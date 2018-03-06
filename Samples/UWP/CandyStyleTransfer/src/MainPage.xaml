@@ -1,0 +1,120 @@
+﻿<Page
+    x:Class="StyleTransfer.MainPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:StyleTransfer"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <Page.Resources>
+        <SolidColorBrush x:Key="TranslucentBlackBrush" Color="Black" Opacity="0.3"/>
+        <Style x:Key="TextBlockStyling" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="Black"/>
+        </Style>
+    </Page.Resources>
+
+    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="80"/>
+                <RowDefinition Height="300*"/>
+                <RowDefinition Height="30"/>
+            </Grid.RowDefinitions>
+
+            <!--Status and result display-->
+            <StackPanel x:Name="UIStatusPanel" Background="#BFFFFFFF" VerticalAlignment="Top" Grid.Row="0">
+                <ContentControl Name="UIModelControls">
+                    <StackPanel Orientation="Horizontal">
+                        <ToggleSwitch Name="UIToggleInferenceDevice"
+                                  OnContent="GPU"
+                                  OffContent="CPU"
+                                  IsOn="True"
+                                  Toggled="UIToggleInferenceDevice_Toggled" 
+                                  Margin="10,0,0,0"/>
+
+                    </StackPanel>
+                </ContentControl>
+
+
+                <!--Image preview and acquisition control-->
+                <ContentControl Name="UIImageControls"
+                            VerticalAlignment="Stretch" 
+                            HorizontalAlignment="Stretch"
+                            IsEnabled="False">
+
+                    <StackPanel Orientation="Horizontal">
+
+                        <Button Name="UIButtonAcquireImage"
+                            ToolTipService.ToolTip="Take a photo"
+                            Click="UIButtonAcquireImage_Click">
+                            <Button.Content>
+                                <SymbolIcon Symbol="Camera"/>
+                            </Button.Content>
+                        </Button>
+                        <Button Name="UIButtonFilePick" 
+                            ToolTipService.ToolTip="Select an image from a file"
+                            Click="UIButtonFilePick_Click">
+                            <Button.Content>
+                                <SymbolIcon Symbol="OpenFile"/>
+                            </Button.Content>
+                        </Button>
+
+                        <Button Name="UIButtonSaveImage" 
+                            ToolTipService.ToolTip="Save the image result to a file"
+                            IsEnabled="false"
+                            VerticalAlignment="Bottom"
+                            Click="UIButtonSaveImage_Click" 
+                            Background="#FF939393" >
+                            <Button.Content>
+                                <SymbolIcon Symbol="Save"/>
+                            </Button.Content>
+                        </Button>
+
+                    </StackPanel>
+                </ContentControl>
+            </StackPanel>
+
+            <Grid Grid.Row="1">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="200*"/>
+                    <ColumnDefinition Width="200*"/>
+                </Grid.ColumnDefinitions>
+
+                <Image Name="UIInputImage"
+                               Grid.Column="0"
+                               Stretch="Uniform"
+                               MaxWidth="720"
+                               MaxHeight="720"/>
+
+                <Grid  Grid.Column="1" VerticalAlignment="Stretch">
+
+                    <Image Name="UIResultImage"
+                                Stretch="Uniform"
+                                MaxWidth="720"
+                                MaxHeight="720"/>
+
+                    <ProgressRing Name="UIProcessingProgressRing" 
+                                      MaxWidth="720"
+                                      MaxHeight="720"
+                                      IsActive="false" 
+                                      Visibility="Collapsed"/>
+                </Grid>
+            </Grid>
+
+            <Border x:Name="UIStatusBorder" Grid.Row="2">
+                <ScrollViewer VerticalScrollMode="Auto"  VerticalScrollBarVisibility="Auto" MaxHeight="200">
+                    <TextBlock x:Name="StatusBlock" 
+                               Text="Select a style to begin"
+                               FontWeight="Bold" 
+                               MaxWidth="{Binding ElementName=Splitter, Path=ActualWidth}" 
+                               Margin="10,10,10,20" 
+                               TextWrapping="Wrap"  />
+                </ScrollViewer>
+            </Border>
+
+        </Grid>
+
+    </Grid>
+</Page>

@@ -1,0 +1,38 @@
+﻿<Page
+    x:Class="SqueezeNetObjectDetection.MainPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:SqueezeNetObjectDetection"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+        <StackPanel>
+            <!--Image picker-->
+            <Button Name="ButtonRun"
+                    ToolTipService.ToolTip="Pick and evaluate and image"
+                    Width="80"
+                    Height="80"
+                    Click="ButtonRun_Click" 
+                    IsEnabled="True" 
+                    HorizontalAlignment="Left" 
+                    VerticalAlignment="Top">
+                <Button.Content>
+                    <SymbolIcon Symbol="Upload" />
+                </Button.Content>
+            </Button>
+
+            <!--Result and status text block-->
+            <TextBlock x:Name="StatusBlock" 
+                       FontWeight="Bold" 
+                       TextWrapping="Wrap"  
+                       Text="Press on the button to select and image and run it through SqueezeNet!"/>
+
+            <!--Image preview -->
+            <Image Name="UIPreviewImage" Stretch="Uniform" MaxWidth="300" MaxHeight="300"/>
+        </StackPanel>
+
+    </Grid>
+</Page>

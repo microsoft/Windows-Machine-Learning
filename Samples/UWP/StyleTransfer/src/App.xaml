@@ -1,12 +1,4 @@
-﻿<!--
-*@@@+++@@@@******************************************************************
-
-Microsoft Windows Media Foundation
-Copyright (C) Microsoft Corporation. All rights reserved.
-
-*@@@+++@@@@******************************************************************
--->
-<Application
+﻿<Application
     x:Class="StyleTransfer.App"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"

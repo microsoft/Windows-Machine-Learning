@@ -107,7 +107,6 @@
       <SubType>Designer</SubType>
     </AppxManifest>
     <Content Include="Assets\mnist.onnx" />
-    <None Include="MNIST_Demo_TemporaryKey.pfx" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Properties\Default.rd.xml" />

@@ -2,7 +2,7 @@
 # MNIST Sample
 
 This is bare template of the MNIST sample that is created through the step-by-step tutorial here: 
-[Windows Machine Learning - Get Started](https://.docs.microsoft.com/en-us/windows/uwp/machine-learning/get-started).
+[Windows Machine Learning - Get Started](https://docs.microsoft.com/en-us/windows/uwp/machine-learning/get-started).
 
 
 A simple UWP application that uses a trained machine learning model (MNIST) to recognize a numeric digit drawn by the user.

@@ -12,7 +12,7 @@ For example, the MNIST sample shows you how to use Visual Studio to easily gener
 
 # Requirements 
 
-* Windows 10, Version 1803.
+* [Latest Windows 10 Insider Preview](https://www.microsoft.com/en-us/software-download/windowsinsiderpreviewiso)
 * [Windows SDK - Build 17110](https://www.microsoft.com/software-download/windowsinsiderpreviewSDK)
 
 

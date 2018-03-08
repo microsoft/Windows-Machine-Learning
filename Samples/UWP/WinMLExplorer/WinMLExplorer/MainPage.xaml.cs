@@ -13,38 +13,56 @@ using WinMLExplorer.ViewModels;
 namespace WinMLExplorer
 {
     /// <summary>
-    /// An empty page that can be used on its own or navigated to within a Frame.
+    /// The main page of the application
     /// </summary>
     public sealed partial class MainPage : Page
     {
+        /// <summary>
+        /// View model that represents this main page
+        /// </summary>
         public MainViewModel ViewModel { get; set; }
 
+        /// <summary>
+        /// Constructor for the MainPage
+        /// </summary>
         public MainPage()
         {
             this.ViewModel = new MainViewModel();
 
-            this.ViewModel.CurrentModel = this.ViewModel.Models[0];
-
             this.InitializeComponent();
 
-            this.modelComboBox.SelectedItem = this.ViewModel.CurrentModel;
+            // Set the model selection combo box to the current model
+            if (this.ViewModel.CurrentModel != null)
+            {
+                this.modelComboBox.SelectedItem = this.ViewModel.CurrentModel;
+            }
 
+            // Set the camera combo box to the first camera on the device
             if (this.ViewModel.CameraNames.Count() > 0)
             {
                 this.cameraSourceComboBox.SelectedItem = this.ViewModel.CameraNames[0];
             }
         }
 
+        /// <summary>
+        /// Event handler for camera source changes
+        /// </summary>
         private async void OnCameraSourceSelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             await this.RestartWebCameraAsync();
         }
 
+        /// <summary>
+        /// Event handler for preferred device toggle changes
+        /// </summary>
         private async void OnDeviceToggleToggled(object sender, RoutedEventArgs e)
         {
             await this.ViewModel.CurrentModel.SetIsGpuValue(this.deviceToggle.IsOn);
         }
 
+        /// <summary>
+        /// Event handler for camera source changes
+        /// </summary>
         private async void OnModelSelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             // Clear existing results
@@ -62,7 +80,7 @@ namespace WinMLExplorer
                 this.durationTextBlock.Visibility = Visibility.Collapsed;
                 this.cameraSource.Visibility = Visibility.Collapsed;
                 this.resultsViewer.Visibility = Visibility.Collapsed;
-                this.webCamHostGrid.Visibility = Visibility.Collapsed;
+                this.webCameraHostGrid.Visibility = Visibility.Collapsed;
                 this.imageHostGrid.Visibility = Visibility.Collapsed;
 
                 // Show UI elements
@@ -70,6 +88,9 @@ namespace WinMLExplorer
             }
         }
 
+        /// <summary>
+        /// Event handler for image selection changes
+        /// </summary>
         private async void OnImagePickerSelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             StorageFile selectedImageFile = (StorageFile)this.imagePickerGridView.SelectedValue;
@@ -86,7 +107,7 @@ namespace WinMLExplorer
                 this.cameraSource.Visibility = Visibility.Collapsed;
                 this.landingMessage.Visibility = Visibility.Collapsed;
                 this.resultsViewer.Visibility = Visibility.Collapsed;
-                this.webCamHostGrid.Visibility = Visibility.Collapsed;
+                this.webCameraHostGrid.Visibility = Visibility.Collapsed;
 
                 // Process images
                 this.imageHostGrid.Visibility = Visibility.Visible;
@@ -98,16 +119,25 @@ namespace WinMLExplorer
             }
         }
 
+        /// <summary>
+        /// Event handler when the page resizes
+        /// </summary>
         private void OnPageSizeChanged(object sender, SizeChangedEventArgs e)
         {
-            UpdateWebCamHostGridSize();
+            UpdateWebCameraHostGridSize();
         }
 
-        private async void OnWebCamButtonClicked(object sender, RoutedEventArgs e)
+        /// <summary>
+        /// Event handler for when web camera button is clicked
+        /// </summary>
+        private async void OnWebCameraButtonClicked(object sender, RoutedEventArgs e)
         {
             await StartWebCameraAsync();
         }
 
+        /// <summary>
+        /// Restart the web camera
+        /// </summary>
         private async Task RestartWebCameraAsync()
         {
             if (this.cameraSourceComboBox.SelectedItem == null)
@@ -123,6 +153,9 @@ namespace WinMLExplorer
             }
         }
 
+        /// <summary>
+        /// Event handler for camera source changes
+        /// </summary>
         private async Task StartWebCameraAsync()
         {
             if (this.cameraSourceComboBox.SelectedItem == null)
@@ -137,7 +170,7 @@ namespace WinMLExplorer
             this.resultsViewer.Visibility = Visibility.Collapsed;
 
             // Start camera
-            this.webCamHostGrid.Visibility = Visibility.Visible;
+            this.webCameraHostGrid.Visibility = Visibility.Visible;
             await this.cameraControl.StartStreamAsync(this.ViewModel, this.cameraSourceComboBox.SelectedItem.ToString());
             await Task.Delay(250);
 
@@ -146,12 +179,15 @@ namespace WinMLExplorer
             this.durationTextBlock.Visibility = Visibility.Visible;
             this.resultsViewer.Visibility = Visibility.Visible;
 
-            UpdateWebCamHostGridSize();
+            UpdateWebCameraHostGridSize();
         }
 
-        private void UpdateWebCamHostGridSize()
+        /// <summary>
+        /// Update the web camera host grid size
+        /// </summary>
+        private void UpdateWebCameraHostGridSize()
         {
-            this.webCamHostGrid.Height = this.webCamHostGrid.ActualWidth / (this.cameraControl.CameraAspectRatio != 0 ? this.cameraControl.CameraAspectRatio : 1.777777777777);
+            this.webCameraHostGrid.Height = this.webCameraHostGrid.ActualWidth / (this.cameraControl.CameraAspectRatio != 0 ? this.cameraControl.CameraAspectRatio : 1.777777777777);
         }
     }
 }

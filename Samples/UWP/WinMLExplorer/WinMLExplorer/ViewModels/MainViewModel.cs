@@ -34,6 +34,9 @@ namespace WinMLExplorer.ViewModels
 
             // Initialize results
             this.Results = new ObservableCollection<ResultViewModel>();
+
+            // Set the first model as current model
+            this.CurrentModel = this.Models.FirstOrDefault();
         }
 
         public List<string> CameraNames { get; private set; }

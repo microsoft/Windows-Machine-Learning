@@ -12,8 +12,7 @@
     SizeChanged="OnPageSizeChanged"
     mc:Ignorable="d">
 
-    <Grid Background="#FF0B4678" 
-          EntranceNavigationTransitionInfo.IsTargetElement="True">
+    <Grid Background="#FF0B4678">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
@@ -45,7 +44,7 @@
                 </AppBarButton.Flyout>
             </AppBarButton>
 
-            <AppBarButton Icon="Video" Label="WebCam"  Click="OnWebCamButtonClicked"/>
+            <AppBarButton Icon="Video" Label="Camera" Click="OnWebCameraButtonClicked"/>
 
             <CommandBar.Content>
                 <ctl:HeaderControl>
@@ -61,10 +60,10 @@
         <Grid Grid.Row="1"  >
             <Grid.RowDefinitions>
                 <RowDefinition Height="0.05*" MinHeight="50"/>
-                <RowDefinition Height="auto" MinHeight="150"/>
+                <RowDefinition Height="auto" MinHeight="75"/>
                 <RowDefinition/>
+                <RowDefinition Height="auto" MinHeight="75"/>
                 <RowDefinition Height="0.05*" MinHeight="50"/>
-                <RowDefinition Height="0.1*"/>
             </Grid.RowDefinitions>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="0.1*"/>
@@ -128,7 +127,7 @@
 
             <Grid Grid.Row="2" Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Top">
 
-                <Grid x:Name="webCamHostGrid" Visibility="Collapsed">
+                <Grid x:Name="webCameraHostGrid" Visibility="Collapsed">
                     <ctl:CameraControl x:Name="cameraControl"/>
                 </Grid>
                 <Grid x:Name="imageHostGrid" Visibility="Collapsed" >

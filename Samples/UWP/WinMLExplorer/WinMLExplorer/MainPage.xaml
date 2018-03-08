@@ -1,0 +1,175 @@
+﻿<Page
+    x:Class="WinMLExplorer.MainPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:WinMLExplorer"
+    xmlns:ctl="using:WinMLExplorer.Controls"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:mlmodels="using:WinMLExplorer.MLModels"
+    xmlns:storage="using:Windows.Storage"
+    xmlns:viewmodels="using:WinMLExplorer.ViewModels"
+    SizeChanged="OnPageSizeChanged"
+    mc:Ignorable="d">
+
+    <Grid Background="#FF0B4678" 
+          EntranceNavigationTransitionInfo.IsTargetElement="True">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <CommandBar x:Name="commandBar" VerticalAlignment="Center" HorizontalContentAlignment="Stretch" Background="#FF0D6394" >
+
+            <AppBarButton Icon="Pictures" Label="{x:Bind ViewModel.DisplayFileInputName, Mode=OneWay}">
+                <AppBarButton.Flyout>
+                    <Flyout x:Name="imagePickerFlyout">
+                        <GridView x:Name="imagePickerGridView"
+                                  Width="408"
+                                  ItemsSource="{x:Bind ViewModel.InputFiles, Mode=OneWay}"
+                                  SelectionChanged="OnImagePickerSelectionChanged"
+                                  SelectionMode="Single">
+                            <GridView.ItemTemplate>
+                                <DataTemplate x:DataType="storage:StorageFile">
+                                    <Border Margin="6">
+                                        <Image Width="120"
+                                               Height="120"
+                                               Source="{Binding Path}"
+                                               Stretch="UniformToFill" />
+                                    </Border>
+                                </DataTemplate>
+                            </GridView.ItemTemplate>
+                        </GridView>
+                    </Flyout>
+                </AppBarButton.Flyout>
+            </AppBarButton>
+
+            <AppBarButton Icon="Video" Label="WebCam"  Click="OnWebCamButtonClicked"/>
+
+            <CommandBar.Content>
+                <ctl:HeaderControl>
+                    <ctl:HeaderControl.HeaderContent>
+                        <TextBlock Text="{x:Bind ViewModel.Title, Mode=OneWay}" Style="{ThemeResource PageTitleTextBlockStyle}" TextWrapping="NoWrap"/>
+                    </ctl:HeaderControl.HeaderContent>
+                </ctl:HeaderControl>
+            </CommandBar.Content>
+        </CommandBar>
+
+        <TextBlock x:Name="landingMessage" Grid.Row="1" Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Center" Text="{x:Bind ViewModel.LandingMessage, Mode=OneWay}" Style="{StaticResource HeaderTextBlockStyle}" />
+
+        <Grid Grid.Row="1"  >
+            <Grid.RowDefinitions>
+                <RowDefinition Height="0.05*" MinHeight="50"/>
+                <RowDefinition Height="auto" MinHeight="150"/>
+                <RowDefinition/>
+                <RowDefinition Height="0.05*" MinHeight="50"/>
+                <RowDefinition Height="0.1*"/>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="0.1*"/>
+                <ColumnDefinition />
+                <ColumnDefinition Width="0.5*"/>
+            </Grid.ColumnDefinitions>
+
+            <StackPanel x:Name="cameraSource"
+                        Grid.ColumnSpan="3"
+                        Margin="6"
+                        HorizontalAlignment="Right"
+                        VerticalAlignment="Top"
+                        Orientation="Horizontal"
+                        Visibility="Collapsed">
+                <TextBlock x:Name="cameraSourceTextBlock"
+                           Margin="6"
+                           Foreground="#FFCCD8E6"
+                           Text="Camera Source" />
+                <ComboBox x:Name="cameraSourceComboBox"
+                          MinWidth="300"
+                          MaxWidth="600"
+                          HorizontalAlignment="Right"
+                          VerticalAlignment="Bottom"
+                          Background="Transparent"
+                          BorderBrush="#FFCCD8E6"
+                          Foreground="#FFCCD8E6"
+                          ItemsSource="{x:Bind ViewModel.CameraNames, Mode=OneWay}"
+                          Opacity="0.8"
+                          SelectionChanged="OnCameraSourceSelectionChanged" />
+            </StackPanel>
+
+            <StackPanel Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Top" Grid.Row="1" Grid.ColumnSpan="3">
+                <ComboBox x:Name="modelComboBox"
+                          MinWidth="300"
+                          MaxWidth="600"
+                          Background="Transparent"
+                          BorderBrush="#FFCCD8E6"
+                          Foreground="#FFCCD8E6"
+                          ItemsSource="{x:Bind ViewModel.Models, Mode=OneWay}"
+                          SelectionChanged="OnModelSelectionChanged">
+                    <ComboBox.HeaderTemplate>
+                        <DataTemplate>
+                            <TextBlock FontWeight="SemiBold"
+                                       Foreground="#FFCCD8E6"
+                                       Style="{StaticResource BaseTextBlockStyle}"
+                                       Text="Select Machine Learning Model"/>
+                        </DataTemplate>
+                    </ComboBox.HeaderTemplate>
+
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate x:DataType="mlmodels:WinMLModel">
+                            <TextBlock 
+                                FontWeight="SemiBold"
+                                Foreground="#FFCCD8E6"
+                                Style="{ThemeResource BodyTextBlockStyle}" 
+                                Text="{Binding DisplayName}"/>
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                </ComboBox>
+            </StackPanel>
+
+            <Grid Grid.Row="2" Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Top">
+
+                <Grid x:Name="webCamHostGrid" Visibility="Collapsed">
+                    <ctl:CameraControl x:Name="cameraControl"/>
+                </Grid>
+                <Grid x:Name="imageHostGrid" Visibility="Collapsed" >
+                    <ctl:ImageControl x:Name="imageControl" DataContext="{x:Bind ViewModel, Mode=OneWay}"/>
+                </Grid>
+
+                <Grid Background="#aa000000"  HorizontalAlignment="Right" VerticalAlignment="Bottom">
+                    <TextBlock x:Name="durationTextBlock" Text="{x:Bind ViewModel.Duration, Mode=OneWay}" Visibility="Collapsed"
+                               TextWrapping="Wrap" Foreground="LightGray" Style="{StaticResource TitleTextBlockStyle}" Margin="5" />
+                </Grid>
+            </Grid>
+
+            <StackPanel x:Name="resultsViewer" Visibility="Collapsed" Grid.Row="2" Grid.Column="2" Margin="12,0,12,0" Orientation="Vertical">
+                <ListView Header="Top Results:" x:Name="topResultsListView" IsItemClickEnabled="False" SelectionMode="None"
+                              ItemsSource="{x:Bind ViewModel.Results, Mode=OneWay}">
+                    <ListView.ItemTemplate>
+                        <DataTemplate x:DataType="viewmodels:ResultViewModel">
+                            <StackPanel Orientation="Vertical" Height="100" Visibility="{Binding VisibilityState}">
+                                <StackPanel Orientation="Horizontal" Height="50" Width="500">
+                                    <TextBlock Margin="5" HorizontalTextAlignment="Left" TextWrapping="Wrap" Text="{Binding Label}" Style="{StaticResource TitleTextBlockStyle}" VerticalAlignment="Center" Foreground="LightGray"/>
+                                    <TextBlock Margin="5" HorizontalTextAlignment="Right" Text="{Binding ProbabilityValue}" VerticalAlignment="Center" Style="{StaticResource TitleTextBlockStyle}" Foreground="White" />
+                                </StackPanel>
+                                <Rectangle Fill="{Binding Color}" HorizontalAlignment="Left" Height="20" VerticalAlignment="Top" Width="{Binding Width}"/>
+                            </StackPanel>
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+                </ListView>
+            </StackPanel>
+
+            <ToggleSwitch x:Name="deviceToggle"
+                          Grid.Row="3"
+                          Grid.ColumnSpan="3"
+                          HorizontalAlignment="Center"
+                          Header="Preferred device"
+                          OffContent="CPU"
+                          OnContent="GPU"
+                          Toggled="OnDeviceToggleToggled" />
+
+        </Grid>
+
+        <ctl:FooterControl Grid.Row="2"/>
+
+    </Grid>
+</Page>

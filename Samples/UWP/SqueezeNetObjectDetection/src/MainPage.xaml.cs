@@ -13,6 +13,7 @@ using Windows.Storage.Streams;
 using Windows.UI.Core;
 using Windows.Storage.Pickers;
 using Windows.UI.Xaml.Media.Imaging;
+using System.Diagnostics;
 
 namespace SqueezeNetObjectDetection
 {
@@ -28,6 +29,7 @@ namespace SqueezeNetObjectDetection
         private LearningModelPreview _model = null;
         private List<string> _labels = new List<string>();
         List<float> _outputVariableList = new List<float>();
+        private Stopwatch modeltime_w = new Stopwatch();
 
         public MainPage()
         {
@@ -152,6 +154,8 @@ namespace SqueezeNetObjectDetection
             {
                 try
                 {
+                    modeltime_w.Start();
+
                     // Create bindings for the input and output buffer
                     LearningModelBindingPreview binding = new LearningModelBindingPreview(_model as LearningModelPreview);
                     binding.Bind(_inputImageDescription.Name, inputFrame);
@@ -178,7 +182,10 @@ namespace SqueezeNetObjectDetection
                     }
 
                     // Display the result
-                    string message = "Predominant objects detected are:";
+                    modeltime_w.Stop();
+                    var runtimemS = modeltime_w.ElapsedMilliseconds;
+
+                    string message = $"Runtime {runtimemS}mS Predominant objects detected are:";
                     for (int i = 0; i < 3; i++)
                     {
                         message += $"\n{ _labels[topProbabilityLabelIndexes[i]]} with confidence of { topProbabilities[i]}";

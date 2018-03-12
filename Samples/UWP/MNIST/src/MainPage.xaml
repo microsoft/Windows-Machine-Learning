@@ -5,7 +5,7 @@
     xmlns:local="using:MNIST_Demo"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    mc:Ignorable="d" Width="608" Height="496">
+    mc:Ignorable="d" Width="731.195" Height="496">
 
     <Grid
         x:Name="parentGrid"
@@ -20,7 +20,7 @@
         </Grid.ColumnDefinitions>
 
         <TextBlock Text="Handwritten Digit:"
-               FontSize="36 "
+               FontSize="36"
                VerticalAlignment="Center"
                Grid.Row="0"
                Grid.Column="0" />
@@ -56,7 +56,7 @@
         <TextBlock Name="numberLabel"
             FontSize="100" 
             Grid.Column="1" 
-            Margin="60,0,183,192" 
+            Margin="60,0,100,192"
             Text="" VerticalAlignment="Bottom" Grid.Row="1"/>
         <Border BorderThickness="4"
             BorderBrush="Black"

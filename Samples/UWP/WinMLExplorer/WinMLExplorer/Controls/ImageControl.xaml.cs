@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
@@ -51,10 +52,11 @@ namespace WinMLExplorer.Controls
                 await EvaluateImageAsync(imageFile);
 
             }
-            catch (Exception)
+            catch (Exception ex)
             {
                 // If we fail to load the image we will just not display it
                 this.bitmapImage.UriSource = null;
+                Debug.WriteLine("Exception with UpdateImageAsync: " + ex);
             }
 
             // Stop progress indicator

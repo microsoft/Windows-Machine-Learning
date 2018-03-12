@@ -93,7 +93,7 @@ namespace WinMLExplorer.MLModels
             }
             catch (Exception ex)
             {
-                Debug.WriteLine("Exception with EvaludateAsync: " + ex);
+                Debug.WriteLine("Exception with EvaluateAsync: " + ex);
             }
 
             return result;

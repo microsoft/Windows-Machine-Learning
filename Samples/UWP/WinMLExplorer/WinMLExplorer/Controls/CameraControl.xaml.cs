@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
@@ -72,6 +73,7 @@ namespace WinMLExplorer.Controls
             }
             catch (Exception ex)
             {
+                Debug.WriteLine("Exception with ProcessCurrentVideoFrame: " + ex);
             }
             finally
             {
@@ -133,8 +135,9 @@ namespace WinMLExplorer.Controls
                     this.webCamCaptureElement.Visibility = Visibility.Visible;
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                Debug.WriteLine("Exception with StartStreamAsync: " + ex);
             }
         }
 
@@ -154,8 +157,9 @@ namespace WinMLExplorer.Controls
                     this.webCamCaptureElement.Visibility = Visibility.Collapsed;
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                Debug.WriteLine("Exception with StopStreamAsync: " + ex);
             }
         }
     }

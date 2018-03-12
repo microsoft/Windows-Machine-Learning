@@ -85,7 +85,7 @@ namespace WinMLExplorer.ViewModels
             this.Results.Clear();
             this.PrevVideoWinMLModelResult = null;
 
-            // Evaludate input
+            // Evaluate input
             MLModelResult result = await this.CurrentModel.EvaluateAsync(inputFile);
             
             // Set results
@@ -95,7 +95,7 @@ namespace WinMLExplorer.ViewModels
 
         public async Task EvaluateAsync(VideoFrame videoFrame)
         {
-            // Evaludate input
+            // Evaluate input
             MLModelResult result = await this.CurrentModel.EvaluateAsync(videoFrame);
 
             // UI trick to smooth out transition from previous results

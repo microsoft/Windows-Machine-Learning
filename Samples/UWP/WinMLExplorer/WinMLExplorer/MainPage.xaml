@@ -44,7 +44,7 @@
                 </AppBarButton.Flyout>
             </AppBarButton>
 
-            <AppBarButton Icon="Video" Label="Camera" Click="OnWebCameraButtonClicked"/>
+            <AppBarButton Icon="Video" Label="Camera" Click="OnWebCameraButtonClicked" Visibility="{x:Bind ViewModel.WebCameraVisibilityState, Mode=OneWay}"/>
 
             <CommandBar.Content>
                 <ctl:HeaderControl>

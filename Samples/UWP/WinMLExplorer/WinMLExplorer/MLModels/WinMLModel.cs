@@ -79,16 +79,14 @@ namespace WinMLExplorer.MLModels
 
             try
             {
-                // Set duration
-                TimeSpan duration = new TimeSpan();
-
                 // Get current datetime
                 DateTime startTime = DateTime.UtcNow;
 
                 // Evaluate
                 await EvaluateAsync(result, inputFrame);
 
-                duration = DateTime.UtcNow - startTime;
+                // Set duration
+                TimeSpan duration = DateTime.UtcNow - startTime;
 
                 // Prepare result
                 result.DurationInMilliSeconds = duration.TotalMilliseconds;

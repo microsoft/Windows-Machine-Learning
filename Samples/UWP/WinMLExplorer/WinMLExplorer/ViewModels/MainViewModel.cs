@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Windows.Media;
 using Windows.Storage;
-
+using Windows.UI.Xaml;
 using WinMLExplorer.MLModels;
 using WinMLExplorer.Models;
 using WinMLExplorer.Utilities;
@@ -196,5 +196,7 @@ namespace WinMLExplorer.ViewModels
                 return this.CurrentModel.DisplayName;
             }
         }
+
+        public Visibility WebCameraVisibilityState => this.CameraNames?.Count() > 0 == true ? Visibility.Visible : Visibility.Collapsed;
     }
 }

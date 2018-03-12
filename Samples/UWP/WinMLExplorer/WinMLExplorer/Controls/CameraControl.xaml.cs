@@ -62,7 +62,7 @@ namespace WinMLExplorer.Controls
 
             try
             {
-                const BitmapPixelFormat InputPixelFormat = BitmapPixelFormat.Nv12;
+                const BitmapPixelFormat InputPixelFormat = BitmapPixelFormat.Bgra8;
                 using (VideoFrame previewFrame = new VideoFrame(InputPixelFormat, (int)this.VideoProperties.Width, (int)this.VideoProperties.Height))
                 {
                     await this.CaptureManager.GetPreviewFrameAsync(previewFrame);

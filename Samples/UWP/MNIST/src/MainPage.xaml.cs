@@ -56,20 +56,10 @@ namespace MNIST_Demo
             //Evaluate the model
             ModelOutput = await ModelGen.EvaluateAsync(ModelInput);
 
-            //Iterate through evaluation output to determine highest probability digit
-            var maxIndexLQ = ModelOutput.Plus214_Output_0.IndexOf(ModelOutput.Plus214_Output_0.Max());
+            //LINQ query to check for highest probability digit
+            var maxIndex = ModelOutput.Plus214_Output_0.IndexOf(ModelOutput.Plus214_Output_0.Max());
 
-            float maxProb = 0;
-            int maxIndex = 0;
-            for (int i = 0; i < 10; i++)
-            {
-                if (ModelOutput.Plus214_Output_0[i] > maxProb)
-                {
-                    maxIndex = i;
-                    maxProb = ModelOutput.Plus214_Output_0[i];
-                }
-            }
-            numberLabel.Text = maxIndex.ToString() + maxIndexLQ.ToString();
+            numberLabel.Text = maxIndex.ToString();
 
         }
 

@@ -56,7 +56,7 @@ namespace WinMLExplorer.MLModels
             // Initialize the input
             PcbModelInput input = new PcbModelInput() { data = inputFrame };
 
-            // Evaludate the input
+            // Evaluate the input
             PcbModelOutput output = await EvaluateAsync(input, result.CorrelationId);
             
             // Get first label from output

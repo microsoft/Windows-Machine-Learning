@@ -182,7 +182,7 @@ namespace WinMLExplorer.ViewModels
         }
 
         /// <summary>
-        /// Set the results to be display after evaluation
+        /// Set the results to be displayed after evaluation
         /// </summary>
         private void SetResults(MLModelResult result)
         {

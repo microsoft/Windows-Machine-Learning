@@ -45,12 +45,12 @@ namespace WinMLExplorer.MLModels
         }
 
         /// <summary>
-        /// Name of the input (ie: circuit board) to be display on the main ui
+        /// Name of the input (ie: circuit board) to be displayed on the main ui
         /// </summary>
         public abstract string DisplayInputName { get; }
 
         /// <summary>
-        /// Mininum probability to be displayed on the result list
+        /// Minimum probability to be displayed on the result list
         /// </summary>
         public abstract float DisplayMinProbability { get; }
 
@@ -148,7 +148,7 @@ namespace WinMLExplorer.MLModels
         }
 
         /// <summary>
-        /// Initilize the ML model
+        /// Initialize the ML model
         /// </summary>
         protected virtual async Task Initialize()
         {

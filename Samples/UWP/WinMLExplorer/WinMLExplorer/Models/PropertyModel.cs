@@ -10,6 +10,7 @@ namespace WinMLExplorer.Models
 {
     public abstract class PropertyModel : INotifyPropertyChanged
     {
+
         public event PropertyChangedEventHandler PropertyChanged;
 
         protected SynchronizationContext SynchronizationContext;

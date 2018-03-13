@@ -53,12 +53,16 @@ namespace WinMLExplorer.MLModels
 
         protected override async Task EvaluateAsync(MLModelResult result, VideoFrame inputFrame)
         {
+            // Initialize the input
             PcbModelInput input = new PcbModelInput() { data = inputFrame };
 
+            // Evaludate the input
             PcbModelOutput output = await EvaluateAsync(input, result.CorrelationId);
             
+            // Get first label from output
             string label = output.classLabel?.FirstOrDefault();
 
+            // Find probability for label
             if (string.IsNullOrEmpty(label) == false)
             {
                 float probability = output.loss?.ContainsKey(label) == true ? output.loss[label] : 0f;
@@ -79,6 +83,7 @@ namespace WinMLExplorer.MLModels
             binding.Bind("classLabel", output.classLabel);
             binding.Bind("loss", output.loss);
 
+            // Evaluate the bindings
             LearningModelEvaluationResultPreview evalResult = await this.LearningModel.EvaluateAsync(binding, correlationId);
             return output;
         }

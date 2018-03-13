@@ -15,9 +15,19 @@ namespace WinMLExplorer.ViewModels
 {
     public class MainViewModel : PropertyModel
     {
+        /// <summary>
+        /// List of supported ml models
+        /// </summary>
         public List<WinMLModel> Models { get; set; }
 
+        /// <summary>
+        /// Max number of results in the result list
+        /// </summary>
         private int MaxNumResults = 5;
+
+        /// <summary>
+        /// Preview video results (this is used to smooth out the UI)
+        /// </summary>
         private MLModelResult PrevVideoWinMLModelResult;
 
         public MainViewModel()
@@ -39,10 +49,16 @@ namespace WinMLExplorer.ViewModels
             this.CurrentModel = this.Models.FirstOrDefault();
         }
 
+        /// <summary>
+        /// List of camera names
+        /// </summary>
         public List<string> CameraNames { get; private set; }
 
         private WinMLModel currentModel;
 
+        /// <summary>
+        /// Current ML model
+        /// </summary>
         public WinMLModel CurrentModel
         {
             get
@@ -62,10 +78,16 @@ namespace WinMLExplorer.ViewModels
             }
         }
 
+        /// <summary>
+        /// Evaluation results to be displayed
+        /// </summary>
         public ObservableCollection<ResultViewModel> Results { get; set; }
 
         private string duration;
 
+        /// <summary>
+        /// Evaluation duration
+        /// </summary>
         public string Duration
         {
             get
@@ -78,7 +100,10 @@ namespace WinMLExplorer.ViewModels
                 this.RaisePropertyChanged("Duration");
             }
         }
-        
+
+        /// <summary>
+        /// Evaluate a static picture file
+        /// </summary>
         public async Task EvaluateAsync(StorageFile inputFile)
         {
             // Clear previous results
@@ -93,6 +118,9 @@ namespace WinMLExplorer.ViewModels
             this.SetResults(result);
         }
 
+        /// <summary>
+        /// Evaluate the video frame
+        /// </summary>
         public async Task EvaluateAsync(VideoFrame videoFrame)
         {
             // Evaluate input
@@ -120,6 +148,9 @@ namespace WinMLExplorer.ViewModels
             this.SetResults(result);
         }
 
+        /// <summary>
+        /// List of input image files
+        /// </summary>
         public IReadOnlyList<StorageFile> InputFiles
         {
             get
@@ -128,6 +159,9 @@ namespace WinMLExplorer.ViewModels
             }
         }
 
+        /// <summary>
+        /// Display name of the input picture type
+        /// </summary>
         public string DisplayFileInputName
         {
             get
@@ -136,6 +170,9 @@ namespace WinMLExplorer.ViewModels
             }
         }
 
+        /// <summary>
+        /// Landing message to show when user opens application
+        /// </summary>
         public string LandingMessage
         {
             get
@@ -144,6 +181,9 @@ namespace WinMLExplorer.ViewModels
             }
         }
 
+        /// <summary>
+        /// Set the results to be display after evaluation
+        /// </summary>
         private void SetResults(MLModelResult result)
         {
             this.SynchronizationContext.Post(_ =>
@@ -189,6 +229,9 @@ namespace WinMLExplorer.ViewModels
             }, null);
         }
 
+        /// <summary>
+        /// Title of the model
+        /// </summary>
         public string Title
         {
             get
@@ -197,6 +240,9 @@ namespace WinMLExplorer.ViewModels
             }
         }
 
+        /// <summary>
+        /// Web camera visibility state
+        /// </summary>
         public Visibility WebCameraVisibilityState => this.CameraNames?.Count() > 0 == true ? Visibility.Visible : Visibility.Collapsed;
     }
 }

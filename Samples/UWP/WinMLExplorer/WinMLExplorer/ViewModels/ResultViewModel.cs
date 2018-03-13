@@ -12,7 +12,14 @@ namespace WinMLExplorer.ViewModels
 {
     public class ResultViewModel : PropertyModel
     {
+        /// <summary>
+        /// Display result settings
+        /// </summary>
         private DisplayResultSetting [] DisplayResultSettings;
+
+        /// <summary>
+        /// Max width of the view model
+        /// </summary>
         private int MaxWidth = 500;
 
         public ResultViewModel(DisplayResultSetting[] settings)
@@ -21,6 +28,9 @@ namespace WinMLExplorer.ViewModels
             this.DisplayResultSettings = settings;
         }
 
+        /// <summary>
+        /// Color of the result based on display result setting
+        /// </summary>
         public Brush Color
         {
             get
@@ -50,6 +60,9 @@ namespace WinMLExplorer.ViewModels
 
         private bool isVisible = false;
 
+        /// <summary>
+        /// Indicate if the view model is visible
+        /// </summary>
         public bool IsVisible
         {
             get
@@ -66,6 +79,9 @@ namespace WinMLExplorer.ViewModels
 
         private string label = string.Empty;
 
+        /// <summary>
+        /// Label of the view model
+        /// </summary>
         public string Label
         {
             get
@@ -86,6 +102,9 @@ namespace WinMLExplorer.ViewModels
 
         private float probability = 0f;
 
+        /// <summary>
+        /// Probability value of the view model
+        /// </summary>
         public float Probability
         {
             get
@@ -108,10 +127,19 @@ namespace WinMLExplorer.ViewModels
             }
         }
 
+        /// <summary>
+        /// String value of the probability
+        /// </summary>
         public string ProbabilityValue => string.Format("{0:P1}", this.Probability);
 
+        /// <summary>
+        /// Visibility state of the view model
+        /// </summary>
         public Visibility VisibilityState => this.IsVisible == true ? Visibility.Visible : Visibility.Collapsed;
 
+        /// <summary>
+        /// Calculated width of the view model based on probability
+        /// </summary>
         public int Width => (int)(this.MaxWidth * this.Probability);
                 
     }

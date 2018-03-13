@@ -9,12 +9,18 @@ namespace WinMLExplorer.Utilities
 {
     public static class DeviceUtility
     {
+        /// <summary>
+        /// Get the available camera names
+        /// </summary>
         public static async Task<IEnumerable<string>> GetAvailableCameraNamesAsync()
         {
             DeviceInformationCollection deviceInfo = await DeviceInformation.FindAllAsync(DeviceClass.VideoCapture);
             return deviceInfo.Select(d => GetCameraName(d, deviceInfo)).OrderBy(name => name);
         }
 
+        /// <summary>
+        /// Get the available camera name
+        /// </summary>
         public static string GetCameraName(DeviceInformation cameraInfo, DeviceInformationCollection allCameras)
         {
             bool isCameraNameUnique = allCameras.Count(c => c.Name == cameraInfo.Name) == 1;

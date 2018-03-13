@@ -18,12 +18,24 @@ namespace WinMLExplorer.MLModels
 {
     public abstract class WinMLModel
     {
+        /// <summary>
+        /// List of static picture files
+        /// </summary>
         public IReadOnlyList<StorageFile> InputFiles { get; set; }
 
+        /// <summary>
+        /// ML model
+        /// </summary>
         protected LearningModelPreview LearningModel;
 
+        /// <summary>
+        /// List of files that the model needs
+        /// </summary>
         protected IReadOnlyList<StorageFile> ModelFiles;
 
+        /// <summary>
+        /// ML model file
+        /// </summary>
         private StorageFile ModelFile;
 
         public WinMLModel()
@@ -32,18 +44,40 @@ namespace WinMLExplorer.MLModels
             Task.Run(async () => await Initialize()).Wait();
         }
 
+        /// <summary>
+        /// Name of the input (ie: circuit board) to be display on the main ui
+        /// </summary>
         public abstract string DisplayInputName { get; }
 
+        /// <summary>
+        /// Mininum probability to be displayed on the result list
+        /// </summary>
         public abstract float DisplayMinProbability { get; }
 
+        /// <summary>
+        /// Display name of the model
+        /// </summary>
         public abstract string DisplayName { get; }
 
+        /// <summary>
+        /// Display result settings
+        /// This is used to define the colors for each label or by probability percentage
+        /// </summary>
         public abstract DisplayResultSetting [] DisplayResultSettings { get; }
 
+        /// <summary>
+        /// Model file name
+        /// </summary>
         public abstract string Filename { get; }
 
+        /// <summary>
+        /// Model folder name
+        /// </summary>
         public abstract string Foldername { get; }
 
+        /// <summary>
+        /// Convert a static image file to video frame
+        /// </summary>
         private async Task<VideoFrame> ConvertFileToVideoFrameAsync(StorageFile file)
         {
             SoftwareBitmap softwareBitmap;
@@ -60,6 +94,9 @@ namespace WinMLExplorer.MLModels
             return VideoFrame.CreateWithSoftwareBitmap(softwareBitmap);
         }
 
+        /// <summary>
+        /// Evaluate static picture file
+        /// </summary>
         public async Task<MLModelResult> EvaluateAsync(StorageFile inputFile)
         {
             Debug.WriteLine("Picture: " + inputFile.Name);
@@ -70,6 +107,9 @@ namespace WinMLExplorer.MLModels
             }
         }
 
+        /// <summary>
+        /// Evaluate video frame
+        /// </summary>
         public async Task<MLModelResult> EvaluateAsync(VideoFrame inputFrame)
         {
             MLModelResult result = new MLModelResult()
@@ -99,11 +139,17 @@ namespace WinMLExplorer.MLModels
             return result;
         }
 
+        /// <summary>
+        /// Evaluate input video frame work ml model result
+        /// </summary>
         protected virtual async Task EvaluateAsync(MLModelResult result, VideoFrame inputFrame)
         {
             throw new NotImplementedException();
         }
-        
+
+        /// <summary>
+        /// Initilize the ML model
+        /// </summary>
         protected virtual async Task Initialize()
         {
             string modelPath
@@ -121,6 +167,9 @@ namespace WinMLExplorer.MLModels
             await InitializeMLModel(false);
         }
 
+        /// <summary>
+        /// Initialize the ML model with isGpu defined
+        /// </summary>
         private async Task InitializeMLModel(bool isGpu)
         {
             this.LearningModel = await LearningModelPreview.LoadModelFromStorageFileAsync(this.ModelFile);
@@ -129,6 +178,9 @@ namespace WinMLExplorer.MLModels
                 LearningModelDeviceKindPreview.LearningDeviceGpu : LearningModelDeviceKindPreview.LearningDeviceCpu;
         }
 
+        /// <summary>
+        /// Set the is gpu value
+        /// </summary>
         public async Task SetIsGpuValue(bool isGpu)
         {
             await InitializeMLModel(isGpu);

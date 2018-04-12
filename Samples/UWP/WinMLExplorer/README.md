@@ -1,18 +1,15 @@
-﻿# Windows Machine Learning Explorer Sample
+﻿# Windows ML Explorer sample
 
-Windows Machine Learning Explorer is a data driven and generic sample application that serves as a 
-launch pad to bootstrap ML models to be evaluated by Windows ML. It currently includes a scenario of 
-circuit board defect detection model that can detect defects on pictures and a real-time camera feed 
-of a printed circuit board. 
+Windows ML Explorer is sample app that you can use to bootstrap ML models to be evaluated with Windows ML. Currently, the app includes a circuit board defect detection model that can detect defects on images and a real-time camera feed of a printed circuit board.
 
-For more information about this sample application, go to: [How three lines of code and Windows Machine 
-Learning empower .NET developers to run AI locally on Windows 10 devices](https://aka.ms/winmlfordevsblog).
+To read more about this sample application, see [How three lines of code and Windows Machine Learning empower .NET developers to run AI locally on Windows 10 devices](https://blogs.technet.microsoft.com/machinelearning/2018/03/13/how-three-lines-of-code-and-windows-machine-learning-empower-net-developers-to-run-ai-locally-on-windows-10-devices/).
 
-For a guide to learn how to get started with Windows Machine Learning development, go to: [Windows Machine 
-Learning - Get Started](https://docs.microsoft.com/en-us/windows/uwp/machine-learning/get-started).
+To learn more about Windows ML development, see [Windows ML documentation](https://docs.microsoft.com/windows/uwp/machine-learning/).
 
 ## Prerequisites
-[Windows SDK - Build 17110](https://www.microsoft.com/software-download/windowsinsiderpreviewSDK)
+
+- [Windows 10 - Build 17110 or higher](https://www.microsoft.com/en-us/software-download/windowsinsiderpreviewiso)
+- [Windows SDK - Build 17110 or higher](https://www.microsoft.com/en-us/software-download/windowsinsiderpreviewSDK)
 
 ## Build the sample
 
@@ -31,14 +28,13 @@ Learning - Get Started](https://docs.microsoft.com/en-us/windows/uwp/machine-lea
 
 The next steps depend on whether you just want to deploy the sample or you want to both deploy and run it.
 
-### Deploying the sample
+### Deploy the sample
 
-- Select Build > Deploy Solution. 
+- Select Build > Deploy Solution.
 
-### Deploying and running the sample
+### Deploy and run the sample
 
-- To debug the sample and then run it, press F5 or select Debug >  Start Debugging. To run the sample 
-without debugging, press Ctrl+F5 or selectDebug > Start Without Debugging.
+- To debug the sample and then run it, press F5 or select Debug >  Start Debugging. To run the sample without debugging, press Ctrl+F5 or selectDebug > Start Without Debugging.
 
 ## License
 

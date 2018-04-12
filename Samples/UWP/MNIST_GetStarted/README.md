@@ -1,21 +1,15 @@
+# MNIST Get Started sample
 
-# MNIST Sample
+This is a starting template for the MNIST sample app and accompanies the step-by-step tutorial [Get Started with Windows ML](https://docs.microsoft.com/windows/uwp/machine-learning/get-started).
 
-This is bare template of the MNIST sample that is created through the step-by-step tutorial here: 
-[Windows Machine Learning - Get Started](https://docs.microsoft.com/en-us/windows/uwp/machine-learning/get-started).
+For a completed version of the sample app, see the completed [MNIST sample](https://github.com/Microsoft/Windows-Machine-Learning/tree/master/Samples/UWP/MNIST).
 
+## Prerequisites
 
-A simple UWP application that uses a trained machine learning model (MNIST) to recognize a numeric digit drawn by the user.
-
-This sample demonstrates the use of Visual Studio ML generation to easily create a model interface for your application.
-Once you have a pre-trained ONNX model, you can add the model file directly to your application to automicatlly generate the model representation, and the model inputs and outputs. 
-
-
-
-
+- [Windows 10 - Build 17110 or higher](https://www.microsoft.com/en-us/software-download/windowsinsiderpreviewiso)
+- [Windows SDK - Build 17110 or higher](https://www.microsoft.com/en-us/software-download/windowsinsiderpreviewSDK)
 
 ## Build the sample
-
 
 1. If you download the samples ZIP, be sure to unzip the entire archive, not just the folder with
    the sample you want to build.
@@ -28,23 +22,19 @@ Once you have a pre-trained ONNX model, you can add the model file directly to y
 
 4. Press Ctrl+Shift+B, or select **Build** \> **Build Solution**.
 
-
-
 ## Run the sample
-
-
 
 The next steps depend on whether you just want to deploy the sample or you want to both deploy and
 run it.
 
-
-
 ### Deploying the sample
 
-- Select Build > Deploy Solution. 
-
-
+- Select Build > Deploy Solution.
 
 ### Deploying and running the sample
 
 - To debug the sample and then run it, press F5 or select Debug >  Start Debugging. To run the sample without debugging, press Ctrl+F5 or selectDebug > Start Without Debugging.
+
+## License
+
+MIT. See [LICENSE file](https://github.com/Microsoft/Windows-Machine-Learning/blob/master/LICENSE).

@@ -1,25 +1,24 @@
+# Windows ML samples
 
-# Windows Machine Learning Samples
+This repo contains sample apps that demonstrate how to use Windows ML to build machine learning applications for Windows 10.
 
-This repo contains the Windows Machine Learning (WinML) samples that demonstrate how to build machine learning applications for Windows 10. 
-We also have additional information and resources available here: 
-https://docs.microsoft.com/en-us/windows/uwp/machine-learning
+We also have additional information and resources available here:
+https://docs.microsoft.com/windows/uwp/machine-learning
 
-## API Samples
+## Sample apps
 
-In the Samples directory, you will find samples that demonstrate API usage and specific features of Windows Machine Learning.
-For example, the MNIST sample shows you how to use Visual Studio to easily generate the model interface for your application. The SnapCandy sample shows you how you can easily integrate your camera stream into your machine learning model. 
+- **MNIST**: Uses the MNIST model to recognize a numeric digit drawn by the user.
+- **SqueezeNet**: Uses the SqueezeNet model to detect the predominant object in an image.
+- **WinMLExplorer**: Uses a circuit board defect detection model to detect defects from images or a real-time camera feed.
 
-# Requirements 
+## Requirements
 
-* [Latest Windows 10 Insider Preview](https://www.microsoft.com/en-us/software-download/windowsinsiderpreviewiso)
-* [Windows SDK - Build 17110](https://www.microsoft.com/software-download/windowsinsiderpreviewSDK)
+- [Windows 10 - Build 17110 or higher](https://www.microsoft.com/en-us/software-download/windowsinsiderpreviewiso)
+- [Windows SDK - Build 17110 or higher](https://www.microsoft.com/en-us/software-download/windowsinsiderpreviewSDK)
 
+## Contributing
 
-
-# Contributing
-
-We're always looking for your help to fix bugs and improve the samples. File those pull requests and we'll be happy to take a look.
+We're always looking for your help to fix bugs and improve the samples. Create a pull request, and we'll be happy to take a look.
 
 This project has adopted the [Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct/).
 For more information see the [Code of Conduct FAQ](https://opensource.microsoft.com/codeofconduct/faq/) or

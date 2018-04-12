@@ -1,14 +1,19 @@
 
-# SqueezeNet Object Detection Sample
+# SqueezeNet Object Detection sample
 
-A simple UWP application that uses a pretrained machine learning model called SqueezeNet to detect the predominant object in an image selected by the user either from file.
+This UWP application uses SqueezeNet, a pre-trained machine learning model, to detect the predominant object in an image selected by the user from a file.
 
-This sample demonstrates the use of generic Windows.AI.MachineLearning.Preview API to load a model, bind an input image and an output tensor, and evaluate a binding. You can use Netron to determine the input and output requirements of your ONNX model which are presumed to be known in this particular sample. https://github.com/lutzroeder/Netron
+This sample demonstrates the use of the [Windows.AI.MachineLearning.Preview](https://docs.microsoft.com/uwp/api/windows.ai.machinelearning.preview) API to load a model, bind an input image and an output tensor, and evaluate a binding.
 
+If you would like to use a different model, then you can use [Netron](https://github.com/lutzroeder/Netron
+) to determine the input and output requirements of your ONNX model.
 
+## Prerequisites
+
+- [Windows 10 - Build 17110 or higher](https://www.microsoft.com/en-us/software-download/windowsinsiderpreviewiso)
+- [Windows SDK - Build 17110 or higher](https://www.microsoft.com/en-us/software-download/windowsinsiderpreviewSDK)
 
 ## Build the sample
-
 
 1. If you download the samples ZIP, be sure to unzip the entire archive, not just the folder with
    the sample you want to build.
@@ -20,23 +25,19 @@ This sample demonstrates the use of generic Windows.AI.MachineLearning.Preview A
 
 4. Press Ctrl+Shift+B, or select **Build** \> **Build Solution**.
 
-
-
 ## Run the sample
-
-
 
 The next steps depend on whether you just want to deploy the sample or you want to both deploy and
 run it.
 
-
-
 ### Deploying the sample
 
-- Select Build > Deploy Solution. 
-
-
+- Select Build > Deploy Solution.
 
 ### Deploying and running the sample
 
 - To debug the sample and then run it, press F5 or select Debug >  Start Debugging. To run the sample without debugging, press Ctrl+F5 or selectDebug > Start Without Debugging.
+
+## License
+
+MIT. See [LICENSE file](https://github.com/Microsoft/Windows-Machine-Learning/blob/master/LICENSE).

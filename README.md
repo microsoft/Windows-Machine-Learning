@@ -2,10 +2,12 @@
 
 This repo contains sample apps that demonstrate how to use Windows ML to build machine learning applications for Windows 10.
 
-We also have additional information and resources available here:
+For tutorials, how-tos, and additional information, see the Windows ML documentation:
 https://docs.microsoft.com/windows/uwp/machine-learning
 
 ## Sample apps
+
+These generic examples show how to use various models and input feeds with Windows ML. 
 
 - **MNIST**: Uses the MNIST model to recognize a numeric digit drawn by the user.
 - **SqueezeNet**: Uses the SqueezeNet model to detect the predominant object in an image.

@@ -12,6 +12,7 @@ These generic examples show how to use various models and input feeds with Windo
 - **MNIST**: Uses the MNIST model to recognize a numeric digit drawn by the user.
 - **SqueezeNet**: Uses the SqueezeNet model to detect the predominant object in an image.
 - **WinMLExplorer**: Uses a circuit board defect detection model to detect defects from images or a real-time camera feed.
+- **[Awesome-WindowsML-ONNX-Models](https://github.com/ChangweiZhang/Awesome-WindowsML-ONNX-Models)**: An project provides the largest collection of tested ONNX machine learning models ande demos for develpers,to help integrate machine learning features more easily. it also provide a ONNX model generator that is able to convert CoreML models to ONNX format.
 
 ## Requirements
 

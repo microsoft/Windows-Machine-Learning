@@ -13,6 +13,8 @@ using Windows.Storage.Streams;
 using Windows.UI.Core;
 using Windows.Storage.Pickers;
 using Windows.UI.Xaml.Media.Imaging;
+using System.Diagnostics;
+using Newtonsoft.Json;
 
 namespace SqueezeNetObjectDetection
 {
@@ -28,6 +30,7 @@ namespace SqueezeNetObjectDetection
         private LearningModelPreview _model = null;
         private List<string> _labels = new List<string>();
         List<float> _outputVariableList = new List<float>();
+        private Stopwatch modeltime_w = new Stopwatch();
 
         public MainPage()
         {
@@ -40,11 +43,25 @@ namespace SqueezeNetObjectDetection
         /// <returns></returns>
         private async Task LoadModelAsync()
         {
-            await Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () => StatusBlock.Text = $"Loading {_kModelFileName} ... patience ");
+            // just load the model one time.
+            if (_model != null) return;
+
+            StatusBlock.Text = $"Loading {_kModelFileName} ... patience ";
 
             try
             {
-                // Parse labels from label file
+                // Parse labels from label json file.  We know the file's 
+                // entries are already sorted in order.
+                var fileString = File.ReadAllText($"Assets/{_kLabelsFileName}");
+                var fileDict = JsonConvert.DeserializeObject<Dictionary<string,string>>(fileString);
+                foreach( var kvp in fileDict)
+                {
+                    _labels.Add(kvp.Value);
+                }
+
+                // legacy code for comparison
+/*
+                var labels = new List<string>();
                 var file = await StorageFile.GetFileFromApplicationUriAsync(new Uri($"ms-appx:///Assets/{_kLabelsFileName}"));
                 using (var inputStream = await file.OpenReadAsync())
                 using (var classicStream = inputStream.AsStreamForRead())
@@ -59,11 +76,11 @@ namespace SqueezeNetObjectDetection
                         var indexAndLabel = line.Split(':');
                         if (indexAndLabel.Count() == 2)
                         {
-                            _labels.Add(indexAndLabel[1]);
+                            labels.Add(indexAndLabel[1]);
                         }
                     }
                 }
-
+*/
                 // Load Model
                 var modelFile = await StorageFile.GetFileFromApplicationUriAsync(new Uri($"ms-appx:///Assets/{_kModelFileName}"));
                 _model = await LearningModelPreview.LoadModelFromStorageFileAsync(modelFile);
@@ -82,7 +99,7 @@ namespace SqueezeNetObjectDetection
             }
             catch (Exception ex)
             {
-                await Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () => StatusBlock.Text = $"error: {ex.Message}");
+                StatusBlock.Text = $"error: {ex.Message}";
                 _model = null;
             }
         }
@@ -99,7 +116,7 @@ namespace SqueezeNetObjectDetection
             try
             {
                 // Load the model
-                await Task.Run(async () => await LoadModelAsync());
+                await LoadModelAsync();
 
                 // Trigger file picker to select an image file
                 FileOpenPicker fileOpenPicker = new FileOpenPicker();
@@ -128,15 +145,11 @@ namespace SqueezeNetObjectDetection
                 // Encapsulate the image within a VideoFrame to be bound and evaluated
                 VideoFrame inputImage = VideoFrame.CreateWithSoftwareBitmap(softwareBitmap);
 
-                await Task.Run(async () =>
-                {
-                    // Evaluate the image
-                    await EvaluateVideoFrameAsync(inputImage);
-                });
+                await EvaluateVideoFrameAsync(inputImage);
             }
             catch (Exception ex)
             {
-                await Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () => StatusBlock.Text = $"error: {ex.Message}");
+                StatusBlock.Text = $"error: {ex.Message}";
                 ButtonRun.IsEnabled = true;
             }
         }
@@ -157,8 +170,11 @@ namespace SqueezeNetObjectDetection
                     binding.Bind(_inputImageDescription.Name, inputFrame);
                     binding.Bind(_outputTensorDescription.Name, _outputVariableList);
 
-                    // Process the frame with the model
+                    // Process the frame with the model, and time the operation
+                    modeltime_w.Restart();
                     LearningModelEvaluationResultPreview results = await _model.EvaluateAsync(binding, "test");
+                    modeltime_w.Stop();
+
                     List<float> resultProbabilities = results.Outputs[_outputTensorDescription.Name] as List<float>;
 
                     // Find the result of the evaluation in the bound output (the top classes detected with the max confidence)
@@ -178,19 +194,21 @@ namespace SqueezeNetObjectDetection
                     }
 
                     // Display the result
-                    string message = "Predominant objects detected are:";
+                    var runtimemS = modeltime_w.ElapsedMilliseconds;
+
+                    string message = $"Runtime {runtimemS}mS Predominant objects detected are:";
                     for (int i = 0; i < 3; i++)
                     {
-                        message += $"\n{ _labels[topProbabilityLabelIndexes[i]]} with confidence of { topProbabilities[i]}";
+                        message += $"\n\"{ _labels[topProbabilityLabelIndexes[i]]}\" with confidence of { topProbabilities[i]}";
                     }
-                    await Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () => StatusBlock.Text = message);
+                    StatusBlock.Text = message;
                 }
                 catch (Exception ex)
                 {
-                    await Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () => StatusBlock.Text = $"error: {ex.Message}");
+                    StatusBlock.Text = $"error: {ex.Message}";
                 }
 
-                await Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () => ButtonRun.IsEnabled = true);
+                ButtonRun.IsEnabled = true;
             }
         }
     }

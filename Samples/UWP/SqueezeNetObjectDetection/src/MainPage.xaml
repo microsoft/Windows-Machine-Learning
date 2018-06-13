@@ -28,7 +28,7 @@
             <TextBlock x:Name="StatusBlock" 
                        FontWeight="Bold" 
                        TextWrapping="Wrap"  
-                       Text="Press on the button to select and image and run it through SqueezeNet!"/>
+                       Text="Press the button to select and image and run it through SqueezeNet!"/>
 
             <!--Image preview -->
             <Image Name="UIPreviewImage" Stretch="Uniform" MaxWidth="300" MaxHeight="300"/>

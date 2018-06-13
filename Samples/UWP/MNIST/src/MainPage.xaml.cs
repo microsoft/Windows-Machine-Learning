@@ -55,18 +55,10 @@ namespace MNIST_Demo
             ModelInput.Input3 = await helper.GetHandWrittenImage(inkGrid);
             //Evaluate the model
             ModelOutput = await ModelGen.EvaluateAsync(ModelInput);
-            
-            //Iterate through evaluation output to determine highest probability digit
-            float maxProb = 0;
-            int maxIndex = 0;
-            for (int i = 0; i < 10; i++)
-            {
-                if (ModelOutput.Plus214_Output_0[i] > maxProb)
-                {
-                    maxIndex = i;
-                    maxProb = ModelOutput.Plus214_Output_0[i];
-                }
-            }
+
+            //LINQ query to check for highest probability digit
+            var maxIndex = ModelOutput.Plus214_Output_0.IndexOf(ModelOutput.Plus214_Output_0.Max());
+
             numberLabel.Text = maxIndex.ToString();
 
         }

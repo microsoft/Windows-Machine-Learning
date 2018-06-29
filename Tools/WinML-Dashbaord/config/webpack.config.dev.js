@@ -213,6 +213,8 @@ module.exports = {
   },
   plugins: [
     new CopyWebpackPlugin([
+      // List of static files used by Netron taken from Netron's setup.py
+      // TODO Get this list from Netron's submodule instead of hardcoding it
       { from: 'static/Netron/src/*', to: 'static/Netron/', flatten: true, ignore: [ '*.py', '*.html' ] },
       { from: 'static/Netron/src/view-browser.html', to: 'static/Netron/index.html' },
       { from: 'static/Netron/node_modules/d3/dist/d3.min.js', to: 'static/Netron/' },
@@ -222,6 +224,7 @@ module.exports = {
       { from: 'static/Netron/node_modules/protobufjs/dist/protobuf.min.js', to: 'static/Netron/' },
       { from: 'static/Netron/node_modules/flatbuffers/js/flatbuffers.js', to: 'static/Netron/' },
       { from: 'static/Netron/node_modules/npm-font-open-sans/open-sans.css', to: 'static/Netron/' },
+      { from: 'static/Netron/node_modules/npm-font-open-sans/fonts', to: 'static/Netron/fonts' },
     ]),
     // Makes some environment variables available in index.html.
     // The public URL is available as %PUBLIC_URL% in index.html, e.g.:

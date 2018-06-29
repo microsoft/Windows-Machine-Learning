@@ -2,6 +2,40 @@
 # yarn lockfile v1
 
 
+"@microsoft/load-themed-styles@^1.7.13":
+  version "1.7.66"
+  resolved "https://registry.yarnpkg.com/@microsoft/load-themed-styles/-/load-themed-styles-1.7.66.tgz#85032f628c1fa27df99a0d379c9424534aa5dc32"
+
+"@uifabric/icons@>=6.0.2 <7.0.0":
+  version "6.0.2"
+  resolved "https://registry.yarnpkg.com/@uifabric/icons/-/icons-6.0.2.tgz#743ed18028285e2c6498b3f15b2195581255cafb"
+  dependencies:
+    "@uifabric/styling" ">=6.3.0 <7.0.0"
+    tslib "^1.7.1"
+
+"@uifabric/merge-styles@>=6.2.1 <7.0.0":
+  version "6.2.1"
+  resolved "https://registry.yarnpkg.com/@uifabric/merge-styles/-/merge-styles-6.2.1.tgz#b7f7eff2ff7c7a92da62249104376411c63e3136"
+  dependencies:
+    tslib "^1.7.1"
+
+"@uifabric/styling@>=6.3.0 <7.0.0", "@uifabric/styling@>=6.4.0 <7.0.0":
+  version "6.4.0"
+  resolved "https://registry.yarnpkg.com/@uifabric/styling/-/styling-6.4.0.tgz#b17f0f29e4011c081f8ca75726d22aac12316ad1"
+  dependencies:
+    "@microsoft/load-themed-styles" "^1.7.13"
+    "@uifabric/merge-styles" ">=6.2.1 <7.0.0"
+    "@uifabric/utilities" ">=6.7.1 <7.0.0"
+    tslib "^1.7.1"
+
+"@uifabric/utilities@>=6.7.1 <7.0.0":
+  version "6.7.1"
+  resolved "https://registry.yarnpkg.com/@uifabric/utilities/-/utilities-6.7.1.tgz#9d3d086079af5fbcf39751c338f0223d3615f3aa"
+  dependencies:
+    "@uifabric/merge-styles" ">=6.2.1 <7.0.0"
+    prop-types "^15.5.10"
+    tslib "^1.7.1"
+
 abab@^1.0.3:
   version "1.0.4"
   resolved "https://registry.yarnpkg.com/abab/-/abab-1.0.4.tgz#5faad9c2c07f60dd76770f71cf025b62a63cfd4e"
@@ -4882,6 +4916,18 @@ obuf@^1.0.0, obuf@^1.1.1:
   version "1.1.2"
   resolved "https://registry.yarnpkg.com/obuf/-/obuf-1.1.2.tgz#09bea3343d41859ebd446292d11c9d4db619084e"
 
+office-ui-fabric-react@^6.23.0:
+  version "6.23.0"
+  resolved "https://registry.yarnpkg.com/office-ui-fabric-react/-/office-ui-fabric-react-6.23.0.tgz#5dbf79ff98baa5029ae24443acd3d7d54e848cc6"
+  dependencies:
+    "@microsoft/load-themed-styles" "^1.7.13"
+    "@uifabric/icons" ">=6.0.2 <7.0.0"
+    "@uifabric/merge-styles" ">=6.2.1 <7.0.0"
+    "@uifabric/styling" ">=6.4.0 <7.0.0"
+    "@uifabric/utilities" ">=6.7.1 <7.0.0"
+    prop-types "^15.5.10"
+    tslib "^1.7.1"
+
 on-finished@~2.3.0:
   version "2.3.0"
   resolved "https://registry.yarnpkg.com/on-finished/-/on-finished-2.3.0.tgz#20f1336481b083cd75337992a16971aa2d906947"
@@ -6741,6 +6787,10 @@ trim-newlines@^1.0.0:
 trim-right@^1.0.1:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/trim-right/-/trim-right-1.0.1.tgz#cb2e1203067e0c8de1f614094b9fe45704ea6003"
+
+tslib@^1.7.1:
+  version "1.9.3"
+  resolved "https://registry.yarnpkg.com/tslib/-/tslib-1.9.3.tgz#d7e4dd79245d85428c4d7e4822a79917954ca286"
 
 tty-browserify@0.0.0:
   version "0.0.0"

@@ -213,15 +213,15 @@ module.exports = {
   },
   plugins: [
     new CopyWebpackPlugin([
-      { from: 'static/Netron/src/*', ignore: [ '*.py' ] },
-      { from: 'static/Netron/src/view-browser.html', to: 'static/Netron/src/index.html' },
-      { from: 'static/Netron/node_modules/d3/dist/d3.min.js', to: 'static/Netron/src' },
-      { from: 'static/Netron/node_modules/dagre/dist/dagre.min.js', to: 'static/Netron/src' },
-      { from: 'static/Netron/node_modules/handlebars/dist/handlebars.min.js', to: 'static/Netron/src' },
-      { from: 'static/Netron/node_modules/marked/marked.min.js', to: 'static/Netron/src' },
-      { from: 'static/Netron/node_modules/protobufjs/dist/protobuf.min.js', to: 'static/Netron/src' },
-      { from: 'static/Netron/node_modules/flatbuffers/js/flatbuffers.js', to: 'static/Netron/src' },
-      { from: 'static/Netron/node_modules/npm-font-open-sans/open-sans.css', to: 'static/Netron/src' },
+      { from: 'static/Netron/src/*', to: 'static/Netron/', flatten: true, ignore: [ '*.py', '*.html' ] },
+      { from: 'static/Netron/src/view-browser.html', to: 'static/Netron/index.html' },
+      { from: 'static/Netron/node_modules/d3/dist/d3.min.js', to: 'static/Netron/' },
+      { from: 'static/Netron/node_modules/dagre/dist/dagre.min.js', to: 'static/Netron/' },
+      { from: 'static/Netron/node_modules/handlebars/dist/handlebars.min.js', to: 'static/Netron/' },
+      { from: 'static/Netron/node_modules/marked/marked.min.js', to: 'static/Netron/' },
+      { from: 'static/Netron/node_modules/protobufjs/dist/protobuf.min.js', to: 'static/Netron/' },
+      { from: 'static/Netron/node_modules/flatbuffers/js/flatbuffers.js', to: 'static/Netron/' },
+      { from: 'static/Netron/node_modules/npm-font-open-sans/open-sans.css', to: 'static/Netron/' },
     ]),
     // Makes some environment variables available in index.html.
     // The public URL is available as %PUBLIC_URL% in index.html, e.g.:

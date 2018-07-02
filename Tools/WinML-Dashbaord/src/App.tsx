@@ -11,7 +11,7 @@ class App extends React.Component<any, any> {
     return (
       <div className="App">
         <Pivot>
-          <PivotItem headerText="Edit" style={{height: '100vh'}}>
+          <PivotItem headerText="Edit">
             <EditPage />
           </PivotItem>
           <PivotItem headerText="Convert">

@@ -10,7 +10,7 @@ class App extends React.Component<any, any> {
   render() {
     return (
       <div className="App">
-        <Pivot onLinkClick={(_: PivotItem) => {window.scrollTo(0,document.body.scrollHeight)}}>
+        <Pivot>
           <PivotItem headerText="Edit" style={{height: '100vh'}}>
             <EditPage />
           </PivotItem>
@@ -27,12 +27,6 @@ class App extends React.Component<any, any> {
       </div>
     );
   }
-
-  private _handleLinkClick = (item: PivotItem): void => {
-    this.setState({
-      selectedKey: item.props.itemKey
-    });
-  };
 }
 
 export default App;

@@ -1,11 +1,11 @@
-import React, { Component } from 'react';
+import * as React from 'react';
 import { Label } from 'office-ui-fabric-react/lib/Label';
 import './EditPage.css';
 
-export default class EditPage extends Component {
+export default class EditPage extends React.Component {
   render() {
     return (
-      <div className='EditPage'>
+      <div id='EditPage'>
         <div className='Panel'>
           <Label>Left panel</Label>
         </div>
@@ -17,5 +17,12 @@ export default class EditPage extends Component {
         </div>
       </div>
     );
+  }
+
+  componentDidMount() {
+    const page = document.getElementById('EditPage');
+    page && page.scrollIntoView({
+      behavior: 'smooth',
+    });
   }
 }

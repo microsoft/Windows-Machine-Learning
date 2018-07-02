@@ -1,21 +1,29 @@
 import React, { Component } from 'react';
-import logo from './logo.svg';
+import { Label } from 'office-ui-fabric-react/lib/Label';
+import { Pivot, PivotItem } from 'office-ui-fabric-react/lib/Pivot';
+
+import EditPage from './view/EditPage';
+
 import './App.css';
 
 class App extends Component {
   render() {
     return (
       <div className="App" style={{height: '100vh'}}>
-        <header className="App-header">
-          <img src={logo} className="App-logo" alt="logo" />
-          <h1 className="App-title">Welcome to React</h1>
-        </header>
-        <p className="App-intro">
-          To get started, edit <code>src/App.js</code> and save to reload.
-        </p>
-        <object type="text/html" data="static/Netron/" width="100%" height="100%">
-          Netron visualization
-        </object>
+        <Pivot>
+          <PivotItem headerText="Edit" style={{height: '100vh'}}>
+            <EditPage />
+          </PivotItem>
+          <PivotItem headerText="Convert">
+            <Label>TODO</Label>
+          </PivotItem>
+          <PivotItem headerText="Debug">
+            <Label>TODO</Label>
+          </PivotItem>
+          <PivotItem headerText="Profile">
+            <Label>TODO</Label>
+          </PivotItem>
+        </Pivot>
       </div>
     );
   }

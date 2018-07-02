@@ -1,0 +1,12 @@
+.EditPage {
+    display: flex;
+    height: 100%;
+}
+
+.Netron {
+    flex-grow: 2;
+}
+
+.Panel {
+    flex-grow: 1;
+}

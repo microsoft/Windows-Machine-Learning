@@ -1,10 +1,10 @@
 import * as React from 'react';
 import { Label } from 'office-ui-fabric-react/lib/Label';
-import Resizable from '../components/Resizable';
+import Resizable from '../../components/Resizable';
 
-import './EditTab.css';
+import './View.css';
 
-export default class EditTab extends React.Component {
+export default class EditView extends React.Component {
   private tab: React.RefObject<HTMLDivElement>;
 
   constructor(props: {}) {
@@ -14,7 +14,7 @@ export default class EditTab extends React.Component {
 
   render() {
     return (
-      <div id='EditTab' ref={this.tab}>
+      <div id='EditView' ref={this.tab}>
         <Resizable>
             <Label>Left panel</Label>
         </Resizable>
@@ -23,6 +23,7 @@ export default class EditTab extends React.Component {
         </object>
         <Resizable>
           <Label>Right panel</Label>
+
         </Resizable>
       </div>
     );

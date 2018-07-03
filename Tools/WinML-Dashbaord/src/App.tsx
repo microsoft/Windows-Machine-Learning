@@ -2,7 +2,7 @@ import * as React from 'react';
 import { Label } from 'office-ui-fabric-react/lib/Label';
 import { Pivot, PivotItem } from 'office-ui-fabric-react/lib/Pivot';
 
-import EditTab from './view/EditTab';
+import EditTab from './view/Edit/View';
 
 import './App.css';
 

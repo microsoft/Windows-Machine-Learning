@@ -1,0 +1,6 @@
+.Resizable {
+    border: 2px lightgray;
+    border-style: none solid;
+    resize: horizontal;
+    overflow: auto;
+}

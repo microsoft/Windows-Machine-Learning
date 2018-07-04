@@ -1,6 +1,8 @@
 import * as React from 'react';
 import { Label } from 'office-ui-fabric-react/lib/Label';
+
 import Resizable from '../../components/Resizable';
+import RightPanel from './RightPanel';
 
 import './View.css';
 
@@ -22,8 +24,7 @@ export default class EditView extends React.Component {
             Netron visualization
         </object>
         <Resizable>
-          <Label>Right panel</Label>
-
+          <RightPanel />
         </Resizable>
       </div>
     );

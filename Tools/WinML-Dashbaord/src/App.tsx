@@ -2,7 +2,7 @@ import * as React from 'react';
 import { Label } from 'office-ui-fabric-react/lib/Label';
 import { Pivot, PivotItem } from 'office-ui-fabric-react/lib/Pivot';
 
-import EditTab from './view/Edit/View';
+import EditView from './view/edit/View';
 
 import './App.css';
 
@@ -12,7 +12,7 @@ class App extends React.Component<any, any> {
       <div className="App">
         <Pivot>
           <PivotItem headerText="Edit">
-            <EditTab />
+            <EditView />
           </PivotItem>
           <PivotItem headerText="Convert">
             <Label>TODO</Label>

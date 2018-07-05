@@ -3,7 +3,6 @@ import * as React from 'react';
 import './Resizable.css';
 
 type ComponentProperties = {}
-
 type ComponentState = {}
 
 export default class Resizable extends React.Component<ComponentProperties, ComponentState> {

@@ -1,0 +1,19 @@
+.Label {
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    -o-user-select: none;
+    user-select: none;
+    cursor: pointer;
+    text-align: left;
+    border: 1px lightgray;
+    border-style: solid none none;
+    padding: 5px;
+}
+
+pre {
+    display: inline;
+    margin: 5px;
+    font-size: 18px;
+}

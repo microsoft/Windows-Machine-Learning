@@ -1,0 +1,16 @@
+#DocsView {
+    display: flex;
+    width: 500px;
+}
+
+#navpart
+{
+    width:  280px;
+}
+
+#markdownsource
+{
+    text-align: left;
+    flex:1;
+
+}

@@ -1,6 +1,7 @@
 {
   "name": "winml-dashbaord",
   "version": "0.1.0",
+  "main": "electronMain.js",
   "private": true,
   "dependencies": {
     "@types/prop-types": "^15.5.3",
@@ -15,6 +16,7 @@
     "css-loader": "0.28.7",
     "dotenv": "4.0.0",
     "dotenv-expand": "4.2.0",
+    "electron-prebuilt": "^1.4.13",
     "extract-text-webpack-plugin": "3.0.2",
     "file-loader": "0.11.2",
     "fork-ts-checker-webpack-plugin": "^0.4.2",
@@ -32,6 +34,8 @@
     "react": "^16.4.1",
     "react-dev-utils": "^5.0.1",
     "react-dom": "^16.4.1",
+    "react-markdown": "^3.3.4",
+    "react-split-pane": "^0.1.81",
     "resolve": "1.6.0",
     "source-map-loader": "^0.2.1",
     "style-loader": "0.19.0",
@@ -52,7 +56,8 @@
   "scripts": {
     "start": "yarn --cwd static/Netron && node scripts/start.js",
     "build": "yarn --cwd static/Netron && node scripts/build.js",
-    "test": "node scripts/test.js --env=jsdom"
+    "test": "node scripts/test.js --env=jsdom",
+    "electron": "electron ."
   },
   "devDependencies": {
     "@types/jest": "^23.1.3",

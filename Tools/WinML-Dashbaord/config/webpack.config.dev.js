@@ -238,6 +238,7 @@ module.exports = {
       { from: 'static/Netron/node_modules/flatbuffers/js/flatbuffers.js', to: 'static/Netron/' },
       { from: 'static/Netron/node_modules/npm-font-open-sans/open-sans.css', to: 'static/Netron/' },
       { from: 'static/Netron/node_modules/npm-font-open-sans/fonts', to: 'static/Netron/fonts' },
+      { from: 'src/learn/content/', to: 'content'},
     ]),
     // Makes some environment variables available in index.html.
     // The public URL is available as %PUBLIC_URL% in index.html, e.g.:

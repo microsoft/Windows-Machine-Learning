@@ -1,0 +1,12 @@
+.Panel {
+    text-align: left;
+}
+
+.PanelName {
+    text-align: center;
+}
+
+.ShapeTextField {
+    width: 35px;
+    display: inline-block;
+}

@@ -7,11 +7,12 @@ import * as React from 'react';
 import Collapsible from '../../components/Collapsible';
 import MetadataSchema from '../../schema/Metadata';
 
+import './Panel.css';
+
 const ajv = new Ajv({ allErrors: true, verbose: true });
 
 export default class RightPanel extends React.Component {
     render() {
-        console.warn(MetadataSchema);
         return (
             <div>
                 <Label>Model</Label>
@@ -23,7 +24,7 @@ export default class RightPanel extends React.Component {
                             a: 'string',
                             b: 2,
                         }}
-                        // onChange={this.handleChange}
+                        onChange={(newValue: object) => console.log(newValue)}  // TODO
                     />
                 </Collapsible>
             </div>

@@ -9,18 +9,18 @@ import './App.css';
 class App extends React.Component<any, any> {
   render() {
     return (
-      <div className="App">
+      <div className='App'>
         <Pivot>
-          <PivotItem headerText="Edit">
+          <PivotItem headerText='Edit'>
             <EditView />
           </PivotItem>
-          <PivotItem headerText="Convert">
+          <PivotItem headerText='Convert'>
             <Label>TODO</Label>
           </PivotItem>
-          <PivotItem headerText="Debug">
+          <PivotItem headerText='Debug'>
             <Label>TODO</Label>
           </PivotItem>
-          <PivotItem headerText="Profile">
+          <PivotItem headerText='Profile'>
             <Label>TODO</Label>
           </PivotItem>
         </Pivot>

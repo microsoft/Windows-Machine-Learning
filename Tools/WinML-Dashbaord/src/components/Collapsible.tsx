@@ -22,7 +22,9 @@ export default class Collapsible extends React.Component<ComponentProperties, Co
         return (
             <div className='Collapsible'>
                 <Label className='Label' onClick={this.toggle}><pre>{this.state.visible && '-' || '+'}</pre>{this.props.label}</Label>
-                {this.state.visible && this.props.children}
+                <div className='Content' style={{display: this.state.visible && 'block' || 'none'}}>
+                    {this.props.children}
+                </div>
             </div>
         );
     }

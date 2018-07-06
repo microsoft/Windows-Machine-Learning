@@ -1,5 +1,6 @@
 .Panel {
     text-align: left;
+    min-width: 290px;
 }
 
 .PanelName {
@@ -7,6 +8,15 @@
 }
 
 .ShapeTextField {
-    width: 35px;
+    width: 70px;
+    display: inline-block;
+}
+
+.TensorName {
+    display: inline;
+    margin: 10px;
+}
+
+.Shape {
     display: inline-block;
 }

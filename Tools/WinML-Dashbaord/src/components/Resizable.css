@@ -3,4 +3,5 @@
     border-style: none solid;
     resize: horizontal;
     overflow: auto;
+    min-width: 80px;
 }

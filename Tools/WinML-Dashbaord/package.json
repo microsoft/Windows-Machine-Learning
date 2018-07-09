@@ -1,6 +1,8 @@
 {
   "name": "winml-dashbaord",
   "version": "0.1.0",
+  "description": "Dashboard for development in ONNX using Windows ML",
+  "author": "Tiago Koji Castro Shibata <t-tica@microsoft.com>",
   "homepage": ".",
   "main": "src/electron.js",
   "private": true,

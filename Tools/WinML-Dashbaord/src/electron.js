@@ -16,8 +16,9 @@ function createWindow() {
     }
     mainWindow.loadURL(uri);
 
-    // Open the DevTools.
-    // mainWindow.webContents.openDevTools()
+    if (process.argv.includes('--dev')) {
+        mainWindow.webContents.openDevTools()
+    }
 
     mainWindow.on('closed', () => {
         mainWindow = null;

@@ -1,20 +1,51 @@
-const {app, BrowserWindow} = require('electron');
+const {app, protocol, BrowserWindow} = require('electron');
+const fs = require('fs');
+const path = require('path');
+const url = require('url');
 
 let mainWindow;
 
 function createWindow() {
-    mainWindow = new BrowserWindow({width: 800, height: 600});
-    let uri = process.argv[process.argv.length - 1];
-    if (!uri.includes('://')) {
-        const path = require('path');
-        const url = require('url');
-        uri = url.format({
+    const fileProtocol = 'file';
+    protocol.interceptFileProtocol(fileProtocol, (request, callback) => {
+        const filePath = new url.URL(request.url).pathname;
+        let resolvedPath = path.normalize(filePath);
+        try {
+            if (resolvedPath.slice(-1) === '/' || fs.statSync(resolvedPath).isDirectory) {
+                let index = path.join(resolvedPath, 'index.html');
+                if (fs.existsSync(index)) {
+                    resolvedPath = index;
+                }
+            }
+        } catch(_) {
+            // Use path as is if it can't be accessed
+        }
+        callback({
+            path: resolvedPath,
+        });
+    })
+
+    mainWindow = new BrowserWindow({
+        height: 600,
+        width: 800,
+
+        webPreferences: {
+            webSecurity: false,
+        },
+    });
+
+    let pageUrl = '';
+    if (process.argv.length > 2) {
+        pageUrl = process.argv[2];
+    }
+    if (!pageUrl.includes('://')) {
+        pageUrl = url.format({
             pathname: path.join(__dirname, '../build/index.html'),
             protocol: 'file:',
             slashes: true,
         });
     }
-    mainWindow.loadURL(uri);
+    mainWindow.loadURL(pageUrl);
 
     if (process.argv.includes('--dev')) {
         mainWindow.webContents.openDevTools()

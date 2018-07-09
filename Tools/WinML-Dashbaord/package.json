@@ -1,7 +1,8 @@
 {
   "name": "winml-dashbaord",
   "version": "0.1.0",
-  "main": "electronMain.js",
+  "homepage": ".",
+  "main": "src/electron.js",
   "private": true,
   "dependencies": {
     "@types/prop-types": "^15.5.3",
@@ -57,7 +58,8 @@
     "start": "yarn --cwd static/Netron && node scripts/start.js",
     "build": "yarn --cwd static/Netron && node scripts/build.js",
     "test": "node scripts/test.js --env=jsdom",
-    "electron": "electron ."
+    "electron-dev": "electron . http://localhost:3000",
+    "electron-prod": "yarn build && electron ."
   },
   "devDependencies": {
     "@types/jest": "^23.1.3",

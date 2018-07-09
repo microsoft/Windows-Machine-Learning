@@ -1,14 +1,14 @@
-import * as React from 'react';
 import { Label } from 'office-ui-fabric-react/lib/Label';
 import { Pivot, PivotItem } from 'office-ui-fabric-react/lib/Pivot';
+import * as React from 'react';
 
-import EditView from './view/edit/View';
 import DocsView from './learn/Docs';
+import EditView from './view/edit/View';
 
 import './App.css';
 
 class App extends React.Component<any, any> {
-  render() {
+  public render() {
     return (
       <div className='App'>
         <Pivot>

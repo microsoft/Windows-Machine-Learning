@@ -7,7 +7,7 @@ import Collapsible from '../../components/Collapsible';
 import './Panel.css';
 
 export default class LeftPanel extends React.Component {
-    render() {
+    public render() {
         const inputs = [];
         inputs.push('stub');
         const inputsForm = [];

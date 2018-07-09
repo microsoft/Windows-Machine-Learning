@@ -14,7 +14,7 @@ export default class EditView extends React.Component {
         this.tab = React.createRef();
     }
 
-    render() {
+    public render() {
         return (
             <div id='EditView' ref={this.tab}>
                 <Resizable>
@@ -30,9 +30,11 @@ export default class EditView extends React.Component {
       );
   }
 
-  componentDidMount() {
-    this.tab.current && this.tab.current.scrollIntoView({
-      behavior: 'smooth',
-    });
-  }
+    public componentDidMount() {
+        if (this.tab.current) {
+            this.tab.current.scrollIntoView({
+                behavior: 'smooth',
+            });
+        }
+    }
 }

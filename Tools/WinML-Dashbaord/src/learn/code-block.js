@@ -40,8 +40,8 @@ CodeBlock.defaultProps = {
 }
 
 CodeBlock.propTypes = {
+  language: PropTypes.string,
   value: PropTypes.string.isRequired,
-  language: PropTypes.string
 }
 
 module.exports = CodeBlock

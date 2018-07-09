@@ -12,7 +12,7 @@ import './Panel.css';
 const ajv = new Ajv({ allErrors: true, verbose: true });
 
 export default class RightPanel extends React.Component {
-    render() {
+    public render() {
         return (
             <div>
                 <Label>Model</Label>
@@ -24,7 +24,7 @@ export default class RightPanel extends React.Component {
                             a: 'string',
                             b: 2,
                         }}
-                        onChange={(newValue: object) => console.log(newValue)}  // TODO
+                        onChange={console.log}  // TODO
                     />
                 </Collapsible>
             </div>

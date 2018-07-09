@@ -1,24 +1,24 @@
 import { Label } from 'office-ui-fabric-react/lib/Label';
 import * as React from 'react';
 
-import './Collapsible.css'
+import './Collapsible.css';
 
-type ComponentProperties = {
+interface IComponentProperties {
     label: string,
 }
-type ComponentState = {
+interface IComponentState {
     visible: boolean,
 }
 
-export default class Collapsible extends React.Component<ComponentProperties, ComponentState> {
-    constructor(props: ComponentProperties) {
+export default class Collapsible extends React.Component<IComponentProperties, IComponentState> {
+    constructor(props: IComponentProperties) {
         super(props);
         this.state = {
             visible: true,
         };
     }
 
-    render() {
+    public render() {
         return (
             <div className='Collapsible'>
                 <Label className='Label' onClick={this.toggle}><pre>{this.state.visible && '-' || '+'}</pre>{this.props.label}</Label>
@@ -29,7 +29,7 @@ export default class Collapsible extends React.Component<ComponentProperties, Co
         );
     }
 
-    toggle = () => {
+    private toggle = () => {
         this.setState(previousState => ({
             visible: !previousState.visible,
         }));

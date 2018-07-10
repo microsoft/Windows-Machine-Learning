@@ -51,8 +51,8 @@ function createWindow() {
     }
     mainWindow.loadURL(pageUrl);
 
-    if (process.argv.includes('--dev')) {
-        mainWindow.webContents.openDevTools()
+    if (process.argv.includes('--dev-tools')) {
+        mainWindow.webContents.openDevTools();
     }
 
     mainWindow.on('closed', () => {

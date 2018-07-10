@@ -1,5 +1,6 @@
 {
   "name": "winml-dashbaord",
+  "productName": "Windows ML Dashboard",
   "version": "0.1.0",
   "description": "Dashboard for development in ONNX using Windows ML",
   "author": "Tiago Koji Castro Shibata <t-tica@microsoft.com>",
@@ -80,7 +81,7 @@
     "@types/react": "^16.4.6",
     "@types/react-dom": "^16.0.6",
     "electron": "^2.0.4",
-    "electron-builder": "^20.19.2",
+    "electron-packager": "^12.1.0",
     "typescript": "^2.9.2"
   },
   "jest": {

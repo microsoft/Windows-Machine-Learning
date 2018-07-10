@@ -15,6 +15,7 @@ function createWindow() {
             // Remove host to pathname separator
             resolvedPath = resolvedPath.substr(1);
         }
+        resolvedPath = path.relative(path.join(__dirname, '..'), resolvedPath);
         try {
             if (resolvedPath.slice(-1) === path.sep || fs.statSync(resolvedPath).isDirectory) {
                 let index = path.posix.join(resolvedPath, 'index.html');
@@ -33,10 +34,6 @@ function createWindow() {
     mainWindow = new BrowserWindow({
         height: 600,
         width: 800,
-
-        webPreferences: {
-            webSecurity: false,
-        },
     });
 
     let pageUrl = '';

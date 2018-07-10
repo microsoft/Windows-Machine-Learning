@@ -12,7 +12,7 @@ export default class LeftPanel extends React.Component {
         inputs.push('stub');
         const inputsForm = [];
         for (const _ of inputs) {
-            inputsForm.push(<div>
+            inputsForm.push(<div key={0}>
                 <Label className='TensorName'>data_0</Label>
                 <span className='Shape'>
                     <TextField inputMode='numeric' type='number' placeholder='N' className='ShapeTextField' />

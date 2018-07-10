@@ -27,6 +27,7 @@
     "src/setupTests.ts",
     "static",
     "webpack",
+    "Windows ML Dashboard*",
     "**/*.spec.ts"
   ]
 }

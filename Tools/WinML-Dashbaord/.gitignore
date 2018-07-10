@@ -9,6 +9,7 @@
 # production
 /build
 /dist
+/Windows ML Dashboard*
 
 # misc
 .DS_Store

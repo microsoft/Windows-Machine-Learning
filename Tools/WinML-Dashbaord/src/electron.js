@@ -9,7 +9,7 @@ function createWindow() {
     const fileProtocol = 'file';
     protocol.interceptFileProtocol(fileProtocol, (request, callback) => {
         // A reference to a folder should return its index.html file
-        const filePath = new url.URL(request.url).pathname;
+        const filePath = decodeURI(new url.URL(request.url).pathname);
         let resolvedPath = path.normalize(filePath);
         if (resolvedPath[0] === '\\') {
             // Remove host to pathname separator

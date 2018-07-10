@@ -5,19 +5,25 @@ const url = require('url');
 
 let mainWindow;
 
-function createWindow() {
+function interceptFileProtocol() {
+    // Intercept the file protocol so that references to folders return its index.html file
     const fileProtocol = 'file';
+    let cwd = process.cwd();
+    if (cwd.startsWith('\\\\')) {
+        // If running from a share, ignore share name when computing relative directories
+        cwd = cwd.substr(2);
+        cwd = path.relative(cwd.split(path.sep, 1)[0], cwd);
+    }
     protocol.interceptFileProtocol(fileProtocol, (request, callback) => {
-        // A reference to a folder should return its index.html file
         const filePath = decodeURI(new url.URL(request.url).pathname);
         let resolvedPath = path.normalize(filePath);
         if (resolvedPath[0] === '\\') {
-            // Remove host to pathname separator
+            // Remove URL host to pathname separator
             resolvedPath = resolvedPath.substr(1);
         }
-        resolvedPath = path.relative(path.join(__dirname, '..'), resolvedPath);
+        resolvedPath = path.relative(cwd, resolvedPath);
         try {
-            if (resolvedPath.slice(-1) === path.sep || fs.statSync(resolvedPath).isDirectory) {
+            if (fs.statSync(resolvedPath).isDirectory) {
                 let index = path.posix.join(resolvedPath, 'index.html');
                 if (fs.existsSync(index)) {
                     resolvedPath = index;
@@ -29,18 +35,25 @@ function createWindow() {
         callback({
             path: resolvedPath,
         });
-    })
+    });
+}
+
+function createWindow() {
+    interceptFileProtocol();
 
     mainWindow = new BrowserWindow({
         height: 600,
         width: 800,
     });
 
-    let pageUrl = '';
-    if (process.argv.length > 2) {
-        pageUrl = process.argv[2];
+    let pageUrl;
+    for (const arg of process.argv.slice(1)) {
+        if (arg.includes('://')) {
+            pageUrl = arg;
+            break;
+        }
     }
-    if (!pageUrl.includes('://')) {
+    if (pageUrl === undefined) {
         pageUrl = url.format({
             pathname: path.join(__dirname, '../build/index.html'),
             protocol: 'file',

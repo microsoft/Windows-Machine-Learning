@@ -9,17 +9,19 @@ function interceptFileProtocol() {
     // Intercept the file protocol so that references to folders return its index.html file
     const fileProtocol = 'file';
     let cwd = process.cwd();
-    if (cwd.startsWith('\\\\')) {
-        // If running from a share, ignore share name when computing relative directories
-        cwd = cwd.substr(2);
-        cwd = path.relative(cwd.split(path.sep, 1)[0], cwd);
-    }
     protocol.interceptFileProtocol(fileProtocol, (request, callback) => {
-        const filePath = decodeURI(new url.URL(request.url).pathname);
+        const fileUrl = new url.URL(request.url);
+        const hostname = decodeURI(fileUrl.hostname);
+        const filePath = decodeURI(fileUrl.pathname);
         let resolvedPath = path.normalize(filePath);
-        if (resolvedPath[0] === '\\') {
-            // Remove URL host to pathname separator
-            resolvedPath = resolvedPath.substr(1);
+        if (process.platform === 'win32') {
+            if (resolvedPath[0] === '\\') {
+                // Remove URL host to pathname separator
+                resolvedPath = resolvedPath.substr(1);
+            }
+            if (hostname) {  // File is on a share
+                resolvedPath = `\\\\${hostname}\\${resolvedPath}`;
+            }
         }
         resolvedPath = path.relative(cwd, resolvedPath);
         try {

@@ -8,19 +8,20 @@ let mainWindow;
 function interceptFileProtocol() {
     // Intercept the file protocol so that references to folders return its index.html file
     const fileProtocol = 'file';
-    let cwd = process.cwd();
+    const cwd = process.cwd();
     protocol.interceptFileProtocol(fileProtocol, (request, callback) => {
         const fileUrl = new url.URL(request.url);
         const hostname = decodeURI(fileUrl.hostname);
         const filePath = decodeURI(fileUrl.pathname);
         let resolvedPath = path.normalize(filePath);
-        if (process.platform === 'win32') {
-            if (resolvedPath[0] === '\\') {
-                // Remove URL host to pathname separator
-                resolvedPath = resolvedPath.substr(1);
-            }
-            if (hostname) {  // File is on a share
-                resolvedPath = `\\\\${hostname}\\${resolvedPath}`;
+        if (resolvedPath[0] === '\\') {
+            // Remove URL host to pathname separator
+            resolvedPath = resolvedPath.substr(1);
+        }
+        if (hostname) {
+            resolvedPath = path.join(hostname, resolvedPath);
+            if (process.platform === 'win32') {  // File is on a share
+                resolvedPath = `\\\\${resolvedPath}`;
             }
         }
         resolvedPath = path.relative(cwd, resolvedPath);

@@ -1,17 +1,26 @@
+import { DefaultButton } from 'office-ui-fabric-react/lib/Button';
 import * as React from 'react';
 
 import Resizable from '../../components/Resizable';
 import LeftPanel from './LeftPanel';
+import Netron from './Netron';
 import RightPanel from './RightPanel';
 
 import './View.css';
 
-export default class EditView extends React.Component {
-    private tab: React.RefObject<HTMLDivElement>;
+interface IComponentState {
+    file?: File,
+}
+
+export default class EditView extends React.Component<{}, IComponentState> {
+    private tab: React.RefObject<HTMLDivElement> = React.createRef();
+    private openFileInput: React.RefObject<HTMLInputElement> = React.createRef();
 
     constructor(props: {}) {
         super(props);
-        this.tab = React.createRef();
+        this.state = {
+            file: undefined,
+        };
     }
 
     public render() {
@@ -20,15 +29,15 @@ export default class EditView extends React.Component {
                 <Resizable>
                     <LeftPanel />
                 </Resizable>
-                <object className='Netron' type='text/html' data='static/Netron/'>
-                    Netron visualization
-                </object>
+                <Netron file={this.state.file} />
                 <Resizable>
+                    <DefaultButton text='Open file' onClick={this.openFile}/>
+                    <input type='file' style={{display: 'none'}} ref={this.openFileInput} />
                     <RightPanel />
                 </Resizable>
             </div>
-      );
-  }
+        );
+    }
 
     public componentDidMount() {
         if (this.tab.current) {
@@ -36,5 +45,27 @@ export default class EditView extends React.Component {
                 behavior: 'smooth',
             });
         }
+    }
+
+    private openFile = () => {
+        if (!this.openFileInput.current) {
+            return;
+        }
+        this.openFileInput.current.addEventListener('change', this.onFileSelected);
+        this.openFileInput.current.click();
+    }
+
+    private onFileSelected = () => {
+        const openFileInput = this.openFileInput.current;
+        if (!openFileInput) {
+            return;
+        }
+        const files = openFileInput.files;
+        if (!files || !files.length) {
+            return;
+        }
+        this.setState({
+            file: files[0],
+        })
     }
 }

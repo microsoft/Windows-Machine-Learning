@@ -35,7 +35,7 @@ export default class Netron extends React.Component<IComponentProperties, ICompo
         let netronUrl = 'static/Netron/';
         if (file) {
             fileUrl = URL.createObjectURL(file);
-            netronUrl = `${netronUrl}?url=${fileUrl}&filename=${file.name}`;  // FIXME escape and format properly
+            netronUrl = `${netronUrl}?url=${fileUrl}&identifier=${file.name}`;  // FIXME escape and format properly
         }
         return { fileUrl, netronUrl };
     }

@@ -1,6 +1,7 @@
 .Panel {
     text-align: left;
     min-width: 290px;
+    background-color: #f8f8f8;
 }
 
 .PanelName {

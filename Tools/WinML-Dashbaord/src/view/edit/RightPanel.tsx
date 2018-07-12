@@ -16,17 +16,19 @@ export default class RightPanel extends React.Component {
         return (
             <div>
                 <Label>Model</Label>
-                <Collapsible label='Model metadata'>
-                    <JsonEditor
-                        ajv={ajv}
-                        schema={MetadataSchema}
-                        value={{
-                            a: 'string',
-                            b: 2,
-                        }}
-                        onChange={console.log}  // TODO
-                    />
-                </Collapsible>
+                <div className='Panel'>
+                    <Collapsible label='Model metadata'>
+                        <JsonEditor
+                            ajv={ajv}
+                            schema={MetadataSchema}
+                            value={{
+                                a: 'string',
+                                b: 2,
+                            }}
+                            onChange={console.log}  // TODO
+                        />
+                    </Collapsible>
+                </div>
             </div>
         );
     }

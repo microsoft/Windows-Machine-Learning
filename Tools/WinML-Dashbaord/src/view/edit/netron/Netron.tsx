@@ -1,8 +1,8 @@
 import * as React from 'react';
 
-import 'Netron/src/view-render.css';
-import 'Netron/src/view-sidebar.css';
-import 'Netron/src/view.css';
+import 'netron/src/view-render.css';
+import 'netron/src/view-sidebar.css';
+import 'netron/src/view.css';
 import 'npm-font-open-sans/open-sans.css';
 
 import './fixed-position-override.css';

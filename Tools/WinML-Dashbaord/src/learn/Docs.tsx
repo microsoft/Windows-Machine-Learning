@@ -41,8 +41,7 @@ export default class DocsView extends React.Component<{}, IComponentState> {
               />
           </div>
           <div id='markdownsource'>
-            <ReactMarkDown source={this.state.markdownSrc}
-            />
+            <ReactMarkDown source={this.state.markdownSrc} />
           </div>
       </div>
     );

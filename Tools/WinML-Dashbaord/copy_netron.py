@@ -52,10 +52,12 @@ def main():
     print('These scripts will be bundled:\n{}'.format(' '.join(static_scripts)))
     package_data = set(package_data) - set(static_scripts)
 
-    package_data = [src / filename for filename in package_data]
+    ignored_extensions = ['css', 'html', 'ico']
+    package_data = [src / filename for filename in package_data if not filename.rsplit('.', 1)[-1] in ignored_extensions]
     static_scripts = [src / filename for filename in static_scripts]
 
-    bundle_destination = 'public/netron_bundle.js'
+    public = Path('public')
+    bundle_destination = public / 'netron_bundle.js'
     if rebuild_needed(static_scripts, bundle_destination):
         with open(bundle_destination, 'w') as f:
             f.write(bundle_scripts(static_scripts))
@@ -64,7 +66,7 @@ def main():
 
     for package_file in package_data:
         try:
-            os.link(package_file, 'public/{}'.format(package_file.name))
+            os.link(package_file, public / package_file.name)
         except FileExistsError:
             pass
 

@@ -3,7 +3,7 @@ import * as React from 'react';
 
 import Resizable from '../../components/Resizable';
 import LeftPanel from './LeftPanel';
-import Netron from './Netron';
+import Netron from './netron/Netron';
 import RightPanel from './RightPanel';
 
 import './View.css';
@@ -29,7 +29,9 @@ export default class EditView extends React.Component<{}, IComponentState> {
                 <Resizable>
                     <LeftPanel />
                 </Resizable>
-                <Netron file={this.state.file} />
+                <div className='Netron'>
+                    <Netron file={this.state.file} />
+                </div>
                 <Resizable>
                     <DefaultButton text='Open file' onClick={this.openFile}/>
                     <input type='file' style={{display: 'none'}} ref={this.openFileInput} />
@@ -48,6 +50,9 @@ export default class EditView extends React.Component<{}, IComponentState> {
     }
 
     private openFile = () => {
+        const g = window as any;
+        // tslint:disable-next-line:no-console
+        console.log(g.window.view && g.window.view._model);
         if (!this.openFileInput.current) {
             return;
         }

@@ -1,0 +1,16 @@
+/* Overrides fixed elements in Netron */
+.background {
+    position: static;
+}
+
+.center {
+    position: static;
+}
+
+.absolute {
+    position: static;
+}
+
+.graph {
+    position: static;
+}

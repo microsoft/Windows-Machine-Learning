@@ -24,9 +24,13 @@
   version "23.1.3"
   resolved "https://registry.yarnpkg.com/@types/jest/-/jest-23.1.3.tgz#4db19b2e7627dc254bbed5781b5609c621b5ad8e"
 
-"@types/node@*", "@types/node@^10.5.1":
+"@types/node@*":
   version "10.5.1"
   resolved "https://registry.yarnpkg.com/@types/node/-/node-10.5.1.tgz#d578446f4abff5c0b49ade9b4e5274f6badaadfc"
+
+"@types/node@^10.5.2":
+  version "10.5.2"
+  resolved "https://registry.yarnpkg.com/@types/node/-/node-10.5.2.tgz#f19f05314d5421fe37e74153254201a7bf00a707"
 
 "@types/node@^8.0.24":
   version "8.10.21"
@@ -5151,6 +5155,10 @@ normalize-url@^1.4.0:
 npm-bundled@^1.0.1:
   version "1.0.3"
   resolved "https://registry.yarnpkg.com/npm-bundled/-/npm-bundled-1.0.3.tgz#7e71703d973af3370a9591bafe3a63aca0be2308"
+
+npm-font-open-sans@^1.1.0:
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/npm-font-open-sans/-/npm-font-open-sans-1.1.0.tgz#8c27a56e43872747b8448dcc30653a649866c6ef"
 
 npm-packlist@^1.1.6:
   version "1.1.10"

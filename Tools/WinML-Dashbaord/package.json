@@ -28,6 +28,7 @@
     "jest": "22.4.2",
     "jsoneditor": "^5.18.0",
     "jsoneditor-react": "^0.1.9",
+    "npm-font-open-sans": "^1.1.0",
     "object-assign": "4.1.1",
     "office-ui-fabric-react": "^6.23.0",
     "postcss-flexbugs-fixes": "3.2.0",
@@ -57,8 +58,9 @@
     "whatwg-fetch": "2.0.3"
   },
   "scripts": {
-    "start": "yarn --cwd static/Netron && node scripts/start.js",
-    "build": "yarn --cwd static/Netron && node scripts/build.js",
+    "copy-netron": "python3 copy_netron.py && echo 'TODO minify Netron bundle'",
+    "start": "yarn copy-netron && node scripts/start.js",
+    "build": "yarn copy-netron && node scripts/build.js",
     "test": "node scripts/test.js --env=jsdom",
     "electron-dev": "electron . http://localhost:3000",
     "electron-prod": "yarn build && electron ."
@@ -77,7 +79,7 @@
   },
   "devDependencies": {
     "@types/jest": "^23.1.3",
-    "@types/node": "^10.5.1",
+    "@types/node": "^10.5.2",
     "@types/react": "^16.4.6",
     "@types/react-dom": "^16.0.6",
     "electron": "^2.0.4",

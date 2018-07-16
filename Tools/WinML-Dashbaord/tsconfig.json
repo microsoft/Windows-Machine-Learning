@@ -23,6 +23,7 @@
     "build",
     "jest",
     "node_modules",
+    "public",
     "scripts",
     "src/setupTests.ts",
     "static",

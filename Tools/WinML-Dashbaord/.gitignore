@@ -18,6 +18,12 @@
 .env.test.local
 .env.production.local
 
+# generated static files
+public/*
+-public/favicon.ico
+-public/index.html
+-public/manifest.json
+
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*

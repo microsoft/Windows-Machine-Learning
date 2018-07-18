@@ -9,8 +9,7 @@ import re
 def get_package_data(mock_setup):
     import static.Netron.setup as netron_setup
     package_data = mock_setup.call_args[1]['package_data']['netron']
-    package_data.extend(netron_setup.node_dependencies[0][1])
-    return package_data
+    return (package_data, netron_setup.node_dependencies[0][1])
 
 
 def get_netron_static_scripts(src_path):
@@ -46,16 +45,28 @@ def bundle_scripts(files):
 
 
 def main():
-    src = Path('static/Netron/src')
-    package_data = get_package_data()
+    netron = Path('static/Netron')
+    src = netron / 'src'
+    package_data, node_dependencies = get_package_data()
     print('Netron package files:\n{}'.format(' '.join(package_data)))
+    print('Netron Node dependencies:\n{}'.format(' '.join(node_dependencies)))
+
     static_scripts = get_netron_static_scripts(src)
     print('These scripts will be bundled:\n{}'.format(' '.join(static_scripts)))
+    # Update script paths to point to paths before installation
+    for i, script in enumerate(static_scripts):
+        if script in package_data:
+            static_scripts[i] = src / script
+        else:
+            for filename in node_dependencies:
+                path = Path(filename)
+                if script == path.name:
+                    static_scripts[i] = netron / path
+
     package_data = set(package_data) - set(static_scripts)
 
-    ignored_extensions = ['css', 'html', 'ico']
-    package_data = [src / filename for filename in package_data if not filename.rsplit('.', 1)[-1] in ignored_extensions]
-    static_scripts = [src / filename for filename in static_scripts]
+    ignored_extensions = ['.css', '.html', '.ico']
+    package_data = [src / filename for filename in package_data if not Path(filename).suffix in ignored_extensions]
 
     public = Path('public')
     bundle_destination = public / 'netron_bundle.js'

@@ -34,7 +34,7 @@ export default class EditView extends React.Component<{}, IComponentState> {
                 </div>
                 <Resizable>
                     <DefaultButton text='Open file' onClick={this.openFile}/>
-                    <input type='file' style={{display: 'none'}} ref={this.openFileInput} />
+                    <input type='file' style={{display: 'none'}} accept=".onnx,.pb,.meta,.tflite,.keras,.h5,.json,.mlmodel,.caffemodel" ref={this.openFileInput} />
                     <RightPanel />
                 </Resizable>
             </div>

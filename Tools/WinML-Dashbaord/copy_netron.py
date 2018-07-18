@@ -7,8 +7,9 @@ import re
 
 @patch('setuptools.setup')
 def get_package_data(mock_setup):
-    import static.Netron.setup
+    import static.Netron.setup as netron_setup
     package_data = mock_setup.call_args[1]['package_data']['netron']
+    package_data.extend(netron_setup.node_dependencies[0][1])
     return package_data
 
 

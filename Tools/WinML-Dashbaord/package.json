@@ -20,12 +20,12 @@
     "react-split-pane": "^0.1.81"
   },
   "scripts": {
-    "start": "yarn copy-netron && react-scripts-ts start",
-    "build": "yarn copy-netron && react-scripts-ts build",
+    "start": "react-scripts-ts start",
+    "build": "react-scripts-ts build",
     "test": "react-scripts-ts test --env=jsdom",
     "eject": "react-scripts-ts eject",
 
-    "postinstall": "node scripts/postinstall.js",
+    "postinstall": "node scripts/postinstall.js && yarn copy-netron",
     "copy-netron": "python3 copy_netron.py && echo 'TODO minify Netron bundle'",
     "electron-dev": "electron . http://localhost:3000",
     "electron-prod": "yarn build && electron ."

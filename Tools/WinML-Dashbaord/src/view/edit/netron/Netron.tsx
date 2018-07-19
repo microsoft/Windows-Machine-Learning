@@ -11,17 +11,59 @@ const browserGlobal = window as any;
 
 interface IComponentProperties {
     file?: File,
+    onChange: (newState: IComponentState) => void,
 }
 
-export default class Netron extends React.Component<IComponentProperties, {}> {
+export interface IComponentState {
+    graph: any,
+    metadataProps: { [key: string]: string },
+    properties: { [key: string]: string },
+}
+
+export class Netron extends React.Component<IComponentProperties, IComponentState> {
     private root: React.RefObject<HTMLDivElement>;
+    private modelLoadedProxy: { proxy: ProxyHandler<any>, revoke: () => void };
+
+    constructor(props: IComponentProperties) {
+        super(props);
+        this.state = {
+            graph: {},
+            metadataProps: {},
+            properties: {},
+        }
+    }
 
     public componentDidMount() {
         // Netron must be run after rendering the HTML
-        const s = document.createElement('script');
-        s.src = "netron_bundle.js";
-        s.async = true;
-        document.body.appendChild(s);
+        if (!browserGlobal.host) {
+            const s = document.createElement('script');
+            s.src = "netron_bundle.js";
+            s.async = true;
+            document.body.appendChild(s);
+        }
+    }
+
+    public componentWillUnmount() {
+        if (this.modelLoadedProxy) {
+            this.modelLoadedProxy.revoke();
+        }
+    }
+
+    public UNSAFE_componentWillReceiveProps(nextProps: IComponentProperties) {
+        if (!browserGlobal.host) {
+            return;
+        }
+        if (this.modelLoadedProxy === undefined) {
+            this.installModelLoadedProxy();
+        }
+        if (nextProps.file !== this.props.file) {
+            browserGlobal.host._openFile(nextProps.file);
+        }
+    }
+
+    public shouldComponentUpdate(netxtProps: IComponentProperties, nextState: IComponentState) {
+        // Netron is a static page and all updates are handled by its JavaScript code
+        return false;
     }
 
     public render() {
@@ -84,7 +126,29 @@ export default class Netron extends React.Component<IComponentProperties, {}> {
         );
     }
 
-    public componentWillReceiveProps(nextProps: IComponentProperties) {
-        browserGlobal.host._openFile(nextProps.file);
+    private propsToObject(props: any) {
+        return props.reduce((acc: { [key: string]: string }, x: any) => {
+            // metadataProps uses key, while model.properties uses name
+            acc[x.key || x.name] = x.value;
+            return acc;
+        }, {});
+    }
+
+    private installModelLoadedProxy() {
+        const handler = {
+            apply: (target: any, thisArg: any, args: any) => {
+                const model = args[0];
+                const newState = {
+                    graph: model.graphs[0],
+                    metadataProps: this.propsToObject(model._metadataProps),
+                    properties: this.propsToObject(model.properties),
+                }
+                this.setState(newState);
+                this.props.onChange(newState);
+                return target.apply(thisArg, args);
+            },
+        };
+        this.modelLoadedProxy = Proxy.revocable(browserGlobal.view.updateGraph, handler);
+        browserGlobal.view.updateGraph = this.modelLoadedProxy.proxy;
     }
 }

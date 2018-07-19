@@ -3,14 +3,11 @@
     width: 500px;
 }
 
-#navpart
-{
-    width:  280px;
+#navpart {
+    width: 280px;
 }
 
-#markdownsource
-{
+#markdownsource {
     text-align: left;
-    flex:1;
-
+    flex: 1;
 }

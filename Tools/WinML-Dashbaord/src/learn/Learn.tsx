@@ -27,10 +27,10 @@ export default class DocsView extends React.Component<{}, IComponentState> {
                     {
                       isExpanded: true,
                       links: [
-                        { name: 'Introduction', key: './content/01_intro.md', url: '', onClick: this.onClickHandler, },
-                        { name: 'Convolutions', key: './content/02_intro_convolutions.md', url: '', onClick: this.onClickHandler, },
-                        { name: 'Imaging Network Architectures', key: './content/03_modern_architectures.md', url: '', onClick: this.onClickHandler, },
-                        { name: 'Model Comparison', key: './content/04_model_comparison.md', url: '', onClick: this.onClickHandler, }
+                        { name: 'Introduction', key: 'learn/01_intro.md', url: '', onClick: this.onClickHandler, },
+                        { name: 'Convolutions', key: 'learn/02_intro_convolutions.md', url: '', onClick: this.onClickHandler, },
+                        { name: 'Imaging Network Architectures', key: 'learn/03_modern_architectures.md', url: '', onClick: this.onClickHandler, },
+                        { name: 'Model Comparison', key: 'learn/04_model_comparison.md', url: '', onClick: this.onClickHandler, }
                       ],
                       name: 'NN Study',
                       url: '',

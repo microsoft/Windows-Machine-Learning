@@ -20,9 +20,10 @@
 
 # generated static files
 public/*
--public/favicon.ico
--public/index.html
--public/manifest.json
+!public/favicon.ico
+!public/index.html
+!public/learn/
+!public/manifest.json
 
 npm-debug.log*
 yarn-debug.log*

@@ -2,7 +2,7 @@ import { Label } from 'office-ui-fabric-react/lib/Label';
 import { Pivot, PivotItem } from 'office-ui-fabric-react/lib/Pivot';
 import * as React from 'react';
 
-import DocsView from './learn/Docs';
+import DocsView from './learn/Learn';
 import EditView from './view/edit/View';
 
 import './App.css';

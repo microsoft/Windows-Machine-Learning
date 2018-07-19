@@ -1,6 +1,14 @@
 export default {
     // https://github.com/onnx/onnx/blob/master/docs/MetadataProps.md
     // FIXME be case insensitive
+    type: 'object',
+
+    additionalProperties: false,
+    patternProperties: {
+        '.+': {
+            type: 'string',
+        },
+    },
     properties: {
         'Image.BitmapPixelFormat': {
             enum: [
@@ -35,5 +43,4 @@ export default {
             type: 'string',
         },
     },
-    type: 'object',
 };

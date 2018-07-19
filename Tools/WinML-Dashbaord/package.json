@@ -8,6 +8,7 @@
   "private": true,
   "dependencies": {
     "@types/prop-types": "^15.5.3",
+    "@types/react-redux": "^6.0.4",
     "ajv": "^6.5.2",
     "jsoneditor": "^5.18.0",
     "jsoneditor-react": "^0.1.9",
@@ -16,15 +17,15 @@
     "react": "^16.4.1",
     "react-dom": "^16.4.1",
     "react-markdown": "^3.3.4",
+    "react-redux": "^5.0.7",
     "react-scripts-ts": "2.16.0",
-    "react-split-pane": "^0.1.81"
+    "redux": "^4.0.0"
   },
   "scripts": {
     "start": "react-scripts-ts start",
     "build": "react-scripts-ts build",
     "test": "react-scripts-ts test --env=jsdom",
     "eject": "react-scripts-ts eject",
-
     "postinstall": "node scripts/postinstall.js && yarn copy-netron",
     "copy-netron": "yarn --cwd static/Netron && python3 copy_netron.py && echo 'TODO minify Netron bundle'",
     "electron-dev": "electron . http://localhost:3000",

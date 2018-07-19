@@ -2,13 +2,13 @@ import { INavLink, Nav } from 'office-ui-fabric-react/lib/Nav';
 import * as React from 'react';
 import * as ReactMarkDown from 'react-markdown';
 
-import './Docs.css';
+import './View.css';
 
 interface IComponentState {
   markdownSrc: string,
 }
 
-export default class DocsView extends React.Component<{}, IComponentState> {
+export default class LearnView extends React.Component<{}, IComponentState> {
   constructor(props: {}) {
     super(props);
     this.state = {

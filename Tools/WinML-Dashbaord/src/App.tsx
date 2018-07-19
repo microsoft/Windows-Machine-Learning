@@ -1,36 +1,67 @@
 import { Label } from 'office-ui-fabric-react/lib/Label';
 import { Pivot, PivotItem } from 'office-ui-fabric-react/lib/Pivot';
+import { setIconOptions } from 'office-ui-fabric-react/lib/Styling';
 import * as React from 'react';
 
-import DocsView from './learn/Learn';
 import EditView from './view/edit/View';
+import LearnView from './view/learn/View';
 
 import './App.css';
 
-class App extends React.Component<any, any> {
-  public render() {
-    return (
-      <div className='App'>
-        <Pivot>
-          <PivotItem headerText='Edit'>
-            <EditView />
-          </PivotItem>
-          <PivotItem headerText='Convert'>
-            <Label>TODO</Label>
-          </PivotItem>
-          <PivotItem headerText='Debug'>
-            <Label>TODO</Label>
-          </PivotItem>
-          <PivotItem headerText='Profile'>
-            <Label>TODO</Label>
-          </PivotItem>
-          <PivotItem headerText='Learn'>
-              <DocsView />
-          </PivotItem>
-        </Pivot>
-      </div>
-    );
-  }
+interface IComponentState {
+    tab: string,
+}
+
+class App extends React.Component<{}, IComponentState> {
+    constructor(props: {}) {
+        super(props);
+        // Don't download Office icons and ignore warnings
+        setIconOptions({
+            disableWarnings: true
+        });
+        this.state = {
+            tab: 'Edit',
+        };
+    }
+
+    public render() {
+        return (
+            <div className='App'>
+                <Pivot onLinkClick={this.onLinkClick}>
+                    <PivotItem headerText='Edit' />
+                    <PivotItem headerText='Convert' />
+                    <PivotItem headerText='Debug' />
+                    <PivotItem headerText='Profile' />
+                    <PivotItem headerText='Learn' />
+                </Pivot>
+                <div style={{ display: this.displayIfKeySelected('Edit') }} >
+                    <EditView />
+                </div>
+                <div style={{ display: this.displayIfKeySelected('Convert') }}>
+                    <Label>TODO</Label>
+                </div>
+                <div style={{ display: this.displayIfKeySelected('Debug') }}>
+                    <Label>TODO</Label>
+                </div>
+                <div style={{ display: this.displayIfKeySelected('Profile') }}>
+                    <Label>TODO</Label>
+                </div>
+                <div style={{ display: this.displayIfKeySelected('Learn') }}>
+                    <LearnView />
+                </div>
+            </div>
+        );
+    }
+
+    private onLinkClick = (item?: PivotItem, ev?: React.MouseEvent<HTMLElement>) => {
+        if (item) {
+            this.setState({ tab: item.props.headerText! });
+        }
+    }
+
+    private displayIfKeySelected = (key: string) => {
+        return key === this.state.tab ? 'block' : 'none';
+    }
 }
 
 export default App;

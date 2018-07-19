@@ -1,28 +1,35 @@
 import * as React from 'react';
+import { connect } from 'react-redux';
 
 import 'netron/src/view-render.css';
 import 'netron/src/view-sidebar.css';
 import 'netron/src/view.css';
 import 'npm-font-open-sans/open-sans.css';
 
+import { updateGraph, updateMetadataProps, updateProperties } from '../../../datastore/actionCreators';
+import IState from '../../../datastore/state';
 import './fixed-position-override.css';
 
 const browserGlobal = window as any;
 
 interface IComponentProperties {
     file?: File,
-    onChange: (newState: IComponentState) => void,
+
+    // Redux properties
+    updateGraph: typeof updateGraph,
+    updateMetadataProps: typeof updateMetadataProps,
+    updateProperties: typeof updateProperties,
 }
 
-export interface IComponentState {
+interface IComponentState {
     graph: any,
     metadataProps: { [key: string]: string },
     properties: { [key: string]: string },
 }
 
-export class Netron extends React.Component<IComponentProperties, IComponentState> {
+class NetronComponent extends React.Component<IComponentProperties, IComponentState> {
     private root: React.RefObject<HTMLDivElement>;
-    private modelLoadedProxy: { proxy: ProxyHandler<any>, revoke: () => void };
+    private revokeModelLoadedProxy: () => void;
 
     constructor(props: IComponentProperties) {
         super(props);
@@ -44,8 +51,8 @@ export class Netron extends React.Component<IComponentProperties, IComponentStat
     }
 
     public componentWillUnmount() {
-        if (this.modelLoadedProxy) {
-            this.modelLoadedProxy.revoke();
+        if (this.revokeModelLoadedProxy) {
+            this.revokeModelLoadedProxy();
         }
     }
 
@@ -53,7 +60,7 @@ export class Netron extends React.Component<IComponentProperties, IComponentStat
         if (!browserGlobal.host) {
             return;
         }
-        if (this.modelLoadedProxy === undefined) {
+        if (this.revokeModelLoadedProxy === undefined) {
             this.installModelLoadedProxy();
         }
         if (nextProps.file !== this.props.file) {
@@ -138,17 +145,29 @@ export class Netron extends React.Component<IComponentProperties, IComponentStat
         const handler = {
             apply: (target: any, thisArg: any, args: any) => {
                 const model = args[0];
-                const newState = {
-                    graph: model.graphs[0],
-                    metadataProps: this.propsToObject(model._metadataProps),
-                    properties: this.propsToObject(model.properties),
-                }
-                this.setState(newState);
-                this.props.onChange(newState);
+                // const graph = model.graphs[0];
+                // this.props.updateGraph(graph);
+                this.props.updateMetadataProps(this.propsToObject(model._metadataProps));
+                this.props.updateProperties(this.propsToObject(model.properties));
                 return target.apply(thisArg, args);
             },
         };
-        this.modelLoadedProxy = Proxy.revocable(browserGlobal.view.updateGraph, handler);
-        browserGlobal.view.updateGraph = this.modelLoadedProxy.proxy;
+        const revokableProxy = Proxy.revocable(browserGlobal.view.updateGraph, handler);
+        browserGlobal.view.updateGraph = revokableProxy.proxy;
+        this.revokeModelLoadedProxy = revokableProxy.revoke;
     }
 }
+
+const mapStateToProps = (state: IState) => ({
+    graph: state.graph,
+    metadataProps: state.metadataProps,
+    properties: state.properties,
+});
+
+const mapDispatchToProps = {
+    updateGraph,
+    updateMetadataProps,
+    updateProperties,
+}
+
+export const Netron = connect(mapStateToProps, mapDispatchToProps)(NetronComponent);

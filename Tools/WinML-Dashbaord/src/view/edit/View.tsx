@@ -30,7 +30,7 @@ export default class EditView extends React.Component<{}, IComponentState> {
                     <LeftPanel />
                 </Resizable>
                 <div className='Netron'>
-                    <netron.Netron file={this.state.file} onChange={this.onNetronChange} />
+                    <netron.Netron file={this.state.file} />
                 </div>
                 <Resizable>
                     <DefaultButton text='Open file' onClick={this.openFile}/>
@@ -69,10 +69,5 @@ export default class EditView extends React.Component<{}, IComponentState> {
         this.setState({
             file: files[0],
         })
-    }
-
-    private onNetronChange = (newState: netron.IComponentState) => {
-        // tslint:disable-next-line:no-console
-        console.log(newState);
     }
 }

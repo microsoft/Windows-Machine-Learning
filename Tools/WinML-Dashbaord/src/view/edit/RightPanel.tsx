@@ -1,18 +1,14 @@
-import * as Ajv from 'ajv';
-import { JsonEditor } from 'jsoneditor-react';
-import 'jsoneditor-react/es/editor.min.css';
 import { Label } from 'office-ui-fabric-react/lib/Label';
 import * as React from 'react';
 import { connect } from 'react-redux';
 
 import Collapsible from '../../components/Collapsible';
+import KeyValueEditor from '../../components/KeyValueEditor'
 import { updateMetadataProps } from '../../datastore/actionCreators';
 import IState, { IMetadataProps } from '../../datastore/state';
 import MetadataSchema from '../../schema/Metadata';
 
 import './Panel.css';
-
-const ajv = new Ajv({ allErrors: true, verbose: true });
 
 interface IComponentProperties {
     // Redux properties
@@ -27,19 +23,14 @@ class RightPanelComponent extends React.Component<IComponentProperties, {}> {
                 <Label>Model</Label>
                 <div className='Panel'>
                     <Collapsible label='Model metadata'>
-                        <div key={JSON.stringify(this.props.metadataProps)}>
-                            <JsonEditor
-                                ajv={ajv}
-                                schema={MetadataSchema}
-                                value={this.props.metadataProps}
-                                onChange={console.log}
-                            />
-                        </div>
+                        <KeyValueEditor actionCreator={updateMetadataProps} getState={this.getMetadataPropsFromState} schema={MetadataSchema} />
                     </Collapsible>
                 </div>
             </div>
         );
     }
+
+    private getMetadataPropsFromState = (state: IState) => state.metadataProps;
 }
 
 const mapStateToProps = (state: IState) => ({

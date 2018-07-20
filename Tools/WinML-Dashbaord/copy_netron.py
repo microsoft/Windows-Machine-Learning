@@ -3,6 +3,7 @@ import os
 from pathlib import Path
 from unittest.mock import patch
 import re
+import subprocess
 
 
 @patch('setuptools.setup')
@@ -39,6 +40,10 @@ def bundle_scripts(files):
     return b'\n'.join(bundle)
 
 
+def minify(input_file, output_file):
+    subprocess.check_call(['yarn', 'minify', str(input_file), '-o', str(output_file)])
+
+
 def main():
     netron = Path('static/Netron')
     src = netron / 'src'
@@ -66,16 +71,10 @@ def main():
     public = Path('public')
     bundle_destination = public / 'netron_bundle.js'
     if rebuild_needed(static_scripts, bundle_destination):
-        try:
-            with open(bundle_destination, 'wb') as f:
-                f.write(bundle_scripts(static_scripts))
-        except:
-            # Remove the output file if bundling fails
-            try:
-                bundle_destination.unlink()
-            except:
-                pass
-            raise
+        import tempfile
+        with tempfile.NamedTemporaryFile() as f:
+            f.write(bundle_scripts(static_scripts))
+            minify(f.name, bundle_destination)
     else:
         print('Bundle is already up to date')
 

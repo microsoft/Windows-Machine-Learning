@@ -6,6 +6,11 @@ export const updateGraph = (graph: any) => ({
     type: actions.UPDATE_GRAPH,
 })
 
+export const updateInputs = (inputs: any) => ({
+    inputs,
+    type: actions.UPDATE_INPUTS,
+})
+
 export const updateMetadataProps = (metadataProps: IMetadataProps) => ({
     metadataProps,
     type: actions.UPDATE_METADATA_PROPS,

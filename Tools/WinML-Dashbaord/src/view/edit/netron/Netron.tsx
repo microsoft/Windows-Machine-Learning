@@ -6,7 +6,7 @@ import 'netron/src/view-sidebar.css';
 import 'netron/src/view.css';
 import 'npm-font-open-sans/open-sans.css';
 
-import { updateGraph, updateMetadataProps, updateProperties } from '../../../datastore/actionCreators';
+import { updateGraph, updateInputs, updateMetadataProps, updateProperties } from '../../../datastore/actionCreators';
 import IState from '../../../datastore/state';
 import './fixed-position-override.css';
 
@@ -17,6 +17,7 @@ interface IComponentProperties {
 
     // Redux properties
     updateGraph: typeof updateGraph,
+    updateInputs: typeof updateInputs,
     updateMetadataProps: typeof updateMetadataProps,
     updateProperties: typeof updateProperties,
 }
@@ -141,12 +142,23 @@ class NetronComponent extends React.Component<IComponentProperties, IComponentSt
         }, {});
     }
 
-    private installModelLoadedProxy() {
+    private installModelLoadedProxy = () => {
+        // Install proxy on browserGlobal.view.updateGraph and update the data store
         const handler = {
             apply: (target: any, thisArg: any, args: any) => {
                 const model = args[0];
-                // const graph = model.graphs[0];
-                // this.props.updateGraph(graph);
+                // FIXME What to do when model has multiple graphs?
+                const graph = model.graphs[0];
+                this.props.updateInputs(graph.inputs);
+                // Normalize graph
+                // const normalizedGraph: Array<{}> = [];
+                // for (const node of graph.nodes) {
+                //     normalizedGraph.push({
+                //         inputs: node.inputs,
+                //         // ... Add other properties of interest
+                //     });
+                // }
+                // this.props.updateGraph(normalizedGraph);
                 this.props.updateMetadataProps(this.propsToObject(model._metadataProps));
                 this.props.updateProperties(this.propsToObject(model.properties));
                 return target.apply(thisArg, args);
@@ -166,6 +178,7 @@ const mapStateToProps = (state: IState) => ({
 
 const mapDispatchToProps = {
     updateGraph,
+    updateInputs,
     updateMetadataProps,
     updateProperties,
 }

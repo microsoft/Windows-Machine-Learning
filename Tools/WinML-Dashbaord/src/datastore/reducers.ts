@@ -7,6 +7,8 @@ export function rootReducer(state: IState, action: actions.IAction) {
         case actions.UPDATE_GRAPH:
             throw new Error('Not implemented');
             // return { ...state, graph: action.graph };
+        case actions.UPDATE_INPUTS:
+            return { ...state, inputs: action.inputs };
         case actions.UPDATE_METADATA_PROPS:
             return { ...state, metadataProps: action.metadataProps };
         case actions.UPDATE_PROPERTIES:

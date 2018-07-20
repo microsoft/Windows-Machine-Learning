@@ -144,29 +144,41 @@ class NetronComponent extends React.Component<IComponentProperties, IComponentSt
 
     private installModelLoadedProxy = () => {
         document.documentElement.style.overflow = 'initial';
-        // Install proxy on browserGlobal.view.updateGraph and update the data store
+
+        const updateDataStore = (model: any) => {
+            // tslint:disable-next-line:no-console
+            console.log(model._model);
+            // FIXME What to do when model has multiple graphs?
+            const graph = model.graphs[0];
+            this.props.updateInputs(graph.inputs);
+            // Normalize graph
+            // const normalizedGraph: Array<{}> = [];
+            // for (const node of graph.nodes) {
+            //     normalizedGraph.push({
+            //         inputs: node.inputs,
+            //         // ... Add other properties of interest
+            //     });
+            // }
+            // this.props.updateGraph(normalizedGraph);
+            this.props.updateMetadataProps(this.propsToObject(model._metadataProps));
+            this.props.updateProperties(this.propsToObject(model.properties));
+        };
+
+        // Install proxy on browserGlobal.view.loadBuffer and update the data store
         const handler = {
             apply: (target: any, thisArg: any, args: any) => {
-                const model = args[0];
-                // FIXME What to do when model has multiple graphs?
-                const graph = model.graphs[0];
-                this.props.updateInputs(graph.inputs);
-                // Normalize graph
-                // const normalizedGraph: Array<{}> = [];
-                // for (const node of graph.nodes) {
-                //     normalizedGraph.push({
-                //         inputs: node.inputs,
-                //         // ... Add other properties of interest
-                //     });
-                // }
-                // this.props.updateGraph(normalizedGraph);
-                this.props.updateMetadataProps(this.propsToObject(model._metadataProps));
-                this.props.updateProperties(this.propsToObject(model.properties));
-                return target.apply(thisArg, args);
+                // Original signature: buffer, identifier, callback
+                // We will patch the callback to update our data store first
+                return target.call(thisArg, args[0], args[1], (err: Error, model: any) => {
+                    if (!err) {
+                        updateDataStore(model);
+                    }
+                    return args[2](err, model);
+                });
             },
         };
-        const revokableProxy = Proxy.revocable(browserGlobal.view.updateGraph, handler);
-        browserGlobal.view.updateGraph = revokableProxy.proxy;
+        const revokableProxy = Proxy.revocable(browserGlobal.view.loadBuffer, handler);
+        browserGlobal.view.loadBuffer = revokableProxy.proxy;
         this.revokeModelLoadedProxy = revokableProxy.revoke;
     }
 }

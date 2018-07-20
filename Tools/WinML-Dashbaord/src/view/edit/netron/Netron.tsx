@@ -143,6 +143,7 @@ class NetronComponent extends React.Component<IComponentProperties, IComponentSt
     }
 
     private installModelLoadedProxy = () => {
+        document.documentElement.style.overflow = 'initial';
         // Install proxy on browserGlobal.view.updateGraph and update the data store
         const handler = {
             apply: (target: any, thisArg: any, args: any) => {

@@ -34,14 +34,9 @@ def rebuild_needed(sources, destination):
 def bundle_scripts(files):
     bundle = []
     for script in files:
-        with script.open() as f:
-            if script.name == 'view.js':
-                lines = [x for x in f.readlines() if not x.lstrip().startswith("document.documentElement.style.overflow = 'hidden'")]
-                data = ''.join(lines)
-            else:
-                data = f.read()
-            bundle.append(data)
-    return '\n'.join(bundle)
+        with script.open('rb') as f:
+            bundle.append(f.read())
+    return b'\n'.join(bundle)
 
 
 def main():
@@ -71,8 +66,16 @@ def main():
     public = Path('public')
     bundle_destination = public / 'netron_bundle.js'
     if rebuild_needed(static_scripts, bundle_destination):
-        with open(bundle_destination, 'w') as f:
-            f.write(bundle_scripts(static_scripts))
+        try:
+            with open(bundle_destination, 'wb') as f:
+                f.write(bundle_scripts(static_scripts))
+        except:
+            # Remove the output file if bundling fails
+            try:
+                bundle_destination.unlink()
+            except:
+                pass
+            raise
     else:
         print('Bundle is already up to date')
 

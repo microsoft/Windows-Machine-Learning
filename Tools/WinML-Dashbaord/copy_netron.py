@@ -3,6 +3,7 @@ import os
 from pathlib import Path
 from unittest.mock import patch
 import re
+import shutil
 import subprocess
 
 
@@ -41,7 +42,7 @@ def bundle_scripts(files):
 
 
 def minify(input_file, output_file):
-    subprocess.check_call(['yarn', 'minify', str(input_file), '-o', str(output_file)])
+    subprocess.check_call([shutil.which('yarn'), 'minify', str(input_file), '-o', str(output_file)])
 
 
 def main():
@@ -67,6 +68,11 @@ def main():
 
     ignored_extensions = ['.css', '.html', '.ico']
     package_data = [src / filename for filename in package_data if not Path(filename).suffix in ignored_extensions]
+    for package_file in package_data:
+        try:
+            os.link(package_file, public / package_file.name)
+        except FileExistsError:
+            pass
 
     public = Path('public')
     bundle_destination = public / 'netron_bundle.js'
@@ -77,13 +83,6 @@ def main():
             minify(f.name, bundle_destination)
     else:
         print('Bundle is already up to date')
-
-    for package_file in package_data:
-        try:
-            os.link(package_file, public / package_file.name)
-        except FileExistsError:
-            pass
-
 
 if __name__ == '__main__':
     main()

@@ -27,7 +27,7 @@
     "test": "react-scripts-ts test --env=jsdom",
     "eject": "react-scripts-ts eject",
     "postinstall": "node scripts/postinstall.js && yarn copy-netron",
-    "copy-netron": "yarn --cwd static/Netron && python3 copy_netron.py && echo 'TODO minify Netron bundle'",
+    "copy-netron": "yarn --cwd static/Netron && python copy_netron.py && echo 'TODO minify Netron bundle'",
     "electron-dev": "electron . http://localhost:3000",
     "electron-prod": "yarn build && electron ."
   },

@@ -47,7 +47,10 @@ class NetronComponent extends React.Component<IComponentProperties, IComponentSt
             const s = document.createElement('script');
             s.src = "netron_bundle.js";
             s.async = true;
+            s.onload = this.installModelLoadedProxy;
             document.body.appendChild(s);
+        } else {
+            this.installModelLoadedProxy();
         }
     }
 
@@ -60,9 +63,6 @@ class NetronComponent extends React.Component<IComponentProperties, IComponentSt
     public UNSAFE_componentWillReceiveProps(nextProps: IComponentProperties) {
         if (!browserGlobal.host) {
             return;
-        }
-        if (this.revokeModelLoadedProxy === undefined) {
-            this.installModelLoadedProxy();
         }
         if (nextProps.file !== this.props.file) {
             browserGlobal.host._openFile(nextProps.file);

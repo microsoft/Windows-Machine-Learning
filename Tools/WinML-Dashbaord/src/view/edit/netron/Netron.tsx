@@ -78,10 +78,10 @@ class NetronComponent extends React.Component<IComponentProperties, IComponentSt
         return (
             <div ref={this.root}>
                 <div id='welcome' className='background' style={{display: 'block'}}>
-                    <a className='center logo' href='https://github.com/lutzroeder/Netron' target='_blank'>
+                    <div className='center logo'>
                         <img className='logo absolute' src='logo.svg' />
                         <img id='spinner' className='spinner logo absolute' src='spinner.svg' style={{display: 'none'}} />
-                    </a>
+                    </div>
                     <button id='open-file-button' className='center' style={{top: '200px', width: '125px', opacity: 0}}>Open Model...</button>
                     <input type="file" id="open-file-dialog" style={{display: 'none'}} multiple={false} accept=".onnx, .pb, .meta, .tflite, .keras, .h5, .json, .mlmodel, .caffemodel" />
                     <div style={{fontWeight: 'normal', color: '#e6e6e6', userSelect: 'none'}}>.</div>

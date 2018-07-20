@@ -58,7 +58,7 @@ function createWindow() {
     }
     if (pageUrl === undefined) {
         pageUrl = url.format({
-            pathname: path.join(__dirname, '../build/index.html'),
+            pathname: path.join(__dirname, '../build/'),
             protocol: 'file',
         });
     }

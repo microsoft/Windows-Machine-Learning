@@ -7,10 +7,6 @@
     position: static;
 }
 
-.absolute {
-    position: static;
-}
-
-.graph {
-    position: static;
+.sidebar {
+    position: absolute;
 }

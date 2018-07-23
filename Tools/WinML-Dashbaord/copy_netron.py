@@ -66,6 +66,7 @@ def main():
 
     package_data = set(package_data) - set(static_scripts)
 
+    public = Path('public')
     ignored_extensions = ['.css', '.html', '.ico']
     package_data = [src / filename for filename in package_data if not Path(filename).suffix in ignored_extensions]
     for package_file in package_data:
@@ -74,7 +75,6 @@ def main():
         except FileExistsError:
             pass
 
-    public = Path('public')
     bundle_destination = public / 'netron_bundle.js'
     if rebuild_needed(static_scripts, bundle_destination):
         import tempfile

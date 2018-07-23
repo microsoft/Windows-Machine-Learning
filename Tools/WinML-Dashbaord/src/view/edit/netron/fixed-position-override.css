@@ -3,6 +3,10 @@
     position: static;
 }
 
+.center {
+    position: absolute;
+}
+
 .sidebar {
     position: absolute;
 }

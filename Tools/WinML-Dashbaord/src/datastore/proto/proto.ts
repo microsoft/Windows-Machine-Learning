@@ -20,11 +20,7 @@ export class Proto {
         return this.onnx;
     }
 
-    private static onnx: any;
-
-    public proto: any;
-
-    public download(data: Uint8Array, filename='model.onnx') {
+    public static download(data: Uint8Array, filename='model.onnx') {
         const blob = new Blob([data], {type: 'application/octet-stream'});
         const anchor = document.createElement('a');
         anchor.href = URL.createObjectURL(blob);
@@ -35,4 +31,7 @@ export class Proto {
         document.body.removeChild(anchor);
         URL.revokeObjectURL(anchor.href);
     }
+
+    private static onnx: any;
+    public proto: any;
 }

@@ -5,6 +5,9 @@ import { Proto } from './proto';
 class ModelProto extends Proto {
     public setMetadata(metadata: IMetadataProps) {
         Proto.getOnnx();
+        if (!this.proto) {
+            return;
+        }
         this.proto.metadataProps = Object.keys(metadata).reduce((acc: any[], x: string) => {
             const entry = new Proto.types.StringStringEntryProto();
             entry.key = x;
@@ -20,8 +23,8 @@ class ModelProto extends Proto {
         return writer.finish();
     }
 
-    public download() {
-        super.download(this.serialize());
+    public download = () => {
+        Proto.download(this.serialize());
     }
 }
 

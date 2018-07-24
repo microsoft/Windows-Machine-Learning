@@ -3,7 +3,6 @@ import * as React from 'react';
 
 import Resizable from '../../components/Resizable';
 import { ModelProtoSingleton } from '../../datastore/proto/modelProto';
-import store from '../../datastore/store';
 import LeftPanel from './LeftPanel';
 import * as netron from './netron/Netron';
 import RightPanel from './RightPanel';
@@ -36,7 +35,7 @@ export default class EditView extends React.Component<{}, IComponentState> {
                 </div>
                 <Resizable>
                     <DefaultButton text='Open file' onClick={this.openFile}/>
-                    <DefaultButton text='Save file' onClick={this.saveFile}/>
+                    <DefaultButton text='Save file' onClick={ModelProtoSingleton.download}/>
                     <input type='file' style={{display: 'none'}} accept=".onnx,.pb,.meta,.tflite,.keras,.h5,.json,.mlmodel,.caffemodel" ref={this.openFileInput} />
                     <RightPanel />
                 </Resizable>
@@ -72,11 +71,5 @@ export default class EditView extends React.Component<{}, IComponentState> {
         this.setState({
             file: files[0],
         })
-    }
-
-    private saveFile = () => {
-        // TODO Refactor data store access
-        ModelProtoSingleton.setMetadata(store.getState().metadataProps);
-        ModelProtoSingleton.download();
     }
 }

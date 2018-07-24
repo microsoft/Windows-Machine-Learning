@@ -1,0 +1,37 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Package xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10" xmlns:mp="http://schemas.microsoft.com/appx/2014/phone/manifest" xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10" IgnorableNamespaces="uap mp">
+  <Identity Name="257918C9-ABE3-483E-A202-C5C69AEBD825" Publisher="CN=lobourre" Version="1.1.36.0" />
+  <mp:PhoneIdentity PhoneProductId="3bd922b5-d779-4208-8c35-aec4dea61330" PhonePublisherId="00000000-0000-0000-0000-000000000000" />
+  <Properties>
+    <DisplayName>Shortcut</DisplayName>
+    <PublisherDisplayName>lobourre</PublisherDisplayName>
+    <Logo>Assets\frame_camera_50.png</Logo>
+  </Properties>
+  <Dependencies>
+    <TargetDeviceFamily Name="Windows.Universal" MinVersion="10.0.0.0" MaxVersionTested="10.0.0.0" />
+  </Dependencies>
+  <Resources>
+    <Resource Language="x-generate" />
+  </Resources>
+  <Applications>
+    <Application Id="App" Executable="$targetnametoken$.exe" EntryPoint="SnapCandy.App">
+      <uap:VisualElements DisplayName="SnapCandy" Square150x150Logo="Assets\frame_camera_150.png" Square44x44Logo="Assets\frame_camera_44.png" Description="Passing images taken from a camera or from an image file through style transfer" BackgroundColor="transparent">
+        <uap:LockScreen Notification="badge" BadgeLogo="Assets\frame_camera_24.png" />
+        <uap:DefaultTile Wide310x150Logo="Assets\frame_camera_310-150.png" Square310x310Logo="Assets\frame_camera_310.png">
+          <uap:ShowNameOnTiles>
+            <uap:ShowOn Tile="square150x150Logo" />
+            <uap:ShowOn Tile="wide310x150Logo" />
+            <uap:ShowOn Tile="square310x310Logo" />
+          </uap:ShowNameOnTiles>
+        </uap:DefaultTile>
+        <uap:SplashScreen Image="Assets\frame_camera_620-300.png" />
+      </uap:VisualElements>
+    </Application>
+  </Applications>
+  <Capabilities>
+    <Capability Name="internetClient" />
+    <uap:Capability Name="picturesLibrary" />
+    <DeviceCapability Name="webcam" />
+    <DeviceCapability Name="microphone" />
+  </Capabilities>
+</Package>

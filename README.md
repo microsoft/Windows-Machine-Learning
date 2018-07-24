@@ -7,16 +7,17 @@ https://docs.microsoft.com/windows/uwp/machine-learning
 
 ## Sample apps
 
-These generic examples show how to use various models and input feeds with Windows ML. 
+These generic examples show how to use various models and input feeds with Windows ML.    We have both C++ native apps and C# UWP samples
 
-- **MNIST**: Uses the MNIST model to recognize a numeric digit drawn by the user.
-- **SqueezeNet**: Uses the SqueezeNet model to detect the predominant object in an image.
-- **WinMLExplorer**: Uses a circuit board defect detection model to detect defects from images or a real-time camera feed.
+
+- **Desktop\SqueezeNet**: a native C++ desktop app that usesthe SqueezeNet model to detect the predominant object in an image.
+- **Store\SqueezeNet**: a UWP C# store app that uses the SqueezeNet model to detect the predominant object in an image.
+- **Store\SnapCandy**: a UWP C# store app that uses the FnsCandy model to make cool images
 
 ## Requirements
 
-- [Windows 10 - Build 17110 or higher](https://www.microsoft.com/en-us/software-download/windowsinsiderpreviewiso)
-- [Windows SDK - Build 17110 or higher](https://www.microsoft.com/en-us/software-download/windowsinsiderpreviewSDK)
+- [Windows 10 - Build 17713 or higher](https://www.microsoft.com/en-us/software-download/windowsinsiderpreviewiso)
+- [Windows SDK - Build 17713 or higher](https://www.microsoft.com/en-us/software-download/windowsinsiderpreviewSDK)
 
 ## Contributing
 

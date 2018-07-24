@@ -1,8 +1,8 @@
 import { Label } from 'office-ui-fabric-react/lib/Label';
 import { Pivot, PivotItem } from 'office-ui-fabric-react/lib/Pivot';
-import { setIconOptions } from 'office-ui-fabric-react/lib/Styling';
 import * as React from 'react';
 
+import { initializeIcons } from './fonts';
 import EditView from './view/edit/View';
 import LearnView from './view/learn/View';
 
@@ -15,10 +15,7 @@ interface IComponentState {
 class App extends React.Component<{}, IComponentState> {
     constructor(props: {}) {
         super(props);
-        // Don't download Office icons and ignore warnings
-        setIconOptions({
-            disableWarnings: true
-        });
+        initializeIcons();
         this.state = {
             tab: 'Edit',
         };

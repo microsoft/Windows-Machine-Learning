@@ -7,7 +7,7 @@ import 'netron/src/view.css';
 import 'npm-font-open-sans/open-sans.css';
 
 import { updateGraph, updateInputs, updateMetadataProps, updateProperties } from '../../../datastore/actionCreators';
-import { ModelProto } from '../../../datastore/proto/modelProto';
+import { ModelProtoSingleton } from '../../../datastore/proto/modelProto';
 import IState from '../../../datastore/state';
 import './fixed-position-override.css';
 
@@ -147,7 +147,7 @@ class NetronComponent extends React.Component<IComponentProperties, IComponentSt
         document.documentElement.style.overflow = 'initial';
 
         const updateDataStore = (model: any) => {
-            ModelProto.set(model._model);
+            ModelProtoSingleton.proto = (model._model);
             // FIXME What to do when model has multiple graphs?
             const graph = model.graphs[0];
             this.props.updateInputs(graph.inputs);

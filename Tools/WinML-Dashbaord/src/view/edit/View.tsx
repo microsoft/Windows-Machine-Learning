@@ -2,7 +2,7 @@ import { DefaultButton } from 'office-ui-fabric-react/lib/Button';
 import * as React from 'react';
 
 import Resizable from '../../components/Resizable';
-import { ModelProto } from '../../datastore/proto/modelProto';
+import { ModelProtoSingleton } from '../../datastore/proto/modelProto';
 import store from '../../datastore/store';
 import LeftPanel from './LeftPanel';
 import * as netron from './netron/Netron';
@@ -17,7 +17,6 @@ interface IComponentState {
 export default class EditView extends React.Component<{}, IComponentState> {
     private tab: React.RefObject<HTMLDivElement> = React.createRef();
     private openFileInput: React.RefObject<HTMLInputElement> = React.createRef();
-    private anchor: React.RefObject<HTMLAnchorElement> = React.createRef();
 
     constructor(props: {}) {
         super(props);
@@ -38,7 +37,6 @@ export default class EditView extends React.Component<{}, IComponentState> {
                 <Resizable>
                     <DefaultButton text='Open file' onClick={this.openFile}/>
                     <DefaultButton text='Save file' onClick={this.saveFile}/>
-                    <a ref={this.anchor} style={{display: 'none'}} />
                     <input type='file' style={{display: 'none'}} accept=".onnx,.pb,.meta,.tflite,.keras,.h5,.json,.mlmodel,.caffemodel" ref={this.openFileInput} />
                     <RightPanel />
                 </Resizable>
@@ -77,20 +75,8 @@ export default class EditView extends React.Component<{}, IComponentState> {
     }
 
     private saveFile = () => {
-        const anchor = this.anchor.current;
-        if (!anchor) {
-            return;
-        }
-        if (anchor.href) {
-            // Release previous object URL
-            URL.revokeObjectURL(anchor.href);
-        }
-        // TODO Move these to the ModelProto class?
         // TODO Refactor data store access
-        ModelProto.setMetadata(store.getState().metadataProps);
-        const blob = new Blob([ModelProto.serialize()], {type: 'application/octet-stream'});
-        anchor.href = URL.createObjectURL(blob);
-        anchor.download = 'model.onnx';
-        anchor.click();
+        ModelProtoSingleton.setMetadata(store.getState().metadataProps);
+        ModelProtoSingleton.download();
     }
 }

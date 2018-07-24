@@ -6,24 +6,10 @@ export class Proto {
         StringStringEntryProto: any,
     };
 
-    public static set(proto: any) {
-        if (!this.getOnnx()) {
-            throw new Error("Can't find protobuf module");
-        }
-        this.proto = proto;
-    }
-
-    public static get() {
-        return this.proto;
-    }
-
-    private static onnx: any;
-    private static proto: any;
-
-    private static getOnnx() {
+    public static getOnnx() {
         if (!this.onnx) {
             if (!browserGlobal.protobuf) {
-                return;
+                throw new Error("Can't find protobuf module");
             }
             this.onnx = browserGlobal.protobuf.roots.onnx.onnx;
             this.types = {
@@ -32,5 +18,21 @@ export class Proto {
             };
         }
         return this.onnx;
+    }
+
+    private static onnx: any;
+
+    public proto: any;
+
+    public download(data: Uint8Array, filename='model.onnx') {
+        const blob = new Blob([data], {type: 'application/octet-stream'});
+        const anchor = document.createElement('a');
+        anchor.href = URL.createObjectURL(blob);
+        anchor.download = filename;
+
+        document.body.appendChild(anchor);
+        anchor.click();
+        document.body.removeChild(anchor);
+        URL.revokeObjectURL(anchor.href);
     }
 }

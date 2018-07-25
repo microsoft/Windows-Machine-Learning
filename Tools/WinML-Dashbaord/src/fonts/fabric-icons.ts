@@ -18,7 +18,9 @@ export function initializeIcons(
       src: `url('${baseUrl}fabric-icons.woff') format('woff')`
     },
     icons: {
-      'ChevronDown': '\uE70D'
+      'Add': '\uE710',
+      'Cancel': '\uE711',
+      'ChevronDown': '\uE70D',
     },
     style: {
       MozOsxFontSmoothing: 'grayscale',

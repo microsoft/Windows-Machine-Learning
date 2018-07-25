@@ -15,4 +15,4 @@ export function initializeIcons(
   registerIconAliases();
 }
 
-export { IconNames } from './IconNames';
+export { IconNames } from './iconNames';

@@ -98,9 +98,7 @@ class KeyValueEditorComponent extends React.Component<IComponentProperties, ICom
     private validateSchema = (schema: any, data: { [key: string]: string }) => {
         const keyErrors = {};
         const valueErrors = {};
-        const lowerCaseData = {...data};
-        this.toLowerCaseObject(lowerCaseData);
-        if (!ajv.validate(schema, lowerCaseData)) {
+        if (!ajv.validate(schema, this.toLowerCaseObject(data))) {
             ajv.errors!.forEach((error: Ajv.ErrorObject) => {
                 if (error.schemaPath.startsWith('#/properties/')) {
                     valueErrors[error.schemaPath.split('/', 3)[2]] = error.message!;
@@ -149,11 +147,11 @@ class KeyValueEditorComponent extends React.Component<IComponentProperties, ICom
     }
 
     private toLowerCaseObject = (obj: { [key: string]: string }) => {
-        Object.entries(obj).forEach((keyValue: [string, string]) => {
+        return Object.entries(obj).reduce((acc: {}, keyValue: [string, string]) => {
             const [key, value] = keyValue;
-            obj[key] = value.toLowerCase();
-            this.renameKey(obj, key, key.toLowerCase());
-        });
+            acc[key.toLowerCase()] = value.toLowerCase();
+            return acc;
+        }, {});
     }
 
     private addMetadataProp = () => {

@@ -3,6 +3,7 @@ export default {
     // FIXME be case insensitive
     type: 'object',
 
+    additionalProperties: false,
     properties: {
         'Image.BitmapPixelFormat': {
             enum: [

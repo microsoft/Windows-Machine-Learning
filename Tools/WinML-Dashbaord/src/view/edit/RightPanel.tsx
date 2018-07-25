@@ -22,7 +22,7 @@ class RightPanelComponent extends React.Component<IComponentProperties, {}> {
             <div>
                 <Label>Model</Label>
                 <div className='Panel'>
-                    <Collapsible label='Model metadata'>
+                    <Collapsible label='Model metadata properties'>
                         <KeyValueEditor actionCreator={updateMetadataProps} getState={this.getMetadataPropsFromState} schema={MetadataSchema} />
                     </Collapsible>
                 </div>

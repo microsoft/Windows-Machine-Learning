@@ -12,14 +12,12 @@ export default {
                 'Rgba8',
                 'Bgra8',
             ],
-            type: 'string',
         },
         'Image.ColorSpaceGamma': {
             enum: [
                 'Linear',
                 'SRGB',
             ],
-            type: 'string',
         },
         'Image.NominalPixelRange': {
             enum: [
@@ -28,7 +26,6 @@ export default {
                 'Normalized_1_1',
                 'NominalRange_16_235',
             ],
-            type: 'string',
         },
         model_author: {
             type: 'string',

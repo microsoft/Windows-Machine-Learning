@@ -1,0 +1,15 @@
+#KeyValueItem {
+    display: flex;
+}
+
+.KeyValueBox {
+    flex: 1;
+}
+
+.KeyValueSeparator {
+    padding: 7px 4px;
+}
+
+.KeyValueEditorButton {
+    width: 50%;
+}

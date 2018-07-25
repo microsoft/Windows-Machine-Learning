@@ -21,12 +21,12 @@
   "exclude": [
     "acceptance-tests",
     "build",
+    "deps",
     "jest",
     "node_modules",
     "public",
     "scripts",
     "src/setupTests.ts",
-    "static",
     "webpack",
     "Windows ML Dashboard*",
     "**/*.spec.ts"

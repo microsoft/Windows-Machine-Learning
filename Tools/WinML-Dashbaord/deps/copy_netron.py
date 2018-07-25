@@ -9,7 +9,7 @@ import subprocess
 
 @patch('setuptools.setup')
 def get_package_data(mock_setup):
-    import static.Netron.setup as netron_setup
+    import Netron.setup as netron_setup
     package_data = mock_setup.call_args[1]['package_data']['netron']
     return (package_data, netron_setup.node_dependencies[0][1])
 
@@ -46,7 +46,7 @@ def minify(input_file, output_file):
 
 
 def main():
-    netron = Path('static/Netron')
+    netron = Path('deps/Netron')
     src = netron / 'src'
     package_data, node_dependencies = get_package_data()
     print('Netron package files:\n{}'.format(' '.join(package_data)))

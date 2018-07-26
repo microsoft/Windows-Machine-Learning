@@ -1,6 +1,7 @@
 import * as Ajv from 'ajv';
 import { DefaultButton } from 'office-ui-fabric-react/lib/Button';
 import { ComboBox, IComboBoxOption } from 'office-ui-fabric-react/lib/ComboBox';
+import { Icon } from 'office-ui-fabric-react/lib/Icon';
 import * as React from 'react';
 import { connect } from 'react-redux';
 
@@ -52,6 +53,11 @@ class KeyValueEditorComponent extends React.Component<IComponentProperties, ICom
                     const newValue = value || option!.text;
                     this.props.updateKeyValueObject!({ ...this.props.keyValueObject!, [x]: newValue });
                 };
+                const removeCallback = () => {
+                    const newObject = { ...this.props.keyValueObject! };
+                    delete newObject[x];
+                    this.props.updateKeyValueObject!(newObject);
+                }
 
                 let knownValues = [];
                 const property = schemaEntries.find((prop) => this.areSameKeys(prop[0], x)) as [string, any];
@@ -61,6 +67,7 @@ class KeyValueEditorComponent extends React.Component<IComponentProperties, ICom
 
                 acc.push(
                     <div key={x} className='KeyValueItem'>
+                        <Icon className='RemoveIcon' iconName='Cancel' onClick={removeCallback} />
                         <ComboBox
                             className='KeyValueBox'
                             allowFreeform={true}
@@ -85,7 +92,6 @@ class KeyValueEditorComponent extends React.Component<IComponentProperties, ICom
         }
 
         const addButtonDisabled = !(this.props.keyValueObject && Object.keys(this.props.keyValueObject).every((x) => !!x));
-        const removeButtonDisabled = !(this.props.keyValueObject && Object.keys(this.props.keyValueObject).length);
         const getSplitButtonClassNames = () => ({ splitButtonContainer: '.KeyValueEditorButtonContainer' });
 
         return (
@@ -96,16 +102,15 @@ class KeyValueEditorComponent extends React.Component<IComponentProperties, ICom
                     iconProps={{ iconName: 'Add' }}
                     disabled={addButtonDisabled}
                     onClick={this.addMetadataProp}
-                    split={true}
-                    menuProps={{
+                    split={!!knownKeys.length}
+                    menuProps={knownKeys.length ? {
                         items: options,
                         onItemClick: this.addMetadataProp,
-                    }}
+                    } : undefined}
                     // The Office UI includes a spam element in it when split = true, which is not of display type block
                     // and ignores the parent width. We do a workaround to get it to 100% of the parent width.
                     getSplitButtonClassNames={getSplitButtonClassNames}
                 />
-                <DefaultButton className='KeyValueEditorButton' iconProps={{ iconName: 'Cancel' }} disabled={removeButtonDisabled} onClick={this.removeMetadataProp} />
             </div>
         );
     }
@@ -174,13 +179,6 @@ class KeyValueEditorComponent extends React.Component<IComponentProperties, ICom
         if (this.props.keyValueObject) {
             this.props.updateKeyValueObject!({ ...this.props.keyValueObject, [key]: ''});
         }
-    };
-
-    private removeMetadataProp = () => {
-        const newObject = { ...this.props.keyValueObject! };
-        const keys = Object.keys(newObject);
-        delete newObject[keys[keys.length - 1]];
-        this.props.updateKeyValueObject!(newObject);
     };
 }
 

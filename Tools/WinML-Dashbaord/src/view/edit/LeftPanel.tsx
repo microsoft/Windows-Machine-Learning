@@ -24,7 +24,7 @@ export default class LeftPanel extends React.Component {
         }
         return (
             <div>
-                <Label className='PanelName'>Layer</Label>
+                <Label className='PanelName'>Node</Label>
                 <div className='Panel'>
                     <Collapsible label='Tensor shapes'>
                         <Label>Inputs</Label>

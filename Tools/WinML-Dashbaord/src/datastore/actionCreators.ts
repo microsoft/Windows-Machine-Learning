@@ -11,6 +11,11 @@ export const updateInputs = (inputs: any) => ({
     type: actions.UPDATE_INPUTS,
 })
 
+export const updateOutputs = (outputs: any) => ({
+    outputs,
+    type: actions.UPDATE_OUTPUTS,
+})
+
 export const updateMetadataProps = (metadataProps: IMetadataProps) => ({
     metadataProps,
     type: actions.UPDATE_METADATA_PROPS,

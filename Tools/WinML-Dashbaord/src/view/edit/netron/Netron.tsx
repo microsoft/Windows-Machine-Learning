@@ -6,7 +6,7 @@ import 'netron/src/view-sidebar.css';
 import 'netron/src/view.css';
 import 'npm-font-open-sans/open-sans.css';
 
-import { updateGraph, updateInputs, updateMetadataProps, updateProperties } from '../../../datastore/actionCreators';
+import { updateGraph, updateInputs, updateMetadataProps, updateOutputs, updateProperties } from '../../../datastore/actionCreators';
 import { ModelProtoSingleton } from '../../../datastore/proto/modelProto';
 import IState from '../../../datastore/state';
 import './fixed-position-override.css';
@@ -19,6 +19,7 @@ interface IComponentProperties {
     // Redux properties
     updateGraph: typeof updateGraph,
     updateInputs: typeof updateInputs,
+    updateOutputs: typeof updateOutputs,
     updateMetadataProps: typeof updateMetadataProps,
     updateProperties: typeof updateProperties,
 }
@@ -76,7 +77,8 @@ class NetronComponent extends React.Component<IComponentProperties, IComponentSt
 
     public render() {
         return (
-            <div style={{height: '100%'}}>
+            // Instead of hardcoding the page, a div with dangerouslySetInnerHTML could be used to include Netron's content
+            <div className='netron-root'>
                 <div id='welcome' className='background' style={{display: 'block'}}>
                     <div className='center logo'>
                         <img className='logo absolute' src='logo.svg' />
@@ -150,6 +152,7 @@ class NetronComponent extends React.Component<IComponentProperties, IComponentSt
             // FIXME What to do when model has multiple graphs?
             const graph = model.graphs[0];
             this.props.updateInputs(graph.inputs);
+            this.props.updateOutputs(graph.outputs);
             // Normalize graph
             // const normalizedGraph: Array<{}> = [];
             // for (const node of graph.nodes) {
@@ -192,6 +195,7 @@ const mapDispatchToProps = {
     updateGraph,
     updateInputs,
     updateMetadataProps,
+    updateOutputs,
     updateProperties,
 }
 

@@ -1,4 +1,9 @@
 /* Overrides fixed elements in Netron */
+.netron-root {
+    all: initial;
+    height: 100%;
+}
+
 .background {
     position: static;
 }
@@ -9,4 +14,5 @@
 
 .sidebar {
     position: absolute;
+    overflow: auto;
 }

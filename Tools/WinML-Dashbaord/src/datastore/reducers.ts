@@ -11,6 +11,8 @@ export function rootReducer(state: IState, action: actions.IAction) {
             return { ...state, inputs: action.inputs };
         case actions.UPDATE_METADATA_PROPS:
             return { ...state, metadataProps: action.metadataProps };
+        case actions.UPDATE_OUTPUTS:
+            return { ...state, outputs: action.outputs };
         case actions.UPDATE_PROPERTIES:
             return { ...state, properties: action.properties };
         default:

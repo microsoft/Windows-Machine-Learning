@@ -1,15 +1,15 @@
-#KeyValueItem {
+.KeyValueItem {
     display: flex;
-}
-
-.KeyValueBox {
-    flex: 1;
-}
-
-.KeyValueSeparator {
-    padding: 7px 4px;
 }
 
 .KeyValueEditorButton {
     width: 50%;
+}
+
+.KeyValueEditorButtonContainer {
+    width: 100%;
+}
+
+.KeyValueBox {
+    flex: 1;
 }

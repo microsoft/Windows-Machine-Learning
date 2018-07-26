@@ -30,7 +30,6 @@ interface IComponentState {
 }
 
 class NetronComponent extends React.Component<IComponentProperties, IComponentState> {
-    private root: React.RefObject<HTMLDivElement>;
     private revokeModelLoadedProxy: () => void;
 
     constructor(props: IComponentProperties) {
@@ -77,7 +76,7 @@ class NetronComponent extends React.Component<IComponentProperties, IComponentSt
 
     public render() {
         return (
-            <div ref={this.root} style={{height: '100%'}}>
+            <div style={{height: '100%'}}>
                 <div id='welcome' className='background' style={{display: 'block'}}>
                     <div className='center logo'>
                         <img className='logo absolute' src='logo.svg' />

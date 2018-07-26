@@ -34,13 +34,14 @@ class KeyValueEditorComponent extends React.Component<IComponentProperties, ICom
 
     public render() {
         let rows = [];
+        const knownKeys = Object.keys(this.props.schema.properties).filter(
+            // Don't suggesting adding keys that already exist
+            (x) => Object.keys(this.props.keyValueObject || {}).every((key) => !this.areSameKeys(key, x)));
+        const options = knownKeys.map((key: string) => ({ key, text: key }));
+
         if (this.props.keyValueObject) {
             const [keyErrors, valueErrors] = this.validateSchema(this.state.caseInsensitiveSchema, this.props.keyValueObject);
             const schemaEntries = Object.entries(this.props.schema.properties);
-            const knownKeys = Object.keys(this.props.schema.properties).filter(
-                // Don't suggesting adding keys that already exist
-                (x) => Object.keys(this.props.keyValueObject!).every((key) => !this.areSameKeys(key, x)));
-            const options = knownKeys.map((key: string) => ({ key, text: key }));
 
             rows = Object.keys(this.props.keyValueObject!).reduce((acc: any[], x: string) => {
                 const keyChangedCallback = (option?: IComboBoxOption, index?: number, value?: string) => {
@@ -59,7 +60,7 @@ class KeyValueEditorComponent extends React.Component<IComponentProperties, ICom
                 }
 
                 acc.push(
-                    <div key={x} id='KeyValueItem'>
+                    <div key={x} className='KeyValueItem'>
                         <ComboBox
                             className='KeyValueBox'
                             allowFreeform={true}
@@ -83,14 +84,28 @@ class KeyValueEditorComponent extends React.Component<IComponentProperties, ICom
             }, []);
         }
 
-        const addDisabled = !(this.props.keyValueObject && Object.keys(this.props.keyValueObject).every((x) => !!x))
-        const removeDisabled = !(this.props.keyValueObject && Object.keys(this.props.keyValueObject).length)
+        const addButtonDisabled = !(this.props.keyValueObject && Object.keys(this.props.keyValueObject).every((x) => !!x));
+        const removeButtonDisabled = !(this.props.keyValueObject && Object.keys(this.props.keyValueObject).length);
+        const getSplitButtonClassNames = () => ({ splitButtonContainer: '.KeyValueEditorButtonContainer' });
 
         return (
             <div>
                 {rows}
-                <DefaultButton className='KeyValueEditorButton' iconProps={{ iconName: 'Add' }} disabled={addDisabled} onClick={this.addMetadataProp} />
-                <DefaultButton className='KeyValueEditorButton' iconProps={{ iconName: 'Cancel' }} disabled={removeDisabled} onClick={this.removeMetadataProp} />
+                <DefaultButton
+                    className='KeyValueEditorButtonContainer'
+                    iconProps={{ iconName: 'Add' }}
+                    disabled={addButtonDisabled}
+                    onClick={this.addMetadataProp}
+                    split={true}
+                    menuProps={{
+                        items: options,
+                        onItemClick: this.addMetadataProp,
+                    }}
+                    // The Office UI includes a spam element in it when split = true, which is not of display type block
+                    // and ignores the parent width. We do a workaround to get it to 100% of the parent width.
+                    getSplitButtonClassNames={getSplitButtonClassNames}
+                />
+                <DefaultButton className='KeyValueEditorButton' iconProps={{ iconName: 'Cancel' }} disabled={removeButtonDisabled} onClick={this.removeMetadataProp} />
             </div>
         );
     }
@@ -154,9 +169,10 @@ class KeyValueEditorComponent extends React.Component<IComponentProperties, ICom
         }, {});
     }
 
-    private addMetadataProp = () => {
+    private addMetadataProp = (event: any, item?: any) => {
+        const key = item && item.key || '';
         if (this.props.keyValueObject) {
-            this.props.updateKeyValueObject!({ ...this.props.keyValueObject, '': ''});
+            this.props.updateKeyValueObject!({ ...this.props.keyValueObject, [key]: ''});
         }
     };
 

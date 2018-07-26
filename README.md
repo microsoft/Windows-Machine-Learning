@@ -2,8 +2,7 @@
 
 This repo contains sample apps that demonstrate how to use Windows ML to build machine learning applications for Windows 10.
 
-For tutorials, how-tos, and additional information, see the Windows ML documentation:
-https://docs.microsoft.com/windows/uwp/machine-learning
+For tutorials, how-tos, and additional information, see the [Windows ML documentation](https://review.docs.microsoft.com/en-us/windows/ai/?branch=master):
 
 ## Pre-release APIs
 
@@ -13,9 +12,11 @@ These samples use the [Windows.AI.MachineLearning APIs](https://docs.microsoft.c
 
 These generic examples show how to use various models and input feeds with Windows ML. We have both C++ native apps and C# UWP samples
 
-- **Desktop\SqueezeNet**: a native C++ desktop app that usesthe SqueezeNet model to detect the predominant object in an image.
-- **Store\SqueezeNet**: a UWP C# store app that uses the SqueezeNet model to detect the predominant object in an image.
-- **Store\SnapCandy**: a UWP C# store app that uses the FnsCandy model to make cool images
+- **FNSCandyStyleTransfer\UWP\cs**: a UWP C# app that uses the FNS-Candy style transfer model to make a cool image.
+- **SqueezeNetObjectDetection\UWP\cs**: a UWP C# app that uses the SqueezeNet model to detect the predominant object in an image.
+- **SqueezeNetObjectDetection\Desktop\cpp**: a classic desktop C++ app that usesthe SqueezeNet model to detect the predominant object in an image.
+- **MNIST\UWP\cs**: a UWP C# app that uses the MNIST model to detect numberic characters.
+- **MNIST\UWP\cx**: a UWP C++/CX app that uses the MNIST model to detect numberic characters.
 
 ## Requirements
 

@@ -5,10 +5,13 @@ This repo contains sample apps that demonstrate how to use Windows ML to build m
 For tutorials, how-tos, and additional information, see the Windows ML documentation:
 https://docs.microsoft.com/windows/uwp/machine-learning
 
+## Pre-release APIs
+
+These samples use the [Windows.AI.MachineLearning APIs](https://docs.microsoft.com/uwp/api/windows.ai.machinelearning), a pre-released product which may be substantially modified before it’s commercially released. Microsoft makes no warranties, express or implied, with respect to the information provided here.
+
 ## Sample apps
 
-These generic examples show how to use various models and input feeds with Windows ML.    We have both C++ native apps and C# UWP samples
-
+These generic examples show how to use various models and input feeds with Windows ML. We have both C++ native apps and C# UWP samples
 
 - **Desktop\SqueezeNet**: a native C++ desktop app that usesthe SqueezeNet model to detect the predominant object in an image.
 - **Store\SqueezeNet**: a UWP C# store app that uses the SqueezeNet model to detect the predominant object in an image.

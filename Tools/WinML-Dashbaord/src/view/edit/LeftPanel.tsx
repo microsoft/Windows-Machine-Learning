@@ -1,13 +1,32 @@
 import { Label } from 'office-ui-fabric-react/lib/Label';
 import { TextField } from 'office-ui-fabric-react/lib/TextField';
 import * as React from 'react';
+import { connect } from 'react-redux';
 
 import Collapsible from '../../components/Collapsible';
+import Resizable from '../../components/Resizable';
+import IState from '../../datastore/state';
 
 import './Panel.css';
 
-export default class LeftPanel extends React.Component {
+interface IComponentProperties {
+    // Redux properties
+    graph?: any,
+}
+
+class LeftPanel extends React.Component<IComponentProperties, {}> {
     public render() {
+        if (!this.props.graph) {
+            return null;
+        }
+        return (
+            <Resizable>
+                {this.getContent()}
+            </Resizable>
+        );
+    }
+
+    private getContent() {
         const inputs = [];
         inputs.push('stub');
         const inputsForm = [];
@@ -36,3 +55,9 @@ export default class LeftPanel extends React.Component {
         );
     }
 }
+
+const mapStateToProps = (state: IState) => ({
+        graph: state.graph,
+})
+
+export default connect(mapStateToProps)(LeftPanel);

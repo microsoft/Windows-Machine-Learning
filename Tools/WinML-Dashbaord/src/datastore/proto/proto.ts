@@ -11,6 +11,9 @@ export class Proto {
             if (!browserGlobal.protobuf) {
                 throw new Error("Can't find protobuf module");
             }
+            if (!browserGlobal.protobuf.roots.onnx) {
+                return;
+            }
             this.onnx = browserGlobal.protobuf.roots.onnx.onnx;
             this.types = {
                 ModelProto: this.onnx.ModelProto,

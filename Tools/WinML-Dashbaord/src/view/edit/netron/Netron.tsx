@@ -148,22 +148,31 @@ class NetronComponent extends React.Component<IComponentProperties, IComponentSt
         document.documentElement.style.overflow = 'initial';
 
         const updateDataStore = (model: any) => {
-            ModelProtoSingleton.proto = (model._model);
+            ModelProtoSingleton.proto = null;
             // FIXME What to do when model has multiple graphs?
             const graph = model.graphs[0];
-            this.props.updateInputs(graph.inputs);
-            this.props.updateOutputs(graph.outputs);
-            // Normalize graph
-            // const normalizedGraph: Array<{}> = [];
-            // for (const node of graph.nodes) {
-            //     normalizedGraph.push({
-            //         inputs: node.inputs,
-            //         // ... Add other properties of interest
-            //     });
-            // }
-            // this.props.updateGraph(normalizedGraph);
-            this.props.updateMetadataProps(this.propsToObject(model._metadataProps));
-            this.props.updateProperties(this.propsToObject(model.properties));
+            if (graph.constructor.name === 'OnnxGraph') {
+                this.props.updateInputs(graph.inputs);
+                this.props.updateOutputs(graph.outputs);
+                // Normalize graph
+                // const normalizedGraph: Array<{}> = [];
+                // for (const node of graph.nodes) {
+                //     normalizedGraph.push({
+                //         inputs: node.inputs,
+                //         // ... Add other properties of interest
+                //     });
+                // }
+                this.props.updateGraph(true);  // TODO
+                this.props.updateMetadataProps(this.propsToObject(model._metadataProps));
+                this.props.updateProperties(this.propsToObject(model.properties));
+            } else {
+                this.props.updateInputs(null);
+                this.props.updateOutputs(null);
+                this.props.updateGraph(null);
+                this.props.updateMetadataProps({});
+                this.props.updateProperties({});
+            }
+            ModelProtoSingleton.proto = (model._model);
         };
 
         // Install proxy on browserGlobal.view.loadBuffer and update the data store
@@ -186,9 +195,7 @@ class NetronComponent extends React.Component<IComponentProperties, IComponentSt
 }
 
 const mapStateToProps = (state: IState) => ({
-    graph: state.graph,
-    metadataProps: state.metadataProps,
-    properties: state.properties,
+    graph: state.graph,  // Unused for now, will be used when editing the graph (e.g. input shapes) is supported
 });
 
 const mapDispatchToProps = {

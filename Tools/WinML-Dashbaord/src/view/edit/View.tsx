@@ -27,9 +27,7 @@ export default class EditView extends React.Component<{}, IComponentState> {
     public render() {
         return (
             <div id='EditView' ref={this.tab}>
-                <Resizable>
-                    <LeftPanel />
-                </Resizable>
+                <LeftPanel />
                 <div className='Netron'>
                     <netron.Netron file={this.state.file} />
                 </div>

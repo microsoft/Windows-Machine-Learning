@@ -21,3 +21,8 @@
 .Shape {
     display: inline-block;
 }
+
+.FormatIsNotOnnx {
+    margin: 10px;
+    font-size: medium;
+}

@@ -12,12 +12,18 @@ import './Panel.css';
 
 interface IComponentProperties {
     // Redux properties
+    graph: any,
     metadataProps: IMetadataProps,
     updateMetadataProps: typeof updateMetadataProps,
 }
 
-class RightPanelComponent extends React.Component<IComponentProperties, {}> {
+class RightPanel extends React.Component<IComponentProperties, {}> {
     public render() {
+        if (this.props.graph === null) {
+            return (
+                <Label className='FormatIsNotOnnx'>To support editing, convert the model to ONNX first.</Label>
+            );
+        }
         return (
             <div>
                 <Label>Model</Label>
@@ -34,6 +40,7 @@ class RightPanelComponent extends React.Component<IComponentProperties, {}> {
 }
 
 const mapStateToProps = (state: IState) => ({
+    graph: state.graph,
     metadataProps: state.metadataProps,
 });
 
@@ -41,5 +48,4 @@ const mapDispatchToProps = {
     updateMetadataProps,
 }
 
-const RightPanel = connect(mapStateToProps, mapDispatchToProps)(RightPanelComponent);
-export default RightPanel;
+export default connect(mapStateToProps, mapDispatchToProps)(RightPanel);

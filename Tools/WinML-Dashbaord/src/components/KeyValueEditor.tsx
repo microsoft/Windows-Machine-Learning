@@ -12,7 +12,7 @@ import './KeyValueEditor.css';
 const ajv = new Ajv({ allErrors: true, verbose: true });
 
 interface IComponentProperties {
-    actionCreator: (keyValueObject: { [key: string]: string }) => {},
+    actionCreator?: (keyValueObject: { [key: string]: string }) => {},
     getState: (state: IState) => { [key: string]: string },
     schema: any,
 
@@ -36,15 +36,16 @@ class KeyValueEditorComponent extends React.Component<IComponentProperties, ICom
     }
 
     public render() {
-        let rows = [];
-        const knownKeys = Object.keys(this.props.schema.properties).filter(
+        const properties = this.props.schema.properties || {};
+        const knownKeys = Object.keys(properties).filter(
             // Don't suggesting adding keys that already exist
             (x) => Object.keys(this.props.keyValueObject || {}).every((key) => !this.areSameKeys(key, x)));
         const options = knownKeys.map((key: string) => ({ key, text: key }));
+        let rows = [];
 
         if (this.props.keyValueObject) {
             const [keyErrors, valueErrors] = this.validateSchema(this.state.caseInsensitiveSchema, this.props.keyValueObject);
-            const schemaEntries = Object.entries(this.props.schema.properties);
+            const schemaEntries = Object.entries(properties);
 
             rows = Object.keys(this.props.keyValueObject!).reduce((acc: any[], x: string) => {
                 const lowerCaseKey = x.toLowerCase();
@@ -81,13 +82,16 @@ class KeyValueEditorComponent extends React.Component<IComponentProperties, ICom
                 const keyErrorsState = this.state.keyErrors[lowerCaseKey];
                 acc.push(
                     <div key={`${x}${keyErrorsState}`} className='KeyValueItem'>
-                        <Icon className='RemoveIcon' iconName='Cancel' onClick={removeCallback} />
+                        { this.props.actionCreator &&
+                            <Icon className='RemoveIcon' iconName='Cancel' onClick={removeCallback} />
+                        }
                         <ComboBox
                             className='KeyValueBox'
                             allowFreeform={true}
                             text={x}
                             errorMessage={keyErrorsState || keyErrors[lowerCaseKey]}
                             options={options}
+                            disabled={!this.props.actionCreator}
                             onChanged={keyChangedCallback}
                         />
                         <span className='KeyValueSeparator'>=</span>
@@ -97,6 +101,7 @@ class KeyValueEditorComponent extends React.Component<IComponentProperties, ICom
                             text={this.props.keyValueObject![x]}
                             errorMessage={valueErrors[lowerCaseKey]}
                             options={knownValues}
+                            disabled={!this.props.actionCreator}
                             onChanged={valueChangedCallback}
                         />
                     </div>
@@ -111,20 +116,22 @@ class KeyValueEditorComponent extends React.Component<IComponentProperties, ICom
         return (
             <div>
                 {rows}
-                <DefaultButton
-                    className='KeyValueEditorButtonContainer'
-                    iconProps={{ iconName: 'Add' }}
-                    disabled={addButtonDisabled}
-                    onClick={this.addMetadataProp}
-                    split={!!knownKeys.length}
-                    menuProps={knownKeys.length ? {
-                        items: options,
-                        onItemClick: this.addMetadataProp,
-                    } : undefined}
-                    // The Office UI includes a spam element in it when split = true, which is not of display type block
-                    // and ignores the parent width. We do a hack to get it to 100% of the parent width.
-                    getSplitButtonClassNames={getSplitButtonClassNames}
-                />
+                { this.props.actionCreator &&
+                    <DefaultButton
+                        className='KeyValueEditorButtonContainer'
+                        iconProps={{ iconName: 'Add' }}
+                        disabled={addButtonDisabled}
+                        onClick={this.addMetadataProp}
+                        split={!!knownKeys.length}
+                        menuProps={knownKeys.length ? {
+                            items: options,
+                            onItemClick: this.addMetadataProp,
+                        } : undefined}
+                        // The Office UI includes a spam element in it when split = true, which is not of display type block
+                        // and ignores the parent width. We do a hack to get it to 100% of the parent width.
+                        getSplitButtonClassNames={getSplitButtonClassNames}
+                    />
+                }
             </div>
         );
     }
@@ -169,7 +176,7 @@ class KeyValueEditorComponent extends React.Component<IComponentProperties, ICom
         // so we convert the schema and object being validated to lowercase before validating.
         // This code assumes the object schema has a "properties" property.
         const lowerCaseSchema = JSON.parse(JSON.stringify(schema));
-        const properties = lowerCaseSchema.properties;
+        const properties = lowerCaseSchema.properties || {};
         Object.keys(properties).forEach((key: string) => {
             const propertyEnum = properties[key].enum;
             if (propertyEnum) {
@@ -201,7 +208,7 @@ const mapStateToProps = (state: IState, ownProps: IComponentProperties) => ({
 });
 
 const mapDispatchToProps = (dispatch: any, ownProps: IComponentProperties) => ({
-    updateKeyValueObject: (keyValueObject: { [key: string]: string }) => dispatch(ownProps.actionCreator(keyValueObject)),
+    updateKeyValueObject: (keyValueObject: { [key: string]: string }) => dispatch(ownProps.actionCreator!(keyValueObject)),
 })
 
 const KeyValueEditor = connect(mapStateToProps, mapDispatchToProps)(KeyValueEditorComponent as any);

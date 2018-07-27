@@ -24,11 +24,15 @@ class RightPanel extends React.Component<IComponentProperties, {}> {
                 <Label className='FormatIsNotOnnx'>To support editing, convert the model to ONNX first.</Label>
             );
         }
+
         return (
             <div>
                 <Label>Model</Label>
                 <div className='Panel'>
-                    <Collapsible label='Model metadata properties'>
+                    <Collapsible label='Properties'>
+                        <KeyValueEditor getState={this.getPropertiesFromState} schema={{ type: 'object' }} />
+                    </Collapsible>
+                    <Collapsible label='Metadata properties'>
                         <KeyValueEditor actionCreator={updateMetadataProps} getState={this.getMetadataPropsFromState} schema={MetadataSchema} />
                     </Collapsible>
                 </div>
@@ -37,11 +41,13 @@ class RightPanel extends React.Component<IComponentProperties, {}> {
     }
 
     private getMetadataPropsFromState = (state: IState) => state.metadataProps;
+    private getPropertiesFromState = (state: IState) => state.properties;
 }
 
 const mapStateToProps = (state: IState) => ({
     graph: state.graph,
     metadataProps: state.metadataProps,
+    properties: state.properties,
 });
 
 const mapDispatchToProps = {

@@ -16,11 +16,8 @@ interface IComponentProperties {
 
 class LeftPanel extends React.Component<IComponentProperties, {}> {
     public render() {
-        if (!this.props.graph) {
-            return null;
-        }
         return (
-            <Resizable>
+            <Resizable visible={!!this.props.graph}>
                 {this.getContent()}
             </Resizable>
         );

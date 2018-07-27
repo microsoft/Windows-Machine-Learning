@@ -148,6 +148,7 @@ class NetronComponent extends React.Component<IComponentProperties, IComponentSt
         document.documentElement.style.overflow = 'initial';
 
         const updateDataStore = (model: any) => {
+            const proto = model._model
             ModelProtoSingleton.proto = null;
             // FIXME What to do when model has multiple graphs?
             const graph = model.graphs[0];
@@ -172,7 +173,7 @@ class NetronComponent extends React.Component<IComponentProperties, IComponentSt
                 this.props.updateMetadataProps({});
                 this.props.updateProperties({});
             }
-            ModelProtoSingleton.proto = (model._model);
+            ModelProtoSingleton.proto = proto;
         };
 
         // Install proxy on browserGlobal.view.loadBuffer and update the data store

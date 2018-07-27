@@ -19,10 +19,15 @@ export default class Collapsible extends React.Component<IComponentProperties, I
     }
 
     public render() {
+        const style: React.CSSProperties = {};
+        if (!this.state.visible) {
+            style.maxHeight = '0px';
+            style.visibility = 'hidden';
+        }
         return (
-            <div className='Collapsible'>
+            <div>
                 <Label className='Label' onClick={this.toggle}><pre>{this.state.visible && '-' || '+'}</pre>{this.props.label}</Label>
-                <div className='Content' style={{display: this.state.visible && 'block' || 'none'}}>
+                <div className='Content' style={style}>
                     {this.props.children}
                 </div>
             </div>

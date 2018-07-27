@@ -14,6 +14,8 @@ export function rootReducer(state: IState, action: actions.IAction) {
             return { ...state, outputs: action.outputs };
         case actions.UPDATE_PROPERTIES:
             return { ...state, properties: action.properties };
+        case actions.UPDATE_SELECTED_NODE:
+            return { ...state, selectedNode: action.selectedNode };
         default:
             return state;
     }

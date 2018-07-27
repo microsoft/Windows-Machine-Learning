@@ -12,12 +12,13 @@ import './Panel.css';
 interface IComponentProperties {
     // Redux properties
     graph?: any,
+    selectedNode?: string,
 }
 
 class LeftPanel extends React.Component<IComponentProperties, {}> {
     public render() {
         return (
-            <Resizable visible={!!this.props.graph}>
+            <Resizable visible={!!(this.props.graph && this.props.selectedNode)}>
                 {this.getContent()}
             </Resizable>
         );
@@ -40,7 +41,7 @@ class LeftPanel extends React.Component<IComponentProperties, {}> {
         }
         return (
             <div>
-                <Label className='PanelName'>Node</Label>
+                <Label className='PanelName'>{`Node: ${this.props.selectedNode || ''}`}</Label>
                 <div className='Panel'>
                     <Collapsible label='Tensor shapes'>
                         <Label>Inputs</Label>
@@ -55,6 +56,7 @@ class LeftPanel extends React.Component<IComponentProperties, {}> {
 
 const mapStateToProps = (state: IState) => ({
         graph: state.graph,
+        selectedNode: state.selectedNode,
 })
 
 export default connect(mapStateToProps)(LeftPanel);

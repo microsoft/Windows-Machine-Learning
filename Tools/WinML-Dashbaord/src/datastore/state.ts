@@ -10,4 +10,5 @@ export default interface IState {
     graph: any,
     metadataProps: IMetadataProps,
     properties: IProperties,
+    selectedNode: string,
 }

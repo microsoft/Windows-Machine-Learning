@@ -25,3 +25,8 @@ export const updateProperties = (properties: IProperties) => ({
     properties,
     type: actions.UPDATE_PROPERTIES,
 })
+
+export const updateSelectedNode = (selectedNode?: string) => ({
+    selectedNode,
+    type: actions.UPDATE_SELECTED_NODE,
+})

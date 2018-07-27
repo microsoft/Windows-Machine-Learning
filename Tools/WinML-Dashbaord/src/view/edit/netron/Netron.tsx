@@ -6,7 +6,7 @@ import 'netron/src/view-sidebar.css';
 import 'netron/src/view.css';
 import 'npm-font-open-sans/open-sans.css';
 
-import { updateGraph, updateInputs, updateMetadataProps, updateOutputs, updateProperties } from '../../../datastore/actionCreators';
+import { updateGraph, updateInputs, updateMetadataProps, updateOutputs, updateProperties, updateSelectedNode } from '../../../datastore/actionCreators';
 import { ModelProtoSingleton } from '../../../datastore/proto/modelProto';
 import IState from '../../../datastore/state';
 import './fixed-position-override.css';
@@ -22,6 +22,7 @@ interface IComponentProperties {
     updateOutputs: typeof updateOutputs,
     updateMetadataProps: typeof updateMetadataProps,
     updateProperties: typeof updateProperties,
+    updateSelectedNode: typeof updateSelectedNode,
 }
 
 interface IComponentState {
@@ -48,10 +49,10 @@ class NetronComponent extends React.Component<IComponentProperties, IComponentSt
             const s = document.createElement('script');
             s.src = "netron_bundle.js";
             s.async = true;
-            s.onload = this.installModelLoadedProxy;
+            s.onload = this.onNetronInitialized;
             document.body.appendChild(s);
         } else {
-            this.installModelLoadedProxy();
+            this.onNetronInitialized();
         }
     }
 
@@ -144,54 +145,71 @@ class NetronComponent extends React.Component<IComponentProperties, IComponentSt
         }, {});
     }
 
-    private installModelLoadedProxy = () => {
+    private onNetronInitialized = () => {
+        // Reset document overflow property
         document.documentElement.style.overflow = 'initial';
+        this.installModelLoadedProxy();
+        browserGlobal.view._sidebar.open = this.openPanel;
+        browserGlobal.view._sidebar.close = this.closePanel;
+    }
 
-        const updateDataStore = (model: any) => {
-            const proto = model._model
-            ModelProtoSingleton.proto = null;
-            // FIXME What to do when model has multiple graphs?
-            const graph = model.graphs[0];
-            if (graph.constructor.name === 'OnnxGraph') {
-                this.props.updateInputs(graph.inputs);
-                this.props.updateOutputs(graph.outputs);
-                // Normalize graph
-                // const normalizedGraph: Array<{}> = [];
-                // for (const node of graph.nodes) {
-                //     normalizedGraph.push({
-                //         inputs: node.inputs,
-                //         // ... Add other properties of interest
-                //     });
-                // }
-                this.props.updateGraph(true);  // TODO
-                this.props.updateMetadataProps(this.propsToObject(model._metadataProps));
-                this.props.updateProperties(this.propsToObject(model.properties));
-            } else {
-                this.props.updateInputs(null);
-                this.props.updateOutputs(null);
-                this.props.updateGraph(null);
-                this.props.updateMetadataProps({});
-                this.props.updateProperties({});
-            }
-            ModelProtoSingleton.proto = proto;
-        };
-
+    private installModelLoadedProxy = () => {
         // Install proxy on browserGlobal.view.loadBuffer and update the data store
         const handler = {
             apply: (target: any, thisArg: any, args: any) => {
-                // Original signature: buffer, identifier, callback
-                // We will patch the callback to update our data store first
-                return target.call(thisArg, args[0], args[1], (err: Error, model: any) => {
+                const [buffer, identifier, callback] = args;
+                // Patch the callback to update our data store first
+                return target.call(thisArg, buffer, identifier, (err: Error, model: any) => {
                     if (!err) {
-                        updateDataStore(model);
+                        this.updateDataStore(model);
                     }
-                    return args[2](err, model);
+                    return callback(err, model);
                 });
             },
         };
         const revokableProxy = Proxy.revocable(browserGlobal.view.loadBuffer, handler);
         browserGlobal.view.loadBuffer = revokableProxy.proxy;
         this.revokeModelLoadedProxy = revokableProxy.revoke;
+    }
+
+    private updateDataStore = (model: any) => {
+        const proto = model._model
+        ModelProtoSingleton.proto = null;
+        // FIXME What to do when model has multiple graphs?
+        const graph = model.graphs[0];
+        if (graph.constructor.name === 'OnnxGraph') {
+            this.props.updateInputs(graph.inputs);
+            this.props.updateOutputs(graph.outputs);
+            // Normalize graph
+            // const normalizedGraph: Array<{}> = [];
+            // for (const node of graph.nodes) {
+            //     normalizedGraph.push({
+            //         inputs: node.inputs,
+            //         // ... Add other properties of interest
+            //     });
+            // }
+            this.props.updateGraph(true);  // TODO
+            this.props.updateMetadataProps(this.propsToObject(model._metadataProps));
+            this.props.updateProperties(this.propsToObject(model.properties));
+        } else {
+            this.props.updateInputs(null);
+            this.props.updateOutputs(null);
+            this.props.updateGraph(null);
+            this.props.updateMetadataProps({});
+            this.props.updateProperties({});
+        }
+        ModelProtoSingleton.proto = proto;
+    };
+
+    private openPanel = (content: any, title: string, width?: number) => {
+        if (title === 'Node Properties') {
+            console.log(content[1].innerText);
+            this.props.updateSelectedNode(content[1].innerText);
+        }
+    }
+
+    private closePanel = () => {
+        this.props.updateSelectedNode(undefined);
     }
 }
 
@@ -205,6 +223,7 @@ const mapDispatchToProps = {
     updateMetadataProps,
     updateOutputs,
     updateProperties,
+    updateSelectedNode,
 }
 
 export const Netron = connect(mapStateToProps, mapDispatchToProps)(NetronComponent);

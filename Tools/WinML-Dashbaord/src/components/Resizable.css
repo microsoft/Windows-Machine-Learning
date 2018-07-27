@@ -5,5 +5,5 @@
     overflow: auto;
     min-width: 80px;
     width: 350px;
-    transition: width 300ms;
+    transition: width 200ms;
 }

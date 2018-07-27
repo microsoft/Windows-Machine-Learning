@@ -23,6 +23,7 @@ interface IComponentProperties {
 
 interface IComponentState {
     caseInsensitiveSchema: any,
+    keyErrors: { [key: string]: string },
 }
 
 class KeyValueEditorComponent extends React.Component<IComponentProperties, IComponentState> {
@@ -30,6 +31,7 @@ class KeyValueEditorComponent extends React.Component<IComponentProperties, ICom
         super(props);
         this.state = {
             caseInsensitiveSchema: this.toLowerCaseSchema(props.schema),
+            keyErrors: {},
         };
     }
 
@@ -45,9 +47,20 @@ class KeyValueEditorComponent extends React.Component<IComponentProperties, ICom
             const schemaEntries = Object.entries(this.props.schema.properties);
 
             rows = Object.keys(this.props.keyValueObject!).reduce((acc: any[], x: string) => {
+                const lowerCaseKey = x.toLowerCase();
                 const keyChangedCallback = (option?: IComboBoxOption, index?: number, value?: string) => {
                     const key = value || option!.text;
-                    this.props.updateKeyValueObject!(this.copyRenameKey(this.props.keyValueObject, x, key));
+                    if (Object.keys(this.props.keyValueObject!).includes(key)) {
+                        this.setState((prevState: IComponentState, props: IComponentProperties) => (
+                            {
+                                keyErrors: {
+                                    [lowerCaseKey]: prevState.keyErrors[lowerCaseKey] ? `${prevState.keyErrors[lowerCaseKey]} ` : 'duplicate key'
+                                },
+                            }
+                        ));
+                    } else {
+                        this.props.updateKeyValueObject!(this.copyRenameKey(this.props.keyValueObject, x, key));
+                    }
                 };
                 const valueChangedCallback = (option?: IComboBoxOption, index?: number, value?: string) => {
                     const newValue = value || option!.text;
@@ -65,14 +78,15 @@ class KeyValueEditorComponent extends React.Component<IComponentProperties, ICom
                    knownValues = property[1].enum.map((key: string) => ({ key, text: key }));
                 }
 
+                const keyErrorsState = this.state.keyErrors[lowerCaseKey];
                 acc.push(
-                    <div key={x} className='KeyValueItem'>
+                    <div key={`${x}${keyErrorsState}`} className='KeyValueItem'>
                         <Icon className='RemoveIcon' iconName='Cancel' onClick={removeCallback} />
                         <ComboBox
                             className='KeyValueBox'
                             allowFreeform={true}
                             text={x}
-                            errorMessage={keyErrors[x.toLowerCase()]}
+                            errorMessage={keyErrorsState || keyErrors[lowerCaseKey]}
                             options={options}
                             onChanged={keyChangedCallback}
                         />
@@ -81,7 +95,7 @@ class KeyValueEditorComponent extends React.Component<IComponentProperties, ICom
                             className='KeyValueBox'
                             allowFreeform={true}
                             text={this.props.keyValueObject![x]}
-                            errorMessage={valueErrors[x.toLowerCase()]}
+                            errorMessage={valueErrors[lowerCaseKey]}
                             options={knownValues}
                             onChanged={valueChangedCallback}
                         />
@@ -108,7 +122,7 @@ class KeyValueEditorComponent extends React.Component<IComponentProperties, ICom
                         onItemClick: this.addMetadataProp,
                     } : undefined}
                     // The Office UI includes a spam element in it when split = true, which is not of display type block
-                    // and ignores the parent width. We do a workaround to get it to 100% of the parent width.
+                    // and ignores the parent width. We do a hack to get it to 100% of the parent width.
                     getSplitButtonClassNames={getSplitButtonClassNames}
                 />
             </div>

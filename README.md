@@ -14,9 +14,9 @@ These generic examples show how to use various models and input feeds with Windo
 
 - **FNSCandyStyleTransfer\UWP\cs**: a UWP C# app that uses the FNS-Candy style transfer model to make a cool image.
 - **SqueezeNetObjectDetection\UWP\cs**: a UWP C# app that uses the SqueezeNet model to detect the predominant object in an image.
-- **SqueezeNetObjectDetection\Desktop\cpp**: a classic desktop C++ app that usesthe SqueezeNet model to detect the predominant object in an image.
+- **SqueezeNetObjectDetection\Desktop\cpp**: a classic desktop C++/WinRT app that uses the SqueezeNet model to detect the predominant object in an image.
 - **MNIST\UWP\cs**: a UWP C# app that uses the MNIST model to detect numberic characters.
-- **MNIST\UWP\cx**: a UWP C++/CX app that uses the MNIST model to detect numberic characters.
+- **MNIST\UWP\cppcx**: a UWP C++/CX app that uses the MNIST model to detect numberic characters.
 
 ## Requirements
 

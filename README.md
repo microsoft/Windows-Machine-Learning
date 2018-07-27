@@ -20,8 +20,21 @@ These generic examples show how to use various models and input feeds with Windo
 
 ## Requirements
 
-- [Windows 10 - Build 17713 or higher](https://www.microsoft.com/en-us/software-download/windowsinsiderpreviewiso)
-- [Windows SDK - Build 17713 or higher](https://www.microsoft.com/en-us/software-download/windowsinsiderpreviewSDK)
+- [Visual Studio 2017 Update 4 or Higher](https://developer.microsoft.com/en-us/windows/downloads)
+- [Windows 10 - Build 17724 or higher](https://www.microsoft.com/en-us/software-download/windowsinsiderpreviewiso)
+- [Windows SDK - Build 17724 or higher](https://www.microsoft.com/en-us/software-download/windowsinsiderpreviewSDK)
+
+## Using the samples
+The easiest way to use these samples without using Git is to download the zip file containing the current version (using the following link or by clicking the "Download ZIP" button on the repo page). You can then unzip the entire archive and use the samples in Visual Studio 2017.
+
+[Download the samples ZIP](https://github.com/Microsoft/Windows-Machine-Learning/archive/RS5.zip)
+
+Notes:
+Before you unzip the archive, right-click it, select Properties, and then select Unblock.
+Be sure to unzip the entire archive, and not just individual samples. The samples all depend on the SharedContent folder in the archive.
+In Visual Studio 2017, the platform target defaults to ARM, so be sure to change that to x64 or x86 if you want to test on a non-ARM device.
+
+Reminder: If you unzip individual samples, they will not build due to references to other portions of the ZIP file that were not unzipped. You must unzip the entire archive if you intend to build the samples.
 
 ## Contributing
 

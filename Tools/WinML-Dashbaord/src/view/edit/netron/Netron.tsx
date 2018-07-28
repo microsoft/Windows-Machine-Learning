@@ -6,7 +6,7 @@ import 'netron/src/view-sidebar.css';
 import 'netron/src/view.css';
 import 'npm-font-open-sans/open-sans.css';
 
-import { setMetadataProps, setModelInputs, setModelOutputs, setNodes, setProperties, setSelectedNode } from '../../../datastore/actionCreators';
+import { setInputs, setMetadataProps, setModelInputs, setModelOutputs, setNodes, setOutputs, setProperties, setSelectedNode } from '../../../datastore/actionCreators';
 import { ModelProtoSingleton } from '../../../datastore/proto/modelProto';
 import IState from '../../../datastore/state';
 import './fixed-position-override.css';
@@ -17,10 +17,12 @@ interface IComponentProperties {
     file?: File,
 
     // Redux properties
-    setNodes: typeof setNodes,
+    setInputs: typeof setInputs,
+    setMetadataProps: typeof setMetadataProps,
     setModelInputs: typeof setModelInputs,
     setModelOutputs: typeof setModelOutputs,
-    setMetadataProps: typeof setMetadataProps,
+    setNodes: typeof setNodes,
+    setOutputs: typeof setOutputs,
     setProperties: typeof setProperties,
     setSelectedNode: typeof setSelectedNode,
 }
@@ -178,8 +180,16 @@ class NetronComponent extends React.Component<IComponentProperties, IComponentSt
         // FIXME What to do when model has multiple graphs?
         const graph = model.graphs[0];
         if (graph.constructor.name === 'OnnxGraph') {
-            this.props.setModelInputs(graph.inputs);
-            this.props.setModelOutputs(graph.outputs);
+            const getNames = (list: any[]) => list.reduce((acc: string[], x: any) => {
+                acc.push(x.name);
+                return acc;
+            }, []);
+            const inputs = getNames(graph.inputs);
+            const outputs = getNames(graph.outputs);
+            this.props.setModelInputs(inputs);
+            this.props.setModelOutputs(outputs);
+            this.props.setInputs(inputs);
+            this.props.setOutputs(outputs);
             const nodes = {};
             for (const node of proto.graph.node) {
                 nodes[node.name] = node;
@@ -189,8 +199,8 @@ class NetronComponent extends React.Component<IComponentProperties, IComponentSt
             this.props.setMetadataProps(this.propsToObject(model._metadataProps));
             this.props.setProperties(this.propsToObject(model.properties));
         } else {
-            this.props.setModelInputs(null);
-            this.props.setModelOutputs(null);
+            this.props.setModelInputs(undefined);
+            this.props.setModelOutputs(undefined);
             this.props.setNodes(undefined);
             this.props.setMetadataProps({});
             this.props.setProperties({});
@@ -217,10 +227,12 @@ const mapStateToProps = (state: IState) => ({
 });
 
 const mapDispatchToProps = {
+    setInputs,
     setMetadataProps,
     setModelInputs,
     setModelOutputs,
     setNodes,
+    setOutputs,
     setProperties,
     setSelectedNode,
 }

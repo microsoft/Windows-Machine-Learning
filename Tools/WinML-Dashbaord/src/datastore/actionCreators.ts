@@ -1,11 +1,6 @@
 import * as actions from './actions';
 import { IMetadataProps, IProperties } from './state';
 
-export const updateGraph = (graph: any) => ({
-    graph,
-    type: actions.UPDATE_GRAPH,
-})
-
 export const updateInputs = (inputs: any) => ({
     inputs,
     type: actions.UPDATE_INPUTS,
@@ -19,6 +14,11 @@ export const updateOutputs = (outputs: any) => ({
 export const updateMetadataProps = (metadataProps: IMetadataProps) => ({
     metadataProps,
     type: actions.UPDATE_METADATA_PROPS,
+})
+
+export const updateNodes = (nodes: any) => ({
+    nodes,
+    type: actions.UPDATE_NODES,
 })
 
 export const updateProperties = (properties: IProperties) => ({

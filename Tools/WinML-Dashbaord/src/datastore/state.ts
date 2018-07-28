@@ -7,8 +7,8 @@ export interface IProperties {
 }
 
 export default interface IState {
-    graph: any,
     metadataProps: IMetadataProps,
+    nodes: any,
     properties: IProperties,
     selectedNode: string,
 }

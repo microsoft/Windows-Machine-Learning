@@ -11,14 +11,14 @@ import './Panel.css';
 
 interface IComponentProperties {
     // Redux properties
-    graph?: any,
-    selectedNode?: string,
+    nodes: any,
+    selectedNode: string,
 }
 
 class LeftPanel extends React.Component<IComponentProperties, {}> {
     public render() {
         return (
-            <Resizable visible={!!(this.props.graph && this.props.selectedNode)}>
+            <Resizable visible={!!(this.props.nodes && this.props.selectedNode)}>
                 {this.getContent()}
             </Resizable>
         );
@@ -55,7 +55,7 @@ class LeftPanel extends React.Component<IComponentProperties, {}> {
 }
 
 const mapStateToProps = (state: IState) => ({
-        graph: state.graph,
+        nodes: state.nodes,
         selectedNode: state.selectedNode,
 })
 

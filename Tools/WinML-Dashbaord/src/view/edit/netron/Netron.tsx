@@ -6,7 +6,7 @@ import 'netron/src/view-sidebar.css';
 import 'netron/src/view.css';
 import 'npm-font-open-sans/open-sans.css';
 
-import { updateGraph, updateInputs, updateMetadataProps, updateOutputs, updateProperties, updateSelectedNode } from '../../../datastore/actionCreators';
+import { updateInputs, updateMetadataProps, updateNodes, updateOutputs, updateProperties, updateSelectedNode } from '../../../datastore/actionCreators';
 import { ModelProtoSingleton } from '../../../datastore/proto/modelProto';
 import IState from '../../../datastore/state';
 import './fixed-position-override.css';
@@ -17,7 +17,7 @@ interface IComponentProperties {
     file?: File,
 
     // Redux properties
-    updateGraph: typeof updateGraph,
+    updateNodes: typeof updateNodes,
     updateInputs: typeof updateInputs,
     updateOutputs: typeof updateOutputs,
     updateMetadataProps: typeof updateMetadataProps,
@@ -180,21 +180,13 @@ class NetronComponent extends React.Component<IComponentProperties, IComponentSt
         if (graph.constructor.name === 'OnnxGraph') {
             this.props.updateInputs(graph.inputs);
             this.props.updateOutputs(graph.outputs);
-            // Normalize graph
-            // const normalizedGraph: Array<{}> = [];
-            // for (const node of graph.nodes) {
-            //     normalizedGraph.push({
-            //         inputs: node.inputs,
-            //         // ... Add other properties of interest
-            //     });
-            // }
-            this.props.updateGraph(true);  // TODO
+            this.props.updateNodes(proto.graph.node);
             this.props.updateMetadataProps(this.propsToObject(model._metadataProps));
             this.props.updateProperties(this.propsToObject(model.properties));
         } else {
             this.props.updateInputs(null);
             this.props.updateOutputs(null);
-            this.props.updateGraph(null);
+            this.props.updateNodes(null);
             this.props.updateMetadataProps({});
             this.props.updateProperties({});
         }
@@ -203,8 +195,9 @@ class NetronComponent extends React.Component<IComponentProperties, IComponentSt
 
     private openPanel = (content: any, title: string, width?: number) => {
         if (title === 'Node Properties') {
-            console.log(content[1].innerText);
             this.props.updateSelectedNode(content[1].innerText);
+        } else if (title === 'Model Properties') {
+            this.props.updateSelectedNode(title);
         }
     }
 
@@ -214,13 +207,13 @@ class NetronComponent extends React.Component<IComponentProperties, IComponentSt
 }
 
 const mapStateToProps = (state: IState) => ({
-    graph: state.graph,  // Unused for now, will be used when editing the graph (e.g. input shapes) is supported
+    nodes: state.nodes,  // Unused for now, will be used when editing the graph (e.g. input shapes) is supported
 });
 
 const mapDispatchToProps = {
-    updateGraph,
     updateInputs,
     updateMetadataProps,
+    updateNodes,
     updateOutputs,
     updateProperties,
     updateSelectedNode,

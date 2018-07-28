@@ -11,33 +11,48 @@ import './Panel.css';
 
 interface IComponentProperties {
     // Redux properties
-    nodes: any,
+    nodes: { [key: string]: any },
     selectedNode: string,
 }
 
 class LeftPanel extends React.Component<IComponentProperties, {}> {
     public render() {
         return (
-            <Resizable visible={!!(this.props.nodes && this.props.selectedNode)}>
-                {this.getContent()}
+            <Resizable visible={!!this.props.selectedNode}>
+                {this.props.selectedNode && this.getContent()}
             </Resizable>
         );
     }
 
     private getContent() {
-        const inputs = [];
-        inputs.push('stub');
+        const node = this.props.nodes[this.props.selectedNode];
         const inputsForm = [];
-        for (const _ of inputs) {
-            inputsForm.push(<div key={0}>
-                <Label className='TensorName'>data_0</Label>
-                <span className='Shape'>
-                    <TextField inputMode='numeric' type='number' placeholder='N' className='ShapeTextField' />
-                    <TextField inputMode='numeric' type='number' placeholder='C' className='ShapeTextField' />
-                    <TextField inputMode='numeric' type='number' placeholder='H' className='ShapeTextField' />
-                    <TextField inputMode='numeric' type='number' placeholder='W' className='ShapeTextField' />
-                </span>
-            </div>);
+        for (const input of node.input) {
+            inputsForm.push(
+                <div key={input}>
+                    <Label className='TensorName'>{input}</Label>
+                    <span className='Shape'>
+                        <TextField inputMode='numeric' type='number' placeholder='N' className='ShapeTextField' />
+                        <TextField inputMode='numeric' type='number' placeholder='C' className='ShapeTextField' />
+                        <TextField inputMode='numeric' type='number' placeholder='H' className='ShapeTextField' />
+                        <TextField inputMode='numeric' type='number' placeholder='W' className='ShapeTextField' />
+                    </span>
+                </div>
+            );
+        }
+        const outputsForm = [];
+        for (const output of node.output) {
+            outputsForm.push(
+                <div key={output}>
+                    <Label className='TensorName'>{output}</Label>
+                    <span className='Shape'>
+                        <TextField inputMode='numeric' type='number' placeholder='N' className='ShapeTextField' />
+                        <TextField inputMode='numeric' type='number' placeholder='C' className='ShapeTextField' />
+                        <TextField inputMode='numeric' type='number' placeholder='H' className='ShapeTextField' />
+                        <TextField inputMode='numeric' type='number' placeholder='W' className='ShapeTextField' />
+                    </span>
+                </div>
+            );
         }
         return (
             <div>
@@ -47,6 +62,7 @@ class LeftPanel extends React.Component<IComponentProperties, {}> {
                         <Label>Inputs</Label>
                         {inputsForm}
                         <Label>Outputs</Label>
+                        {outputsForm}
                     </Collapsible>
                 </div>
             </div>

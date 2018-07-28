@@ -4,7 +4,7 @@ import { connect } from 'react-redux';
 
 import Collapsible from '../../components/Collapsible';
 import KeyValueEditor from '../../components/KeyValueEditor'
-import { updateMetadataProps } from '../../datastore/actionCreators';
+import { setMetadataProps } from '../../datastore/actionCreators';
 import IState, { IMetadataProps } from '../../datastore/state';
 import MetadataSchema from '../../schema/Metadata';
 
@@ -14,7 +14,7 @@ interface IComponentProperties {
     // Redux properties
     nodes: any,
     metadataProps: IMetadataProps,
-    updateMetadataProps: typeof updateMetadataProps,
+    setMetadataProps: typeof setMetadataProps,
 }
 
 class RightPanel extends React.Component<IComponentProperties, {}> {
@@ -33,7 +33,7 @@ class RightPanel extends React.Component<IComponentProperties, {}> {
                         <KeyValueEditor getState={this.getPropertiesFromState} schema={{ type: 'object' }} />
                     </Collapsible>
                     <Collapsible label='Metadata properties'>
-                        <KeyValueEditor actionCreator={updateMetadataProps} getState={this.getMetadataPropsFromState} schema={MetadataSchema} />
+                        <KeyValueEditor actionCreator={setMetadataProps} getState={this.getMetadataPropsFromState} schema={MetadataSchema} />
                     </Collapsible>
                 </div>
             </div>
@@ -51,7 +51,7 @@ const mapStateToProps = (state: IState) => ({
 });
 
 const mapDispatchToProps = {
-    updateMetadataProps,
+    setMetadataProps,
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(RightPanel);

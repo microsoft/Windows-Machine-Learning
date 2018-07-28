@@ -1,32 +1,32 @@
 import * as actions from './actions';
 import { IMetadataProps, IProperties } from './state';
 
-export const updateInputs = (inputs: any) => ({
-    inputs,
-    type: actions.UPDATE_INPUTS,
-})
-
-export const updateOutputs = (outputs: any) => ({
-    outputs,
-    type: actions.UPDATE_OUTPUTS,
-})
-
-export const updateMetadataProps = (metadataProps: IMetadataProps) => ({
+export const setMetadataProps = (metadataProps: IMetadataProps) => ({
     metadataProps,
-    type: actions.UPDATE_METADATA_PROPS,
+    type: actions.SET_METADATA_PROPS,
 })
 
-export const updateNodes = (nodes: any) => ({
+export const setModelInputs = (inputs: any) => ({
+    inputs,
+    type: actions.SET_MODEL_INPUTS,
+})
+
+export const setModelOutputs = (outputs: any) => ({
+    outputs,
+    type: actions.SET_MODEL_OUTPUTS,
+})
+
+export const setNodes = (nodes?: { [key: string]: any }) => ({
     nodes,
-    type: actions.UPDATE_NODES,
+    type: actions.SET_NODES,
 })
 
-export const updateProperties = (properties: IProperties) => ({
+export const setProperties = (properties: IProperties) => ({
     properties,
-    type: actions.UPDATE_PROPERTIES,
+    type: actions.SET_PROPERTIES,
 })
 
-export const updateSelectedNode = (selectedNode?: string) => ({
+export const setSelectedNode = (selectedNode?: string) => ({
     selectedNode,
-    type: actions.UPDATE_SELECTED_NODE,
+    type: actions.SET_SELECTED_NODE,
 })

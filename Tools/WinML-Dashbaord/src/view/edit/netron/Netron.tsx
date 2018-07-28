@@ -6,7 +6,7 @@ import 'netron/src/view-sidebar.css';
 import 'netron/src/view.css';
 import 'npm-font-open-sans/open-sans.css';
 
-import { updateInputs, updateMetadataProps, updateNodes, updateOutputs, updateProperties, updateSelectedNode } from '../../../datastore/actionCreators';
+import { setMetadataProps, setModelInputs, setModelOutputs, setNodes, setProperties, setSelectedNode } from '../../../datastore/actionCreators';
 import { ModelProtoSingleton } from '../../../datastore/proto/modelProto';
 import IState from '../../../datastore/state';
 import './fixed-position-override.css';
@@ -17,12 +17,12 @@ interface IComponentProperties {
     file?: File,
 
     // Redux properties
-    updateNodes: typeof updateNodes,
-    updateInputs: typeof updateInputs,
-    updateOutputs: typeof updateOutputs,
-    updateMetadataProps: typeof updateMetadataProps,
-    updateProperties: typeof updateProperties,
-    updateSelectedNode: typeof updateSelectedNode,
+    setNodes: typeof setNodes,
+    setModelInputs: typeof setModelInputs,
+    setModelOutputs: typeof setModelOutputs,
+    setMetadataProps: typeof setMetadataProps,
+    setProperties: typeof setProperties,
+    setSelectedNode: typeof setSelectedNode,
 }
 
 interface IComponentState {
@@ -178,31 +178,37 @@ class NetronComponent extends React.Component<IComponentProperties, IComponentSt
         // FIXME What to do when model has multiple graphs?
         const graph = model.graphs[0];
         if (graph.constructor.name === 'OnnxGraph') {
-            this.props.updateInputs(graph.inputs);
-            this.props.updateOutputs(graph.outputs);
-            this.props.updateNodes(proto.graph.node);
-            this.props.updateMetadataProps(this.propsToObject(model._metadataProps));
-            this.props.updateProperties(this.propsToObject(model.properties));
+            this.props.setModelInputs(graph.inputs);
+            this.props.setModelOutputs(graph.outputs);
+            const nodes = {};
+            for (const node of proto.graph.node) {
+                nodes[node.name] = node;
+                delete nodes[node.name].name;
+            }
+            this.props.setNodes(nodes);
+            this.props.setMetadataProps(this.propsToObject(model._metadataProps));
+            this.props.setProperties(this.propsToObject(model.properties));
         } else {
-            this.props.updateInputs(null);
-            this.props.updateOutputs(null);
-            this.props.updateNodes(null);
-            this.props.updateMetadataProps({});
-            this.props.updateProperties({});
+            this.props.setModelInputs(null);
+            this.props.setModelOutputs(null);
+            this.props.setNodes(undefined);
+            this.props.setMetadataProps({});
+            this.props.setProperties({});
         }
+        this.props.setSelectedNode(undefined);
         ModelProtoSingleton.proto = proto;
     };
 
     private openPanel = (content: any, title: string, width?: number) => {
         if (title === 'Node Properties') {
-            this.props.updateSelectedNode(content[1].innerText);
+            this.props.setSelectedNode(content[1].innerText);
         } else if (title === 'Model Properties') {
-            this.props.updateSelectedNode(title);
+            this.props.setSelectedNode(title);
         }
     }
 
     private closePanel = () => {
-        this.props.updateSelectedNode(undefined);
+        this.props.setSelectedNode(undefined);
     }
 }
 
@@ -211,12 +217,12 @@ const mapStateToProps = (state: IState) => ({
 });
 
 const mapDispatchToProps = {
-    updateInputs,
-    updateMetadataProps,
-    updateNodes,
-    updateOutputs,
-    updateProperties,
-    updateSelectedNode,
+    setMetadataProps,
+    setModelInputs,
+    setModelOutputs,
+    setNodes,
+    setProperties,
+    setSelectedNode,
 }
 
 export const Netron = connect(mapStateToProps, mapDispatchToProps)(NetronComponent);

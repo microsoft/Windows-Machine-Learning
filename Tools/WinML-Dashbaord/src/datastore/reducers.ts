@@ -4,17 +4,17 @@ import IState from './state';
 export function rootReducer(state: IState, action: actions.IAction) {
     state = state || {};
     switch (action.type) {
-        case actions.UPDATE_INPUTS:
-            return { ...state, inputs: action.inputs };
-        case actions.UPDATE_METADATA_PROPS:
+        case actions.SET_METADATA_PROPS:
             return { ...state, metadataProps: action.metadataProps };
-        case actions.UPDATE_NODES:
-            return { ...state, nodes: action.nodes };
-        case actions.UPDATE_OUTPUTS:
+        case actions.SET_MODEL_INPUTS:
+            return { ...state, inputs: action.inputs };
+        case actions.SET_MODEL_OUTPUTS:
             return { ...state, outputs: action.outputs };
-        case actions.UPDATE_PROPERTIES:
+        case actions.SET_NODES:
+            return { ...state, nodes: action.nodes };
+        case actions.SET_PROPERTIES:
             return { ...state, properties: action.properties };
-        case actions.UPDATE_SELECTED_NODE:
+        case actions.SET_SELECTED_NODE:
             return { ...state, selectedNode: action.selectedNode };
         default:
             return state;

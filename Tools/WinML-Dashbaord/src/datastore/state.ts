@@ -8,7 +8,7 @@ export interface IProperties {
 
 export default interface IState {
     metadataProps: IMetadataProps,
-    nodes: any,
+    nodes: { [key: string]: any },
     properties: IProperties,
     selectedNode: string,
 }

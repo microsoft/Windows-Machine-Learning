@@ -14,7 +14,7 @@ using namespace std;
 
 // globals
 vector<string> labels;
-string labelsFileName("labels.json");
+string labelsFileName("labels.txt");
 LearningModelDeviceKind deviceKind = LearningModelDeviceKind::Default;
 string deviceName = "default";
 hstring modelPath;
@@ -114,7 +114,7 @@ string GetModulePath()
     char dir[_MAX_DIR];
     char filename[_MAX_FNAME];
     char ext[_MAX_EXT];
-    errno_t err = _splitpath_s(modulePath, drive, _MAX_DRIVE, dir, _MAX_DIR, filename, _MAX_FNAME, ext, _MAX_EXT);
+    _splitpath_s(modulePath, drive, _MAX_DRIVE, dir, _MAX_DIR, filename, _MAX_FNAME, ext, _MAX_EXT);
 
     val = drive;
     val += dir;
@@ -123,7 +123,7 @@ string GetModulePath()
 
 void LoadLabels()
 {
-    // Parse labels from label json file.  We know the file's entries are already sorted in order.
+    // Parse labels from labels file.  We know the file's entries are already sorted in order.
     std::string labelsFilePath = GetModulePath() + labelsFileName;
     ifstream labelFile(labelsFilePath, ifstream::in);
     if (labelFile.fail())

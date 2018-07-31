@@ -9,6 +9,9 @@ If you would like to use a different model, then you can use [Netron](https://gi
 
 ## Prerequisites
 
+- [Visual Studio 2017 Version 15.7.4 or Newer](https://developer.microsoft.com/en-us/windows/downloads)
+- [Windows 10 - Build 17724 or higher](https://www.microsoft.com/en-us/software-download/windowsinsiderpreviewiso)
+- [Windows SDK - Build 17723 or higher](https://www.microsoft.com/en-us/software-download/windowsinsiderpreviewSDK)
 
 ## Build the sample
 
@@ -18,9 +21,11 @@ If you would like to use a different model, then you can use [Netron](https://gi
 2. Start Microsoft Visual Studio 2017 and select **File** \> **Open** \> **Project/Solution**.
 
 3. Starting in the folder where you unzipped the samples, go to the Samples subfolder, then the
-   subfolder for this specific sample. Double-click the Visual Studio project file (.csproj) file.
+   subfolder for this specific sample. Double-click the Visual Studio solution file (.sln) file.
 
-4. Press Ctrl+Shift+B, or select **Build** \> **Build Solution**.
+4. Change the platform target default to x64 or x86 if you want to test on a non-ARM device.
+
+5. Press Ctrl+Shift+B, or select **Build** \> **Build Solution**.
 
 ## Run the sample
 

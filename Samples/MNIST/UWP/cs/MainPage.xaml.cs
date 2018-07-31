@@ -41,10 +41,8 @@ namespace MNIST_Demo
         private async void LoadModel()
         {
             //Load a machine learning model
-            //StorageFile modelFile = await StorageFile.GetFileFromApplicationUriAsync(new Uri($"ms-appx:///Assets/model.onnx"));
-            Uri uri = new Uri("ms-appx:///Assets/model.onnx");
-            StorageFile stf = await StorageFile.GetFileFromApplicationUriAsync(uri);
-            modelGen = await modelModel.CreateFromFilePathAsync(stf.Path);
+            StorageFile modelFile = await StorageFile.GetFileFromApplicationUriAsync(new Uri($"ms-appx:///Assets/model.onnx"));
+            modelGen = await modelModel.CreateFromFilePathAsync(modelFile.Path);
         }
 
         private async void recognizeButton_Click(object sender, RoutedEventArgs e)

@@ -32,7 +32,7 @@ You'll also need to add the C++/WinRT extension in Visual Studio.
 2. Change current folder to the folder containing the built exe
 3. Run the executable as shown below, make sure to replace the install location with what matches yours
 
-.\SqueezeNetObjectDetection.exe **F:\src\github\microsoft\Windows-Machine-Learning**\SharedContent\models\SqueezeNet.onnx  **F:\src\github\microsoft\Windows-Machine-Learning**\SharedContent\media\kitten_224.png
+`.\SqueezeNetObjectDetection.exe F:\src\github\microsoft\Windows-Machine-Learning\SharedContent\models\SqueezeNet.onnx  F:\src\github\microsoft\Windows-Machine-Learning\SharedContent\media\kitten_224.png`
 
 ## License
 

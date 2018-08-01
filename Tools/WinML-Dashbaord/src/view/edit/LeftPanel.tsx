@@ -7,7 +7,7 @@ import { connect } from 'react-redux';
 
 import Collapsible from '../../components/Collapsible';
 import Resizable from '../../components/Resizable';
-import { setInputs } from '../../datastore/actionCreators';
+import { setInputs, setOutputs } from '../../datastore/actionCreators';
 import IState from '../../datastore/state';
 
 import './Panel.css';
@@ -21,6 +21,37 @@ interface IComponentProperties {
     outputs: { [key: string]: any },
     selectedNode: string,
     setInputs: typeof setInputs,
+    setOutputs: typeof setOutputs,
+}
+
+const tensorProtoDataType = [
+    'UNDEFINED',
+    'float',
+    'uint8',
+    'int8',
+    'uint16',
+    'int16',
+    'int32',
+    'int64',
+    'string',
+    'bool',
+    'float16',
+    'double',
+    'uint32',
+    'uint64',
+    'complex64',
+    'complex128',
+]
+
+const getFullType = (typeProto: any): string => {
+    if (typeProto.tensorType) {
+        return `Tensor<${tensorProtoDataType[typeProto.tensorType.elemType]}>`;
+    } else if (typeProto.sequenceType) {
+        return `List<${getFullType(typeProto.sequenceType.elemType)}>`;
+    } else if (typeProto.mapType) {
+        return `Map<${tensorProtoDataType[typeProto.mapType.keyType]}, ${getFullType(typeProto.mapType.valueType)}>`;
+    }
+    return 'unknown';
 }
 
 class LeftPanel extends React.Component<IComponentProperties, {}> {
@@ -70,58 +101,78 @@ class LeftPanel extends React.Component<IComponentProperties, {}> {
                         <Label className='TensorName' disabled={true}>{x}</Label>
                     </div>
                 );
-            } else {
-                const keyChangedCallback = (option?: IComboBoxOption, index?: number, value?: string) => {
+                return acc;
+            }
+
+            const onnxType = Object.keys(valueInfoProto.type).find((t: string) => ['tensorType', 'sequenceType', 'mapType'].includes(t)) || 'unknownType';
+            const type = onnxType.slice(0, -4);
+            let tensorName = (
+                <div className={valueInfoProto.docString ? 'TensorDocumentationHover' : 'TensorName'}>
+                    <b>{x}</b><span>{` (type: ${getFullType(valueInfoProto.type)})`}</span>
+                </div>
+            );
+            if (valueInfoProto.docString) {
+                const expandingCardProps: IExpandingCardProps = {
+                    compactCardHeight: 100,
+                    mode: ExpandingCardMode.compact,
+                    onRenderCompactCard: (item: any): JSX.Element => (
+                        <p className='DocString'>{valueInfoProto.docString}</p>
+                    ),
+                };
+                tensorName = (
+                    <HoverCard expandingCardProps={expandingCardProps} instantOpenOnClick={true}>
+                        {tensorName}
+                    </HoverCard>
+                );
+            }
+
+            const isModelInput = this.props.modelInputs.includes(x)
+            const isModelOutput = this.props.modelOutputs.includes(x);
+            let keyChangedCallback;
+            if (isModelInput) {
+                keyChangedCallback = (option?: IComboBoxOption, index?: number, value?: string) => {
                     const nextInputs = { ...this.props.inputs };
                     nextInputs[x].type.denotation = value || option!.text;
                     this.props.setInputs(nextInputs);
                 };
-                const onnxType = Object.keys(valueInfoProto.type).find((t: string) => ['tensorType', 'sequenceType', 'mapType'].includes(t)) || 'unknownType';
-                const type = onnxType.slice(0, -4);
-
-                let tensorName = (
-                    <div className={valueInfoProto.docString ? 'TensorDocumentationHover' : 'TensorName'}>
-                        <b>{x}</b><span>{` (type: ${type})`}</span>
-                    </div>
-                );
-                if (valueInfoProto.docString) {
-                    const expandingCardProps: IExpandingCardProps = {
-                        compactCardHeight: 100,
-                        mode: ExpandingCardMode.compact,
-                        onRenderCompactCard: (item: any): JSX.Element => (
-                            <p className='DocString'>{valueInfoProto.docString}</p>
-                        ),
-                    };
-                    tensorName = (
-                        <HoverCard expandingCardProps={expandingCardProps} instantOpenOnClick={true}>
-                            {tensorName}
-                        </HoverCard>
-                    );
-                }
-                acc.push(
-                    <div key={x}>
-                        {tensorName}
-                        <div className='TensorTypeDenotationDiv'>
-                            <Label className='TensorTypeDenotationLabel'>Type denotation</Label>
-                            <ComboBox
-                                className='TensorTypeDenotation'
-                                placeholder='Type denotation'
-                                allowFreeform={true}
-                                text={valueInfoProto.type.denotation}
-                                options={denotationOptions}
-                                disabled={!this.props.modelInputs.includes(x)}
-                                onChanged={keyChangedCallback}
-                            />
-                        </div>
-                        <span className='Shape'>
-                            <TextField inputMode='numeric' type='number' placeholder='N' className='ShapeTextField' />
-                            <TextField inputMode='numeric' type='number' placeholder='C' className='ShapeTextField' />
-                            <TextField inputMode='numeric' type='number' placeholder='H' className='ShapeTextField' />
-                            <TextField inputMode='numeric' type='number' placeholder='W' className='ShapeTextField' />
-                        </span>
-                    </div>
-                );
+            } else if (isModelOutput) {
+                keyChangedCallback = (option?: IComboBoxOption, index?: number, value?: string) => {
+                    const nextOutputs = { ...this.props.outputs };
+                    nextOutputs[x].type.denotation = value || option!.text;
+                    this.props.setOutputs(nextOutputs);
+                };
             }
+
+            let shapeEditor;
+            if (type === 'tensor') {
+                shapeEditor = (
+                    <span className='Shape'>
+                        <TextField inputMode='numeric' type='number' placeholder='N' className='ShapeTextField' />
+                        <TextField inputMode='numeric' type='number' placeholder='C' className='ShapeTextField' />
+                        <TextField inputMode='numeric' type='number' placeholder='H' className='ShapeTextField' />
+                        <TextField inputMode='numeric' type='number' placeholder='W' className='ShapeTextField' />
+                    </span>
+                )
+            }
+
+            acc.push(
+                <div key={x}>
+                    {tensorName}
+                    <div className='TensorTypeDenotationDiv'>
+                        <Label className='TensorTypeDenotationLabel'>Type denotation</Label>
+                        <ComboBox
+                            className='TensorTypeDenotation'
+                            placeholder='Type denotation'
+                            allowFreeform={true}
+                            text={valueInfoProto.type.denotation}
+                            options={denotationOptions}
+                            disabled={!isModelInput && !isModelOutput}
+                            onChanged={keyChangedCallback}
+                        />
+                    </div>
+                    {shapeEditor}
+                </div>
+            );
             return acc;
         }, []);
     }
@@ -138,6 +189,7 @@ const mapStateToProps = (state: IState) => ({
 
 const mapDispatchToProps = {
     setInputs,
+    setOutputs,
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(LeftPanel);

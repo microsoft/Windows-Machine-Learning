@@ -22,6 +22,12 @@ class ModelProto extends Proto {
             return acc;
         }, []);
     }
+    public setOutputs(outputs: { [key: string]: any }) {
+        if (!Proto.getOnnx() || !this.proto) {
+            return;
+        }
+        this.proto.graph.output = outputs;
+    }
 
     public serialize() {
         Proto.getOnnx();

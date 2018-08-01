@@ -26,7 +26,7 @@ interface IComponentState {
     keyErrors: { [key: string]: string },
 }
 
-class KeyValueEditorComponent extends React.Component<IComponentProperties, IComponentState> {
+class KeyValueEditor extends React.Component<IComponentProperties, IComponentState> {
     constructor(props: IComponentProperties) {
         super(props);
         this.state = {
@@ -211,5 +211,4 @@ const mapDispatchToProps = (dispatch: any, ownProps: IComponentProperties) => ({
     updateKeyValueObject: (keyValueObject: { [key: string]: string }) => dispatch(ownProps.actionCreator!(keyValueObject)),
 })
 
-const KeyValueEditor = connect(mapStateToProps, mapDispatchToProps)(KeyValueEditorComponent as any);
-export default KeyValueEditor;
+export default connect(mapStateToProps, mapDispatchToProps)(KeyValueEditor as any);

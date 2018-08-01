@@ -17,6 +17,7 @@ interface IComponentProperties {
     file?: File,
 
     // Redux properties
+    nodes: { [key: string]: any },
     setInputs: typeof setInputs,
     setMetadataProps: typeof setMetadataProps,
     setModelInputs: typeof setModelInputs,
@@ -147,6 +148,14 @@ class NetronComponent extends React.Component<IComponentProperties, IComponentSt
         }, {});
     }
 
+    private valueListToObject(values: any) {
+        return values.reduce((acc: { [key: string]: any }, x: any) => {
+            acc[x.name] = x;
+            delete x.name;
+            return acc;
+        }, {});
+    }
+
     private onNetronInitialized = () => {
         // Reset document overflow property
         document.documentElement.style.overflow = 'initial';
@@ -180,7 +189,7 @@ class NetronComponent extends React.Component<IComponentProperties, IComponentSt
         // FIXME What to do when model has multiple graphs?
         const graph = model.graphs[0];
         if (graph.constructor.name === 'OnnxGraph') {
-            const getNames = (list: any[]) => list.reduce((acc: string[], x: any) => {
+            const getNames = (list: any[]): string[] => list.reduce((acc: string[], x: any) => {
                 acc.push(x.name);
                 return acc;
             }, []);
@@ -188,14 +197,9 @@ class NetronComponent extends React.Component<IComponentProperties, IComponentSt
             const outputs = getNames(graph.outputs);
             this.props.setModelInputs(inputs);
             this.props.setModelOutputs(outputs);
-            this.props.setInputs(inputs);
-            this.props.setOutputs(outputs);
-            const nodes = {};
-            for (const node of proto.graph.node) {
-                nodes[node.name] = node;
-                delete nodes[node.name].name;
-            }
-            this.props.setNodes(nodes);
+            this.props.setInputs(this.valueListToObject(proto.graph.input));
+            this.props.setOutputs(this.valueListToObject(proto.graph.output));
+            this.props.setNodes(this.valueListToObject(proto.graph.node));
             this.props.setMetadataProps(this.propsToObject(model._metadataProps));
             this.props.setProperties(this.propsToObject(model.properties));
         } else {
@@ -210,6 +214,9 @@ class NetronComponent extends React.Component<IComponentProperties, IComponentSt
     };
 
     private openPanel = (content: any, title: string, width?: number) => {
+        if (!this.props.nodes) {
+            return;
+        }
         if (title === 'Node Properties') {
             this.props.setSelectedNode(content[1].innerText);
         } else if (title === 'Model Properties') {

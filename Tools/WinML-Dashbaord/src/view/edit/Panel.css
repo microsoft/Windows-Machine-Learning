@@ -13,9 +13,33 @@
     display: inline-block;
 }
 
-.TensorName {
-    display: inline;
-    margin: 10px;
+
+.TensorName, .TensorDocumentationHover {
+    display: block;
+    margin: 5px 5px;
+}
+
+.TensorDocumentationHover {
+    cursor: pointer;
+}
+
+.TensorTypeDenotationDiv {
+    display: flex;
+}
+
+.TensorTypeDenotationLabel {
+    margin: 3px 5px;
+}
+
+.TensorTypeDenotation {
+    flex: 1;
+}
+
+.DocString {
+    text-align: center;
+    vertical-align: middle;
+    height: 100%;
+    margin: 20px;
 }
 
 .Shape {

@@ -23,6 +23,7 @@ export default class Collapsible extends React.Component<IComponentProperties, I
         if (!this.state.visible) {
             style.maxHeight = '0px';
             style.visibility = 'hidden';
+            style.padding = '0px';
         }
         return (
             <div>

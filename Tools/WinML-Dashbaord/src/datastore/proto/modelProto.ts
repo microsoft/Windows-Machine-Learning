@@ -3,6 +3,13 @@ import { Proto } from './proto';
 
 
 class ModelProto extends Proto {
+    public setInputs(inputs: { [key: string]: any }) {
+        if (!Proto.getOnnx() || !this.proto) {
+            return;
+        }
+        this.proto.graph.input = inputs;
+    }
+
     public setMetadata(metadata: IMetadataProps) {
         if (!Proto.getOnnx() || !this.proto) {
             return;

@@ -8,8 +8,8 @@
     cursor: pointer;
     text-align: left;
     border: 1px lightgray;
-    border-style: solid none none;
-    padding: 5px;
+    border-style: solid none;
+    padding: 5px 5px 10px;
 }
 
 .Content {

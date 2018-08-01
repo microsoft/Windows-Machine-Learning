@@ -19,8 +19,9 @@ interface IComponentProperties {
 
 class RightPanel extends React.Component<IComponentProperties, {}> {
     public render() {
-        if (this.props.nodes === null) {
+        if (this.props.metadataProps !== undefined && !this.props.nodes) {
             return (
+                // TODO Make it a button to navigate to the Convert tab
                 <Label className='FormatIsNotOnnx'>To support editing, convert the model to ONNX first.</Label>
             );
         }

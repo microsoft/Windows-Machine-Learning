@@ -24,6 +24,17 @@ interface IComponentProperties {
     setOutputs: typeof setOutputs,
 }
 
+const denotationOptions = ['', 'IMAGE', 'AUDIO', 'TEXT', 'TENSOR'].map((key: string) => ({ key, text: key }));
+const dimensionDenotationOptions = [
+    'DATA_BATCH',
+    'DATA_CHANNEL',
+    'DATA_TIME',
+    'DATA_FEATURE',
+    'FILTER_IN_CHANNEL',
+    'FILTER_OUT_CHANNEL',
+    'FILTER_SPATIAL',
+].map((key) => ({ key, text: key }));
+
 const tensorProtoDataType = [
     'UNDEFINED',
     'float',
@@ -92,16 +103,14 @@ class LeftPanel extends React.Component<IComponentProperties, {}> {
     }
 
     private buildConnectionList = (connections: any[]) => {
-        const denotationOptions = ['', 'IMAGE', 'AUDIO', 'TEXT', 'TENSOR'].map((key: string) => ({ key, text: key }));
-        return connections.reduce((acc: any[], x: any) => {
+        return connections.map((x: any) => {
             const valueInfoProto = this.props.inputs[x] || this.props.outputs[x];
             if (!valueInfoProto) {
-                acc.push(
+                return (
                     <div key={x}>
-                        <Label className='TensorName' disabled={true}>{x}</Label>
+                        <Label className='TensorName' disabled={true}>{`${x} (type: internal model connection)`}</Label>
                     </div>
                 );
-                return acc;
             }
 
             const onnxType = Object.keys(valueInfoProto.type).find((t: string) => ['tensorType', 'sequenceType', 'mapType'].includes(t)) || 'unknownType';
@@ -128,6 +137,7 @@ class LeftPanel extends React.Component<IComponentProperties, {}> {
 
             const isModelInput = this.props.modelInputs.includes(x)
             const isModelOutput = this.props.modelOutputs.includes(x);
+            const disabled = !isModelInput && !isModelOutput;
             let keyChangedCallback;
             if (isModelInput) {
                 keyChangedCallback = (option?: IComboBoxOption, index?: number, value?: string) => {
@@ -145,36 +155,46 @@ class LeftPanel extends React.Component<IComponentProperties, {}> {
 
             let shapeEditor;
             if (type === 'tensor') {
-                shapeEditor = (
-                    <span className='Shape'>
-                        <TextField inputMode='numeric' type='number' placeholder='N' className='ShapeTextField' />
-                        <TextField inputMode='numeric' type='number' placeholder='C' className='ShapeTextField' />
-                        <TextField inputMode='numeric' type='number' placeholder='H' className='ShapeTextField' />
-                        <TextField inputMode='numeric' type='number' placeholder='W' className='ShapeTextField' />
-                    </span>
-                )
+                shapeEditor = valueInfoProto.type.tensorType.shape.dim.map((dim: any, index: number) => {
+                    return (
+                        <div key={index}>
+                            <div className='DenotationDiv'>
+                                <TextField
+                                    className='DenotationLabel'
+                                    label={`Dimension [${index}]`}
+                                    inputMode='numeric'
+                                    type='number'
+                                    placeholder='None'
+                                    disabled={disabled} />
+                                <ComboBox
+                                    label='Denotation'
+                                    defaultSelectedKey={valueInfoProto.type.denotation}
+                                    className='DenotationComboBox'
+                                    options={dimensionDenotationOptions}
+                                    disabled={disabled} />
+                            </div>
+                        </div>
+                    );
+                });
             }
 
-            acc.push(
+            return (
                 <div key={x}>
                     {tensorName}
-                    <div className='TensorTypeDenotationDiv'>
-                        <Label className='TensorTypeDenotationLabel'>Type denotation</Label>
+                    <div className='DenotationDiv'>
                         <ComboBox
-                            className='TensorTypeDenotation'
-                            placeholder='Type denotation'
+                            className='DenotationComboBox'
+                            label='Type denotation'
                             allowFreeform={true}
                             text={valueInfoProto.type.denotation}
                             options={denotationOptions}
                             disabled={!isModelInput && !isModelOutput}
-                            onChanged={keyChangedCallback}
-                        />
+                            onChanged={keyChangedCallback} />
                     </div>
                     {shapeEditor}
                 </div>
             );
-            return acc;
-        }, []);
+        });
     }
 }
 

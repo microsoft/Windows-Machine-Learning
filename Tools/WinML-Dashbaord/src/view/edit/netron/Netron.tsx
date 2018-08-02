@@ -150,8 +150,8 @@ class NetronComponent extends React.Component<IComponentProperties, IComponentSt
 
     private valueListToObject(values: any) {
         return values.reduce((acc: { [key: string]: any }, x: any) => {
-            acc[x.name] = x;
-            delete x.name;
+            const {name, ...props} = x;
+            acc[name] = props;
             return acc;
         }, {});
     }
@@ -189,10 +189,7 @@ class NetronComponent extends React.Component<IComponentProperties, IComponentSt
         // FIXME What to do when model has multiple graphs?
         const graph = model.graphs[0];
         if (graph.constructor.name === 'OnnxGraph') {
-            const getNames = (list: any[]): string[] => list.reduce((acc: string[], x: any) => {
-                acc.push(x.name);
-                return acc;
-            }, []);
+            const getNames = (list: any[]): string[] => list.map((x: any) => x.name);
             const inputs = getNames(graph.inputs);
             const outputs = getNames(graph.outputs);
             this.props.setModelInputs(inputs);

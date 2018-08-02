@@ -41,13 +41,13 @@ class KeyValueEditor extends React.Component<IComponentProperties, IComponentSta
             // Don't suggesting adding keys that already exist
             (x) => Object.keys(this.props.keyValueObject || {}).every((key) => !this.areSameKeys(key, x)));
         const options = knownKeys.map((key: string) => ({ key, text: key }));
-        let rows = [];
+        let rows: Array<React.ReactElement<HTMLDivElement>> = [];
 
         if (this.props.keyValueObject) {
             const [keyErrors, valueErrors] = this.validateSchema(this.state.caseInsensitiveSchema, this.props.keyValueObject);
             const schemaEntries = Object.entries(properties);
 
-            rows = Object.keys(this.props.keyValueObject!).reduce((acc: any[], x: string) => {
+            rows = Object.keys(this.props.keyValueObject!).map((x: string) => {
                 const lowerCaseKey = x.toLowerCase();
                 const keyChangedCallback = (option?: IComboBoxOption, index?: number, value?: string) => {
                     const key = value || option!.text;
@@ -80,7 +80,7 @@ class KeyValueEditor extends React.Component<IComponentProperties, IComponentSta
                 }
 
                 const keyErrorsState = this.state.keyErrors[lowerCaseKey];
-                acc.push(
+                return (
                     <div key={`${x}${keyErrorsState}`} className='KeyValueItem'>
                         { this.props.actionCreator &&
                             <Icon className='RemoveIcon' iconName='Cancel' onClick={removeCallback} />
@@ -106,8 +106,7 @@ class KeyValueEditor extends React.Component<IComponentProperties, IComponentSta
                         />
                     </div>
                 );
-                return acc;
-            }, []);
+            });
         }
 
         const addButtonDisabled = !(this.props.keyValueObject && Object.keys(this.props.keyValueObject).every((x) => !!x));
@@ -121,11 +120,11 @@ class KeyValueEditor extends React.Component<IComponentProperties, IComponentSta
                         className='KeyValueEditorButtonContainer'
                         iconProps={{ iconName: 'Add' }}
                         disabled={addButtonDisabled}
-                        onClick={this.addMetadataProp}
+                        onClick={this.addProp}
                         split={!!knownKeys.length}
                         menuProps={knownKeys.length ? {
                             items: options,
-                            onItemClick: this.addMetadataProp,
+                            onItemClick: this.addProp,
                         } : undefined}
                         // The Office UI includes a spam element in it when split = true, which is not of display type block
                         // and ignores the parent width. We do a hack to get it to 100% of the parent width.
@@ -188,14 +187,14 @@ class KeyValueEditor extends React.Component<IComponentProperties, IComponentSta
     }
 
     private toLowerCaseObject = (obj: { [key: string]: string }) => {
-        return Object.entries(obj).reduce((acc: {}, keyValue: [string, string]) => {
+        return Object.entries(obj).reduce((acc: {}, keyValue: [string, any]) => {
             const [key, value] = keyValue;
-            acc[key.toLowerCase()] = value.toLowerCase();
+            acc[key.toLowerCase()] = value.toString().toLowerCase();
             return acc;
         }, {});
     }
 
-    private addMetadataProp = (event: any, item?: any) => {
+    private addProp = (event: any, item?: any) => {
         const key = item && item.key || '';
         if (this.props.keyValueObject) {
             this.props.updateKeyValueObject!({ ...this.props.keyValueObject, [key]: ''});

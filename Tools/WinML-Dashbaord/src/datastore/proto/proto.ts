@@ -4,6 +4,7 @@ export class Proto {
     public static types: {
         ModelProto: any,
         StringStringEntryProto: any,
+        ValueInfoProto: any,
     };
 
     public static getOnnx() {
@@ -15,10 +16,7 @@ export class Proto {
                 return;
             }
             this.onnx = browserGlobal.protobuf.roots.onnx.onnx;
-            this.types = {
-                ModelProto: this.onnx.ModelProto,
-                StringStringEntryProto: this.onnx.StringStringEntryProto,
-            };
+            this.types = this.onnx;
         }
         return this.onnx;
     }

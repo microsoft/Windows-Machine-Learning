@@ -8,12 +8,6 @@
     text-align: center;
 }
 
-.ShapeTextField {
-    width: 70px;
-    display: inline-block;
-}
-
-
 .TensorName, .TensorDocumentationHover {
     display: block;
     margin: 5px 5px;
@@ -23,15 +17,17 @@
     cursor: pointer;
 }
 
-.TensorTypeDenotationDiv {
+.DenotationDiv {
     display: flex;
 }
 
-.TensorTypeDenotationLabel {
-    margin: 3px 5px;
+.DenotationLabel {
+    margin: 2px;
+    width: 110px;
 }
 
-.TensorTypeDenotation {
+.DenotationComboBox {
+    margin: 2px;
     flex: 1;
 }
 
@@ -40,10 +36,6 @@
     vertical-align: middle;
     height: 100%;
     margin: 20px;
-}
-
-.Shape {
-    display: inline-block;
 }
 
 .FormatIsNotOnnx {

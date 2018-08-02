@@ -139,24 +139,42 @@ class LeftPanel extends React.Component<IComponentProperties, {}> {
             const isModelInput = this.props.modelInputs.includes(x)
             const isModelOutput = this.props.modelOutputs.includes(x);
             const disabled = !isModelInput && !isModelOutput;
+            const valueInfoProtoCopy = () => Proto.types.ValueInfoProto.fromObject(Proto.types.ValueInfoProto.toObject(valueInfoProto));
             const tensorDenotationChanged = (option?: IComboBoxOption, index?: number, value?: string) => {
-                const next = {...this.props[isModelInput ? 'inputs' : 'outputs']};
-                const nextValueInfoProto = Proto.types.ValueInfoProto.fromObject(Proto.types.ValueInfoProto.toObject(next[x]));
+                const nextValueInfoProto = valueInfoProtoCopy();
                 nextValueInfoProto.type.denotation = value || option!.text;
-                next[x] = nextValueInfoProto;
-                this.props[isModelInput ? 'setInputs' : 'setOutputs'](next);
+                this.props[isModelInput ? 'setInputs' : 'setOutputs']({
+                    ...this.props[isModelInput ? 'inputs' : 'outputs'],
+                    [x]: nextValueInfoProto,
+                });
             };
 
             let shapeEditor;
             if (type === 'tensor') {
                 const getValueInfoDimensions = (valueInfo: any) => valueInfo.type.tensorType.shape.dim;
                 shapeEditor = getValueInfoDimensions(valueInfoProto).map((dim: any, index: number) => {
+                    const dimensionChanged = (value: string) => {
+                        const nextValueInfoProto = valueInfoProtoCopy();
+                        const dimension = getValueInfoDimensions(nextValueInfoProto)[index]
+                        if (value) {
+                            dimension.dimValue = +value;
+                            delete dimension.dimParam;
+                        } else {
+                            dimension.dimParam = 'None'
+                            delete dimension.dimValue;
+                        }
+                        this.props[isModelInput ? 'setInputs' : 'setOutputs']({
+                            ...this.props[isModelInput ? 'inputs' : 'outputs'],
+                            [x]: nextValueInfoProto,
+                        });
+                    }
                     const dimensionDenotationChanged = (option?: IComboBoxOption) => {
-                        const next = {...this.props[isModelInput ? 'inputs' : 'outputs']};
-                        const nextValueInfoProto = Proto.types.ValueInfoProto.fromObject(Proto.types.ValueInfoProto.toObject(next[x]));
+                        const nextValueInfoProto = valueInfoProtoCopy();
                         getValueInfoDimensions(nextValueInfoProto)[index].denotation = option!.text;
-                        next[x] = nextValueInfoProto;
-                        this.props[isModelInput ? 'setInputs' : 'setOutputs'](next);
+                        this.props[isModelInput ? 'setInputs' : 'setOutputs']({
+                            ...this.props[isModelInput ? 'inputs' : 'outputs'],
+                            [x]: nextValueInfoProto,
+                        });
                     };
                     return (
                         <div key={index}>
@@ -164,10 +182,12 @@ class LeftPanel extends React.Component<IComponentProperties, {}> {
                                 <TextField
                                     className='DenotationLabel'
                                     label={`Dimension [${index}]`}
+                                    value={dim.dimParam === 'None' ? undefined : dim.dimValue}
                                     inputMode='numeric'
                                     type='number'
                                     placeholder='None'
-                                    disabled={disabled} />
+                                    disabled={disabled}
+                                    onChanged={dimensionChanged} />
                                 <ComboBox
                                     label='Denotation'
                                     defaultSelectedKey={dim.denotation}

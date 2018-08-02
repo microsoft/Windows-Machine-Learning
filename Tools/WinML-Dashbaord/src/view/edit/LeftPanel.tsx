@@ -8,6 +8,7 @@ import { connect } from 'react-redux';
 import Collapsible from '../../components/Collapsible';
 import Resizable from '../../components/Resizable';
 import { setInputs, setOutputs } from '../../datastore/actionCreators';
+import { Proto } from '../../datastore/proto/proto';
 import IState from '../../datastore/state';
 
 import './Panel.css';
@@ -108,7 +109,7 @@ class LeftPanel extends React.Component<IComponentProperties, {}> {
             if (!valueInfoProto) {
                 return (
                     <div key={x}>
-                        <Label className='TensorName' disabled={true}>{`${x} (type: internal model connection)`}</Label>
+                        <Label className='TensorName' disabled={true}>{`${x} (type: internal connection)`}</Label>
                     </div>
                 );
             }
@@ -138,24 +139,25 @@ class LeftPanel extends React.Component<IComponentProperties, {}> {
             const isModelInput = this.props.modelInputs.includes(x)
             const isModelOutput = this.props.modelOutputs.includes(x);
             const disabled = !isModelInput && !isModelOutput;
-            let keyChangedCallback;
-            if (isModelInput) {
-                keyChangedCallback = (option?: IComboBoxOption, index?: number, value?: string) => {
-                    const nextInputs = { ...this.props.inputs };
-                    nextInputs[x].type.denotation = value || option!.text;
-                    this.props.setInputs(nextInputs);
-                };
-            } else if (isModelOutput) {
-                keyChangedCallback = (option?: IComboBoxOption, index?: number, value?: string) => {
-                    const nextOutputs = { ...this.props.outputs };
-                    nextOutputs[x].type.denotation = value || option!.text;
-                    this.props.setOutputs(nextOutputs);
-                };
-            }
+            const tensorDenotationChanged = (option?: IComboBoxOption, index?: number, value?: string) => {
+                const next = {...this.props[isModelInput ? 'inputs' : 'outputs']};
+                const nextValueInfoProto = Proto.types.ValueInfoProto.fromObject(Proto.types.ValueInfoProto.toObject(next[x]));
+                nextValueInfoProto.type.denotation = value || option!.text;
+                next[x] = nextValueInfoProto;
+                this.props[isModelInput ? 'setInputs' : 'setOutputs'](next);
+            };
 
             let shapeEditor;
             if (type === 'tensor') {
-                shapeEditor = valueInfoProto.type.tensorType.shape.dim.map((dim: any, index: number) => {
+                const getValueInfoDimensions = (valueInfo: any) => valueInfo.type.tensorType.shape.dim;
+                shapeEditor = getValueInfoDimensions(valueInfoProto).map((dim: any, index: number) => {
+                    const dimensionDenotationChanged = (option?: IComboBoxOption) => {
+                        const next = {...this.props[isModelInput ? 'inputs' : 'outputs']};
+                        const nextValueInfoProto = Proto.types.ValueInfoProto.fromObject(Proto.types.ValueInfoProto.toObject(next[x]));
+                        getValueInfoDimensions(nextValueInfoProto)[index].denotation = option!.text;
+                        next[x] = nextValueInfoProto;
+                        this.props[isModelInput ? 'setInputs' : 'setOutputs'](next);
+                    };
                     return (
                         <div key={index}>
                             <div className='DenotationDiv'>
@@ -168,10 +170,11 @@ class LeftPanel extends React.Component<IComponentProperties, {}> {
                                     disabled={disabled} />
                                 <ComboBox
                                     label='Denotation'
-                                    defaultSelectedKey={valueInfoProto.type.denotation}
+                                    defaultSelectedKey={dim.denotation}
                                     className='DenotationComboBox'
                                     options={dimensionDenotationOptions}
-                                    disabled={disabled} />
+                                    disabled={disabled}
+                                    onChanged={dimensionDenotationChanged} />
                             </div>
                         </div>
                     );
@@ -189,7 +192,7 @@ class LeftPanel extends React.Component<IComponentProperties, {}> {
                             text={valueInfoProto.type.denotation}
                             options={denotationOptions}
                             disabled={!isModelInput && !isModelOutput}
-                            onChanged={keyChangedCallback} />
+                            onChanged={tensorDenotationChanged} />
                     </div>
                     {shapeEditor}
                 </div>

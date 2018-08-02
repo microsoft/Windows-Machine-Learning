@@ -25,7 +25,7 @@ class ModelProto extends Proto {
         if (!Proto.getOnnx() || !this.proto) {
             return;
         }
-        this.proto.graph.outputs = Object.keys(outputs).map((name: string) => ({ name, ...outputs[name] }));
+        this.proto.graph.output = Object.keys(outputs).map((name: string) => ({ name, ...outputs[name] }));
     }
 
     public serialize() {

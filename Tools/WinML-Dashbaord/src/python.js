@@ -6,7 +6,7 @@ const unzipper = require('unzipper');
 const util = require('util');
 
 const appData = process.env.APPDATA ||
-    path.join(process.env.HOME, process.platform == 'darwin' ? 'Library/Preferences' : '.local/share');
+    path.join(process.env.HOME, process.platform === 'darwin' ? 'Library/Preferences' : '.local/share');
 
 function mkdir(...directory) {
     directory = path.join(...directory);
@@ -22,7 +22,9 @@ function filterPythonBinaries(binaries) {
         try {
             execFileSync(binary, ['-c', 'import venv']);
             return true;
-        } catch(_) {}
+        } catch(_) {
+            // Pass if not run successfully
+        }
     }, []);
 }
 

@@ -4,6 +4,7 @@ export class Proto {
     public static types: {
         ModelProto: any,
         StringStringEntryProto: any,
+        TypeProto: any,
         ValueInfoProto: any,
     };
 

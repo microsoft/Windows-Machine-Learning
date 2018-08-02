@@ -22,7 +22,7 @@
 }
 
 .DenotationLabel {
-    margin: 2px;
+    margin: 2px !important;
     width: 110px;
 }
 

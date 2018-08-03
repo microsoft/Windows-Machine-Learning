@@ -146,8 +146,8 @@
     "@types/react" "*"
 
 "@types/react-redux@^6.0.5":
-  version "6.0.5"
-  resolved "https://registry.yarnpkg.com/@types/react-redux/-/react-redux-6.0.5.tgz#bb44679588554f3b686666c0484a960aa7a47b86"
+  version "6.0.6"
+  resolved "https://registry.yarnpkg.com/@types/react-redux/-/react-redux-6.0.6.tgz#87f1d0a6ea901b93fcaf95fa57641ff64079d277"
   dependencies:
     "@types/react" "*"
     redux "^4.0.0"
@@ -171,22 +171,22 @@
     "@uifabric/styling" ">=6.3.0 <7.0.0"
     tslib "^1.7.1"
 
-"@uifabric/merge-styles@>=6.5.1 <7.0.0", "@uifabric/merge-styles@>=6.6.0 <7.0.0", "@uifabric/merge-styles@>=6.7.0 <7.0.0":
+"@uifabric/merge-styles@>=6.6.0 <7.0.0", "@uifabric/merge-styles@>=6.7.0 <7.0.0":
   version "6.7.0"
   resolved "https://registry.yarnpkg.com/@uifabric/merge-styles/-/merge-styles-6.7.0.tgz#35ced1e204279998d358332ada70fd3a2792692d"
   dependencies:
     tslib "^1.7.1"
 
-"@uifabric/styling@>=6.12.0 <7.0.0", "@uifabric/styling@>=6.3.0 <7.0.0":
-  version "6.12.0"
-  resolved "https://registry.yarnpkg.com/@uifabric/styling/-/styling-6.12.0.tgz#3949308cc9fbcd76b32899be43fc55c2671178e6"
+"@uifabric/styling@>=6.14.0 <7.0.0", "@uifabric/styling@>=6.3.0 <7.0.0":
+  version "6.14.0"
+  resolved "https://registry.yarnpkg.com/@uifabric/styling/-/styling-6.14.0.tgz#72e6f7fb0c456756ece4d4b3fc6c42d1d847190c"
   dependencies:
     "@microsoft/load-themed-styles" "^1.7.13"
-    "@uifabric/merge-styles" ">=6.5.1 <7.0.0"
-    "@uifabric/utilities" ">=6.12.0 <7.0.0"
+    "@uifabric/merge-styles" ">=6.7.0 <7.0.0"
+    "@uifabric/utilities" ">=6.12.1 <7.0.0"
     tslib "^1.7.1"
 
-"@uifabric/utilities@>=6.12.0 <7.0.0", "@uifabric/utilities@>=6.12.1 <7.0.0":
+"@uifabric/utilities@>=6.12.1 <7.0.0":
   version "6.12.1"
   resolved "https://registry.yarnpkg.com/@uifabric/utilities/-/utilities-6.12.1.tgz#e868d6cac5cea1b769219309acf8aff36e81cb1c"
   dependencies:
@@ -437,8 +437,10 @@ asn1.js@^4.0.0:
     minimalistic-assert "^1.0.0"
 
 asn1@~0.2.3:
-  version "0.2.3"
-  resolved "https://registry.yarnpkg.com/asn1/-/asn1-0.2.3.tgz#dac8787713c9966849fc8180777ebe9c1ddf3b86"
+  version "0.2.4"
+  resolved "https://registry.yarnpkg.com/asn1/-/asn1-0.2.4.tgz#8d2475dfab553bb33e77b54e59e880bb8ce23136"
+  dependencies:
+    safer-buffer "~2.1.0"
 
 assert-plus@1.0.0, assert-plus@^1.0.0:
   version "1.0.0"
@@ -1665,12 +1667,12 @@ caniuse-api@^1.5.2:
     lodash.uniq "^4.5.0"
 
 caniuse-db@^1.0.30000529, caniuse-db@^1.0.30000634, caniuse-db@^1.0.30000639:
-  version "1.0.30000872"
-  resolved "https://registry.yarnpkg.com/caniuse-db/-/caniuse-db-1.0.30000872.tgz#3f6e53b63d373768bf99e896133d66ef89c49999"
+  version "1.0.30000874"
+  resolved "https://registry.yarnpkg.com/caniuse-db/-/caniuse-db-1.0.30000874.tgz#49edc0262efdc6c49d4d962bb16d1f0c790fa44e"
 
 caniuse-lite@^1.0.30000748, caniuse-lite@^1.0.30000792:
-  version "1.0.30000865"
-  resolved "https://registry.yarnpkg.com/caniuse-lite/-/caniuse-lite-1.0.30000865.tgz#70026616e8afe6e1442f8bb4e1092987d81a2f25"
+  version "1.0.30000874"
+  resolved "https://registry.yarnpkg.com/caniuse-lite/-/caniuse-lite-1.0.30000874.tgz#a641b1f1c420d58d9b132920ef6ba87bbdcd2223"
 
 capture-exit@^1.2.0:
   version "1.2.0"
@@ -5345,14 +5347,14 @@ obuf@^1.0.0, obuf@^1.1.1:
   resolved "https://registry.yarnpkg.com/obuf/-/obuf-1.1.2.tgz#09bea3343d41859ebd446292d11c9d4db619084e"
 
 office-ui-fabric-react@^6.40.0:
-  version "6.43.0"
-  resolved "https://registry.yarnpkg.com/office-ui-fabric-react/-/office-ui-fabric-react-6.43.0.tgz#3789dc22482420cbe9f1ce3c8b5903d54a6d2b08"
+  version "6.45.0"
+  resolved "https://registry.yarnpkg.com/office-ui-fabric-react/-/office-ui-fabric-react-6.45.0.tgz#1e2741a2e3d62282ef783e88d2694ed384e8b21f"
   dependencies:
     "@microsoft/load-themed-styles" "^1.7.13"
     "@types/prop-types" "15.5.3"
     "@uifabric/icons" ">=6.0.2 <7.0.0"
     "@uifabric/merge-styles" ">=6.7.0 <7.0.0"
-    "@uifabric/styling" ">=6.12.0 <7.0.0"
+    "@uifabric/styling" ">=6.14.0 <7.0.0"
     "@uifabric/utilities" ">=6.12.1 <7.0.0"
     prop-types "^15.5.10"
     tslib "^1.7.1"
@@ -6045,8 +6047,8 @@ pseudomap@^1.0.2:
   resolved "https://registry.yarnpkg.com/pseudomap/-/pseudomap-1.0.2.tgz#f052a28da70e618917ef0a8ac34c1ae5a68286b3"
 
 psl@^1.1.24:
-  version "1.1.28"
-  resolved "https://registry.yarnpkg.com/psl/-/psl-1.1.28.tgz#4fb6ceb08a1e2214d4fd4de0ca22dae13740bc7b"
+  version "1.1.29"
+  resolved "https://registry.yarnpkg.com/psl/-/psl-1.1.29.tgz#60f580d360170bb722a797cc704411e6da850c67"
 
 public-encrypt@^4.0.0:
   version "4.0.2"
@@ -6678,7 +6680,7 @@ safe-regex@^1.1.0:
   dependencies:
     ret "~0.1.10"
 
-"safer-buffer@>= 2.1.2 < 3", safer-buffer@^2.0.2, safer-buffer@^2.1.0:
+"safer-buffer@>= 2.1.2 < 3", safer-buffer@^2.0.2, safer-buffer@^2.1.0, safer-buffer@~2.1.0:
   version "2.1.2"
   resolved "https://registry.yarnpkg.com/safer-buffer/-/safer-buffer-2.1.2.tgz#44fa161b0187b9549dd84bb91802f9bd8385cd6a"
 

@@ -9,7 +9,7 @@ PLEASE HELP US PROCESS ISSUES FASTER BY FOLLOWING THE BELOW GUIDELINES.
 ISSUES MISSING IMPORTANT INFORMATION MAY BE CLOSED WITHOUT INVESTIGATION.
 
 Guidelines:
-For Feature Requests, please head over to Windows Developer Feedback using this link: https://wpdev.uservoice.com/
+For Feature Requests, please head over to Windows Developer Feedback using this link: https://wpdev.uservoice.com/forums/110705-universal-windows-platform?category_id=341035
 
 For documentation feedback, please use the documentation feedback button on http://docs.microsoft.com/windowsml
 

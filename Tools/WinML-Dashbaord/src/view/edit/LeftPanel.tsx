@@ -69,28 +69,31 @@ const getFullType = (typeProto: any): string => {
 class LeftPanel extends React.Component<IComponentProperties, {}> {
     public render() {
         return (
-            <Resizable visible={!!this.props.selectedNode}>
-                {this.props.selectedNode && this.getContent()}
+            <Resizable visible={this.props.selectedNode !== undefined}>
+                {this.props.selectedNode !== undefined && this.getContent()}
             </Resizable>
         );
     }
 
     private getContent() {
-        const modelPropertiesSelected = this.props.selectedNode === 'Model Properties';
+        let name = 'Model Properties';
+        const modelPropertiesSelected = this.props.selectedNode === name;
         let input: any[];
         let output: any[];
         if (modelPropertiesSelected) {
             input = this.props.modelInputs;
             output = this.props.modelOutputs;
         } else {
-            ({ input, output } = this.props.nodes[this.props.selectedNode]);
+            const node = this.props.nodes[this.props.selectedNode];
+            ({ input, output, name } = node);
+            name = `Node: ${name ? `${name} (${node.opType})` : node.opType}`;
         }
 
         const inputsForm = this.buildConnectionList(input);
         const outputsForm = this.buildConnectionList(output);
         return (
             <div>
-                <Label className='PanelName'>{this.props.selectedNode ? (`${modelPropertiesSelected ? '' : 'Node: '}${this.props.selectedNode}`) : ''}</Label>
+                <Label className='PanelName'>{name}</Label>
                 <div className='Panel'>
                     <Collapsible label='Inputs'>
                         {inputsForm}

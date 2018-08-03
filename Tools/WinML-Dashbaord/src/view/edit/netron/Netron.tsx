@@ -35,7 +35,7 @@ interface IComponentState {
 }
 
 class NetronComponent extends React.Component<IComponentProperties, IComponentState> {
-    private revokeModelLoadedProxy: () => void;
+    private proxiesRevoke: Array<() => void> = [];
 
     constructor(props: IComponentProperties) {
         super(props);
@@ -60,8 +60,8 @@ class NetronComponent extends React.Component<IComponentProperties, IComponentSt
     }
 
     public componentWillUnmount() {
-        if (this.revokeModelLoadedProxy) {
-            this.revokeModelLoadedProxy();
+        for (const revoke of this.proxiesRevoke) {
+            revoke();
         }
     }
 
@@ -159,14 +159,12 @@ class NetronComponent extends React.Component<IComponentProperties, IComponentSt
     private onNetronInitialized = () => {
         // Reset document overflow property
         document.documentElement.style.overflow = 'initial';
-        this.installModelLoadedProxy();
-        browserGlobal.view._sidebar.open = this.openPanel;
-        browserGlobal.view._sidebar.close = this.closePanel;
+        this.installProxies();
     }
 
-    private installModelLoadedProxy = () => {
+    private installProxies = () => {
         // Install proxy on browserGlobal.view.loadBuffer and update the data store
-        const handler = {
+        const loadBufferHandler = {
             apply: (target: any, thisArg: any, args: any) => {
                 const [buffer, identifier, callback] = args;
                 // Patch the callback to update our data store first
@@ -178,9 +176,39 @@ class NetronComponent extends React.Component<IComponentProperties, IComponentSt
                 });
             },
         };
-        const revokableProxy = Proxy.revocable(browserGlobal.view.loadBuffer, handler);
-        browserGlobal.view.loadBuffer = revokableProxy.proxy;
-        this.revokeModelLoadedProxy = revokableProxy.revoke;
+        const loadBufferProxy = Proxy.revocable(browserGlobal.view.loadBuffer, loadBufferHandler);
+        browserGlobal.view.loadBuffer = loadBufferProxy.proxy;
+        this.proxiesRevoke.push(loadBufferProxy.revoke);
+
+        const panelOpenHandler = {
+            apply: (target: any, thisArg: any, args: any) => {
+                if (this.props.nodes) {
+                    const title = args[1];
+                    if (title === 'Model Properties') {
+                        this.props.setSelectedNode(title);
+                        return;
+                    } else {
+                        this.props.setSelectedNode(undefined);
+                    }
+                }
+                return target.apply(thisArg, args);
+            },
+        };
+        const panelOpenProxy = Proxy.revocable(browserGlobal.view._sidebar.open, panelOpenHandler);
+        browserGlobal.view._sidebar.open = panelOpenProxy.proxy;
+        this.proxiesRevoke.push(panelOpenProxy.revoke);
+
+        const panelCloseHandler = {
+            apply: (target: any, thisArg: any, args: any) => {
+                this.props.setSelectedNode(undefined);
+                return target.apply(thisArg, args);
+            },
+        };
+        const panelCloseProxy = Proxy.revocable(browserGlobal.view._sidebar.open, panelCloseHandler);
+        browserGlobal.view._sidebar.open = panelCloseProxy.proxy;
+        this.proxiesRevoke.push(panelCloseProxy.revoke);
+
+        browserGlobal.view.showNodeProperties = (node: any) => this.props.setSelectedNode(node.graph.nodes.indexOf(node));
     }
 
     private updateDataStore = (model: any) => {
@@ -196,7 +224,7 @@ class NetronComponent extends React.Component<IComponentProperties, IComponentSt
             this.props.setModelOutputs(outputs);
             this.props.setInputs(this.valueListToObject(proto.graph.input));
             this.props.setOutputs(this.valueListToObject(proto.graph.output));
-            this.props.setNodes(this.valueListToObject(proto.graph.node));
+            this.props.setNodes(proto.graph.node);
             this.props.setMetadataProps(this.propsToObject(model._metadataProps));
             this.props.setProperties(this.propsToObject(model.properties));
         } else {
@@ -209,21 +237,6 @@ class NetronComponent extends React.Component<IComponentProperties, IComponentSt
         this.props.setSelectedNode(undefined);
         ModelProtoSingleton.proto = proto;
     };
-
-    private openPanel = (content: any, title: string, width?: number) => {
-        if (!this.props.nodes) {
-            return;
-        }
-        if (title === 'Node Properties') {
-            this.props.setSelectedNode(content[1].innerText);
-        } else if (title === 'Model Properties') {
-            this.props.setSelectedNode(title);
-        }
-    }
-
-    private closePanel = () => {
-        this.props.setSelectedNode(undefined);
-    }
 }
 
 const mapStateToProps = (state: IState) => ({

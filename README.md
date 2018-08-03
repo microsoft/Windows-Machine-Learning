@@ -21,7 +21,7 @@ These generic examples show how to use various models and input feeds with Windo
 ## Requirements
 
 - [Visual Studio 2017 Version 15.7.4 or Newer](https://developer.microsoft.com/en-us/windows/downloads)
-- [Windows 10 - Build 17724 or higher](https://www.microsoft.com/en-us/software-download/windowsinsiderpreviewiso)
+- [Windows 10 - Build 17728 or higher](https://www.microsoft.com/en-us/software-download/windowsinsiderpreviewiso)
 - [Windows SDK - Build 17723 or higher](https://www.microsoft.com/en-us/software-download/windowsinsiderpreviewSDK)
 
 ## Using the samples

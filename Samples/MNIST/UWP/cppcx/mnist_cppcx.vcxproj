@@ -136,7 +136,7 @@
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="model.h" />
+    <ClInclude Include="mnist.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="App.xaml.h">
       <DependentUpon>App.xaml</DependentUpon>
@@ -157,7 +157,7 @@
     <AppxManifest Include="Package.appxmanifest">
       <SubType>Designer</SubType>
     </AppxManifest>
-    <None Include="Assets\model.onnx">
+    <None Include="Assets\mnist.onnx">
       <DeploymentContent>true</DeploymentContent>
     </None>
     <None Include="mnist_cppcx_TemporaryKey.pfx" />

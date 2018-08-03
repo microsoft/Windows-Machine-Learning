@@ -8,4 +8,4 @@
 #include <ppltasks.h>
 
 #include "App.xaml.h"
-#include "model.h"
+#include "mnist.h"

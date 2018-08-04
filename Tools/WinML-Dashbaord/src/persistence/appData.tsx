@@ -1,8 +1,11 @@
 import * as fs from 'fs';
 import * as path from 'path';
 
-export const appData = process.env.APPDATA ||
-    path.join(process.env.HOME || '/tmp', process.platform === 'darwin' ? 'Library/Preferences' : '.local/share');
+const nodeProcess = process;
+const env = nodeProcess.env;
+
+export const appData = env.APPDATA ||
+    path.join(env.HOME || '/tmp', process.platform === 'darwin' ? 'Library/Preferences' : '.local/share');
 
 export function mkdir(...directory: string[]) {
     const joined = path.join(...directory);

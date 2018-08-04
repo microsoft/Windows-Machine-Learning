@@ -8,21 +8,22 @@ import * as yauzl from 'yauzl';
 import { mkdir, winmlDataFoler } from '../persistence/appData';
 
 const venv = path.join(winmlDataFoler, 'venv');
+export const localPython = path.join(winmlDataFoler, 'python/python');
 
 function filterPythonBinaries(binaries: string[]) {
     // Look for binaries with venv support
-    return binaries.filter((binary) => {
+    return binaries.reduce((acc, x) => {
         try {
-            execFileSync(binary, ['-c', 'import venv']);
-            return true;
+            const binary = execFileSync(x, ['-c', 'import venv; import sys; print(sys.executable)'], { encoding: 'utf8' });
+            acc.push(binary.trim());
         } catch(_) {
-            return;
+            // Ignore binary if unavailable
         }
-    });
+        return acc;
+    }, [] as string[]);
 }
 
 export function getPythonBinaries() {
-    const localPython = path.join(winmlDataFoler, 'python/python');
     const binaries = filterPythonBinaries([localPython, 'python3', 'py', 'python']) as Array<string | null>;
     if (process.platform === 'win32' && binaries[0] !== localPython) {
         binaries.push(null);  // use null to represent local, embedded version
@@ -30,28 +31,30 @@ export function getPythonBinaries() {
     return binaries;
 }
 
-function unzip(buffer: Buffer, directory: string) {
+function unzip(buffer: Buffer, directory: string, success: () => void, errorCallback: (err: Error) => void) {
     yauzl.fromBuffer(buffer, (err, zipfile) => {
         if (err) {
-            // TODO
-            throw err;
+            errorCallback(err);
+            return;
         }
+        zipfile!.once('end', success);
+        zipfile!.once('error', errorCallback);
         zipfile!.readEntry();
         zipfile!.on('entry', entry => {
             zipfile!.openReadStream(entry, (error, readStream) => {
                 if (error) {
-                    // TODO
-                    throw error;
+                    errorCallback(error);
+                    return;
                 }
                 readStream!.on('end', zipfile!.readEntry);
+                readStream!.once('error', errorCallback);
                 readStream!.pipe(fs.createWriteStream(path.join(directory, entry.fileName)));
             });
         });
     });
-    // TODO call success on end
 }
 
-export function downloadPython(success: () => void, error: () => void) {
+export function downloadPython(success: () => void, error: (err: Error) => void) {
     if (process.platform !== 'win32') {
         throw new Error('Unsupported platform');
     }
@@ -60,12 +63,9 @@ export function downloadPython(success: () => void, error: () => void) {
     const data: Buffer[] = [];
     https.get(pythonUrl, response => {
         response
-        .on('data', (chunk: Buffer) => data.push(chunk))
-        .on('end', () => unzip(Buffer.concat(data), pythonFolder))
-        .on('error', (err: Error) => {
-            // TODO
-            throw err;
-        });
+        .on('data', data.push)
+        .on('end', () => unzip(Buffer.concat(data), pythonFolder, success, error))
+        .on('error', error);
     });
 }
 
@@ -85,5 +85,5 @@ export async function pip(...command: string[]) {
 export async function installVenv(targetPython: string) {
     await promisify(execFile)(targetPython, ['-m', 'venv', venv]);
     await pip('install', '-U', 'pip');
-    await pip('install', '-r', path.join(__dirname, 'requirements.txt'));
+    await pip('install', '-r', path.join(__filename, 'requirements.txt'));
 }

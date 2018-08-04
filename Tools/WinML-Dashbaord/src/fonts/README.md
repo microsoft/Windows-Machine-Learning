@@ -7,3 +7,4 @@ The icons currently in use are:
 * E70D
 * E710
 * E711
+* EA39

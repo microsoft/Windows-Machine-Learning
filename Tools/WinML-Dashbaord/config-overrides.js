@@ -1,6 +1,8 @@
 module.exports = function override(config, env) {
-    // __filename and __dirname are currently mocked
     config.node = {
+        __dirname: false,
+        __filename: false,
+
         Buffer: false,
         child_process: false,
         dgram: false,

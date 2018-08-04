@@ -2,17 +2,19 @@ import { DefaultButton } from 'office-ui-fabric-react/lib/Button';
 import { ChoiceGroup, IChoiceGroupOption } from 'office-ui-fabric-react/lib/ChoiceGroup';
 import { MessageBar, MessageBarType } from 'office-ui-fabric-react/lib/MessageBar';
 import { Spinner } from 'office-ui-fabric-react/lib/Spinner';
+import * as path from 'path';
 import * as React from 'react';
 
 import { winmlDataFoler } from '../../persistence/appData';
-import { downloadPython, getPythonBinaries, getVenvPython, installVenv, localPython } from '../../python/python';
+import { downloadPython, getPythonBinaries, getVenvPython, installVenv, pip } from '../../python/python';
 
 import './View.css';
 
 enum InstallationStep {
     NotInstalling,
     Downloading,
-    Installing,
+    CreatingVenv,
+    InstallingRequirements,
 }
 
 interface IComponentState {
@@ -21,7 +23,7 @@ interface IComponentState {
 }
 
 export default class ConvertView extends React.Component<{}, IComponentState> {
-    private venvPython: string;
+    private venvPython: string | undefined;
 
     constructor(props: {}) {
         super(props);
@@ -47,8 +49,10 @@ export default class ConvertView extends React.Component<{}, IComponentState> {
         switch (this.state.installationStep) {
             case InstallationStep.Downloading:
                 return <Spinner label="Downloading Python..." />;
-            case InstallationStep.Installing:
-                return <Spinner label="Downloading and installing converter..." />;
+            case InstallationStep.CreatingVenv:
+                return <Spinner label="Creating virtual environment..." />;
+            case InstallationStep.InstallingRequirements:
+                return <Spinner label="Downloading and installing requirements..." />;
         }
         this.venvPython = this.venvPython || getVenvPython();
         if (!this.venvPython) {
@@ -60,12 +64,19 @@ export default class ConvertView extends React.Component<{}, IComponentState> {
     private pythonChooser = () => {
         const binaries = getPythonBinaries();
         const options = binaries.map((key) => key ? { key, text: key } : { key: '__download', text: 'Download a new Python binary to be used exclusively by the WinML Dashboard' });
-        const onChange = (ev: React.FormEvent<HTMLInputElement>, option: IChoiceGroupOption) => {
-            if (option.key === '__download') {
-                this.setState({ installationStep: InstallationStep.Downloading });
-                downloadPython(() => this.installVenv(localPython), (err) => this.setState({ error: err }));
-            } else {
-                this.installVenv(option.key);
+        const onChange = async (ev: React.FormEvent<HTMLInputElement>, option: IChoiceGroupOption) => {
+            try {
+                if (option.key === '__download') {
+                    this.setState({ installationStep: InstallationStep.Downloading });
+                    await downloadPython();
+                } else {
+                    this.setState({ installationStep: InstallationStep.CreatingVenv });
+                    await installVenv(option.key);
+                }
+                await this.installRequirements();
+                this.setState({ installationStep: InstallationStep.NotInstalling });
+            } catch (error) {
+                this.setState({ error, installationStep: InstallationStep.NotInstalling });
             }
         }
         return (
@@ -77,14 +88,9 @@ export default class ConvertView extends React.Component<{}, IComponentState> {
         );
     }
 
-    private installVenv = async (targetPython: string) => {
-        this.setState({ installationStep: InstallationStep.Installing });
-        try {
-            await installVenv(targetPython);
-            this.setState({ installationStep: InstallationStep.NotInstalling });
-        } catch (error) {
-            this.setState({ error, installationStep: InstallationStep.NotInstalling });
-        }
+    private installRequirements = async () => {
+        this.setState({ installationStep: InstallationStep.InstallingRequirements });
+        await pip('install', '-r', path.join(__filename, 'requirements.txt'));
     }
 
     private convert = () => {

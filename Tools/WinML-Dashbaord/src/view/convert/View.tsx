@@ -49,7 +49,7 @@ export default class ConvertView extends React.Component<{}, IComponentState> {
             case InstallationStep.Downloading:
                 return <Spinner label="Downloading Python..." />;
             case InstallationStep.Installing:
-                return <Spinner label="Installing converter..." />;
+                return <Spinner label="Downloading and installing converter..." />;
         }
         this.venvPython = this.venvPython || getVenvPython();
         if (!this.venvPython) {

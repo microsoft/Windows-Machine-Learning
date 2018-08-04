@@ -28,7 +28,7 @@ export function getPythonBinaries() {
     if (process.platform === 'win32' && binaries[0] !== localPython) {
         binaries.push(null);  // use null to represent local, embedded version
     }
-    return binaries;
+    return [...new Set(binaries)];
 }
 
 function unzip(buffer: Buffer, directory: string, success: () => void, errorCallback: (err: Error) => void) {

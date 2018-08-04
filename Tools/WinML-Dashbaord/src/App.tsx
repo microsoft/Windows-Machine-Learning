@@ -3,6 +3,7 @@ import { Pivot, PivotItem } from 'office-ui-fabric-react/lib/Pivot';
 import * as React from 'react';
 
 import { initializeIcons } from './fonts';
+import ConvertView from './view/convert/View';
 import EditView from './view/edit/View';
 import LearnView from './view/learn/View';
 
@@ -35,7 +36,7 @@ class App extends React.Component<{}, IComponentState> {
                     <EditView />
                 </div>
                 <div style={{ display: this.displayIfKeySelected('Convert') }}>
-                    <Label>TODO</Label>
+                    <ConvertView />
                 </div>
                 <div style={{ display: this.displayIfKeySelected('Debug') }}>
                     <Label>TODO</Label>

@@ -48,6 +48,7 @@ function unzip(buffer: Buffer, directory: string) {
             });
         });
     });
+    // TODO call success on end
 }
 
 export function downloadPython(success: () => void, error: () => void) {
@@ -70,11 +71,7 @@ export function downloadPython(success: () => void, error: () => void) {
 
 export function getVenvPython() {
     // Get Python installed in local venv
-    const binaries = filterPythonBinaries([path.join(venv, 'Scripts/python'), path.join(venv, 'bin/python')]);
-    if (binaries === []) {
-        return null;
-    }
-    return binaries[0];
+    return filterPythonBinaries([path.join(venv, 'Scripts/python'), path.join(venv, 'bin/python')])[0];
 }
 
 export async function python(...command: string[]) {

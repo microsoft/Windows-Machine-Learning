@@ -21,6 +21,7 @@ export function initializeIcons(
       'Add': '\uE710',
       'Cancel': '\uE711',
       'ChevronDown': '\uE70D',
+      'ErrorBadge': '\uEA39',
     },
     style: {
       MozOsxFontSmoothing: 'grayscale',

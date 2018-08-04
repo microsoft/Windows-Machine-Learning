@@ -39,14 +39,12 @@ function unzip(buffer: Buffer, directory: string, success: () => void, errorCall
         }
         zipfile!.once('end', success);
         zipfile!.once('error', errorCallback);
-        zipfile!.readEntry();
         zipfile!.on('entry', entry => {
             zipfile!.openReadStream(entry, (error, readStream) => {
                 if (error) {
                     errorCallback(error);
                     return;
                 }
-                readStream!.on('end', zipfile!.readEntry);
                 readStream!.once('error', errorCallback);
                 readStream!.pipe(fs.createWriteStream(path.join(directory, entry.fileName)));
             });
@@ -63,7 +61,7 @@ export function downloadPython(success: () => void, error: (err: Error) => void)
     const data: Buffer[] = [];
     https.get(pythonUrl, response => {
         response
-        .on('data', data.push)
+        .on('data', (x: string) => data.push(Buffer.from(x, 'binary')))
         .on('end', () => unzip(Buffer.concat(data), pythonFolder, success, error))
         .on('error', error);
     });

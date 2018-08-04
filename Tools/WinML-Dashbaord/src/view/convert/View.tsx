@@ -1,4 +1,3 @@
-// tslint:disable:no-console
 import { DefaultButton } from 'office-ui-fabric-react/lib/Button';
 import { ChoiceGroup, IChoiceGroupOption } from 'office-ui-fabric-react/lib/ChoiceGroup';
 import { MessageBar, MessageBarType } from 'office-ui-fabric-react/lib/MessageBar';
@@ -60,7 +59,6 @@ export default class ConvertView extends React.Component<{}, IComponentState> {
 
     private pythonChooser = () => {
         const binaries = getPythonBinaries();
-        console.log(binaries);
         const options = binaries.map((key) => key ? { key, text: key } : { key: '__download', text: 'Download a new Python binary to be used exclusively by the WinML Dashboard' });
         const onChange = (ev: React.FormEvent<HTMLInputElement>, option: IChoiceGroupOption) => {
             if (option.key === '__download') {
@@ -92,6 +90,7 @@ export default class ConvertView extends React.Component<{}, IComponentState> {
     private convert = () => {
         // Dialog box
         // python
+        // tslint:disable-next-line:no-console
         console.log('Convert')
     }
 }

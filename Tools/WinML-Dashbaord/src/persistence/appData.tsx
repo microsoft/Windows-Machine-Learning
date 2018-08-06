@@ -16,4 +16,4 @@ export function mkdir(...directory: string[]) {
 }
 
 // Point to the root if running in the web
-export const winmlDataFoler = fs.exists ? mkdir(appData, 'WinML-Dashboard') : '/';
+export const winmlDataFolder = fs.exists ? mkdir(appData, 'winml-dashbaord') : '/';

@@ -5,22 +5,26 @@ import * as path from 'path';
 import { promisify } from 'util';
 import * as yauzl from 'yauzl';
 
-import { mkdir, winmlDataFoler } from '../persistence/appData';
+import { mkdir, winmlDataFolder } from '../persistence/appData';
 
-const venv = mkdir(winmlDataFoler, 'venv');
-export const localPython = path.join(venv, 'Scripts/python');
+const venv = mkdir(winmlDataFolder, 'venv');
+export const embeddedPython = path.join(venv, 'python.exe');
 
 function filterPythonBinaries(binaries: string[]) {
     // Look for binaries with venv support
-    return binaries.reduce((acc, x) => {
+    return [...new Set(binaries.reduce((acc, x) => {
         try {
-            const binary = execFileSync(x, ['-c', 'import venv; import sys; print(sys.executable)'], { encoding: 'utf8' });
-            acc.push(binary.trim());
+            if (x === embeddedPython && fs.existsSync(x)) {  // Install directly (without a venv) in embedded Python installations
+                acc.push(x);
+            } else {
+                const binary = execFileSync(x, ['-c', 'import venv; import sys; print(sys.executable)'], { encoding: 'utf8' });
+                acc.push(binary.trim());
+            }
         } catch(_) {
             // Ignore binary if unavailable
         }
         return acc;
-    }, [] as string[]);
+    }, [] as string[]))];
 }
 
 export function getPythonBinaries() {
@@ -28,7 +32,7 @@ export function getPythonBinaries() {
     if (process.platform === 'win32') {
         binaries.push(null);  // use null to represent local, embedded version
     }
-    return [...new Set(binaries)];
+    return binaries;
 }
 
 async function unzip(buffer: Buffer, directory: string) {
@@ -54,7 +58,7 @@ async function unzip(buffer: Buffer, directory: string) {
 
 // Change the PTH to discover modules from Lib/site-packages, so that pip modules can be found
 const pythonPth = `Lib/site-packages
-python36.zip
+python37.zip
 .
 # Uncomment to run site.main() automatically
 import site`;
@@ -65,15 +69,14 @@ export async function downloadPython() {
             reject('Unsupported platform');
         }
         const pythonUrl = 'https://www.python.org/ftp/python/3.7.0/python-3.7.0-embed-amd64.zip';
-        const pythonFolder = mkdir(venv, 'Scripts');
         const data: Buffer[] = [];
         https.get(pythonUrl, response => {
             response
             .on('data', (x: string) => data.push(Buffer.from(x, 'binary')))
             .on('end', async () => {
                 try {
-                    await unzip(Buffer.concat(data), pythonFolder);
-                    fs.writeFileSync(path.join(pythonFolder, 'python37._pth'), pythonPth);
+                    await unzip(Buffer.concat(data), venv);
+                    fs.writeFileSync(path.join(venv, 'python37._pth'), pythonPth);
                     resolve();
                 } catch (err) {
                     reject(err);
@@ -84,16 +87,7 @@ export async function downloadPython() {
     });
 }
 
-export function getVenvPython() {
-    for (const binary of [localPython, path.join(venv, 'bin/python')]) {
-        if (fs.existsSync(binary)) {
-            return binary;
-        }
-    }
-    return;
-}
-
-export async function installPip() {
+export async function getPip() {
     // Python embedded distribution for Windows doesn't have pip
     return new Promise((resolve, reject) => {
         const data: Buffer[] = [];
@@ -102,9 +96,9 @@ export async function installPip() {
             .on('data', (x: string) => data.push(Buffer.from(x, 'binary')))
             .on('end', async () => {
                 try {
-                    const getPip = path.join(venv, 'get-pip.py');
-                    fs.writeFileSync(getPip, Buffer.concat(data));
-                    await python(getPip);
+                    const installer = path.join(venv, 'get-pip.py');
+                    fs.writeFileSync(installer, Buffer.concat(data));
+                    await python(installer);
                     resolve();
                 } catch (err) {
                     reject(err);
@@ -115,8 +109,32 @@ export async function installPip() {
     });
 }
 
+export function getLocalPython() {  // Get the local (embedded or venv) Python
+    return filterPythonBinaries([embeddedPython, path.join(venv, 'Scripts/python'), path.join(venv, 'bin/python')])[0];
+}
+
+async function execFilePromise(file: string, args: string[]) {
+    const run = async () => await promisify(execFile)(file, args);
+    for (let i = 0; i < 10; i++) {
+        try {
+            return await run();
+        } catch (err) {
+            if (err.code !== 'ENOENT') {
+                throw err;
+            }
+            // tslint:disable-next-line:no-console
+            console.warn('Ignoring possibly spurious ENOENT in child process invocation');
+        }
+    }
+    return await run();
+}
+
 export async function python(...command: string[]) {
-    return await promisify(execFile)(getVenvPython()!, [...command]);
+    const binary = getLocalPython();
+    if (!binary) {
+        throw Error('Failed to find Python binary in venv');
+    }
+    return await execFilePromise(binary, command);
 }
 
 export async function pip(...command: string[]) {

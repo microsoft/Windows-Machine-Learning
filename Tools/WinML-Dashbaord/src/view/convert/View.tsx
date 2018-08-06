@@ -5,14 +5,15 @@ import { Spinner } from 'office-ui-fabric-react/lib/Spinner';
 import * as path from 'path';
 import * as React from 'react';
 
-import { winmlDataFoler } from '../../persistence/appData';
-import { downloadPython, getPythonBinaries, getVenvPython, installVenv, pip } from '../../python/python';
+import { winmlDataFolder } from '../../persistence/appData';
+import { downloadPython, getLocalPython, getPip, getPythonBinaries, installVenv, pip } from '../../python/python';
 
 import './View.css';
 
 enum InstallationStep {
     NotInstalling,
     Downloading,
+    GetPip,
     CreatingVenv,
     InstallingRequirements,
 }
@@ -27,11 +28,10 @@ export default class ConvertView extends React.Component<{}, IComponentState> {
 
     constructor(props: {}) {
         super(props);
-        const state: IComponentState = { installationStep: InstallationStep.NotInstalling };
-        if (winmlDataFoler === '/') {
-            state.error = Error("The converter can't be run in the web interface");
-        }
-        this.state = state;
+        this.state = {
+            error: winmlDataFolder === '/' ? Error("The converter can't be run in the web interface") : undefined,
+            installationStep: InstallationStep.NotInstalling,
+        };
     }
 
     public render() {
@@ -43,18 +43,21 @@ export default class ConvertView extends React.Component<{}, IComponentState> {
     }
 
     private getView() {
-        if (this.state.error) {
-            return <MessageBar messageBarType={MessageBarType.error}>{this.state.error.message}</MessageBar>
+        const { error } = this.state;
+        if (error) {
+            return <MessageBar messageBarType={MessageBarType.error}>{`${error.stack ? `${error.stack}: ` : ''}${error.message}`}</MessageBar>
         }
         switch (this.state.installationStep) {
             case InstallationStep.Downloading:
                 return <Spinner label="Downloading Python..." />;
+            case InstallationStep.GetPip:
+                return <Spinner label="Getting pip to embedded Python..." />;
             case InstallationStep.CreatingVenv:
                 return <Spinner label="Creating virtual environment..." />;
             case InstallationStep.InstallingRequirements:
                 return <Spinner label="Downloading and installing requirements..." />;
         }
-        this.venvPython = this.venvPython || getVenvPython();
+        this.venvPython = this.venvPython || getLocalPython();
         if (!this.venvPython) {
             return this.pythonChooser();
         }
@@ -69,11 +72,14 @@ export default class ConvertView extends React.Component<{}, IComponentState> {
                 if (option.key === '__download') {
                     this.setState({ installationStep: InstallationStep.Downloading });
                     await downloadPython();
+                    this.setState({ installationStep: InstallationStep.GetPip });
+                    await getPip();
                 } else {
                     this.setState({ installationStep: InstallationStep.CreatingVenv });
                     await installVenv(option.key);
                 }
-                await this.installRequirements();
+                this.setState({ installationStep: InstallationStep.InstallingRequirements });
+                await pip('install', '-r', path.join(__filename, 'requirements.txt'));
                 this.setState({ installationStep: InstallationStep.NotInstalling });
             } catch (error) {
                 this.setState({ error, installationStep: InstallationStep.NotInstalling });
@@ -82,15 +88,10 @@ export default class ConvertView extends React.Component<{}, IComponentState> {
         return (
             <ChoiceGroup
                 options={options}
-                label={binaries[0] ? 'No suitable Python versions were found in the system.' : 'Suitable Python versions were found in the system. Pick one to be used by the converter.'}
+                label={binaries[0] ? 'Suitable Python versions were found in the system. Pick one to be used by the converter.' : 'No suitable Python versions were found in the system.'}
                 onChange={onChange}
             />
         );
-    }
-
-    private installRequirements = async () => {
-        this.setState({ installationStep: InstallationStep.InstallingRequirements });
-        await pip('install', '-r', path.join(__filename, 'requirements.txt'));
     }
 
     private convert = () => {

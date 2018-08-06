@@ -94,6 +94,8 @@ export async function downloadPython() {
             const data = await downloadBinaryFile('https://www.python.org/ftp/python/3.7.0/python-3.7.0-embed-amd64.zip') as Buffer;
             await unzip(data, localPython);
             fs.writeFileSync(path.join(localPython, 'python37._pth'), pythonPth);
+            const includes = await downloadBinaryFile('https://f001.backblazeb2.com/file/ticast/python37_include.zip') as Buffer;
+            await unzip(includes, localPython);
         } catch (err) {
             reject(err);
         }
@@ -123,7 +125,7 @@ export async function downloadPip() {
         try {
             const data = await downloadBinaryFile('https://bootstrap.pypa.io/get-pip.py') as Buffer;
             fs.writeFileSync(installer, data);
-            await python(installer);
+            await python([installer]);
         } catch (err) {
             return reject(err);
         }
@@ -151,25 +153,34 @@ async function execFilePromise(file: string, args: string[], options?: ExecFileO
     return await run();
 }
 
-export async function python(...command: string[]) {
+export async function python(command: string[], options?: ExecFileOptions) {
     const binary = getLocalPython();
     if (!binary) {
         throw Error('Failed to find local Python');
     }
-    const nodeProcess = process;
-    const PATH = `${nodeProcess.env.PATH}${path.delimiter}${path.join(winmlDataFolder, 'tools', 'protobuf')}`;
-    const env = {
-        ...nodeProcess.env,
-        CMAKE_INCLUDE_PATH: path.join(winmlDataFolder, 'include'),
-        CMAKE_LIBRARY_PATH: path.join(winmlDataFolder, 'bin'),
-        PATH,
-        Path: PATH,
-    };
-    return await execFilePromise(binary, command, { env });
+    return execFilePromise(binary, command, options);
 }
 
 export async function pip(...command: string[]) {
-    return await python('-m', 'pip', ...command);
+    let options;
+    if (getLocalPython() === embeddedPythonBinary) {
+        const nodeProcess = process;
+        const PATH = [nodeProcess.env.PATH, path.join(winmlDataFolder, 'tools', 'protobuf')].join(path.delimiter);
+        options = {
+            env: {
+                ...nodeProcess.env,
+                CMAKE_INCLUDE_PATH: path.join(winmlDataFolder, 'include'),
+                CMAKE_LIBRARY_PATH: path.join(winmlDataFolder, 'lib'),
+                // See https://github.com/google/protobuf/blob/master/cmake/README.md#notes-on-compiler-warnings
+                CXXFLAGS: '/wd4251',
+                PATH,
+                PYTHON_INCLUDE_DIR: path.join(winmlDataFolder, 'python', 'include'),
+                PYTHON_LIBRARY: path.join(winmlDataFolder, 'python', 'python37.dll'),
+                Path: PATH,
+            },
+        };
+    }
+    return python(['-m', 'pip', ...command], options);
 }
 
 export async function installVenv(targetPython: string) {

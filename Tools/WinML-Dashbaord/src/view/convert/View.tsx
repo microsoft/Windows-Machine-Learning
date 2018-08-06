@@ -6,7 +6,7 @@ import * as path from 'path';
 import * as React from 'react';
 
 import { winmlDataFolder } from '../../persistence/appData';
-import { downloadPython, getLocalPython, getPip, getPythonBinaries, installVenv, pip } from '../../python/python';
+import { downloadPip, downloadProtobuf, downloadPython, getLocalPython, getPythonBinaries, installVenv, pip } from '../../python/python';
 
 import './View.css';
 
@@ -14,6 +14,7 @@ enum InstallationStep {
     NotInstalling,
     Downloading,
     GetPip,
+    GetProtobuf,
     CreatingVenv,
     InstallingRequirements,
 }
@@ -52,6 +53,8 @@ export default class ConvertView extends React.Component<{}, IComponentState> {
                 return <Spinner label="Downloading Python..." />;
             case InstallationStep.GetPip:
                 return <Spinner label="Getting pip to embedded Python..." />;
+            case InstallationStep.GetProtobuf:
+                return <Spinner label="Getting protobuf..." />;
             case InstallationStep.CreatingVenv:
                 return <Spinner label="Creating virtual environment..." />;
             case InstallationStep.InstallingRequirements:
@@ -73,7 +76,9 @@ export default class ConvertView extends React.Component<{}, IComponentState> {
                     this.setState({ installationStep: InstallationStep.Downloading });
                     await downloadPython();
                     this.setState({ installationStep: InstallationStep.GetPip });
-                    await getPip();
+                    await downloadPip();
+                    this.setState({ installationStep: InstallationStep.GetProtobuf });
+                    await downloadProtobuf();
                 } else {
                     this.setState({ installationStep: InstallationStep.CreatingVenv });
                     await installVenv(option.key);

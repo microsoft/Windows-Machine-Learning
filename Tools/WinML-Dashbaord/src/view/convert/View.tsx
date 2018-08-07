@@ -84,7 +84,13 @@ export default class ConvertView extends React.Component<{}, IComponentState> {
                     await installVenv(option.key);
                 }
                 this.setState({ installationStep: InstallationStep.InstallingRequirements });
-                await pip('install', '-r', path.join(__filename, 'requirements.txt'));
+                await pip(['install', '-r', path.join(__filename, 'requirements.txt')], {
+                    // TODO have a UI text box and show the installation output
+                    // tslint:disable-next-line:no-console
+                    stderr: console.error,
+                    // tslint:disable-next-line:no-console
+                    stdout: console.log,
+                });
                 this.setState({ installationStep: InstallationStep.NotInstalling });
             } catch (error) {
                 this.setState({ error, installationStep: InstallationStep.NotInstalling });

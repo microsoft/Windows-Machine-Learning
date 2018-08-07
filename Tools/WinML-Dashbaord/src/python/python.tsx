@@ -1,8 +1,8 @@
 import { execFile, ExecFileOptions, execFileSync } from 'child_process';
 import * as fs from 'fs';
 import * as https from 'https';
+import * as os from 'os';
 import * as path from 'path';
-import { promisify } from 'util';
 import * as yauzl from 'yauzl';
 
 import { mkdir, winmlDataFolder } from '../persistence/appData';
@@ -13,15 +13,15 @@ const embeddedPythonBinary = path.join(localPython, 'python.exe');
 function filterPythonBinaries(binaries: string[]) {
     // Look for binaries with venv support
     return [...new Set(binaries.reduce((acc, x) => {
-        try {
-            if (x === embeddedPythonBinary && fs.existsSync(x)) {  // Install directly (without a venv) in embedded Python installations
-                acc.push(x);
-            } else {
+        if (x === embeddedPythonBinary && fs.existsSync(x)) {  // Install directly (without a venv) in embedded Python installations
+            acc.push(x);
+        } else {
+            try {
                 const binary = execFileSync(x, ['-c', 'import venv; import sys; print(sys.executable)'], { encoding: 'utf8' });
                 acc.push(binary.trim());
+            } catch(_) {
+                // Ignore binary if unavailable
             }
-        } catch(_) {
-            // Ignore binary if unavailable
         }
         return acc;
     }, [] as string[]))];
@@ -137,36 +137,52 @@ export function getLocalPython() {  // Get the local (embedded or venv) Python
     return filterPythonBinaries([embeddedPythonBinary, path.join(localPython, 'Scripts/python'), path.join(localPython, 'bin/python')])[0];
 }
 
-async function execFilePromise(file: string, args: string[], options?: ExecFileOptions) {
-    const run = async () => await promisify(execFile)(file, args, options);
+interface IOutputListener {
+    stdout: (output: string) => void,
+    stderr: (output: string) => void,
+}
+
+async function execFilePromise(file: string, args: string[], options?: ExecFileOptions, listener?: IOutputListener) {
+    const run = async () => new Promise((resolve, reject) => {
+        const childProcess = execFile(file, args, {...options});
+        if (listener) {
+            childProcess.stdout.on('data', listener.stdout);
+            childProcess.stderr.on('data', listener.stderr);
+        }
+        childProcess.on('exit', (code, signal) => {
+            if (code !== 0) {
+                return reject();
+            }
+            resolve();
+        });
+    });
     for (let i = 0; i < 10; i++) {
         try {
             return await run();
         } catch (err) {
-            if (err.code !== 'ENOENT') {
+            if (err.code !== 'ENOENT') {  // ignoring possible spurious ENOENT in child process invocation
                 throw err;
             }
-            // tslint:disable-next-line:no-console
-            console.warn('Ignoring possibly spurious ENOENT in child process invocation');
         }
     }
-    return await run();
+    return run();
 }
 
-export async function python(command: string[], options?: ExecFileOptions) {
+export async function python(command: string[], options?: ExecFileOptions, listener?: IOutputListener) {
     const binary = getLocalPython();
     if (!binary) {
         throw Error('Failed to find local Python');
     }
-    return execFilePromise(binary, command, options);
+    return execFilePromise(binary, command, options, listener);
 }
 
-export async function pip(...command: string[]) {
+export async function pip(command: string[], listener?: IOutputListener) {
     let options;
     if (getLocalPython() === embeddedPythonBinary) {
         const nodeProcess = process;
         const PATH = [nodeProcess.env.PATH, path.join(winmlDataFolder, 'tools', 'protobuf')].join(path.delimiter);
         options = {
+            cwd: os.tmpdir(),
             env: {
                 ...nodeProcess.env,
                 CMAKE_INCLUDE_PATH: path.join(winmlDataFolder, 'include'),
@@ -180,10 +196,10 @@ export async function pip(...command: string[]) {
             },
         };
     }
-    return python(['-m', 'pip', ...command], options);
+    return python(['-m', 'pip', ...command], options, listener);
 }
 
-export async function installVenv(targetPython: string) {
-    await promisify(execFile)(targetPython, ['-m', 'venv', localPython]);
-    await pip('install', '-U', 'pip');
+export async function installVenv(targetPython: string, listener?: IOutputListener) {
+    await execFilePromise(targetPython, ['-m', 'venv', localPython], {}, listener);
+    await pip(['install', '-U', 'pip'], listener);
 }

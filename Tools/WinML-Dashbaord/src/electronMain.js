@@ -48,6 +48,7 @@ function createWindow() {
         height: 600,
         width: 800,
     });
+    global.mainWindow = mainWindow;
 
     let pageUrl;
     for (const arg of process.argv.slice(1)) {

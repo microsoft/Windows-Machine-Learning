@@ -11,7 +11,6 @@ const localPython = mkdir(winmlDataFolder, 'python');
 const embeddedPythonBinary = path.join(localPython, 'python.exe');
 
 function filterPythonBinaries(binaries: string[]) {
-    // Look for binaries with venv support
     return [...new Set(binaries.reduce((acc, x) => {
         if (x === embeddedPythonBinary && fs.existsSync(x)) {  // Install directly (without a venv) in embedded Python installations
             acc.push(x);
@@ -20,7 +19,7 @@ function filterPythonBinaries(binaries: string[]) {
                 const binary = execFileSync(x, ['-c', 'import venv; import sys; print(sys.executable)'], { encoding: 'utf8' });
                 acc.push(binary.trim());
             } catch(_) {
-                // Ignore binary if unavailable
+                // Ignore binary if unavailable or no venv support
             }
         }
         return acc;
@@ -151,7 +150,7 @@ async function execFilePromise(file: string, args: string[], options?: ExecFileO
         }
         childProcess.on('exit', (code, signal) => {
             if (code !== 0) {
-                return reject();
+                return reject(Error(`Child process ${file} ${code !== null ? `exited with code ${code}` : `killed by signal ${signal}`}`));
             }
             resolve();
         });

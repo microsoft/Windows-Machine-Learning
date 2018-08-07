@@ -15,5 +15,10 @@ export function mkdir(...directory: string[]) {
     return joined;
 }
 
+export function packagedFile(...filePath: string[]) {
+    // Return a path to a file packaged in the application
+    return path.join(__filename, ...filePath);
+}
+
 // Point to the root if running in the web
 export const winmlDataFolder = fs.exists ? mkdir(appData, 'winml-dashbaord') : '/';

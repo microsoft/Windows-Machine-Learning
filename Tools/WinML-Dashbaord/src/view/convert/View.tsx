@@ -52,7 +52,7 @@ export default class ConvertView extends React.Component<{}, IComponentState> {
             case InstallationStep.Downloading:
                 return <Spinner label="Downloading Python..." />;
             case InstallationStep.GetPip:
-                return <Spinner label="Getting pip to embedded Python..." />;
+                return <Spinner label="Getting pip in embedded Python..." />;
             case InstallationStep.GetProtobuf:
                 return <Spinner label="Getting protobuf..." />;
             case InstallationStep.CreatingVenv:

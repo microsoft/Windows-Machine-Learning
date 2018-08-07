@@ -79,7 +79,7 @@ async function downloadBinaryFile(url: string) {
 
 // Change the PTH to discover modules from Lib/site-packages, so that pip modules can be found
 const pythonPth = `Lib/site-packages
-python37.zip
+python36.zip
 .
 # Uncomment to run site.main() automatically
 import site`;
@@ -90,9 +90,9 @@ export async function downloadPython() {
     }
     return new Promise(async (resolve, reject) => {
         try {
-            const data = await downloadBinaryFile('https://www.python.org/ftp/python/3.7.0/python-3.7.0-embed-amd64.zip') as Buffer;
+            const data = await downloadBinaryFile('https://www.python.org/ftp/python/3.6.6/python-3.6.6-embed-amd64.zip') as Buffer;
             await unzip(data, localPython);
-            fs.writeFileSync(path.join(localPython, 'python37._pth'), pythonPth);
+            fs.writeFileSync(path.join(localPython, 'python36._pth'), pythonPth);
             const includes = await downloadBinaryFile('https://f001.backblazeb2.com/file/ticast/python37_include.zip') as Buffer;
             await unzip(includes, localPython);
         } catch (err) {
@@ -190,7 +190,7 @@ export async function pip(command: string[], listener?: IOutputListener) {
                 CXXFLAGS: '/wd4251',
                 PATH,
                 PYTHON_INCLUDE_DIR: path.join(winmlDataFolder, 'python', 'include'),
-                PYTHON_LIBRARY: path.join(winmlDataFolder, 'python', 'python37.dll'),
+                PYTHON_LIBRARY: path.join(winmlDataFolder, 'python', 'python36.dll'),
                 Path: PATH,
             },
         };

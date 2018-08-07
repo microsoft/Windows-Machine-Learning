@@ -2,7 +2,7 @@
 
 Welcome to the Windows ML repo! In this repo, you will find sample apps that demonstrate how to use Windows ML to build machine learning applications for Windows 10. 
 
-For additional information on Windows ML, including release notes, step-by-step tutorials and how-to guides, please visit see the [Windows ML documentation](https://review.docs.microsoft.com/en-us/windows/ai/?branch=master)
+For additional information on Windows ML, including release notes, step-by-step tutorials and how-to guides, please visit the [Windows ML documentation](https://review.docs.microsoft.com/en-us/windows/ai/?branch=master).
 
 ## Pre-release APIs
 

@@ -10,17 +10,18 @@ import { downloadPip, downloadProtobuf, downloadPython, getLocalPython, getPytho
 
 import './View.css';
 
-enum InstallationStep {
-    NotInstalling,
+enum Step {
+    Idle,
     Downloading,
     GetPip,
     GetProtobuf,
     CreatingVenv,
     InstallingRequirements,
+    Converting,
 }
 
 interface IComponentState {
-    installationStep: InstallationStep,
+    currentStep: Step,
     error?: Error,
 }
 
@@ -30,8 +31,8 @@ export default class ConvertView extends React.Component<{}, IComponentState> {
     constructor(props: {}) {
         super(props);
         this.state = {
+            currentStep: Step.Idle,
             error: winmlDataFolder === '/' ? Error("The converter can't be run in the web interface") : undefined,
-            installationStep: InstallationStep.NotInstalling,
         };
     }
 
@@ -48,17 +49,19 @@ export default class ConvertView extends React.Component<{}, IComponentState> {
         if (error) {
             return <MessageBar messageBarType={MessageBarType.error}>{`${error.stack ? `${error.stack}: ` : ''}${error.message}`}</MessageBar>
         }
-        switch (this.state.installationStep) {
-            case InstallationStep.Downloading:
+        switch (this.state.currentStep) {
+            case Step.Downloading:
                 return <Spinner label="Downloading Python..." />;
-            case InstallationStep.GetPip:
+            case Step.GetPip:
                 return <Spinner label="Getting pip in embedded Python..." />;
-            case InstallationStep.GetProtobuf:
+            case Step.GetProtobuf:
                 return <Spinner label="Getting protobuf..." />;
-            case InstallationStep.CreatingVenv:
+            case Step.CreatingVenv:
                 return <Spinner label="Creating virtual environment..." />;
-            case InstallationStep.InstallingRequirements:
+            case Step.InstallingRequirements:
                 return <Spinner label="Downloading and installing requirements..." />;
+            case Step.Converting:
+                return <Spinner label="Converting..." />;
         }
         this.venvPython = this.venvPython || getLocalPython();
         if (!this.venvPython) {
@@ -73,17 +76,17 @@ export default class ConvertView extends React.Component<{}, IComponentState> {
         const onChange = async (ev: React.FormEvent<HTMLInputElement>, option: IChoiceGroupOption) => {
             try {
                 if (option.key === '__download') {
-                    this.setState({ installationStep: InstallationStep.Downloading });
+                    this.setState({ currentStep: Step.Downloading });
                     await downloadPython();
-                    this.setState({ installationStep: InstallationStep.GetPip });
+                    this.setState({ currentStep: Step.GetPip });
                     await downloadPip();
-                    this.setState({ installationStep: InstallationStep.GetProtobuf });
+                    this.setState({ currentStep: Step.GetProtobuf });
                     await downloadProtobuf();
                 } else {
-                    this.setState({ installationStep: InstallationStep.CreatingVenv });
+                    this.setState({ currentStep: Step.CreatingVenv });
                     await installVenv(option.key);
                 }
-                this.setState({ installationStep: InstallationStep.InstallingRequirements });
+                this.setState({ currentStep: Step.InstallingRequirements });
                 await pip(['install', '-r', packagedFile('requirements.txt')], {
                     // TODO have a UI text box and show the installation output
                     // tslint:disable-next-line:no-console
@@ -91,9 +94,9 @@ export default class ConvertView extends React.Component<{}, IComponentState> {
                     // tslint:disable-next-line:no-console
                     stdout: console.log,
                 });
-                this.setState({ installationStep: InstallationStep.NotInstalling });
+                this.setState({ currentStep: Step.Idle });
             } catch (error) {
-                this.setState({ error, installationStep: InstallationStep.NotInstalling });
+                this.setState({ error, currentStep: Step.Idle });
             }
         }
         // TODO Options to reinstall environment or update dependencies
@@ -121,12 +124,15 @@ export default class ConvertView extends React.Component<{}, IComponentState> {
             if (source) {
                 dialog.showSaveDialog(mainWindow, { filters: [{ name: 'ONNX model', extensions: ['onnx'] }] }, (destination) => {
                     if (destination) {
+                        this.setState({ currentStep: Step.Converting });
                         python([packagedFile('convert.py'), source, destination], {}, {
                             // TODO have a UI text box and show the installation output
                             // tslint:disable-next-line:no-console
                             stderr: console.error,
                             // tslint:disable-next-line:no-console
                             stdout: console.log,
+                        }).then(() => {
+                            this.setState({ currentStep: Step.Idle });
                         }).catch((error) => {
                             this.setState({ error });
                         });

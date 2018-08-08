@@ -4,7 +4,7 @@ Welcome to the Windows ML repo! Windows ML allows you to use trained machine lea
 
 In this repo, you will find sample apps that demonstrate how to use Windows ML to build machine learning applications for Windows 10. 
 
-For additional information on Windows ML, including step-by-step tutorials and how-to guides, please visit the [Windows ML documentation](https://review.docs.microsoft.com/en-us/windows/ai/?branch=master).
+For additional information on Windows ML, including step-by-step tutorials and how-to guides, please visit the [Windows ML documentation](https://docs.microsoft.com/en-us/windows/ai/).
 
 ## Pre-release APIs
 
@@ -31,7 +31,7 @@ These generic examples show how to use various models and input feeds with Windo
 ## Using the samples
 The easiest way to use these samples without using Git is to download the zip file containing the current version (using the following link or by clicking the "Download ZIP" button on the repo page). You can then unzip the entire archive and use the samples in Visual Studio 2017.
 
-[Download the samples ZIP](https://github.com/Microsoft/Windows-Machine-Learning/archive/RS5.zip)
+[Download the samples ZIP](https://github.com/Microsoft/Windows-Machine-Learning/archive/master.zip)
 
 Notes:
 Before you unzip the archive, right-click it, select Properties, and then select Unblock.

@@ -1,3 +1,20 @@
 .ConvertView {
     margin: 10px;
+    text-align: initial;
+}
+
+.ModelConvertBrowser {
+    width: 100%;
+}
+
+.ms-TextField {
+    flex: 1;
+}
+
+#ConverterModelInputBrowse {
+    margin: 24px 5px 0px;
+}
+
+#ConvertButton {
+    margin: 5px 0px;
 }

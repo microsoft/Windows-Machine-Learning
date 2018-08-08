@@ -17,10 +17,6 @@
     cursor: pointer;
 }
 
-.DenotationDiv {
-    display: flex;
-}
-
 .DenotationLabel {
     margin: 2px !important;
     width: 110px;

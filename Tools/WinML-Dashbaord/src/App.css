@@ -1,3 +1,7 @@
 .App {
-  text-align: center;
+    text-align: center;
+}
+
+.DisplayFlex {
+    display: flex;
 }

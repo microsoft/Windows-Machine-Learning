@@ -2,6 +2,7 @@ import { DefaultButton } from 'office-ui-fabric-react/lib/Button';
 import { ChoiceGroup, IChoiceGroupOption } from 'office-ui-fabric-react/lib/ChoiceGroup';
 import { MessageBar, MessageBarType } from 'office-ui-fabric-react/lib/MessageBar';
 import { Spinner } from 'office-ui-fabric-react/lib/Spinner';
+import { TextField } from 'office-ui-fabric-react/lib/TextField';
 import * as React from 'react';
 
 import { packagedFile, winmlDataFolder } from '../../persistence/appData';
@@ -22,10 +23,11 @@ enum Step {
 interface IComponentState {
     currentStep: Step,
     error?: Error | string,
+    source?: string,
 }
 
 export default class ConvertView extends React.Component<{}, IComponentState> {
-    private venvPython?: string;
+    private localPython?: string;
     private electron?: typeof Electron;
 
     constructor(props: {}) {
@@ -71,11 +73,11 @@ export default class ConvertView extends React.Component<{}, IComponentState> {
             case Step.Converting:
                 return <Spinner label="Converting..." />;
         }
-        this.venvPython = this.venvPython || getLocalPython();
-        if (!this.venvPython) {
+        this.localPython = this.localPython || getLocalPython();
+        if (!this.localPython) {
             return this.pythonChooser();
         }
-        return <DefaultButton style={{ height: '100vh', width: '100%' }} text='Open file' onClick={this.convert}/>;
+        return this.converterView();
     }
 
     private pythonChooser = () => {
@@ -96,8 +98,8 @@ export default class ConvertView extends React.Component<{}, IComponentState> {
                 }
                 this.setState({ currentStep: Step.InstallingRequirements });
                 await pip(['install', '-r', packagedFile('requirements.txt')], {
-                    stderr: print,
-                    stdout: print,
+                    stderr: this.printMessage,
+                    stdout: this.printMessage,
                 });
                 this.setState({ currentStep: Step.Idle });
             } catch (error) {
@@ -114,11 +116,24 @@ export default class ConvertView extends React.Component<{}, IComponentState> {
         );
     }
 
-    private convert = () => {
-        if (!this.electron) {
-            return;
-        }
-        const { dialog } = this.electron.remote;
+    private converterView = () => {
+        return (
+            <div>
+                <div className='DisplayFlex ModelConvertBrowser'>
+                    <TextField placeholder='Path' value={this.state.source} label='Model to convert' onChanged={this.setSource} />
+                    <DefaultButton id='ConverterModelInputBrowse' text='Browse' onClick={this.browseSource}/>
+                </div>
+                <DefaultButton id='ConvertButton' text='Convert' disabled={!this.state.source} onClick={this.convert}/>
+            </div>
+        );
+    }
+
+    private setSource = (source?: string) => {
+        this.setState({ source })
+    }
+
+    private browseSource = () => {
+        const { dialog } = this.electron!.remote;
         const openDialogOptions = {
             filters: [
                 { name: 'CoreML model', extensions: [ 'mlmodel' ] },
@@ -128,22 +143,28 @@ export default class ConvertView extends React.Component<{}, IComponentState> {
         };
         dialog.showOpenDialog(openDialogOptions, (filePaths: string[]) => {
             if (filePaths[0]) {
-                dialog.showSaveDialog({ filters: [{ name: 'ONNX model', extensions: ['onnx'] }] }, (destination: string) => {
-                    if (destination) {
-                        this.setState({ currentStep: Step.Converting });
-                        python([packagedFile('convert.py'), filePaths[0], destination], {}, {
-                            stderr: print,
-                            stdout: print,
-                        })
-                            .then(() => this.setState({ currentStep: Step.Idle }))
-                            .catch(this.printError);
-                    }
-                });
+                this.setSource(filePaths[0]);
             }
         });
     }
 
-    private print = (message: string) => {
+    private convert = () => {
+        const { dialog } = this.electron!.remote;
+        const source = this.state.source!;
+        dialog.showSaveDialog({ filters: [{ name: 'ONNX model', extensions: ['onnx'] }] }, (destination: string) => {
+            if (destination) {
+                this.setState({ currentStep: Step.Converting });
+                python([packagedFile('convert.py'), source, destination], {}, {
+                    stderr: this.printMessage,
+                    stdout: this.printMessage,
+                })
+                    .then(() => this.setState({ currentStep: Step.Idle, source: undefined }))
+                    .catch(this.printError);
+            }
+        });
+    }
+
+    private printMessage = (message: string) => {
         // TODO have a UI text box and show the installation output
         // tslint:disable-next-line:no-console
         console.log(message);

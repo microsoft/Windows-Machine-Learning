@@ -81,7 +81,7 @@ class KeyValueEditor extends React.Component<IComponentProperties, IComponentSta
 
                 const keyErrorsState = this.state.keyErrors[lowerCaseKey];
                 return (
-                    <div key={`${x}${keyErrorsState}`} className='KeyValueItem'>
+                    <div key={`${x}${keyErrorsState}`} className='DisplayFlex'>
                         { this.props.actionCreator &&
                             <Icon className='RemoveIcon' iconName='Cancel' onClick={removeCallback} />
                         }

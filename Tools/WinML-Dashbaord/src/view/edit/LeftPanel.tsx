@@ -181,7 +181,7 @@ class LeftPanel extends React.Component<IComponentProperties, {}> {
                     };
                     return (
                         <div key={index}>
-                            <div className='DenotationDiv'>
+                            <div className='DisplayFlex'>
                                 <TextField
                                     className='DenotationLabel'
                                     label={`Dimension [${index}]`}

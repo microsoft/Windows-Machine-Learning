@@ -1,4 +1,3 @@
-import { OpenDialogOptions, remote } from 'electron';
 import { DefaultButton } from 'office-ui-fabric-react/lib/Button';
 import { ChoiceGroup, IChoiceGroupOption } from 'office-ui-fabric-react/lib/ChoiceGroup';
 import { MessageBar, MessageBarType } from 'office-ui-fabric-react/lib/MessageBar';
@@ -22,18 +21,26 @@ enum Step {
 
 interface IComponentState {
     currentStep: Step,
-    error?: Error,
+    error?: Error | string,
 }
 
 export default class ConvertView extends React.Component<{}, IComponentState> {
-    private venvPython: string | undefined;
+    private venvPython?: string;
+    private electron?: typeof Electron;
 
     constructor(props: {}) {
         super(props);
-        this.state = {
-            currentStep: Step.Idle,
-            error: winmlDataFolder === '/' ? Error("The converter can't be run in the web interface") : undefined,
-        };
+        if (winmlDataFolder === '/') {
+            this.state = {
+                currentStep: Step.Idle,
+                error: "The converter can't be run in the web interface",
+            };
+            return;
+        }
+        import('electron')
+            .then(mod => this.electron = mod)
+            .catch(this.printError);
+        this.state = { currentStep: Step.Idle };
     }
 
     public render() {
@@ -47,7 +54,8 @@ export default class ConvertView extends React.Component<{}, IComponentState> {
     private getView() {
         const { error } = this.state;
         if (error) {
-            return <MessageBar messageBarType={MessageBarType.error}>{`${error.stack ? `${error.stack}: ` : ''}${error.message}`}</MessageBar>
+            const message = typeof error === 'string' ? error : (`${error.stack ? `${error.stack}: ` : ''}${error.message}`);
+            return <MessageBar messageBarType={MessageBarType.error}>{message}</MessageBar>
         }
         switch (this.state.currentStep) {
             case Step.Downloading:
@@ -88,15 +96,12 @@ export default class ConvertView extends React.Component<{}, IComponentState> {
                 }
                 this.setState({ currentStep: Step.InstallingRequirements });
                 await pip(['install', '-r', packagedFile('requirements.txt')], {
-                    // TODO have a UI text box and show the installation output
-                    // tslint:disable-next-line:no-console
-                    stderr: console.error,
-                    // tslint:disable-next-line:no-console
-                    stdout: console.log,
+                    stderr: print,
+                    stdout: print,
                 });
                 this.setState({ currentStep: Step.Idle });
             } catch (error) {
-                this.setState({ error, currentStep: Step.Idle });
+                this.printError(error);
             }
         }
         // TODO Options to reinstall environment or update dependencies
@@ -110,35 +115,41 @@ export default class ConvertView extends React.Component<{}, IComponentState> {
     }
 
     private convert = () => {
-        const { mainWindow } = global as any;
-        const { dialog } = remote;
+        if (!this.electron) {
+            return;
+        }
+        const { dialog } = this.electron.remote;
         const openDialogOptions = {
             filters: [
                 { name: 'CoreML model', extensions: [ 'mlmodel' ] },
                 { name: 'Keras model', extensions: [ 'json', 'keras', 'h5' ] },
             ],
-            properties: ['openFile'],
-        } as OpenDialogOptions;
-        dialog.showOpenDialog(mainWindow, openDialogOptions, (filePaths) => {
-            const [source] = filePaths;
-            if (source) {
-                dialog.showSaveDialog(mainWindow, { filters: [{ name: 'ONNX model', extensions: ['onnx'] }] }, (destination) => {
+            properties: Array<'openFile'>('openFile'),
+        };
+        dialog.showOpenDialog(openDialogOptions, (filePaths: string[]) => {
+            if (filePaths[0]) {
+                dialog.showSaveDialog({ filters: [{ name: 'ONNX model', extensions: ['onnx'] }] }, (destination: string) => {
                     if (destination) {
                         this.setState({ currentStep: Step.Converting });
-                        python([packagedFile('convert.py'), source, destination], {}, {
-                            // TODO have a UI text box and show the installation output
-                            // tslint:disable-next-line:no-console
-                            stderr: console.error,
-                            // tslint:disable-next-line:no-console
-                            stdout: console.log,
-                        }).then(() => {
-                            this.setState({ currentStep: Step.Idle });
-                        }).catch((error) => {
-                            this.setState({ error });
-                        });
+                        python([packagedFile('convert.py'), filePaths[0], destination], {}, {
+                            stderr: print,
+                            stdout: print,
+                        })
+                            .then(() => this.setState({ currentStep: Step.Idle }))
+                            .catch(this.printError);
                     }
                 });
             }
         });
+    }
+
+    private print = (message: string) => {
+        // TODO have a UI text box and show the installation output
+        // tslint:disable-next-line:no-console
+        console.log(message);
+    }
+
+    private printError = (error: string | Error) => {
+        this.setState({ currentStep: Step.Idle, error });
     }
 }

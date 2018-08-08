@@ -43,9 +43,13 @@ async function unzip(buffer: Buffer, directory: string) {
             zipfile!.once('end', resolve);
             zipfile!.once('error', reject);
             zipfile!.on('entry', entry => {
+                const destination = path.join(directory, entry.fileName);
                 if (entry.fileName.endsWith('/')) {
+                    if (fs.existsSync(destination)) {
+                        return;
+                    }
                     try {
-                        return fs.mkdirSync(path.join(directory, entry.fileName));
+                        return fs.mkdirSync(destination);
                     } catch (e) {
                         return reject(e);
                     }
@@ -55,7 +59,7 @@ async function unzip(buffer: Buffer, directory: string) {
                         return reject(error);
                     }
                     readStream!.once('error', reject);
-                    readStream!.pipe(fs.createWriteStream(path.join(directory, entry.fileName)));
+                    readStream!.pipe(fs.createWriteStream(destination));
                 });
             });
         });

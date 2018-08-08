@@ -73,18 +73,7 @@
                     Name="inkCanvas"
                     Height="336"
                     Width="336"/>
-            <Button Content="Button" HorizontalAlignment="Left" VerticalAlignment="Top"/>
         </Grid>
 
-        <Image
-            Name="secondImage"
-            Grid.Row="2"
-            Grid.Column="0"
-            Height="336"
-            Width="336"
-            Margin="0,0,0,0"
-            HorizontalAlignment="Center"
-            VerticalAlignment="Center"/>
-        <Button Content="Button" HorizontalAlignment="Left" VerticalAlignment="Top"/>
     </Grid>
 </Page>

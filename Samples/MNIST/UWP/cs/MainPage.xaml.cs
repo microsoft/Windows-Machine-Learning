@@ -8,22 +8,23 @@ using Windows.Storage;
 using Windows.UI.Xaml.Media.Imaging;
 using Windows.AI.MachineLearning;
 using Windows.Media;
+using Windows.Storage.Streams;
 
 namespace MNIST_Demo
 {
     public sealed partial class MainPage : Page
     {
-        private modelModel              modelGen = new modelModel();
-        private modelInput              modelInput = new modelInput();
-        private modelOutput             modelOutput = new modelOutput();
+        private mnistModel modelGen = new mnistModel();
+        private mnistInput mnistInput = new mnistInput();
+        private mnistOutput mnistOutput = new mnistOutput();
         //private LearningModelSession    session;
-        private Helper                  helper = new Helper();
-        RenderTargetBitmap              renderBitmap = new RenderTargetBitmap();
+        private Helper helper = new Helper();
+        RenderTargetBitmap renderBitmap = new RenderTargetBitmap();
 
         public MainPage()
         {
             this.InitializeComponent();
-            
+
             // Set supported inking device types.
             inkCanvas.InkPresenter.InputDeviceTypes = Windows.UI.Core.CoreInputDeviceTypes.Mouse | Windows.UI.Core.CoreInputDeviceTypes.Pen | Windows.UI.Core.CoreInputDeviceTypes.Touch;
             inkCanvas.InkPresenter.UpdateDefaultDrawingAttributes(
@@ -40,21 +41,21 @@ namespace MNIST_Demo
 
         private async void LoadModel()
         {
-            //Load a machine learning model
-            StorageFile modelFile = await StorageFile.GetFileFromApplicationUriAsync(new Uri($"ms-appx:///Assets/model.onnx"));
-            modelGen = await modelModel.CreateFromFilePathAsync(modelFile.Path);
+            Uri uri = new Uri("ms-appx:///Assets/mnist.onnx");
+            StorageFile stf = await StorageFile.GetFileFromApplicationUriAsync(uri);
+            modelGen = await mnistModel.CreateFromStreamAsync(stf as IRandomAccessStreamReference);
         }
 
         private async void recognizeButton_Click(object sender, RoutedEventArgs e)
         {
             //Bind model input with contents from InkCanvas
             VideoFrame vf = await helper.GetHandWrittenImage(inkGrid);
-            modelInput.Input3 = ImageFeatureValue.CreateFromVideoFrame(vf);
+            mnistInput.Input3 = ImageFeatureValue.CreateFromVideoFrame(vf);
             //Evaluate the model
-            modelOutput = await modelGen.Evaluate(modelInput);
+            mnistOutput = await modelGen.EvaluateAsync(mnistInput);
 
             //Convert output to datatype
-            IReadOnlyList<float> VectorImage = modelOutput.Plus214_Output_0.GetAsVectorView();
+            IReadOnlyList<float> VectorImage = mnistOutput.Plus214_Output_0.GetAsVectorView();
             IList<float> ImageList = VectorImage.ToList();
 
             //LINQ query to check for highest probability digit

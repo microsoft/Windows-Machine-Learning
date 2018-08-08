@@ -46,8 +46,8 @@ MainPage::MainPage()
     fullModelName += ModelFileName;
     create_task(StorageFile::GetFileFromApplicationUriAsync(ref new Uri(ref new Platform::String(fullModelName.c_str()))))
         .then([](StorageFile^ file) {
-            return create_task(coreml_MNISTModel::CreateFromStreamAsync(file)); })
-        .then([this](coreml_MNISTModel ^model) {
+            return create_task(mnistModel::CreateFromStreamAsync(file)); })
+        .then([this](mnistModel ^model) {
             this->m_model = model;
         });
 }
@@ -55,21 +55,22 @@ MainPage::MainPage()
 
 void mnist_cppcx::MainPage::recognizeButton_Click(Platform::Object^ sender, Windows::UI::Xaml::RoutedEventArgs^ e)
 {
-    coreml_MNISTInput^ input = ref new coreml_MNISTInput();
+    mnistInput^ input = ref new mnistInput();
     create_task(GetHandWrittenImage())
     .then([this, input](VideoFrame^ vf) {
-        input->image = ImageFeatureValue::CreateFromVideoFrame(vf);
+        input->Input3 = ImageFeatureValue::CreateFromVideoFrame(vf);
         return create_task(this->m_model->EvaluateAsync(input)); })
-    .then([this](coreml_MNISTOutput^ output) {
+    .then([this](mnistOutput^ output) {
         float maxProb = 0;
-        int maxKey = 0;
-        IMapView<int64_t, float>^ map = output->prediction->GetAt(0)->GetView();
-        for (const auto& pair : map)
+        unsigned int maxKey = 0;
+        auto vector = output->Plus214_Output_0->GetAsVectorView();
+        for (unsigned int i = 0; i < vector->Size; ++i)
         {
-            if (pair->Value > maxProb)
+            float value = vector->GetAt(i);
+            if (value > maxProb)
             {
-                maxProb = pair->Value;
-                maxKey = (int64_t)pair->Key;
+                maxProb = value;
+                maxKey = i;
             }
         }
         numberLabel->Text = maxKey.ToString();
@@ -90,9 +91,8 @@ void mnist_cppcx::MainPage::clearButton_Click(Platform::Object^ sender, Windows:
             .then([renderBitmap]() { return renderBitmap->GetPixelsAsync(); })
             .then([this, renderBitmap](IBuffer ^ buffer) {
             SoftwareBitmap ^ softwareBitMap = SoftwareBitmap::CreateCopyFromBuffer(
-                buffer, BitmapPixelFormat::Rgba8, renderBitmap->PixelWidth,
+                buffer, BitmapPixelFormat::Bgra8, renderBitmap->PixelWidth,
                 renderBitmap->PixelHeight, BitmapAlphaMode::Ignore);
-            this->secondImage->Source = renderBitmap;
             VideoFrame ^ vf = VideoFrame::CreateWithSoftwareBitmap(softwareBitMap);
             return create_task(CropAndDisplayInputImageAsync(vf)); })
             .then([](VideoFrame^ cropped_vf) {
@@ -125,7 +125,7 @@ void mnist_cppcx::MainPage::clearButton_Click(Platform::Object^ sender, Windows:
         cropBounds.Width = w;
         cropBounds.Height = h;
 
-        VideoFrame^ cropped_vf = ref new VideoFrame(BitmapPixelFormat::Rgba8, w, h, BitmapAlphaMode::Ignore);
+        VideoFrame^ cropped_vf = ref new VideoFrame(BitmapPixelFormat::Bgra8, 28, 28, BitmapAlphaMode::Ignore);
 
         inputVideoFrame->CopyToAsync(cropped_vf, cropBounds, nullptr);
         return cropped_vf;

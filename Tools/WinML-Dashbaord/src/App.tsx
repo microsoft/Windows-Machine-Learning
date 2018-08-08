@@ -1,4 +1,3 @@
-import { Label } from 'office-ui-fabric-react/lib/Label';
 import { Pivot, PivotItem } from 'office-ui-fabric-react/lib/Pivot';
 import * as React from 'react';
 
@@ -37,12 +36,6 @@ class App extends React.Component<{}, IComponentState> {
                 </div>
                 <div style={{ display: this.displayIfKeySelected('Convert') }}>
                     <ConvertView />
-                </div>
-                <div style={{ display: this.displayIfKeySelected('Debug') }}>
-                    <Label>TODO</Label>
-                </div>
-                <div style={{ display: this.displayIfKeySelected('Profile') }}>
-                    <Label>TODO</Label>
                 </div>
                 <div style={{ display: this.displayIfKeySelected('Learn') }}>
                     <LearnView />

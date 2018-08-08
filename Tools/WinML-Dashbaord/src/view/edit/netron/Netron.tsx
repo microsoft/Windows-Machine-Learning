@@ -69,7 +69,8 @@ class NetronComponent extends React.Component<IComponentProperties, IComponentSt
         if (!browserGlobal.host) {
             return;
         }
-        if (nextProps.file !== this.props.file) {
+        if (nextProps.file && nextProps.file !== this.props.file) {
+            document.title = `WinML Dashboard - ${nextProps.file.path}`;
             browserGlobal.host._openFile(nextProps.file);
         }
     }

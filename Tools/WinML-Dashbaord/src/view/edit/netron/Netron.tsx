@@ -70,7 +70,6 @@ class NetronComponent extends React.Component<IComponentProperties, IComponentSt
             return;
         }
         if (nextProps.file && nextProps.file !== this.props.file) {
-            document.title = `WinML Dashboard - ${nextProps.file.path}`;
             browserGlobal.host._openFile(nextProps.file);
         }
     }
@@ -225,7 +224,7 @@ class NetronComponent extends React.Component<IComponentProperties, IComponentSt
             this.props.setModelOutputs(outputs);
             this.props.setInputs(this.valueListToObject(proto.graph.input));
             this.props.setOutputs(this.valueListToObject(proto.graph.output));
-            this.props.setNodes(proto.graph.node);
+            this.props.setNodes(proto.graph.node.filter((x: any) => x.opType !== 'Constant'));
             this.props.setMetadataProps(this.propsToObject(model._metadataProps));
             this.props.setProperties(this.propsToObject(model.properties));
         } else {

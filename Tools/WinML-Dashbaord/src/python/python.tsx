@@ -121,14 +121,15 @@ export async function downloadProtobuf() {
     });
 }
 
-export async function downloadPip() {
+export async function downloadPip(listener?: IOutputListener) {
     // Python embedded distribution for Windows doesn't have pip
     return new Promise(async (resolve, reject) => {
         const installer = path.join(localPython, 'get-pip.py');
         try {
             const data = await downloadBinaryFile('https://bootstrap.pypa.io/get-pip.py') as Buffer;
             fs.writeFileSync(installer, data);
-            await python([installer]);
+            await python([installer], {}, listener);
+            await pip(['install', '-U', 'pip'], listener);
         } catch (err) {
             return reject(err);
         }

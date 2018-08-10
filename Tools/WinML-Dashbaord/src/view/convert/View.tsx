@@ -5,6 +5,7 @@ import { Spinner } from 'office-ui-fabric-react/lib/Spinner';
 import { TextField } from 'office-ui-fabric-react/lib/TextField';
 import * as React from 'react';
 
+import { showOpenDialog, showSaveDialog } from '../../native';
 import { packagedFile, winmlDataFolder } from '../../persistence/appData';
 import { downloadPip, downloadProtobuf, downloadPython, getLocalPython, getPythonBinaries, installVenv, pip, python } from '../../python/python';
 
@@ -28,7 +29,10 @@ interface IComponentState {
 
 export default class ConvertView extends React.Component<{}, IComponentState> {
     private localPython?: string;
-    private electron?: typeof Electron;
+    private outputListener = {
+        stderr: this.printMessage,
+        stdout: this.printMessage,
+    };
 
     constructor(props: {}) {
         super(props);
@@ -39,9 +43,6 @@ export default class ConvertView extends React.Component<{}, IComponentState> {
             };
             return;
         }
-        import('electron')
-            .then(mod => this.electron = mod)
-            .catch(this.printError);
         this.state = { currentStep: Step.Idle };
     }
 
@@ -89,7 +90,7 @@ export default class ConvertView extends React.Component<{}, IComponentState> {
                     this.setState({ currentStep: Step.Downloading });
                     await downloadPython();
                     this.setState({ currentStep: Step.GetPip });
-                    await downloadPip();
+                    await downloadPip(this.outputListener);
                     this.setState({ currentStep: Step.GetProtobuf });
                     await downloadProtobuf();
                 } else {
@@ -97,10 +98,7 @@ export default class ConvertView extends React.Component<{}, IComponentState> {
                     await installVenv(option.key);
                 }
                 this.setState({ currentStep: Step.InstallingRequirements });
-                await pip(['install', '-r', packagedFile('requirements.txt')], {
-                    stderr: this.printMessage,
-                    stdout: this.printMessage,
-                });
+                await pip(['install', '-r', packagedFile('requirements.txt')], this.outputListener);
                 this.setState({ currentStep: Step.Idle });
             } catch (error) {
                 this.printError(error);
@@ -133,7 +131,6 @@ export default class ConvertView extends React.Component<{}, IComponentState> {
     }
 
     private browseSource = () => {
-        const { dialog } = this.electron!.remote;
         const openDialogOptions = {
             filters: [
                 { name: 'CoreML model', extensions: [ 'mlmodel' ] },
@@ -141,30 +138,28 @@ export default class ConvertView extends React.Component<{}, IComponentState> {
             ],
             properties: Array<'openFile'>('openFile'),
         };
-        dialog.showOpenDialog(openDialogOptions, (filePaths: string[]) => {
-            if (filePaths[0]) {
-                this.setSource(filePaths[0]);
-            }
-        });
+        showOpenDialog(openDialogOptions)
+            .then((filePaths) => {
+                if (filePaths[0]) {
+                    this.setSource(filePaths[0]);
+                }
+            });
     }
 
     private convert = () => {
-        const { dialog } = this.electron!.remote;
         const source = this.state.source!;
-        dialog.showSaveDialog({ filters: [{ name: 'ONNX model', extensions: ['onnx'] }] }, (destination: string) => {
-            if (destination) {
-                this.setState({ currentStep: Step.Converting });
-                python([packagedFile('convert.py'), source, destination], {}, {
-                    stderr: this.printMessage,
-                    stdout: this.printMessage,
-                })
-                    .then(() => this.setState({ currentStep: Step.Idle, source: undefined }))
-                    .catch(this.printError);
-            }
-        });
+        showSaveDialog({ filters: [{ name: 'ONNX model', extensions: ['onnx'] }] })
+            .then((destination: string) => {
+                if (destination) {
+                    this.setState({ currentStep: Step.Converting });
+                    python([packagedFile('convert.py'), source, destination], {}, this.outputListener)
+                        .then(() => this.setState({ currentStep: Step.Idle, source: undefined }))
+                        .catch(this.printError);
+                }
+            });
     }
 
-    private printMessage = (message: string) => {
+    private printMessage(message: string) {
         // TODO have a UI text box and show the installation output
         // tslint:disable-next-line:no-console
         console.log(message);

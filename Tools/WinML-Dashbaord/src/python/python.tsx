@@ -184,7 +184,7 @@ export async function pip(command: string[], listener?: IOutputListener) {
     let options;
     if (getLocalPython() === embeddedPythonBinary) {
         const nodeProcess = process;
-        const PATH = [nodeProcess.env.PATH, path.join(winmlDataFolder, 'tools', 'protobuf')].join(path.delimiter);
+        const PATH = [path.join(winmlDataFolder, 'bin'), nodeProcess.env.PATH].join(path.delimiter);
         options = {
             cwd: os.tmpdir(),
             env: {

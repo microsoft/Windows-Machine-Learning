@@ -1,3 +1,4 @@
+import * as fs from 'fs';
 import { DefaultButton } from 'office-ui-fabric-react/lib/Button';
 import { ChoiceGroup, IChoiceGroupOption } from 'office-ui-fabric-react/lib/ChoiceGroup';
 import { MessageBar, MessageBarType } from 'office-ui-fabric-react/lib/MessageBar';
@@ -98,6 +99,12 @@ export default class ConvertView extends React.Component<{}, IComponentState> {
                     await installVenv(option.key);
                 }
                 this.setState({ currentStep: Step.InstallingRequirements });
+                const platformRequirements = packagedFile(`requirements-${process.platform}.txt`)
+                if (fs.existsSync(platformRequirements)) {
+                    await pip(['install', '-r', platformRequirements], this.outputListener);
+                } else {
+                    await pip(['install', '-r', packagedFile(`requirements-other.txt`)], this.outputListener);
+                }
                 await pip(['install', '-r', packagedFile('requirements.txt')], this.outputListener);
                 this.setState({ currentStep: Step.Idle });
             } catch (error) {

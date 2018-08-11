@@ -1,0 +1,1 @@
+https://github.com/tiagoshibata/coremltools_windows/releases/download/v2.0b1/coremltools-2.0b1-py3-none-win_amd64.whl

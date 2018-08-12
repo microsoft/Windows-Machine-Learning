@@ -8,7 +8,7 @@ import * as React from 'react';
 
 import { showOpenDialog, showSaveDialog } from '../../native';
 import { packagedFile, winmlDataFolder } from '../../persistence/appData';
-import { downloadPip, downloadProtobuf, downloadPython, getLocalPython, getPythonBinaries, installVenv, pip, python } from '../../python/python';
+import { downloadPip, downloadPython, getLocalPython, getPythonBinaries, installVenv, pip, python } from '../../python/python';
 
 import './View.css';
 
@@ -16,7 +16,6 @@ enum Step {
     Idle,
     Downloading,
     GetPip,
-    GetProtobuf,
     CreatingVenv,
     InstallingRequirements,
     Converting,
@@ -66,8 +65,6 @@ export default class ConvertView extends React.Component<{}, IComponentState> {
                 return <Spinner label="Downloading Python..." />;
             case Step.GetPip:
                 return <Spinner label="Getting pip in embedded Python..." />;
-            case Step.GetProtobuf:
-                return <Spinner label="Getting protobuf..." />;
             case Step.CreatingVenv:
                 return <Spinner label="Creating virtual environment..." />;
             case Step.InstallingRequirements:
@@ -92,8 +89,6 @@ export default class ConvertView extends React.Component<{}, IComponentState> {
                     await downloadPython();
                     this.setState({ currentStep: Step.GetPip });
                     await downloadPip(this.outputListener);
-                    this.setState({ currentStep: Step.GetProtobuf });
-                    await downloadProtobuf();
                 } else {
                     this.setState({ currentStep: Step.CreatingVenv });
                     await installVenv(option.key);
@@ -147,7 +142,7 @@ export default class ConvertView extends React.Component<{}, IComponentState> {
         };
         showOpenDialog(openDialogOptions)
             .then((filePaths) => {
-                if (filePaths[0]) {
+                if (filePaths) {
                     this.setSource(filePaths[0]);
                 }
             });

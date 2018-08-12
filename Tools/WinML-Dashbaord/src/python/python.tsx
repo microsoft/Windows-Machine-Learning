@@ -106,21 +106,6 @@ export async function downloadPython() {
     });
 }
 
-export async function downloadProtobuf() {
-    if (process.platform !== 'win32') {
-        throw Error('Unsupported platform');
-    }
-    return new Promise(async (resolve, reject) => {
-        try {
-            const data = await downloadBinaryFile('https://f001.backblazeb2.com/file/ticast/protobuf.zip') as Buffer;
-            await unzip(data, winmlDataFolder);
-        } catch (err) {
-            return reject(err);
-        }
-        resolve();
-    });
-}
-
 export async function downloadPip(listener?: IOutputListener) {
     // Python embedded distribution for Windows doesn't have pip
     return new Promise(async (resolve, reject) => {
@@ -129,7 +114,6 @@ export async function downloadPip(listener?: IOutputListener) {
             const data = await downloadBinaryFile('https://bootstrap.pypa.io/get-pip.py') as Buffer;
             fs.writeFileSync(installer, data);
             await python([installer], {}, listener);
-            await pip(['install', '-U', 'pip'], listener);
         } catch (err) {
             return reject(err);
         }

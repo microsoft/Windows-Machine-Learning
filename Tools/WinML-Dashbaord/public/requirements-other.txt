@@ -1,1 +1,0 @@
--e git+https://github.com/apple/coremltools@ad3e24d875972cd2242b531e80d99d92ae215dec#egg=coremltools

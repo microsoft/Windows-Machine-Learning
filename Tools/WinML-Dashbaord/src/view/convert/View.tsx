@@ -141,7 +141,7 @@ export default class ConvertView extends React.Component<{}, IComponentState> {
         const openDialogOptions = {
             filters: [
                 { name: 'CoreML model', extensions: [ 'mlmodel' ] },
-                { name: 'Keras model', extensions: [ 'json', 'keras', 'h5' ] },
+                { name: 'Keras model', extensions: [ 'keras', 'h5' ] },
             ],
             properties: Array<'openFile'>('openFile'),
         };

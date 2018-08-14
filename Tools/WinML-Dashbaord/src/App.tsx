@@ -27,8 +27,6 @@ class App extends React.Component<{}, IComponentState> {
                 <Pivot onLinkClick={this.onLinkClick}>
                     <PivotItem headerText='Edit' />
                     <PivotItem headerText='Convert' />
-                    <PivotItem headerText='Debug' />
-                    <PivotItem headerText='Profile' />
                     <PivotItem headerText='Learn' />
                 </Pivot>
                 <div style={{ display: this.displayIfKeySelected('Edit') }} >

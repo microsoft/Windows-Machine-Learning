@@ -1,14 +1,26 @@
 .ConvertView {
     margin: 10px;
     text-align: initial;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
 }
 
 .ModelConvertBrowser {
     width: 100%;
 }
 
-.ms-TextField {
+.ms-TextField, .ConvertViewSplit {
     flex: 1;
+}
+
+.ConvertViewSplit {
+    overflow: auto;
+}
+
+.ConverterViewConsole {
+    display: block;
+    max-height: 350px;
 }
 
 #ConverterModelInputBrowse {

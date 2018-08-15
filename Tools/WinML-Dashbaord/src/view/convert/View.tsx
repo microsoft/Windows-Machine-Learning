@@ -5,6 +5,7 @@ import { Spinner } from 'office-ui-fabric-react/lib/Spinner';
 import { TextField } from 'office-ui-fabric-react/lib/TextField';
 import * as React from 'react';
 
+import Collapsible from '../../components/Collapsible';
 import { showOpenDialog, showSaveDialog } from '../../native';
 import { packagedFile, winmlDataFolder } from '../../persistence/appData';
 import { downloadPip, downloadPython, getLocalPython, getPythonBinaries, installVenv, pip, python } from '../../python/python';
@@ -21,6 +22,7 @@ enum Step {
 }
 
 interface IComponentState {
+    console: string,
     currentStep: Step,
     error?: Error | string,
     source?: string,
@@ -28,27 +30,27 @@ interface IComponentState {
 
 export default class ConvertView extends React.Component<{}, IComponentState> {
     private localPython?: string;
-    private outputListener = {
-        stderr: this.printMessage,
-        stdout: this.printMessage,
-    };
 
     constructor(props: {}) {
         super(props);
-        if (winmlDataFolder === '/') {
-            this.state = {
-                currentStep: Step.Idle,
-                error: "The converter can't be run in the web interface",
-            };
-            return;
-        }
-        this.state = { currentStep: Step.Idle };
+        const error = winmlDataFolder === '/' ? "The converter can't be run in the web interface" : undefined;
+        this.state = { console: '', error, currentStep: Step.Idle };
     }
 
     public render() {
+        const collabsibleRef: React.RefObject<Collapsible> = React.createRef();
         return (
             <div className='ConvertView'>
-                {this.getView()}
+                <div className='ConvertViewSplit'>
+                    {this.getView()}
+                </div>
+                { this.state.console &&
+                    <Collapsible ref={collabsibleRef} label='Console output'>
+                        <pre className='ConverterViewConsole'>
+                            {this.state.console}
+                        </pre>
+                    </Collapsible>
+                }
             </div>
         )
     }
@@ -78,6 +80,23 @@ export default class ConvertView extends React.Component<{}, IComponentState> {
         return this.converterView();
     }
 
+    private printMessage = (message: string) => {
+        this.setState((prevState) => ({
+            ...prevState,
+            console: prevState.console.concat(message, '\n'),
+        }))
+    }
+
+    private printError = (error: string | Error) => {
+        this.setState({ currentStep: Step.Idle, error });
+    }
+
+    // tslint:disable-next-line:member-ordering
+    private outputListener = {
+        stderr: this.printMessage,
+        stdout: this.printMessage,
+    };
+
     private pythonChooser = () => {
         const binaries = getPythonBinaries();
         const options = binaries.map((key) => key ? { key, text: key } : { key: '__download', text: 'Download a new Python binary to be used exclusively by the WinML Dashboard' });
@@ -90,7 +109,7 @@ export default class ConvertView extends React.Component<{}, IComponentState> {
                     await downloadPip(this.outputListener);
                 } else {
                     this.setState({ currentStep: Step.CreatingVenv });
-                    await installVenv(option.key);
+                    await installVenv(option.key, this.outputListener);
                 }
                 this.setState({ currentStep: Step.InstallingRequirements });
                 await pip(['install', '-r', packagedFile('requirements.txt')], this.outputListener);
@@ -152,15 +171,5 @@ export default class ConvertView extends React.Component<{}, IComponentState> {
                         .catch(this.printError);
                 }
             });
-    }
-
-    private printMessage(message: string) {
-        // TODO have a UI text box and show the installation output
-        // tslint:disable-next-line:no-console
-        console.log(message);
-    }
-
-    private printError = (error: string | Error) => {
-        this.setState({ currentStep: Step.Idle, error });
     }
 }

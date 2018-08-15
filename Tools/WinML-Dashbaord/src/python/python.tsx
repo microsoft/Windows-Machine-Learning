@@ -97,8 +97,6 @@ export async function downloadPython() {
             const data = await downloadBinaryFile('https://www.python.org/ftp/python/3.6.6/python-3.6.6-embed-amd64.zip') as Buffer;
             await unzip(data, localPython);
             fs.writeFileSync(path.join(localPython, 'python36._pth'), pythonPth);
-            const includes = await downloadBinaryFile('https://f001.backblazeb2.com/file/ticast/python37_include.zip') as Buffer;
-            await unzip(includes, localPython);
         } catch (err) {
             reject(err);
         }
@@ -168,18 +166,14 @@ export async function pip(command: string[], listener?: IOutputListener) {
     let options;
     if (getLocalPython() === embeddedPythonBinary) {
         const nodeProcess = process;
-        const PATH = [path.join(winmlDataFolder, 'bin'), nodeProcess.env.PATH].join(path.delimiter);
+        const PATH = [path.join(localPython, 'Scripts'), nodeProcess.env.PATH].join(path.delimiter);
         options = {
             cwd: os.tmpdir(),
             env: {
                 ...nodeProcess.env,
-                CMAKE_INCLUDE_PATH: path.join(winmlDataFolder, 'include'),
-                CMAKE_LIBRARY_PATH: path.join(winmlDataFolder, 'lib'),
                 // See https://github.com/google/protobuf/blob/master/cmake/README.md#notes-on-compiler-warnings
                 CXXFLAGS: '/wd4251',
                 PATH,
-                PYTHON_INCLUDE_DIR: path.join(winmlDataFolder, 'python', 'include'),
-                PYTHON_LIBRARY: path.join(winmlDataFolder, 'python', 'python36.dll'),
                 Path: PATH,
             },
         };

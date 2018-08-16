@@ -165,18 +165,7 @@ export async function python(command: string[], options?: ExecFileOptions, liste
 export async function pip(command: string[], listener?: IOutputListener) {
     let options;
     if (getLocalPython() === embeddedPythonBinary) {
-        const nodeProcess = process;
-        const PATH = [path.join(localPython, 'Scripts'), nodeProcess.env.PATH].join(path.delimiter);
-        options = {
-            cwd: os.tmpdir(),
-            env: {
-                ...nodeProcess.env,
-                // See https://github.com/google/protobuf/blob/master/cmake/README.md#notes-on-compiler-warnings
-                CXXFLAGS: '/wd4251',
-                PATH,
-                Path: PATH,
-            },
-        };
+        options = { cwd: os.tmpdir() };  // without this workaround, pip downloads packages to whatever the current working directory is
     }
     return python(['-m', 'pip', ...command], options, listener);
 }

@@ -211,6 +211,28 @@ class NetronComponent extends React.Component<IComponentProperties, IComponentSt
         browserGlobal.view.showNodeProperties = (node: any) => this.props.setSelectedNode(node.graph.nodes.indexOf(node));
     }
 
+    private getModelProperties(modelProto: any) {
+        const opsetImport = (modelProto.opsetImport as Array<{domain: string, version: number}>)
+            .reduce((acc, x) => {
+                const opset = `opsetImport.${x.domain || 'ai.onnx'}`;
+                return {
+                    ...acc,
+                    [opset]: x.version,
+                };
+            }, {});
+        const properties = {
+            ...opsetImport,
+            docString: modelProto.docString,
+            domain: modelProto.domain,
+            irVersion: modelProto.irVersion,
+            modelVersion: modelProto.modelVersion,
+            producerName: modelProto.producerName,
+            producerVersion: modelProto.producerVersion,
+        }
+        Object.entries(properties).forEach(([key, value]) => value || delete properties[key]);  // filter empty properties
+        return properties;
+    }
+
     private updateDataStore = (model: any) => {
         const proto = model._model
         ModelProtoSingleton.proto = null;
@@ -225,8 +247,8 @@ class NetronComponent extends React.Component<IComponentProperties, IComponentSt
             this.props.setInputs(this.valueListToObject(proto.graph.input));
             this.props.setOutputs(this.valueListToObject(proto.graph.output));
             this.props.setNodes(proto.graph.node.filter((x: any) => x.opType !== 'Constant'));
-            this.props.setMetadataProps(this.propsToObject(model._metadataProps));
-            this.props.setProperties(this.propsToObject(model.properties));
+            this.props.setMetadataProps(this.propsToObject(proto.metadataProps));
+            this.props.setProperties(this.getModelProperties(proto));
         } else {
             this.props.setModelInputs(undefined);
             this.props.setModelOutputs(undefined);

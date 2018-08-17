@@ -74,6 +74,10 @@ def main():
             os.link(package_file, public / package_file.name)
         except FileExistsError:
             pass
+        except FileNotFoundError:
+            print("Warning: Got FileNotFoundError linking {} -> {}. "
+                  "Netron's setup might be declaring files that are missing in their repository."
+                  .format(public / package_file.name, package_file))
 
     bundle_destination = public / 'netron_bundle.js'
     if rebuild_needed(static_scripts, bundle_destination):

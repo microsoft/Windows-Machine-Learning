@@ -149,6 +149,7 @@ export default class ConvertView extends React.Component<{}, IComponentState> {
             filters: [
                 { name: 'CoreML model', extensions: [ 'mlmodel' ] },
                 { name: 'Keras model', extensions: [ 'keras', 'h5' ] },
+                { name: 'ONNX model', extensions: [ 'onnx' ] },
             ],
             properties: Array<'openFile'>('openFile'),
         };
@@ -162,7 +163,7 @@ export default class ConvertView extends React.Component<{}, IComponentState> {
 
     private convert = () => {
         const source = this.state.source!;
-        showSaveDialog({ filters: [{ name: 'ONNX model', extensions: ['onnx'] }] })
+        showSaveDialog({ filters: [{ name: 'ONNX model', extensions: ['onnx'] }, { name: 'ONNX text protobuf', extensions: ['prototxt'] }] })
             .then((destination: string) => {
                 if (destination) {
                     this.setState({ currentStep: Step.Converting });

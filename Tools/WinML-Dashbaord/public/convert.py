@@ -13,8 +13,7 @@ def parse_args():
 
 
 def get_extension(path):
-    extension = Path(path).suffix
-    return extension[1:].lower()
+    return Path(path).suffix[1:].lower()
 
 
 def save_onnx(onnx_model, destination):
@@ -28,6 +27,11 @@ def save_onnx(onnx_model, destination):
 
 
 def coreml_converter(args):
+    # When imported, CoreML tools checks for the current version of Keras and TF and prints warnings if they are
+    # outside its expected range. We don't want it to import these packages (since they are big and take seconds to
+    # load) and we don't want to clutter the console with unrelated Keras warnings when converting from CoreML.
+    import sys
+    sys.modules['keras'] = None
     import coremltools
     source_model = coremltools.utils.load_spec(args.source)
     onnx_model = onnxmltools.convert_coreml(source_model, args.name)
@@ -41,18 +45,21 @@ def keras_converter(args):
     onnx_model = onnxmltools.convert_keras(source_model)
     save_onnx(onnx_model, args.destination)
 
+
+def onnx_converter(args):
+    onnx_model = onnxmltools.load_model(args.source)
+    save_onnx(onnx_model, args.destination)
+
 converters = {
     'h5': keras_converter,
     'keras': keras_converter,
     'mlmodel': coreml_converter,
+    'onnx': coreml_converter,
 }
 
 
 def main(args):
     source_extension = get_extension(args.source)
-    destination_extension = get_extension(args.destination)
-    if destination_extension not in ('onnx', 'prototxt'):
-        raise RuntimeError('Conversion to extension {} is not supported'.format(destination_extension))
     converter = converters.get(source_extension)
     if not converter:
         raise RuntimeError('Conversion from extension {} is not supported'.format(source_extension))

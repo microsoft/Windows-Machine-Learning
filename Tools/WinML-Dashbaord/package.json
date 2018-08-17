@@ -46,7 +46,6 @@
     "@types/react": "^16.4.7",
     "@types/react-dom": "^16.0.6",
     "@types/react-redux": "^6.0.5",
-    "@types/unzipper": "^0.8.4",
     "@types/yauzl": "^2.9.0",
     "babel-minify": "^0.4.3",
     "electron": "^2.0.6",

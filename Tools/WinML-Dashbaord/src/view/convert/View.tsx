@@ -83,7 +83,7 @@ export default class ConvertView extends React.Component<{}, IComponentState> {
     private printMessage = (message: string) => {
         this.setState((prevState) => ({
             ...prevState,
-            console: prevState.console.concat(message, '\n'),
+            console: prevState.console.concat(message),
         }))
     }
 

@@ -14,13 +14,13 @@
     flex: 1;
 }
 
-.ConvertViewSplit {
+.ConvertViewSplit, .ConverterViewConsole {
     overflow: auto;
 }
 
 .ConverterViewConsole {
     display: block;
-    max-height: 350px;
+    max-height: 400px;
 }
 
 #ConverterModelInputBrowse {

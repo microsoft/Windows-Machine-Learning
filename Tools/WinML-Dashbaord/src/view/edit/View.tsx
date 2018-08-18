@@ -14,7 +14,6 @@ interface IComponentState {
 }
 
 export default class EditView extends React.Component<{}, IComponentState> {
-    private tab: React.RefObject<HTMLDivElement> = React.createRef();
     private openFileInput: React.RefObject<HTMLInputElement> = React.createRef();
 
     constructor(props: {}) {
@@ -26,7 +25,7 @@ export default class EditView extends React.Component<{}, IComponentState> {
 
     public render() {
         return (
-            <div id='EditView' ref={this.tab}>
+            <div id='EditView'>
                 <LeftPanel />
                 <div className='Netron'>
                     <netron.Netron file={this.state.file} />
@@ -39,14 +38,6 @@ export default class EditView extends React.Component<{}, IComponentState> {
                 </Resizable>
             </div>
         );
-    }
-
-    public componentDidMount() {
-        if (this.tab.current) {
-            this.tab.current.scrollIntoView({
-                behavior: 'smooth',
-            });
-        }
     }
 
     private openFile = () => {

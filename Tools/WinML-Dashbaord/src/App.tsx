@@ -12,6 +12,13 @@ interface IComponentState {
     tab: string,
 }
 
+const views = {
+    Edit: <EditView />,
+    // tslint:disable-next-line:object-literal-sort-keys
+    Convert: <ConvertView />,
+    Learn: <LearnView />,
+};
+
 class App extends React.Component<{}, IComponentState> {
     constructor(props: {}) {
         super(props);
@@ -22,22 +29,19 @@ class App extends React.Component<{}, IComponentState> {
     }
 
     public render() {
+        const pivotItems = Object.keys(views).map(x => <PivotItem headerText={x} key={x} />);
+        const mainView = Object.entries(views).map(([k, v]) =>
+            <div className='MainView' style={{ display: this.displayIfKeySelected(k) }} key={k} >
+                {v}
+            </div>
+        )
+
         return (
             <div className='App'>
                 <Pivot onLinkClick={this.onLinkClick}>
-                    <PivotItem headerText='Edit' />
-                    <PivotItem headerText='Convert' />
-                    <PivotItem headerText='Learn' />
+                    {pivotItems}
                 </Pivot>
-                <div style={{ display: this.displayIfKeySelected('Edit') }} >
-                    <EditView />
-                </div>
-                <div style={{ display: this.displayIfKeySelected('Convert') }}>
-                    <ConvertView />
-                </div>
-                <div style={{ display: this.displayIfKeySelected('Learn') }}>
-                    <LearnView />
-                </div>
+                {mainView}
             </div>
         );
     }

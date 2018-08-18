@@ -1,7 +1,7 @@
 .ConvertView {
-    margin: 10px;
+    margin: 0px 10px;
     text-align: initial;
-    height: 100vh;
+    height: 100%;
     display: flex;
     flex-direction: column;
 }
@@ -10,11 +10,11 @@
     width: 100%;
 }
 
-.ms-TextField, .ConvertViewSplit {
+.ms-TextField, .ConvertViewControls {
     flex: 1;
 }
 
-.ConvertViewSplit, .ConverterViewConsole {
+.ConvertViewControls, .ConverterViewConsole {
     overflow: auto;
 }
 

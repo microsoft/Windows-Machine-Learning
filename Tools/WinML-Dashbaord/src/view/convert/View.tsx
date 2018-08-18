@@ -6,8 +6,8 @@ import { TextField } from 'office-ui-fabric-react/lib/TextField';
 import * as React from 'react';
 
 import Collapsible from '../../components/Collapsible';
-import { showOpenDialog, showSaveDialog } from '../../native';
-import { packagedFile, winmlDataFolder } from '../../persistence/appData';
+import { isWeb, showOpenDialog, showSaveDialog } from '../../native';
+import { packagedFile } from '../../persistence/appData';
 import { downloadPip, downloadPython, getLocalPython, getPythonBinaries, installVenv, pip, python } from '../../python/python';
 
 import './View.css';
@@ -33,7 +33,7 @@ export default class ConvertView extends React.Component<{}, IComponentState> {
 
     constructor(props: {}) {
         super(props);
-        const error = winmlDataFolder === '/' ? "The converter can't be run in the web interface" : undefined;
+        const error = isWeb() ? "The converter can't be run in the web interface" : undefined;
         this.state = { console: '', error, currentStep: Step.Idle };
     }
 
@@ -41,7 +41,7 @@ export default class ConvertView extends React.Component<{}, IComponentState> {
         const collabsibleRef: React.RefObject<Collapsible> = React.createRef();
         return (
             <div className='ConvertView'>
-                <div className='ConvertViewSplit'>
+                <div className='ConvertViewControls'>
                     {this.getView()}
                 </div>
                 { this.state.console &&

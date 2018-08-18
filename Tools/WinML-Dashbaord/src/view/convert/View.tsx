@@ -7,9 +7,9 @@ import * as React from 'react';
 
 import Collapsible from '../../components/Collapsible';
 import { showOpenDialog, showSaveDialog } from '../../native/dialog';
+import { downloadPip, downloadPython, getLocalPython, getPythonBinaries, installVenv, pip, python } from '../../native/python';
 import { isWeb } from '../../native/util';
 import { packagedFile } from '../../persistence/appData';
-import { downloadPip, downloadPython, getLocalPython, getPythonBinaries, installVenv, pip, python } from '../../python/python';
 
 import './View.css';
 

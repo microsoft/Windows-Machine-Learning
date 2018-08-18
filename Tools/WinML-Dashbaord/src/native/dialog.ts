@@ -33,7 +33,7 @@ export function showOpenDialog(options: Electron.OpenDialogOptions) {
     } else {
         // tslint:disable-next-line:no-console
         console.error('TODO');
-        return Promise.resolve();
+        return Promise.resolve([]);
     }
 }
 
@@ -44,6 +44,6 @@ export function showSaveDialog(options: Electron.SaveDialogOptions) {
     } else {
         // tslint:disable-next-line:no-console
         console.error('TODO');
-        return Promise.resolve();
+        return Promise.resolve('');
     }
 }

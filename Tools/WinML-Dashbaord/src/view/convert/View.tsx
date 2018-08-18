@@ -6,7 +6,8 @@ import { TextField } from 'office-ui-fabric-react/lib/TextField';
 import * as React from 'react';
 
 import Collapsible from '../../components/Collapsible';
-import { isWeb, showOpenDialog, showSaveDialog } from '../../native';
+import { showOpenDialog, showSaveDialog } from '../../native/dialog';
+import { isWeb } from '../../native/util';
 import { packagedFile } from '../../persistence/appData';
 import { downloadPip, downloadPython, getLocalPython, getPythonBinaries, installVenv, pip, python } from '../../python/python';
 

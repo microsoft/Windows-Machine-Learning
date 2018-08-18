@@ -1,12 +1,8 @@
 /**
- * Provide native functions. When possible, provide web replacements.
+ * Provide dialogs, abstracting whether in web or Electron.
  */
 
-import * as fs from 'fs';
-
-export function isWeb() {
-    return !fs.exists;
-}
+import { isWeb } from './util';
 
 let electron: typeof Electron;
 if (!isWeb()) {
@@ -16,18 +12,28 @@ if (!isWeb()) {
         .catch(console.error);
 }
 
+export function showWebOpenDialog(accept: string) {
+    const input = document.createElement('input');
+    input.setAttribute('type', 'file');
+    input.setAttribute('accept', accept);
+    return new Promise((resolve: any) => {
+        input.addEventListener('change', () => resolve(input.files));
+        input.click();
+    });
+}
+
 export function showOpenDialog(options: Electron.OpenDialogOptions) {
     if (electron) {
         const { dialog } = electron.remote;
         return new Promise((resolve) => {
-            dialog.showOpenDialog(options, (filePaths: string[]) => {
+            dialog.showOpenDialog(options, filePaths => {
                 resolve(filePaths);
             });
         })
     } else {
         // tslint:disable-next-line:no-console
         console.error('TODO');
-        return new Promise((resolve) => resolve());
+        return Promise.resolve();
     }
 }
 
@@ -38,6 +44,6 @@ export function showSaveDialog(options: Electron.SaveDialogOptions) {
     } else {
         // tslint:disable-next-line:no-console
         console.error('TODO');
-        return new Promise((resolve) => resolve());
+        return Promise.resolve();
     }
 }

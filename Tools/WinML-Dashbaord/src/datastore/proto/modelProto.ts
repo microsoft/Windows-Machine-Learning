@@ -33,10 +33,6 @@ class ModelProto extends Proto {
         const writer = Proto.types.ModelProto.encode(this.proto);
         return writer.finish();
     }
-
-    public download = () => {
-        Proto.download(this.serialize());
-    }
 }
 
 export const ModelProtoSingleton = new ModelProto();

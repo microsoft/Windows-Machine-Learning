@@ -3,7 +3,7 @@ import * as React from 'react';
 
 import Resizable from '../../components/Resizable';
 import { ModelProtoSingleton } from '../../datastore/proto/modelProto';
-import { showWebOpenDialog } from '../../native/dialog';
+import { showWebOpenDialog, showWebSaveDialog } from '../../native/dialog';
 import LeftPanel from './LeftPanel';
 import * as netron from './netron/Netron';
 import RightPanel from './RightPanel';
@@ -31,19 +31,20 @@ export default class EditView extends React.Component<{}, IComponentState> {
                 </div>
                 <Resizable>
                     <DefaultButton text='Open file' onClick={this.openFile}/>
-                    <DefaultButton text='Save file' onClick={ModelProtoSingleton.download}/>
+                    <DefaultButton text='Save file' onClick={this.saveFile}/>
                     <RightPanel />
                 </Resizable>
             </div>
         );
     }
 
-    private openFile = () => {
+    private openFile = () =>
         showWebOpenDialog('.onnx,.pb,.meta,.tflite,.keras,.h5,.json,.mlmodel,.caffemodel')
             .then((files) => {
                 if (files) {
                     this.setState({ file: files[0] });
                 }
             });
-    }
+
+    private saveFile = () => showWebSaveDialog(ModelProtoSingleton.serialize(), 'model.onnx');
 }

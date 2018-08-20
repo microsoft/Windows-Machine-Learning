@@ -6,7 +6,7 @@ import { TextField } from 'office-ui-fabric-react/lib/TextField';
 import * as React from 'react';
 
 import Collapsible from '../../components/Collapsible';
-import { showOpenDialog, showSaveDialog } from '../../native/dialog';
+import { showNativeOpenDialog, showNativeSaveDialog } from '../../native/dialog';
 import { downloadPip, downloadPython, getLocalPython, getPythonBinaries, installVenv, pip, python } from '../../native/python';
 import { isWeb } from '../../native/util';
 import { packagedFile } from '../../persistence/appData';
@@ -154,7 +154,7 @@ export default class ConvertView extends React.Component<{}, IComponentState> {
             ],
             properties: Array<'openFile'>('openFile'),
         };
-        showOpenDialog(openDialogOptions)
+        showNativeOpenDialog(openDialogOptions)
             .then((filePaths) => {
                 if (filePaths) {
                     this.setSource(filePaths[0]);
@@ -164,7 +164,7 @@ export default class ConvertView extends React.Component<{}, IComponentState> {
 
     private convert = () => {
         const source = this.state.source!;
-        showSaveDialog({ filters: [{ name: 'ONNX model', extensions: ['onnx'] }, { name: 'ONNX text protobuf', extensions: ['prototxt'] }] })
+        showNativeSaveDialog({ filters: [{ name: 'ONNX model', extensions: ['onnx'] }, { name: 'ONNX text protobuf', extensions: ['prototxt'] }] })
             .then((destination: string) => {
                 if (destination) {
                     this.setState({ currentStep: Step.Converting });

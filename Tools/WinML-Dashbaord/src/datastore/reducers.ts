@@ -20,6 +20,8 @@ export function rootReducer(state: IState, action: actions.IAction) {
             return { ...state, nodes: action.nodes };
         case actions.SET_PROPERTIES:
             return { ...state, properties: action.properties };
+        case actions.SET_SAVE_FILE_NAME:
+            return { ...state, saveFileName: action.saveFileName };
         case actions.SET_SELECTED_NODE:
             return { ...state, selectedNode: action.selectedNode };
         default:

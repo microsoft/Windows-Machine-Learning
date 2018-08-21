@@ -8,6 +8,8 @@ export interface IProperties {
 
 export default interface IState {
     file: File,
+    saveFileName: string,
+
     inputs: { [key: string]: any },
     metadataProps: IMetadataProps,
     modelInputs: string[],

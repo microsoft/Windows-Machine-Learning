@@ -29,6 +29,13 @@ export function showNativeOpenDialog(options: Electron.OpenDialogOptions) {
     return new Promise<string[]>(resolve => dialog.showOpenDialog(options, resolve));
 }
 
+export function populateFileFields(fileLikeObject: any, filePath: string) {
+    fileLikeObject.lastModified = 0;
+    fileLikeObject.name = path.basename(filePath);
+    fileLikeObject.path = path.resolve(filePath);
+    return fileLikeObject as File;
+}
+
 export async function showOpenDialog(filters: Electron.FileFilter[]) {
     if (getElectron()) {
         const paths = await showNativeOpenDialog({ filters });
@@ -40,10 +47,7 @@ export async function showOpenDialog(filters: Electron.FileFilter[]) {
             // the path field is read-only. Instead, we create a Blob and manually add the remaining fields (per
             // https://www.w3.org/TR/FileAPI/#dfn-file and an extra "path" field, containing the real path).
             const file = new Blob([fs.readFileSync(x)]) as any;
-            file.lastModified = 0;
-            file.name = path.basename(x);
-            file.path = x;
-            return file as File;
+            return populateFileFields(file, x);
         });
     }
     return showWebOpenDialog(fileFilterToAccept(filters));

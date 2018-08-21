@@ -2,7 +2,7 @@
  * Provide native menus and shortcuts. In the web, installs shortcuts only.
  */
 
-import { setFile } from "../datastore/actionCreators";
+import { setFile, setSaveFileName } from "../datastore/actionCreators";
 import { ModelProtoSingleton } from "../datastore/proto/modelProto";
 import store from "../datastore/store";
 import { save, showOpenDialog } from "./dialog";
@@ -93,9 +93,15 @@ export function registerKeyboardShurtcuts() {
     }
 }
 
-function onSave() {
-    if (ModelProtoSingleton.proto) {
-        save(ModelProtoSingleton.serialize(), 'model.onnx', [{ name: 'ONNX model', extensions: [ 'onnx', 'prototxt' ] }]);
+async function onSave() {
+    if (!ModelProtoSingleton.proto) {
+        return;
+    }
+    const suggestedPath = store.getState().saveFileName || 'model.onnx';
+    const selectedPath = await save(ModelProtoSingleton.serialize(), suggestedPath,
+        [{ name: 'ONNX model', extensions: [ 'onnx', 'prototxt' ] }]);
+    if (selectedPath && selectedPath !== suggestedPath) {
+        store.dispatch(setSaveFileName(suggestedPath));
     }
 }
 
@@ -113,5 +119,6 @@ async function onOpen() {
     ]);
     if (files) {
         store.dispatch(setFile(files[0]));
+        store.dispatch(setSaveFileName(files[0].path || files[0].name));
     }
 }

@@ -41,6 +41,11 @@ export const setProperties = (properties: IProperties) => ({
     type: actions.SET_PROPERTIES,
 })
 
+export const setSaveFileName = (saveFileName?: string) => ({
+    saveFileName,
+    type: actions.SET_SAVE_FILE_NAME,
+})
+
 export const setSelectedNode = (selectedNode?: string) => ({
     selectedNode,
     type: actions.SET_SELECTED_NODE,

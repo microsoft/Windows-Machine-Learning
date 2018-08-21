@@ -41,9 +41,9 @@ namespace MNIST_Demo
 
         private async void LoadModel()
         {
-            Uri uri = new Uri("ms-appx:///Assets/mnist.onnx");
-            StorageFile stf = await StorageFile.GetFileFromApplicationUriAsync(uri);
-            modelGen = await mnistModel.CreateFromStreamAsync(stf as IRandomAccessStreamReference);
+            //Load a machine learning model
+            StorageFile modelFile = await StorageFile.GetFileFromApplicationUriAsync(new Uri($"ms-appx:///Assets/mnist.onnx"));
+            modelGen = await mnistModel.CreateFromStreamAsync(modelFile as IRandomAccessStreamReference);
         }
 
         private async void recognizeButton_Click(object sender, RoutedEventArgs e)
@@ -51,6 +51,7 @@ namespace MNIST_Demo
             //Bind model input with contents from InkCanvas
             VideoFrame vf = await helper.GetHandWrittenImage(inkGrid);
             mnistInput.Input3 = ImageFeatureValue.CreateFromVideoFrame(vf);
+            
             //Evaluate the model
             mnistOutput = await modelGen.EvaluateAsync(mnistInput);
 

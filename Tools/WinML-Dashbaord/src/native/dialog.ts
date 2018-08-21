@@ -7,7 +7,7 @@ import * as path from 'path';
 
 import { getElectron } from './util';
 
-export function filterToAccept(filters: Electron.FileFilter[]) {
+export function fileFilterToAccept(filters: Electron.FileFilter[]) {
     /**
      * Convert Electron FileFilter[] to HTML accept field.
      */
@@ -46,7 +46,7 @@ export async function showOpenDialog(filters: Electron.FileFilter[]) {
             return file as File;
         });
     }
-    return showWebOpenDialog(filterToAccept(filters));
+    return showWebOpenDialog(fileFilterToAccept(filters));
 }
 
 export function showWebSaveDialog(data: Uint8Array, filename: string) {

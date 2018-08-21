@@ -4,6 +4,7 @@ import { connect } from 'react-redux';
 
 import Collapsible from '../../components/Collapsible';
 import KeyValueEditor from '../../components/KeyValueEditor'
+import Resizable from '../../components/Resizable';
 import { setMetadataProps } from '../../datastore/actionCreators';
 import IState, { IMetadataProps } from '../../datastore/state';
 import MetadataSchema from '../../schema/Metadata';
@@ -27,7 +28,7 @@ class RightPanel extends React.Component<IComponentProperties, {}> {
         }
 
         return (
-            <div>
+            <Resizable>
                 <Label>Model</Label>
                 <div className='Panel'>
                     <Collapsible label='Properties'>
@@ -37,7 +38,7 @@ class RightPanel extends React.Component<IComponentProperties, {}> {
                         <KeyValueEditor actionCreator={setMetadataProps} getState={this.getMetadataPropsFromState} schema={MetadataSchema} />
                     </Collapsible>
                 </div>
-            </div>
+            </Resizable>
         );
     }
 

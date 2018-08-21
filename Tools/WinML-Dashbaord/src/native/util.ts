@@ -3,7 +3,7 @@ import * as fs from 'fs';
 import { createMenu } from './menu';
 
 export function isWeb() {
-    return !fs.exists;
+    return !fs.exists || typeof it === 'function';
 }
 
 let electron: typeof Electron;

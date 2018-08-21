@@ -1,6 +1,5 @@
 export default {
     // https://github.com/onnx/onnx/blob/master/docs/MetadataProps.md
-    // FIXME be case insensitive
     type: 'object',
 
     additionalProperties: false,

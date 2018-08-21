@@ -31,7 +31,7 @@ class App extends React.Component<{}, IComponentState> {
     public render() {
         const pivotItems = Object.keys(views).map(x => <PivotItem headerText={x} key={x} />);
         const mainView = Object.entries(views).map(([k, v]) =>
-            <div className='MainView' style={{ display: this.displayIfKeySelected(k) }} key={k} >
+            <div className={k === this.state.tab ? 'MainView' : 'HiddenTab'} key={k} >
                 {v}
             </div>
         )
@@ -50,10 +50,6 @@ class App extends React.Component<{}, IComponentState> {
         if (item) {
             this.setState({ tab: item.props.headerText! });
         }
-    }
-
-    private displayIfKeySelected = (key: string) => {
-        return key === this.state.tab ? 'block' : 'none';
     }
 }
 

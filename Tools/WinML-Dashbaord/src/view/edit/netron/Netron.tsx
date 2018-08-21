@@ -33,7 +33,7 @@ interface IComponentState {
     properties: { [key: string]: string },
 }
 
-class NetronComponent extends React.Component<IComponentProperties, IComponentState> {
+class Netron extends React.Component<IComponentProperties, IComponentState> {
     private proxiesRevoke: Array<() => void> = [];
 
     constructor(props: IComponentProperties) {
@@ -73,7 +73,7 @@ class NetronComponent extends React.Component<IComponentProperties, IComponentSt
         }
     }
 
-    public shouldComponentUpdate(netxtProps: IComponentProperties, nextState: IComponentState) {
+    public shouldComponentUpdate(nextProps: IComponentProperties, nextState: IComponentState) {
         return false;  // Netron is a static page and all updates are handled by its JavaScript code
     }
 
@@ -275,4 +275,4 @@ const mapDispatchToProps = {
     setSelectedNode,
 }
 
-export const Netron = connect(mapStateToProps, mapDispatchToProps)(NetronComponent);
+export default connect(mapStateToProps, mapDispatchToProps)(Netron);

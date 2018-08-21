@@ -29,9 +29,9 @@ class ModelProto extends Proto {
     }
 
     public serialize() {
-        // FIXME can finish be called multiple times?
         Proto.getOnnx();
-        const writer = Proto.types.ModelProto.encode(this.proto);
+        const clone = Proto.types.ModelProto.fromObject(this.proto);
+        const writer = Proto.types.ModelProto.encode(clone);
         return writer.finish();
     }
 }

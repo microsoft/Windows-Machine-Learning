@@ -1,12 +1,16 @@
+import * as React from 'react';
+import { connect } from 'react-redux';
+
 import { DefaultButton } from 'office-ui-fabric-react/lib/Button';
 import { ChoiceGroup, IChoiceGroupOption } from 'office-ui-fabric-react/lib/ChoiceGroup';
 import { MessageBar, MessageBarType } from 'office-ui-fabric-react/lib/MessageBar';
 import { Spinner } from 'office-ui-fabric-react/lib/Spinner';
 import { TextField } from 'office-ui-fabric-react/lib/TextField';
-import * as React from 'react';
 
 import Collapsible from '../../components/Collapsible';
-import { showNativeOpenDialog, showNativeSaveDialog } from '../../native/dialog';
+import { setFile, setSaveFileName } from '../../datastore/actionCreators';
+import IState from '../../datastore/state';
+import { fileFromPath, showNativeOpenDialog, showNativeSaveDialog } from '../../native/dialog';
 import { downloadPip, downloadPython, getLocalPython, getPythonBinaries, installVenv, pip, python } from '../../native/python';
 import { isWeb } from '../../native/util';
 import { packagedFile } from '../../persistence/appData';
@@ -22,6 +26,13 @@ enum Step {
     Converting,
 }
 
+interface IComponentProperties {
+    // Redux properties
+    file: File,
+    setFile: typeof setFile,
+    setSaveFileName: typeof setSaveFileName,
+}
+
 interface IComponentState {
     console: string,
     currentStep: Step,
@@ -29,10 +40,10 @@ interface IComponentState {
     source?: string,
 }
 
-export default class ConvertView extends React.Component<{}, IComponentState> {
+class ConvertView extends React.Component<IComponentProperties, IComponentState> {
     private localPython?: string;
 
-    constructor(props: {}) {
+    constructor(props: IComponentProperties) {
         super(props);
         const error = isWeb() ? "The converter can't be run in the web interface" : undefined;
         this.state = { console: '', error, currentStep: Step.Idle };
@@ -133,7 +144,7 @@ export default class ConvertView extends React.Component<{}, IComponentState> {
         return (
             <div>
                 <div className='DisplayFlex ModelConvertBrowser'>
-                    <TextField placeholder='Path' value={this.state.source} label='Model to convert' onChanged={this.setSource} />
+                    <TextField placeholder='Path' value={this.state.source || this.props.file && this.props.file.path} label='Model to convert' onChanged={this.setSource} />
                     <DefaultButton id='ConverterModelInputBrowse' text='Browse' onClick={this.browseSource}/>
                 </div>
                 <DefaultButton id='ConvertButton' text='Convert' disabled={!this.state.source} onClick={this.convert}/>
@@ -162,16 +173,32 @@ export default class ConvertView extends React.Component<{}, IComponentState> {
             });
     }
 
-    private convert = () => {
+    private convert = async () => {
         const source = this.state.source!;
-        showNativeSaveDialog({ filters: [{ name: 'ONNX model', extensions: ['onnx'] }, { name: 'ONNX text protobuf', extensions: ['prototxt'] }] })
-            .then((destination: string) => {
-                if (destination) {
-                    this.setState({ currentStep: Step.Converting });
-                    python([packagedFile('convert.py'), source, destination], {}, this.outputListener)
-                        .then(() => this.setState({ currentStep: Step.Idle, source: undefined }))
-                        .catch(this.printError);
-                }
-            });
+        const destination = await showNativeSaveDialog({ filters: [{ name: 'ONNX model', extensions: ['onnx'] }, { name: 'ONNX text protobuf', extensions: ['prototxt'] }] });
+        if (!destination) {
+            return;
+        }
+        this.setState({ currentStep: Step.Converting });
+        try {
+            await python([packagedFile('convert.py'), source, destination], {}, this.outputListener);
+        } catch (e) {
+            this.printError(e);
+        }
+        this.setState({ currentStep: Step.Idle, source: undefined });
+        // TODO Show dialog (https://developer.microsoft.com/en-us/fabric#/components/dialog) asking whether we should open the converted model
+        this.props.setFile(fileFromPath(destination));
+        this.props.setSaveFileName(destination);
     }
 }
+
+const mapStateToProps = (state: IState) => ({
+    file: state.file,
+});
+
+const mapDispatchToProps = {
+    setFile,
+    setSaveFileName,
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(ConvertView);

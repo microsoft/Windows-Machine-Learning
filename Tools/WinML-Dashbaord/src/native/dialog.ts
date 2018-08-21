@@ -36,19 +36,21 @@ export function populateFileFields(fileLikeObject: any, filePath: string) {
     return fileLikeObject as File;
 }
 
+export function fileFromPath(filePath: string) {
+    // Make the native dialogs return an object that acts like the File object returned in HTML forms.
+    // This way, all functions that use dialogs can have a single code path instead of one for the web
+    // and one for Electron.
+    // "new File(fs.readFileSync(x), path.basename(x))" followed by "file.path = x" doesn't work because
+    // the path field is read-only. Instead, we create a Blob and manually add the remaining fields (per
+    // https://www.w3.org/TR/FileAPI/#dfn-file and an extra "path" field, containing the real path).
+    const file = new Blob([fs.readFileSync(filePath)]);
+    return populateFileFields(file, filePath);
+}
+
 export async function showOpenDialog(filters: Electron.FileFilter[]) {
     if (getElectron()) {
         const paths = await showNativeOpenDialog({ filters });
-        return paths.map(x => {
-            // Make the native dialogs return an object that acts like the File object returned in HTML forms.
-            // This way, all functions that use dialogs can have a single code path instead of one for the web
-            // and one for Electron.
-            // "new File(fs.readFileSync(x), path.basename(x))" followed by "file.path = x" doesn't work because
-            // the path field is read-only. Instead, we create a Blob and manually add the remaining fields (per
-            // https://www.w3.org/TR/FileAPI/#dfn-file and an extra "path" field, containing the real path).
-            const file = new Blob([fs.readFileSync(x)]) as any;
-            return populateFileFields(file, x);
-        });
+        return paths.map(fileFromPath);
     }
     return showWebOpenDialog(fileFilterToAccept(filters));
 }

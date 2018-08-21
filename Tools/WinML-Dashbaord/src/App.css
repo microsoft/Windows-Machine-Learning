@@ -10,6 +10,13 @@
     overflow: auto;
 }
 
+.HiddenTab {
+    visibility: hidden;
+    overflow: hidden;
+    height: 0px;
+    line-height: 0px;
+}
+
 .DisplayFlex {
     display: flex;
 }

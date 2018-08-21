@@ -14,9 +14,8 @@ import './fixed-position-override.css';
 const browserGlobal = window as any;
 
 interface IComponentProperties {
-    file?: File,
-
     // Redux properties
+    file: File,
     nodes: { [key: string]: any },
     setInputs: typeof setInputs,
     setMetadataProps: typeof setMetadataProps,
@@ -75,8 +74,7 @@ class NetronComponent extends React.Component<IComponentProperties, IComponentSt
     }
 
     public shouldComponentUpdate(netxtProps: IComponentProperties, nextState: IComponentState) {
-        // Netron is a static page and all updates are handled by its JavaScript code
-        return false;
+        return false;  // Netron is a static page and all updates are handled by its JavaScript code
     }
 
     public render() {
@@ -262,7 +260,8 @@ class NetronComponent extends React.Component<IComponentProperties, IComponentSt
 }
 
 const mapStateToProps = (state: IState) => ({
-    nodes: state.nodes,  // Unused for now, will be used when editing the graph (e.g. input shapes) is supported
+    file: state.file,
+    nodes: state.nodes,
 });
 
 const mapDispatchToProps = {

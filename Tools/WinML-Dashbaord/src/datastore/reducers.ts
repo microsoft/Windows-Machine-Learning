@@ -4,6 +4,8 @@ import IState from './state';
 export function rootReducer(state: IState, action: actions.IAction) {
     state = state || {};
     switch (action.type) {
+        case actions.SET_FILE:
+            return { ...state, file: action.file };
         case actions.SET_INPUTS:
             return { ...state, inputs: action.inputs };
         case actions.SET_OUTPUTS:

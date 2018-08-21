@@ -26,9 +26,7 @@ export default class EditView extends React.Component<{}, IComponentState> {
         return (
             <div id='EditView'>
                 <LeftPanel />
-                <div className='Netron'>
-                    <netron.Netron file={this.state.file} />
-                </div>
+                <netron.Netron />
                 <Resizable>
                     <DefaultButton text='Open file' onClick={this.openFile}/>
                     <DefaultButton text='Save file' onClick={this.saveFile}/>

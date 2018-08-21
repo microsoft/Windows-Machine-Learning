@@ -1,6 +1,11 @@
 import * as actions from './actions';
 import { IMetadataProps, IProperties } from './state';
 
+export const setFile = (file?: File) => ({
+    file,
+    type: actions.SET_FILE,
+})
+
 export const setInputs = (inputs?: { [key: string]: any }) => ({
     inputs,
     type: actions.SET_INPUTS,

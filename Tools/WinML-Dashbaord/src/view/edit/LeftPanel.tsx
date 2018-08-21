@@ -117,8 +117,6 @@ class LeftPanel extends React.Component<IComponentProperties, {}> {
                 );
             }
 
-            const onnxType = Object.keys(valueInfoProto.type).find((t: string) => ['tensorType', 'sequenceType', 'mapType'].includes(t)) || 'unknownType';
-            const type = onnxType.slice(0, -4);
             let tensorName = (
                 <div className={valueInfoProto.docString ? 'TensorDocumentationHover' : 'TensorName'}>
                     <b>{x}</b><span>{` (type: ${getFullType(valueInfoProto.type)})`}</span>
@@ -153,7 +151,7 @@ class LeftPanel extends React.Component<IComponentProperties, {}> {
             };
 
             let shapeEditor;
-            if (type === 'tensor') {
+            if (valueInfoProto.type.tensorType) {
                 const getValueInfoDimensions = (valueInfo: any) => valueInfo.type.tensorType.shape.dim;
                 shapeEditor = getValueInfoDimensions(valueInfoProto).map((dim: any, index: number) => {
                     const dimensionChanged = (value: string) => {

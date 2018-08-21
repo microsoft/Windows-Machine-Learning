@@ -7,6 +7,7 @@ export interface IProperties {
 }
 
 export default interface IState {
+    file: File,
     inputs: { [key: string]: any },
     metadataProps: IMetadataProps,
     modelInputs: string[],

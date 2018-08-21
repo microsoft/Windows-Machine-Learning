@@ -2,6 +2,8 @@
 .netron-root {
     all: initial;
     height: 100%;
+    flex-grow: 1;
+    position: relative;
 }
 
 .background {

@@ -5,15 +5,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 
-import { isWeb } from './util';
-
-let electron: typeof Electron;
-if (!isWeb()) {
-    import('electron')
-        .then(mod => electron = mod)
-        // tslint:disable-next-line:no-console
-        .catch(console.error);
-}
+import { getElectron } from './util';
 
 export function filterToAccept(filters: Electron.FileFilter[]) {
     /**
@@ -26,18 +18,34 @@ export function showWebOpenDialog(accept: string) {
     const input = document.createElement('input');
     input.setAttribute('type', 'file');
     input.setAttribute('accept', accept);
-    return new Promise((resolve: any) => {
-        input.addEventListener('change', () => resolve(input.files));
+    return new Promise<FileList>(resolve => {
+        input.addEventListener('change', () => resolve(input.files || undefined));
         input.click();
     });
 }
 
 export function showNativeOpenDialog(options: Electron.OpenDialogOptions) {
-    const { dialog } = electron.remote;
-    return new Promise(resolve => dialog.showOpenDialog(options, resolve));
+    const { dialog } = getElectron().remote;
+    return new Promise<string[]>(resolve => dialog.showOpenDialog(options, resolve));
 }
 
-export function showOpenDialog(filters: Electron.FileFilter[]) {
+export async function showOpenDialog(filters: Electron.FileFilter[]) {
+    if (getElectron()) {
+        const paths = await showNativeOpenDialog({ filters });
+        return paths.map(x => {
+            // Make the native dialogs return an object that acts like the File object returned in HTML forms.
+            // This way, all functions that use dialogs can have a single code path instead of one for the web
+            // and one for Electron.
+            // "new File(fs.readFileSync(x), path.basename(x))" followed by "file.path = x" doesn't work because
+            // the path field is read-only. Instead, we create a Blob and manually add the remaining fields (per
+            // https://www.w3.org/TR/FileAPI/#dfn-file and an extra "path" field, containing the real path).
+            const file = new Blob([fs.readFileSync(x)]) as any;
+            file.lastModified = 0;
+            file.name = path.basename(x);
+            file.path = x;
+            return file as File;
+        });
+    }
     return showWebOpenDialog(filterToAccept(filters));
 }
 
@@ -56,24 +64,23 @@ export function showWebSaveDialog(data: Uint8Array, filename: string) {
 }
 
 export function showNativeSaveDialog(options: Electron.SaveDialogOptions) {
-    const { dialog } = electron.remote;
-    return new Promise(resolve => dialog.showSaveDialog(options, resolve));
+    const { dialog } = getElectron().remote;
+    return new Promise<string>(resolve => dialog.showSaveDialog(options, resolve));
 }
 
 export async function save(data: Uint8Array, filename: string, filters: Electron.FileFilter[]) {
-    if (electron) {
+    if (getElectron()) {
         if (!path.isAbsolute(filename)) {
             // If a suggested filename is given instead of a full path, show a save dialog
-            const paths = await showNativeSaveDialog({ defaultPath: filename, filters });
-            if (!paths) {
-                return Promise.resolve();
+            filename = await showNativeSaveDialog({ defaultPath: filename, filters });
+            if (!filename) {
+                return;
             }
-            filename = path.resolve(paths[0]);
         }
         // Save contents
         fs.writeFileSync(filename, new Buffer(data));
-        return Promise.resolve(filename);
+        return filename;
     }
     showWebSaveDialog(data, filename);
-    return Promise.resolve();
+    return;
 }

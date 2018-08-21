@@ -162,12 +162,6 @@
   dependencies:
     csstype "^2.2.0"
 
-"@types/unzipper@^0.8.4":
-  version "0.8.4"
-  resolved "https://registry.yarnpkg.com/@types/unzipper/-/unzipper-0.8.4.tgz#0665b064763472c5e68cb10620fc2ce36b4587e7"
-  dependencies:
-    "@types/node" "*"
-
 "@types/yauzl@^2.9.0":
   version "2.9.0"
   resolved "https://registry.yarnpkg.com/@types/yauzl/-/yauzl-2.9.0.tgz#b8427df4659c77a9f5f1bf684a1f54a5159032f6"

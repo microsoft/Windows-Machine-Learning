@@ -27,6 +27,23 @@ export default {
                 'NominalRange_16_235',
             ],
         },
+
+        author: {
+            type: 'string',
+        },
+        company: {
+            type: 'string',
+        },
+        converted_from: {
+            type: 'string',
+        },
+        licence: {
+            type: 'string',
+        },
+        licence_url: {
+            format: 'uri',
+            type: 'string',
+        },
         model_author: {
             type: 'string',
         },

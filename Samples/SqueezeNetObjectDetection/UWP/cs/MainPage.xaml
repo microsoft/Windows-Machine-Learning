@@ -1,0 +1,73 @@
+﻿<Page
+    x:Class="SqueezeNetObjectDetection.MainPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:SqueezeNetObjectDetection"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+        <StackPanel>
+            <ComboBox Name="Combo_DeviceKind" 
+                      HorizontalAlignment="Left" 
+                      VerticalAlignment="Top"
+                      Width="200"
+                      Height="40"
+                      SelectedIndex="0"
+                      >
+                <ComboBoxItem Name="Default" Content="Default"/>
+                <ComboBoxItem Name="Cpu" Content="Cpu"/>
+                <ComboBoxItem Name="DirectX" Content="DirectX"/>
+                <ComboBoxItem Name="DirectXHighPerformance" Content="DirectXHighPerformance"/>
+                <ComboBoxItem Name="DirectXMinPower" Content="DirectXMinPower"/>
+            </ComboBox>
+            <Button Name="ButtonLoad"
+                    ToolTipService.ToolTip="Load the model"
+                    Width="100"
+                    Height="40"
+                    Click="ButtonLoad_Click" 
+                    IsEnabled="True" 
+                    HorizontalAlignment="Left" 
+                    VerticalAlignment="Top">
+                <Button.Content>
+                    Load model
+                </Button.Content>
+            </Button>
+            <Button Name="ButtonRun"
+                    ToolTipService.ToolTip="Pick and evaluate and image"
+                    Width="100"
+                    Height="40"
+                    Click="ButtonRun_Click" 
+                    IsEnabled="False" 
+                    HorizontalAlignment="Left" 
+                    VerticalAlignment="Top">
+                <Button.Content>
+                    Pick image
+                </Button.Content>
+            </Button>
+            <Button Name="ButtonReset"
+                    ToolTipService.ToolTip="Unload the model"
+                    Width="100"
+                    Height="40"
+                    Click="ButtonReset_Click" 
+                    IsEnabled="False" 
+                    HorizontalAlignment="Left" 
+                    VerticalAlignment="Top">
+                <Button.Content>
+                    Reset
+                </Button.Content>
+            </Button>
+
+            <!--Result and status text block-->
+            <TextBlock x:Name="StatusBlock" 
+                       FontWeight="Bold" 
+                       TextWrapping="Wrap"  
+                       Text="Load the model first (SqueezeNet!)"/>
+
+            <!--Image preview -->
+            <Image Name="UIPreviewImage" Stretch="Uniform" MaxWidth="300" MaxHeight="300"/>
+        </StackPanel>
+
+    </Grid>
+</Page>

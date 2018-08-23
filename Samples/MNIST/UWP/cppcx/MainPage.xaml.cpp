@@ -125,7 +125,7 @@ void mnist_cppcx::MainPage::clearButton_Click(Platform::Object^ sender, Windows:
         cropBounds.Width = w;
         cropBounds.Height = h;
 
-        VideoFrame^ cropped_vf = ref new VideoFrame(BitmapPixelFormat::Bgra8, 28, 28, BitmapAlphaMode::Ignore);
+        VideoFrame^ cropped_vf = ref new VideoFrame(BitmapPixelFormat::Bgra8, w, h, BitmapAlphaMode::Ignore);
 
         inputVideoFrame->CopyToAsync(cropped_vf, cropBounds, nullptr);
         return cropped_vf;

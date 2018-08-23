@@ -8,7 +8,7 @@ Note: SqueezeNet was trained to work with image sizes of 224x224, so you must pr
 
 - [Visual Studio 2017 Version 15.7.4 or Newer](https://developer.microsoft.com/en-us/windows/downloads)
 - [Windows 10 - Build 17728 or higher](https://www.microsoft.com/en-us/software-download/windowsinsiderpreviewiso)
-- [Windows SDK - Build 17723 or higher](https://www.microsoft.com/en-us/software-download/windowsinsiderpreviewSDK)
+- [Windows SDK - Build 17738 or higher](https://www.microsoft.com/en-us/software-download/windowsinsiderpreviewSDK)
 - Visual Studio Extension for C++/WinRT
 
   Do the following to add the C++/WinRT extension in Visual Studio.

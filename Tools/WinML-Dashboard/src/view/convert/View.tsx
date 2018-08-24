@@ -50,14 +50,13 @@ class ConvertView extends React.Component<IComponentProperties, IComponentState>
     }
 
     public render() {
-        const collabsibleRef: React.RefObject<Collapsible> = React.createRef();
         return (
             <div className='ConvertView'>
                 <div className='ConvertViewControls'>
                     {this.getView()}
                 </div>
                 { this.state.console &&
-                    <Collapsible ref={collabsibleRef} label='Console output'>
+                    <Collapsible label='Console output'>
                         <pre className='ConverterViewConsole'>
                             {this.state.console}
                         </pre>

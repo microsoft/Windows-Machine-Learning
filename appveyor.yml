@@ -1,0 +1,23 @@
+image: Visual Studio 2017
+platform: x64
+max_jobs: 10
+environment:
+  PYTHON: C:\Python36-x64
+  DASHBOARD: Tools\WinML-Dashboard
+
+build: false
+test_script:
+  - git submodule update --init
+  - set PATH=%PYTHON%;%PATH%
+  - yarn --cwd %DASHBOARD%
+  - yarn --cwd %DASHBOARD% build-electron
+  - mkdir %DASHBOARD%\node_modules\electron\dist\resources\app\src
+  - xcopy %DASHBOARD%\build %DASHBOARD%\node_modules\electron\dist\resources\app\ /e
+  - copy %DASHBOARD%\package.json %DASHBOARD%\node_modules\electron\dist\resources\app\
+  - copy %DASHBOARD%\src\electronMain.js %DASHBOARD%\node_modules\electron\dist\resources\app\src\
+
+artifacts:
+  - path: '%DASHBOARD%\node_modules\electron\dist'
+
+cache:
+  - '%DASHBOARD%\node_modules'

@@ -4,7 +4,7 @@ Developer dashboard for Windows ML and ONNX.
 
 ## Getting started
 
-The dashboard can be downloaded from the [releases page](TODO). Some of the functionality can be used in the [online, browser version here](TODO).
+The dashboard can be downloaded from the [releases page](https://github.com/Microsoft/Windows-Machine-Learning/releases). Some of the functionality can be used in the [online, browser version here](TODO).
 
 ### Building from source
 

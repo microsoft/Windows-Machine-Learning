@@ -18,6 +18,3 @@ test_script:
 
 artifacts:
   - path: '%DASHBOARD%\node_modules\electron\dist'
-
-cache:
-  - '%DASHBOARD%\node_modules'

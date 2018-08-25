@@ -12,7 +12,8 @@ test_script:
   - yarn --cwd %DASHBOARD%
   - yarn --cwd %DASHBOARD% build-electron
   - mkdir %DASHBOARD%\node_modules\electron\dist\resources\app\src
-  - xcopy %DASHBOARD%\build %DASHBOARD%\node_modules\electron\dist\resources\app\ /e
+  - mkdir %DASHBOARD%\node_modules\electron\dist\resources\app\build
+  - xcopy %DASHBOARD%\build %DASHBOARD%\node_modules\electron\dist\resources\app\build\ /e
   - copy %DASHBOARD%\package.json %DASHBOARD%\node_modules\electron\dist\resources\app\
   - copy %DASHBOARD%\src\electronMain.js %DASHBOARD%\node_modules\electron\dist\resources\app\src\
 

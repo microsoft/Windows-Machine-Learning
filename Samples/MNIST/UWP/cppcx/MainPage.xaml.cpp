@@ -127,7 +127,7 @@ void mnist_cppcx::MainPage::clearButton_Click(Platform::Object^ sender, Windows:
 
         VideoFrame^ cropped_vf = ref new VideoFrame(BitmapPixelFormat::Bgra8, w, h, BitmapAlphaMode::Ignore);
 
-        inputVideoFrame->CopyToAsync(cropped_vf, cropBounds, nullptr);
-        return cropped_vf;
+        return create_task(inputVideoFrame->CopyToAsync(cropped_vf, cropBounds, nullptr))
+            .then([cropped_vf]() { return cropped_vf; });
     });
 }

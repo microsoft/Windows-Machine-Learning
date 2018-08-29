@@ -7,8 +7,8 @@ For other tutorials, how-tos, and additional information, see the [Windows ML do
 ## Requirements
 
 - [Visual Studio 2017 Update 4 or Higher](https://developer.microsoft.com/en-us/windows/downloads)
-- [Windows 10 - Build 17724 or higher](https://www.microsoft.com/en-us/software-download/windowsinsiderpreviewiso)
-- [Windows SDK - Build 17724 or higher](https://www.microsoft.com/en-us/software-download/windowsinsiderpreviewSDK)
+- [Windows 10 - Build 17738 or higher](https://www.microsoft.com/en-us/software-download/windowsinsiderpreviewiso)
+- [Windows SDK - Build 17738 or higher](https://www.microsoft.com/en-us/software-download/windowsinsiderpreviewSDK)
 
 
 ## Contributing

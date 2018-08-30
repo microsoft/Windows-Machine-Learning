@@ -1,12 +1,12 @@
 # FNS Style Transfer
 
-A UWP C# app that uses the FNS-Candy style transfer model to make a cool image.
+This UWP C# app uses the FNS-Candy style transfer model to re-style images or video streams. 
 
-For other tutorials, how-tos, and additional information, see the [Windows ML documentation](https://review.docs.microsoft.com/en-us/windows/ai/?branch=master):
+For how-tos, tutorials and additional information, see the [Windows ML documentation](https://docs.microsoft.com/windows/ai/).
 
 ## Requirements
 
-- [Visual Studio 2017 Update 4 or Higher](https://developer.microsoft.com/en-us/windows/downloads)
+- [Visual Studio 2017 - 15.4 or higher](https://developer.microsoft.com/en-us/windows/downloads)
 - [Windows 10 - Build 17738 or higher](https://www.microsoft.com/en-us/software-download/windowsinsiderpreviewiso)
 - [Windows SDK - Build 17738 or higher](https://www.microsoft.com/en-us/software-download/windowsinsiderpreviewSDK)
 

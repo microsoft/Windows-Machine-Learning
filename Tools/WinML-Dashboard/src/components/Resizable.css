@@ -1,9 +1,22 @@
 .Resizable {
+    position: relative;
     border: 2px lightgray;
     border-style: none solid;
-    resize: horizontal;
     overflow: auto;
     min-width: 80px;
-    width: 350px;
     transition: width 200ms;
+    width: 100%;
+}
+
+.container { 
+    display: flex;
+    position: relative;
+    height: 100%;
+    width: 350px;
+}
+
+.drag {
+    position: relative;
+    width: 5px;
+    cursor: w-resize;
 }

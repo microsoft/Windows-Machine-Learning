@@ -10,10 +10,10 @@ import { TextField } from 'office-ui-fabric-react/lib/TextField';
 import Collapsible from '../../components/Collapsible';
 import { setFile, setSaveFileName } from '../../datastore/actionCreators';
 import IState from '../../datastore/state';
-import { packagedFile } from '../../native/appData';
 import { fileFromPath, showNativeOpenDialog, showNativeSaveDialog } from '../../native/dialog';
 import { downloadPip, downloadPython, getLocalPython, getPythonBinaries, installVenv, pip, python } from '../../native/python';
 import { isWeb } from '../../native/util';
+import { packagedFile } from '../../persistence/appData';
 
 import './View.css';
 
@@ -50,13 +50,14 @@ class ConvertView extends React.Component<IComponentProperties, IComponentState>
     }
 
     public render() {
+        const collabsibleRef: React.RefObject<Collapsible> = React.createRef();
         return (
             <div className='ConvertView'>
                 <div className='ConvertViewControls'>
                     {this.getView()}
                 </div>
                 { this.state.console &&
-                    <Collapsible label='Console output'>
+                    <Collapsible ref={collabsibleRef} label='Console output'>
                         <pre className='ConverterViewConsole'>
                             {this.state.console}
                         </pre>

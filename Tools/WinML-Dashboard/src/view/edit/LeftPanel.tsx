@@ -69,9 +69,11 @@ const getFullType = (typeProto: any): string => {
 class LeftPanel extends React.Component<IComponentProperties, {}> {
     public render() {
         return (
-            <Resizable visible={this.props.selectedNode !== undefined}>
-                {this.props.selectedNode !== undefined && this.getContent()}
-            </Resizable>
+            <div className="Unselectable">
+                <Resizable visible={this.props.selectedNode !== undefined}>
+                    {this.props.selectedNode !== undefined && this.getContent()}
+                </Resizable>
+            </div>
         );
     }
 

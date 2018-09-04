@@ -19,6 +19,9 @@ interface IComponentProperties {
 }
 
 class RightPanel extends React.Component<IComponentProperties, {}> {
+    constructor(props: any) {
+        super(props);
+    }
     public render() {
         if (this.props.metadataProps !== undefined && !this.props.nodes) {
             return (
@@ -28,17 +31,19 @@ class RightPanel extends React.Component<IComponentProperties, {}> {
         }
 
         return (
-            <Resizable>
-                <Label>Model</Label>
-                <div className='Panel'>
-                    <Collapsible label='Properties'>
-                        <KeyValueEditor getState={this.getPropertiesFromState} schema={{ type: 'object' }} />
-                    </Collapsible>
-                    <Collapsible label='Metadata properties'>
-                        <KeyValueEditor actionCreator={setMetadataProps} getState={this.getMetadataPropsFromState} schema={MetadataSchema} />
-                    </Collapsible>
-                </div>
-            </Resizable>
+            <div className="Unselectable">
+                <Resizable isRightPanel={true}>
+                    <Label >Model</Label>
+                    <div className='Panel'>
+                        <Collapsible label='Properties'>
+                            <KeyValueEditor getState={this.getPropertiesFromState} schema={{ type: 'object' }} />
+                        </Collapsible>
+                        <Collapsible label='Metadata properties'>
+                            <KeyValueEditor actionCreator={setMetadataProps} getState={this.getMetadataPropsFromState} schema={MetadataSchema} />
+                        </Collapsible>
+                    </div>
+                </Resizable>
+            </div>
         );
     }
 

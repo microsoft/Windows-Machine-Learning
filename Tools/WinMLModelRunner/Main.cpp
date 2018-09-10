@@ -47,15 +47,15 @@ void EvaluateModel(LearningModel model, const CommandLineArgs& args, OutputHelpe
     }
 
     LearningModelBinding binding(session);
+
+    bool useInputData = false;
+    std::string device = deviceKind == LearningModelDeviceKind::Cpu ? "CPU" : "GPU";
+    std::cout << "Binding Model on " << device << "...";
     if (args.PerfCapture())
     {
         WINML_PROFILING_START(g_Profiler, WINML_MODEL_TEST_PERF::BIND_VALUE);
         timer.Start();
     }
-
-    bool useInputData = false;
-    std::string device = deviceKind == LearningModelDeviceKind::Cpu ? "CPU" : "GPU";
-    std::cout << "Binding Model on " << device << "...";
     if (!args.ImagePath().empty())
     {
         useInputData = true;
@@ -83,13 +83,13 @@ void EvaluateModel(LearningModel model, const CommandLineArgs& args, OutputHelpe
             return;
         }
     }
-    std::cout << "[SUCCESS]" << std::endl;
 
     if (args.PerfCapture())
     {
         WINML_PROFILING_STOP(g_Profiler, WINML_MODEL_TEST_PERF::BIND_VALUE);
         output->m_clockBindTime = timer.Stop();
     }
+    std::cout << "[SUCCESS]" << std::endl;
 
     std::cout << "Evaluating Model on " << device << "...";
     LearningModelEvaluationResult result = nullptr;
@@ -115,10 +115,9 @@ void EvaluateModel(LearningModel model, const CommandLineArgs& args, OutputHelpe
                 std::wcout << hr.message().c_str() << std::endl;
                 return;
             }
-
-            std::cout << "[SUCCESS]" << std::endl;
             WINML_PROFILING_STOP(g_Profiler, WINML_MODEL_TEST_PERF::EVAL_MODEL);
             output->m_clockEvalTimes.push_back(timer.Stop());
+            std::cout << "[SUCCESS]" << std::endl;
         }
 
         output->PrintWallClockTimes(args.NumIterations());
@@ -163,16 +162,15 @@ void EvaluateModel(LearningModel model, const CommandLineArgs& args, OutputHelpe
 LearningModel LoadModelHelper(const CommandLineArgs& args, OutputHelper * output)
 {
     Timer timer;
-    if (args.PerfCapture())
-    {
-        WINML_PROFILING_START(g_Profiler, WINML_MODEL_TEST_PERF::LOAD_MODEL);
-        timer.Start();
-    }
-
     LearningModel model = nullptr;
 
     try
     {
+        if (args.PerfCapture())
+        {
+            WINML_PROFILING_START(g_Profiler, WINML_MODEL_TEST_PERF::LOAD_MODEL);
+            timer.Start();
+        }
         model = LearningModel::LoadFromFilePath(args.ModelPath());
     }
     catch (HRESULT hr)
@@ -187,15 +185,14 @@ LearningModel LoadModelHelper(const CommandLineArgs& args, OutputHelper * output
         std::wcout << hr.message().c_str() << std::endl;
         return nullptr;
     }
- 
-    output->PrintModelInfo(args.ModelPath(), model);
-    std::cout << "Loading model...[SUCCESS]" << std::endl;
-
     if (args.PerfCapture())
     {
         WINML_PROFILING_STOP(g_Profiler, WINML_MODEL_TEST_PERF::LOAD_MODEL);
         output->m_clockLoadTime = timer.Stop();
     }
+    output->PrintModelInfo(args.ModelPath(), model);
+    std::cout << "Loading model...[SUCCESS]" << std::endl;
+
     return model;
 }
 

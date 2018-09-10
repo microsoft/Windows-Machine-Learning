@@ -91,5 +91,6 @@ private:
     winrt::Windows::AI::MachineLearning::ILearningModelFeatureDescriptor m_bindingDesc;
     std::vector<INT64> m_shapeBuffer;
     UINT m_numElements = 0;
+    UINT m_elementSize = 0;
     std::vector<T> m_dataBuffer;
 };

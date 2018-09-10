@@ -6,7 +6,7 @@
 using namespace Windows::AI::MachineLearning;
 
 void CommandLineArgs::PrintUsage() {
-    std::cout << "WinML Model Runner" << std::endl;
+    std::cout << "WinML Runner" << std::endl;
     std::cout << " ---------------------------------------------------------------" << std::endl;
     std::cout << "WinmlRunner.exe <-model | -folder> <fully qualified path> [options]" << std::endl;
     std::cout << std::endl;

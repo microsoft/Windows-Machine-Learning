@@ -6,6 +6,9 @@ class WinMLRunnerTest
 public:
     TEST_CLASS(WinMLRunnerTest);
     TEST_METHOD(TestPrintUsage);
+    /*
+    TODO: Implement tests below
+    */
     //TEST_METHOD(GarbageInputCpuAndGpu);
     //TEST_METHOD(GarbageInputOnlyCpu);
     //TEST_METHOD(GarbageInputOnlyCPU);

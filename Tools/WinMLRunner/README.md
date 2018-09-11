@@ -1,7 +1,7 @@
 
-# WinML Model Runner Sample
+# WinML Runner Sample
 
-The WinMLModelRunner program can run .onnx or .pb models where the input and output variables are tensors or images. It will attempt to load, bind, and evaluate a model and output error messages if these steps were unsuccessful. It will also capture performance measurements on the GPU and/or CPU. If using the performance flag, the GPU, CPU and wall-clock times for loading (on CPU only), binding, and evaluating and the CPU and GPU memory usage during evaluate will print to the command line and to a CSV file.
+The WinMLRunner program can run .onnx or .pb models where the input and output variables are tensors or images. It will attempt to load, bind, and evaluate a model and output error messages if these steps were unsuccessful. It will also capture performance measurements on the GPU and/or CPU. If using the performance flag, the GPU, CPU and wall-clock times for loading (on CPU only), binding, and evaluating and the CPU and GPU memory usage during evaluate will print to the command line and to a CSV file.
 
 ## Prerequisites
 - [Visual Studio 2017 Version 15.7.4 or Newer](https://developer.microsoft.com/en-us/windows/downloads)
@@ -33,19 +33,19 @@ Required command-Line arguments:
  ```
 ### Examples:
 Run a model on the CPU and GPU separately 5 times and output performance data:
-> WinMLModelRunner.exe -model c:\\data\\concat.onnx -iterations 5 -perf
+> WinMLRunner.exe -model c:\\data\\concat.onnx -iterations 5 -perf
 
 Runs all the models in the data folder, captures performance data 3 times using only the CPU: 
-> WinMLModelRunner .exe -folder c:\\data -perf -iterations 3 -CPU
+> WinMLRunner .exe -folder c:\\data -perf -iterations 3 -CPU
 
 ## Default output
 
 **Running a good model:**
 Run the executable as shown below. Make sure to replace the install location with what matches yours:
  ```
- WinMLModelRunner.exe -model C:\Repos\Windows-Machine-Learning\SharedContent\models\SqueezeNet.onnx 
+ WinMLRunner.exe -model C:\Repos\Windows-Machine-Learning\SharedContent\models\SqueezeNet.onnx 
 
-WinML Model Runner
+WinML Runner
 GPU: AMD Radeon Pro WX 3100
 
 =================================================================
@@ -150,7 +150,7 @@ private:
 
  Run the executable as shown below. Make sure to replace the install location with what matches yours:
  ```
-WinMLModelRunner.exe -model C:\Repos\Windows-Machine-Learning\SharedContent\models\SqueezeNet.onnx -perf
+WinMLRunner.exe -model C:\Repos\Windows-Machine-Learning\SharedContent\models\SqueezeNet.onnx -perf
 
 If capturing performance measurements, the program will create a CSV titled "WinML Model Run [Today's date]" in the same folder as the .exe file. 
  ```
@@ -159,7 +159,7 @@ Dedicated Memory (MB) - The amount of memory that was used on the VRAM of the de
 Shared Memory (MB) -  The amount of memory that was used on the DRAM by the GPU.
  ### Sample performance output:
  ```
-WinML Model Runner
+WinML Runner
 GPU: AMD Radeon Pro WX 3100
 
 =================================================================
@@ -244,10 +244,10 @@ CPU Time Averages (iterations = 1):
  ```
 logman start winml -ets -o winmllog.etl -nb 128 640 -bs 128
 logman update trace  winml -p {BCAD6AEE-C08D-4F66-828C-4C43461A033D} 0xffffffffffffffff 0xff -ets         
-WinMLModelRunner.exe -model C:\Repos\Windows-Machine-Learning\SharedContent\models\SqueezeNet.onnx -debug
+WinMLRunner.exe -model C:\Repos\Windows-Machine-Learning\SharedContent\models\SqueezeNet.onnx -debug
 logman stop winml -ets
  ```
-The winmllog.etl file will appear in the same directory as the WinMLModelRunner.exe. 
+The winmllog.etl file will appear in the same directory as the WinMLRunner.exe. 
  
  ## Reading the Trace Logs
 1. Using the traceprt.exe

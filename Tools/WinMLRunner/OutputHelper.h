@@ -214,7 +214,7 @@ public:
 
     void PrintHardwareInfo()
     {
-        std::cout << "WinML Model Runner" << std::endl;
+        std::cout << "WinML Runner" << std::endl;
 
         com_ptr<IDXGIFactory6> factory;
         (CreateDXGIFactory1(__uuidof(IDXGIFactory6), factory.put_void()));
@@ -236,7 +236,7 @@ public:
 
         std::ostringstream oss;
         oss << std::put_time(&localTime, "%Y-%m-%d");
-        std::string fileName = "WinML Model Runner [" + oss.str() + "].csv";
+        std::string fileName = "WinML Runner [" + oss.str() + "].csv";
         std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
         m_csvFileName = converter.from_bytes(fileName);
     }

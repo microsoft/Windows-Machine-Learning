@@ -8,6 +8,12 @@ For additional information on Windows ML, including step-by-step tutorials and h
 
 ## Pre-release APIs
 
+
+- **MNIST**: Uses the MNIST model to recognize a numeric digit drawn by the user.
+- **SqueezeNet**: Uses the SqueezeNet model to detect the predominant object in an image.
+- **WinMLExplorer**: Uses a circuit board defect detection model to detect defects from images or a real-time camera feed.
+- **[Awesome-WindowsML-ONNX-Models](https://github.com/ChangweiZhang/Awesome-WindowsML-ONNX-Models)**: An project provides the largest collection of tested ONNX machine learning models ande demos for develpers,to help integrate machine learning features more easily. it also provide a ONNX model generator that is able to convert CoreML models to ONNX format.
+
 These samples use the [Windows.AI.MachineLearning APIs](https://docs.microsoft.com/uwp/api/windows.ai.machinelearning), a pre-released product which may be substantially modified before it’s commercially released. Microsoft makes no warranties, express or implied, with respect to the information provided here.
 
 ## Requirements

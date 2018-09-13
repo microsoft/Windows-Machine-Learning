@@ -21,7 +21,6 @@ namespace SamplesTest
         // This string key is present in RegisteredUserModeAppID under AppX/vs.appxrecipe
         // TODO: this string value has to be retrieved from local test machine
         // More information on https://github.com/Microsoft/WinAppDriver
-        private const string MNISTAppId_CS = "f330385a-7468-4688-859d-7d11a61d1b29_atz7ne7vp47fr!App";
 
         protected static WindowsDriver<WindowsElement> session;
 
@@ -30,7 +29,8 @@ namespace SamplesTest
             if (session == null)
             {
                 DesiredCapabilities appCapabilities = new DesiredCapabilities();
-                appCapabilities.SetCapability("app", MNISTAppId_CS);
+                string[] lines = System.IO.File.ReadAllLines(@".\AppIds.txt");
+                appCapabilities.SetCapability("app", lines[0]);
                 appCapabilities.SetCapability("deviceName", "WindowsPC");
                 session = new WindowsDriver<WindowsElement>(new Uri(WindowsApplicationDriverUrl), appCapabilities);
                 Assert.IsNotNull(session);

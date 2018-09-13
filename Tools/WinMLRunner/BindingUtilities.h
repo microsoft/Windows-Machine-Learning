@@ -9,14 +9,14 @@ using namespace winrt::Windows::AI::MachineLearning;
 
 namespace BindingUtilities
 {
-    bool BindTensorsFromGarbageData(LearningModelBinding context, LearningModel model)
+    void BindTensorsFromGarbageData(LearningModelBinding context, LearningModel model)
     {
         for (auto&& description : model.InputFeatures())
         {
             if (description == nullptr)
             {
                 std::cout << "BindingUtilities: Learning model has no binding description." << std::endl;
-                return false;
+                throw hresult_invalid_argument();
             }
 
             hstring name = description.Name();
@@ -28,7 +28,7 @@ namespace BindingUtilities
             catch (...)
             {
                 std::cout << "BindingUtilities: TensorKind is undefined." << std::endl;
-                return false;
+                throw;
             }
 
             TensorKind tensorKind = tensorDescriptor.TensorKind();
@@ -37,7 +37,7 @@ namespace BindingUtilities
                 case TensorKind::Undefined:
                 {
                     std::cout << "BindingUtilities: TensorKind is undefined." << std::endl;
-                    return false;
+                    throw hresult_invalid_argument();
                 }
                 case TensorKind::Float:
                 {
@@ -126,11 +126,10 @@ namespace BindingUtilities
                 default:
                 {
                     std::cout << "BindingUtilities: TensorKind binding has not been implemented." << std::endl;
-                    return false;
+                    throw hresult_not_implemented();
                 }
             }
         }
-        return true;
     }
     
     VideoFrame LoadImageFile(hstring filePath)
@@ -192,7 +191,7 @@ namespace BindingUtilities
     }
 
     // Binds tensor floats, ints, doubles from CSV data.
-    bool BindCSVDataToContext(LearningModelBinding context, LearningModel model, std::wstring csvFilePath)
+    void BindCSVDataToContext(LearningModelBinding context, LearningModel model, std::wstring csvFilePath)
     {
         std::ifstream fileStream;
         fileStream.open(csvFilePath);
@@ -206,7 +205,7 @@ namespace BindingUtilities
             {
 
                 std::cout << "BindingUtilities: Learning model has no binding description." << std::endl;
-                return false;
+                throw hresult_invalid_argument();
             }
 
             hstring name = description.Name();
@@ -219,7 +218,7 @@ namespace BindingUtilities
                 case TensorKind::Undefined:
                 {
                     std::cout << "BindingUtilities: TensorKind is undefined." << std::endl;
-                    return false;
+                    throw hresult_invalid_argument();
                 }
                 case TensorKind::Float:
                 {
@@ -312,14 +311,13 @@ namespace BindingUtilities
                 default:
                 {
                     std::cout << "BindingUtilities: TensorKind has not been implemented." << std::endl;
-                    return false;
+                    throw hresult_not_implemented();
                 }
             }
-            return true;
         }
     }
 
-    bool BindImageToContext(LearningModelBinding context, LearningModel model, std::wstring imagePath)
+    void BindImageToContext(LearningModelBinding context, LearningModel model, std::wstring imagePath)
     {
         context.Clear();
         for (auto&& description : model.InputFeatures())
@@ -331,7 +329,7 @@ namespace BindingUtilities
             {
                 std::cout << "BindingUtilities: Cannot bind image to LearningModelBinding." << std::endl;
                 std::cout << std::endl;
-                return false;
+                throw_hresult(E_FAIL);
             }
             try
             {
@@ -342,20 +340,19 @@ namespace BindingUtilities
             {
                 WriteErrorMsg(msg);
                 std::cout << std::endl;
-                return false;
+                throw;
             }
             catch (HRESULT hr)
             {
                 std::cout << hr << std::endl;
-                return false;
+                throw;
             }
             catch (hresult_error hr)
             {
                 std::wcout << hr.message().c_str() << std::endl;
-                return false;
+                throw;
             }
         }
-        return true;
     }
 
     template< typename K, typename V>
@@ -458,9 +455,17 @@ namespace BindingUtilities
         }
     }
 
-    bool BindGarbageDataToContext(LearningModelBinding context, LearningModel model)
+    void BindGarbageDataToContext(LearningModelBinding context, LearningModel model)
     {
         context.Clear();
-        return BindTensorsFromGarbageData(context, model);
+        try
+        {
+            BindTensorsFromGarbageData(context, model);
+        }
+        catch (...)
+        {
+            std::cout << "Could not bind tensors from garbage data" << std::endl;
+            throw;
+        }
     }
  };

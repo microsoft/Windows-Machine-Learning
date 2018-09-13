@@ -74,9 +74,16 @@ void EvaluateModel(LearningModel model, const CommandLineArgs& args, OutputHelpe
         {
             BindingUtilities::BindCSVDataToContext(binding, model, args.CsvPath());
         }
-        catch (...)
+        catch (HRESULT hr)
         {
             std::cout << "[FAILED] Could Not Bind CSV Data To Context" << std::endl;
+            std::cout << hr << std::endl;
+            throw;
+        }
+        catch (hresult_error hr)
+        {
+            std::cout << "[FAILED] Could Not Bind CSV Data To Context" << std::endl;
+            std::wcout << hr.message().c_str() << std::endl;
             throw;
         }
     }
@@ -277,6 +284,7 @@ int main(int argc, char** argv)
         }
         catch (hresult_error hr)
         {
+            std::cout << hr.message().c_str() << std::endl;
             return hr.code();
         }
         output.WritePerformanceDataToCSV(g_Profiler, args, args.ModelPath());
@@ -295,6 +303,7 @@ int main(int argc, char** argv)
         }
         catch (hresult_error hr)
         {
+            std::cout << hr.message().c_str() << std::endl;
             return hr.code();
         }
     }

@@ -27,7 +27,7 @@ namespace BindingUtilities
             }
             catch (...)
             {
-                std::cout << "BindingUtilities: TensorKind is undefined." << std::endl;
+                std::cout << "BindingUtilities: Input Descriptor type isn't tensor." << std::endl;
                 throw;
             }
 
@@ -179,7 +179,10 @@ namespace BindingUtilities
     template <typename T>
     void WriteDataToBinding(const std::vector<std::string>& elementStrings, ModelBinding<T>& binding)
     {
-        assert(binding.GetDataBufferSize() == elementStrings.size());
+        if (binding.GetDataBufferSize() != elementStrings.size())
+        {
+            throw hresult_invalid_argument(L"CSV Input is size/shape is different from what model expects");
+        }
         T* data = binding.GetData();
         for (auto &elementString : elementStrings)
         {
@@ -223,7 +226,15 @@ namespace BindingUtilities
                 case TensorKind::Float:
                 {
                     ModelBinding<float> binding(description);
-                    WriteDataToBinding<float>(elementStrings, binding);
+                    try
+                    {
+                        WriteDataToBinding<float>(elementStrings, binding);
+                    }
+                    catch (...)
+                    {
+                        std::cout << "BindingUtilities: Input CSV Data could not be written to input binding" << std::endl;
+                        throw;
+                    }
                     ITensor tensor = TensorFloat::CreateFromArray(binding.GetShapeBuffer(), binding.GetDataBuffer());
                     context.Bind(name, tensor);
                 }
@@ -464,7 +475,7 @@ namespace BindingUtilities
         }
         catch (...)
         {
-            std::cout << "Could not bind tensors from garbage data" << std::endl;
+            std::cout << "Could not bind from garbage data. Currently only supports binding garbage data for tensor inputs." << std::endl;
             throw;
         }
     }

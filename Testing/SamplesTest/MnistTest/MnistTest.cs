@@ -13,7 +13,7 @@ using OpenQA.Selenium.Remote;
 // up to OpenQA.Selenium.Interactions and this alias can simply be removed.
 using PointerInputDevice = OpenQA.Selenium.Appium.Interactions.PointerInputDevice;
 
-namespace SamplesTest
+namespace MnistTest
 {
     public class MnistSession
     {

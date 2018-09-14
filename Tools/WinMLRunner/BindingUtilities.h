@@ -186,7 +186,7 @@ namespace BindingUtilities
         {
             T value;
             std::stringstream(elementString) >> value;
-            data = &value;
+            *data = value;
             data++;
         }
     }
@@ -403,8 +403,19 @@ namespace BindingUtilities
                 case TensorKind::Float:
                 {
                     auto resultVector = results.Lookup(desc.Name()).as<TensorFloat>().GetAsVectorView();
-                    auto output = resultVector.GetAt(0);
-                    std::wcout << " Result: " << output << std::endl;
+                    UINT maxIndex = 0;
+                    auto maxValue = resultVector.GetAt(0);
+
+                    for (UINT i = 0; i < resultVector.Size(); i++)
+                    {
+                        if (maxValue < resultVector.GetAt(i))
+                        {
+                            maxValue = resultVector.GetAt(i);
+                            maxIndex = i;
+                        }
+                    }
+
+                    std::wcout << " resultVector[" << maxIndex << "] has the maximal value of " << maxValue << std::endl;
                 }
                 break;
                 case TensorKind::Int64:

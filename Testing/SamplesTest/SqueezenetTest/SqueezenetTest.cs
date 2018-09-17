@@ -70,15 +70,15 @@ namespace SamplesTest
         [TestMethod]
         public void TestTabbyCat()
         {
-            string tabbyCatPath = "E:\\winml\\Windows-Machine-Learning\\SharedContent\\media\\kitten_224.png";
+            string tabbyCatPath = "kitten_224.png";
             resetButton.Click();
-            System.Threading.Thread.Sleep(50);
+            System.Threading.Thread.Sleep(100);
             loadModelButton.Click();
             // wait for model to load
-            System.Threading.Thread.Sleep(1500);
+            System.Threading.Thread.Sleep(2000);
             pickImageButton.Click();
             // wait for file picker window to pop up
-            System.Threading.Thread.Sleep(1000);
+            System.Threading.Thread.Sleep(3000);
             session.Keyboard.SendKeys(tabbyCatPath);
             session.Keyboard.SendKeys(Keys.Enter);
             System.Threading.Thread.Sleep(1000);

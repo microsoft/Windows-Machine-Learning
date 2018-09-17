@@ -10,7 +10,7 @@ Profiler<WINML_MODEL_TEST_PERF> g_Profiler;
 // Binds and evaluates the user-specified model and outputs success/failure for each step. If the
 // perf flag is used, it will output the CPU, GPU, and wall-clock time for each step to the
 // command-line and to a CSV file.
-void EvaluateModel(LearningModel model, const CommandLineArgs& args, OutputHelper* output, LearningModelDeviceKind deviceKind)
+HRESULT EvaluateModel(LearningModel model, const CommandLineArgs& args, OutputHelper* output, LearningModelDeviceKind deviceKind)
 {
     if (model == nullptr)
     {
@@ -25,17 +25,11 @@ void EvaluateModel(LearningModel model, const CommandLineArgs& args, OutputHelpe
     {
         session =  LearningModelSession(model, LearningModelDevice(deviceKind));
     }
-    catch (HRESULT hr)
-    {
-        std::cout << "Creating session [FAILED]" << std::endl;
-        std::cout << hr << std::endl;
-        throw;
-    }
     catch (hresult_error hr)
     {
         std::cout << "Creating session [FAILED]" << std::endl;
         std::wcout << hr.message().c_str() << std::endl;
-        throw;
+        return hr.code();
     }
 
     if (args.EnableDebugOutput())
@@ -61,10 +55,11 @@ void EvaluateModel(LearningModel model, const CommandLineArgs& args, OutputHelpe
         {
             BindingUtilities::BindImageToContext(binding, model, args.ImagePath());
         }
-        catch (...)
+        catch (hresult_error hr)
         {
             std::cout << "[FAILED] Could Not Bind Image To Context" << std::endl;
-            throw;
+            std::wcout << hr.message().c_str() << std::endl;
+            return hr.code();
         }
     }
     else if (!args.CsvPath().empty())
@@ -74,17 +69,11 @@ void EvaluateModel(LearningModel model, const CommandLineArgs& args, OutputHelpe
         {
             BindingUtilities::BindCSVDataToContext(binding, model, args.CsvPath());
         }
-        catch (HRESULT hr)
-        {
-            std::cout << "[FAILED] Could Not Bind CSV Data To Context" << std::endl;
-            std::cout << hr << std::endl;
-            throw;
-        }
         catch (hresult_error hr)
         {
             std::cout << "[FAILED] Could Not Bind CSV Data To Context" << std::endl;
             std::wcout << hr.message().c_str() << std::endl;
-            throw;
+            return hr.code();
         }
     }
     else
@@ -93,10 +82,11 @@ void EvaluateModel(LearningModel model, const CommandLineArgs& args, OutputHelpe
         {
             BindingUtilities::BindGarbageDataToContext(binding, model);
         }
-        catch (...)
+        catch (hresult_error hr)
         {
             std::cout << "[FAILED] Could Not Garbage Data Context" << std::endl;
-            throw;
+            std::wcout << hr.message().c_str() << std::endl;
+            return hr.code();
         }
     }
     if (args.PerfCapture())
@@ -118,17 +108,11 @@ void EvaluateModel(LearningModel model, const CommandLineArgs& args, OutputHelpe
             {
                 result = session.Evaluate(binding, L"");
             }
-            catch (HRESULT hr)
-            {
-                std::cout << "[FAILED]" << std::endl;
-                std::cout << hr << std::endl;
-                throw;
-            }
             catch (hresult_error hr)
             {
                 std::cout << "[FAILED]" << std::endl;
                 std::wcout << hr.message().c_str() << std::endl;
-                throw;
+                return hr.code();
             }
             WINML_PROFILING_STOP(g_Profiler, WINML_MODEL_TEST_PERF::EVAL_MODEL);
             output->m_clockEvalTimes.push_back(timer.Stop());
@@ -151,17 +135,11 @@ void EvaluateModel(LearningModel model, const CommandLineArgs& args, OutputHelpe
         {
             result = session.Evaluate(binding, L"");
         }
-        catch (HRESULT hr)
-        {
-            std::wcout << " [FAILED]" << std::endl;
-            std::cout << hr << std::endl;
-            throw;
-        }
         catch (hresult_error hr)
         {
             std::cout << "[FAILED]" << std::endl;
             std::wcout << hr.message().c_str() << std::endl;
-            throw;
+            return hr.code();
         }
         std::cout << "[SUCCESS]" << std::endl;
     }
@@ -172,6 +150,7 @@ void EvaluateModel(LearningModel model, const CommandLineArgs& args, OutputHelpe
     {
        BindingUtilities::PrintEvaluationResults(model, args, result.Outputs());
     }
+    return S_OK;
 }
 
 LearningModel LoadModelHelper(const CommandLineArgs& args, OutputHelper * output)
@@ -187,12 +166,6 @@ LearningModel LoadModelHelper(const CommandLineArgs& args, OutputHelper * output
             timer.Start();
         }
         model = LearningModel::LoadFromFilePath(args.ModelPath());
-    }
-    catch (HRESULT hr)
-    {
-        std::wcout << "Load Model: " << args.ModelPath() << " [FAILED]" << std::endl;
-        std::cout << hr << std::endl;
-        throw;
     }
     catch (hresult_error hr)
     {
@@ -211,7 +184,7 @@ LearningModel LoadModelHelper(const CommandLineArgs& args, OutputHelper * output
     return model;
 }
 
-void EvaluateModelsInDirectory(CommandLineArgs& args, OutputHelper * output)
+HRESULT EvaluateModelsInDirectory(CommandLineArgs& args, OutputHelper * output)
 {
     std::wstring folderPath = args.FolderPath();
     for (auto & it : std::filesystem::directory_iterator(args.FolderPath()))
@@ -223,31 +196,37 @@ void EvaluateModelsInDirectory(CommandLineArgs& args, OutputHelper * output)
             std::wstring fileName;
             fileName.assign(path.begin(), path.end());
             args.SetModelPath(fileName);
+            LearningModel model = nullptr;
             try
             {
-                LearningModel model = LoadModelHelper(args, output);
-                if (args.UseCPUandGPU() || args.UseGPU())
-                {
-                    EvaluateModel(model, args, output, args.DeviceKind());
-                }
-                if (args.UseCPUandGPU() || args.UseCPU())
-                {
-                    EvaluateModel(model, args, output, LearningModelDeviceKind::Cpu);
-                }
-                output->WritePerformanceDataToCSV(g_Profiler, args, fileName);
-                output->Reset();
+                model = LoadModelHelper(args, output);
             }
-            catch (const std::wstring &msg)
+            catch (hresult_error hr)
             {
-                WriteErrorMsg(msg);
-                throw;
+                std::cout << hr.message().c_str() << std::endl;
+                return hr.code();
             }
-            catch (...)
+            if (args.UseCPUandGPU() || args.UseGPU())
             {
-                throw;
+                HRESULT evalHResult = EvaluateModel(model, args, output, args.DeviceKind());
+                if (evalHResult != S_OK)
+                {
+                    return evalHResult;
+                }
             }
+            if (args.UseCPUandGPU() || args.UseCPU())
+            {
+                HRESULT evalHResult = EvaluateModel(model, args, output, LearningModelDeviceKind::Cpu);
+                if (evalHResult != S_OK)
+                {
+                    return evalHResult;
+                }
+            }
+            output->WritePerformanceDataToCSV(g_Profiler, args, fileName);
+            output->Reset();
         }
     }
+    return S_OK;
 }
 
 int main(int argc, char** argv)
@@ -266,26 +245,32 @@ int main(int argc, char** argv)
     if (!args.ModelPath().empty())
     {
         output.PrintHardwareInfo();
+        LearningModel model = nullptr;
         try
         {
-            LearningModel model = LoadModelHelper(args, &output);
-            if (args.UseCPUandGPU() || args.UseGPU())
-            {
-                EvaluateModel(model, args, &output, args.DeviceKind());
-            }
-            if (args.UseCPUandGPU() || args.UseCPU())
-            {
-                EvaluateModel(model, args, &output, LearningModelDeviceKind::Cpu);
-            }
-        }
-        catch (HRESULT hr)
-        {
-            return hr;
+            model = LoadModelHelper(args, &output);
         }
         catch (hresult_error hr)
         {
             std::cout << hr.message().c_str() << std::endl;
             return hr.code();
+        }
+
+        if (args.UseCPUandGPU() || args.UseGPU())
+        {
+            HRESULT evalHResult = EvaluateModel(model, args, &output, args.DeviceKind());
+            if (evalHResult != S_OK)
+            {
+                return evalHResult;
+            }
+        }
+        if (args.UseCPUandGPU() || args.UseCPU())
+        {
+            HRESULT evalHResult = EvaluateModel(model, args, &output, LearningModelDeviceKind::Cpu);
+            if (evalHResult != S_OK)
+            {
+                return evalHResult;
+            }
         }
         output.WritePerformanceDataToCSV(g_Profiler, args, args.ModelPath());
         output.Reset();
@@ -293,19 +278,7 @@ int main(int argc, char** argv)
     else if (!args.FolderPath().empty())
     {
         output.PrintHardwareInfo();
-        try
-        {
-            EvaluateModelsInDirectory(args, &output);
-        }
-        catch (HRESULT hr)
-        {
-            return hr;
-        }
-        catch (hresult_error hr)
-        {
-            std::cout << hr.message().c_str() << std::endl;
-            return hr.code();
-        }
+        return EvaluateModelsInDirectory(args, &output);
     }
     return 0;
 }

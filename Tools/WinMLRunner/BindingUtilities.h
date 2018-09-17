@@ -226,15 +226,8 @@ namespace BindingUtilities
                 case TensorKind::Float:
                 {
                     ModelBinding<float> binding(description);
-                    try
-                    {
-                        WriteDataToBinding<float>(elementStrings, binding);
-                    }
-                    catch (...)
-                    {
-                        std::cout << "BindingUtilities: Input CSV Data could not be written to input binding" << std::endl;
-                        throw;
-                    }
+
+                    WriteDataToBinding<float>(elementStrings, binding);
                     ITensor tensor = TensorFloat::CreateFromArray(binding.GetShapeBuffer(), binding.GetDataBuffer());
                     context.Bind(name, tensor);
                 }
@@ -346,17 +339,6 @@ namespace BindingUtilities
             {
                 auto featureValue = ImageFeatureValue::CreateFromVideoFrame(videoFrame);
                 context.Bind(name, featureValue);
-            }
-            catch (const std::wstring &msg)
-            {
-                WriteErrorMsg(msg);
-                std::cout << std::endl;
-                throw;
-            }
-            catch (HRESULT hr)
-            {
-                std::cout << hr << std::endl;
-                throw;
             }
             catch (hresult_error hr)
             {

@@ -70,7 +70,7 @@ namespace SamplesTest
         [TestMethod]
         public void TestTabbyCat()
         {
-            string tabbyCatPath = "kitten_224.png";
+            string tabbyCatPath = System.AppDomain.CurrentDomain.BaseDirectory + "\\kitten_224.png";
             resetButton.Click();
             System.Threading.Thread.Sleep(100);
             loadModelButton.Click();

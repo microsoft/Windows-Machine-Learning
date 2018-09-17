@@ -259,7 +259,7 @@ int main(int argc, char** argv)
         if (args.UseCPUandGPU() || args.UseGPU())
         {
             HRESULT evalHResult = EvaluateModel(model, args, &output, args.DeviceKind());
-            if (evalHResult != S_OK)
+            if (FAILED(evalHResult))
             {
                 return evalHResult;
             }
@@ -267,7 +267,7 @@ int main(int argc, char** argv)
         if (args.UseCPUandGPU() || args.UseCPU())
         {
             HRESULT evalHResult = EvaluateModel(model, args, &output, LearningModelDeviceKind::Cpu);
-            if (evalHResult != S_OK)
+            if (FAILED(evalHResult))
             {
                 return evalHResult;
             }

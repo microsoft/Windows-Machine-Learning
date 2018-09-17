@@ -9,14 +9,14 @@ using namespace winrt::Windows::AI::MachineLearning;
 
 namespace BindingUtilities
 {
-    bool BindTensorsFromGarbageData(LearningModelBinding context, LearningModel model)
+    void BindTensorsFromGarbageData(LearningModelBinding context, LearningModel model)
     {
         for (auto&& description : model.InputFeatures())
         {
             if (description == nullptr)
             {
                 std::cout << "BindingUtilities: Learning model has no binding description." << std::endl;
-                return false;
+                throw hresult_invalid_argument();
             }
 
             hstring name = description.Name();
@@ -27,8 +27,8 @@ namespace BindingUtilities
             }
             catch (...)
             {
-                std::cout << "BindingUtilities: TensorKind is undefined." << std::endl;
-                return false;
+                std::cout << "BindingUtilities: Input Descriptor type isn't tensor." << std::endl;
+                throw;
             }
 
             TensorKind tensorKind = tensorDescriptor.TensorKind();
@@ -37,7 +37,7 @@ namespace BindingUtilities
                 case TensorKind::Undefined:
                 {
                     std::cout << "BindingUtilities: TensorKind is undefined." << std::endl;
-                    return false;
+                    throw hresult_invalid_argument();
                 }
                 case TensorKind::Float:
                 {
@@ -126,11 +126,10 @@ namespace BindingUtilities
                 default:
                 {
                     std::cout << "BindingUtilities: TensorKind binding has not been implemented." << std::endl;
-                    return false;
+                    throw hresult_not_implemented();
                 }
             }
         }
-        return true;
     }
     
     VideoFrame LoadImageFile(hstring filePath)
@@ -180,7 +179,10 @@ namespace BindingUtilities
     template <typename T>
     void WriteDataToBinding(const std::vector<std::string>& elementStrings, ModelBinding<T>& binding)
     {
-        assert(binding.GetDataBufferSize() == elementStrings.size());
+        if (binding.GetDataBufferSize() != elementStrings.size())
+        {
+            throw hresult_invalid_argument(L"CSV Input is size/shape is different from what model expects");
+        }
         T* data = binding.GetData();
         for (auto &elementString : elementStrings)
         {
@@ -192,7 +194,7 @@ namespace BindingUtilities
     }
 
     // Binds tensor floats, ints, doubles from CSV data.
-    bool BindCSVDataToContext(LearningModelBinding context, LearningModel model, std::wstring csvFilePath)
+    void BindCSVDataToContext(LearningModelBinding context, LearningModel model, std::wstring csvFilePath)
     {
         std::ifstream fileStream;
         fileStream.open(csvFilePath);
@@ -206,7 +208,7 @@ namespace BindingUtilities
             {
 
                 std::cout << "BindingUtilities: Learning model has no binding description." << std::endl;
-                return false;
+                throw hresult_invalid_argument();
             }
 
             hstring name = description.Name();
@@ -219,11 +221,12 @@ namespace BindingUtilities
                 case TensorKind::Undefined:
                 {
                     std::cout << "BindingUtilities: TensorKind is undefined." << std::endl;
-                    return false;
+                    throw hresult_invalid_argument();
                 }
                 case TensorKind::Float:
                 {
                     ModelBinding<float> binding(description);
+
                     WriteDataToBinding<float>(elementStrings, binding);
                     ITensor tensor = TensorFloat::CreateFromArray(binding.GetShapeBuffer(), binding.GetDataBuffer());
                     context.Bind(name, tensor);
@@ -312,14 +315,13 @@ namespace BindingUtilities
                 default:
                 {
                     std::cout << "BindingUtilities: TensorKind has not been implemented." << std::endl;
-                    return false;
+                    throw hresult_not_implemented();
                 }
             }
-            return true;
         }
     }
 
-    bool BindImageToContext(LearningModelBinding context, LearningModel model, std::wstring imagePath)
+    void BindImageToContext(LearningModelBinding context, LearningModel model, std::wstring imagePath)
     {
         context.Clear();
         for (auto&& description : model.InputFeatures())
@@ -331,31 +333,19 @@ namespace BindingUtilities
             {
                 std::cout << "BindingUtilities: Cannot bind image to LearningModelBinding." << std::endl;
                 std::cout << std::endl;
-                return false;
+                throw_hresult(E_FAIL);
             }
             try
             {
                 auto featureValue = ImageFeatureValue::CreateFromVideoFrame(videoFrame);
                 context.Bind(name, featureValue);
             }
-            catch (const std::wstring &msg)
-            {
-                WriteErrorMsg(msg);
-                std::cout << std::endl;
-                return false;
-            }
-            catch (HRESULT hr)
-            {
-                std::cout << hr << std::endl;
-                return false;
-            }
             catch (hresult_error hr)
             {
                 std::wcout << hr.message().c_str() << std::endl;
-                return false;
+                throw;
             }
         }
-        return true;
     }
 
     template< typename K, typename V>
@@ -458,9 +448,17 @@ namespace BindingUtilities
         }
     }
 
-    bool BindGarbageDataToContext(LearningModelBinding context, LearningModel model)
+    void BindGarbageDataToContext(LearningModelBinding context, LearningModel model)
     {
         context.Clear();
-        return BindTensorsFromGarbageData(context, model);
+        try
+        {
+            BindTensorsFromGarbageData(context, model);
+        }
+        catch (...)
+        {
+            std::cout << "Could not bind from garbage data. Currently only supports binding garbage data for tensor inputs." << std::endl;
+            throw;
+        }
     }
  };

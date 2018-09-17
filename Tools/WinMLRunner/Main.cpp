@@ -14,7 +14,7 @@ HRESULT EvaluateModel(LearningModel model, const CommandLineArgs& args, OutputHe
 {
     if (model == nullptr)
     {
-        throw hresult_invalid_argument();
+        return hresult_invalid_argument().code();
     }
     LearningModelSession session = nullptr;
 

@@ -23,7 +23,6 @@ General Public License.
 ================================================
 react 16.4.1
 react-dom 16.4.1
-react-markdown 
 =====
 
 MIT License

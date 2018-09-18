@@ -2,7 +2,7 @@
   "name": "winml-dashboard",
   "version": "0.1.0",
   "description": "Dashboard for development in ONNX using Windows ML",
-  "author": "Tiago Koji Castro Shibata <t-tica@microsoft.com>",
+  "author": "Microsoft Corporation",
   "homepage": ".",
   "main": "src/electronMain.js",
   "private": true,

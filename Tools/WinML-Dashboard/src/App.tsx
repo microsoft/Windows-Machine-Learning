@@ -4,7 +4,6 @@ import * as React from 'react';
 import { initializeIcons } from './fonts';
 import ConvertView from './view/convert/View';
 import EditView from './view/edit/View';
-import LearnView from './view/learn/View';
 
 import './App.css';
 
@@ -16,7 +15,6 @@ const views = {
     Edit: <EditView />,
     // tslint:disable-next-line:object-literal-sort-keys
     Convert: <ConvertView />,
-    Learn: <LearnView />,
 };
 
 class App extends React.Component<{}, IComponentState> {

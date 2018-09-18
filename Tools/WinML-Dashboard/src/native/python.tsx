@@ -5,7 +5,7 @@ import * as os from 'os';
 import * as path from 'path';
 import * as yauzl from 'yauzl';
 
-import { mkdir, winmlDataFolder } from '../persistence/appData';
+import { mkdir, winmlDataFolder } from '../native/appData';
 
 const localPython = mkdir(winmlDataFolder, 'python');
 const embeddedPythonBinary = path.join(localPython, 'python.exe');

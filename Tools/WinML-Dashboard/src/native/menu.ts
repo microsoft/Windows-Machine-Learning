@@ -44,7 +44,13 @@ export function createMenu(electron: typeof Electron) {
         }, {
             role: 'help',
             submenu: [
-                { label: 'Project Page', click () { alert('TODO') } },
+                {
+                    label: 'Third Party Notice',
+                    click() {
+                        const path = require('path');
+                        require('electron').shell.openItem(path.join('file://', process.cwd(), 'ThirdPartyNotice.txt'));
+                    },
+                }
             ],
         }
     ];

@@ -159,7 +159,7 @@
     <Content Include="Assets\la_muse.onnx">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="Assets\winmlperf_coreml_FNS-Candy_prerelease.onnx">
+    <Content Include="Assets\candy.onnx">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="Assets\mosaic.onnx" />

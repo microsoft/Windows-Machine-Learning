@@ -61,7 +61,7 @@ namespace SnapCandy
         // WinML related
         private readonly List<string> _kModelFileNames = new List<string>
         {
-            "winmlperf_coreml_FNS-Candy_prerelease",
+            "candy",
             "mosaic",
             "la_muse",
             "udnie"

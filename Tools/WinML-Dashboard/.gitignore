@@ -11,6 +11,11 @@
 /dist
 /Windows ML Dashboard*
 
+# installer
+/release
+/tmp
+/build.js
+
 # misc
 .DS_Store
 .env.local

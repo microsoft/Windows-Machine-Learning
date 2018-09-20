@@ -20,15 +20,15 @@ These samples use the [Windows.AI.MachineLearning APIs](https://docs.microsoft.c
 
 These generic examples show how to use various models and input feeds with Windows ML. We have both C++ native desktop apps and C# and Javascript UWP samples
 
-- **FNSCandyStyleTransfer\UWP\cs**: a UWP C# app that uses the FNS-Candy style transfer model to make a cool image.
-- **SqueezeNetObjectDetection\UWP\cs**: a UWP C# app that uses the SqueezeNet model to detect the predominant object in an image.
-- **SqueezeNetObjectDetection\UWP\js**: a UWP Javascript app that uses SqueezeNet model to detect the predominent object in an image. 
-- **SqueezeNetObjectDetection\Desktop\cpp**: a classic desktop C++/WinRT app that uses the SqueezeNet model to detect the predominant object in an image.
-- **MNIST\UWP\cs**: a UWP C# app that uses the MNIST model to detect numberic characters.
-- **MNIST\UWP\cppcx**: a UWP C++/CX app that uses the MNIST model to detect numberic characters.
+- **[FNSCandyStyleTransfer\UWP\cs](https://github.com/Microsoft/Windows-Machine-Learning/tree/master/Samples/FNSCandyStyleTransfer)**: a UWP C# app that uses the FNS-Candy style transfer model to make a cool image.
+- **[SqueezeNetObjectDetection\UWP\cs](https://github.com/Microsoft/Windows-Machine-Learning/tree/master/Samples/SqueezeNetObjectDetection/UWP/cs)**: a UWP C# app that uses the SqueezeNet model to detect the predominant object in an image.
+- **[SqueezeNetObjectDetection\UWP\js](https://github.com/Microsoft/Windows-Machine-Learning/tree/master/Samples/SqueezeNetObjectDetection/UWP/js)**: a UWP Javascript app that uses SqueezeNet model to detect the predominent object in an image. 
+- **[SqueezeNetObjectDetection\Desktop\cpp](https://github.com/Microsoft/Windows-Machine-Learning/tree/master/Samples/SqueezeNetObjectDetection/Desktop/cpp)**: a classic desktop C++/WinRT app that uses the SqueezeNet model to detect the predominant object in an image.
+- **[MNIST\UWP\cs](https://github.com/Microsoft/Windows-Machine-Learning/tree/master/Samples/MNIST/Tutorial/cs)**: a UWP C# app that uses the MNIST model to detect numberic characters.
+- **[MNIST\UWP\cppcx](https://github.com/Microsoft/Windows-Machine-Learning/tree/master/Samples/MNIST/UWP)**: a UWP C++/CX app that uses the MNIST model to detect numberic characters.
 
 ## Developer Tools
-- **WinMLRunner**: a command-line tool that can run .onnx or .pb models where the input and output variables are tensors or images. It is a very handy tool to quickly validate an ONNX model. It will attempt to load, bind, and evaluate a model and print out helpful messages. It also captures performance measurements. 
+- **[WinMLRunner](https://github.com/Microsoft/Windows-Machine-Learning/tree/master/Tools/WinMLRunner)**: a command-line tool that can run .onnx or .pb models where the input and output variables are tensors or images. It is a very handy tool to quickly validate an ONNX model. It will attempt to load, bind, and evaluate a model and print out helpful messages. It also captures performance measurements. 
 
 ## Using the samples
 The easiest way to use these samples without using Git is to download the zip file containing the current version (using the following link or by clicking the "Download ZIP" button on the repo page). You can then unzip the entire archive and use the samples in Visual Studio 2017.

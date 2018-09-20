@@ -206,17 +206,17 @@ HRESULT EvaluateModelsInDirectory(CommandLineArgs& args, OutputHelper * output)
                 std::cout << hr.message().c_str() << std::endl;
                 return hr.code();
             }
-            if (args.UseCPUandGPU() || args.UseGPU())
+            if (args.UseCPUandGPU() || args.UseCPU())
             {
-                HRESULT evalHResult = EvaluateModel(model, args, output, args.DeviceKind());
+                HRESULT evalHResult = EvaluateModel(model, args, output, LearningModelDeviceKind::Cpu);
                 if (evalHResult != S_OK)
                 {
                     return evalHResult;
                 }
             }
-            if (args.UseCPUandGPU() || args.UseCPU())
+            if (args.UseCPUandGPU() || args.UseGPU())
             {
-                HRESULT evalHResult = EvaluateModel(model, args, output, LearningModelDeviceKind::Cpu);
+                HRESULT evalHResult = EvaluateModel(model, args, output, args.DeviceKind());
                 if (evalHResult != S_OK)
                 {
                     return evalHResult;
@@ -255,18 +255,17 @@ int main(int argc, char** argv)
             std::cout << hr.message().c_str() << std::endl;
             return hr.code();
         }
-
-        if (args.UseCPUandGPU() || args.UseGPU())
+        if (args.UseCPUandGPU() || args.UseCPU())
         {
-            HRESULT evalHResult = EvaluateModel(model, args, &output, args.DeviceKind());
+            HRESULT evalHResult = EvaluateModel(model, args, &output, LearningModelDeviceKind::Cpu);
             if (FAILED(evalHResult))
             {
                 return evalHResult;
             }
         }
-        if (args.UseCPUandGPU() || args.UseCPU())
+        if (args.UseCPUandGPU() || args.UseGPU())
         {
-            HRESULT evalHResult = EvaluateModel(model, args, &output, LearningModelDeviceKind::Cpu);
+            HRESULT evalHResult = EvaluateModel(model, args, &output, args.DeviceKind());
             if (FAILED(evalHResult))
             {
                 return evalHResult;

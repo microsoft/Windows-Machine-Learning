@@ -13,8 +13,7 @@
 
 # installer
 /release
-/tmp
-/build.js
+/installer
 
 # misc
 .DS_Store
@@ -26,8 +25,7 @@
 # generated static files
 public/*
 !public/favicon.ico
-!public/index.html
-!public/learn/
+!public/index.html 
 !public/manifest.json
 
 npm-debug.log*

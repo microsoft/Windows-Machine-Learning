@@ -1,5 +1,5 @@
 {
-  "name": "winml-dashboard",
+  "name": "WinmlDashBoard",
   "version": "1.0.0",
   "description": "Dashboard for development in ONNX using Windows ML",
   "author": "Microsoft Corporation",
@@ -29,7 +29,8 @@
     "build-electron": "react-app-rewired build --scripts-version react-scripts-ts",
     "electron-dev": "electron . http://localhost:3000",
     "electron-prod": "yarn build-electron && electron .",
-    "packager": "electron-packager . WinmlDashboard --asar=true --overwrite --win=x32 --out  ./release --arch=x64 --app-version=1.0.0 --electron-version=2.0.6"
+    "packager": "yarn build-electron && electron-packager . WinmlDashboard --asar=true --overwrite --win=x32 --out  ./release --arch=x64 --app-version=1.0.0 --electron-version=2.0.6",
+    "installer": "yarn packager && node build.js"
   },
   "build": {
     "appId": "com.microsoft.dashboard.winml",
@@ -44,7 +45,7 @@
   },
   "devDependencies": {
     "@types/jest": "^23.3.0",
-    "@types/node": "^10.5.3",
+    "@types/node": "^10.5.3", 
     "@types/prop-types": "^15.5.4",
     "@types/react": "^16.4.7",
     "@types/react-dom": "^16.0.6",

@@ -67,6 +67,12 @@ namespace SamplesTest
             statusBlock = session.FindElementByAccessibilityId("StatusBlock");
         }
 
+        [ClassCleanup()]
+        public static void ClassCleanup()
+        {
+            TearDown();
+        }
+
         [TestMethod]
         public void TestTabbyCat()
         {

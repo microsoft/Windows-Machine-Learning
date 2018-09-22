@@ -251,6 +251,12 @@ namespace MnistTest
             Setup(MNISTAppId_CS);
         }
 
+        [TestCleanup()]
+        public void CleanUp()
+        {
+            TearDown();
+        }
+
         [TestMethod]
         public void TestMNISTCSharp()
         {
@@ -268,6 +274,12 @@ namespace MnistTest
         public void TestInitialize()
         {
             Setup(MNISTAppId_CPPCX);
+        }
+
+        [TestCleanup()]
+        public void CleanUp()
+        {
+            TearDown();
         }
 
         [TestMethod]

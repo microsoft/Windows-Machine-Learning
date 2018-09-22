@@ -14,6 +14,7 @@ using OpenQA.Selenium.Remote;
 // In the future, all functions of OpenQA.Selenium.Appium.Interactions should be moved
 // up to OpenQA.Selenium.Interactions and this alias can simply be removed.
 using PointerInputDevice = OpenQA.Selenium.Appium.Interactions.PointerInputDevice;
+using System.Diagnostics;
 
 namespace SamplesTest
 {
@@ -50,9 +51,9 @@ namespace SamplesTest
                 appCapabilities.SetCapability("deviceName", "WindowsPC");
                 session = new WindowsDriver<WindowsElement>(new Uri(WindowsApplicationDriverUrl), appCapabilities);
                 Assert.IsNotNull(session);
-                // Set implicit timeout to 1.5 seconds to make element search to retry every 500 ms for at most three times
-                session.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(1.5);
             }
+            // wait for first style transfer to be done
+            Thread.Sleep(styleTransferTimeout);
             styleElements = new Dictionary<Style, WindowsElement>();
             foreach(Style style in (Style[])Enum.GetValues(typeof(Style)))
             {
@@ -75,11 +76,16 @@ namespace SamplesTest
     [TestClass]
     public class StyleTransferTest : StyleTransferSession
     {
-
         [ClassInitialize]
         public static void ClassInitialize(TestContext context)
         {
             Setup(context);
+        }
+
+        [ClassCleanup()]
+        public static void ClassCleanup()
+        {
+            TearDown();
         }
 
         [TestMethod]
@@ -111,24 +117,16 @@ namespace SamplesTest
             styleElements[style].Click();
             var cts = new CancellationTokenSource();
 
-            var styleTransferTask = Task.Factory.StartNew(state =>
+            var stopwatch = new Stopwatch();
+            stopwatch.Start();
+            while (statusBlock.Text != "Done!" && stopwatch.ElapsedMilliseconds < styleTransferTimeout)
             {
-                styleElements[style].Click();
-                var token = (CancellationToken)state;
-                while (statusBlock.Text != "Done!")
-                {
-                    if (token.IsCancellationRequested)
-                    {
-                        throw new OperationCanceledException(token);
-                    }
-                }
-            }, cts.Token, cts.Token);
-
-            if (!styleTransferTask.Wait(styleTransferTimeout, cts.Token)) {
-                cts.Cancel();
-                Assert.Fail("style transfer timed out");
+                Thread.Sleep(500);
             }
-            string resultPath = String.Format("Resource\\result-{0}.png", style.ToString());
+            stopwatch.Stop();
+            Assert.IsTrue(statusBlock.Text == "Done!", String.Format("{0} style timed out", style.ToString()));
+
+            string resultPath = String.Format("result-{0}.png", style.ToString());
             string baselinePath = String.Format("Resource\\baseline-{0}.png", style.ToString());
             // get a screenshot for result
             var screenShot = resultImage.GetScreenshot();

@@ -67,10 +67,28 @@ namespace SamplesTest
             statusBlock = session.FindElementByAccessibilityId("StatusBlock");
         }
 
+        [ClassCleanup()]
+        public static void ClassCleanup()
+        {
+            TearDown();
+        }
+
         [TestMethod]
         public void TestTabbyCat()
         {
             string tabbyCatPath = System.AppDomain.CurrentDomain.BaseDirectory + "\\kitten_224.png";
+            TestImageFile(tabbyCatPath, "\"tabby, tabby cat\" with confidence of 0.93");
+        }
+
+        [TestMethod]
+        public void TestFish()
+        {
+            string fishPath = System.AppDomain.CurrentDomain.BaseDirectory + "\\fish.png";
+            TestImageFile(fishPath, "\"tench, Tinca tinca\" with confidence of 0.738");
+        }
+
+        public void TestImageFile(string filePath, string expectedResult)
+        {
             resetButton.Click();
             System.Threading.Thread.Sleep(100);
             loadModelButton.Click();
@@ -79,11 +97,11 @@ namespace SamplesTest
             pickImageButton.Click();
             // wait for file picker window to pop up
             System.Threading.Thread.Sleep(3000);
-            session.Keyboard.SendKeys(tabbyCatPath);
+            session.Keyboard.SendKeys(filePath);
             session.Keyboard.SendKeys(Keys.Enter);
             System.Threading.Thread.Sleep(1000);
             string result = statusBlock.Text;
-            Assert.IsTrue(result.Contains("\"tabby, tabby cat\" with confidence of 0.93"));
+            Assert.IsTrue(result.Contains(expectedResult));
         }
     }
 }

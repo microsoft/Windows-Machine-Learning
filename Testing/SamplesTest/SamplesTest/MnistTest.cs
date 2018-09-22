@@ -21,63 +21,36 @@ namespace MnistTest
         // This string key is present in RegisteredUserModeAppID under AppX/vs.appxrecipe
         // TODO: this string value has to be retrieved from local test machine
         // More information on https://github.com/Microsoft/WinAppDriver
-        private const string MNISTAppId_CS = "f330385a-7468-4688-859d-7d11a61d1b29_atz7ne7vp47fr!App";
+        protected WindowsDriver<WindowsElement> session;
+        protected static WindowsElement inkCanvas;
+        protected static WindowsElement recognizeButton;
+        protected static WindowsElement clearButton;
+        protected static WindowsElement numberLabel;
 
-        protected static WindowsDriver<WindowsElement> session;
-
-        public static void Setup(TestContext context)
+        public void Setup(string appid)
         {
             if (session == null)
             {
                 DesiredCapabilities appCapabilities = new DesiredCapabilities();
-                appCapabilities.SetCapability("app", MNISTAppId_CS);
+                appCapabilities.SetCapability("app", appid);
                 appCapabilities.SetCapability("deviceName", "WindowsPC");
                 session = new WindowsDriver<WindowsElement>(new Uri(WindowsApplicationDriverUrl), appCapabilities);
                 Assert.IsNotNull(session);
                 // Set implicit timeout to 1.5 seconds to make element search to retry every 500 ms for at most three times
                 session.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(1.5);
+                inkCanvas = session.FindElementByClassName("InkCanvas");
+                recognizeButton = session.FindElementByName("Recognize");
+                clearButton = session.FindElementByXPath("//Button[@AutomationId=\"clearButton\"]");
+                numberLabel = session.FindElementByAccessibilityId("numberLabel");
             }
         }
 
-        public static void TearDown()
+        public void TearDown()
         {
             if (session != null)
             {
                 session.Quit();
                 session = null;
-            }
-        }
-    }
-
-    [TestClass]
-    public class MnistTest : MnistSession
-    {
-        private static WindowsElement inkCanvas;
-        private static WindowsElement recognizeButton;
-        private static WindowsElement clearButton;
-        private static WindowsElement numberLabel;
-
-        [ClassInitialize]
-        public static void ClassInitialize(TestContext context)
-        {
-            Setup(context);
-            inkCanvas = session.FindElementByClassName("InkCanvas");
-            recognizeButton = session.FindElementByName("Recognize");
-            clearButton = session.FindElementByXPath("//Button[@AutomationId=\"clearButton\"]");
-            numberLabel = session.FindElementByAccessibilityId("numberLabel");
-        }
-
-        [TestMethod]
-        public void TestDigits()
-        {
-            IList<uint> digits = new List<uint> { 0, 1, 4, 7, 8 };
-            for (int i = 0; i < digits.Count; i++)
-            {
-                clearButton.Click();
-                uint digit = digits[i];
-                Draw(digit);
-                recognizeButton.Click();
-                Assert.AreEqual(numberLabel.Text, digit.ToString());
             }
         }
 
@@ -251,6 +224,68 @@ namespace MnistTest
                     break;
             }
             session.PerformActions(new List<ActionSequence> { sequence });
+        }
+
+        public void TestDigits()
+        {
+            IList<uint> digits = new List<uint> { 0, 1, 4, 7, 8 };
+            for (int i = 0; i < digits.Count; i++)
+            {
+                clearButton.Click();
+                uint digit = digits[i];
+                Draw(digit);
+                recognizeButton.Click();
+                Assert.AreEqual(numberLabel.Text, digit.ToString());
+            }
+        }
+    }
+
+    [TestClass]
+    public class MnistTestCSharp : MnistSession
+    {
+        private const string MNISTAppId_CS = "f330385a-7468-4688-859d-7d11a61d1b29_atz7ne7vp47fr!App";
+
+        [TestInitialize]
+        public void TestInitialize()
+        {
+            Setup(MNISTAppId_CS);
+        }
+
+        [TestCleanup()]
+        public void CleanUp()
+        {
+            TearDown();
+        }
+
+        [TestMethod]
+        public void TestMNISTCSharp()
+        {
+            TestDigits();
+        }
+    }
+
+
+    [TestClass]
+    public class MnistTestCPPCX : MnistSession
+    {
+        private const string MNISTAppId_CPPCX = "7c575962-f37f-4240-a2ba-33fbf54c19f6_ms3keja78xfsy!App";
+
+        [TestInitialize]
+        public void TestInitialize()
+        {
+            Setup(MNISTAppId_CPPCX);
+        }
+
+        [TestCleanup()]
+        public void CleanUp()
+        {
+            TearDown();
+        }
+
+        [TestMethod]
+        public void TestMNISTCppcx()
+        {
+            TestDigits();
         }
     }
 }

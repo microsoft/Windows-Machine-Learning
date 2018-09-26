@@ -21,4 +21,4 @@ export function packagedFile(...filePath: string[]) {
 }
 
 // Point to the root if running in the web
-export const winmlDataFolder = fs.exists ? mkdir(appData, 'winml-dashboard') : '/';
+export const winmlDataFolder = fs.exists ? mkdir(appData, 'WinmlDashBoard') : '/';

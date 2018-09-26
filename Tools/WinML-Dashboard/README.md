@@ -10,13 +10,14 @@ The dashboard can be downloaded from the [releases page](https://github.com/Micr
 
 #### Prerequisites
 
-Yarn is a requirement to download dependency packages. It can be [downloaded from its official page](https://yarnpkg.com/en/docs/install). It also requires the installation of Node.js.
+1. Yarn is a requirement to download dependency packages. It can be [downloaded from its official page](https://yarnpkg.com/en/docs/install). 
+2. It also requires the installation of [Node.js](https://nodejs.org/en/).
 
-Yarn is also available in [Chocolatey](https://chocolatey.org/packages/yarn).
 
 #### Building
 
-Run `yarn` to download dependencies. Then, run one of the following:
+1. Run `yarn` to download dependencies. 
+2. Then, run one of the following:
 
 * `yarn start` to build the project and start a local server serving its pages
 * `yarn test` to run tests

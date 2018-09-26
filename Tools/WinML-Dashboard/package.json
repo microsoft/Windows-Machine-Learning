@@ -29,7 +29,7 @@
     "build-electron": "react-app-rewired build --scripts-version react-scripts-ts",
     "electron-dev": "electron . http://localhost:3000",
     "electron-prod": "yarn build-electron && electron .",
-    "packager": "yarn build-electron && electron-packager . WinmlDashboard --asar=true --overwrite --win=x32 --out  ./release --arch=x64 --app-version=1.0.0 --electron-version=2.0.6",
+    "packager": "yarn build-electron && electron-packager . WinmlDashboard --overwrite --win=x32 --out  ./release --arch=x64 --app-version=1.0.0 --electron-version=2.0.6",
     "installer": "yarn packager && node build.js"
   },
   "build": {

@@ -2,29 +2,28 @@
 
 Developer dashboard for Windows ML and ONNX.
 
-## Getting started
-
-The dashboard can be downloaded from the [releases page](https://github.com/Microsoft/Windows-Machine-Learning/releases). Some of the functionality can be used in the [online, browser version here](TODO).
-
-### Building from source
+## Building from source
 
 #### Prerequisites
 
-1. Yarn is a requirement to download dependency packages. It can be [downloaded from its official page](https://yarnpkg.com/en/docs/install). 
-2. It also requires the installation of [Node.js](https://nodejs.org/en/).
-
+|Requirements|Version|Download|Command to check|
+|------------|-------|--------|----------------|
+|Yarn        |latest |[here](https://yarnpkg.com/en/docs/install)|`yarn --version`|
+|Node.js     |latest |[here](https://nodejs.org/en/)|`node --version`|
+|Python3     |3.4+   |[here](https://www.python.org/)|`python --version`|
 
 #### Building
 
-1. Run `yarn` to download dependencies. 
-2. Then, run one of the following:
+1. Git clone [Microsoft/Windows-Machine-Learning](https://github.com/Microsoft/Windows-Machine-Learning) repo.
 
-* `yarn start` to build the project and start a local server serving its pages
-* `yarn test` to run tests
-* `yarn build-electron` to make a production build to be used in an Electron app
-* `yarn electron-prod` to make a production build to be used in an Electron app and start the electron app
+2. `cd Tools/WinMLDashboard`
+3. Run `yarn` to download dependencies. 
+4. Then, run one of the following:
 
-All available commands can be seen at [package.json](package.json).
+    * `yarn start` to build and start the web application
+    * `yarn electron-prod` to build and start the desktop application
+
+> All available commands can be seen at [package.json](package.json).
 
 ### Debugging
 

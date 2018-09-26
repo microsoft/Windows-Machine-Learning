@@ -2,12 +2,12 @@ var electronInstaller = require('electron-winstaller');
 var path = require("path");
 
 resultPromise = electronInstaller.createWindowsInstaller({
-    appDirectory: path.join('./release/WinmlDashboard-win32-x64'), 
+    appDirectory: path.join('./release/WinMLDashboard-win32-x64'), 
     authors: 'Microsoft Corporation',
-    exe: 'WinmlDashboard.exe',
+    exe: 'WinMLDashboard.exe',
     outputDirectory: path.join('./installer'), 
-    setupExe: 'WinmlDashBoard_setup.exe',
-    setupMsi: 'WinmlDashBoard_setup.msi',
+    setupExe: 'WinMLDashboard_setup.exe',
+    setupMsi: 'WinMLDashboard_setup.msi',
     version: "1.0.0",
   });
 

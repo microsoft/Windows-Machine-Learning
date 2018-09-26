@@ -1,0 +1,20 @@
+.KeyValueEditorButton {
+    width: 50%;
+}
+
+.KeyValueEditorButtonContainer {
+    width: 100%;
+}
+
+.KeyValueBox {
+    flex: 1;
+}
+
+.KeyValueSeparator {
+    padding: 8px 4px;
+}
+
+.RemoveIcon {
+    cursor: pointer;
+    padding: 10px 4px 0px 0px;
+}

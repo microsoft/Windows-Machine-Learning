@@ -1,0 +1,32 @@
+.ConvertView {
+    margin: 0px 10px;
+    text-align: initial;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.ModelConvertBrowser {
+    width: 100%;
+}
+
+.ms-TextField, .ConvertViewControls {
+    flex: 1;
+}
+
+.ConvertViewControls, .ConverterViewConsole {
+    overflow: auto;
+}
+
+.ConverterViewConsole {
+    display: block;
+    max-height: 400px;
+}
+
+#ConverterModelInputBrowse {
+    margin: 24px 5px 0px;
+}
+
+#ConvertButton {
+    margin: 5px 0px;
+}

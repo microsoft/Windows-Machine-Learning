@@ -1,5 +1,4 @@
---extra-index-url https://tiagoshibata.github.io/PyPI/simple
-coremltools
+git+https://github.com/apple/coremltools
 h5py==2.8.0
 Keras==2.2.2
 Keras-Applications==1.0.4

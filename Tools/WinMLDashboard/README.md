@@ -17,8 +17,9 @@ Developer dashboard for Windows ML and ONNX.
 1. Git clone [Microsoft/Windows-Machine-Learning](https://github.com/Microsoft/Windows-Machine-Learning) repo.
 
 2. `cd Tools/WinMLDashboard`
-3. Run `yarn` to download dependencies. 
-4. Then, run one of the following:
+3. Run `Git submodule update --init --recursive` to update Netron.
+4. Run `yarn` to download dependencies. 
+5. Then, run one of the following:
 
     * `yarn start` to build and start the web application
     * `yarn electron-prod` to build and start the desktop application

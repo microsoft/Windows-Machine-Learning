@@ -2,7 +2,7 @@
 
 Developer dashboard for Windows ML and ONNX.
 
-## Building from source
+## Build from source
 
 #### Prerequisites
 
@@ -13,23 +13,39 @@ Developer dashboard for Windows ML and ONNX.
 |Python3     |3.4+   |[here](https://www.python.org/)|`python --version`|
 |Git         |latest |[here](https://git-scm.com/download/win)|`git --version`|
 
-#### Building
+> All four prerequisites should be **added to Enviroment Path**.
 
-1. Git clone [Microsoft/Windows-Machine-Learning](https://github.com/Microsoft/Windows-Machine-Learning) repo.
+#### Steps to build
+
+1. `git clone https://github.com/Microsoft/Windows-Machine-Learning`
 
 2. `cd Tools/WinMLDashboard`
 3. Run `Git submodule update --init --recursive` to update Netron.
 4. Run `yarn` to download dependencies. 
-5. Then, run one of the following:
-
-    * `yarn start` to build and start the web application
-    * `yarn electron-prod` to build and start the desktop application
+5. Then, run `yarn electron-prod` to build and start the desktop application, which will launch the Dashboard.
 
 > All available commands can be seen at [package.json](package.json).
 
+### How to use the tool
+
+1. Convert To Onnx File
+   * Click the `Convert` Tab
+   * Select the **sencond option (recommand)** to install python enviroment(take minutes). It would be save to select the first option if you are sure you have intalled all required python packages in `./public/requirement.txt`
+   * Click `browse` to locate your file to convert
+   * Click `convert` button to save the output file first and start conversion.
+2. Edit Onnx File
+   * Press `Cltr + O` to open a new Onnx file, and the default file is what you just converted from other platforms.
+   * The right panel is visible by default, which is designed to be used to change the metadata of the model.
+   * For left panel, click any node of the graph, or click the left button among the three left-top buttons. The left panel is designed to show and change the metadata of the Graph. **Only input node and output node are changeable, internal nodes are not**.
+   * Press `Ctrl + S` to **save the changes to the same file**.
+
 ### Debugging
 
-Chromium's dev tools pane can be used for debugging. To open it in the web view, press F12. To open it in the Electron app, run it with flag `--dev-tools`, or select *View -> Toggle Dev Tools* in the application menu, or press *Ctrl+Shift+I*.
+To open the **debug view** in the Electron app
+
+* Run it with flag `--dev-tools`
+* Or select `View -> Toggle Dev Tools` in the application menu
+* Or press `Ctrl + Shift + I`.
 
 ### Distribution
 

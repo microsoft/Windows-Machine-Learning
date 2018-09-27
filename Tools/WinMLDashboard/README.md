@@ -11,6 +11,7 @@ Developer dashboard for Windows ML and ONNX.
 |Yarn        |latest |[here](https://yarnpkg.com/en/docs/install)|`yarn --version`|
 |Node.js     |latest |[here](https://nodejs.org/en/)|`node --version`|
 |Python3     |3.4+   |[here](https://www.python.org/)|`python --version`|
+|Git         |latest |[here](https://git-scm.com/download/win)|`git --version`|
 
 #### Building
 

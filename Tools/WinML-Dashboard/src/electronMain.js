@@ -49,6 +49,7 @@ function createWindow() {
 
     mainWindow = new BrowserWindow({
         height: 600,
+        icon: path.join(__dirname, '../public/winml_icon.ico'),
         width: 800,
     });
     global.mainWindow = mainWindow;

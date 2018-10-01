@@ -47,8 +47,8 @@ export function createMenu(electron: typeof Electron) {
                 {
                     label: 'Third Party Notice',
                     click() {
-                        const path = require('path');
-                        require('electron').shell.openItem(path.join('file://', process.cwd(), 'ThirdPartyNotice.txt'));
+                        const tpnUrl = 'https://github.com/Microsoft/Windows-Machine-Learning/blob/user/xianz/winmldb/Tools/WinMLDashboard/ThirdPartyNotice.txt';
+                        require('electron').shell.openExternal(tpnUrl);
                     },
                 }
             ],

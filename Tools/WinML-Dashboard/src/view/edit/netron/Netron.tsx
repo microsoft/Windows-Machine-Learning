@@ -83,7 +83,7 @@ class Netron extends React.Component<IComponentProperties, IComponentState> {
             <div className='netron-root'>
                 <div id='welcome' className='background' style={{display: 'block'}}>
                     <div className='center logo'>
-                        <img className='logo absolute' src='logo.svg' />
+                        <img className='logo absolute' src='winml_icon.ico' />
                         <img id='spinner' className='spinner logo absolute' src='spinner.svg' style={{display: 'none'}} />
                     </div>
                     <button id='open-file-button' className='center' style={{top: '200px', width: '125px', opacity: 0}}>Open Model...</button>

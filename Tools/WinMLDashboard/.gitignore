@@ -27,6 +27,7 @@ public/*
 !public/favicon.ico
 !public/index.html 
 !public/manifest.json
+!public/winml_icon.ico
 
 npm-debug.log*
 yarn-debug.log*

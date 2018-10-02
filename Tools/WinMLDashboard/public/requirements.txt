@@ -1,0 +1,15 @@
+git+https://github.com/apple/coremltools
+h5py==2.8.0
+Keras==2.2.2
+Keras-Applications==1.0.4
+Keras-Preprocessing==1.0.2
+numpy==1.15.0
+onnx==1.2.2
+onnxmltools==1.2.0.116
+protobuf==3.6.0
+PyYAML==3.13
+scikit-learn==0.19.2
+scipy==1.1.0
+six==1.10.0
+typing==3.6.4
+typing-extensions==3.6.5

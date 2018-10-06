@@ -571,12 +571,17 @@ public:
         Reset(0, T::COUNT);
     }
 
-    PerfCounterStatistics& GetCounter(int t)
+    PerfCounterStatistics& GetCounter(int t) const
     {
         return m_perfCounterStat[t];
     }
 
     PerfCounterStatistics& operator [] (int t)
+    {
+        return m_perfCounterStat[t];
+    }
+
+    const PerfCounterStatistics& operator [] (int t) const
     {
         return m_perfCounterStat[t];
     }

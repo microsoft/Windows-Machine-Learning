@@ -6,9 +6,8 @@
 #include <winrt/Windows.Media.h>
 #include <winrt/Windows.Graphics.Imaging.h>
 #include <winrt/Windows.Media.h>
-#include "winrt/Windows.Storage.h"
+#include <winrt/Windows.Storage.h>
 #include <winrt/Windows.Storage.Streams.h>
-#include "TimerHelper.h"
 #include <vector>
 #include <string>
 #include <iostream>
@@ -19,6 +18,8 @@
 #include <cassert>
 #include <fstream>
 #include <dxgi1_6.h>
+#include "TypeHelper.h"
+#include "TimerHelper.h"
 
 enum WINML_MODEL_TEST_PERF
 {

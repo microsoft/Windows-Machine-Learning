@@ -29,13 +29,14 @@
     <ClInclude Include="OutputHelper.h" />
     <ClInclude Include="ModelBinding.h" />
     <ClInclude Include="TimerHelper.h" />
+    <ClInclude Include="TypeHelper.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <CppWinRTEnabled>true</CppWinRTEnabled>
     <VCProjectVersion>15.0</VCProjectVersion>
     <ProjectGuid>{81EA9CC6-8A26-4583-B1A4-84740EF815C8}</ProjectGuid>
     <RootNamespace>Benchmark</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.17738.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.17758.0</WindowsTargetPlatformVersion>
     <ProjectName>WinMLRunner</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />

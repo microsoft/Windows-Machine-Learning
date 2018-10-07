@@ -1,3 +1,5 @@
+[![Build status](https://mscodehub.visualstudio.com/WindowsAI/_apis/build/status/winml/WinMLDashboard%20CI%20Build)](https://mscodehub.visualstudio.com/WindowsAI/_build/latest?definitionId=591)
+
 # Windows ML
 
 Welcome to the Windows ML repo! Windows ML allows you to use trained machine learning models in your Windows apps (C# and C++). The Windows ML inference engine evaluates trained models locally on Windows devices. Hardware optimizations for CPU and GPU additionally enable high performance for quick evaluation results.

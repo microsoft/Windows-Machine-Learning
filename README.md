@@ -1,4 +1,9 @@
-[![Build status](https://mscodehub.visualstudio.com/DefaultCollection/WindowsAI/_apis/build/status/winml/WinML%20Dashboard%20CI%20Build)](https://mscodehub.visualstudio.com/DefaultCollection/WindowsAI/_build/latest?definitionId=601)
+
+| Release | Build status |
+|---------|--------------|
+| WinML Dashboard | [![Build status](https://mscodehub.visualstudio.com/DefaultCollection/WindowsAI/_apis/build/status/winml/WinML%20Dashboard%20CI%20Build)](https://mscodehub.visualstudio.com/DefaultCollection/WindowsAI/_build/latest?definitionId=601) |
+| WinmlRunner | [![Build status](https://mscodehub.visualstudio.com/DefaultCollection/WindowsAI/_apis/build/status/winml/WinML%20Dashboard%20CI%20Build)](https://mscodehub.visualstudio.com/DefaultCollection/WindowsAI/_build/latest?definitionId=601) |
+| Samples | [![Build status](https://mscodehub.visualstudio.com/DefaultCollection/WindowsAI/_apis/build/status/winml/WinML%20Dashboard%20CI%20Build)](https://mscodehub.visualstudio.com/DefaultCollection/WindowsAI/_build/latest?definitionId=601) |
 
 # Windows ML
 

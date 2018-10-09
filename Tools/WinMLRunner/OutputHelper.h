@@ -103,7 +103,7 @@ public:
         }
     }
 
-    void PrintHardwareInfo()
+    void PrintHardwareInfo() const
     {
         if (!m_silent)
         {

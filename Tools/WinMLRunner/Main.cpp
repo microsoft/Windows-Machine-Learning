@@ -4,17 +4,8 @@
 #include "BindingUtilities.h"
 #include "CommandLineArgs.h"
 #include <filesystem>
-#include <evntprov.h>
 
 Profiler<WINML_MODEL_TEST_PERF> g_Profiler;
-
-// Markers for easy profiling
-REGHANDLE gStartInputBindingHandle;
-REGHANDLE gStopInputBindingHandle;
-REGHANDLE gStartOutputBindingHandle;
-REGHANDLE gStopOutputBindingHandle;
-REGHANDLE gStartEvaluatingHandle;
-REGHANDLE gStopEvaluatingHandle;
 
 LearningModel LoadModel(const std::wstring path, bool capturePerf, bool silent, OutputHelper& output)
 {
@@ -97,7 +88,7 @@ std::vector<ILearningModelFeatureValue> GenerateInputFeatures(const LearningMode
     return inputFeatures;
 }
 
-HRESULT BindInputFeatures(const LearningModel& model, const LearningModelBinding& context, const std::vector<ILearningModelFeatureValue>& inputFeatures, const CommandLineArgs& args, OutputHelper& output)
+HRESULT BindInputFeatures(const LearningModel& model, const LearningModelBinding& context, const std::vector<ILearningModelFeatureValue>& inputFeatures, const CommandLineArgs& args, OutputHelper& output, bool capturePerf)
 {
     assert(model.InputFeatures().Size() == inputFeatures.size());
 
@@ -105,14 +96,9 @@ HRESULT BindInputFeatures(const LearningModel& model, const LearningModelBinding
     {
         context.Clear();
 
-        if (args.UseMarkers())
-        {
-            EventWriteString(gStartInputBindingHandle, 0, 0, L"Start Input Binding");
-        }
-
         Timer timer;
 
-        if (args.PerfCapture())
+        if (capturePerf)
         {
             timer.Start();
             WINML_PROFILING_START(g_Profiler, WINML_MODEL_TEST_PERF::BIND_VALUE);
@@ -124,15 +110,10 @@ HRESULT BindInputFeatures(const LearningModel& model, const LearningModelBinding
             context.Bind(description.Name(), inputFeatures[i]);
         }
 
-        if (args.PerfCapture())
+        if (capturePerf)
         {
             WINML_PROFILING_STOP(g_Profiler, WINML_MODEL_TEST_PERF::BIND_VALUE);
             output.m_clockBindTimes.push_back(timer.Stop());
-        }
-
-        if (args.UseMarkers())
-        {
-            EventWriteString(gStopInputBindingHandle, 0, 0, L"Stop Input Binding");
         }
 
         if (!args.Silent())
@@ -150,21 +131,16 @@ HRESULT BindInputFeatures(const LearningModel& model, const LearningModelBinding
     return S_OK;
 }
 
-// TODO:pavignol Refactor
 HRESULT EvaluateModel(
     const LearningModel& model,
     const LearningModelBinding& context,
     LearningModelSession& session,
     bool isGarbageData,
     const CommandLineArgs& args,
-    OutputHelper& output
+    OutputHelper& output,
+    bool capturePerf
 )
 {
-    if (args.UseMarkers())
-    {
-        EventWriteString(gStartEvaluatingHandle, 0, 0, L"Start Evaluating");
-    }
-
     LearningModelEvaluationResult result = nullptr;
 
     try
@@ -172,7 +148,7 @@ HRESULT EvaluateModel(
         // Timer measures wall-clock time between the last two start/stop calls.
         Timer timer;
 
-        if (args.PerfCapture())
+        if (capturePerf)
         {
             timer.Start();
             WINML_PROFILING_START(g_Profiler, WINML_MODEL_TEST_PERF::EVAL_MODEL);
@@ -180,7 +156,7 @@ HRESULT EvaluateModel(
 
         result = session.Evaluate(context, L"");
 
-        if (args.PerfCapture())
+        if (capturePerf)
         {
             WINML_PROFILING_STOP(g_Profiler, WINML_MODEL_TEST_PERF::EVAL_MODEL);
             output.m_clockEvalTimes.push_back(timer.Stop());
@@ -196,11 +172,6 @@ HRESULT EvaluateModel(
     if (!args.Silent())
     {
         std::cout << "[SUCCESS]" << std::endl;
-    }
-
-    if (args.UseMarkers())
-    {
-        EventWriteString(gStopEvaluatingHandle, 0, 0, L"Stop Evaluating");
     }
 
     if (!isGarbageData && !args.Silent())
@@ -258,12 +229,12 @@ HRESULT EvaluateModel(
     // Run the binding + evaluate multiple times and average the results
     for (uint32_t i = 0; i < numIterations; i++)
     {
-        bool capturePerf = args.PerfCapture() && (!args.IgnoreFirstRun() || i > 0);
+        bool captureIterationPerf = args.PerfCapture() && (!args.IgnoreFirstRun() || i > 0);
 
         output.PrintBindingInfo(i + 1, deviceType, inputBindingType, inputDataType);
 
         std::vector<ILearningModelFeatureValue> inputFeatures = GenerateInputFeatures(model, args, inputBindingType, inputDataType);
-        HRESULT bindInputResult = BindInputFeatures(model, context, inputFeatures, args, output);
+        HRESULT bindInputResult = BindInputFeatures(model, context, inputFeatures, args, output, captureIterationPerf);
 
         if (FAILED(bindInputResult))
         {
@@ -272,7 +243,7 @@ HRESULT EvaluateModel(
 
         output.PrintEvaluatingInfo(i + 1, deviceType, inputBindingType, inputDataType);
 
-        HRESULT evalResult = EvaluateModel(model, context, session, isGarbageData, args, output);
+        HRESULT evalResult = EvaluateModel(model, context, session, isGarbageData, args, output, captureIterationPerf);
 
         if (FAILED(evalResult))
         {
@@ -367,7 +338,7 @@ std::vector<InputDataType> FetchInputDataTypes(const CommandLineArgs& args)
 {
     std::vector<InputDataType> inputDataTypes;
 
-    if (!args.UseBGR() && !args.UseRGB())
+    if (args.UseTensorInput())
     {
         inputDataTypes.push_back(InputDataType::Tensor);
     }
@@ -429,33 +400,6 @@ std::vector<InputBindingType> FetchInputBindingTypes(const CommandLineArgs& args
     return inputBindingTypes;
 }
 
-// Register the custom marker events for perf analysis
-void RegisterCustomMarkers()
-{
-    GUID guid;
-
-    UuidFromString((RPC_WSTR)L"3545d8c3-3bcb-4865-98a7-90efff40f22d", &guid);
-    EventRegister(&guid, nullptr, nullptr, &gStartInputBindingHandle);
-
-    UuidFromString((RPC_WSTR)L"06ecb327-079d-45b2-900b-68885ce32605", &guid);
-    EventRegister(&guid, nullptr, nullptr, &gStopInputBindingHandle);
-
-    UuidFromString((RPC_WSTR)L"5fec8460-02d6-4dff-bb65-c6c0a862d2f5", &guid);
-    EventRegister(&guid, nullptr, nullptr, &gStartEvaluatingHandle);
-
-    UuidFromString((RPC_WSTR)L"f4960254-f367-43d5-b324-b552fae1d9d8", &guid);
-    EventRegister(&guid, nullptr, nullptr, &gStopEvaluatingHandle);
-}
-
-// Unregister the custom marker events for perf analysis
-void UnregisterCustomMarkers()
-{
-    EventUnregister(gStartInputBindingHandle);
-    EventUnregister(gStopInputBindingHandle);
-    EventUnregister(gStartEvaluatingHandle);
-    EventUnregister(gStopEvaluatingHandle);
-}
-
 int main(int argc, char** argv)
 {
     // Initialize COM in a multi-threaded environment.
@@ -463,11 +407,6 @@ int main(int argc, char** argv)
 
     CommandLineArgs args;
     OutputHelper output(args.Silent());
-
-    if (args.UseMarkers())
-    {
-        RegisterCustomMarkers();
-    }
 
     // Profiler is a wrapper class that captures and stores timing and memory usage data on the
     // CPU and GPU.
@@ -485,22 +424,9 @@ int main(int argc, char** argv)
     std::vector<DeviceType> deviceTypes = FetchDeviceTypes(args);
     std::vector<InputBindingType> inputBindingTypes = FetchInputBindingTypes(args);
     std::vector<InputDataType> inputDataTypes = FetchInputDataTypes(args);
+    std::vector<std::wstring> modelPaths = args.ModelPath().empty() ? GetModelsInDirectory(args, &output) : std::vector<std::wstring>(1, args.ModelPath());
 
-    if (!args.ModelPath().empty())
-    {
-        std::vector<std::wstring> modelPaths(1, args.ModelPath());
-        return EvaluateModels(modelPaths, deviceTypes, inputBindingTypes, inputDataTypes, args, output);
-    }
-    else if (!args.FolderPath().empty())
-    {
-        std::vector<std::wstring> modelPaths = GetModelsInDirectory(args, &output);
-        return EvaluateModels(modelPaths, deviceTypes, inputBindingTypes, inputDataTypes, args, output);
-    }
-
-    if (args.UseMarkers())
-    {
-        UnregisterCustomMarkers();
-    }
+    return EvaluateModels(modelPaths, deviceTypes, inputBindingTypes, inputDataTypes, args, output);
 
     return 0;
 }

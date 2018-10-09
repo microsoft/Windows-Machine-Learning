@@ -6,8 +6,7 @@ resultPromise = electronInstaller.createWindowsInstaller({
     authors: 'Microsoft Corporation',
     exe: 'WinMLDashboard.exe',
     outputDirectory: path.join('./installer'), 
-    setupExe: 'WinMLDashboard_setup.exe',
-    setupMsi: 'WinMLDashboard_setup.msi',
+    setupExe: 'WinMLDashboard_setup_belta.exe',
     version: "1.0.0",
   });
 

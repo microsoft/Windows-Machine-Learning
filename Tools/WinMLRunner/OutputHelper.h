@@ -58,6 +58,7 @@ public:
          m_GPUEvalTime = profiler[EVAL_MODEL].GetAverage(CounterType::TIMER);
          m_GPUEvalSharedMemoryUsage = profiler[EVAL_MODEL].GetAverage(CounterType::GPU_SHARED_MEM_USAGE);
          m_GPUEvalDedicatedMemoryUsage = profiler[EVAL_MODEL].GetAverage(CounterType::GPU_DEDICATED_MEM_USAGE);
+         m_CPUEvalMemoryUsage = profiler[EVAL_MODEL].GetAverage(CounterType::WORKING_SET_USAGE);
 
         std::cout << std::endl;
         std::cout << "GPU Time Averages (iterations = " << iterations << "):" << std::endl;
@@ -65,8 +66,11 @@ public:
         std::cout << "  Bind: " << m_GPUBindTime << " ms" << std::endl;
         std::cout << "  Evaluate: " << m_GPUEvalTime << " ms" << std::endl;
         std::cout << "  Total time: " << m_GPUBindTime + m_GPUEvalTime << " ms" << std::endl;
+        std::cout << "  Working Set Memory usage (evaluate): " << m_CPUEvalMemoryUsage << " MB" << std::endl;
         std::cout << "  Dedicated memory usage (evaluate): " << m_GPUEvalDedicatedMemoryUsage << " MB" << std::endl;
         std::cout << "  Shared memory usage (evaluate): " << m_GPUEvalSharedMemoryUsage << " MB" << std::endl;
+		std::cout << std::endl;
+		std::cout << "  Throughput (FPS): " << 1000.0 / m_GPUEvalTime << std::endl;
         std::cout << std::endl;
     }
 

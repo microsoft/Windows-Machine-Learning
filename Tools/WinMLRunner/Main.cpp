@@ -53,7 +53,7 @@ HRESULT EvaluateModel(LearningModel model, const CommandLineArgs& args, OutputHe
         useInputData = true;
         try
         {
-            BindingUtilities::BindImageToContext(binding, model, args.ImagePath());
+            BindingUtilities::BindImageToContext(binding, model, args.ImagePath(), args.Scale(), args.MeanStdDev());
         }
         catch (hresult_error hr)
         {
@@ -116,7 +116,6 @@ HRESULT EvaluateModel(LearningModel model, const CommandLineArgs& args, OutputHe
             }
             WINML_PROFILING_STOP(g_Profiler, WINML_MODEL_TEST_PERF::EVAL_MODEL);
             output->m_clockEvalTimes.push_back(timer.Stop());
-            std::cout << "[SUCCESS]" << std::endl;
         }
 
         output->PrintWallClockTimes(args.NumIterations());

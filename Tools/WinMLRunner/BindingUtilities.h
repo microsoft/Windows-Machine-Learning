@@ -3,6 +3,7 @@
 #include "ModelBinding.h"
 using namespace winrt::Windows::Graphics::Imaging;
 using namespace Windows::Media;
+using namespace winrt::Windows::Foundation;
 using namespace winrt::Windows::Foundation::Collections;
 using namespace Windows::Storage;
 using namespace winrt::Windows::AI::MachineLearning;
@@ -132,7 +133,7 @@ namespace BindingUtilities
         }
     }
     
-    VideoFrame LoadImageFile(hstring filePath)
+    SoftwareBitmap LoadImageFile(hstring filePath)
     {
         try
         {
@@ -144,10 +145,8 @@ namespace BindingUtilities
             BitmapDecoder decoder = BitmapDecoder::CreateAsync(stream).get();
             // get the bitmap
             SoftwareBitmap softwareBitmap = decoder.GetSoftwareBitmapAsync().get();
-            // load a videoframe from it
-            VideoFrame inputImage = VideoFrame::CreateWithSoftwareBitmap(softwareBitmap);
             // all done
-            return inputImage;
+            return softwareBitmap;
         }
         catch (...)
         {
@@ -321,15 +320,15 @@ namespace BindingUtilities
         }
     }
 
-    void BindImageToContext(LearningModelBinding context, LearningModel model, std::wstring imagePath)
+    void BindImageToContext(LearningModelBinding context, LearningModel model, std::wstring imagePath, float scale, std::array<float,3> mean_std_dev)
     {
         context.Clear();
         for (auto&& description : model.InputFeatures())
         {
             hstring name = description.Name();
             auto Kind = description.Kind();
-            auto videoFrame = LoadImageFile(imagePath.c_str());
-            if (videoFrame == nullptr)
+            auto softwareBitmap = LoadImageFile(imagePath.c_str());
+            if (softwareBitmap == nullptr)
             {
                 std::cout << "BindingUtilities: Cannot bind image to LearningModelBinding." << std::endl;
                 std::cout << std::endl;
@@ -337,8 +336,58 @@ namespace BindingUtilities
             }
             try
             {
-                auto featureValue = ImageFeatureValue::CreateFromVideoFrame(videoFrame);
-                context.Bind(name, featureValue);
+				if (scale != 1.0 &&
+					 ( mean_std_dev[0] != 0 ||
+					   mean_std_dev[1] != 0 ||
+					   mean_std_dev[2] != 0))
+				{
+					const auto imgHeight = softwareBitmap.PixelHeight();
+					const auto imgWidth = softwareBitmap.PixelWidth();
+
+					Buffer sbBuffer(imgHeight * imgWidth * 4);
+					softwareBitmap.CopyToBuffer(sbBuffer);
+					byte *sbBufferData = sbBuffer.data();
+
+					std::vector<float> resultArrList(imgHeight * imgWidth * 3);
+
+					//Roll the array correctly for the tensor
+					for (int i = 0, count = 0; i < imgHeight * imgWidth; ++i, count += 4)
+					{
+						resultArrList[i] = (sbBufferData[count] - mean_std_dev[0]) / scale;
+						resultArrList[i + imgHeight * imgWidth] = (sbBufferData[count + 1] - mean_std_dev[1]) / scale;
+						resultArrList[i + imgHeight * imgWidth * 2] = (sbBufferData[count + 2] - mean_std_dev[2]) / scale;
+					}
+
+					TensorFeatureDescriptor tensorDescriptor = description.as<TensorFeatureDescriptor>();
+					TensorKind tensorKind = tensorDescriptor.TensorKind();
+					switch (tensorKind)
+					{
+					case TensorKind::Float:
+					{
+						ModelBinding<float> binding(description);
+						auto floatTensor = TensorFloat::CreateFromArray(binding.GetShapeBuffer(), resultArrList);
+						context.Bind(name, floatTensor);
+					}
+					break;
+					case TensorKind::Float16:
+					{
+						ModelBinding<float> binding(description);
+						auto float16Tensor = TensorFloat16Bit::CreateFromArray(binding.GetShapeBuffer(), resultArrList);
+						context.Bind(name, float16Tensor);
+					}
+					break;
+					default:
+						std::cout << "BindingUtilities: Unknown TensorKind for binding." << std::endl;
+						std::cout << std::endl;
+						throw_hresult(E_FAIL);
+					}
+				}
+				else
+				{
+					auto videoFrame = VideoFrame::CreateWithSoftwareBitmap( softwareBitmap );
+					auto featureValue = ImageFeatureValue::CreateFromVideoFrame(videoFrame);
+					context.Bind(name, featureValue);
+				}
             }
             catch (hresult_error hr)
             {
@@ -393,6 +442,24 @@ namespace BindingUtilities
                 case TensorKind::Float:
                 {
                     auto resultVector = results.Lookup(desc.Name()).as<TensorFloat>().GetAsVectorView();
+                    UINT maxIndex = 0;
+                    auto maxValue = resultVector.GetAt(0);
+
+                    for (UINT i = 0; i < resultVector.Size(); i++)
+                    {
+                        if (maxValue < resultVector.GetAt(i))
+                        {
+                            maxValue = resultVector.GetAt(i);
+                            maxIndex = i;
+                        }
+                    }
+
+                    std::wcout << " resultVector[" << maxIndex << "] has the maximal value of " << maxValue << std::endl;
+                }
+                break;
+                case TensorKind::Float16:
+                {
+                    auto resultVector = results.Lookup(desc.Name()).as<TensorFloat16Bit>().GetAsVectorView();
                     UINT maxIndex = 0;
                     auto maxValue = resultVector.GetAt(0);
 

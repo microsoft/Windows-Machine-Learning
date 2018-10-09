@@ -16,9 +16,11 @@ void CommandLineArgs::PrintUsage() {
     std::cout << "  -GPUHighPerformance : run model on GPU with highest performance" << std::endl;
     std::cout << "  -GPUMinPower : run model on GPU with the least power" << std::endl;
     std::cout << "  -perf : capture timing measurements" << std::endl;
-    std::cout << "  -iterations : # times perf measurements will be run/averaged" << std::endl;
-    std::cout << "  -input <fully qualified path>: binds image or CSV to model" << std::endl;
-    std::cout << "  -debug: print trace logs" << std::endl;
+    std::cout << "  -iterations <iteration count> : # times perf measurements will be run/averaged" << std::endl;
+    std::cout << "  -input <fully qualified path> : binds image or CSV to model" << std::endl;
+    std::cout << "  -scale <float> : scale factor for input image (float)" << std::endl;
+    std::cout << "  -meanStdDev <float> <float> <float> : 3 factors for mean std dev adjustment to input image" << std::endl;
+    std::cout << "  -debug : print trace logs" << std::endl;
 }
 
 CommandLineArgs::CommandLineArgs()
@@ -58,6 +60,16 @@ CommandLineArgs::CommandLineArgs()
         else if ((_wcsicmp(args[i], L"-folder") == 0) && (i + 1 < numArgs))
         {
             m_modelFolderPath = args[++i];
+        }
+        else if ((_wcsicmp(args[i], L"-scale") == 0) && (i + 1 < numArgs))
+        {
+            m_scale = static_cast<float>(_wtof(args[++i]));
+        }
+        else if ((_wcsicmp(args[i], L"-meanStdDev") == 0) && (i + 3 < numArgs))
+        {
+            m_meanStdDev[0] = static_cast<float>(_wtof(args[++i]));
+            m_meanStdDev[1] = static_cast<float>(_wtof(args[++i]));
+            m_meanStdDev[2] = static_cast<float>(_wtof(args[++i]));
         }
         else if ((_wcsicmp(args[i], L"-input") == 0))
         {

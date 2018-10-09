@@ -6,19 +6,6 @@
   "homepage": ".",
   "main": "src/electronMain.js",
   "private": true,
-  "dependencies": {
-    "ajv": "^6.5.2",
-    "electron-packager": "^12.1.2",
-    "electron-squirrel-startup": "^1.0.0",
-    "npm-font-open-sans": "^1.1.0",
-    "office-ui-fabric-react": "^6.40.0",
-    "react": "^16.4.1",
-    "react-dom": "^16.4.1",
-    "react-markdown": "^3.4.1",
-    "react-redux": "^5.0.7",
-    "redux": "^4.0.0",
-    "yauzl": "^2.10.0"
-  },
   "scripts": {
     "start": "react-scripts-ts start",
     "build": "react-scripts-ts build",
@@ -29,7 +16,7 @@
     "build-electron": "react-app-rewired build --scripts-version react-scripts-ts",
     "electron-dev": "electron . http://localhost:3000",
     "electron-prod": "yarn build-electron && electron .",
-    "packager": "yarn build-electron && electron-packager . WinMLDashboard --overwrite --win=x32 --ignore=\\.cache --ignore=\\office-ui-fabric-react --out  ./release --arch=x64 --app-version=1.0.0 --electron-version=2.0.6",
+    "packager": "yarn build-electron && electron-packager . WinMLDashboard --overwrite --win=x32 --asar --out ./release --arch=x64 --app-version=1.0.0 --electron-version=2.0.6",
     "installer": "yarn packager && node build.js"
   },
   "build": {
@@ -56,6 +43,17 @@
     "electron-winstaller": "^2.6.4",
     "react-app-rewired": "^1.5.2",
     "react-scripts-ts": "^2.16.0",
-    "typescript": "^2.9.2"
+    "typescript": "^2.9.2",
+    "ajv": "^6.5.2",
+    "electron-packager": "^12.1.2",
+    "electron-squirrel-startup": "^1.0.0",
+    "npm-font-open-sans": "^1.1.0",
+    "office-ui-fabric-react": "^6.40.0",
+    "react": "^16.4.1",
+    "react-dom": "^16.4.1",
+    "react-markdown": "^3.4.1",
+    "react-redux": "^5.0.7",
+    "redux": "^4.0.0",
+    "yauzl": "^2.10.0"
   }
 }

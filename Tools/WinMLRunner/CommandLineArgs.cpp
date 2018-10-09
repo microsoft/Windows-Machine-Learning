@@ -26,7 +26,6 @@ void CommandLineArgs::PrintUsage() {
     std::cout << "  -ouput <fully qualified path>: csv file to write the perf results to" << std::endl;
     std::cout << "  -IgnoreFirstRun : ignore the first run in the perf results" << std::endl;
     std::cout << "  -debug: print trace logs" << std::endl;
-    std::cout << "  -markers: inserts custom event markers for easier profiling in an application like GPUView" << std::endl;
     std::cout << "  -silent: only errors are printed to the console" << std::endl;
 }
 
@@ -83,7 +82,7 @@ CommandLineArgs::CommandLineArgs()
         }
         else if ((_wcsicmp(args[i], L"-tensor") == 0))
         {
-            m_useTensorInput = true;
+            m_useTensor = true;
         }
         else if ((_wcsicmp(args[i], L"-CPUBoundInput") == 0))
         {
@@ -104,10 +103,6 @@ CommandLineArgs::CommandLineArgs()
         else if ((_wcsicmp(args[i], L"-debug") == 0))
         {
             m_debug = true;
-        }
-        else if ((_wcsicmp(args[i], L"-markers") == 0))
-        {
-            m_useMarkers = true;
         }
         else if ((_wcsicmp(args[i], L"-silent") == 0))
         {

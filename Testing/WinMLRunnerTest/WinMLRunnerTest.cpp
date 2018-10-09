@@ -116,7 +116,10 @@ namespace WinMLRunnerTest
             std::wstring command = curPath +
                 L"./WinMLRunner " + L"-model " + curPath + L"SqueezeNet.onnx "
                 + L" -input " + curPath + L"horizontal-crop.png";
-            Assert::AreNotEqual(0, RunProc((wchar_t *)command.c_str()));
+
+            auto abc = RunProc((wchar_t *)command.c_str());
+
+            Assert::AreNotEqual(0, abc);
         }
     };
 

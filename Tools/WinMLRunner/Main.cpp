@@ -313,7 +313,6 @@ HRESULT EvaluateModels(
 
                     HRESULT evalHResult = EvaluateModel(model, args, output, deviceType, inputBindingType, inputDataType);
 
-                    // Some models may fail because of bugs in the winml code or the model file itself, but we should still run the remaining models
                     if (FAILED(evalHResult))
                     {
                         return evalHResult;
@@ -338,7 +337,7 @@ std::vector<InputDataType> FetchInputDataTypes(const CommandLineArgs& args)
 {
     std::vector<InputDataType> inputDataTypes;
 
-    if (args.UseTensorInput())
+    if (args.UseTensor())
     {
         inputDataTypes.push_back(InputDataType::Tensor);
     }

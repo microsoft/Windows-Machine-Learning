@@ -255,12 +255,6 @@ namespace BindingUtilities
     ImageFeatureValue CreateBindableImage(const ILearningModelFeatureDescriptor& featureDescriptor, const std::wstring& imagePath, InputBindingType inputBindingType, InputDataType inputDataType)
     {
         auto imageDescriptor = featureDescriptor.try_as<TensorFeatureDescriptor>();
-        auto test1 = featureDescriptor.try_as<ImageFeatureDescriptor>();
-
-        if (test1)
-        {
-            std::cout << "IS IMAGE FEATURE VALUE!!!" << std::endl;
-        }
 
         if (!imageDescriptor)
         {
@@ -301,7 +295,7 @@ namespace BindingUtilities
 
     void PrintEvaluationResults(const LearningModel& model, const CommandLineArgs& args, const IMapView<hstring, Windows::Foundation::IInspectable>& results)
     {
-        if (!args.Silent()) return;
+        if (args.Silent()) return;
         
         std::cout << "Outputting results.. " << std::endl;
         
@@ -337,10 +331,7 @@ namespace BindingUtilities
                         }
                     }
 
-                    if (!args.Silent())
-                    {
-                        std::wcout << " resultVector[" << maxIndex << "] has the maximal value of " << maxValue << std::endl;
-                    }
+                    std::wcout << " resultVector[" << maxIndex << "] has the maximal value of " << maxValue << std::endl;
                 }
                 break;
                 case TensorKind::Int64:

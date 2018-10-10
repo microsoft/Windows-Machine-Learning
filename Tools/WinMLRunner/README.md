@@ -23,9 +23,9 @@ Required command-Line arguments:
 
 #Optional command-line arguments:
 -perf                    : Captures GPU, CPU, and wall-clock time measurements. 
--iterations <int>	     : Number of times to evaluate the model when capturing performance measurements.
--CPU             	     : Will create a session on the CPU.
--GPU            	     : Will create a session on the GPU.
+-iterations <int>        : Number of times to evaluate the model when capturing performance measurements.
+-CPU                     : Will create a session on the CPU.
+-GPU                     : Will create a session on the GPU.
 -GPUHighPerformance      : Will create a session with the most powerful GPU device available.
 -GPUMinPower             : Will create a session with GPU with the least power.
 -CPUBoundInput           : Will bind the input to the CPU.

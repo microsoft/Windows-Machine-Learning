@@ -46,7 +46,7 @@ namespace BindingUtilities
         IBuffer buffer = dataWriter.DetachBuffer();
 
         // Create the software bitmap
-        return SoftwareBitmap::CreateCopyFromBuffer(buffer, TypeHelper::GetBitmapPixelFormat(inputDataType), width, height);
+        return SoftwareBitmap::CreateCopyFromBuffer(buffer, TypeHelper::GetBitmapPixelFormat(inputDataType), static_cast<int32_t>(width), static_cast<int32_t>(height));
     }
 
     SoftwareBitmap LoadImageFile(const hstring& filePath, InputDataType inputDataType)
@@ -271,10 +271,10 @@ namespace BindingUtilities
         return ImageFeatureValue::CreateFromVideoFrame(videoFrame);
     }
 
-    template< typename K, typename V>
+    template<typename K, typename V>
     void OutputSequenceBinding(IMapView<hstring, Windows::Foundation::IInspectable> results, hstring name)
     {
-        auto map = results.Lookup(name).as<IVectorView<IMap<int64_t, float>>>().GetAt(0);
+        auto map = results.Lookup(name).as<IVectorView<IMap<K, V>>>().GetAt(0);
         auto iter = map.First();
 
         K maxKey = -1;

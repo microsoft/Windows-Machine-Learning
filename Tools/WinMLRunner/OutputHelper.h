@@ -30,10 +30,10 @@ public:
         {
             printf(
                 "Binding (device = %s, iteration = %d, inputBinding = %s, inputDataType = %s)...",
-                TypeHelper::Stringify(deviceType),
+                TypeHelper::Stringify(deviceType).c_str(),
                 iteration,
-                TypeHelper::Stringify(inputBindingType),
-                TypeHelper::Stringify(inputDataType)
+                TypeHelper::Stringify(inputBindingType).c_str(),
+                TypeHelper::Stringify(inputDataType).c_str()
             );
         }
     }
@@ -44,10 +44,10 @@ public:
         {
             printf(
                 "Evaluating (device = %s, iteration = %d, inputBinding = %s, inputDataType = %s)...",
-                TypeHelper::Stringify(deviceType),
+                TypeHelper::Stringify(deviceType).c_str(),
                 iteration,
-                TypeHelper::Stringify(inputBindingType),
-                TypeHelper::Stringify(inputDataType)
+                TypeHelper::Stringify(inputBindingType).c_str(),
+                TypeHelper::Stringify(inputDataType).c_str()
             );
         }
     }
@@ -144,23 +144,23 @@ public:
             std::cout << std::endl;
 
             printf("Results (device = %s, numIterations = %d, inputBinding = %s, inputDataType = %s):\n",
-                TypeHelper::Stringify(deviceType),
+                TypeHelper::Stringify(deviceType).c_str(),
                 numIterations,
-                TypeHelper::Stringify(inputBindingType),
-                TypeHelper::Stringify(inputDataType)
+                TypeHelper::Stringify(inputBindingType).c_str(),
+                TypeHelper::Stringify(inputDataType).c_str()
             );
 
-            printf("  Load: %s\n", isnan(loadTime) ? "N/A" : std::to_string(loadTime) + "ms");
-            printf("  Bind: %f ms\n", bindTime);
-            printf("  Evaluate: %f ms\n", evalTime);
-            printf("  Total Time: %f ms\n", totalTime);
-            printf("  Wall-Clock Load: %f ms\n", m_clockLoadTime);
-            printf("  Wall-Clock Bind: %f ms\n", clockBindTime);
-            printf("  Wall-Clock Evaluate: %f ms\n", clockEvalTime);
-            printf("  Total Wall-Clock Time: %f ms\n", m_clockLoadTime + clockBindTime + clockEvalTime);
-            printf("  Working Set Memory usage (evaluate): %s\n", isnan(evalMemoryUsage) ? "N/A" : std::to_string(evalMemoryUsage) + " MB");
-            printf("  Dedicated Memory Usage (evaluate): %s\n", isnan(gpuEvalDedicatedMemoryUsage) ? "N/A" : std::to_string(gpuEvalDedicatedMemoryUsage) + " MB");
-            printf("  Shared Memory Usage (evaluate): %s\n", isnan(gpuEvalSharedMemoryUsage) ? "N/A" : std::to_string(gpuEvalSharedMemoryUsage) + " MB");
+            std::cout << "  Load: " << (isnan(loadTime) ? "N/A" : std::to_string(loadTime) + "ms") << std::endl;
+            std::cout << "  Bind: " << bindTime << std::endl;
+            std::cout << "  Evaluate: " << evalTime << std::endl;
+            std::cout << "  Total Time: " << totalTime << std::endl;
+            std::cout << "  Wall-Clock Load: " << m_clockLoadTime << std::endl;
+            std::cout << "  Wall-Clock Bind: " << clockBindTime << std::endl;
+            std::cout << "  Wall-Clock Evaluate: " << clockEvalTime << std::endl;
+            std::cout << "  Total Wall-Clock Time: " << (m_clockLoadTime + clockBindTime + clockEvalTime) << std::endl;
+            std::cout << "  Working Set Memory usage (evaluate): " << gpuEvalDedicatedMemoryUsage << " MB" << std::endl;
+            std::cout << "  Dedicated Memory Usage (evaluate): " << gpuEvalDedicatedMemoryUsage << " MB" << std::endl;
+            std::cout << "  Shared Memory Usage (evaluate): " << gpuEvalSharedMemoryUsage << " MB" << std::endl;
 
             std::cout << std::endl << std::endl;
         }

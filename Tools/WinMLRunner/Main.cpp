@@ -425,7 +425,10 @@ int main(int argc, char** argv)
     std::vector<InputDataType> inputDataTypes = FetchInputDataTypes(args);
     std::vector<std::wstring> modelPaths = args.ModelPath().empty() ? GetModelsInDirectory(args, &output) : std::vector<std::wstring>(1, args.ModelPath());
 
-    return EvaluateModels(modelPaths, deviceTypes, inputBindingTypes, inputDataTypes, args, output);
+    if (!args.CsvPath().empty() || !args.FolderPath().empty() || !args.ImagePath().empty())
+    {
+        return EvaluateModels(modelPaths, deviceTypes, inputBindingTypes, inputDataTypes, args, output);
+    }
 
     return 0;
 }

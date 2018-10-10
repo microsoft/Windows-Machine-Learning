@@ -15,18 +15,18 @@ void CommandLineArgs::PrintUsage() {
     std::cout << "  -GPU : run model on default GPU" << std::endl;
     std::cout << "  -GPUHighPerformance : run model on GPU with highest performance" << std::endl;
     std::cout << "  -GPUMinPower : run model on GPU with the least power" << std::endl;
-    std::cout << "  -CPUBoundInput : bind the image to the GPU (ignored if the input is not an image)" << std::endl;
-    std::cout << "  -GPUBoundInput : bind the image to the CPU (ignored if the input is not an image)" << std::endl;
-    std::cout << "  -RGB : bind the image as an RGB image (ignored if the input is not an image)" << std::endl;
-    std::cout << "  -BGR : bind the image as a BGR image (ignored if the input is not an image)" << std::endl;
-    std::cout << "  -tensor : bind the input as a tensor (ignored if the input is an image)" << std::endl;
+    std::cout << "  -CPUBoundInput : bind the input to the CPU" << std::endl;
+    std::cout << "  -GPUBoundInput : bind the input to the GPU" << std::endl;
+    std::cout << "  -RGB : load the input as an RGB image" << std::endl;
+    std::cout << "  -BGR : load the input as a BGR image" << std::endl;
+    std::cout << "  -tensor : load the input as a tensor" << std::endl;
     std::cout << "  -perf : capture timing measurements" << std::endl;
     std::cout << "  -iterations : # times perf measurements will be run/averaged" << std::endl;
     std::cout << "  -input <fully qualified path>: binds image or CSV to model" << std::endl;
     std::cout << "  -ouput <fully qualified path>: csv file to write the perf results to" << std::endl;
-    std::cout << "  -IgnoreFirstRun : ignore the first run in the perf results" << std::endl;
-    std::cout << "  -debug: print trace logs" << std::endl;
+    std::cout << "  -IgnoreFirstRun : ignore the first run in the perf results when calculating the average" << std::endl;
     std::cout << "  -silent: only errors are printed to the console" << std::endl;
+    std::cout << "  -debug: print trace logs" << std::endl;
 }
 
 CommandLineArgs::CommandLineArgs()

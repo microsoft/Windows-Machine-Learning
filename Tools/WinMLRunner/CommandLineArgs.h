@@ -7,7 +7,6 @@ public:
     CommandLineArgs();
     void PrintUsage();
 
-    bool UseGPU() const { return m_useGPU; }
     bool UseGPUHighPerformance() const { return m_useGPUHighPerformance; }
     bool UseGPUMinPower() const { return m_useGPUMinPower; }
     bool UseRGB() const { return m_useRGB; }
@@ -35,6 +34,11 @@ public:
     {
         // Tensor input is the default input if no flag is specified
         return m_useTensor || (!m_useRGB && !UseBGR());
+    }
+
+    bool UseGPU() const
+    {
+        return m_useGPU || (!m_useCPU && !m_useGPUHighPerformance && !m_useGPUMinPower);
     }
 
     bool UseCPU() const

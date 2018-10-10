@@ -23,7 +23,7 @@ void CommandLineArgs::PrintUsage() {
     std::cout << "  -perf : capture timing measurements" << std::endl;
     std::cout << "  -iterations : # times perf measurements will be run/averaged" << std::endl;
     std::cout << "  -input <fully qualified path>: binds image or CSV to model" << std::endl;
-    std::cout << "  -ouput <fully qualified path>: csv file to write the perf results to" << std::endl;
+    std::cout << "  -output <fully qualified path>: csv file to write the perf results to" << std::endl;
     std::cout << "  -IgnoreFirstRun : ignore the first run in the perf results when calculating the average" << std::endl;
     std::cout << "  -silent: only errors are printed to the console" << std::endl;
     std::cout << "  -debug: print trace logs" << std::endl;

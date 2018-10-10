@@ -52,6 +52,110 @@ namespace WinMLRunnerTest
             Assert::AreEqual(0, RunProc((wchar_t *)command.c_str()));
         }
 
+        TEST_METHOD(GarbageInputCpuDeviceCpuBoundRGBImage)
+        {
+            auto const curPath = FileHelper::GetModulePath();
+            std::wstring command = curPath +
+                L"./WinMLRunner " + L"-model " + curPath + L"SqueezeNet.onnx " + L"-CPU " + L"-CPUBoundInput " + L"-RGB ";
+            Assert::AreEqual(0, RunProc((wchar_t *)command.c_str()));
+        }
+
+        TEST_METHOD(GarbageInputCpuDeviceCpuBoundBGRImage)
+        {
+            auto const curPath = FileHelper::GetModulePath();
+            std::wstring command = curPath +
+                L"./WinMLRunner " + L"-model " + curPath + L"SqueezeNet.onnx " + L"-CPU " + L"-CPUBoundInput " + L"-BGR ";
+            Assert::AreEqual(0, RunProc((wchar_t *)command.c_str()));
+        }
+
+        TEST_METHOD(GarbageInputCpuDeviceCpuBoundTensor)
+        {
+            auto const curPath = FileHelper::GetModulePath();
+            std::wstring command = curPath +
+                L"./WinMLRunner " + L"-model " + curPath + L"SqueezeNet.onnx " + L"-CPU " + L"-CPUBoundInput " + L"-tensor ";
+            Assert::AreEqual(0, RunProc((wchar_t *)command.c_str()));
+        }
+
+        TEST_METHOD(GarbageInputCpuDeviceGpuBoundRGBImage)
+        {
+            auto const curPath = FileHelper::GetModulePath();
+            std::wstring command = curPath +
+                L"./WinMLRunner " + L"-model " + curPath + L"SqueezeNet.onnx " + L"-CPU " + L"-GPUBoundInput " + L"-RGB ";
+            Assert::AreEqual(0, RunProc((wchar_t *)command.c_str()));
+        }
+
+        TEST_METHOD(GarbageInputCpuDeviceGpuBoundBGRImage)
+        {
+            auto const curPath = FileHelper::GetModulePath();
+            std::wstring command = curPath +
+                L"./WinMLRunner " + L"-model " + curPath + L"SqueezeNet.onnx " + L"-CPU " + L"-GPUBoundInput " + L"-BGR ";
+            Assert::AreEqual(0, RunProc((wchar_t *)command.c_str()));
+        }
+
+        TEST_METHOD(GarbageInputCpuDeviceGpuBoundTensor)
+        {
+            auto const curPath = FileHelper::GetModulePath();
+            std::wstring command = curPath +
+                L"./WinMLRunner " + L"-model " + curPath + L"SqueezeNet.onnx " + L"-CPU " + L"-GPUBoundInput " + L"-tensor ";
+            Assert::AreEqual(0, RunProc((wchar_t *)command.c_str()));
+        }
+
+        TEST_METHOD(GarbageInputGpuDeviceCpuBoundRGBImage)
+        {
+            auto const curPath = FileHelper::GetModulePath();
+            std::wstring command = curPath +
+                L"./WinMLRunner " + L"-model " + curPath + L"SqueezeNet.onnx " + L"-GPU " + L"-CPUBoundInput " + L"-RGB ";
+            Assert::AreEqual(0, RunProc((wchar_t *)command.c_str()));
+        }
+
+        TEST_METHOD(GarbageInputGpuDeviceCpuBoundBGRImage)
+        {
+            auto const curPath = FileHelper::GetModulePath();
+            std::wstring command = curPath +
+                L"./WinMLRunner " + L"-model " + curPath + L"SqueezeNet.onnx " + L"-GPU " + L"-CPUBoundInput " + L"-BGR ";
+            Assert::AreEqual(0, RunProc((wchar_t *)command.c_str()));
+        }
+
+        TEST_METHOD(GarbageInputGpuDeviceCpuBoundTensor)
+        {
+            auto const curPath = FileHelper::GetModulePath();
+            std::wstring command = curPath +
+                L"./WinMLRunner " + L"-model " + curPath + L"SqueezeNet.onnx " + L"-GPU " + L"-CPUBoundInput " + L"-tensor ";
+            Assert::AreEqual(0, RunProc((wchar_t *)command.c_str()));
+        }
+
+        TEST_METHOD(GarbageInputGpuDeviceGpuBoundRGBImage)
+        {
+            auto const curPath = FileHelper::GetModulePath();
+            std::wstring command = curPath +
+                L"./WinMLRunner " + L"-model " + curPath + L"SqueezeNet.onnx " + L"-GPU " + L"-GPUBoundInput " + L"-RGB ";
+            Assert::AreEqual(0, RunProc((wchar_t *)command.c_str()));
+        }
+
+        TEST_METHOD(GarbageInputGpuDeviceGpuBoundBGRImage)
+        {
+            auto const curPath = FileHelper::GetModulePath();
+            std::wstring command = curPath +
+                L"./WinMLRunner " + L"-model " + curPath + L"SqueezeNet.onnx " + L"-GPU " + L"-GPUBoundInput " + L"-BGR ";
+            Assert::AreEqual(0, RunProc((wchar_t *)command.c_str()));
+        }
+
+        TEST_METHOD(GarbageInputGpuDeviceGpuBoundTensor)
+        {
+            auto const curPath = FileHelper::GetModulePath();
+            std::wstring command = curPath +
+                L"./WinMLRunner " + L"-model " + curPath + L"SqueezeNet.onnx " + L"-GPU " + L"-GPUBoundInput " + L"-tensor ";
+            Assert::AreEqual(0, RunProc((wchar_t *)command.c_str()));
+        }
+
+        TEST_METHOD(GarbageInputAllPermutations)
+        {
+            auto const curPath = FileHelper::GetModulePath();
+            std::wstring command = curPath +
+                L"./WinMLRunner " + L"-model " + curPath + L"SqueezeNet.onnx " + L"-GPU -CPU -CPUBoundInput -GPUBoundInput -RGB -BGR -tensor";
+            Assert::AreEqual(0, RunProc((wchar_t *)command.c_str()));
+        }
+
         TEST_METHOD(RunAllModelsInFolderGarbageInput)
         {
             auto const curPath = FileHelper::GetModulePath();

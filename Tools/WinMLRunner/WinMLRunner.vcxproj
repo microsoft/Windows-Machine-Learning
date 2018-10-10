@@ -19,10 +19,13 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Filehelper.cpp" />
     <ClCompile Include="CommandLineArgs.cpp" />
+    <ClCompile Include="dllload.cpp" />
     <ClCompile Include="Main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Filehelper.h" />
     <ClInclude Include="BindingUtilities.h" />
     <ClInclude Include="CommandLineArgs.h" />
     <ClInclude Include="Common.h" />

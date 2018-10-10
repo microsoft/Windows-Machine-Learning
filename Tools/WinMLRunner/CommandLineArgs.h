@@ -9,7 +9,7 @@ public:
 
     bool UseGPUHighPerformance() const { return m_useGPUHighPerformance; }
     bool UseGPUMinPower() const { return m_useGPUMinPower; }
-    bool UseRGB() const { return m_useRGB; }
+    bool UseBGR() const { return m_useBGR; }
     bool UseGPUBoundInput() const { return m_useGPUBoundInput; }
     bool IgnoreFirstRun() const { return m_ignoreFirstRun; }
     bool PerfCapture() const { return m_perfCapture; }
@@ -24,16 +24,16 @@ public:
 
     void SetModelPath(std::wstring path) { m_modelPath = path; }
 
-    bool UseBGR() const
+    bool UseRGB() const
     {
         // If an image is specified without flags, we load it as a BGR image by default
-        return m_useRGB || (!m_imagePath.empty() && !m_useRGB && !m_useTensor);
+        return m_useRGB || (!m_imagePath.empty() && !m_useBGR && !m_useTensor);
     }
 
     bool UseTensor() const
     {
         // Tensor input is the default input if no flag is specified
-        return m_useTensor || (!m_useRGB && !UseBGR());
+        return m_useTensor || (!m_useBGR && !UseRGB());
     }
 
     bool UseGPU() const

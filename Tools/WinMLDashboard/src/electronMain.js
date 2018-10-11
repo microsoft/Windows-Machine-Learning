@@ -1,9 +1,10 @@
-const {app, protocol, BrowserWindow} = require('electron');
+const {app, ipcMain, protocol, BrowserWindow} = require('electron');
 const fs = require('fs');
 const path = require('path');
 const url = require('url');
 
 let mainWindow;
+let aboutWindow;
 
 function interceptFileProtocol() {
     // Intercept the file protocol so that references to folders return its index.html file
@@ -88,3 +89,33 @@ app.on('activate', () => {
         createWindow();
     }
 });
+
+ipcMain.on('show-about-window', () => {
+    
+    openAboutWindow()
+})
+
+function openAboutWindow() {
+    // tslint:disable-next-line:no-console
+    console.log("show about window")
+  if (aboutWindow) {
+    aboutWindow.focus()
+    return
+  }
+
+  aboutWindow = new BrowserWindow({
+    height: 700,
+    title: "About",
+    width: 700,
+  })
+
+  aboutWindow.setMenu(null);
+  aboutWindow.loadURL('file://' + __dirname + '/../public/about.html')
+  // tslint:disable-next-line:no-console
+  console.log('file://' + __dirname + '/../public/about.html')
+  aboutWindow.on('closed', () => {
+    // tslint:disable-next-line:no-console
+    console.log("close window")
+    aboutWindow = null
+  })
+}

@@ -13,7 +13,7 @@ void CommandLineArgs::PrintUsage() {
     std::cout << "options: " << std::endl;
     std::cout << "  -CPU : run model on default CPU" << std::endl;
     std::cout << "  -GPU : run model on default GPU" << std::endl;
-    std::cout << "  -GPUMaxPerformance : run model on GPU with highest performance" << std::endl;
+    std::cout << "  -GPUHighPerformance : run model on GPU with highest performance" << std::endl;
     std::cout << "  -GPUMinPower : run model on GPU with the least power" << std::endl;
     std::cout << "  -CPUBoundInput : bind the input to the CPU" << std::endl;
     std::cout << "  -GPUBoundInput : bind the input to the GPU" << std::endl;
@@ -44,9 +44,9 @@ CommandLineArgs::CommandLineArgs()
         {
             m_useGPU = true;
         }
-        else if ((_wcsicmp(args[i], L"-GPUMaxPerformance") == 0))
+        else if ((_wcsicmp(args[i], L"-GPUHighPerformance") == 0))
         {
-            m_useGPUMaxPerformance = true;
+            m_useGPUHighPerformance = true;
         }
         else if ((_wcsicmp(args[i], L"-GPUMinPower") == 0))
         {

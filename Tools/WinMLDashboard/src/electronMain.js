@@ -96,26 +96,25 @@ ipcMain.on('show-about-window', () => {
 })
 
 function openAboutWindow() {
-    // tslint:disable-next-line:no-console
-    console.log("show about window")
   if (aboutWindow) {
     aboutWindow.focus()
     return
   }
 
   aboutWindow = new BrowserWindow({
-    height: 700,
+    height: 420,
+    icon: path.join(__dirname, '../public/winml_icon.ico'),
     title: "About",
-    width: 700,
+    width: 420,
   })
 
+  aboutWindow.setFullScreenable(false);
+  aboutWindow.setMinimizable(false);
+  aboutWindow.setResizable(false);
   aboutWindow.setMenu(null);
-  aboutWindow.loadURL('file://' + __dirname + '/../public/about.html')
-  // tslint:disable-next-line:no-console
-  console.log('file://' + __dirname + '/../public/about.html')
+  aboutWindow.loadURL('file://' + __dirname + '/../public/about.html');
+
   aboutWindow.on('closed', () => {
-    // tslint:disable-next-line:no-console
-    console.log("close window")
     aboutWindow = null
   })
 }

@@ -29,6 +29,7 @@ public/*
 !public/manifest.json
 !public/winml_icon.ico
 !public/about.html
+!public/about.css
 
 npm-debug.log*
 yarn-debug.log*

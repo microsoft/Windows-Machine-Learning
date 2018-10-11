@@ -30,8 +30,8 @@ Required command-Line arguments:
 -GPUMinPower             : Will create a session with GPU with the least power.
 -CPUBoundInput           : Will bind the input to the CPU.
 -GPUBoundInput           : Will bind the input to the GPU.
--BGR                     : Will load the input as an RGB image.
--RGB                     : Will load the input as a BGR image.
+-BGR                     : Will load the input as a BGR image.
+-RGB                     : Will load the input as an RGB image.
 -tensor                  : Will load the input as a tensor.
 -input <image/CSV path>  : Will bind image/data from CSV to model.
 -output <CSV path>       : Path to the CSV where the perf results will be written.

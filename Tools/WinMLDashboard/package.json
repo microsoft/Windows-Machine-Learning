@@ -1,6 +1,6 @@
 {
   "name": "WinMLDashboard",
-  "version": "1.0.0",
+  "version": "0.5.1",
   "description": "Dashboard for development in ONNX using Windows ML",
   "author": "Microsoft Corporation",
   "homepage": ".",

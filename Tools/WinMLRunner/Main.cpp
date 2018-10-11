@@ -369,7 +369,7 @@ std::vector<DeviceType> FetchDeviceTypes(const CommandLineArgs& args)
         deviceTypes.push_back(DeviceType::DefaultGPU);
     }
 
-    if (args.UseGPUHighPerformance())
+    if (args.UseGPUMaxPerformance())
     {
         deviceTypes.push_back(DeviceType::HighPerfGPU);
     }

@@ -7,7 +7,7 @@ public:
     CommandLineArgs();
     void PrintUsage();
 
-    bool UseGPUHighPerformance() const { return m_useGPUHighPerformance; }
+    bool UseGPUMaxPerformance() const { return m_useGPUMaxPerformance; }
     bool UseGPUMinPower() const { return m_useGPUMinPower; }
     bool UseBGR() const { return m_useBGR; }
     bool UseGPUBoundInput() const { return m_useGPUBoundInput; }
@@ -38,13 +38,13 @@ public:
 
     bool UseGPU() const
     {
-        return m_useGPU || (!m_useCPU && !m_useGPUHighPerformance && !m_useGPUMinPower);
+        return m_useGPU || (!m_useCPU && !m_useGPUMaxPerformance && !m_useGPUMinPower);
     }
 
     bool UseCPU() const
     {
         // CPU is the default device if no flag is specified
-        return m_useCPU || (!m_useGPU && !m_useGPUHighPerformance && !m_useGPUMinPower);
+        return m_useCPU || (!m_useGPU && !m_useGPUMaxPerformance && !m_useGPUMinPower);
     }
 
     bool UseCPUBoundInput() const
@@ -59,7 +59,7 @@ private:
     bool m_perfCapture = false;
     bool m_useCPU = false;
     bool m_useGPU = false;
-    bool m_useGPUHighPerformance = false;
+    bool m_useGPUMaxPerformance = false;
     bool m_useGPUMinPower = false;
     bool m_useRGB = false;
     bool m_useBGR = false;

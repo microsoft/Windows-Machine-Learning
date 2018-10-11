@@ -296,6 +296,8 @@ public:
         double totalEvalTime = std::accumulate(m_clockEvalTimes.begin(), m_clockEvalTimes.end(), 0.0);
         double clockEvalTime = totalEvalTime / (double)numIterations;
 
+        double totalTime = (isnan(loadTime) ? 0 : loadTime) + bindTime + evalTime;
+
         if (!m_csvFileName.empty())
         {
             // Check if header exists
@@ -345,10 +347,10 @@ public:
                  << (isnan(loadTime) ? "N/A" : std::to_string(loadTime)) << ","
                  << bindTime << ","
                  << evalTime << ","
-                 << loadTime + bindTime + evalTime << ","
-                 << (isnan(evalMemoryUsage) ? "N/A" : std::to_string(evalMemoryUsage)) << ","
-                 << (isnan(gpuEvalDedicatedMemoryUsage) ? "N/A" : std::to_string(gpuEvalDedicatedMemoryUsage)) << ","
-                 << (isnan(gpuEvalSharedMemoryUsage) ? "N/A" : std::to_string(gpuEvalSharedMemoryUsage)) << ","
+                 << totalTime << ","
+                 << evalMemoryUsage << ","
+                 << gpuEvalDedicatedMemoryUsage << ","
+                 << gpuEvalSharedMemoryUsage << ","
                  << m_clockLoadTime << ","
                  << clockBindTime << ","
                  << clockEvalTime << ","

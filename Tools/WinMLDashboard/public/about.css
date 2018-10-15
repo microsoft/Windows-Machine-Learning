@@ -1,0 +1,14 @@
+.logo {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    width: 70px;
+    height: 70px;
+}
+.description {
+    padding-left: 50px;
+  }
+
+.title {
+    text-align: center
+}

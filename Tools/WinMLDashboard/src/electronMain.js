@@ -1,9 +1,10 @@
-const {app, protocol, BrowserWindow} = require('electron');
+const {app, ipcMain, protocol, BrowserWindow} = require('electron');
 const fs = require('fs');
 const path = require('path');
 const url = require('url');
 
 let mainWindow;
+let aboutWindow;
 
 function interceptFileProtocol() {
     // Intercept the file protocol so that references to folders return its index.html file
@@ -88,3 +89,32 @@ app.on('activate', () => {
         createWindow();
     }
 });
+
+ipcMain.on('show-about-window', () => {
+    
+    openAboutWindow()
+})
+
+function openAboutWindow() {
+  if (aboutWindow) {
+    aboutWindow.focus()
+    return
+  }
+
+  aboutWindow = new BrowserWindow({
+    height: 420,
+    icon: path.join(__dirname, '../public/winml_icon.ico'),
+    title: "About",
+    width: 420,
+  })
+
+  aboutWindow.setFullScreenable(false);
+  aboutWindow.setMinimizable(false);
+  aboutWindow.setResizable(false);
+  aboutWindow.setMenu(null);
+  aboutWindow.loadURL('file://' + __dirname + '/../public/about.html');
+
+  aboutWindow.on('closed', () => {
+    aboutWindow = null
+  })
+}

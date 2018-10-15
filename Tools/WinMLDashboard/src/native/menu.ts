@@ -1,7 +1,4 @@
-/**
- * Provide native menus and shortcuts. In the web, installs shortcuts only.
- */
-
+import { ipcRenderer } from 'electron';
 import { setFile, setSaveFileName } from "../datastore/actionCreators";
 import { ModelProtoSingleton } from "../datastore/proto/modelProto";
 import store from "../datastore/store";
@@ -47,9 +44,15 @@ export function createMenu(electron: typeof Electron) {
                 {
                     label: 'Third Party Notice',
                     click() {
-                        const tpnUrl = 'https://github.com/Microsoft/Windows-Machine-Learning/blob/user/xianz/winmldb/Tools/WinMLDashboard/ThirdPartyNotice.txt';
+                        const tpnUrl = 'https://github.com/Microsoft/Windows-Machine-Learning/blob/RS5/Tools/WinMLDashboard/ThirdPartyNotice.txt';
                         require('electron').shell.openExternal(tpnUrl);
                     },
+                },
+                {
+                    label: "About",
+                    click() {
+                        ipcRenderer.send('show-about-window')
+                      }
                 }
             ],
         }

@@ -1,8 +1,8 @@
-# Customized Tensorization Sample
+# Custom Tensorization Sample
 
 ## Overview
 
-This sample tells how to tensorize the input image by only using WinML public APIs on both CPU and GPU.
+This sample tells how to tensorize the input image by using WinML public APIs on both CPU and GPU.
 
 ## Background
 

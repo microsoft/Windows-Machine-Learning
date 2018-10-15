@@ -34,7 +34,7 @@ namespace TensorizationHelper
         val = drive;
         val += dir;
         int32_t i = val.find(filename);
-        val = val.substr(0, i + wcslen(filename)) + L"\\";
+        val = val.substr(0, i + wcslen(filename)) + L"\\" + filename + L"\\";
         return val;
     }
 

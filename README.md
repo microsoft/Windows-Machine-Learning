@@ -23,7 +23,7 @@ These generic examples show how to use various models and input feeds with Windo
 
 - **[FNSCandyStyleTransfer\UWP\cs](https://github.com/Microsoft/Windows-Machine-Learning/tree/master/Samples/FNSCandyStyleTransfer)**: a UWP C# app that uses the FNS-Candy style transfer model to make a cool image.
 - **[SqueezeNetObjectDetection\UWP\cs](https://github.com/Microsoft/Windows-Machine-Learning/tree/master/Samples/SqueezeNetObjectDetection/UWP/cs)**: a UWP C# app that uses the SqueezeNet model to detect the predominant object in an image.
-- **[SqueezeNetObjectDetection\UWP\js](https://github.com/Microsoft/Windows-Machine-Learning/tree/master/Samples/SqueezeNetObjectDetection/UWP/js)**: a UWP Javascript app that uses SqueezeNet model to detect the predominent object in an image. 
+- **[SqueezeNetObjectDetection\UWP\js](https://github.com/Microsoft/Windows-Machine-Learning/tree/master/Samples/SqueezeNetObjectDetection/UWP/js)**: a UWP Javascript app that uses SqueezeNet model to detect the predominant object in an image. 
 - **[SqueezeNetObjectDetection\Desktop\cpp](https://github.com/Microsoft/Windows-Machine-Learning/tree/master/Samples/SqueezeNetObjectDetection/Desktop/cpp)**: a classic desktop C++/WinRT app that uses the SqueezeNet model to detect the predominant object in an image.
 - **[MNIST\UWP\cs](https://github.com/Microsoft/Windows-Machine-Learning/tree/master/Samples/MNIST/Tutorial/cs)**: a UWP C# app that uses the MNIST model to detect numberic characters.
 - **[MNIST\UWP\cppcx](https://github.com/Microsoft/Windows-Machine-Learning/tree/master/Samples/MNIST/UWP)**: a UWP C++/CX app that uses the MNIST model to detect numberic characters.
@@ -44,7 +44,7 @@ In Visual Studio 2017, the platform target defaults to ARM, so be sure to change
 Reminder: If you unzip individual samples, they will not build due to references to other portions of the ZIP file that were not unzipped. You must unzip the entire archive if you intend to build the samples.
 
 ## Feedback
-- For issues file a bug on [GitHub Issues](https://github.com/Microsoft/Windows-Machine-Learning/issues).
+- For issues, file a bug on [GitHub Issues](https://github.com/Microsoft/Windows-Machine-Learning/issues).
 - Ask questions on [Stack Overflow](https://stackoverflow.com/questions/tagged/windows-machine-learning).
 - Vote for popular feature requests on [Windows Developer Feedback](https://wpdev.uservoice.com/forums/110705-universal-windows-platform?category_id=341035) or include your own request.
 

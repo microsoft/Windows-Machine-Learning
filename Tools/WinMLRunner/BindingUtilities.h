@@ -1,5 +1,6 @@
 #pragma once
 #include <random>
+#include <time.h>
 #include "Common.h"
 #include "ModelBinding.h"
 #include "CommandLineArgs.h"
@@ -9,8 +10,8 @@ using namespace Windows::Storage;
 using namespace winrt::Windows::AI::MachineLearning;
 using namespace winrt::Windows::Foundation;
 using namespace winrt::Windows::Foundation::Collections;
-    using namespace winrt::Windows::Graphics::DirectX;
-    using namespace winrt::Windows::Graphics::Imaging;
+using namespace winrt::Windows::Graphics::DirectX;
+using namespace winrt::Windows::Graphics::Imaging;
 
 namespace BindingUtilities
 {
@@ -35,7 +36,8 @@ namespace BindingUtilities
 
         // Generate random values for the image
         std::vector<uint8_t> data(totalByteSize);
-        std::independent_bits_engine<std::default_random_engine, CHAR_BIT, unsigned int> randomBitsEngine;
+        static std::independent_bits_engine<std::default_random_engine, CHAR_BIT, unsigned int> randomBitsEngine;
+        randomBitsEngine.seed(time(0));
         std::generate(data.begin(), data.end(), randomBitsEngine);
 
         // Write the values to a buffer

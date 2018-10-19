@@ -37,7 +37,7 @@ namespace BindingUtilities
         // Generate random values for the image
         std::vector<uint8_t> data(totalByteSize);
         static std::independent_bits_engine<std::default_random_engine, CHAR_BIT, unsigned int> randomBitsEngine;
-        randomBitsEngine.seed(time(0));
+        randomBitsEngine.seed(static_cast<unsigned int>(time(nullptr)));
         std::generate(data.begin(), data.end(), randomBitsEngine);
 
         // Write the values to a buffer

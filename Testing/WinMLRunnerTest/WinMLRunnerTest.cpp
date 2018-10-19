@@ -77,7 +77,7 @@ namespace WinMLRunnerTest
             std::string mkFolderCommand = "mkdir " + std::string(INPUT_FOLDER_PATH.begin(), INPUT_FOLDER_PATH.end());
             system(mkFolderCommand.c_str());
 
-            std::vector<std::string> models = { "SqueezeNet.onnx", "Add_ImageNet224.onnx" };
+            std::vector<std::string> models = { "SqueezeNet.onnx", "keras_Add_ImageNet_small.onnx" };
 
             // Copy models from list to test_folder_input
             for (auto model : models)

@@ -281,7 +281,7 @@ public:
 
     void WritePerformanceDataToCSV(const Profiler<WINML_MODEL_TEST_PERF> &profiler, int numIterations, std::wstring model, std::string modelBinding, std::string inputBinding, std::string inputType, bool firstRunIgnored) const
     {
-        double loadTime = profiler[LOAD_MODEL].GetMax(CounterType::TIMER);
+        double loadTime = profiler[LOAD_MODEL].GetAverage(CounterType::TIMER);
         double bindTime = profiler[BIND_VALUE].GetAverage(CounterType::TIMER);
         double evalTime = profiler[EVAL_MODEL].GetAverage(CounterType::TIMER);
         double evalMemoryUsage = profiler[EVAL_MODEL].GetAverage(CounterType::WORKING_SET_USAGE);

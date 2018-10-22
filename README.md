@@ -1,7 +1,7 @@
 | Sample/Tool | Status |
 |---------|--------------|
-| All Samples | [![Build status](https://mscodehub.visualstudio.com/DefaultCollection/WindowsAI/_apis/build/status/winml/WinML%20Dashboard%20CI%20Build)](https://mscodehub.visualstudio.com/DefaultCollection/WindowsAI/_build/latest?definitionId=601) |
-| WinmlRunner | [![Build status](https://mscodehub.visualstudio.com/DefaultCollection/WindowsAI/_apis/build/status/winml/WinML%20Dashboard%20CI%20Build)](https://mscodehub.visualstudio.com/DefaultCollection/WindowsAI/_build/latest?definitionId=601) |
+| All Samples | [![Build status](https://mscodehub.visualstudio.com/DefaultCollection/WindowsAI/_apis/build/status/winml/WinML%20Dashboard%20CI%20Build)](https://mscodehub.visualstudio.com/DefaultCollection/WindowsAI/_build/latest?definitionId=602) |
+| WinmlRunner | [![Build status](https://mscodehub.visualstudio.com/DefaultCollection/WindowsAI/_apis/build/status/winml/WinML%20Dashboard%20CI%20Build)](https://mscodehub.visualstudio.com/DefaultCollection/WindowsAI/_build/latest?definitionId=602) |
 
 # Windows ML
 
@@ -10,10 +10,6 @@ Welcome to the Windows ML repo! Windows ML allows you to use trained machine lea
 In this repo, you will find sample apps that demonstrate how to use Windows ML to build machine learning applications, and tools that help verify models and troubleshoot issues during development on Windows 10. 
 
 For additional information on Windows ML, including step-by-step tutorials and how-to guides, please visit the [Windows ML documentation](https://docs.microsoft.com/en-us/windows/ai/).
-
-## Pre-release APIs
-
-These samples use the [Windows.AI.MachineLearning APIs](https://docs.microsoft.com/uwp/api/windows.ai.machinelearning), a pre-released product which may be substantially modified before it’s commercially released. Microsoft makes no warranties, express or implied, with respect to the information provided here.
 
 ## Requirements
 
@@ -31,7 +27,7 @@ These generic examples show how to use various models and input feeds with Windo
 - **[SqueezeNetObjectDetection\Desktop\cpp](https://github.com/Microsoft/Windows-Machine-Learning/tree/master/Samples/SqueezeNetObjectDetection/Desktop/cpp)**: a classic desktop C++/WinRT app that uses the SqueezeNet model to detect the predominant object in an image.
 - **[MNIST\UWP\cs](https://github.com/Microsoft/Windows-Machine-Learning/tree/master/Samples/MNIST/Tutorial/cs)**: a UWP C# app that uses the MNIST model to detect numberic characters.
 - **[MNIST\UWP\cppcx](https://github.com/Microsoft/Windows-Machine-Learning/tree/master/Samples/MNIST/UWP)**: a UWP C++/CX app that uses the MNIST model to detect numberic characters.
-
+- **[CustomTensorization](https://github.com/Microsoft/Windows-Machine-Learning/tree/master/Samples/CustomTensorization)**: a Windows Console Application (C++/WinRT) that shows how to do custom tensorization.
 ## Developer Tools
 - **[WinMLRunner](https://github.com/Microsoft/Windows-Machine-Learning/tree/master/Tools/WinMLRunner)**: a command-line tool that can run .onnx or .pb models where the input and output variables are tensors or images. It is a very handy tool to quickly validate an ONNX model. It will attempt to load, bind, and evaluate a model and print out helpful messages. It also captures performance measurements. 
 

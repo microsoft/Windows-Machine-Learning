@@ -1,0 +1,89 @@
+resources:
+- repo: self
+queue:
+  name: Package ES CodeHub Lab E
+  demands: 
+  - Agent.Name -equals PKGESCHLABE029
+  - msbuild
+  - visualstudio
+
+#Your build pipeline references the ‘BuildPlatform’ variable, which you’ve selected to be settable at queue time. Create or edit the build pipeline for this YAML file, define the variable on the Variables tab, and then select the option to make it settable at queue time. See https://go.microsoft.com/fwlink/?linkid=865971
+
+#Your build pipeline references the ‘BuildConfiguration’ variable, which you’ve selected to be settable at queue time. Create or edit the build pipeline for this YAML file, define the variable on the Variables tab, and then select the option to make it settable at queue time. See https://go.microsoft.com/fwlink/?linkid=865971
+
+#Your build pipeline references the ‘BuildPlatform’ variable, which you’ve selected to be settable at queue time. Create or edit the build pipeline for this YAML file, define the variable on the Variables tab, and then select the option to make it settable at queue time. See https://go.microsoft.com/fwlink/?linkid=865971
+
+#Your build pipeline references the ‘BuildConfiguration’ variable, which you’ve selected to be settable at queue time. Create or edit the build pipeline for this YAML file, define the variable on the Variables tab, and then select the option to make it settable at queue time. See https://go.microsoft.com/fwlink/?linkid=865971
+
+#Your build pipeline references the ‘BuildPlatform’ variable, which you’ve selected to be settable at queue time. Create or edit the build pipeline for this YAML file, define the variable on the Variables tab, and then select the option to make it settable at queue time. See https://go.microsoft.com/fwlink/?linkid=865971
+
+#Your build pipeline references the ‘BuildConfiguration’ variable, which you’ve selected to be settable at queue time. Create or edit the build pipeline for this YAML file, define the variable on the Variables tab, and then select the option to make it settable at queue time. See https://go.microsoft.com/fwlink/?linkid=865971
+
+#Your build pipeline references the ‘BuildPlatform’ variable, which you’ve selected to be settable at queue time. Create or edit the build pipeline for this YAML file, define the variable on the Variables tab, and then select the option to make it settable at queue time. See https://go.microsoft.com/fwlink/?linkid=865971
+
+#Your build pipeline references the ‘BuildConfiguration’ variable, which you’ve selected to be settable at queue time. Create or edit the build pipeline for this YAML file, define the variable on the Variables tab, and then select the option to make it settable at queue time. See https://go.microsoft.com/fwlink/?linkid=865971
+
+#Your build pipeline references the ‘BuildPlatform’ variable, which you’ve selected to be settable at queue time. Create or edit the build pipeline for this YAML file, define the variable on the Variables tab, and then select the option to make it settable at queue time. See https://go.microsoft.com/fwlink/?linkid=865971
+
+#Your build pipeline references the ‘BuildConfiguration’ variable, which you’ve selected to be settable at queue time. Create or edit the build pipeline for this YAML file, define the variable on the Variables tab, and then select the option to make it settable at queue time. See https://go.microsoft.com/fwlink/?linkid=865971
+
+#Your build pipeline references the ‘BuildPlatform’ variable, which you’ve selected to be settable at queue time. Create or edit the build pipeline for this YAML file, define the variable on the Variables tab, and then select the option to make it settable at queue time. See https://go.microsoft.com/fwlink/?linkid=865971
+
+#Your build pipeline references the ‘BuildConfiguration’ variable, which you’ve selected to be settable at queue time. Create or edit the build pipeline for this YAML file, define the variable on the Variables tab, and then select the option to make it settable at queue time. See https://go.microsoft.com/fwlink/?linkid=865971
+
+steps:
+- task: VSBuild@1
+  displayName: 'Build FNSCandyStyleTransfer-UWP-CS'
+  inputs:
+    solution: Samples/FNSCandyStyleTransfer/UWP/CS/snapcandy.sln
+    vsVersion: 15.0
+    platform: '$(BuildPlatform)'
+    configuration: '$(BuildConfiguration)'
+    msbuildArchitecture: x64
+
+- task: VSBuild@1
+  displayName: 'Build MNIST-UWP-cppcx '
+  inputs:
+    solution: 'Samples/MNIST/UWP/cppcx/mnist_cppcx.sln'
+    vsVersion: 15.0
+    platform: '$(BuildPlatform)'
+    configuration: '$(BuildConfiguration)'
+    msbuildArchitecture: x64
+  condition: succeededOrFailed()
+
+- task: VSBuild@1
+  displayName: 'Build MNIST-UWP-cs'
+  inputs:
+    solution: 'Samples/MNIST/UWP/cs/mnist_demo.sln'
+    vsVersion: 15.0
+    platform: '$(BuildPlatform)'
+    configuration: '$(BuildConfiguration)'
+    msbuildArchitecture: x64
+  condition: succeededOrFailed()
+
+- task: VSBuild@1
+  displayName: 'Build MNIST-Tutorial-cs'
+  inputs:
+    solution: 'Samples/MNIST/Tutorial/cs/mnist_demo.sln'
+    vsVersion: 15.0
+    platform: '$(BuildPlatform)'
+    configuration: '$(BuildConfiguration)'
+    msbuildArchitecture: x64
+  condition: succeededOrFailed()
+
+- task: VSBuild@1
+  displayName: 'Build SqueezenetObjectDetection'
+  inputs:
+    solution: Samples/SqueezeNetObjectDetection/squeezenetobjectdetection.sln
+    vsVersion: 15.0
+    platform: '$(BuildPlatform)'
+    configuration: '$(BuildConfiguration)'
+    msbuildArchitecture: x64
+  condition: succeededOrFailed()
+
+- task: PublishBuildArtifacts@1
+  displayName: 'Publish Artifact: Samples'
+  inputs:
+    PathtoPublish: '/Samples/release/$(BuildPlatform)/$(BuildConfiguration)'
+    ArtifactName: Samples
+  enabled: false

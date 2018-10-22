@@ -1,7 +1,7 @@
 import * as actions from './actions';
 import IState from './state';
 
-export function rootReducer(state: IState, action: actions.IAction) {
+export function rootReducer(state: IState, action: any) {
     state = state || {};
     switch (action.type) {
         case actions.SET_FILE:

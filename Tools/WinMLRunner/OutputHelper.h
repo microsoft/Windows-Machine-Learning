@@ -141,8 +141,6 @@ public:
         {
             double totalTime = (isnan(loadTime) ? 0 : loadTime) + bindTime + evalTime;
 
-            std::cout << std::endl;
-
             printf("Results (device = %s, numIterations = %d, inputBinding = %s, inputDataType = %s):\n",
                 TypeHelper::Stringify(deviceType).c_str(),
                 numIterations,
@@ -150,19 +148,19 @@ public:
                 TypeHelper::Stringify(inputDataType).c_str()
             );
 
-            std::cout << "  Load: " << (isnan(loadTime) ? "N/A" : std::to_string(loadTime) + "ms") << std::endl;
-            std::cout << "  Bind: " << bindTime << std::endl;
-            std::cout << "  Evaluate: " << evalTime << std::endl;
-            std::cout << "  Total Time: " << totalTime << std::endl;
-            std::cout << "  Wall-Clock Load: " << m_clockLoadTime << std::endl;
-            std::cout << "  Wall-Clock Bind: " << clockBindTime << std::endl;
-            std::cout << "  Wall-Clock Evaluate: " << clockEvalTime << std::endl;
-            std::cout << "  Total Wall-Clock Time: " << (m_clockLoadTime + clockBindTime + clockEvalTime) << std::endl;
+            std::cout << "  Load: " << (isnan(loadTime) ? "N/A" : std::to_string(loadTime) + " ms") << std::endl;
+            std::cout << "  Bind: " << bindTime << " ms" << std::endl;
+            std::cout << "  Evaluate: " << evalTime << " ms" << std::endl;
+            std::cout << "  Total Time: " << totalTime << " ms" << std::endl;
+            std::cout << "  Wall-Clock Load: " << m_clockLoadTime << " ms" << std::endl;
+            std::cout << "  Wall-Clock Bind: " << clockBindTime << " ms" << std::endl;
+            std::cout << "  Wall-Clock Evaluate: " << clockEvalTime << " ms" << std::endl;
+            std::cout << "  Total Wall-Clock Time: " << (m_clockLoadTime + clockBindTime + clockEvalTime) << " ms" << std::endl;
             std::cout << "  Working Set Memory usage (evaluate): " << gpuEvalDedicatedMemoryUsage << " MB" << std::endl;
             std::cout << "  Dedicated Memory Usage (evaluate): " << gpuEvalDedicatedMemoryUsage << " MB" << std::endl;
             std::cout << "  Shared Memory Usage (evaluate): " << gpuEvalSharedMemoryUsage << " MB" << std::endl;
 
-            std::cout << std::endl << std::endl;
+            std::cout << std::endl << std::endl << std::endl;
         }
     }
 
@@ -283,7 +281,7 @@ public:
 
     void WritePerformanceDataToCSV(const Profiler<WINML_MODEL_TEST_PERF> &profiler, int numIterations, std::wstring model, std::string modelBinding, std::string inputBinding, std::string inputType, bool firstRunIgnored) const
     {
-        double loadTime = profiler[LOAD_MODEL].GetAverage(CounterType::TIMER);
+        double loadTime = profiler[LOAD_MODEL].GetMax(CounterType::TIMER);
         double bindTime = profiler[BIND_VALUE].GetAverage(CounterType::TIMER);
         double evalTime = profiler[EVAL_MODEL].GetAverage(CounterType::TIMER);
         double evalMemoryUsage = profiler[EVAL_MODEL].GetAverage(CounterType::WORKING_SET_USAGE);

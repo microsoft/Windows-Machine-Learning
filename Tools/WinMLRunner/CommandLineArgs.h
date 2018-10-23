@@ -9,6 +9,7 @@ public:
 
     bool UseGPUHighPerformance() const { return m_useGPUHighPerformance; }
     bool UseGPUMinPower() const { return m_useGPUMinPower; }
+    bool CreateDeviceOnClient() const { return m_createDeviceOnClient; }
     bool UseBGR() const { return m_useBGR; }
     bool UseGPUBoundInput() const { return m_useGPUBoundInput; }
     bool IgnoreFirstRun() const { return m_ignoreFirstRun; }
@@ -61,6 +62,7 @@ private:
     bool m_useGPU = false;
     bool m_useGPUHighPerformance = false;
     bool m_useGPUMinPower = false;
+    bool m_createDeviceOnClient = false;
     bool m_useRGB = false;
     bool m_useBGR = false;
     bool m_useTensor = false;

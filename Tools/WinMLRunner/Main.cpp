@@ -4,14 +4,17 @@
 #include "BindingUtilities.h"
 #include "CommandLineArgs.h"
 #include <filesystem>
+#include <d3d11.h>
+#include <Windows.Graphics.DirectX.Direct3D11.interop.h>
 
 Profiler<WINML_MODEL_TEST_PERF> g_Profiler;
+
+using namespace winrt::Windows::Graphics::DirectX::Direct3D11;
 
 LearningModel LoadModel(const std::wstring path, bool capturePerf, bool silent, OutputHelper& output)
 {
     Timer timer;
     LearningModel model = nullptr;
-
     output.PrintLoadingInfo(path);
 
     try
@@ -63,7 +66,12 @@ std::vector<std::wstring> GetModelsInDirectory(CommandLineArgs& args, OutputHelp
     return modelPaths;
 }
 
-std::vector<ILearningModelFeatureValue> GenerateInputFeatures(const LearningModel& model, const CommandLineArgs& args, InputBindingType inputBindingType, InputDataType inputDataType)
+std::vector<ILearningModelFeatureValue> GenerateInputFeatures(
+    const LearningModel& model,
+    const CommandLineArgs& args,
+    InputBindingType inputBindingType,
+    InputDataType inputDataType,
+    const IDirect3DDevice winrtDevice)
 {
     std::vector<ILearningModelFeatureValue> inputFeatures;
 
@@ -80,7 +88,7 @@ std::vector<ILearningModelFeatureValue> GenerateInputFeatures(const LearningMode
         }
         else
         {
-            auto imageFeature = BindingUtilities::CreateBindableImage(description, args.ImagePath(), inputBindingType, inputDataType);
+            auto imageFeature = BindingUtilities::CreateBindableImage(description, args.ImagePath(), inputBindingType, inputDataType, winrtDevice);
             inputFeatures.push_back(imageFeature);
         }
     }
@@ -198,11 +206,48 @@ HRESULT EvaluateModel(
     {
         return hresult_invalid_argument().code();
     }
+
     LearningModelSession session = nullptr;
+    IDirect3DDevice winrtDevice = nullptr;
 
     try
     {
-        session = LearningModelSession(model, TypeHelper::GetWinmlDeviceKind(deviceType));
+        if (args.CreateDeviceOnClient())
+        {
+            // Creating the device on the client and using it to create the video frame and initialize the session makes sure that everything is on
+            // the same device. This usually avoids an expensive cross-device and cross-videoframe copy via the VideoFrame pipeline.
+            com_ptr<ID3D11Device> d3d11Device;
+            HRESULT hr = D3D11CreateDevice(nullptr, D3D_DRIVER_TYPE_HARDWARE, nullptr, D3D11_CREATE_DEVICE_BGRA_SUPPORT, nullptr, 0, D3D11_SDK_VERSION, d3d11Device.put(), nullptr, nullptr);
+
+            if (FAILED(hr))
+            {
+                throw hresult(hr);
+            }
+
+            com_ptr<IDXGIDevice> dxgiDevice;
+            hr = d3d11Device->QueryInterface(IID_PPV_ARGS(dxgiDevice.put()));
+
+            if (FAILED(hr))
+            {
+                throw hresult(hr);
+            }
+
+            com_ptr<IInspectable> inspectableDevice;
+            hr = CreateDirect3D11DeviceFromDXGIDevice(dxgiDevice.get(), inspectableDevice.put());
+
+            if (FAILED(hr))
+            {
+                throw hresult(hr);
+            }
+
+            winrtDevice = inspectableDevice.as<IDirect3DDevice>();
+            LearningModelDevice learningModelDevice = LearningModelDevice::CreateFromDirect3D11Device(winrtDevice);
+            session = LearningModelSession(model, learningModelDevice);
+        }
+        else
+        {
+            session = LearningModelSession(model, TypeHelper::GetWinmlDeviceKind(deviceType));
+        }
     }
     catch (hresult_error hr)
     {
@@ -233,7 +278,7 @@ HRESULT EvaluateModel(
 
         output.PrintBindingInfo(i + 1, deviceType, inputBindingType, inputDataType);
 
-        std::vector<ILearningModelFeatureValue> inputFeatures = GenerateInputFeatures(model, args, inputBindingType, inputDataType);
+        std::vector<ILearningModelFeatureValue> inputFeatures = GenerateInputFeatures(model, args, inputBindingType, inputDataType, winrtDevice);
         HRESULT bindInputResult = BindInputFeatures(model, context, inputFeatures, args, output, captureIterationPerf);
 
         if (FAILED(bindInputResult))

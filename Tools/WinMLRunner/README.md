@@ -28,7 +28,8 @@ Required command-Line arguments:
 -GPU                     : Will create a session on the GPU.
 -GPUHighPerformance      : Will create a session with the most powerful GPU device available.
 -GPUMinPower             : Will create a session with GPU with the least power.
--CreateDeviceOnClient    : Will create the device on the client and explicitly pass it to WinML (ignored when the device is not a GPU). Turning this on will usually result in faster GPU runs since we avoid a cross-device copy by creating the video frame on the same device that DML uses to bind inputs.
+-CreateDeviceOnClient    : Will create the device on the client and explicitly pass it to WinML via the API. GPU runs using this flag will usually be faster than -CreateDeviceInWinML since we avoid a cross-device copy by creating the video frame on the same device that DML uses to bind inputs.
+-CreateDeviceInWinML     : Will create the device inside WinML. GPU runs using this flag will usually be slower than -CreateDeviceOnClient since we have to copy the video frame to a different device.
 -CPUBoundInput           : Will bind the input to the CPU.
 -GPUBoundInput           : Will bind the input to the GPU.
 -BGR                     : Will load the input as a BGR image.

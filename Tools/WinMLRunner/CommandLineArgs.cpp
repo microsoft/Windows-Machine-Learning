@@ -15,7 +15,8 @@ void CommandLineArgs::PrintUsage() {
     std::cout << "  -GPU : run model on default GPU" << std::endl;
     std::cout << "  -GPUHighPerformance : run model on GPU with highest performance" << std::endl;
     std::cout << "  -GPUMinPower : run model on GPU with the least power" << std::endl;
-    std::cout << "  -CreateDeviceOnClient : create the device on the client and pass it to WinML (ignored when the device is not a GPU)" << std::endl;
+    std::cout << "  -CreateDeviceOnClient : create the device on the client and pass it to WinML" << std::endl;
+    std::cout << "  -CreateDeviceInWinML : create the device inside WinML" << std::endl;
     std::cout << "  -CPUBoundInput : bind the input to the CPU" << std::endl;
     std::cout << "  -GPUBoundInput : bind the input to the GPU" << std::endl;
     std::cout << "  -RGB : load the input as an RGB image" << std::endl;
@@ -56,6 +57,10 @@ CommandLineArgs::CommandLineArgs()
         else if ((_wcsicmp(args[i], L"-CreateDeviceOnClient") == 0))
         {
             m_createDeviceOnClient = true;
+        }
+        else if ((_wcsicmp(args[i], L"-CreateDeviceInWinML") == 0))
+        {
+            m_createDeviceInWinML = true;
         }
         else if ((_wcsicmp(args[i], L"-iterations") == 0) && (i + 1 < numArgs))
         {

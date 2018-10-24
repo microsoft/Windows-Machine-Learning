@@ -9,13 +9,13 @@ public:
 
     bool UseGPUHighPerformance() const { return m_useGPUHighPerformance; }
     bool UseGPUMinPower() const { return m_useGPUMinPower; }
-    bool CreateDeviceOnClient() const { return m_createDeviceOnClient; }
     bool UseBGR() const { return m_useBGR; }
     bool UseGPUBoundInput() const { return m_useGPUBoundInput; }
     bool IgnoreFirstRun() const { return m_ignoreFirstRun; }
     bool PerfCapture() const { return m_perfCapture; }
     bool EnableDebugOutput() const { return m_debug; }
     bool Silent() const { return m_silent; }
+    bool CreateDeviceInWinML() const { return m_createDeviceInWinML; }
    
     const std::wstring& ImagePath() const { return m_imagePath; }
     const std::wstring& CsvPath() const { return m_csvData; }
@@ -54,6 +54,12 @@ public:
         return m_useCPUBoundInput || !m_useGPUBoundInput;
     }
 
+    bool CreateDeviceOnClient() const
+    {
+        // By Default we create the device on the client if no flag is specified
+        return m_createDeviceOnClient || !m_createDeviceInWinML;
+    }
+
     uint32_t NumIterations() const { return m_numIterations; }
 
 private:
@@ -63,6 +69,7 @@ private:
     bool m_useGPUHighPerformance = false;
     bool m_useGPUMinPower = false;
     bool m_createDeviceOnClient = false;
+    bool m_createDeviceInWinML = false;
     bool m_useRGB = false;
     bool m_useBGR = false;
     bool m_useTensor = false;

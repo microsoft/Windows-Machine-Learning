@@ -9,6 +9,7 @@ enum class InputBindingType { CPU, GPU };
 enum class InputDataType { Tensor, ImageRGB, ImageBGR };
 enum class InputSourceType { ImageFile, CSVFile, GeneratedData };
 enum class DeviceType { CPU, DefaultGPU, MinPowerGPU, HighPerfGPU };
+enum class DeviceCreationLocation { WinML, ClientCode };
 
 class TypeHelper
 {
@@ -59,6 +60,17 @@ public:
         }
 
         throw "No name found for this DeviceType.";
+    }
+
+    static std::string Stringify(DeviceCreationLocation deviceCreationLocation)
+    {
+        switch (deviceCreationLocation)
+        {
+            case DeviceCreationLocation::ClientCode: return "Client Code";
+            case DeviceCreationLocation::WinML: return "WinML";
+        }
+
+        throw "No name found for this DeviceCreationLocation.";
     }
 
     static LearningModelDeviceKind GetWinmlDeviceKind(DeviceType deviceType)

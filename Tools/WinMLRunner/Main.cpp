@@ -199,7 +199,8 @@ HRESULT EvaluateModel(
     OutputHelper& output,
     DeviceType deviceType,
     InputBindingType inputBindingType,
-    InputDataType inputDataType
+    InputDataType inputDataType,
+    DeviceCreationLocation deviceCreationLocation
 )
 {
     if (model == nullptr)
@@ -212,7 +213,7 @@ HRESULT EvaluateModel(
 
     try
     {
-        if (args.CreateDeviceOnClient())
+        if (deviceCreationLocation == DeviceCreationLocation::ClientCode)
         {
             // Creating the device on the client and using it to create the video frame and initialize the session makes sure that everything is on
             // the same device. This usually avoids an expensive cross-device and cross-videoframe copy via the VideoFrame pipeline.
@@ -276,7 +277,7 @@ HRESULT EvaluateModel(
     {
         bool captureIterationPerf = args.PerfCapture() && (!args.IgnoreFirstRun() || i > 0);
 
-        output.PrintBindingInfo(i + 1, deviceType, inputBindingType, inputDataType);
+        output.PrintBindingInfo(i + 1, deviceType, inputBindingType, inputDataType, deviceCreationLocation);
 
         std::vector<ILearningModelFeatureValue> inputFeatures = GenerateInputFeatures(model, args, inputBindingType, inputDataType, winrtDevice);
         HRESULT bindInputResult = BindInputFeatures(model, context, inputFeatures, args, output, captureIterationPerf);
@@ -286,7 +287,7 @@ HRESULT EvaluateModel(
             return bindInputResult;
         }
 
-        output.PrintEvaluatingInfo(i + 1, deviceType, inputBindingType, inputDataType);
+        output.PrintEvaluatingInfo(i + 1, deviceType, inputBindingType, inputDataType, deviceCreationLocation);
 
         HRESULT evalResult = EvaluateModel(model, context, session, isGarbageData, args, output, captureIterationPerf);
 
@@ -306,6 +307,7 @@ HRESULT EvaluateModels(
     const std::vector<DeviceType>& deviceTypes,
     const std::vector<InputBindingType>& inputBindingTypes,
     const std::vector<InputDataType>& inputDataTypes,
+    const std::vector<DeviceCreationLocation> deviceCreationLocations,
     const CommandLineArgs& args,
     OutputHelper& output
 )
@@ -341,32 +343,44 @@ HRESULT EvaluateModels(
             {
                 for (auto inputDataType : inputDataTypes)
                 {
-                    if (args.PerfCapture())
+                    for (auto deviceCreationLocation : deviceCreationLocations)
                     {
-                        output.Reset();
-                        g_Profiler.Reset();
-                    }
-
-                    if (inputDataType != InputDataType::Tensor)
-                    {
-                        // Currently GPU binding only work with 4D tensors and RGBA/BGRA images
-                        if (tensorDescriptor.Shape().Size() != 4 || tensorDescriptor.Shape().GetAt(1) != 3)
+                        if (args.PerfCapture())
                         {
-                            continue;
+                            output.Reset();
+                            g_Profiler.Reset();
                         }
-                    }
 
-                    HRESULT evalHResult = EvaluateModel(model, args, output, deviceType, inputBindingType, inputDataType);
+                        if (inputDataType != InputDataType::Tensor)
+                        {
+                            // Currently GPU binding only work with 4D tensors and RGBA/BGRA images
+                            if (tensorDescriptor.Shape().Size() != 4 || tensorDescriptor.Shape().GetAt(1) != 3)
+                            {
+                                continue;
+                            }
+                        }
 
-                    if (FAILED(evalHResult))
-                    {
-                        return evalHResult;
-                    }
+                        HRESULT evalHResult = EvaluateModel(model, args, output, deviceType, inputBindingType, inputDataType, deviceCreationLocation);
 
-                    if (args.PerfCapture())
-                    {
-                        output.PrintResults(g_Profiler, args.NumIterations(), deviceType, inputBindingType, inputDataType);
-                        output.WritePerformanceDataToCSV(g_Profiler, args.NumIterations(), path, TypeHelper::Stringify(deviceType), TypeHelper::Stringify(inputDataType), TypeHelper::Stringify(inputBindingType), args.IgnoreFirstRun());
+                        if (FAILED(evalHResult))
+                        {
+                            return evalHResult;
+                        }
+
+                        if (args.PerfCapture())
+                        {
+                            output.PrintResults(g_Profiler, args.NumIterations(), deviceType, inputBindingType, inputDataType, deviceCreationLocation);
+                            output.WritePerformanceDataToCSV(
+                                g_Profiler,
+                                args.NumIterations(),
+                                path,
+                                TypeHelper::Stringify(deviceType),
+                                TypeHelper::Stringify(inputDataType),
+                                TypeHelper::Stringify(inputBindingType),
+                                TypeHelper::Stringify(deviceCreationLocation),
+                                args.IgnoreFirstRun()
+                            );
+                        }
                     }
                 }
             }
@@ -444,6 +458,23 @@ std::vector<InputBindingType> FetchInputBindingTypes(const CommandLineArgs& args
     return inputBindingTypes;
 }
 
+std::vector<DeviceCreationLocation> FetchDeviceCreationLocations(const CommandLineArgs& args)
+{
+    std::vector<DeviceCreationLocation> deviceCreationLocations;
+
+    if (args.CreateDeviceInWinML())
+    {
+        deviceCreationLocations.push_back(DeviceCreationLocation::WinML);
+    }
+
+    if (args.CreateDeviceOnClient())
+    {
+        deviceCreationLocations.push_back(DeviceCreationLocation::ClientCode);
+    }
+
+    return deviceCreationLocations;
+}
+
 int main(int argc, char** argv)
 {
     // Initialize COM in a multi-threaded environment.
@@ -464,15 +495,16 @@ int main(int argc, char** argv)
     {
         output.SetDefaultCSVFileName();
     }
-    
-    std::vector<DeviceType> deviceTypes = FetchDeviceTypes(args);
-    std::vector<InputBindingType> inputBindingTypes = FetchInputBindingTypes(args);
-    std::vector<InputDataType> inputDataTypes = FetchInputDataTypes(args);
-    std::vector<std::wstring> modelPaths = args.ModelPath().empty() ? GetModelsInDirectory(args, &output) : std::vector<std::wstring>(1, args.ModelPath());
 
     if (!args.ModelPath().empty() || !args.FolderPath().empty())
     {
-        return EvaluateModels(modelPaths, deviceTypes, inputBindingTypes, inputDataTypes, args, output);
+        std::vector<DeviceType> deviceTypes = FetchDeviceTypes(args);
+        std::vector<InputBindingType> inputBindingTypes = FetchInputBindingTypes(args);
+        std::vector<InputDataType> inputDataTypes = FetchInputDataTypes(args);
+        std::vector<DeviceCreationLocation> deviceCreationLocations = FetchDeviceCreationLocations(args);
+        std::vector<std::wstring> modelPaths = args.ModelPath().empty() ? GetModelsInDirectory(args, &output) : std::vector<std::wstring>(1, args.ModelPath());
+
+        return EvaluateModels(modelPaths, deviceTypes, inputBindingTypes, inputDataTypes, deviceCreationLocations, args, output);
     }
 
     return 0;

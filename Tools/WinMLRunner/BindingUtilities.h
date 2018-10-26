@@ -37,7 +37,7 @@ namespace BindingUtilities
         // We have to create RGBA8 or BGRA8 images, so we need 4 channels
         uint32_t totalByteSize = static_cast<uint32_t>(width) * static_cast<uint32_t>(height) * 4;
 
-        // Generate random values for the image
+        // Generate values for the image based on a seed
         std::vector<uint8_t> data(totalByteSize);
         randomBitsEngine.seed(seed++);
         std::generate(data.begin(), data.end(), randomBitsEngine);

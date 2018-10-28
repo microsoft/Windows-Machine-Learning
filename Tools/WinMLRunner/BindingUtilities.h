@@ -25,7 +25,7 @@ namespace BindingUtilities
         // We assume NCHW and NCDHW
         uint64_t width = imageDescriptor.Shape().GetAt(imageDescriptor.Shape().Size() - 1);
         uint64_t height = imageDescriptor.Shape().GetAt(imageDescriptor.Shape().Size() - 2);
-        uint64_t channelCount = inputDataType == InputDataType::ImageGRAY ? 1 : 4;
+        uint32_t channelCount = inputDataType == InputDataType::ImageGRAY ? 1 : 4;
         uint32_t totalByteSize = static_cast<uint32_t>(width) * static_cast<uint32_t>(height) * channelCount;
 
         // Generate values for the image based on a seed

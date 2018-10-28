@@ -21,6 +21,7 @@ void CommandLineArgs::PrintUsage() {
     std::cout << "  -GPUBoundInput : bind the input to the GPU" << std::endl;
     std::cout << "  -RGB : load the input as an RGB image" << std::endl;
     std::cout << "  -BGR : load the input as a BGR image" << std::endl;
+    std::cout << "  -GRAY : load the input as a GRAY image" << std::endl;
     std::cout << "  -tensor : load the input as a tensor" << std::endl;
     std::cout << "  -perf : capture timing measurements" << std::endl;
     std::cout << "  -iterations : # times perf measurements will be run/averaged" << std::endl;
@@ -89,6 +90,10 @@ CommandLineArgs::CommandLineArgs()
         else if ((_wcsicmp(args[i], L"-BGR") == 0))
         {
             m_useBGR = true;
+        }
+        else if ((_wcsicmp(args[i], L"-GRAY") == 0))
+        {
+            m_useGRAY = true;
         }
         else if ((_wcsicmp(args[i], L"-tensor") == 0))
         {

@@ -6,7 +6,7 @@ using namespace winrt::Windows::Graphics::DirectX;
 using namespace winrt::Windows::Graphics::Imaging;
 
 enum class InputBindingType { CPU, GPU };
-enum class InputDataType { Tensor, ImageRGB, ImageBGR };
+enum class InputDataType { Tensor, ImageRGB, ImageBGR, ImageGRAY };
 enum class InputSourceType { ImageFile, CSVFile, GeneratedData };
 enum class DeviceType { CPU, DefaultGPU, MinPowerGPU, HighPerfGPU };
 enum class DeviceCreationLocation { WinML, ClientCode };
@@ -21,6 +21,7 @@ public:
             case InputDataType::Tensor: return "Tensor";
             case InputDataType::ImageRGB: return "RGB Image";
             case InputDataType::ImageBGR: return "BGR Image";
+            case InputDataType::ImageGRAY: return "GRAY Image";
         }
 
         throw "No name found for this InputDataType";
@@ -92,6 +93,7 @@ public:
         {
             case InputDataType::ImageRGB: return BitmapPixelFormat::Rgba8;
             case InputDataType::ImageBGR: return BitmapPixelFormat::Bgra8;
+            case InputDataType::ImageGRAY: return BitmapPixelFormat::Gray8;
         }
 
         throw "No BitmapPixelFormat found for this InputDataType.";
@@ -101,8 +103,9 @@ public:
     {
         switch (inputDataType)
         {
-            case InputDataType::ImageRGB: return DirectXPixelFormat::R8G8B8A8UInt;
+            case InputDataType::ImageRGB: return DirectXPixelFormat::R8G8B8A8UIntNormalized;
             case InputDataType::ImageBGR: return DirectXPixelFormat::B8G8R8A8UIntNormalized;
+            case InputDataType::ImageGRAY: return DirectXPixelFormat::R8UIntNormalized;
         }
 
         throw "No DirectXPixelFormat found for this InputDataType.";

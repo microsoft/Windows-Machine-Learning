@@ -411,6 +411,11 @@ std::vector<InputDataType> FetchInputDataTypes(const CommandLineArgs& args)
         inputDataTypes.push_back(InputDataType::ImageBGR);
     }
 
+    if (args.UseGRAY())
+    {
+        inputDataTypes.push_back(InputDataType::ImageBGR);
+    }
+
     return inputDataTypes;
 }
 

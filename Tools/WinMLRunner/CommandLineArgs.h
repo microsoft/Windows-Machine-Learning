@@ -10,6 +10,7 @@ public:
     bool UseGPUHighPerformance() const { return m_useGPUHighPerformance; }
     bool UseGPUMinPower() const { return m_useGPUMinPower; }
     bool UseBGR() const { return m_useBGR; }
+    bool UseGRAY() const { return m_useGRAY; }
     bool UseGPUBoundInput() const { return m_useGPUBoundInput; }
     bool IgnoreFirstRun() const { return m_ignoreFirstRun; }
     bool PerfCapture() const { return m_perfCapture; }
@@ -27,14 +28,14 @@ public:
 
     bool UseRGB() const
     {
-        // If an image is specified without flags, we load it as a BGR image by default
-        return m_useRGB || (!m_imagePath.empty() && !m_useBGR && !m_useTensor);
+        // If an image is specified without flags, we load it as an RGB image by default
+        return m_useRGB || (!m_imagePath.empty() && !m_useBGR && !m_useTensor && !m_useGRAY);
     }
 
     bool UseTensor() const
     {
         // Tensor input is the default input if no flag is specified
-        return m_useTensor || (!m_useBGR && !UseRGB());
+        return m_useTensor || (!m_useBGR && !m_useGRAY && !UseRGB());
     }
 
     bool UseGPU() const
@@ -72,6 +73,7 @@ private:
     bool m_createDeviceInWinML = false;
     bool m_useRGB = false;
     bool m_useBGR = false;
+    bool m_useGRAY = false;
     bool m_useTensor = false;
     bool m_useCPUBoundInput = false;
     bool m_useGPUBoundInput = false;

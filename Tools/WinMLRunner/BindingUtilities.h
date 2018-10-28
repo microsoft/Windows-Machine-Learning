@@ -25,17 +25,8 @@ namespace BindingUtilities
         // We assume NCHW and NCDHW
         uint64_t width = imageDescriptor.Shape().GetAt(imageDescriptor.Shape().Size() - 1);
         uint64_t height = imageDescriptor.Shape().GetAt(imageDescriptor.Shape().Size() - 2);
-        uint64_t channelCount = imageDescriptor.Shape().GetAt(1);
-        uint64_t batchCount = imageDescriptor.Shape().GetAt(0);
-
-        // If the batchCount is infinite, we can put as many images as we want
-        if (batchCount >= ULLONG_MAX)
-        {
-            batchCount = 3;
-        }
-
-        // We have to create RGBA8 or BGRA8 images, so we need 4 channels
-        uint32_t totalByteSize = static_cast<uint32_t>(width) * static_cast<uint32_t>(height) * 4;
+        uint64_t channelCount = inputDataType == InputDataType::ImageGRAY ? 1 : 4;
+        uint32_t totalByteSize = static_cast<uint32_t>(width) * static_cast<uint32_t>(height) * channelCount;
 
         // Generate values for the image based on a seed
         std::vector<uint8_t> data(totalByteSize);

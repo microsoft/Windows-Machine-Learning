@@ -1,10 +1,12 @@
 git+https://github.com/apple/coremltools
+winmltools==1.2.0.912
+xgboost==0.80
 h5py==2.8.0
 Keras==2.2.2
 Keras-Applications==1.0.4
 Keras-Preprocessing==1.0.2
 numpy==1.15.0
-onnx==1.2.2
+onnx==1.2.3
 onnxmltools==1.2.0.116
 protobuf==3.6.0
 PyYAML==3.13

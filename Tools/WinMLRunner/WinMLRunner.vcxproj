@@ -139,7 +139,7 @@
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
-      <AdditionalDependencies>dxgi.lib;d3d12.lib;winml.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>dxgi.lib;d3d12.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalOptions>WindowsApp.lib %(AdditionalOptions)</AdditionalOptions>
     </Link>
   </ItemDefinitionGroup>

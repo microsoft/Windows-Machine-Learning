@@ -15,6 +15,7 @@ public:
     bool PerfCapture() const { return m_perfCapture; }
     bool EnableDebugOutput() const { return m_debug; }
     bool Silent() const { return m_silent; }
+    bool CreateDeviceOnClient() const { return m_createDeviceOnClient; }
    
     const std::wstring& ImagePath() const { return m_imagePath; }
     const std::wstring& CsvPath() const { return m_csvData; }
@@ -53,6 +54,12 @@ public:
         return m_useCPUBoundInput || !m_useGPUBoundInput;
     }
 
+    bool CreateDeviceInWinML() const
+    {
+        // By Default we create the device in WinML if no flag is specified
+        return m_createDeviceInWinML || !m_createDeviceOnClient;
+    }
+
     uint32_t NumIterations() const { return m_numIterations; }
 
 private:
@@ -61,6 +68,8 @@ private:
     bool m_useGPU = false;
     bool m_useGPUHighPerformance = false;
     bool m_useGPUMinPower = false;
+    bool m_createDeviceOnClient = false;
+    bool m_createDeviceInWinML = false;
     bool m_useRGB = false;
     bool m_useBGR = false;
     bool m_useTensor = false;

@@ -296,6 +296,12 @@ HRESULT EvaluateModels(
             {
                 for (auto inputDataType : inputDataTypes)
                 {
+                    if (args.PerfCapture())
+                    {
+                        output.Reset();
+                        g_Profiler.Reset();
+                    }
+
                     if (inputDataType != InputDataType::Tensor)
                     {
                         // Currently GPU binding only work with 4D tensors and RGBA/BGRA images
@@ -316,8 +322,6 @@ HRESULT EvaluateModels(
                     {
                         output.PrintResults(g_Profiler, args.NumIterations(), deviceType, inputBindingType, inputDataType);
                         output.WritePerformanceDataToCSV(g_Profiler, args.NumIterations(), path, TypeHelper::Stringify(deviceType), TypeHelper::Stringify(inputDataType), TypeHelper::Stringify(inputBindingType), args.IgnoreFirstRun());
-                        output.Reset();
-                        g_Profiler.Reset();
                     }
                 }
             }

@@ -415,14 +415,13 @@ int main(int argc, char** argv)
     {
         output.SetDefaultCSVFileName();
     }
-    
-    std::vector<DeviceType> deviceTypes = FetchDeviceTypes(args);
-    std::vector<InputBindingType> inputBindingTypes = FetchInputBindingTypes(args);
-    std::vector<InputDataType> inputDataTypes = FetchInputDataTypes(args);
-    std::vector<std::wstring> modelPaths = args.ModelPath().empty() ? GetModelsInDirectory(args, &output) : std::vector<std::wstring>(1, args.ModelPath());
 
     if (!args.ModelPath().empty() || !args.FolderPath().empty())
     {
+        std::vector<DeviceType> deviceTypes = FetchDeviceTypes(args);
+        std::vector<InputBindingType> inputBindingTypes = FetchInputBindingTypes(args);
+        std::vector<InputDataType> inputDataTypes = FetchInputDataTypes(args);
+        std::vector<std::wstring> modelPaths = args.ModelPath().empty() ? GetModelsInDirectory(args, &output) : std::vector<std::wstring>(1, args.ModelPath());
         return EvaluateModels(modelPaths, deviceTypes, inputBindingTypes, inputDataTypes, args, output);
     }
 

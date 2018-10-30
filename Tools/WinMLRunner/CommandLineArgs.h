@@ -15,7 +15,7 @@ public:
     bool PerfCapture() const { return m_perfCapture; }
     bool EnableDebugOutput() const { return m_debug; }
     bool Silent() const { return m_silent; }
-    bool CreateDeviceInWinML() const { return m_createDeviceInWinML; }
+    bool CreateDeviceOnClient() const { return m_createDeviceOnClient; }
    
     const std::wstring& ImagePath() const { return m_imagePath; }
     const std::wstring& CsvPath() const { return m_csvData; }
@@ -54,10 +54,10 @@ public:
         return m_useCPUBoundInput || !m_useGPUBoundInput;
     }
 
-    bool CreateDeviceOnClient() const
+    bool CreateDeviceInWinML() const
     {
-        // By Default we create the device on the client if no flag is specified
-        return m_createDeviceOnClient || !m_createDeviceInWinML;
+        // By Default we create the device in WinML if no flag is specified
+        return m_createDeviceInWinML || !m_createDeviceOnClient;
     }
 
     uint32_t NumIterations() const { return m_numIterations; }

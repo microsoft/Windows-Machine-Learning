@@ -360,10 +360,9 @@ public:
         }
     }
     
-    void Reset() 
+    void ResetBindAndEvalTImes() 
     {
          m_clockEvalTime = 0;
-         m_clockLoadTime = 0;
          m_clockBindTime = 0;
 
          m_clockBindTimes.clear();

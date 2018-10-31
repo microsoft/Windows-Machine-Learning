@@ -62,6 +62,14 @@ def xgboost_converter(args):
                                 input_features=[('input', FloatTensorType([1, source_model.feature_importances_.shape[0]]))])
     save_onnx(onnx_model, args.destination)
 
+def libSVM_converter(args):
+    import svmutil
+    source_model = svmutil.svm_load_model(args.source)
+    from onnxmltools.convert.common.data_types import FloatTensorType
+    onnx_model = winmltools.convert_libsvm(source_model,
+                                input_features=[('input', FloatTensorType([1, 'None']))])
+    save_onnx(onnx_model, args.destination)
+
 def onnx_converter(args):
     onnx_model = winmltools.load_model(args.source)
     save_onnx(onnx_model, args.destination)
@@ -71,7 +79,7 @@ framework_converters = {
     'keras': keras_converter,
     'scikit-learn': scikit_learn_converter,
     'xgboost': xgboost_converter,
-    #'libsvm': libSVM_converter,
+    'libsvm': libSVM_converter,
     #'tensorflow': TensorFlow_converter
 }
 

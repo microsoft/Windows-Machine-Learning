@@ -13,7 +13,7 @@ import { setFile, setSaveFileName } from '../../datastore/actionCreators';
 import IState from '../../datastore/state';
 import { packagedFile } from '../../native/appData';
 import { fileFromPath, showNativeOpenDialog, showNativeSaveDialog } from '../../native/dialog';
-import { downloadPip, downloadPython, getLocalPython, getPythonBinaries, installVenv, pip, python } from '../../native/python';
+import { downloadPip, downloadPython, getLocalPython, installVenv, pip, python } from '../../native/python';
 import { isWeb } from '../../native/util';
 
 
@@ -133,8 +133,10 @@ class ConvertView extends React.Component<IComponentProperties, IComponentState>
     };
 
     private pythonChooser = () => {
-        const binaries = getPythonBinaries();
-        const options = binaries.map((key) => key ? { key, text: key } : { key: '__download', text: 'Download a new Python binary to be used exclusively by the WinML Dashboard' });
+        const options = [
+            { key: '__download', text: 'Download a new Python binary to be used exclusively by the WinML Dashboard' } as IChoiceGroupOption,
+            { key: '__Skip', text: 'Skip'} as IChoiceGroupOption
+        ];
         const onChange = async (ev: React.FormEvent<HTMLInputElement>, option: IChoiceGroupOption) => {
             // Clear console output
             this.setState({console: ''})
@@ -161,7 +163,6 @@ class ConvertView extends React.Component<IComponentProperties, IComponentState>
         return (
             <ChoiceGroup
                 options={options}
-                label={binaries[0] ? 'Suitable Python versions were found in the system. Pick one to be used by the converter.' : 'No suitable Python versions were found in the system.'}
                 onChange={onChange}
             />
         );

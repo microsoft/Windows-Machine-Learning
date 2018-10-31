@@ -39,7 +39,7 @@ namespace MNIST_Demo
             LoadModel();
         }
 
-        private async void LoadModel()
+        private async Task LoadModel()
         {
             //Load a machine learning model
             StorageFile modelFile = await StorageFile.GetFileFromApplicationUriAsync(new Uri($"ms-appx:///Assets/mnist.onnx"));

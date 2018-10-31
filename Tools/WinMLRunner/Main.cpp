@@ -4,14 +4,17 @@
 #include "BindingUtilities.h"
 #include "CommandLineArgs.h"
 #include <filesystem>
+#include <d3d11.h>
+#include <Windows.Graphics.DirectX.Direct3D11.interop.h>
 
 Profiler<WINML_MODEL_TEST_PERF> g_Profiler;
+
+using namespace winrt::Windows::Graphics::DirectX::Direct3D11;
 
 LearningModel LoadModel(const std::wstring path, bool capturePerf, bool silent, OutputHelper& output)
 {
     Timer timer;
     LearningModel model = nullptr;
-
     output.PrintLoadingInfo(path);
 
     try
@@ -63,7 +66,12 @@ std::vector<std::wstring> GetModelsInDirectory(CommandLineArgs& args, OutputHelp
     return modelPaths;
 }
 
-std::vector<ILearningModelFeatureValue> GenerateInputFeatures(const LearningModel& model, const CommandLineArgs& args, InputBindingType inputBindingType, InputDataType inputDataType)
+std::vector<ILearningModelFeatureValue> GenerateInputFeatures(
+    const LearningModel& model,
+    const CommandLineArgs& args,
+    InputBindingType inputBindingType,
+    InputDataType inputDataType,
+    const IDirect3DDevice winrtDevice)
 {
     std::vector<ILearningModelFeatureValue> inputFeatures;
 
@@ -80,7 +88,7 @@ std::vector<ILearningModelFeatureValue> GenerateInputFeatures(const LearningMode
         }
         else
         {
-            auto imageFeature = BindingUtilities::CreateBindableImage(description, args.ImagePath(), inputBindingType, inputDataType);
+            auto imageFeature = BindingUtilities::CreateBindableImage(description, args.ImagePath(), inputBindingType, inputDataType, winrtDevice);
             inputFeatures.push_back(imageFeature);
         }
     }
@@ -191,18 +199,56 @@ HRESULT EvaluateModel(
     OutputHelper& output,
     DeviceType deviceType,
     InputBindingType inputBindingType,
-    InputDataType inputDataType
+    InputDataType inputDataType,
+    DeviceCreationLocation deviceCreationLocation
 )
 {
     if (model == nullptr)
     {
         return hresult_invalid_argument().code();
     }
+
     LearningModelSession session = nullptr;
+    IDirect3DDevice winrtDevice = nullptr;
 
     try
     {
-        session = LearningModelSession(model, TypeHelper::GetWinmlDeviceKind(deviceType));
+        if (deviceCreationLocation == DeviceCreationLocation::ClientCode)
+        {
+            // Creating the device on the client and using it to create the video frame and initialize the session makes sure that everything is on
+            // the same device. This usually avoids an expensive cross-device and cross-videoframe copy via the VideoFrame pipeline.
+            com_ptr<ID3D11Device> d3d11Device;
+            HRESULT hr = D3D11CreateDevice(nullptr, D3D_DRIVER_TYPE_HARDWARE, nullptr, D3D11_CREATE_DEVICE_BGRA_SUPPORT, nullptr, 0, D3D11_SDK_VERSION, d3d11Device.put(), nullptr, nullptr);
+
+            if (FAILED(hr))
+            {
+                throw hresult(hr);
+            }
+
+            com_ptr<IDXGIDevice> dxgiDevice;
+            hr = d3d11Device->QueryInterface(IID_PPV_ARGS(dxgiDevice.put()));
+
+            if (FAILED(hr))
+            {
+                throw hresult(hr);
+            }
+
+            com_ptr<IInspectable> inspectableDevice;
+            hr = CreateDirect3D11DeviceFromDXGIDevice(dxgiDevice.get(), inspectableDevice.put());
+
+            if (FAILED(hr))
+            {
+                throw hresult(hr);
+            }
+
+            winrtDevice = inspectableDevice.as<IDirect3DDevice>();
+            LearningModelDevice learningModelDevice = LearningModelDevice::CreateFromDirect3D11Device(winrtDevice);
+            session = LearningModelSession(model, learningModelDevice);
+        }
+        else
+        {
+            session = LearningModelSession(model, TypeHelper::GetWinmlDeviceKind(deviceType));
+        }
     }
     catch (hresult_error hr)
     {
@@ -231,9 +277,9 @@ HRESULT EvaluateModel(
     {
         bool captureIterationPerf = args.PerfCapture() && (!args.IgnoreFirstRun() || i > 0);
 
-        output.PrintBindingInfo(i + 1, deviceType, inputBindingType, inputDataType);
+        output.PrintBindingInfo(i + 1, deviceType, inputBindingType, inputDataType, deviceCreationLocation);
 
-        std::vector<ILearningModelFeatureValue> inputFeatures = GenerateInputFeatures(model, args, inputBindingType, inputDataType);
+        std::vector<ILearningModelFeatureValue> inputFeatures = GenerateInputFeatures(model, args, inputBindingType, inputDataType, winrtDevice);
         HRESULT bindInputResult = BindInputFeatures(model, context, inputFeatures, args, output, captureIterationPerf);
 
         if (FAILED(bindInputResult))
@@ -241,7 +287,7 @@ HRESULT EvaluateModel(
             return bindInputResult;
         }
 
-        output.PrintEvaluatingInfo(i + 1, deviceType, inputBindingType, inputDataType);
+        output.PrintEvaluatingInfo(i + 1, deviceType, inputBindingType, inputDataType, deviceCreationLocation);
 
         HRESULT evalResult = EvaluateModel(model, context, session, isGarbageData, args, output, captureIterationPerf);
 
@@ -261,6 +307,7 @@ HRESULT EvaluateModels(
     const std::vector<DeviceType>& deviceTypes,
     const std::vector<InputBindingType>& inputBindingTypes,
     const std::vector<InputDataType>& inputDataTypes,
+    const std::vector<DeviceCreationLocation> deviceCreationLocations,
     const CommandLineArgs& args,
     OutputHelper& output
 )
@@ -296,32 +343,44 @@ HRESULT EvaluateModels(
             {
                 for (auto inputDataType : inputDataTypes)
                 {
-                    if (args.PerfCapture())
+                    for (auto deviceCreationLocation : deviceCreationLocations)
                     {
-                        output.Reset();
-                        g_Profiler.Reset();
-                    }
-
-                    if (inputDataType != InputDataType::Tensor)
-                    {
-                        // Currently GPU binding only work with 4D tensors and RGBA/BGRA images
-                        if (tensorDescriptor.Shape().Size() != 4 || tensorDescriptor.Shape().GetAt(1) != 3)
+                        if (args.PerfCapture())
                         {
-                            continue;
+                            output.ResetBindAndEvalTImes();
+                            g_Profiler.Reset();
                         }
-                    }
 
-                    HRESULT evalHResult = EvaluateModel(model, args, output, deviceType, inputBindingType, inputDataType);
+                        if (inputDataType != InputDataType::Tensor)
+                        {
+                            // Currently GPU binding only work with 4D tensors and RGBA/BGRA images
+                            if (tensorDescriptor.Shape().Size() != 4 || tensorDescriptor.Shape().GetAt(1) != 3)
+                            {
+                                continue;
+                            }
+                        }
 
-                    if (FAILED(evalHResult))
-                    {
-                        return evalHResult;
-                    }
+                        HRESULT evalHResult = EvaluateModel(model, args, output, deviceType, inputBindingType, inputDataType, deviceCreationLocation);
 
-                    if (args.PerfCapture())
-                    {
-                        output.PrintResults(g_Profiler, args.NumIterations(), deviceType, inputBindingType, inputDataType);
-                        output.WritePerformanceDataToCSV(g_Profiler, args.NumIterations(), path, TypeHelper::Stringify(deviceType), TypeHelper::Stringify(inputDataType), TypeHelper::Stringify(inputBindingType), args.IgnoreFirstRun());
+                        if (FAILED(evalHResult))
+                        {
+                            return evalHResult;
+                        }
+
+                        if (args.PerfCapture())
+                        {
+                            output.PrintResults(g_Profiler, args.NumIterations(), deviceType, inputBindingType, inputDataType, deviceCreationLocation);
+                            output.WritePerformanceDataToCSV(
+                                g_Profiler,
+                                args.NumIterations(),
+                                path,
+                                TypeHelper::Stringify(deviceType),
+                                TypeHelper::Stringify(inputDataType),
+                                TypeHelper::Stringify(inputBindingType),
+                                TypeHelper::Stringify(deviceCreationLocation),
+                                args.IgnoreFirstRun()
+                            );
+                        }
                     }
                 }
             }
@@ -399,6 +458,23 @@ std::vector<InputBindingType> FetchInputBindingTypes(const CommandLineArgs& args
     return inputBindingTypes;
 }
 
+std::vector<DeviceCreationLocation> FetchDeviceCreationLocations(const CommandLineArgs& args)
+{
+    std::vector<DeviceCreationLocation> deviceCreationLocations;
+
+    if (args.CreateDeviceInWinML())
+    {
+        deviceCreationLocations.push_back(DeviceCreationLocation::WinML);
+    }
+
+    if (args.CreateDeviceOnClient())
+    {
+        deviceCreationLocations.push_back(DeviceCreationLocation::ClientCode);
+    }
+
+    return deviceCreationLocations;
+}
+
 int main(int argc, char** argv)
 {
     // Initialize COM in a multi-threaded environment.
@@ -425,8 +501,10 @@ int main(int argc, char** argv)
         std::vector<DeviceType> deviceTypes = FetchDeviceTypes(args);
         std::vector<InputBindingType> inputBindingTypes = FetchInputBindingTypes(args);
         std::vector<InputDataType> inputDataTypes = FetchInputDataTypes(args);
+        std::vector<DeviceCreationLocation> deviceCreationLocations = FetchDeviceCreationLocations(args);
         std::vector<std::wstring> modelPaths = args.ModelPath().empty() ? GetModelsInDirectory(args, &output) : std::vector<std::wstring>(1, args.ModelPath());
-        return EvaluateModels(modelPaths, deviceTypes, inputBindingTypes, inputDataTypes, args, output);
+
+        return EvaluateModels(modelPaths, deviceTypes, inputBindingTypes, inputDataTypes, deviceCreationLocations, args, output);
     }
 
     return 0;

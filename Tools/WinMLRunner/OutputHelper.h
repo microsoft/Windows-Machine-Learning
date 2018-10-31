@@ -24,30 +24,32 @@ public:
         }
     }
 
-    void PrintBindingInfo(uint32_t iteration, DeviceType deviceType, InputBindingType inputBindingType, InputDataType inputDataType) const
+    void PrintBindingInfo(uint32_t iteration, DeviceType deviceType, InputBindingType inputBindingType, InputDataType inputDataType, DeviceCreationLocation deviceCreationLocation) const
     {
         if (!m_silent)
         {
             printf(
-                "Binding (device = %s, iteration = %d, inputBinding = %s, inputDataType = %s)...",
+                "Binding (device = %s, iteration = %d, inputBinding = %s, inputDataType = %s, deviceCreationLocation = %s)...",
                 TypeHelper::Stringify(deviceType).c_str(),
                 iteration,
                 TypeHelper::Stringify(inputBindingType).c_str(),
-                TypeHelper::Stringify(inputDataType).c_str()
+                TypeHelper::Stringify(inputDataType).c_str(),
+                TypeHelper::Stringify(deviceCreationLocation).c_str()
             );
         }
     }
 
-    void PrintEvaluatingInfo(uint32_t iteration, DeviceType deviceType, InputBindingType inputBindingType, InputDataType inputDataType) const
+    void PrintEvaluatingInfo(uint32_t iteration, DeviceType deviceType, InputBindingType inputBindingType, InputDataType inputDataType, DeviceCreationLocation deviceCreationLocation) const
     {
         if (!m_silent)
         {
             printf(
-                "Evaluating (device = %s, iteration = %d, inputBinding = %s, inputDataType = %s)...",
+                "Evaluating (device = %s, iteration = %d, inputBinding = %s, inputDataType = %s, deviceCreationLocation = %s)...",
                 TypeHelper::Stringify(deviceType).c_str(),
                 iteration,
                 TypeHelper::Stringify(inputBindingType).c_str(),
-                TypeHelper::Stringify(inputDataType).c_str()
+                TypeHelper::Stringify(inputDataType).c_str(),
+                TypeHelper::Stringify(deviceCreationLocation).c_str()
             );
         }
     }
@@ -122,7 +124,14 @@ public:
         }
     }
 
-    void PrintResults(const Profiler<WINML_MODEL_TEST_PERF> &profiler, uint32_t numIterations, DeviceType deviceType, InputBindingType inputBindingType, InputDataType inputDataType) const
+    void PrintResults(
+        const Profiler<WINML_MODEL_TEST_PERF> &profiler,
+        uint32_t numIterations,
+        DeviceType deviceType,
+        InputBindingType inputBindingType,
+        InputDataType inputDataType,
+        DeviceCreationLocation deviceCreationLocation
+    ) const
     {
         double loadTime = profiler[LOAD_MODEL].GetAverage(CounterType::TIMER);
         double bindTime = profiler[BIND_VALUE].GetAverage(CounterType::TIMER);
@@ -141,11 +150,14 @@ public:
         {
             double totalTime = (isnan(loadTime) ? 0 : loadTime) + bindTime + evalTime;
 
-            printf("Results (device = %s, numIterations = %d, inputBinding = %s, inputDataType = %s):\n",
+            std::cout << std::endl;
+
+            printf("Results (device = %s, numIterations = %d, inputBinding = %s, inputDataType = %s, deviceCreationLocation = %s):\n",
                 TypeHelper::Stringify(deviceType).c_str(),
                 numIterations,
                 TypeHelper::Stringify(inputBindingType).c_str(),
-                TypeHelper::Stringify(inputDataType).c_str()
+                TypeHelper::Stringify(inputDataType).c_str(),
+                TypeHelper::Stringify(deviceCreationLocation).c_str()
             );
 
             std::cout << "  Load: " << (isnan(loadTime) ? "N/A" : std::to_string(loadTime) + " ms") << std::endl;
@@ -279,7 +291,15 @@ public:
         m_csvFileName = fileName;
     }
 
-    void WritePerformanceDataToCSV(const Profiler<WINML_MODEL_TEST_PERF> &profiler, int numIterations, std::wstring model, std::string modelBinding, std::string inputBinding, std::string inputType, bool firstRunIgnored) const
+    void WritePerformanceDataToCSV(
+        const Profiler<WINML_MODEL_TEST_PERF> &profiler,
+        int numIterations, std::wstring model,
+        std::string modelBinding,
+        std::string inputBinding,
+        std::string inputType,
+        std::string deviceCreationLocation,
+        bool firstRunIgnored
+    ) const
     {
         double loadTime = profiler[LOAD_MODEL].GetAverage(CounterType::TIMER);
         double bindTime = profiler[BIND_VALUE].GetAverage(CounterType::TIMER);
@@ -321,6 +341,7 @@ public:
                      << "Model Binding" << ","
                      << "Input Binding" << ","
                      << "Input Type" << ","
+                     << "Device Creation Location" << ","
                      << "Iterations" << ","
                      << "First Run Ignored" << ","
                      << "Load (ms)" << ","
@@ -340,6 +361,7 @@ public:
                  << modelBinding << ","
                  << inputBinding << ","
                  << inputType << ","
+                 << deviceCreationLocation << ","
                  << numIterations << ","
                  << firstRunIgnored << ","
                  << (isnan(loadTime) ? "N/A" : std::to_string(loadTime)) << ","
@@ -358,10 +380,9 @@ public:
         }
     }
     
-    void Reset() 
+    void ResetBindAndEvalTImes() 
     {
          m_clockEvalTime = 0;
-         m_clockLoadTime = 0;
          m_clockBindTime = 0;
 
          m_clockBindTimes.clear();

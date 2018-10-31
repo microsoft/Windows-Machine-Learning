@@ -5,16 +5,19 @@
 #include "ModelBinding.h"
 #include "CommandLineArgs.h"
 
-using namespace Windows::Media;
-using namespace Windows::Storage;
+using namespace winrt::Windows::Media;
+using namespace winrt::Windows::Storage;
 using namespace winrt::Windows::AI::MachineLearning;
-using namespace winrt::Windows::Foundation;
 using namespace winrt::Windows::Foundation::Collections;
 using namespace winrt::Windows::Graphics::DirectX;
 using namespace winrt::Windows::Graphics::Imaging;
+using namespace winrt::Windows::Graphics::DirectX::Direct3D11;
 
 namespace BindingUtilities
 {
+    static unsigned int seed = 0;
+    static std::independent_bits_engine<std::default_random_engine, CHAR_BIT, unsigned int> randomBitsEngine;
+
     SoftwareBitmap GenerateGarbageImage(const TensorFeatureDescriptor& imageDescriptor, InputDataType inputDataType)
     {
         assert(inputDataType != InputDataType::Tensor);
@@ -34,10 +37,9 @@ namespace BindingUtilities
         // We have to create RGBA8 or BGRA8 images, so we need 4 channels
         uint32_t totalByteSize = static_cast<uint32_t>(width) * static_cast<uint32_t>(height) * 4;
 
-        // Generate random values for the image
+        // Generate values for the image based on a seed
         std::vector<uint8_t> data(totalByteSize);
-        static std::independent_bits_engine<std::default_random_engine, CHAR_BIT, unsigned int> randomBitsEngine;
-        randomBitsEngine.seed(static_cast<unsigned int>(time(nullptr)));
+        randomBitsEngine.seed(seed++);
         std::generate(data.begin(), data.end(), randomBitsEngine);
 
         // Write the values to a buffer
@@ -75,13 +77,16 @@ namespace BindingUtilities
         }
     }
 
-    VideoFrame CreateVideoFrame(const SoftwareBitmap& softwareBitmap, InputBindingType inputBindingType, InputDataType inputDataType)
+    VideoFrame CreateVideoFrame(const SoftwareBitmap& softwareBitmap, InputBindingType inputBindingType, InputDataType inputDataType, const IDirect3DDevice winrtDevice)
     {
         VideoFrame inputImage = VideoFrame::CreateWithSoftwareBitmap(softwareBitmap);
 
         if (inputBindingType == InputBindingType::GPU)
         {
-            VideoFrame gpuImage = VideoFrame::CreateAsDirect3D11SurfaceBacked(TypeHelper::GetDirectXPixelFormat(inputDataType), softwareBitmap.PixelWidth(), softwareBitmap.PixelHeight());
+            VideoFrame gpuImage = winrtDevice
+                ? VideoFrame::CreateAsDirect3D11SurfaceBacked(TypeHelper::GetDirectXPixelFormat(inputDataType), softwareBitmap.PixelWidth(), softwareBitmap.PixelHeight(), winrtDevice)
+                : VideoFrame::CreateAsDirect3D11SurfaceBacked(TypeHelper::GetDirectXPixelFormat(inputDataType), softwareBitmap.PixelWidth(), softwareBitmap.PixelHeight());
+
             inputImage.CopyToAsync(gpuImage).get();
 
             return gpuImage;
@@ -254,7 +259,14 @@ namespace BindingUtilities
         throw hresult_not_implemented();
     }
 
-    ImageFeatureValue CreateBindableImage(const ILearningModelFeatureDescriptor& featureDescriptor, const std::wstring& imagePath, InputBindingType inputBindingType, InputDataType inputDataType)
+    ImageFeatureValue CreateBindableImage(
+        const ILearningModelFeatureDescriptor&
+        featureDescriptor,
+        const std::wstring& imagePath,
+        InputBindingType inputBindingType,
+        InputDataType inputDataType,
+        const IDirect3DDevice winrtDevice
+    )
     {
         auto imageDescriptor = featureDescriptor.try_as<TensorFeatureDescriptor>();
 
@@ -268,13 +280,13 @@ namespace BindingUtilities
             ? GenerateGarbageImage(imageDescriptor, inputDataType)
             : LoadImageFile(imagePath.c_str(), inputDataType);
 
-        auto videoFrame = CreateVideoFrame(softwareBitmap, inputBindingType, inputDataType);
+        auto videoFrame = CreateVideoFrame(softwareBitmap, inputBindingType, inputDataType, winrtDevice);
 
         return ImageFeatureValue::CreateFromVideoFrame(videoFrame);
     }
 
     template<typename K, typename V>
-    void OutputSequenceBinding(IMapView<hstring, Windows::Foundation::IInspectable> results, hstring name)
+    void OutputSequenceBinding(IMapView<hstring, winrt::Windows::Foundation::IInspectable> results, hstring name)
     {
         auto map = results.Lookup(name).as<IVectorView<IMap<K, V>>>().GetAt(0);
         auto iter = map.First();
@@ -295,7 +307,7 @@ namespace BindingUtilities
         std::cout << " " << maxKey << " " << maxVal << std::endl;
     }
 
-    void PrintEvaluationResults(const LearningModel& model, const CommandLineArgs& args, const IMapView<hstring, Windows::Foundation::IInspectable>& results)
+    void PrintEvaluationResults(const LearningModel& model, const CommandLineArgs& args, const IMapView<hstring, winrt::Windows::Foundation::IInspectable>& results)
     {
         if (args.Silent()) return;
         

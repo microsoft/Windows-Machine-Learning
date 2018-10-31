@@ -5,8 +5,8 @@ The WinMLRunner is a command-line based tool that can run .onnx or .pb models wh
 
 ## Prerequisites
 - [Visual Studio 2017 Version 15.7.4 or Newer](https://developer.microsoft.com/en-us/windows/downloads)
-- [Windows 10 - Build 17738 or higher](https://www.microsoft.com/en-us/software-download/windowsinsiderpreviewiso)
-- [Windows SDK - Build 17738 or higher](https://www.microsoft.com/en-us/software-download/windowsinsiderpreviewSDK)
+- [Windows 10 - Build 17763 or higher](https://www.microsoft.com/en-us/software-download/windowsinsiderpreviewiso)
+- [Windows SDK - Build 17763 or higher](https://www.microsoft.com/en-us/software-download/windowsinsiderpreviewSDK)
 
 ## Build the tool
 
@@ -28,6 +28,8 @@ Required command-Line arguments:
 -GPU                     : Will create a session on the GPU.
 -GPUHighPerformance      : Will create a session with the most powerful GPU device available.
 -GPUMinPower             : Will create a session with GPU with the least power.
+-CreateDeviceOnClient    : Will create the device on the client and explicitly pass it to WinML via the API. GPU runs using this flag will usually be faster than -CreateDeviceInWinML since we avoid a cross-device copy by creating the video frame on the same device that DML uses to bind inputs.
+-CreateDeviceInWinML     : Will create the device inside WinML. GPU runs using this flag will usually be slower than -CreateDeviceOnClient since we have to copy the video frame to a different device.
 -CPUBoundInput           : Will bind the input to the CPU.
 -GPUBoundInput           : Will bind the input to the GPU.
 -BGR                     : Will load the input as a BGR image.

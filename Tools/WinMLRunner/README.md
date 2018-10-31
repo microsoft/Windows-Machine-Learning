@@ -42,6 +42,9 @@ Required command-Line arguments:
 -debug                   : Will start a trace logging session.
 
  ```
+
+Note that -CPU, -GPU, -GPUHighPerformance, -GPUMinPower -BGR, -RGB, -tensor, -CPUBoundInput, -GPUBoundInput are not mutually exclusive (i.e. you can combine as many as you want to run the model with different configurations).
+
 ### Examples:
 Run a model on the CPU and GPU separately 5 times and output performance data:
 > WinMLRunner.exe -model c:\\data\\concat.onnx -iterations 5 -perf
@@ -60,18 +63,18 @@ Run a model on the CPU with the input bound to the GPU and loaded as an RGB imag
 **Running a good model:**
 Run the executable as shown below. Make sure to replace the install location with what matches yours:
  ```
- WinMLRunner.exe -model C:\Repos\Windows-Machine-Learning\SharedContent\models\SqueezeNet.onnx 
-
+.\WinMLRunner.exe -model SqueezeNet.onnx
 WinML Runner
 GPU: AMD Radeon Pro WX 3100
 
+Loading model (path = SqueezeNet.onnx)...
 =================================================================
 Name: squeezenet_old
 Author: onnx-caffe2
 Version: 9223372036854775807
 Domain:
 Description:
-Path: C:\Repos\Windows-Machine-Learning\SharedContent\models\SqueezeNet.onnx
+Path: SqueezeNet.onnx
 Support FP16: false
 
 Input Feature Info:
@@ -84,32 +87,18 @@ Feature Kind: Float
 
 =================================================================
 
-Loading model...[SUCCESS]
-Binding Model on GPU...[SUCCESS]
-Evaluating Model on GPU...[SUCCESS]
+Binding (device = CPU, iteration = 1, inputBinding = CPU, inputDataType = Tensor)...[SUCCESS]
+Evaluating (device = CPU, iteration = 1, inputBinding = CPU, inputDataType = Tensor)...[SUCCESS]
+Outputting results..
+Feature Name: softmaxout_1
+ resultVector[818] has the maximal value of 1
 
-=================================================================
-Name: squeezenet_old
-Author: onnx-caffe2
-Version: 9223372036854775807
-Domain:
-Description:
-Path: C:\Repos\Windows-Machine-Learning\SharedContent\models\SqueezeNet.onnx
-Support FP16: false
 
-Input Feature Info:
-Name: data_0
-Feature Kind: Float
-
-Output Feature Info:
-Name: softmaxout_1
-Feature Kind: Float
-
-=================================================================
-
-Loading model...[SUCCESS]
-Binding Model on CPU...[SUCCESS]
-Evaluating Model on CPU...[SUCCESS]
+Binding (device = GPU, iteration = 1, inputBinding = CPU, inputDataType = Tensor)...[SUCCESS]
+Evaluating (device = GPU, iteration = 1, inputBinding = CPU, inputDataType = Tensor)...[SUCCESS]
+Outputting results..
+Feature Name: softmaxout_1
+ resultVector[818] has the maximal value of 1
  ```
 **Running a bad model:**
 Here's an example of running a model with incorrect parameters:
@@ -176,16 +165,18 @@ Dedicated Memory (MB) - The amount of memory that was used on the VRAM of the de
 Shared Memory (MB) -  The amount of memory that was used on the DRAM by the GPU.
  ### Sample performance output:
  ```
+.\WinMLRunner.exe -model SqueezeNet.onnx -perf
 WinML Runner
 GPU: AMD Radeon Pro WX 3100
 
+Loading model (path = SqueezeNet.onnx)...
 =================================================================
 Name: squeezenet_old
 Author: onnx-caffe2
 Version: 9223372036854775807
 Domain:
 Description:
-Path: C:\Repos\Windows-Machine-Learning\SharedContent\models\SqueezeNet.onnx
+Path: SqueezeNet.onnx
 Support FP16: false
 
 Input Feature Info:
@@ -198,62 +189,47 @@ Feature Kind: Float
 
 =================================================================
 
-Loading model...[SUCCESS]
-Binding Model on GPU...[SUCCESS]
-Evaluating Model on GPU...[SUCCESS]
-
-Wall-clock Time Averages (iterations = 1):
-  Load: 391.556 ms
-  Bind: 10.8784 ms
-  Evaluate: 72.4004 ms
-  Total time: 474.834 ms
+Binding (device = CPU, iteration = 1, inputBinding = CPU, inputDataType = Tensor)...[SUCCESS]
+Evaluating (device = CPU, iteration = 1, inputBinding = CPU, inputDataType = Tensor)...[SUCCESS]
+Outputting results..
+Feature Name: softmaxout_1
+ resultVector[818] has the maximal value of 1
 
 
-GPU Time Averages (iterations = 1):
+Results (device = CPU, numIterations = 1, inputBinding = CPU, inputDataType = Tensor):
+  Load: 408.386300 ms
+  Bind: 0.9184 ms
+  Evaluate: 739.173 ms
+  Total Time: 1148.48 ms
+  Wall-Clock Load: 408.064 ms
+  Wall-Clock Bind: 1.1311 ms
+  Wall-Clock Evaluate: 739.337 ms
+  Total Wall-Clock Time: 1148.53 ms
+  Working Set Memory usage (evaluate): 0 MB
+  Dedicated Memory Usage (evaluate): 0 MB
+  Shared Memory Usage (evaluate): 0 MB
+
+
+
+Binding (device = GPU, iteration = 1, inputBinding = CPU, inputDataType = Tensor)...[SUCCESS]
+Evaluating (device = GPU, iteration = 1, inputBinding = CPU, inputDataType = Tensor)...[SUCCESS]
+Outputting results..
+Feature Name: softmaxout_1
+ resultVector[818] has the maximal value of 1
+
+
+Results (device = GPU, numIterations = 1, inputBinding = CPU, inputDataType = Tensor):
   Load: N/A
-  Bind: 11.0698 ms
-  Evaluate: 72.8877 ms
-  Total time: 83.9575 ms
-  Dedicated memory usage (evaluate): 13.668 MB
-  Shared memory usage (evaluate): 1 MB
-
-
-=================================================================
-Name: squeezenet_old
-Author: onnx-caffe2
-Version: 9223372036854775807
-Domain:
-Description:
-Path: C:\Repos\Windows-Machine-Learning\SharedContent\models\SqueezeNet.onnx
-Support FP16: false
-
-Input Feature Info:
-Name: data_0
-Feature Kind: Float
-
-Output Feature Info:
-Name: softmaxout_1
-Feature Kind: Float
-
-=================================================================
-
-Loading model...[SUCCESS]
-Binding Model on CPU...[SUCCESS]
-Evaluating Model on CPU...[SUCCESS]
-
-Wall-clock Time Averages (iterations = 1):
-  Load: 117.31 ms
-  Bind: 7.233 ms
-  Evaluate: 762.886 ms
-  Total time: 887.428 ms
-
-
-CPU Time Averages (iterations = 1):
-  Load: 117.581 ms
-  Bind: 7.467 ms
-  Evaluate: 690.129 ms
-  Total time: 815.176 ms
-  Working Set Memory usage (evaluate): 9.77734 MB
+  Bind: 3.6711 ms
+  Evaluate: 66.5285 ms
+  Total Time: 70.1996 ms
+  Wall-Clock Load: 0 ms
+  Wall-Clock Bind: 3.9697 ms
+  Wall-Clock Evaluate: 67.2518 ms
+  Total Wall-Clock Time: 71.2215 ms
+  Working Set Memory usage (evaluate): 13.668 MB
+  Dedicated Memory Usage (evaluate): 13.668 MB
+  Shared Memory Usage (evaluate): 1 MB
  ```
  
  ## Capturing Trace Logs
@@ -275,5 +251,16 @@ tracerpt.exe winmllog.etl -o logdump.csv -of CSV
 
 2. Windows Performance Analyzer (from Visual Studio)
  * Launch Windows Performance Analyzer and open the winmllog.etl.
+
+## Dynamic DLL Loading
+
+If you want to run WinMLRunner with another version of WinML (e.g. comparing the performance with an older version or testing a newer version), simply place the `windows.ai.machinelearning.dll` and `directml.dll` files in the same folder as WinMLRunner.exe. WinMLRunner will look for for these DLLs first and fall back to `C:/Windows/System32` if it doesn't find them.
+
+## Known issues
+
+- Sequence/Map inputs are not supported yet (the model is just skipped, so it doesn't block other models in a folder);
+- We cannot reliably run multiple models with the `-folder` argument with real data. Since we can only specify 1 input, the size of the input would mismatch with most of the models. Right now, using the `-folder` argument only works well with garbage data;
+- Generating garbage input as Gray or YUV is not currently supported. Ideally, WinMLRunner's garbage data pipeline should support all inputs types that we can give to winml.
+
 ## License
 MIT. See [LICENSE file](https://github.com/Microsoft/Windows-Machine-Learning/blob/master/LICENSE).

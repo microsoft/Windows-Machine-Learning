@@ -2,15 +2,22 @@
 
 Developer dashboard for Windows ML and ONNX.
 
+## What you can with this tool
+1. The tool enables you to view and modify the metadata of the model and the metadata of input and output nodes.
+
+![Editor](./public/EditorView.png)
+
+2. The tool enables you to convert models to ONNX.
+![Conveter](./public/ConverterView.png)
 ## Build from source
 
 #### Prerequisites
 
 |Requirements|Version|Download|Command to check|
 |------------|-------|--------|----------------|
+|Python3     |3.4+   |[here](https://www.python.org/)|`python --version`|
 |Yarn        |latest |[here](https://yarnpkg.com/en/docs/install)|`yarn --version`|
 |Node.js     |latest |[here](https://nodejs.org/en/)|`node --version`|
-|Python3     |3.4+   |[here](https://www.python.org/)|`python --version`|
 |Git         |latest |[here](https://git-scm.com/download/win)|`git --version`|
 
 > All four prerequisites should be **added to Enviroment Path**.

@@ -167,6 +167,7 @@ export async function pip(command: string[], listener?: IOutputListener) {
     if (getLocalPython() === embeddedPythonBinary) {
         options = { cwd: os.tmpdir() };  // without this workaround, pip downloads packages to whatever the current working directory is
     }
+    python(['-m', 'easy_install', 'termcolor'], options, listener);
     return python(['-m', 'pip', ...command], options, listener);
 }
 

@@ -3,16 +3,17 @@ import { connect } from 'react-redux';
 
 import { DefaultButton } from 'office-ui-fabric-react/lib/Button';
 import { ChoiceGroup, IChoiceGroupOption } from 'office-ui-fabric-react/lib/ChoiceGroup';
-import { MessageBar, MessageBarType } from 'office-ui-fabric-react/lib/MessageBar';
+// import { MessageBar, MessageBarType } from 'office-ui-fabric-react/lib/MessageBar';
 import { Spinner } from 'office-ui-fabric-react/lib/Spinner';
 import { TextField } from 'office-ui-fabric-react/lib/TextField';
+import Select from 'react-select';
 
 import Collapsible from '../../components/Collapsible';
 import { setFile, setSaveFileName } from '../../datastore/actionCreators';
 import IState from '../../datastore/state';
 import { packagedFile } from '../../native/appData';
 import { fileFromPath, showNativeOpenDialog, showNativeSaveDialog } from '../../native/dialog';
-import { downloadPip, downloadPython, getLocalPython, getPythonBinaries, installVenv, pip, python } from '../../native/python';
+import { downloadPip, downloadPython, getLocalPython, pip, python } from '../../native/python';
 import { isWeb } from '../../native/util';
 
 
@@ -27,6 +28,11 @@ enum Step {
     Converting,
 }
 
+interface ISelectOpition {
+    label: string;
+    value: string;
+  }
+
 interface IComponentProperties {
     // Redux properties
     file: File,
@@ -38,6 +44,8 @@ interface IComponentState {
     console: string,
     currentStep: Step,
     error?: Error | string,
+    framework: string,
+    pythonReinstall: boolean,
     source?: string,
 }
 
@@ -47,7 +55,13 @@ class ConvertView extends React.Component<IComponentProperties, IComponentState>
     constructor(props: IComponentProperties) {
         super(props);
         const error = isWeb() ? "The converter can't be run in the web interface" : undefined;
-        this.state = { console: '', error, currentStep: Step.Idle };
+        this.state = { 
+            console: '', 
+            currentStep: Step.Idle,
+            error, 
+            framework: '',
+            pythonReinstall: false
+        };
     }
 
     public render() {
@@ -68,12 +82,18 @@ class ConvertView extends React.Component<IComponentProperties, IComponentState>
         )
     }
 
+    private initializeState() {
+        this.setState({ currentStep: Step.Idle, console: '', error: undefined, framework: '', pythonReinstall: false});
+    }
+
     private getView() {
-        const { error } = this.state;
-        if (error) {
-            const message = typeof error === 'string' ? error : (`${error.stack ? `${error.stack}: ` : ''}${error.message}`);
-            return <MessageBar messageBarType={MessageBarType.error}>{message}</MessageBar>
-        }
+        // const { error } = this.state;
+        // if (error) {
+        //     const message = typeof error === 'string' ? error : (`${error.stack ? `${error.stack}: ` : ''}${error.message}`);
+        //     this.printMessage(message)
+        //     this.setState({pythonReinstall: true});
+        //     // return <MessageBar messageBarType={MessageBarType.error}>{message}</MessageBar>
+        // }
         switch (this.state.currentStep) {
             case Step.Downloading:
                 return <Spinner label="Downloading Python..." />;
@@ -87,7 +107,7 @@ class ConvertView extends React.Component<IComponentProperties, IComponentState>
                 return <Spinner label="Converting..." />;
         }
         this.localPython = this.localPython || getLocalPython();
-        if (!this.localPython) {
+        if (!this.localPython || this.state.pythonReinstall) {
             return this.pythonChooser();
         }
         return this.converterView();
@@ -101,7 +121,9 @@ class ConvertView extends React.Component<IComponentProperties, IComponentState>
     }
 
     private printError = (error: string | Error) => {
-        this.setState({ currentStep: Step.Idle, error });
+        const message = typeof error === 'string' ? error : (`${error.stack ? `${error.stack}: ` : ''}${error.message}`);
+        this.printMessage(message)
+        this.setState({ currentStep: Step.Idle, error, pythonReinstall:true });
     }
 
     // tslint:disable-next-line:member-ordering
@@ -111,9 +133,13 @@ class ConvertView extends React.Component<IComponentProperties, IComponentState>
     };
 
     private pythonChooser = () => {
-        const binaries = getPythonBinaries();
-        const options = binaries.map((key) => key ? { key, text: key } : { key: '__download', text: 'Download a new Python binary to be used exclusively by the WinML Dashboard' });
+        const options = [
+            { key: '__download', text: 'Download a new Python binary to be used exclusively by the WinML Dashboard' } as IChoiceGroupOption,
+            { key: '__Skip', text: 'Skip'} as IChoiceGroupOption
+        ];
         const onChange = async (ev: React.FormEvent<HTMLInputElement>, option: IChoiceGroupOption) => {
+            // Clear console output
+            this.setState({console: ''})
             try {
                 if (option.key === '__download') {
                     this.setState({ currentStep: Step.Downloading });
@@ -121,8 +147,8 @@ class ConvertView extends React.Component<IComponentProperties, IComponentState>
                     this.setState({ currentStep: Step.GetPip });
                     await downloadPip(this.outputListener);
                 } else {
-                    this.setState({ currentStep: Step.CreatingVenv });
-                    await installVenv(option.key, this.outputListener);
+                    this.setState({pythonReinstall: false})
+                    return;
                 }
                 this.setState({ currentStep: Step.InstallingRequirements });
                 await pip(['install', '-r', packagedFile('requirements.txt')], this.outputListener);
@@ -130,27 +156,57 @@ class ConvertView extends React.Component<IComponentProperties, IComponentState>
             } catch (error) {
                 this.printError(error);
             }
+            // reset pythonReinstall
+            this.setState({pythonReinstall: false})
         }
         // TODO Options to reinstall environment or update dependencies
         return (
             <ChoiceGroup
                 options={options}
-                label={binaries[0] ? 'Suitable Python versions were found in the system. Pick one to be used by the converter.' : 'No suitable Python versions were found in the system.'}
                 onChange={onChange}
             />
         );
     }
 
     private converterView = () => {
+        const options = [
+            { value: 'Coreml', label: 'Coreml' },
+            { value: 'Keras', label: 'Keras' },
+            { value: 'scikit-learn', label: 'scikit-learn' },
+            { value: "xgboost", label: 'xgboost' },
+            { value: 'libSVM', label: 'libSVM' },
+            { value: 'TensorFlow', label: 'TensorFlow' }
+          ];
         return (
             <div>
                 <div className='DisplayFlex ModelConvertBrowser'>
                     <TextField placeholder='Path' value={this.state.source || this.props.file && this.props.file.path} label='Model to convert' onChanged={this.setSource} />
                     <DefaultButton id='ConverterModelInputBrowse' text='Browse' onClick={this.browseSource}/>
                 </div>
+                <div className='Frameworks'>
+                    <p>Source Framework model come from: </p>
+                    <Select
+                        value={this.newOption(this.state.framework)}
+                        onChange={this.setFramework}
+                        options={options}
+                    />
+                </div>
                 <DefaultButton id='ConvertButton' text='Convert' disabled={!this.state.source} onClick={this.convert}/>
             </div>
         );
+    }
+
+    private newOption = (framework: string):ISelectOpition => {
+        return {
+            label: framework,
+            value: framework
+        }
+    }
+
+    private setFramework = (framework: ISelectOpition) => {
+        this.setState({framework: framework.value})
+        // tslint:disable-next-line:no-console
+        console.log(framework.value)
     }
 
     private setSource = (source?: string) => {
@@ -159,11 +215,6 @@ class ConvertView extends React.Component<IComponentProperties, IComponentState>
 
     private browseSource = () => {
         const openDialogOptions = {
-            filters: [
-                { name: 'CoreML model', extensions: [ 'mlmodel' ] },
-                { name: 'Keras model', extensions: [ 'keras', 'h5' ] },
-                { name: 'ONNX model', extensions: [ 'onnx' ] },
-            ],
             properties: Array<'openFile'>('openFile'),
         };
         showNativeOpenDialog(openDialogOptions)
@@ -175,18 +226,26 @@ class ConvertView extends React.Component<IComponentProperties, IComponentState>
     }
 
     private convert = async () => {
+        this.initializeState();
         const source = this.state.source!;
+        const framework = this.state.framework;
         const destination = await showNativeSaveDialog({ filters: [{ name: 'ONNX model', extensions: ['onnx'] }, { name: 'ONNX text protobuf', extensions: ['prototxt'] }] });
         if (!destination) {
             return;
         }
+        if (!framework) {
+            return;
+        }
         this.setState({ currentStep: Step.Converting });
         try {
-            await python([packagedFile('convert.py'), source, destination], {}, this.outputListener);
+            await python([packagedFile('convert.py'), source, framework, destination], {}, this.outputListener);
         } catch (e) {
             this.printError(e);
+            return;
         }
-        this.setState({ currentStep: Step.Idle, source: undefined });
+
+        // Convert successfully
+        this.setState({ currentStep: Step.Idle, source: undefined, console:"convert successfully!!"});
         // TODO Show dialog (https://developer.microsoft.com/en-us/fabric#/components/dialog) asking whether we should open the converted model
         this.props.setFile(fileFromPath(destination));
         this.props.setSaveFileName(destination);

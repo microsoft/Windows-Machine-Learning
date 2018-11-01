@@ -2,33 +2,37 @@
 var Application = require('spectron').Application
 var assert = require('assert')
 var path = require('path')
+const chaiAsPromised = require("chai-as-promised");
+const chai = require("chai");
+chai.should();
+chai.use(chaiAsPromised);
 
 var appllicationPath = process.env.LOCALAPPDATA + '\\winmldashboard\\winmldashboard.exe'
-console.log(appllicationPath)
 
 var app = new Application({
   path:appllicationPath,
-  startTimeout: 200000,
 })
 
-describe("test-login-form", function () {
-    this.timeout(20000);
+describe("WinMLDashboard Tests", function () {
+    this.timeout(200000);
+
     // CSS selectors
-    // const usernameInput = 'form input[formControlName="username"]';
-    // const usernameError = 'form input[formControlName="username"] + div';
-    // const passwordInput = 'form input[formControlName="password"]';
-    // const passwordError = 'form input[formControlName="password"] + div';
-    // const submitButton = 'button*=Store';
     const openModelButton = '#open-file-button';
-    const modelPathInput = '#open-file-dialog'
+    const modelPathInput = '#open-file-dialog';
+    const editButton = '#Pivot0-Tab0';
+    const convertViewButton = '#Pivot0-Tab1';
+    const mainView = '.MainView'
+    const convertView = '.ConvertView'
+    const convertButton = '#ConvertButton'
+    const modelToConvertTextFiled = '#modelToConvert'
 
     // Start spectron
-    beforeEach(function () {
+    before(function () {
         return app.start();
     });
 
     // Stop Electron
-    afterEach(function () {
+    after(function () {
         if (app && app.isRunning()) {
             return app.stop();
         }
@@ -37,15 +41,27 @@ describe("test-login-form", function () {
     describe("Edit View", function () {
         // wait for Electron window to open
         it('opens window', function () {
-            return app.client.waitUntilWindowLoaded().getWindowCount().should.eventually.equal(1);
+            return app.client
+            .waitUntilWindowLoaded().getWindowCount().should.eventually.equal(1)
+            .get
         });
 
-        // Initially, the submit button should be deactivated
-        it("opens a model to view", function () {
+        it('click open model button', function(){
             return app.client
                 .click(openModelButton)
-                .hasFocus(modelPathInput)
-                .setValue(modelPathInput, path.join(__dirname, 'la_muse.mlmodel'))
+        })
+
+        it('click convertButton button', function () {
+            return app.client
+                .click(convertViewButton)
+                .element(mainView).element(convertView).should.eventually.exist
+                .element(convertButton).isEnabled().should.eventually.equal(false)
         });
-    });
+
+        it('set model path to convert', function () {
+            return app.client
+                .setValue(modelToConvertTextFiled, 'D:\\Windows-Machine-Learning\\Tools\\WinMLDashboard\\test\\la_muse.mlmodel')
+                .getText(modelToConvertTextFiled).should.eventually.equal('D:\\Windows-Machine-Learning\\Tools\\WinMLDashboard\\test\\la_muse.mlmodel')
+        });
+    }); 
 });

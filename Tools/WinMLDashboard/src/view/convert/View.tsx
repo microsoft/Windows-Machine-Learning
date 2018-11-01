@@ -180,7 +180,7 @@ class ConvertView extends React.Component<IComponentProperties, IComponentState>
         return (
             <div>
                 <div className='DisplayFlex ModelConvertBrowser'>
-                    <TextField placeholder='Path' value={this.state.source || this.props.file && this.props.file.path} label='Model to convert' onChanged={this.setSource} />
+                    <TextField id='modelToConvert' placeholder='Path' value={this.state.source || this.props.file && this.props.file.path} label='Model to convert' onChanged={this.setSource} />
                     <DefaultButton id='ConverterModelInputBrowse' text='Browse' onClick={this.browseSource}/>
                 </div>
                 <div className='Frameworks'>

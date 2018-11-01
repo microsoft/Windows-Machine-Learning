@@ -9,6 +9,7 @@ using Windows.UI.Xaml.Media.Imaging;
 using Windows.AI.MachineLearning;
 using Windows.Media;
 using Windows.Storage.Streams;
+using System.Threading.Tasks;
 
 namespace MNIST_Demo
 {

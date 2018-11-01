@@ -13,7 +13,7 @@ import { setFile, setSaveFileName } from '../../datastore/actionCreators';
 import IState from '../../datastore/state';
 import { packagedFile } from '../../native/appData';
 import { fileFromPath, showNativeOpenDialog, showNativeSaveDialog } from '../../native/dialog';
-import { downloadPip, downloadPython, getLocalPython, installVenv, pip, python } from '../../native/python';
+import { downloadPip, downloadPython, getLocalPython, pip, python } from '../../native/python';
 import { isWeb } from '../../native/util';
 
 
@@ -147,8 +147,8 @@ class ConvertView extends React.Component<IComponentProperties, IComponentState>
                     this.setState({ currentStep: Step.GetPip });
                     await downloadPip(this.outputListener);
                 } else {
-                    this.setState({ currentStep: Step.CreatingVenv });
-                    await installVenv(option.key, this.outputListener);
+                    this.setState({pythonReinstall: false})
+                    return;
                 }
                 this.setState({ currentStep: Step.InstallingRequirements });
                 await pip(['install', '-r', packagedFile('requirements.txt')], this.outputListener);

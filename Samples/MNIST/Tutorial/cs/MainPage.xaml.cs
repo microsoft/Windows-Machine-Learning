@@ -31,10 +31,10 @@ namespace MNIST_Demo
                     IgnoreTilt = true,
                 }
             );
-            LoadModel();
+            await LoadModelAsync();
         }
 
-        private async void LoadModel()
+        private async Task LoadModelAsync()
         {
 
         }

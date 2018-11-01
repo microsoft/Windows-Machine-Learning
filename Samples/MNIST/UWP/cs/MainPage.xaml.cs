@@ -37,7 +37,7 @@ namespace MNIST_Demo
                     IgnoreTilt = true,
                 }
             );
-            await LoadModelAsync();
+            LoadModelAsync();
         }
 
         private async Task LoadModelAsync()

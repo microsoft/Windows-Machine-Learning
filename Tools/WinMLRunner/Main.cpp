@@ -347,7 +347,7 @@ HRESULT EvaluateModels(
                     {
                         if (args.PerfCapture())
                         {
-                            output.Reset();
+                            output.ResetBindAndEvalTImes();
                             g_Profiler.Reset();
                         }
 

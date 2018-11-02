@@ -43,25 +43,31 @@ describe("WinMLDashboard Tests", function () {
         it('opens window', function () {
             return app.client
             .waitUntilWindowLoaded().getWindowCount().should.eventually.equal(1)
-            .get
         });
 
-        it('click open model button', function(){
+        it('checks title', function(){
+            return app.client
+                .getTitle().should.eventually.equal("WinML Dashboard")
+        })
+
+        it('clicks open model button', function(){
             return app.client
                 .click(openModelButton)
         })
 
-        it('click convertButton button', function () {
+        it('clicks convertButton button', function () {
             return app.client
                 .click(convertViewButton)
                 .element(mainView).element(convertView).should.eventually.exist
-                .element(convertButton).isEnabled().should.eventually.equal(false)
+        });
+        it('sets model to convert', function () {
+            return app.client
+                .element(modelToConvertTextFiled).exist
         });
 
-        it('set model path to convert', function () {
+        it('clicks browse button', function() {
             return app.client
-                .setValue(modelToConvertTextFiled, 'D:\\Windows-Machine-Learning\\Tools\\WinMLDashboard\\test\\la_muse.mlmodel')
-                .getText(modelToConvertTextFiled).should.eventually.equal('D:\\Windows-Machine-Learning\\Tools\\WinMLDashboard\\test\\la_muse.mlmodel')
-        });
+                .click('#ConverterModelInputBrowse')
+        })
     }); 
 });

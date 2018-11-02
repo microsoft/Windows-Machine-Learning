@@ -6,6 +6,11 @@ const url = require('url');
 let mainWindow;
 let aboutWindow;
 
+if(require('electron-squirrel-startup'))
+{
+    return;
+}
+
 function interceptFileProtocol() {
     // Intercept the file protocol so that references to folders return its index.html file
     const fileProtocol = 'file';

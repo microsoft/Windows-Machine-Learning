@@ -64,10 +64,5 @@ describe("WinMLDashboard Tests", function () {
             return app.client
                 .element(modelToConvertTextFiled).exist
         });
-
-        it('clicks browse button', function() {
-            return app.client
-                .click('#ConverterModelInputBrowse')
-        })
     }); 
 });

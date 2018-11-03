@@ -1,4 +1,3 @@
-
 var electronInstaller = require('electron-winstaller');
 var path = require('path');
 
@@ -10,8 +9,9 @@ resultPromise = electronInstaller.createWindowsInstaller({
     noMsi: true,
     outputDirectory: path.join('./installer'), 
     setupExe: 'WinMLDashboard_setup_0.5.1.exe',
+    setupIcon: './public/winml_icon.ico',
     version: '0.5.1',
   });
 
 // tslint:disable-next-line:no-console
-resultPromise.then(() => console.log('It worked!'), (e) => console.log(`No dice: ${e.message}`));
+resultPromise.then(() => console.log('It worked!'), (e) => console.log(`No dice: ${e.message}`)); 

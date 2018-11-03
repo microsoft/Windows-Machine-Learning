@@ -22,6 +22,9 @@
 .env.test.local
 .env.production.local
 
+# vscode 
+.vscode/*
+
 # generated static files
 public/*
 !public/favicon.ico

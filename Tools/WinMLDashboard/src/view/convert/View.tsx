@@ -184,7 +184,7 @@ class ConvertView extends React.Component<IComponentProperties, IComponentState>
                     <DefaultButton id='ConverterModelInputBrowse' text='Browse' onClick={this.browseSource}/>
                 </div>
                 <div className='Frameworks'>
-                    <label>Source Framework: </label>
+                    <p>Source Framework: </p>
                     <Select
                         value={this.newOption(this.state.framework)}
                         onChange={this.setFramework}

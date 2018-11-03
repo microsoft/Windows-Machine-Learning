@@ -184,14 +184,14 @@ class ConvertView extends React.Component<IComponentProperties, IComponentState>
                     <DefaultButton id='ConverterModelInputBrowse' text='Browse' onClick={this.browseSource}/>
                 </div>
                 <div className='Frameworks'>
-                    <p>Source Framework model come from: </p>
+                    <label>Source Framework: </label>
                     <Select
                         value={this.newOption(this.state.framework)}
                         onChange={this.setFramework}
                         options={options}
                     />
                 </div>
-                <DefaultButton id='ConvertButton' text='Convert' disabled={!this.state.source} onClick={this.convert}/>
+                <DefaultButton id='ConvertButton' text='Convert' disabled={!this.state.source || !this.state.framework} onClick={this.convert}/>
             </div>
         );
     }

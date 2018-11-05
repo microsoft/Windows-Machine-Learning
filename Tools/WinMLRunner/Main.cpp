@@ -270,13 +270,21 @@ HRESULT EvaluateModel(
             dxgiAdapter1->GetDesc1(&adapterDesc1);
             printf("Use adapter : %S\n", adapterDesc1.Description);
 
+            D3D12_COMMAND_LIST_TYPE commandQueueType = D3D12_COMMAND_LIST_TYPE_DIRECT;
+
             com_ptr<ID3D12Device> d3d12Device;
             hr = D3D12CreateDevice(dxgiAdapter1.get(), D3D_FEATURE_LEVEL::D3D_FEATURE_LEVEL_11_0, __uuidof(ID3D12Device), d3d12Device.put_void());
+            if (FAILED(hr))
+            {
+                hr = D3D12CreateDevice(dxgiAdapter1.get(), D3D_FEATURE_LEVEL::D3D_FEATURE_LEVEL_1_0_CORE, __uuidof(ID3D12Device), d3d12Device.put_void());
+
+                commandQueueType = D3D12_COMMAND_LIST_TYPE_COMPUTE;
+            }
             THROW_IF_FAILED(hr);
 
             com_ptr<ID3D12CommandQueue> d3d12CommandQueue;
             D3D12_COMMAND_QUEUE_DESC commandQueueDesc = {};
-            commandQueueDesc.Type = D3D12_COMMAND_LIST_TYPE_COMPUTE;
+            commandQueueDesc.Type = commandQueueType;
 
             hr = d3d12Device->CreateCommandQueue(&commandQueueDesc, __uuidof(ID3D12CommandQueue), d3d12CommandQueue.put_void());
             THROW_IF_FAILED(hr);
@@ -538,6 +546,8 @@ int main(int argc, char** argv)
     {
         output.SetDefaultCSVFileName();
     }
+
+    D3D12EnableExperimentalFeatures(1, &D3D12ComputeOnlyDevices, NULL, 0);
 
     if (!args.ModelPath().empty() || !args.FolderPath().empty())
     {

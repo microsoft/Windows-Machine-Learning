@@ -9,6 +9,7 @@ public:
 
     bool UseGPUHighPerformance() const { return m_useGPUHighPerformance; }
     bool UseGPUMinPower() const { return m_useGPUMinPower; }
+    UINT GPUAdapterIndex() const { return m_adapterIndex; }
     bool UseBGR() const { return m_useBGR; }
     bool UseGPUBoundInput() const { return m_useGPUBoundInput; }
     bool IgnoreFirstRun() const { return m_ignoreFirstRun; }
@@ -68,6 +69,7 @@ private:
     bool m_useGPU = false;
     bool m_useGPUHighPerformance = false;
     bool m_useGPUMinPower = false;
+    UINT m_adapterIndex = -1;
     bool m_createDeviceOnClient = false;
     bool m_createDeviceInWinML = false;
     bool m_useRGB = false;

@@ -9,6 +9,8 @@
 
 Profiler<WINML_MODEL_TEST_PERF> g_Profiler;
 
+#define THROW_IF_FAILED(hr) { if (FAILED(hr)) throw hresult_error(hr); }
+
 using namespace winrt::Windows::Graphics::DirectX::Direct3D11;
 
 LearningModel LoadModel(const std::wstring path, bool capturePerf, bool silent, OutputHelper& output)
@@ -210,9 +212,12 @@ HRESULT EvaluateModel(
 
     LearningModelSession session = nullptr;
     IDirect3DDevice winrtDevice = nullptr;
+    com_ptr<::IUnknown> spUnkLearningModelDevice;
 
     try
     {
+        UINT adapterIndex = args.GPUAdapterIndex();
+
         if (deviceCreationLocation == DeviceCreationLocation::ClientCode)
         {
             // Creating the device on the client and using it to create the video frame and initialize the session makes sure that everything is on
@@ -244,6 +249,44 @@ HRESULT EvaluateModel(
             winrtDevice = inspectableDevice.as<IDirect3DDevice>();
             LearningModelDevice learningModelDevice = LearningModelDevice::CreateFromDirect3D11Device(winrtDevice);
             session = LearningModelSession(model, learningModelDevice);
+        }
+        else if ((TypeHelper::GetWinmlDeviceKind(deviceType) != LearningModelDeviceKind::Cpu) && (adapterIndex != -1))
+        {
+            HRESULT hr = S_OK;
+
+            com_ptr<IDXGIFactory1> dxgiFactory1;
+            hr = CreateDXGIFactory1(__uuidof(IDXGIFactory), dxgiFactory1.put_void());
+            THROW_IF_FAILED(hr);
+
+            com_ptr<IDXGIAdapter1> dxgiAdapter1;
+            hr = dxgiFactory1->EnumAdapters1(adapterIndex, dxgiAdapter1.put());
+            if (FAILED(hr))
+            {
+                printf("Invalid adapter index : %d\n", adapterIndex);
+                throw hresult(hr);
+            }
+
+            DXGI_ADAPTER_DESC1 adapterDesc1;
+            dxgiAdapter1->GetDesc1(&adapterDesc1);
+            printf("Use adapter : %S\n", adapterDesc1.Description);
+
+            com_ptr<ID3D12Device> d3d12Device;
+            hr = D3D12CreateDevice(dxgiAdapter1.get(), D3D_FEATURE_LEVEL::D3D_FEATURE_LEVEL_11_0, __uuidof(ID3D12Device), d3d12Device.put_void());
+            THROW_IF_FAILED(hr);
+
+            com_ptr<ID3D12CommandQueue> d3d12CommandQueue;
+            D3D12_COMMAND_QUEUE_DESC commandQueueDesc = {};
+            commandQueueDesc.Type = D3D12_COMMAND_LIST_TYPE_COMPUTE;
+
+            hr = d3d12Device->CreateCommandQueue(&commandQueueDesc, __uuidof(ID3D12CommandQueue), d3d12CommandQueue.put_void());
+            THROW_IF_FAILED(hr);
+
+            auto factory = get_activation_factory<LearningModelDevice, ILearningModelDeviceFactoryNative>();
+
+            hr = factory->CreateFromD3D12CommandQueue(d3d12CommandQueue.get(), spUnkLearningModelDevice.put());
+            THROW_IF_FAILED(hr);
+
+            session = LearningModelSession(model, spUnkLearningModelDevice.as<LearningModelDevice>());
         }
         else
         {

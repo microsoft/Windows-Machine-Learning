@@ -63,8 +63,8 @@ namespace Emoji8.Services
                 Debug.WriteLine(ex.Message);
             }
 
-            _device = new LearningModelDevice(LearningModelDeviceKind.Default);
-            _session = new LearningModelSession(_model, _device);
+            // since we do not specify the device, we are using the default CPU option
+            _session = new LearningModelSession(_model);
             
             List<ILearningModelFeatureDescriptor> inputFeatures;
             List<ILearningModelFeatureDescriptor> outputFeatures;

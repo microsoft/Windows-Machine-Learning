@@ -1,0 +1,28 @@
+.RunView {
+    margin: 0px 10px;
+    text-align: initial;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.ModelPathBrowser {
+    width: 100%;
+}
+
+.ms-TextField, .RunViewControls {
+    flex: 1;
+}
+
+.RunViewControls, .RunViewConsole {
+    overflow: auto;
+}
+
+#RunButton {
+    margin: 5px 0px;
+}
+
+.RunViewConsole {
+    display: block;
+    max-height: 400px;
+}

@@ -5,12 +5,14 @@ import { DefaultButton } from 'office-ui-fabric-react/lib/Button';
 
 import IState from '../../datastore/state';
 
+
 import { TextField } from 'office-ui-fabric-react/lib/TextField';
+import { packagedFile } from '../../native/appData';
 import { showNativeOpenDialog } from '../../native/dialog';
 import { execFilePromise } from '../../native/python';
 import './view.css';
 
-const modelRunnerPath = '../../public/WinMLRunner.exe';
+const modelRunnerPath = packagedFile('WinMLRunner.exe');
 
 interface IComponentProperties {
     file: File

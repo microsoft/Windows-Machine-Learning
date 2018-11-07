@@ -1,0 +1,2 @@
+Model Name,Model Binding,Input Binding,Input Type,Device Creation Location,Iterations,First Run Ignored,Load (ms),Bind (ms),Evaluate (ms),Total Time (ms),Working Set Memory usage (evaluate) (MB),GPU Dedicated memory usage (evaluate) (MB),GPU Shared memory usage (evaluate) (MB),Wall-clock Load (ms),Wall-clock Bind (ms),Wall-clock Evaluate (ms),Wall-clock total time (ms)
+E:\Pycharm Project\Onnx\libsvm.onnx,GPU,Tensor,CPU,WinML,1,0,N/A,0.5202,1.2935,1.8137,0.109375,0,0,33.9421,0.8278,1.4978,36.2677

@@ -41,8 +41,10 @@ interface IComponentState {
     inputType: string,
     model: string,
     parameters: string[],
+    showPerf: boolean,
 }
 class RunView extends React.Component<IComponentProperties, IComponentState> {
+    private lastFile = '';
     constructor(props: IComponentProperties) {
         super(props);
         this.state = {
@@ -53,8 +55,17 @@ class RunView extends React.Component<IComponentProperties, IComponentState> {
             inputType: '',
             model: '',
             parameters: [],
+            showPerf: false,
         }
     }
+
+    public componentWillMount() {
+        if(!this.lastFile && this.props.file && this.props.file.path && this.props.file.path !== this.lastFile){
+            this.lastFile = this.props.file.path;
+            this.setState({model: ''});
+        }
+    }
+
     public render() {
         const collabsibleRef: React.RefObject<Collapsible> = React.createRef();
         return (
@@ -80,17 +91,13 @@ class RunView extends React.Component<IComponentProperties, IComponentState> {
         }
     }
 
-    private getView() {
+    private getView = () => {
         switch(this.state.currentStep) {
             case Step.Running:
                 return <Spinner label="Running..." />;
         }
         return (
             <div>
-                <div className='DisplayFlex ModelPathBrowser'>
-                    <TextField id='modelToRun' placeholder='Model Path' value={this.state.model || this.props.file && this.props.file.path} label='Model to Run' onChanged={this.setModel} />
-                    <DefaultButton id='ConverterModelInputBrowse' text='Browse' onClick={this.browseSource}/>
-                </div>
                 <div className='ArgumentsControl'>
                     {this.getArgumentsView()}
                 </div>
@@ -100,25 +107,56 @@ class RunView extends React.Component<IComponentProperties, IComponentState> {
         )
     }
 
-    private getArgumentsView() {
+    private handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const target = event.target;
+        const value = target.checked;
+        const name = target.name;
+        switch (name) {
+            case 'showPerf':
+                this.setState({showPerf: value}, () => {this.setParameters()});
+                break;
+
+        }
+      }
+    private getArgumentsView = () => {
         const deviceOptions = [
             { value: 'CPU', label: 'CPU' },
             { value: 'GPU', label: 'GPU' },
             { value: 'GPUHighPerformance', label: 'GPUHighPerformance' },
             { value: "GPUMinPower", label: 'GPUMinPower' }
           ];
+
+        const modelPath = this.state.model || this.props.file && this.props.file.path;
         return (
             <div className="Arguments">
+                <div className='DisplayFlex ModelPath'>
+                    <label className="label">Input Path: </label>
+                    <TextField id='modelToRun' placeholder='Model Path' value={modelPath} onChanged={this.setModel} />
+                    <DefaultButton id='InputPathBrowse' text='Browse' onClick={this.browseSource}/>
+                </div>
+                <br />
                 <div className='DisplayFlex Device'>
-                    <p>Devices: </p>
-                    <Select
+                    <label className="label">Devices: </label>
+                    <Select className="DeviceOption"
                         value={this.newOption(this.state.device)}
                         onChange={this.setDevice}
                         options={deviceOptions}
-                    />  
+                    />
+                    <form className="perfForm">
+                        <label className="labelPerf">
+                            <input
+                                name="showPerf"
+                                type="checkbox"
+                                checked={this.state.showPerf}
+                                onChange={this.handleInputChange} />
+                            : Perf
+                        </label>
+                    </form>
                 </div>
+                <br />
                 <div className='DisplayFlex Input'>
-                    <TextField id='InputPath' placeholder='image/csv Path' value={this.state.inputPath} onChanged={this.setInputPath} />
+                    <label className="label">Input Path: </label>
+                    <TextField id='InputPath' placeholder='(Optional) image/csv Path' value={this.state.inputPath} onChanged={this.setInputPath} />
                     <DefaultButton id='InputPathBrowse' text='Browse' onClick={this.browseSource}/>
                 </div>
             </div>
@@ -144,8 +182,10 @@ class RunView extends React.Component<IComponentProperties, IComponentState> {
 
     private setParameters = () => {
         const tempParameters = []
-        tempParameters.push('-model')
-        tempParameters.push(this.state.model)
+        if(this.state.model) {
+            tempParameters.push('-model')
+            tempParameters.push(this.state.model)
+        }
         if(this.state.device) {
             switch(this.state.device) {
                 case 'CPU':
@@ -166,6 +206,11 @@ class RunView extends React.Component<IComponentProperties, IComponentState> {
             tempParameters.push('-input')
             tempParameters.push(this.state.inputPath)
         }
+
+        if(this.state.showPerf) {
+            tempParameters.push('-perf')
+        }
+
         this.setState({parameters: tempParameters})
     }
     private browseSource = () => {

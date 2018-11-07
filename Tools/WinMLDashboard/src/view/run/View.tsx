@@ -5,6 +5,8 @@ import { DefaultButton } from 'office-ui-fabric-react/lib/Button';
 
 import IState from '../../datastore/state';
 
+import Select from 'react-select';
+
 import { Spinner } from 'office-ui-fabric-react/lib/Spinner';
 import { TextField } from 'office-ui-fabric-react/lib/TextField';
 import { packagedFile } from '../../native/appData';
@@ -20,6 +22,11 @@ interface IComponentProperties {
     file: File
 }
 
+interface ISelectOpition {
+    label: string;
+    value: string;
+}
+
 enum Step {
     Idle,
     Running,
@@ -29,10 +36,11 @@ enum Step {
 interface IComponentState {
     console: string,
     currentStep: Step,
-    input: string,
+    device: string,
+    inputPath: string,
+    inputType: string,
     model: string,
-
-
+    parameters: string[],
 }
 class RunView extends React.Component<IComponentProperties, IComponentState> {
     constructor(props: IComponentProperties) {
@@ -40,8 +48,11 @@ class RunView extends React.Component<IComponentProperties, IComponentState> {
         this.state = {
             console: '',
             currentStep: Step.Idle,
-            input: '',
-            model: ''
+            device: '',
+            inputPath: '',
+            inputType: '',
+            model: '',
+            parameters: [],
         }
     }
     public render() {
@@ -62,6 +73,13 @@ class RunView extends React.Component<IComponentProperties, IComponentState> {
         )
     }
 
+    private newOption = (item: string):ISelectOpition => {
+        return {
+            label: item,
+            value: item
+        }
+    }
+
     private getView() {
         switch(this.state.currentStep) {
             case Step.Running:
@@ -73,15 +91,83 @@ class RunView extends React.Component<IComponentProperties, IComponentState> {
                     <TextField id='modelToRun' placeholder='Model Path' value={this.state.model || this.props.file && this.props.file.path} label='Model to Run' onChanged={this.setModel} />
                     <DefaultButton id='ConverterModelInputBrowse' text='Browse' onClick={this.browseSource}/>
                 </div>
+                <div className='ArgumentsControl'>
+                    {this.getArgumentsView()}
+                </div>
+                <TextField id='paramters' readOnly={true} placeholder='paramters' value={this.state.parameters.join(' ')} label='paramters to model runner.exe' onChanged={this.updateParameters} />
                 <DefaultButton id='RunButton' text='Run' disabled={!this.state.model} onClick={this.execModelRunner}/>
             </div>
         )
     }
 
-    private setModel = (model: string) => {
-        this.setState({ model })
+    private getArgumentsView() {
+        const deviceOptions = [
+            { value: 'CPU', label: 'CPU' },
+            { value: 'GPU', label: 'GPU' },
+            { value: 'GPUHighPerformance', label: 'GPUHighPerformance' },
+            { value: "GPUMinPower", label: 'GPUMinPower' }
+          ];
+        return (
+            <div className="Arguments">
+                <div className='DisplayFlex Device'>
+                    <p>Devices: </p>
+                    <Select
+                        value={this.newOption(this.state.device)}
+                        onChange={this.setDevice}
+                        options={deviceOptions}
+                    />  
+                </div>
+                <div className='DisplayFlex Input'>
+                    <TextField id='InputPath' placeholder='image/csv Path' value={this.state.inputPath} onChanged={this.setInputPath} />
+                    <DefaultButton id='InputPathBrowse' text='Browse' onClick={this.browseSource}/>
+                </div>
+            </div>
+        )
     }
 
+    private updateParameters = (parameters: string) => {
+        parameters = parameters.replace(/\s+/g,' ').trim();
+        this.setState({parameters: parameters.split(' ')})
+    }
+
+    private setModel = (model: string) => {
+        this.setState({ model }, () => {this.setParameters()} )
+    }
+
+    private setDevice = (device: ISelectOpition) => {
+        this.setState({device: device.value}, () => {this.setParameters()})
+    }
+
+    private setInputPath = (inputPath: string) => {
+        this.setState({inputPath}, () => {this.setParameters()})
+    }
+
+    private setParameters = () => {
+        const tempParameters = []
+        tempParameters.push('-model')
+        tempParameters.push(this.state.model)
+        if(this.state.device) {
+            switch(this.state.device) {
+                case 'CPU':
+                    tempParameters.push('-CPU');
+                    break;
+                case 'GPU':
+                    tempParameters.push('-GPU');
+                    break;
+                case 'GPUHighPerformance':
+                    tempParameters.push('-GPUHighPerformance');
+                    break;
+                case 'GPUMinPower':
+                    tempParameters.push('-GPUMinPower');
+                    break;
+            }
+        }
+        if(this.state.inputPath) {
+            tempParameters.push('-input')
+            tempParameters.push(this.state.inputPath)
+        }
+        this.setState({parameters: tempParameters})
+    }
     private browseSource = () => {
         const openDialogOptions = {
             properties: Array<'openFile'>('openFile'),
@@ -117,9 +203,9 @@ class RunView extends React.Component<IComponentProperties, IComponentState> {
             console: '',
             currentStep: Step.Running,
         });
-        const paramters = ['-model', this.state.model];
+        // const paramters = ['-model', this.state.model];
         try {
-            await execFilePromise(modelRunnerPath, paramters, {}, this.outputListener);
+            await execFilePromise(modelRunnerPath, this.state.parameters, {}, this.outputListener);
         } catch (e) {
             this.printError(e);
             this.setState({

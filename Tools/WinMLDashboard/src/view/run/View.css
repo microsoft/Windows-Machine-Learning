@@ -6,7 +6,7 @@
     flex-direction: column;
 }
 
-.ModelPathBrowser {
+.ModelPathBrowser .Arguments{
     width: 100%;
 }
 
@@ -25,4 +25,8 @@
 .RunViewConsole {
     display: block;
     max-height: 400px;
+}
+
+.Device {
+    width: 50%;
 }

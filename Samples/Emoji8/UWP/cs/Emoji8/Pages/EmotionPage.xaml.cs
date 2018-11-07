@@ -25,13 +25,12 @@ namespace Emoji8
     public sealed partial class EmotionPage : Page
     {
         private static List<Emoji> _resultsEmojis { get; set; }
-        private DispatcherTimer EmojiTimer;
-        private int countdownNum;
-        private int numEmojisLeftToPerform = Constants.EMOJI_NUMBER_TO_DISPLAY;
-        private double nextPercentage;
+        private DispatcherTimer EmojiTimer = null;
+        private int countdownNum = 0;
+        private int numEmojisLeftToPerform = 0;
+        private double nextPercentage = 0;
         private double smoothDelta = 0.01;
         private bool _isInitialized = false;
-        private bool debugMode = false;
         private bool _isPaused = false;
         private DateTime _pageNavigatedToTime;
 
@@ -42,6 +41,7 @@ namespace Emoji8
         public EmotionPage()
         {
             this.InitializeComponent();
+            numEmojisLeftToPerform = Constants.EMOJI_NUMBER_TO_DISPLAY;
             LoadingMessage.Text = GameText.LOADER.GetString("SecondScreenInstructions");
         }
 
@@ -149,7 +149,7 @@ namespace Emoji8
             if (countdownNum % Constants.DIVISIBLE_FACTOR == 0)
             {
                 //display pattern 5...4...3...2...1...5... [...] ...2...1...0
-                if ((numEmojisLeftToPerform > -1 && countdownNum != 0) || 
+                if ((numEmojisLeftToPerform >= 0 && countdownNum != 0) || 
                     (numEmojisLeftToPerform == 0 && countdownNum == 0) )
                 {
                     UpdateCountdownNumber();   
@@ -282,12 +282,9 @@ namespace Emoji8
             Application.Current.Suspending -= Current_Suspending;
             Application.Current.Resuming -= Current_Resuming;
 
-            if (!debugMode)
-            {
-                CleanUpTimer();
-                await CleanUpCameraAsync();
-                Frame.Navigate(typeof(ResultsPage), _resultsEmojis);
-            }
+            CleanUpTimer();
+            await CleanUpCameraAsync();
+            Frame.Navigate(typeof(ResultsPage), _resultsEmojis);
         }
 
         private async Task CleanUpCameraAsync()

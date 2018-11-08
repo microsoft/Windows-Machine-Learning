@@ -1,2 +1,0 @@
-Model Name,Model Binding,Input Binding,Input Type,Device Creation Location,Iterations,First Run Ignored,Load (ms),Bind (ms),Evaluate (ms),Total Time (ms),Working Set Memory usage (evaluate) (MB),GPU Dedicated memory usage (evaluate) (MB),GPU Shared memory usage (evaluate) (MB),Wall-clock Load (ms),Wall-clock Bind (ms),Wall-clock Evaluate (ms),Wall-clock total time (ms)
-E:\Pycharm Project\Onnx\resnet.onnx,GPU,Tensor,CPU,WinML,1,0,N/A,1.795,46.6417,48.4367,1.72266,1.36328,1,86.1975,2.0861,47.2536,135.537

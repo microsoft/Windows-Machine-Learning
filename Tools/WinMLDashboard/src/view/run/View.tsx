@@ -59,12 +59,14 @@ class RunView extends React.Component<IComponentProperties, IComponentState> {
         }
     }
 
-    public componentWillMount() {
-        if(!this.lastFile && this.props.file && this.props.file.path && this.props.file.path !== this.lastFile){
-            this.lastFile = this.props.file.path;
-            this.setState({model: ''});
-        }
-    }
+    // public componentDidMount() {
+    //     if(this.props.file && this.props.file.path) {
+    //         if(!this.lastFile || this.props.file.path !== this.lastFile){
+    //             this.setState({model: this.props.file.path}, () => {this.setParameters()});
+    //         }
+    //         this.lastFile = this.props.file.path;
+    //     }
+    // }
 
     public render() {
         const collabsibleRef: React.RefObject<Collapsible> = React.createRef();
@@ -125,13 +127,18 @@ class RunView extends React.Component<IComponentProperties, IComponentState> {
             { value: 'GPUHighPerformance', label: 'GPUHighPerformance' },
             { value: "GPUMinPower", label: 'GPUMinPower' }
           ];
+        
+        if(this.props.file && this.props.file.path && this.props.file.path !== this.lastFile) {
+            this.lastFile = this.props.file.path;
+            this.setState({model: this.props.file.path}, () => {this.setParameters()})
+        }
+        // const modelPath = this.state.model || this.props.file && this.props.file.path;
 
-        const modelPath = this.state.model || this.props.file && this.props.file.path;
         return (
             <div className="Arguments">
                 <div className='DisplayFlex ModelPath'>
                     <label className="label">Input Path: </label>
-                    <TextField id='modelToRun' placeholder='Model Path' value={modelPath} onChanged={this.setModel} />
+                    <TextField id='modelToRun' placeholder='Model Path' value={this.state.model} onChanged={this.setModel} />
                     <DefaultButton id='InputPathBrowse' text='Browse' onClick={this.browseSource}/>
                 </div>
                 <br />

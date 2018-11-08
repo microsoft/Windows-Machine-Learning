@@ -37,6 +37,7 @@ public/*
 !public/requirements.txt
 !public/ConverterView.png
 !public/EditorView.png
+!public/progress_bar.gif
 
 npm-debug.log*
 yarn-debug.log*

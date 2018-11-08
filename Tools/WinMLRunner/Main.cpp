@@ -88,7 +88,7 @@ std::vector<ILearningModelFeatureValue> GenerateInputFeatures(
         }
         else
         {
-            auto imageFeature = BindingUtilities::CreateBindableImage(description, args.ImagePath(), inputBindingType, inputDataType, winrtDevice);
+            auto imageFeature = BindingUtilities::CreateBindableImage(description, args.ImagePath(), inputBindingType, inputDataType, winrtDevice, args);
             inputFeatures.push_back(imageFeature);
         }
     }

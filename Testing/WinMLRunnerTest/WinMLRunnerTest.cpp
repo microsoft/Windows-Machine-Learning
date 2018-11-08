@@ -470,8 +470,17 @@ namespace WinMLRunnerTest
             auto const curPath = FileHelper::GetModulePath();
             std::wstring command = curPath +
                 L"./WinMLRunner " + L"-model " + curPath + L"SqueezeNet.onnx "
-                + L" -input " + curPath + L"horizontal-crop.png";
+                + L" -input " + curPath + L"fish_112.png";
             Assert::AreNotEqual(0, RunProc((wchar_t *)command.c_str()));
+        }
+
+        TEST_METHOD(AutoScaleImage)
+        {
+            auto const curPath = FileHelper::GetModulePath();
+            std::wstring command = curPath +
+                L"./WinMLRunner " + L"-model " + curPath + L"SqueezeNet.onnx "
+                + L" -input " + curPath + L"fish_112.png -autoScale Cubic";
+            Assert::AreEqual(0, RunProc((wchar_t*)command.c_str()));
         }
     };
 

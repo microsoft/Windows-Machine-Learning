@@ -137,9 +137,9 @@ class RunView extends React.Component<IComponentProperties, IComponentState> {
         return (
             <div className="Arguments">
                 <div className='DisplayFlex ModelPath'>
-                    <label className="label">Input Path: </label>
+                    <label className="label">Model Path: </label>
                     <TextField id='modelToRun' placeholder='Model Path' value={this.state.model} onChanged={this.setModel} />
-                    <DefaultButton id='InputPathBrowse' text='Browse' onClick={this.browseSource}/>
+                    <DefaultButton id='ModelPathBrowse' text='Browse' onClick={this.browseModel}/>
                 </div>
                 <br />
                 <div className='DisplayFlex Device'>
@@ -164,7 +164,7 @@ class RunView extends React.Component<IComponentProperties, IComponentState> {
                 <div className='DisplayFlex Input'>
                     <label className="label">Input Path: </label>
                     <TextField id='InputPath' placeholder='(Optional) image/csv Path' value={this.state.inputPath} onChanged={this.setInputPath} />
-                    <DefaultButton id='InputPathBrowse' text='Browse' onClick={this.browseSource}/>
+                    <DefaultButton id='InputPathBrowse' text='Browse' onClick={this.browseInput}/>
                 </div>
             </div>
         )
@@ -220,7 +220,7 @@ class RunView extends React.Component<IComponentProperties, IComponentState> {
 
         this.setState({parameters: tempParameters})
     }
-    private browseSource = () => {
+    private browseModel = () => {
         const openDialogOptions = {
             properties: Array<'openFile'>('openFile'),
         };
@@ -231,6 +231,19 @@ class RunView extends React.Component<IComponentProperties, IComponentState> {
                 }
             });
     }
+
+    private browseInput = () => {
+        const openDialogOptions = {
+            properties: Array<'openFile'>('openFile'),
+        };
+        showNativeOpenDialog(openDialogOptions)
+            .then((filePaths) => {
+                if (filePaths) {
+                    this.setInputPath(filePaths[0]);
+                }
+            });
+    }
+
 
     private printError = (error: string | Error) => {
         const message = typeof error === 'string' ? error : (`${error.stack ? `${error.stack}: ` : ''}${error.message}`);

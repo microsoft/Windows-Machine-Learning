@@ -1,6 +1,6 @@
 # Emoji8
 
-![Emoji8 logo](https://github.com/Microsoft/Windows-Machine-Learning/blob/master/Samples/Emoji8/UWP/cs/Emoji8/Assets/emoji8Smaller.png)
+![Emoji8 logo](Emoji8/Assets/emoji8Smaller.png)
 
 ## Overview
 

@@ -11,7 +11,6 @@ Emoji8 is sample UWP application [available in the Store](https://aka.ms/getemoj
 This app will give you a great end-to-end example of how you can use the Windows ML APIs to create simple yet magical experiences.
 
 
-
 ## Assumptions
    This sample assumes you have the following installed/established:
 

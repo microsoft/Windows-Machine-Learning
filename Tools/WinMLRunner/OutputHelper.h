@@ -160,19 +160,19 @@ public:
                 TypeHelper::Stringify(deviceCreationLocation).c_str()
             );
 
-            std::cout << "  Load: " << (isnan(loadTime) ? "N/A" : std::to_string(loadTime) + "ms") << std::endl;
-            std::cout << "  Bind: " << bindTime << std::endl;
-            std::cout << "  Evaluate: " << evalTime << std::endl;
-            std::cout << "  Total Time: " << totalTime << std::endl;
-            std::cout << "  Wall-Clock Load: " << m_clockLoadTime << std::endl;
-            std::cout << "  Wall-Clock Bind: " << clockBindTime << std::endl;
-            std::cout << "  Wall-Clock Evaluate: " << clockEvalTime << std::endl;
-            std::cout << "  Total Wall-Clock Time: " << (m_clockLoadTime + clockBindTime + clockEvalTime) << std::endl;
+            std::cout << "  Load: " << (isnan(loadTime) ? "N/A" : std::to_string(loadTime) + " ms") << std::endl;
+            std::cout << "  Bind: " << bindTime << " ms" << std::endl;
+            std::cout << "  Evaluate: " << evalTime << " ms" << std::endl;
+            std::cout << "  Total Time: " << totalTime << " ms" << std::endl;
+            std::cout << "  Wall-Clock Load: " << m_clockLoadTime << " ms" << std::endl;
+            std::cout << "  Wall-Clock Bind: " << clockBindTime << " ms" << std::endl;
+            std::cout << "  Wall-Clock Evaluate: " << clockEvalTime << " ms" << std::endl;
+            std::cout << "  Total Wall-Clock Time: " << (m_clockLoadTime + clockBindTime + clockEvalTime) << " ms" << std::endl;
             std::cout << "  Working Set Memory usage (evaluate): " << gpuEvalDedicatedMemoryUsage << " MB" << std::endl;
             std::cout << "  Dedicated Memory Usage (evaluate): " << gpuEvalDedicatedMemoryUsage << " MB" << std::endl;
             std::cout << "  Shared Memory Usage (evaluate): " << gpuEvalSharedMemoryUsage << " MB" << std::endl;
 
-            std::cout << std::endl << std::endl;
+            std::cout << std::endl << std::endl << std::endl;
         }
     }
 

@@ -174,8 +174,7 @@ class ConvertView extends React.Component<IComponentProperties, IComponentState>
             { value: 'Keras', label: 'Keras' },
             { value: 'scikit-learn', label: 'scikit-learn' },
             { value: "xgboost", label: 'xgboost' },
-            { value: 'libSVM', label: 'libSVM' },
-            { value: 'TensorFlow', label: 'TensorFlow' }
+            { value: 'libSVM', label: 'libSVM' }
           ];
         return (
             <div>

@@ -38,6 +38,7 @@ public/*
 !public/ConverterView.png
 !public/EditorView.png
 !public/progress_bar.gif
+!public/WinMLRunner.exe
 
 npm-debug.log*
 yarn-debug.log*

@@ -1,0 +1,66 @@
+.RunView {
+    margin: 0px 10px;
+    text-align: initial;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.Arguments{
+    width: 100%;
+}
+
+.ms-TextField, .RunViewControls {
+    flex: 1;
+}
+
+.RunViewControls, .RunViewConsole {
+    overflow: auto;
+}
+
+#RunButton {
+    margin: 5px 0px;
+}
+
+.RunViewConsole {
+    display: block;
+    max-height: 400px;
+}
+
+.DeviceOption {
+    width: 40%;
+}
+
+input[type=checkbox] {
+    transform: scale(1.5);
+}
+
+.perfForm {
+    margin-left: 3%;
+    padding-top: 10px;
+}
+
+.label .labelPerf{
+    font-family: "Segoe UI", "Segoe UI Web (West European)", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
+    -webkit-font-smoothing: antialiased;
+    font-size: 14px;
+    font-weight: 400;
+    color: rgb(51, 51, 51);
+    box-sizing: border-box;
+    box-shadow: none;
+    margin-top: 0px;
+    margin-right: 0px;
+    margin-bottom: 0px;
+    margin-left: 0px;
+    display: block;
+    padding-top: 10px;
+    padding-right: 0px;
+    padding-bottom: 0px;
+    padding-left: 0px;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+}
+
+.label {
+    width: 10%;
+}

@@ -128,7 +128,7 @@ interface IOutputListener {
     stderr: (output: string) => void,
 }
 
-async function execFilePromise(file: string, args: string[], options?: ExecFileOptions, listener?: IOutputListener) {
+export async function execFilePromise(file: string, args: string[], options?: ExecFileOptions, listener?: IOutputListener) {
     const run = async () => new Promise((resolve, reject) => {
         const childProcess = execFile(file, args, {...options});
         if (listener) {

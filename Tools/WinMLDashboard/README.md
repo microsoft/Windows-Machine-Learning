@@ -5,10 +5,11 @@ Developer dashboard for Windows ML and ONNX.
 ## What you can with this tool
 1. The tool enables you to view and modify the metadata of the model and the metadata of input and output nodes.
 
-![Editor](./public/EditorView.png)
-
+   <img src="./public/EditorView.png" width="700">
 2. The tool enables you to convert models to ONNX.
-![Conveter](./public/ConverterView.png)
+   
+   <img src="./public/ConverterView.png" width="700">
+
 ## Build from source
 
 #### Prerequisites

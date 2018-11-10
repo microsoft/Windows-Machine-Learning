@@ -1,5 +1,6 @@
 #pragma once
 #include "Common.h"
+#include "CommandLineArgs.h"
 #include <fstream>
 #include <ctime>
 #include <locale>
@@ -14,7 +15,17 @@ using namespace Windows::Storage::Streams;
 class OutputHelper
 {
 public:
-    OutputHelper(bool silent) : m_silent(silent) {}
+    OutputHelper(int num, bool silent)
+    {
+        m_silent = silent;
+        m_CPUWorkingDiff.resize(num, 0.0);
+        m_CPUWorkingStart.resize(num, 0.0);
+        m_GPUSharedDiff.resize(num, 0.0);
+        m_GPUDedicatedDiff.resize(num, 0.0);
+        m_GPUSharedStart.resize(num, 0.0);
+        m_Result.resize(num, "");
+        m_Hash.resize(num, 0);
+    }
 
     void PrintLoadingInfo(const std::wstring& modelPath) const
     {
@@ -273,6 +284,34 @@ public:
         return false;
     }
 
+    void SaveEvalTimes(Profiler<WINML_MODEL_TEST_PERF> &profiler, uint32_t iterNum)
+    {
+        m_CPUWorkingDiff[iterNum] = profiler[EVAL_MODEL].GetCpuWorkingDiff();
+        m_CPUWorkingStart[iterNum] = profiler[EVAL_MODEL].GetCpuWorkingStart();
+        m_GPUSharedDiff[iterNum] = profiler[EVAL_MODEL].GetGpuSharedDiff();
+        m_GPUSharedStart[iterNum] = profiler[EVAL_MODEL].GetGpuSharedStart();
+        m_GPUDedicatedDiff[iterNum] = profiler[EVAL_MODEL].GetGpuDedicatedDiff();
+    }
+    
+    void SaveResult(uint32_t iterNum, std::string &iterRes, int &tensorHash)
+    {
+        m_Result[iterNum] = iterRes;
+        m_Hash[iterNum] = tensorHash;
+    }
+    
+    void SetDefaultCSVFileNamePerIteration()
+    {
+        auto time = std::time(nullptr);
+        struct tm localTime;
+        localtime_s(&localTime, &time);
+
+        std::ostringstream oss;
+        oss << std::put_time(&localTime, "%Y-%m-%d %H.%M.%S");
+        fileNameIter = "PerIterPerf [" + oss.str() + "].csv";
+        std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
+        m_csvFileNamePerIteration = converter.from_bytes(fileNameIter);
+    }
+
     void SetDefaultCSVFileName() 
     {
         auto time = std::time(nullptr);
@@ -379,6 +418,68 @@ public:
             fout.close();
         }
     }
+
+    void WritePerformanceDataToCSVPerIteration(Profiler<WINML_MODEL_TEST_PERF> &profiler, const CommandLineArgs& args, std::wstring model, std::wstring img)
+    {
+        if (m_csvFileNamePerIteration.length() > 0)
+        {
+            bool bNewFile = false;
+            std::ifstream fin;
+            fin.open(m_csvFileNamePerIteration);
+            std::filebuf* outbuf = fin.rdbuf();
+            if (EOF == outbuf->sbumpc())
+            {
+                bNewFile = true;
+            }
+            fin.close();
+            
+            std::ofstream fout;
+            fout.open(m_csvFileNamePerIteration, std::ios_base::app);
+            
+            std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
+            std::string modelName = converter.to_bytes(model);
+            std::string imgName = converter.to_bytes(img);
+            
+            if (bNewFile)
+            {
+                fout << "Model Name" << ","
+                     << "Image Name" << ","
+                     << "Iterations" << ","
+                     << "Iteration Number " << ","
+                     << "Result" << ","
+                     << "Hash" << ","
+                     << "CPU Working Set Diff (MB)" << ","
+                     << "CPU Working Set Start (MB)" << ","
+                     << "GPU Shared Memory Diff (MB)" << ","
+                     << "GPU Shared Memory Start (MB)" << ","
+                     << "GPU Dedicated Memory Diff (MB)" << ","
+                     << "Load (ms)" << ","
+                     << "Bind (ms)" << ","
+                     << "Evaluate (ms)" << "," << std::endl;
+            }
+
+            m_clockLoadTimes.resize(args.NumIterations(), 0.0);
+
+            for (int i = 0; i < args.NumIterations(); i++) 
+            {
+                fout << modelName << ","
+                     << imgName << ","
+                     << args.NumIterations() << ","
+                     << i + 1 << ","
+                     << m_Result[i] << ","
+                     << m_Hash[i] << ","
+                     << m_CPUWorkingDiff[i] << ","
+                     << m_CPUWorkingStart[i] << ","
+                     << m_GPUSharedDiff[i] << ","
+                     << m_GPUSharedStart[i] << ","
+                     << m_GPUDedicatedDiff[i] << ","
+                     << m_clockLoadTimes[i] << ","
+                     << m_clockBindTimes[i] << ","
+                     << m_clockEvalTimes[i] << std::endl;
+            }
+            fout.close();
+        }
+    }
     
     void ResetBindAndEvalTImes() 
     {
@@ -391,14 +492,25 @@ public:
 
     double m_clockLoadTime = 0;
 
+    std::vector<double> m_clockLoadTimes;
     std::vector<double> m_clockBindTimes;
     std::vector<double> m_clockEvalTimes;
 
 private:
     std::wstring m_csvFileName;
+    std::wstring m_csvFileNamePerIteration;
+    std::string fileNameIter;
 
     double m_clockBindTime = 0;
     double m_clockEvalTime = 0;
 
     bool m_silent = false;
+
+    std::vector<double> m_CPUWorkingDiff;
+    std::vector<double> m_CPUWorkingStart;
+    std::vector<double> m_GPUSharedDiff;
+    std::vector<double> m_GPUSharedStart;
+    std::vector<double> m_GPUDedicatedDiff;
+    std::vector<std::string> m_Result;
+    std::vector<int> m_Hash;
 };

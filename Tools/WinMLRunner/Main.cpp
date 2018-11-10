@@ -30,6 +30,7 @@ LearningModel LoadModel(const std::wstring path, bool capturePerf, bool silent, 
         {
             WINML_PROFILING_STOP(g_Profiler, WINML_MODEL_TEST_PERF::LOAD_MODEL);
             output.m_clockLoadTime = timer.Stop();
+            output.m_clockLoadTimes.push_back(output.m_clockLoadTime);
         }
     }
     catch (hresult_error hr)
@@ -146,7 +147,8 @@ HRESULT EvaluateModel(
     bool isGarbageData,
     const CommandLineArgs& args,
     OutputHelper& output,
-    bool capturePerf
+    bool capturePerf,
+    uint32_t iterNum
 )
 {
     LearningModelEvaluationResult result = nullptr;
@@ -168,6 +170,10 @@ HRESULT EvaluateModel(
         {
             WINML_PROFILING_STOP(g_Profiler, WINML_MODEL_TEST_PERF::EVAL_MODEL);
             output.m_clockEvalTimes.push_back(timer.Stop());
+            if (args.PerIterCapture())
+            {
+                output.SaveEvalTimes(g_Profiler, iterNum);
+            }
         }
     }
     catch (winrt::hresult_error hr)
@@ -185,6 +191,13 @@ HRESULT EvaluateModel(
     if (!isGarbageData && !args.Silent())
     {
         BindingUtilities::PrintEvaluationResults(model, args, result.Outputs());
+    }
+
+    if (args.PerIterCapture())
+    {
+        int Hash = 1;
+        std::string Res = BindingUtilities::SaveEvaluationResults(model, args, result.Outputs(), output, iterNum + 1, Hash);
+        output.SaveResult(iterNum, Res, Hash);
     }
 
     return S_OK;
@@ -270,12 +283,12 @@ HRESULT EvaluateModel(
     // Add one more iteration if we ignore the first run
     uint32_t numIterations = args.NumIterations() + args.IgnoreFirstRun();
 
-    bool isGarbageData = !args.CsvPath().empty() || !args.ImagePath().empty();
+    bool isGarbageData = !args.CsvPath().empty() || args.ImagePath().empty();
 
     // Run the binding + evaluate multiple times and average the results
     for (uint32_t i = 0; i < numIterations; i++)
     {
-        bool captureIterationPerf = args.PerfCapture() && (!args.IgnoreFirstRun() || i > 0);
+        bool captureIterationPerf = ( args.PerfCapture() && (!args.IgnoreFirstRun() || i > 0) ) || (args.PerIterCapture());
 
         output.PrintBindingInfo(i + 1, deviceType, inputBindingType, inputDataType, deviceCreationLocation);
 
@@ -289,7 +302,7 @@ HRESULT EvaluateModel(
 
         output.PrintEvaluatingInfo(i + 1, deviceType, inputBindingType, inputDataType, deviceCreationLocation);
 
-        HRESULT evalResult = EvaluateModel(model, context, session, isGarbageData, args, output, captureIterationPerf);
+        HRESULT evalResult = EvaluateModel(model, context, session, isGarbageData, args, output, captureIterationPerf, i);
 
         if (FAILED(evalResult))
         {
@@ -320,7 +333,7 @@ HRESULT EvaluateModels(
 
         try
         {
-            model = LoadModel(path, args.PerfCapture(), args.Silent(), output);
+            model = LoadModel(path, args.PerfCapture()||args.PerIterCapture(), args.Silent(), output);
         }
         catch (hresult_error hr)
         {
@@ -345,7 +358,7 @@ HRESULT EvaluateModels(
                 {
                     for (auto deviceCreationLocation : deviceCreationLocations)
                     {
-                        if (args.PerfCapture())
+                        if (args.PerfCapture() || args.PerIterCapture())
                         {
                             output.ResetBindAndEvalTImes();
                             g_Profiler.Reset();
@@ -380,6 +393,11 @@ HRESULT EvaluateModels(
                                 TypeHelper::Stringify(deviceCreationLocation),
                                 args.IgnoreFirstRun()
                             );
+                        }
+
+                        if (args.PerIterCapture())
+                        {
+                            output.WritePerformanceDataToCSVPerIteration(g_Profiler, args, args.ModelPath(), args.ImagePath());
                         }
                     }
                 }
@@ -481,7 +499,7 @@ int main(int argc, char** argv)
     winrt::init_apartment();
 
     CommandLineArgs args;
-    OutputHelper output(args.Silent());
+    OutputHelper output(args.NumIterations(), args.Silent());
 
     // Profiler is a wrapper class that captures and stores timing and memory usage data on the
     // CPU and GPU.
@@ -494,6 +512,10 @@ int main(int argc, char** argv)
     else
     {
         output.SetDefaultCSVFileName();
+    }
+
+    if (args.PerIterCapture()) {
+        output.SetDefaultCSVFileNamePerIteration();
     }
 
     if (!args.ModelPath().empty() || !args.FolderPath().empty())

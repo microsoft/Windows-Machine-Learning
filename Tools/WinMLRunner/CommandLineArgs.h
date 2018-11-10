@@ -15,6 +15,7 @@ public:
     bool PerfCapture() const { return m_perfCapture; }
     bool EnableDebugOutput() const { return m_debug; }
     bool Silent() const { return m_silent; }
+    bool SaveTensor() const { return m_saveTensor; }
     bool CreateDeviceOnClient() const { return m_createDeviceOnClient; }
     bool AutoScale() const { return m_autoScale; }
     BitmapInterpolationMode AutoScaleInterpMode() const { return m_autoScaleInterpMode; }
@@ -64,6 +65,11 @@ public:
 
     uint32_t NumIterations() const { return m_numIterations; }
 
+    std::string SaveTensorMode() const
+    {
+        return m_saveTensorMode;
+    }
+
 private:
     bool m_perfCapture = false;
     bool m_useCPU = false;
@@ -82,6 +88,8 @@ private:
     bool m_silent = false;
     bool m_autoScale = false;
     BitmapInterpolationMode m_autoScaleInterpMode = BitmapInterpolationMode::Cubic;
+    bool m_saveTensor = false;
+    std::string m_saveTensorMode = "First";
 
     std::wstring m_modelFolderPath;
     std::wstring m_modelPath;

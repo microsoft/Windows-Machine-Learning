@@ -3,7 +3,8 @@
 #include <time.h>
 #include "Common.h"
 #include "ModelBinding.h"
-#include "CommandLineArgs.h"
+#include "Windows.AI.Machinelearning.Native.h"
+
 
 using namespace winrt::Windows::Media;
 using namespace winrt::Windows::Storage;
@@ -415,6 +416,141 @@ namespace BindingUtilities
                 }
             }
             std::cout << std::endl;
+        }
+    }
+
+    template< typename K, typename V>
+    winrt::Windows::Foundation::Collections::IMap<int64_t, float>& SaveOutputSequenceBinding(IMapView<hstring, winrt::Windows::Foundation::IInspectable> results, hstring name, std::string &iterationResult)
+    {
+        auto map = results.Lookup(name).as<IVectorView<IMap<int64_t, float>>>().GetAt(0);
+        K maxKey = -1;
+        V maxVal = -1;
+
+        auto iter = map.First();
+        while (iter.HasCurrent())
+        {
+            auto pair = iter.Current();
+            if (pair.Value() > maxKey)
+            {
+                maxVal = pair.Value();
+                maxKey = pair.Key();
+            }
+            iter.MoveNext();
+        }
+        iterationResult = "Key: " + std::to_string(maxKey) + "; Value: " + std::to_string(maxVal);
+        return map;
+    }
+
+    void SaveEvaluationResults(const LearningModel &model, const CommandLineArgs &args, const IMapView<hstring, winrt::Windows::Foundation::IInspectable>& results, OutputHelper &output, uint32_t iterationNum)
+    {
+        std::string iterationResult;
+        size_t hash = 0;
+
+        for (auto&& desc : model.OutputFeatures())
+        {
+            if (desc.Kind() == LearningModelFeatureKind::Tensor)
+            {
+                std::wstring name(desc.Name());
+                TensorFeatureDescriptor tensorDescriptor = desc.as<TensorFeatureDescriptor>();
+                TensorKind tensorKind = tensorDescriptor.TensorKind();
+
+                switch (tensorKind)
+                {
+                case TensorKind::String:
+                {
+                    auto resultVector = results.Lookup(desc.Name()).as<TensorString>().GetAsVectorView();
+                    auto res = resultVector.GetAt(0).data();
+                    std::wstring widestr(res);
+                    std::string temp(widestr.begin(), widestr.end());
+                    iterationResult = temp;
+                    output.WriteTensorResultToCSV(resultVector, iterationNum, args);
+
+                    /******************************************************************************
+                    com_ptr<ITensorNative> itn = results.Lookup(desc.Name()).as<ITensorNative>();
+                    float* pCPUTensor;
+                    uint32_t uCapacity;
+                    HRESULT(itn->GetBuffer(reinterpret_cast<BYTE**>(&pCPUTensor), &uCapacity));
+                    hash = winrt::impl::hash_data(pCPUTensor, 8 * resultVector.Size());
+                    std::cout << "Hash: " << hash << std::endl;
+                    /*******************************************************************************/
+                }
+                break;
+
+                case TensorKind::Float:
+                {
+                    auto resultVector = results.Lookup(desc.Name()).as<TensorFloat>().GetAsVectorView();     
+                    UINT maxIndex = 0;
+                    auto maxValue = resultVector.GetAt(0);
+                    for (UINT i = 0; i < resultVector.Size(); i++)
+                    {
+                        float val = resultVector.GetAt(i);
+                        if (maxValue < val)
+                        {
+                            maxValue = val;
+                            maxIndex = i;
+                        }
+                    }
+                    iterationResult = "Index: " + std::to_string(maxIndex) + "; Value: " + std::to_string(maxValue);
+                    output.WriteTensorResultToCSV(resultVector, iterationNum, args);
+
+                    com_ptr<ITensorNative> itn = results.Lookup(desc.Name()).as<ITensorNative>();
+                    float* pCPUTensor;
+                    uint32_t uCapacity;
+                    HRESULT(itn->GetBuffer(reinterpret_cast<BYTE**>(&pCPUTensor), &uCapacity));
+                    hash = winrt::impl::hash_data(pCPUTensor, 4 * resultVector.Size());
+                }
+                break;
+
+                case TensorKind::Int64:
+                {
+                    auto resultVector = results.Lookup(desc.Name()).as<TensorInt64Bit>().GetAsVectorView();
+                    auto res = resultVector.GetAt(0);
+                    iterationResult = "Result: " + std::to_string(res);
+                    unsigned long val = resultVector.GetAt(0);
+                    output.WriteTensorResultToCSV(resultVector, iterationNum, args);
+
+                    com_ptr<ITensorNative> itn = results.Lookup(desc.Name()).as<ITensorNative>();
+                    float* pCPUTensor;
+                    uint32_t uCapacity;
+                    HRESULT(itn->GetBuffer(reinterpret_cast<BYTE**>(&pCPUTensor), &uCapacity));
+                    hash = winrt::impl::hash_data(pCPUTensor, 8 * resultVector.Size());
+                }
+                break;
+
+                default:
+                {
+                    std::cout << "BindingUtilities: output type not implemented.";
+                }
+                break;
+                }
+                output.SaveResult(iterationNum - 1, iterationResult, hash);
+            }
+
+            else if (desc.Kind() == LearningModelFeatureKind::Sequence)
+            {
+                std::cout << "**********WARNING**********\nSequence Type Output Encountered\n PerIteration Results needs to be verified";
+                auto seqDescriptor = desc.as<SequenceFeatureDescriptor>();
+                auto mapDescriptor = seqDescriptor.ElementDescriptor().as<MapFeatureDescriptor>();
+                auto keyKind = mapDescriptor.KeyKind();
+                auto valueKind = mapDescriptor.ValueDescriptor();
+                auto tensorKind = valueKind.as<TensorFeatureDescriptor>().TensorKind();
+                winrt::Windows::Foundation::Collections::IMap<int64_t, float> KeyValue;
+                switch (keyKind)
+                {
+                case TensorKind::Int64:
+                {
+                    KeyValue = SaveOutputSequenceBinding<int64_t, float>(results, desc.Name(), iterationResult);
+                }
+                break;
+
+                case TensorKind::Float:
+                {
+                    KeyValue = SaveOutputSequenceBinding<float, float>(results, desc.Name(), iterationResult);
+                }
+                break;
+                }
+                output.WriteSequenceResultToCSV(KeyValue, iterationNum, args);
+            }
         }
     }
  };

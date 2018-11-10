@@ -29,7 +29,8 @@ void CommandLineArgs::PrintUsage() {
     std::cout << "  -IgnoreFirstRun : ignore the first run in the perf results when calculating the average" << std::endl;
     std::cout << "  -silent: only errors are printed to the console" << std::endl;
     std::cout << "  -debug: print trace logs" << std::endl;
-    std::cout << "  -autoScale <interpolationMode>: Enable image autoscaling and set the interpolation mode [Nearest, Linear, Cubic, Fant]" << std::endl;
+    std::cout << "  -autoScale <interpolationMode>: Enable image autoscaling and set the interpolation mode [Nearest, Linear, Cubic, Fant]" << std::endl; 
+    std::cout << "  -saveTensorData <Mode>: save first iteration or all iteration output tensor results to csv file [First, All]" << std::endl;
 }
 
 CommandLineArgs::CommandLineArgs()
@@ -145,6 +146,26 @@ CommandLineArgs::CommandLineArgs()
                 return;
             }
         }
+
+        else if ((_wcsicmp(args[i], L"-saveTensorData") == 0) && (i + 1 < numArgs))
+        {
+            m_saveTensor = true;
+            if (_wcsicmp(args[++i], L"First") == 0)
+            {
+                m_saveTensorMode = "First";
+            }
+            else if (_wcsicmp(args[i], L"All") == 0)
+            {
+                m_saveTensorMode = "All";
+            }
+            else
+            {
+                std::cout << "Unknown Mode!" << std::endl;
+                PrintUsage();
+                return;
+            }
+        }
+
         else if ((_wcsicmp(args[i], L"/?") == 0))
         {
             PrintUsage();

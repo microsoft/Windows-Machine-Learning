@@ -18,7 +18,7 @@ Developer dashboard for Windows ML and ONNX.
 |Python3     |3.4+   |[here](https://www.python.org/)|`python --version`|
 |Yarn        |latest |[here](https://yarnpkg.com/en/docs/install)|`yarn --version`|
 |Node.js     |latest |[here](https://nodejs.org/en/)|`node --version`|
-|Git         |latest |[here](https://git-scm.com/download/win)|`git --version`|
+|Git         |latest |[here](https://git-scm.com/download/win)|`git --version`
 
 > All four prerequisites should be **added to Enviroment Path**.
 

@@ -1,4 +1,4 @@
-const {app, ipcMain, protocol, BrowserWindow} = require('electron');
+const {app, ipcMain, protocol, BrowserWindow, dialog} = require('electron');
 const fs = require('fs');
 const path = require('path');
 const url = require('url');
@@ -96,9 +96,43 @@ app.on('activate', () => {
 });
 
 ipcMain.on('show-about-window', () => {
+    showAboutDialog()
+    //openAboutWindow()
+});
+
+var pkg = {
+    get package (){
+        var _package; 
+        if (!_package) {
+            var appPath = app.getAppPath();
+            var file = appPath + '/package.json'; 
+            var data = fs.readFileSync(file);
+            _package = JSON.parse(data);
+            _package.date = new Date(fs.statSync(file).mtime);
+        }    
+        return _package;
+    }    
+}
+
+function showAboutDialog() {
+    var commit = ' '; //package.author;
+    var date = pkg.package.date;
+    var details = [];
+    details.push('Version: ' + app.getVersion() + ' (pre-release)');
+    details.push('Commit: ' + '0');
+    if (date) {
+        details.push('Date: ' + (date.getMonth() + 1).toString() + '/' + date.getDate() + '/' + date.getFullYear())
+    }
     
-    openAboutWindow()
-})
+    var aboutDialogOptions = {
+        icon: path.join(__dirname, '../public/winml_icon.ico'),
+        title: 'About',
+        message: app.getName(),
+        detail: details.join('\n')
+    };
+
+    dialog.showMessageBox(mainWindow, aboutDialogOptions);    
+}
 
 function openAboutWindow() {
   if (aboutWindow) {

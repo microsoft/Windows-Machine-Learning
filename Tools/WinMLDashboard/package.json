@@ -1,5 +1,5 @@
 {
-  "name": "WinMLDashboard",
+  "name": "WinML Dashboard (pre-release)",
   "version": "0.5.1",
   "icon": "public/winml_icon.ico",
   "description": "Dashboard for development in ONNX using Windows ML",

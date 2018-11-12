@@ -1,10 +1,17 @@
 const {app, ipcMain, protocol, BrowserWindow} = require('electron');
+
 const fs = require('fs');
 const path = require('path');
 const url = require('url');
+const log = require('electron-log');
 
 let mainWindow;
 let aboutWindow;
+
+log.transports.file.level = 'info'
+log.transports.console.level = 'info'
+// log.transports.file.level = 'info';
+// log.transports.console.level = 'info';
 
 if(require('electron-squirrel-startup'))
 {
@@ -48,6 +55,8 @@ function interceptFileProtocol() {
 }
 
 function createWindow() {
+    
+    log.info("=================================================")
     interceptFileProtocol();
 
     mainWindow = new BrowserWindow({
@@ -56,7 +65,8 @@ function createWindow() {
         width: 800,
     });
     global.mainWindow = mainWindow;
-
+    
+    log.info("main window is created");
     let pageUrl;
     for (const arg of process.argv.slice(1)) {
         if (arg.includes('://')) {
@@ -78,6 +88,8 @@ function createWindow() {
 
     mainWindow.on('closed', () => {
         mainWindow = null;
+        log.info("main windows is closed.")
+        log.info("=================================================")
     });
 }
 
@@ -101,6 +113,8 @@ ipcMain.on('show-about-window', () => {
 })
 
 function openAboutWindow() {
+    
+  log.info("about window is opened.");
   if (aboutWindow) {
     aboutWindow.focus()
     return
@@ -120,6 +134,7 @@ function openAboutWindow() {
   aboutWindow.loadURL('file://' + __dirname + '/../public/about.html');
 
   aboutWindow.on('closed', () => {
+    log.info("about window is closed");
     aboutWindow = null
   })
 }

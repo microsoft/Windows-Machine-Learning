@@ -19,6 +19,8 @@ import { isWeb } from '../../native/util';
 
 import './View.css';
 
+import log from 'electron-log';
+
 enum Step {
     Idle,
     Downloading,
@@ -62,6 +64,7 @@ class ConvertView extends React.Component<IComponentProperties, IComponentState>
             framework: '',
             pythonReinstall: false
         };
+        log.info("Run view is created.");
     }
 
     public render() {
@@ -123,6 +126,7 @@ class ConvertView extends React.Component<IComponentProperties, IComponentState>
     private printError = (error: string | Error) => {
         const message = typeof error === 'string' ? error : (`${error.stack ? `${error.stack}: ` : ''}${error.message}`);
         this.printMessage(message)
+        log.info(message);
         this.setState({ currentStep: Step.Idle, error, pythonReinstall:true });
     }
 
@@ -142,6 +146,7 @@ class ConvertView extends React.Component<IComponentProperties, IComponentState>
             this.setState({console: ''})
             try {
                 if (option.key === '__download') {
+                    log.info("downloading python environment is selected.");
                     this.setState({ currentStep: Step.Downloading });
                     await downloadPython();
                     this.setState({ currentStep: Step.GetPip });
@@ -150,10 +155,13 @@ class ConvertView extends React.Component<IComponentProperties, IComponentState>
                     this.setState({pythonReinstall: false})
                     return;
                 }
+                log.info("start to download python environment.");
                 this.setState({ currentStep: Step.InstallingRequirements });
                 await pip(['install', '-r', packagedFile('requirements.txt')], this.outputListener);
                 this.setState({ currentStep: Step.Idle });
+                log.info("python environment is installed successfully");
             } catch (error) {
+                log.info("installation of python environment failed");
                 this.printError(error);
             }
             // reset pythonReinstall
@@ -235,15 +243,19 @@ class ConvertView extends React.Component<IComponentProperties, IComponentState>
         if (!framework) {
             return;
         }
+        log.info("start to convert " + this.state.source);
+
         this.setState({ currentStep: Step.Converting });
         try {
             await python([packagedFile('convert.py'), source, framework, destination], {}, this.outputListener);
         } catch (e) {
+            log.info("Conversion of " + this.state.source + " failed.");
             this.printError(e);
             return;
         }
 
         // Convert successfully
+        log.info(this.state.source + " is converted successfully.");
         this.setState({ currentStep: Step.Idle, source: undefined, console:"convert successfully!!"});
         // TODO Show dialog (https://developer.microsoft.com/en-us/fabric#/components/dialog) asking whether we should open the converted model
         this.props.setFile(fileFromPath(destination));

@@ -16,6 +16,8 @@ import './View.css';
 
 import Collapsible from '../../components/Collapsible';
 
+import log from 'electron-log';
+
 const modelRunnerPath = packagedFile('WinMLRunner.exe');
 
 interface IComponentProperties {
@@ -57,6 +59,7 @@ class RunView extends React.Component<IComponentProperties, IComponentState> {
             parameters: [],
             showPerf: false,
         }
+        log.info("Run view is created.");
     }
 
     // public componentDidMount() {
@@ -248,6 +251,7 @@ class RunView extends React.Component<IComponentProperties, IComponentState> {
     private printError = (error: string | Error) => {
         const message = typeof error === 'string' ? error : (`${error.stack ? `${error.stack}: ` : ''}${error.message}`);
         this.printMessage(message)
+        log.info(message);
     }
 
     private printMessage = (message: string) => {
@@ -264,6 +268,7 @@ class RunView extends React.Component<IComponentProperties, IComponentState> {
     };
 
     private execModelRunner = async() => {
+        log.info("start to run " + this.state.model);
         this.setState({
             console: '',
             currentStep: Step.Running,
@@ -272,6 +277,7 @@ class RunView extends React.Component<IComponentProperties, IComponentState> {
         try {
             await execFilePromise(modelRunnerPath, this.state.parameters, {}, this.outputListener);
         } catch (e) {
+            log.info(this.state.model + " is failed to run");
             this.printError(e);
             this.setState({
                 currentStep: Step.Idle,
@@ -281,8 +287,7 @@ class RunView extends React.Component<IComponentProperties, IComponentState> {
         this.setState({
             currentStep: Step.Success,
         });
-        // tslint:disable-next-line:no-console
-        console.log(this.state.currentStep.toString());
+        log.info(this.state.model + " run successfully");
     }
 }
 

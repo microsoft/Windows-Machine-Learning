@@ -26,6 +26,7 @@
     "jest",
     "node_modules",
     "public",
+    "release",
     "scripts",
     "src/setupTests.ts",
     "webpack",

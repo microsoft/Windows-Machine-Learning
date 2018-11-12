@@ -30,7 +30,8 @@
     }
   },
   "dependencies": {
-    "electron-squirrel-startup": "^1.0.0"
+    "electron-squirrel-startup": "^1.0.0",
+    "electron-log": "^2.2.17"
   },
   "devDependencies": {
     "@types/jest": "^23.3.0",
@@ -47,7 +48,6 @@
     "chai": "^4.2.0",
     "chai-as-promised": "^7.1.1",
     "electron": "^3.0.4",
-    "electron-log": "^2.2.17",
     "electron-winstaller": "^2.7.0",
     "mocha": "^5.2.0",
     "npm-font-open-sans": "^1.1.0",

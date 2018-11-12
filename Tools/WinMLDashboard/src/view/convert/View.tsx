@@ -136,13 +136,17 @@ class ConvertView extends React.Component<IComponentProperties, IComponentState>
         ];
         const onChange = async (ev: React.FormEvent<HTMLInputElement>, option: IChoiceGroupOption) => {
             // Clear console output
-            this.setState({console: ''})
+            this.setState({console: '', pythonReinstall:true})
             try {
                 if (option.key === '__download') {
                     log.info("downloading python environment is selected.");
                     this.setState({ currentStep: Step.Downloading });
+                    this.printMessage('start to downloading python\
+                    ')
                     await downloadPython();
                     this.setState({ currentStep: Step.GetPip });
+                    this.printMessage('start to downloading pip\
+                    ')
                     await downloadPip(this.outputListener);
                 } else {
                     this.setState({pythonReinstall: false})
@@ -153,12 +157,13 @@ class ConvertView extends React.Component<IComponentProperties, IComponentState>
                 await pip(['install', '-r', packagedFile('requirements.txt')], this.outputListener);
                 this.setState({ currentStep: Step.Idle });
                 log.info("python environment is installed successfully");
+                // reset pythonReinstall after environment is installed successfully
+                this.setState({pythonReinstall: false})
             } catch (error) {
                 log.info("installation of python environment failed");
                 this.printError(error);
             }
-            // reset pythonReinstall
-            this.setState({pythonReinstall: false})
+            
         }
         // TODO Options to reinstall environment or update dependencies
         return (

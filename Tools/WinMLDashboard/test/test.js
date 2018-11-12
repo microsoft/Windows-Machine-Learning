@@ -60,6 +60,12 @@ describe("WinMLDashboard Tests", function () {
                 .click(convertViewButton)
                 .element(mainView).element(convertView).should.eventually.exist
         });
+
+        it('checks python environment installation options exists', function () {
+            return app.client
+                .element('#ChoiceGroup17-__download').should.eventually.exist
+        })
+        
         it('sets model to convert', function () {
             return app.client
                 .element(modelToConvertTextFiled).exist

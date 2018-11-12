@@ -64,7 +64,7 @@ class ConvertView extends React.Component<IComponentProperties, IComponentState>
             framework: '',
             pythonReinstall: false
         };
-        log.info("Run view is created.");
+        log.info("Convert view is created.");
     }
 
     public render() {
@@ -90,13 +90,6 @@ class ConvertView extends React.Component<IComponentProperties, IComponentState>
     }
 
     private getView() {
-        // const { error } = this.state;
-        // if (error) {
-        //     const message = typeof error === 'string' ? error : (`${error.stack ? `${error.stack}: ` : ''}${error.message}`);
-        //     this.printMessage(message)
-        //     this.setState({pythonReinstall: true});
-        //     // return <MessageBar messageBarType={MessageBarType.error}>{message}</MessageBar>
-        // }
         switch (this.state.currentStep) {
             case Step.Downloading:
                 return <Spinner label="Downloading Python..." />;
@@ -212,8 +205,6 @@ class ConvertView extends React.Component<IComponentProperties, IComponentState>
 
     private setFramework = (framework: ISelectOpition) => {
         this.setState({framework: framework.value})
-        // tslint:disable-next-line:no-console
-        console.log(framework.value)
     }
 
     private setSource = (source?: string) => {

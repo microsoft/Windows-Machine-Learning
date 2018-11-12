@@ -10,8 +10,6 @@ let aboutWindow;
 
 log.transports.file.level = 'info'
 log.transports.console.level = 'info'
-// log.transports.file.level = 'info';
-// log.transports.console.level = 'info';
 
 if(require('electron-squirrel-startup'))
 {

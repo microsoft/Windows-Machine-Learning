@@ -62,15 +62,6 @@ class RunView extends React.Component<IComponentProperties, IComponentState> {
         log.info("Run view is created.");
     }
 
-    // public componentDidMount() {
-    //     if(this.props.file && this.props.file.path) {
-    //         if(!this.lastFile || this.props.file.path !== this.lastFile){
-    //             this.setState({model: this.props.file.path}, () => {this.setParameters()});
-    //         }
-    //         this.lastFile = this.props.file.path;
-    //     }
-    // }
-
     public render() {
         const collabsibleRef: React.RefObject<Collapsible> = React.createRef();
         return (
@@ -135,7 +126,6 @@ class RunView extends React.Component<IComponentProperties, IComponentState> {
             this.lastFile = this.props.file.path;
             this.setState({model: this.props.file.path}, () => {this.setParameters()})
         }
-        // const modelPath = this.state.model || this.props.file && this.props.file.path;
 
         return (
             <div className="Arguments">

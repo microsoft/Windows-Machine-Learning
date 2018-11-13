@@ -44,8 +44,9 @@ void CommandLineArgs::PrintUsage()
               << std::endl;
     std::cout << "  -Terse: Terse Mode (suppresses repetitive console output)" << std::endl;
     std::cout << "  -AutoScale <interpolationMode>: Enable image autoscaling and set the interpolation mode [Nearest, "
-                 "Linear, Cubic, Fant]"
-              << std::endl;
+              << "Linear, Cubic, Fant]" << std::endl;
+    std::cout << "  -InputImagePreprocess <scale> <msdR> <msdG> <msdB>: float scale factor and per channel meanStdDev "
+              << "factors to preprocess input images before being passed ot the model" << std::endl;
     std::cout << std::endl;
     std::cout << "Concurrency Options:" << std::endl;
     std::cout << "  -ConcurrentLoad: load models concurrently" << std::endl;
@@ -69,7 +70,7 @@ void CheckAPICall(int return_value)
 
 CommandLineArgs::CommandLineArgs(const std::vector<std::wstring>& args)
 {
-    for (UINT i = 0; i < args.size(); i++)
+    for (int32_t i = 0; i < args.size(); i++)
     {
         if ((_wcsicmp(args[i].c_str(), L"-CPU") == 0))
         {
@@ -111,6 +112,7 @@ CommandLineArgs::CommandLineArgs(const std::vector<std::wstring>& args)
         }
         else if ((_wcsicmp(args[i].c_str(), L"-Input") == 0))
         {
+            CheckNextArgument(args, i);
             m_inputData = args[++i];
         }
         else if ((_wcsicmp(args[i].c_str(), L"-PerfOutput") == 0))
@@ -227,7 +229,7 @@ CommandLineArgs::CommandLineArgs(const std::vector<std::wstring>& args)
                 SetTensorOutputPath(L"\\PerIterationRun[" + oss.str() + L"]");
             }
         }
-        else if (_wcsicmp(args[i].c_str(), L"-version") == 0)
+        else if (_wcsicmp(args[i].c_str(), L"-Version") == 0)
         {
             TCHAR szExeFileName[MAX_PATH];
             auto ret = GetModuleFileName(NULL, szExeFileName, MAX_PATH);
@@ -255,7 +257,14 @@ CommandLineArgs::CommandLineArgs(const std::vector<std::wstring>& args)
             std::wcout << L"Version: " << pFileVersion << "." << pProductVersion << std::endl;
 
             delete[] pVersionData;
-            return;
+        }
+        else if ((_wcsicmp(args[i].c_str(), L"-InputImagePreprocess") == 0) && (i + 4 < args.size()))
+        {
+            m_inputImagePreprocess = true;
+            m_inputImagePreprocessFactors.Scale = (float)_wtof(args[++i].c_str());
+            m_inputImagePreprocessFactors.Red = (float)_wtof(args[++i].c_str());
+            m_inputImagePreprocessFactors.Green = (float)_wtof(args[++i].c_str());
+            m_inputImagePreprocessFactors.Blue = (float)_wtof(args[++i].c_str());
         }
         else if ((_wcsicmp(args[i].c_str(), L"/?") == 0))
         {

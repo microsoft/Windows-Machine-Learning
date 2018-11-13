@@ -79,14 +79,19 @@ std::vector<ILearningModelFeatureValue> GenerateInputFeatures(const LearningMode
 {
     std::vector<ILearningModelFeatureValue> inputFeatures;
 
-    for (uint32_t i = 0; i < model.InputFeatures().Size(); i++)
+    for (uint32_t inputNum = 0; inputNum < model.InputFeatures().Size(); inputNum++)
     {
-        auto&& description = model.InputFeatures().GetAt(i);
+        auto&& description = model.InputFeatures().GetAt(inputNum);
 
-        if (inputDataType == InputDataType::Tensor || i > 0)
+        if (inputDataType == InputDataType::Tensor || inputNum > 0)
         {
             // For now, only the first input can be bound with real data
-            auto tensorFeature = BindingUtilities::CreateBindableTensor(description, args);
+            auto tensorFeature = BindingUtilities::CreateBindableTensor(description, inputDataType, args, iterationNum);
+            inputFeatures.push_back(tensorFeature);
+        }
+        else if (!args.ImagePath().empty() && args.IsInputImagePreprocess())
+        {
+            auto tensorFeature = BindingUtilities::CreateBindableTensor(description, inputDataType, args, iterationNum);
             inputFeatures.push_back(tensorFeature);
         }
         else

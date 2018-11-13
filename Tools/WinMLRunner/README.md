@@ -53,6 +53,7 @@ Required command-Line arguments:
 -DebugEvaluate: Print evaluation debug output to debug console if debugger is present.
 -Terse: Terse Mode (suppresses repetitive console output)
 -AutoScale <interpolationMode>: Enable image autoscaling and set the interpolation mode [Nearest, Linear, Cubic, Fant]
+-InputImagePreprocess <scale> <rFactor> <gFactor> <bFactor> : Will automatically preprocess the input image before it's sent to the model.  Will subtract rFactor, gFactor and bFactor from the input image per channel and divide by the scale, to scale the input to the model's expected range.  (e.g. Values of [1, 0, 0, 0] will yield no change to input image data, while values of [255, 123.68, 116.779, 103.939] will correctly preprocess input for ResNet50 and DenseNet121 from the ONNX model zoo.)
 
 Concurrency Options:
 -ConcurrentLoad: load models concurrently

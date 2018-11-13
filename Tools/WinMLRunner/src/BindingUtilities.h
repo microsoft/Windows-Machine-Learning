@@ -3,69 +3,132 @@
 #include <time.h>
 #include "Common.h"
 #include "ModelBinding.h"
+#include <MemoryBuffer.h>
 #include "Windows.AI.Machinelearning.Native.h"
+#include "DirectXPackedVector.h"
+#include "CommandLineArgs.h"
+#include "OutputHelper.h"
 
 using namespace winrt::Windows::Media;
 using namespace winrt::Windows::Storage;
+using namespace winrt::Windows::Storage::Streams;
 using namespace winrt::Windows::AI::MachineLearning;
 using namespace winrt::Windows::Foundation::Collections;
 using namespace winrt::Windows::Graphics::DirectX;
 using namespace winrt::Windows::Graphics::Imaging;
 using namespace winrt::Windows::Graphics::DirectX::Direct3D11;
+using namespace DirectX::PackedVector;
 
-template <TensorKind T> struct TensorKindToType
+template <TensorKind T> struct TensorKindToArithmeticType
 {
     static_assert(true, "No TensorKind mapped for given type!");
 };
-template <> struct TensorKindToType<TensorKind::UInt8>
+template <> struct TensorKindToArithmeticType<TensorKind::UInt8>
 {
     typedef uint8_t Type;
 };
-template <> struct TensorKindToType<TensorKind::Int8>
+template <> struct TensorKindToArithmeticType<TensorKind::Int8>
 {
     typedef uint8_t Type;
 };
-template <> struct TensorKindToType<TensorKind::UInt16>
+template <> struct TensorKindToArithmeticType<TensorKind::UInt16>
 {
     typedef uint16_t Type;
 };
-template <> struct TensorKindToType<TensorKind::Int16>
+template <> struct TensorKindToArithmeticType<TensorKind::Int16>
 {
     typedef int16_t Type;
 };
-template <> struct TensorKindToType<TensorKind::UInt32>
+template <> struct TensorKindToArithmeticType<TensorKind::UInt32>
 {
     typedef uint32_t Type;
 };
-template <> struct TensorKindToType<TensorKind::Int32>
+template <> struct TensorKindToArithmeticType<TensorKind::Int32>
 {
     typedef int32_t Type;
 };
-template <> struct TensorKindToType<TensorKind::UInt64>
+template <> struct TensorKindToArithmeticType<TensorKind::UInt64>
 {
     typedef uint64_t Type;
 };
-template <> struct TensorKindToType<TensorKind::Int64>
+template <> struct TensorKindToArithmeticType<TensorKind::Int64>
 {
     typedef int64_t Type;
 };
-template <> struct TensorKindToType<TensorKind::Boolean>
+template <> struct TensorKindToArithmeticType<TensorKind::Boolean>
 {
     typedef boolean Type;
 };
-template <> struct TensorKindToType<TensorKind::Double>
+template <> struct TensorKindToArithmeticType<TensorKind::Double>
 {
     typedef double Type;
 };
-template <> struct TensorKindToType<TensorKind::Float>
+template <> struct TensorKindToArithmeticType<TensorKind::Float>
 {
     typedef float Type;
 };
-template <> struct TensorKindToType<TensorKind::Float16>
+template <> struct TensorKindToArithmeticType<TensorKind::Float16>
 {
     typedef float Type;
 };
-template <> struct TensorKindToType<TensorKind::String>
+template <> struct TensorKindToArithmeticType<TensorKind::String>
+{
+    typedef winrt::hstring Type;
+};
+
+template <TensorKind T> struct TensorKindToPointerType
+{
+    static_assert(true, "No TensorKind mapped for given type!");
+};
+template <> struct TensorKindToPointerType<TensorKind::UInt8>
+{
+    typedef uint8_t Type;
+};
+template <> struct TensorKindToPointerType<TensorKind::Int8>
+{
+    typedef uint8_t Type;
+};
+template <> struct TensorKindToPointerType<TensorKind::UInt16>
+{
+    typedef uint16_t Type;
+};
+template <> struct TensorKindToPointerType<TensorKind::Int16>
+{
+    typedef int16_t Type;
+};
+template <> struct TensorKindToPointerType<TensorKind::UInt32>
+{
+    typedef uint32_t Type;
+};
+template <> struct TensorKindToPointerType<TensorKind::Int32>
+{
+    typedef int32_t Type;
+};
+template <> struct TensorKindToPointerType<TensorKind::UInt64>
+{
+    typedef uint64_t Type;
+};
+template <> struct TensorKindToPointerType<TensorKind::Int64>
+{
+    typedef int64_t Type;
+};
+template <> struct TensorKindToPointerType<TensorKind::Boolean>
+{
+    typedef boolean Type;
+};
+template <> struct TensorKindToPointerType<TensorKind::Double>
+{
+    typedef double Type;
+};
+template <> struct TensorKindToPointerType<TensorKind::Float>
+{
+    typedef float Type;
+};
+template <> struct TensorKindToPointerType<TensorKind::Float16>
+{
+    typedef HALF Type;
+};
+template <> struct TensorKindToPointerType<TensorKind::String>
 {
     typedef winrt::hstring Type;
 };
@@ -125,6 +188,63 @@ template <> struct TensorKindToValue<TensorKind::Float16>
 template <> struct TensorKindToValue<TensorKind::String>
 {
     typedef TensorString Type;
+};
+
+template <TensorKind T, typename PointerType, typename ArithmeticType > PointerType ConvertArithmeticTypeToPointerType(ArithmeticType value)
+{
+    static_assert(true, "No TensorKind mapped for given type!");
+};
+template <> uint8_t ConvertArithmeticTypeToPointerType<TensorKind::UInt8>(uint8_t value)
+{
+    return static_cast<uint8_t>(value);
+};
+template <> uint8_t ConvertArithmeticTypeToPointerType<TensorKind::Int8>(uint8_t value)
+{
+    return static_cast<uint8_t>(value);
+};
+template <> uint16_t ConvertArithmeticTypeToPointerType<TensorKind::UInt16>(uint16_t value)
+{
+    return static_cast<uint16_t>(value);
+};
+template <> int16_t ConvertArithmeticTypeToPointerType<TensorKind::Int16>(int16_t value)
+{
+    return static_cast<int16_t>(value);
+};
+template <> uint32_t ConvertArithmeticTypeToPointerType<TensorKind::UInt32>(uint32_t value)
+{
+    return static_cast<uint32_t>(value);
+};
+template <> int32_t ConvertArithmeticTypeToPointerType<TensorKind::Int32>(int32_t value)
+{
+    return static_cast<int32_t>(value);
+};
+template <> uint64_t ConvertArithmeticTypeToPointerType<TensorKind::UInt64>(uint64_t value)
+{
+    return static_cast<uint64_t>(value);
+};
+template <> int64_t ConvertArithmeticTypeToPointerType<TensorKind::Int64>(int64_t value)
+{
+    return static_cast<int64_t>(value);
+};
+template <> boolean ConvertArithmeticTypeToPointerType<TensorKind::Boolean>(boolean value)
+{
+    return static_cast<boolean>(value);
+};
+template <> double ConvertArithmeticTypeToPointerType<TensorKind::Double>(double value)
+{
+    return static_cast<double>(value);
+};
+template <> float ConvertArithmeticTypeToPointerType<TensorKind::Float>(float value)
+{
+    return static_cast<float>(value);
+};
+template <> HALF ConvertArithmeticTypeToPointerType<TensorKind::Float16>(float value)
+{
+    return XMConvertFloatToHalf(value);
+};
+template <> winrt::hstring ConvertArithmeticTypeToPointerType<TensorKind::String>(winrt::hstring value)
+{
+    return static_cast<winrt::hstring>(value);
 };
 
 namespace BindingUtilities
@@ -268,23 +388,6 @@ namespace BindingUtilities
         return elementStrings;
     }
 
-    template <typename T>
-    void WriteDataToBinding(const std::vector<std::string>& elementStrings, ModelBinding<T>& binding)
-    {
-        if (binding.GetDataBufferSize() != elementStrings.size())
-        {
-            throw hresult_invalid_argument(L"CSV Input is size/shape is different from what model expects");
-        }
-        T* data = binding.GetData();
-        for (const auto& elementString : elementStrings)
-        {
-            T value;
-            std::stringstream(elementString) >> value;
-            *data = value;
-            data++;
-        }
-    }
-
     std::vector<std::string> ParseCSVElementStrings(const std::wstring& csvFilePath)
     {
         std::ifstream fileStream;
@@ -301,16 +404,83 @@ namespace BindingUtilities
 
     template <TensorKind T>
     static ITensor CreateTensor(const CommandLineArgs& args, std::vector<std::string>& tensorStringInput,
-                                TensorFeatureDescriptor& tensorDescriptor)
+                                TensorFeatureDescriptor& tensorDescriptor, SoftwareBitmap &softwareBitmap)
     {
         using TensorValue = typename TensorKindToValue<T>::Type;
-        using DataType = typename TensorKindToType<T>::Type;
+        using ArithmeticType = typename TensorKindToArithmeticType<T>::Type;
+        using PointerType = typename TensorKindToPointerType<T>::Type;
+
+        // Map the incoming Tensor as a TensorNative to get the actual data buffer.
+        auto tensorValue = TensorValue::Create(tensorDescriptor.Shape());
+
+        com_ptr<ITensorNative> spTensorValueNative;
+        tensorValue.as(spTensorValueNative);
+
+        PointerType* actualData;
+        uint32_t actualSizeInBytes;
+        spTensorValueNative->GetBuffer(reinterpret_cast<BYTE**>(&actualData), &actualSizeInBytes);
 
         if (!args.CsvPath().empty())
         {
-            ModelBinding<DataType> binding(tensorDescriptor);
-            WriteDataToBinding<DataType>(tensorStringInput, binding);
-            return TensorValue::CreateFromArray(binding.GetShapeBuffer(), binding.GetDataBuffer());
+            if (tensorStringInput.size() != actualSizeInBytes / sizeof(PointerType))
+            {
+                throw hresult_invalid_argument(L"CSV input size/shape is different from what model expects");
+            }
+
+            // Write the elementStrings into the iTensorNative
+            for (const auto &tensorString : tensorStringInput)
+            {
+                ArithmeticType value;
+                std::stringstream(tensorString) >> value;
+                *actualData = ConvertArithmeticTypeToPointerType<T,PointerType,ArithmeticType>(value);
+                actualData++;
+            }
+        }
+        else if (!args.ImagePath().empty())
+        {
+            // Get Pointers to the SoftwareBitmap buffers
+            uint8_t *sbData = nullptr;
+            uint32_t sbDataSize = 0;
+            const BitmapBuffer sbBitmapBuffer(softwareBitmap.LockBuffer(BitmapBufferAccessMode::Read));
+            winrt::Windows::Foundation::IMemoryBufferReference sbReference = sbBitmapBuffer.CreateReference();
+            auto sbByteAccess = sbReference.as<::Windows::Foundation::IMemoryBufferByteAccess>();
+            winrt::check_hresult(sbByteAccess->GetBuffer(&sbData, &sbDataSize));
+
+            // Check to make sure the sizes are right
+            const uint32_t imageHeight = softwareBitmap.PixelHeight();
+            const uint32_t imageWidth = softwareBitmap.PixelWidth();
+            const auto pixelFormat = softwareBitmap.BitmapPixelFormat();
+            const uint32_t numChannels = 3;
+            const uint32_t resultSize = imageHeight * imageWidth * numChannels;
+
+            if (resultSize != actualSizeInBytes / sizeof(PointerType))
+            {
+                throw hresult_invalid_argument(L"Image Input size/shape is different from what model expects");
+            }
+
+            auto factors = args.InputImagePreprocessFactors();
+            float channelFactors[3] = { factors.Red, factors.Green, factors.Blue };
+            if (BitmapPixelFormat::Bgra8 == pixelFormat)
+            {
+                channelFactors[0] = factors.Blue;
+                channelFactors[1] = factors.Green;
+                channelFactors[2] = factors.Red;
+            }
+            else if (BitmapPixelFormat::Rgba8 != pixelFormat)
+            {
+                throw hresult_invalid_argument(L"PreprocessImageToTensor: Unhandled SoftwareBitmap pixel format");
+            }
+
+            //Roll the array correctly for the tensor
+            for (uint32_t i = 0, count = 0; i < imageHeight * imageWidth; ++i, count += numChannels + 1)
+            {
+                actualData[i] = ConvertArithmeticTypeToPointerType<T, PointerType, ArithmeticType>(
+                    static_cast<ArithmeticType>((sbData[count] - channelFactors[0]) / factors.Scale));
+                actualData[i + imageHeight * imageWidth] = ConvertArithmeticTypeToPointerType<T, PointerType, ArithmeticType>(
+                    static_cast<ArithmeticType>((sbData[count + 1] - channelFactors[1]) / factors.Scale));
+                actualData[i + imageHeight * imageWidth * 2] = ConvertArithmeticTypeToPointerType<T, PointerType, ArithmeticType>(
+                    static_cast<ArithmeticType>((sbData[count + 2] - channelFactors[2]) / factors.Scale));
+            }
         }
         else if (args.IsGarbageInput())
         {
@@ -346,17 +516,22 @@ namespace BindingUtilities
             uint32_t actualSizeInBytes;
             spTensorValueNative->GetBuffer(
                 &actualData, &actualSizeInBytes); // Need to GetBuffer to have CPU memory backing tensorValue
-            return tensorValue;
         }
         else
         {
             // Creating Tensors for Input Images haven't been added yet.
             throw hresult_not_implemented(L"Creating Tensors for Input Images haven't been implemented yet!");
         }
+
+        return tensorValue;
     }
 
     // Binds tensor floats, ints, doubles from CSV data.
-    ITensor CreateBindableTensor(const ILearningModelFeatureDescriptor& description, const CommandLineArgs& args)
+    ITensor CreateBindableTensor(
+        const ILearningModelFeatureDescriptor& description,
+        InputDataType inputDataType,
+        const CommandLineArgs &args,
+        uint32_t iterationNum)
     {
         auto name = description.Name();
         auto tensorDescriptor = description.try_as<TensorFeatureDescriptor>();
@@ -367,10 +542,16 @@ namespace BindingUtilities
             throw;
         }
 
+        ITensor tensor;
+        SoftwareBitmap softwareBitmap(nullptr);
         std::vector<std::string> elementStrings;
         if (!args.CsvPath().empty())
         {
             elementStrings = ParseCSVElementStrings(args.CsvPath());
+        }
+        else if (!args.ImagePath().empty())
+        {
+            softwareBitmap = LoadImageFile(tensorDescriptor, inputDataType, args.ImagePath().c_str(), args, iterationNum);
         }
         switch (tensorDescriptor.TensorKind())
         {
@@ -381,63 +562,65 @@ namespace BindingUtilities
             }
             case TensorKind::Float:
             {
-                return CreateTensor<TensorKind::Float>(args, elementStrings, tensorDescriptor);
+                tensor = CreateTensor<TensorKind::Float>(args, elementStrings, tensorDescriptor, softwareBitmap);
             }
             break;
             case TensorKind::Float16:
             {
-                return CreateTensor<TensorKind::Float16>(args, elementStrings, tensorDescriptor);
+                tensor = CreateTensor<TensorKind::Float16>(args, elementStrings, tensorDescriptor, softwareBitmap);
             }
             break;
             case TensorKind::Double:
             {
-                return CreateTensor<TensorKind::Double>(args, elementStrings, tensorDescriptor);
+                tensor = CreateTensor<TensorKind::Double>(args, elementStrings, tensorDescriptor, softwareBitmap);
             }
             break;
             case TensorKind::Int8:
             {
-                return CreateTensor<TensorKind::Int8>(args, elementStrings, tensorDescriptor);
+                tensor = CreateTensor<TensorKind::Int8>(args, elementStrings, tensorDescriptor, softwareBitmap);
             }
             break;
             case TensorKind::UInt8:
             {
-                return CreateTensor<TensorKind::UInt8>(args, elementStrings, tensorDescriptor);
+                tensor = CreateTensor<TensorKind::UInt8>(args, elementStrings, tensorDescriptor, softwareBitmap);
             }
             break;
             case TensorKind::Int16:
             {
-                return CreateTensor<TensorKind::Int16>(args, elementStrings, tensorDescriptor);
+                tensor = CreateTensor<TensorKind::Int16>(args, elementStrings, tensorDescriptor, softwareBitmap);
             }
             break;
             case TensorKind::UInt16:
             {
-                return CreateTensor<TensorKind::UInt16>(args, elementStrings, tensorDescriptor);
+                tensor = CreateTensor<TensorKind::UInt16>(args, elementStrings, tensorDescriptor, softwareBitmap);
             }
             break;
             case TensorKind::Int32:
             {
-                return CreateTensor<TensorKind::Int32>(args, elementStrings, tensorDescriptor);
+                tensor = CreateTensor<TensorKind::Int32>(args, elementStrings, tensorDescriptor, softwareBitmap);
             }
             break;
             case TensorKind::UInt32:
             {
-                return CreateTensor<TensorKind::UInt32>(args, elementStrings, tensorDescriptor);
+                tensor = CreateTensor<TensorKind::UInt32>(args, elementStrings, tensorDescriptor, softwareBitmap);
             }
             break;
             case TensorKind::Int64:
             {
-                return CreateTensor<TensorKind::Int64>(args, elementStrings, tensorDescriptor);
+                tensor = CreateTensor<TensorKind::Int64>(args, elementStrings, tensorDescriptor, softwareBitmap);
             }
             break;
             case TensorKind::UInt64:
             {
-                return CreateTensor<TensorKind::UInt64>(args, elementStrings, tensorDescriptor);
+                tensor = CreateTensor<TensorKind::UInt64>(args, elementStrings, tensorDescriptor, softwareBitmap);
             }
             break;
+            default:
+                std::cout << "BindingUtilities: TensorKind has not been implemented." << std::endl;
+                throw hresult_not_implemented();
         }
 
-        std::cout << "BindingUtilities: TensorKind has not been implemented." << std::endl;
-        throw hresult_not_implemented();
+        return tensor;
     }
 
     ImageFeatureValue CreateBindableImage(const ILearningModelFeatureDescriptor& featureDescriptor,
@@ -446,7 +629,6 @@ namespace BindingUtilities
                                           const CommandLineArgs& args, uint32_t iterationNum)
     {
         auto imageDescriptor = featureDescriptor.try_as<TensorFeatureDescriptor>();
-
         if (!imageDescriptor)
         {
             std::cout << "BindingUtilities: Input Descriptor type isn't tensor." << std::endl;
@@ -492,7 +674,7 @@ namespace BindingUtilities
         {
             if (desc.Kind() == LearningModelFeatureKind::Tensor)
             {
-                std::string name = to_string(desc.Name());
+                std::wstring name(desc.Name());
                 if (args.IsSaveTensor() && args.SaveTensorMode() == "First" && iterationNum > 0)
                 {
                     return;
@@ -571,8 +753,8 @@ namespace BindingUtilities
                 }
                 if (!args.IsGarbageInput() && iterationNum == 0)
                 {
-                    std::cout << "Outputting top " << args.TopK() << " values" << std::endl;
-                    std::cout << "Feature Name: " << name << std::endl;
+                    std::wcout << "Outputting top " << args.TopK() << " values" << std::endl;
+                    std::wcout << "Feature Name: " << name << std::endl;
                     for (auto& pair : maxKValues)
                     {
                         auto maxValue = pair.first;

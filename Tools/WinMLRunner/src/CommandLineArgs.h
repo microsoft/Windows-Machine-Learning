@@ -1,6 +1,14 @@
 #pragma once
 #include "Common.h"
 
+struct InputImagePreprocessFactors
+{
+    float Scale;
+    float Red;
+    float Green;
+    float Blue;
+};
+
 class CommandLineArgs
 {
 public:
@@ -21,6 +29,7 @@ public:
     bool IsAutoScale() const { return m_autoScale; }
     bool IsOutputPerf() const { return m_perfOutput; }
     bool IsSaveTensor() const { return m_saveTensor; }
+    bool IsInputImagePreprocess() const { return m_inputImagePreprocess; }
 
     BitmapInterpolationMode AutoScaleInterpMode() const { return m_autoScaleInterpMode; }
 
@@ -30,6 +39,8 @@ public:
     const std::wstring& FolderPath() const { return m_modelFolderPath; }
     const std::wstring& ModelPath() const { return m_modelPath; }
     const std::wstring& TensorOutputPath() const { return m_tensorOutputPath; }
+
+    const InputImagePreprocessFactors& InputImagePreprocessFactors() const { return m_inputImagePreprocessFactors; }
 
     bool UseRGB() const
     {
@@ -131,6 +142,8 @@ private:
     BitmapInterpolationMode m_autoScaleInterpMode = BitmapInterpolationMode::Cubic;
     bool m_saveTensor = false;
     std::string m_saveTensorMode = "First";
+    bool m_inputImagePreprocess = false;
+    struct InputImagePreprocessFactors m_inputImagePreprocessFactors;
 
     std::wstring m_modelFolderPath;
     std::wstring m_modelPath;

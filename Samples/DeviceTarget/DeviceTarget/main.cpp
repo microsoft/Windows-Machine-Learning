@@ -28,77 +28,107 @@ bool ParseArgs(int argc, char* argv[]);
 int main(int argc, char* argv[])
 {
 
-	init_apartment();
-
-	if (ParseArgs(argc, argv) == false)
 	{
-		printf("Usage: %s [modelfile] [imagefile] [adapter index]", argv[0]);
-		return -1;
+		init_apartment();
+
+		if (ParseArgs(argc, argv) == false)
+		{
+			printf("Usage: %s [modelfile] [imagefile]", argv[0]);
+			return -1;
+		}
+
+	
+		// display all adapters
+		com_ptr<IDXGIFactory> spFactory;
+		CreateDXGIFactory(__uuidof(IDXGIFactory), (void**)(spFactory.put()));
+		com_ptr<IDXGIAdapter> spAdapter;
+
+		UINT i;
+
+		for (i = 0; spFactory->EnumAdapters(i, spAdapter.put()) != DXGI_ERROR_NOT_FOUND ; ++i)
+		{
+			DXGI_ADAPTER_DESC pDesc;
+			spAdapter->GetDesc(&pDesc);
+			printf("Index: %d, Description: ", i);
+			wcout << pDesc.Description << endl;
+			spAdapter = nullptr;
+		}
+
+		if (i == 0) {
+			printf("There are no available adapters\n");
+			return -1;
+		}
+
+		// user selects adapter
+		int selectedIndex;
+		printf("Please enter the index of the adapter you want to use...\n");
+		cin >> selectedIndex;
+
+		while (selectedIndex < 0 || selectedIndex >= i) {
+			printf("Invalid index, please try again.\n");
+			cin >> selectedIndex;
+		}
+
+		printf("Selected adapter at index %d\n", selectedIndex);
+
+		// create D3D12Device
+		com_ptr<IUnknown> spIUnknownAdapter;
+
+		spFactory->EnumAdapters(selectedIndex, spAdapter.put());
+
+		spAdapter->QueryInterface(IID_IUnknown, spIUnknownAdapter.put_void());
+		com_ptr<ID3D12Device> spD3D12Device;
+		D3D12CreateDevice(spIUnknownAdapter.get(), D3D_FEATURE_LEVEL_12_0, _uuidof(ID3D12Device), spD3D12Device.put_void());
+
+		// create D3D12 command queue from device
+		D3D12_COMMAND_QUEUE_DESC queueDesc = {};
+		queueDesc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;
+		queueDesc.Type = D3D12_COMMAND_LIST_TYPE_DIRECT;
+		com_ptr<ID3D12CommandQueue> spCommandQueue;
+		spD3D12Device->CreateCommandQueue(&queueDesc, IID_PPV_ARGS(spCommandQueue.put()));
+
+		// create LearningModelDevice from command queue	
+		com_ptr<ILearningModelDeviceFactoryNative> dFactory =
+			get_activation_factory<LearningModelDevice, ILearningModelDeviceFactoryNative>();
+		com_ptr<::IUnknown> spLearningDevice;
+		dFactory->CreateFromD3D12CommandQueue(spCommandQueue.get(), spLearningDevice.put());
+
+		// load the model
+		printf("Loading modelfile '%ws' on the selected device\n", modelPath.c_str());
+		DWORD ticks = GetTickCount();
+		auto model = LearningModel::LoadFromFilePath(modelPath);
+		ticks = GetTickCount() - ticks;
+		printf("model file loaded in %d ticks\n", ticks);
+
+		// now create a session and binding
+		//LearningModelSession session(model, spLearningDevice.as<LearningModelDevice>());
+		LearningModelSession session(model);
+		printf("session initialized\n");
+		LearningModelBinding binding(session);
+
+		// load the image
+		printf("Loading the image...\n");
+		auto imageFrame = LoadImageFile(imagePath);
+
+		// bind the input image
+		printf("Binding...\n");
+		binding.Bind(L"data_0", ImageFeatureValue::CreateFromVideoFrame(imageFrame));
+		// temp: bind the output (we don't support unbound outputs yet)
+		vector<int64_t> shape({ 1, 1000, 1, 1 });
+		binding.Bind(L"softmaxout_1", TensorFloat::Create(shape));
+
+		// now run the model
+		printf("Running the model...\n");
+		ticks = GetTickCount();
+		auto results = session.Evaluate(binding, L"RunId");
+		ticks = GetTickCount() - ticks;
+		printf("model run took %d ticks\n", ticks);
+
+		// get the output
+		auto resultTensor = results.Outputs().Lookup(L"softmaxout_1").as<TensorFloat>();
+		auto resultVector = resultTensor.GetAsVectorView();
+		PrintResults(resultVector);
 	}
-
-	// select an adapter
-	com_ptr<IDXGIFactory> spFactory;
-	CreateDXGIFactory(__uuidof(IDXGIFactory), (void**)(spFactory.put()));
-	com_ptr<IDXGIAdapter> spAdapter;
-	spFactory->EnumAdapters(deviceIndex, spAdapter.put());
-	DXGI_ADAPTER_DESC pDesc;
-	spAdapter->GetDesc(&pDesc);
-	printf("Selected adapter at index %d with description: ", deviceIndex);
-	wcout << pDesc.Description << endl;
-	
-	// create D3D12Device
-	com_ptr<IUnknown> spIUnknownAdapter;
-	spAdapter->QueryInterface(IID_IUnknown, spIUnknownAdapter.put_void());
-	com_ptr<ID3D12Device> spD3D12Device;
-	D3D12CreateDevice(spIUnknownAdapter.get(), D3D_FEATURE_LEVEL_12_0, _uuidof(ID3D12Device), spD3D12Device.put_void());
-
-	// create D3D12 command queue from device
-	D3D12_COMMAND_QUEUE_DESC queueDesc = {};
-	queueDesc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;
-	queueDesc.Type = D3D12_COMMAND_LIST_TYPE_DIRECT;
-	com_ptr<ID3D12CommandQueue> spCommandQueue;
-	spD3D12Device->CreateCommandQueue(&queueDesc, IID_PPV_ARGS(spCommandQueue.put()));
-	
-	// create LearningModelDevice from command queue	
-	com_ptr<ILearningModelDeviceFactoryNative> dFactory =
-		get_activation_factory<LearningModelDevice, ILearningModelDeviceFactoryNative>();
-	com_ptr<::IUnknown> spLearningDevice;
-	dFactory->CreateFromD3D12CommandQueue(spCommandQueue.get(), spLearningDevice.put());
-	
-	// load the model
-	printf("Loading modelfile '%ws' on the selected device\n", modelPath.c_str());
-	DWORD ticks = GetTickCount();
-	auto model = LearningModel::LoadFromFilePath(modelPath);
-	ticks = GetTickCount() - ticks;
-	printf("model file loaded in %d ticks\n", ticks);
-	
-	// now create a session and binding
-	LearningModelSession session(model, spLearningDevice.as<LearningModelDevice>());
-	printf("session initialized\n");
-	LearningModelBinding binding(session);
-
-	// load the image
-	printf("Loading the image...\n");
-	auto imageFrame = LoadImageFile(imagePath);
-
-	// bind the input image
-	printf("Binding...\n");
-	binding.Bind(L"data_0", ImageFeatureValue::CreateFromVideoFrame(imageFrame));
-	// temp: bind the output (we don't support unbound outputs yet)
-	vector<int64_t> shape({ 1, 1000, 1, 1 });
-	binding.Bind(L"softmaxout_1", TensorFloat::Create(shape));
-
-	// now run the model
-	printf("Running the model...\n");
-	ticks = GetTickCount();
-	auto results = session.Evaluate(binding, L"RunId");
-	ticks = GetTickCount() - ticks;
-	printf("model run took %d ticks\n", ticks);
-
-	// get the output
-	auto resultTensor = results.Outputs().Lookup(L"softmaxout_1").as<TensorFloat>();
-	auto resultVector = resultTensor.GetAsVectorView();
-	PrintResults(resultVector);
 	
 }
 

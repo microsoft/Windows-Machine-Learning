@@ -1,4 +1,5 @@
 git+https://github.com/apple/coremltools
+lightgbm==2.2.1
 winmltools==1.2.0.912
 tensorflow==1.11.0
 xgboost==0.80

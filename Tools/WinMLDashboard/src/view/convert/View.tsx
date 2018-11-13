@@ -141,18 +141,17 @@ class ConvertView extends React.Component<IComponentProperties, IComponentState>
                 if (option.key === '__download') {
                     log.info("downloading python environment is selected.");
                     this.setState({ currentStep: Step.Downloading });
-                    this.printMessage('start to downloading python\
-                    ')
+                    this.printMessage('start to downloading python\n')
                     await downloadPython();
                     this.setState({ currentStep: Step.GetPip });
-                    this.printMessage('start to downloading pip\
-                    ')
+                    this.printMessage('start to downloading pip\n')
                     await downloadPip(this.outputListener);
                 } else {
                     this.setState({pythonReinstall: false})
                     return;
                 }
                 log.info("start to download python environment.");
+                await pip(['install', packagedFile('libsvm-3.22-cp36-cp36m-win_amd64.whl')], this.outputListener);
                 this.setState({ currentStep: Step.InstallingRequirements });
                 await pip(['install', '-r', packagedFile('requirements.txt')], this.outputListener);
                 this.setState({ currentStep: Step.Idle });

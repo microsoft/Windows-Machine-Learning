@@ -39,6 +39,7 @@ public/*
 !public/EditorView.png
 !public/progress_bar.gif
 !public/WinMLRunner.exe
+!public/libsvm-3.22-cp36-cp36m-win_amd64.whl
 
 npm-debug.log*
 yarn-debug.log*

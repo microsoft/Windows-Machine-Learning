@@ -58,9 +58,9 @@ function createWindow() {
     interceptFileProtocol();
 
     mainWindow = new BrowserWindow({
-        height: 600,
+        height: 1000,
         icon: path.join(__dirname, '../public/winml_icon.ico'),
-        width: 800,
+        width: 1200,
     });
     global.mainWindow = mainWindow;
     

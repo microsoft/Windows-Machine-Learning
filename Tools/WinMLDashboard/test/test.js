@@ -69,7 +69,7 @@ describe("WinMLDashboard Tests", function () {
 
         it('click install python environment', function () {
             return app.client
-                .click(pythonDownloadOption).waitForVisible('#modelToConvert', 1000*1000)
+                .click(pythonDownloadOption).waitForVisible('#modelToConvert', 1000*60*10)
         })
         
         it('sets model to convert', function () {

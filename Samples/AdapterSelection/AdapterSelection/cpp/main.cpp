@@ -14,7 +14,6 @@ using namespace std;
 // globals
 vector<string> labels;
 string labelsFileName("labels.txt");
-UINT deviceIndex;
 hstring modelPath;
 hstring imagePath;
 
@@ -143,10 +142,7 @@ bool ParseArgs(int argc, char* argv[])
 	// get the image file
 	imagePath = hstring(wstring_to_utf8().from_bytes(argv[2]));
 	// did they pass a fourth arg?
-	if (argc >= 4)
-	{
-		deviceIndex = atoi(argv[3]);
-	}
+
 	return true;
 }
 

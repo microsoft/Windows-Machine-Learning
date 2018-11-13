@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.28302.56
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DeviceTarget", "DeviceTarget\DeviceTarget.vcxproj", "{2E115EFB-F7EC-444E-A555-507D55A89BC9}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "AdapterSelection", "AdapterSelection\cpp\AdapterSelection.vcxproj", "{2E115EFB-F7EC-444E-A555-507D55A89BC9}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

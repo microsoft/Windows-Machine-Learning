@@ -46,7 +46,6 @@ interface IComponentState {
     showPerf: boolean,
 }
 class RunView extends React.Component<IComponentProperties, IComponentState> {
-    private lastFile = '';
     constructor(props: IComponentProperties) {
         super(props);
         this.state = {
@@ -61,7 +60,16 @@ class RunView extends React.Component<IComponentProperties, IComponentState> {
         }
         log.info("Run view is created.");
     }
-
+    public UNSAFE_componentWillReceiveProps(nextProps: IComponentProperties) {
+        if(nextProps.file.path && nextProps.file.path) {
+            if(!nextProps.file.path.endsWith(".onnx")){
+                return;
+            }
+            if(!(this.props.file && this.props.file.path) || this.props.file.path !== nextProps.file.path){
+                this.setState({model: nextProps.file.path}, () => {this.setParameters()})
+            }
+        }
+    }
     public render() {
         const collabsibleRef: React.RefObject<Collapsible> = React.createRef();
         return (
@@ -121,12 +129,6 @@ class RunView extends React.Component<IComponentProperties, IComponentState> {
             { value: 'GPUHighPerformance', label: 'GPUHighPerformance' },
             { value: "GPUMinPower", label: 'GPUMinPower' }
           ];
-        
-        if(this.props.file && this.props.file.path && this.props.file.path !== this.lastFile) {
-            this.lastFile = this.props.file.path;
-            this.setState({model: this.props.file.path}, () => {this.setParameters()})
-        }
-
         return (
             <div className="Arguments">
                 <div className='DisplayFlex ModelPath'>
@@ -263,7 +265,10 @@ class RunView extends React.Component<IComponentProperties, IComponentState> {
             console: '',
             currentStep: Step.Running,
         });
-        // const paramters = ['-model', this.state.model];
+        const runDialogOptions = {
+            message: '',
+            title: 'run result',
+        }
         try {
             await execFilePromise(modelRunnerPath, this.state.parameters, {}, this.outputListener);
         } catch (e) {
@@ -272,11 +277,15 @@ class RunView extends React.Component<IComponentProperties, IComponentState> {
             this.setState({
                 currentStep: Step.Idle,
             });
+            runDialogOptions.message = 'run failed!'
+            require('electron').remote.dialog.showMessageBox(runDialogOptions)
             return;
         }
         this.setState({
             currentStep: Step.Success,
         });
+        runDialogOptions.message = 'run successfully';
+        require('electron').remote.dialog.showMessageBox(runDialogOptions)
         log.info(this.state.model + " run successfully");
     }
 }

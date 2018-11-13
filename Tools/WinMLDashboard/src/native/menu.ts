@@ -114,7 +114,7 @@ async function onSave() {
     }
 }
 
-async function onOpen() {
+export async function onOpen() {
     const files = await showOpenDialog([
         { name: 'ONNX Model', extensions: [ 'onnx', 'pb' ] },
         { name: 'Keras Model', extensions: [ 'h5', 'json', 'keras' ] },

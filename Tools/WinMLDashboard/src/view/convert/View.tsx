@@ -67,6 +67,16 @@ class ConvertView extends React.Component<IComponentProperties, IComponentState>
         log.info("Convert view is created.");
     }
 
+    public UNSAFE_componentWillReceiveProps(nextProps: IComponentProperties){
+        if(nextProps.file && nextProps.file.path) {
+            if(!nextProps.file.path.endsWith(".onnx")) {
+                this.setState({source: nextProps.file.path})
+            }
+            else {
+                this.setState({source: ''})
+            }
+        }
+    }
     public render() {
         const collabsibleRef: React.RefObject<Collapsible> = React.createRef();
         return (
@@ -184,7 +194,7 @@ class ConvertView extends React.Component<IComponentProperties, IComponentState>
         return (
             <div>
                 <div className='DisplayFlex ModelConvertBrowser'>
-                    <TextField id='modelToConvert' placeholder='Path' value={this.state.source || this.props.file && this.props.file.path} label='Model to convert' onChanged={this.setSource} />
+                    <TextField id='modelToConvert' placeholder='Path' value={this.state.source} label='Model to convert' onChanged={this.setSource} />
                     <DefaultButton id='ConverterModelInputBrowse' text='Browse' onClick={this.browseSource}/>
                 </div>
                 <div className='Frameworks'>
@@ -238,6 +248,10 @@ class ConvertView extends React.Component<IComponentProperties, IComponentState>
         if (!framework) {
             return;
         }
+        const convertDialogOptions = {
+            message: '',
+            title: 'convert result',
+        }
         log.info("start to convert " + this.state.source);
 
         this.setState({ currentStep: Step.Converting });
@@ -245,12 +259,16 @@ class ConvertView extends React.Component<IComponentProperties, IComponentState>
             await python([packagedFile('convert.py'), source, framework, destination], {}, this.outputListener);
         } catch (e) {
             log.info("Conversion of " + this.state.source + " failed.");
+            convertDialogOptions.message = 'convert failed!'
+            require('electron').remote.dialog.showMessageBox(convertDialogOptions)
             this.printError(e);
             return;
         }
 
         // Convert successfully
         log.info(this.state.source + " is converted successfully.");
+        convertDialogOptions.message = 'convert successfully!'
+        require('electron').remote.dialog.showMessageBox(convertDialogOptions)
         this.setState({ currentStep: Step.Idle, source: undefined, console:"convert successfully!!"});
         // TODO Show dialog (https://developer.microsoft.com/en-us/fabric#/components/dialog) asking whether we should open the converted model
         this.props.setFile(fileFromPath(destination));

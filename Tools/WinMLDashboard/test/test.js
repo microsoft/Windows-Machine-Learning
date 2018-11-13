@@ -14,7 +14,7 @@ var app = new Application({
 })
 
 describe("WinMLDashboard Tests", function () {
-    this.timeout(200000);
+    this.timeout(2000000);
 
     // CSS selectors
     const openModelButton = '#open-file-button';

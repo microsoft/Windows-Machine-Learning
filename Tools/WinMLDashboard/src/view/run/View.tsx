@@ -7,6 +7,7 @@ import IState from '../../datastore/state';
 
 import Select from 'react-select';
 
+import { MessageBar, MessageBarType } from 'office-ui-fabric-react/lib/MessageBar'
 import { Spinner } from 'office-ui-fabric-react/lib/Spinner';
 import { TextField } from 'office-ui-fabric-react/lib/TextField';
 import { packagedFile } from '../../native/appData';
@@ -59,9 +60,6 @@ class RunView extends React.Component<IComponentProperties, IComponentState> {
             showPerf: false,
         }
         log.info("Run view is created.");
-        const osInfo = require('os').release()
-        
-        log.info(osInfo);
     }
     public UNSAFE_componentWillReceiveProps(nextProps: IComponentProperties) {
         if(nextProps.file.path && nextProps.file.path) {
@@ -99,6 +97,12 @@ class RunView extends React.Component<IComponentProperties, IComponentState> {
     }
 
     private getView = () => {
+        const osInfo = require('os').release()
+        log.info(osInfo);
+        if(osInfo < '10.0.17669') {
+            const message = 'This functionality can only be used for R5-later operating system'
+            return <MessageBar messageBarType={MessageBarType.error}>{message}</MessageBar>
+        }
         switch(this.state.currentStep) {
             case Step.Running:
                 return <Spinner label="Running..." />;

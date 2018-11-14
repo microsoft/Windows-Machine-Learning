@@ -59,6 +59,9 @@ class RunView extends React.Component<IComponentProperties, IComponentState> {
             showPerf: false,
         }
         log.info("Run view is created.");
+        const osInfo = require('os').release()
+        
+        log.info(osInfo);
     }
     public UNSAFE_componentWillReceiveProps(nextProps: IComponentProperties) {
         if(nextProps.file.path && nextProps.file.path) {

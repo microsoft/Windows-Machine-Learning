@@ -116,15 +116,16 @@ async function onSave() {
 
 export async function onOpen() {
     const files = await showOpenDialog([
-        { name: 'ONNX Model', extensions: [ 'onnx', 'pb' ] },
-        { name: 'Keras Model', extensions: [ 'h5', 'json', 'keras' ] },
-        { name: 'CoreML Model', extensions: [ 'mlmodel' ] },
-        { name: 'Caffe Model', extensions: [ 'caffemodel' ] },
-        { name: 'Caffe2 Model', extensions: [ 'pb' ] },
-        { name: 'MXNet Model', extensions: [ 'model', 'json' ] },
-        { name: 'TensorFlow Graph', extensions: [ 'pb', 'meta' ] },
-        { name: 'TensorFlow Saved Model', extensions: [ 'pb' ] },
-        { name: 'TensorFlow Lite Model', extensions: [ 'tflite' ] }
+        {name: 'model', extensions: ['onnx', 'pb', 'meta', 'tflite', 'keras', 'h5', 'json', 'mlmodel', 'caffemodel']}
+        // { name: 'ONNX Model', extensions: [ 'onnx', 'pb' ] },
+        // { name: 'Keras Model', extensions: [ 'h5', 'json', 'keras' ] },
+        // { name: 'CoreML Model', extensions: [ 'mlmodel' ] },
+        // { name: 'Caffe Model', extensions: [ 'caffemodel' ] },
+        // { name: 'Caffe2 Model', extensions: [ 'pb' ] },
+        // { name: 'MXNet Model', extensions: [ 'model', 'json' ] },
+        // { name: 'TensorFlow Graph', extensions: [ 'pb', 'meta' ] },
+        // { name: 'TensorFlow Saved Model', extensions: [ 'pb' ] },
+        // { name: 'TensorFlow Lite Model', extensions: [ 'tflite' ] }
     ]);
     if (files) {
         store.dispatch(setFile(files[0]));

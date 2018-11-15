@@ -16,6 +16,8 @@ public:
     bool EnableDebugOutput() const { return m_debug; }
     bool Silent() const { return m_silent; }
     bool CreateDeviceOnClient() const { return m_createDeviceOnClient; }
+    bool AutoScale() const { return m_autoScale; }
+    BitmapInterpolationMode AutoScaleInterpMode() const { return m_autoScaleInterpMode; }
    
     const std::wstring& ImagePath() const { return m_imagePath; }
     const std::wstring& CsvPath() const { return m_csvData; }
@@ -78,6 +80,8 @@ private:
     bool m_ignoreFirstRun = false;
     bool m_debug = false;
     bool m_silent = false;
+    bool m_autoScale = false;
+    BitmapInterpolationMode m_autoScaleInterpMode = BitmapInterpolationMode::Cubic;
 
     std::wstring m_modelFolderPath;
     std::wstring m_modelPath;

@@ -40,6 +40,7 @@ Required command-Line arguments:
 -IgnoreFirstRun          : Will ignore the first run in the perf results when calculating the average
 -silent                  : Silent mode (only errors will be printed to the console)
 -debug                   : Will start a trace logging session.
+-autoScale <mode>        : Will automatically scale an input image to match the required input dimensions of the model.  Pass in the interpolation mode, one of ["Nearest", "Linear", "Cubic", "Fant"].
 
  ```
 

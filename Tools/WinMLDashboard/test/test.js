@@ -17,7 +17,7 @@ describe("WinMLDashboard Tests", function () {
     this.timeout(2000000);
 
     // CSS selectors
-    const openModelButton = '#open-file-button';
+    const openModelButton = '#openFileButton';
     const modelPathInput = '#open-file-dialog';
     const editButton = '#Pivot0-Tab0';
     const convertViewButton = '#Pivot0-Tab1';

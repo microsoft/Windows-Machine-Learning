@@ -99,8 +99,8 @@ class RunView extends React.Component<IComponentProperties, IComponentState> {
     private getView = () => {
         const osInfo = require('os').release()
         log.info(osInfo);
-        if(osInfo < '10.0.17669') {
-            const message = 'This functionality can only be used for R5-later operating system'
+        if(osInfo < '10.0.17763') {
+            const message = 'This functionality is available on Windows 10 October 2018 Update (1809) or newer version of OS.'
             return <MessageBar messageBarType={MessageBarType.error}>{message}</MessageBar>
         }
         switch(this.state.currentStep) {
@@ -284,16 +284,16 @@ class RunView extends React.Component<IComponentProperties, IComponentState> {
             this.setState({
                 currentStep: Step.Idle,
             });
-            runDialogOptions.message = 'run failed!'
+            runDialogOptions.message = 'Run failed! See console log for details.'
             require('electron').remote.dialog.showMessageBox(runDialogOptions)
             return;
         }
         this.setState({
             currentStep: Step.Success,
         });
-        runDialogOptions.message = 'run successfully';
+        runDialogOptions.message = 'Run successful';
         require('electron').remote.dialog.showMessageBox(runDialogOptions)
-        log.info(this.state.model + " run successfully");
+        log.info(this.state.model + " run successful");
     }
 }
 

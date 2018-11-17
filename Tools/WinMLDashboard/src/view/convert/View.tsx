@@ -120,6 +120,7 @@ class ConvertView extends React.Component<IComponentProperties, IComponentState>
     }
 
     private printMessage = (message: string) => {
+        log.info(message);
         this.setState((prevState) => ({
             ...prevState,
             console: prevState.console.concat(message),

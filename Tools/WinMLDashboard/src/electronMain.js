@@ -2,9 +2,16 @@ const {app, ipcMain, protocol, BrowserWindow} = require('electron');
 const fs = require('fs');
 const path = require('path');
 const url = require('url');
+const log = require('electron-log');
 
 let mainWindow;
 let aboutWindow;
+
+log.transports.file.level = 'info' 
+log.transports.console.level = 'info'
+
+const squirrelEvent = process.argv[1];
+log.info('Squirrel event: ' + squirrelEvent);
 
 if(require('electron-squirrel-startup'))
 {
@@ -48,6 +55,8 @@ function interceptFileProtocol() {
 }
 
 function createWindow() {
+    log.info('Enter CreateWindow()');
+
     interceptFileProtocol();
 
     mainWindow = new BrowserWindow({
@@ -70,6 +79,9 @@ function createWindow() {
             protocol: 'file',
         });
     }
+
+    log.info('loading URL ' + pageUrl);
+    
     mainWindow.loadURL(pageUrl);
 
     if (process.argv.includes('--dev-tools')) {
@@ -79,6 +91,8 @@ function createWindow() {
     mainWindow.on('closed', () => {
         mainWindow = null;
     });
+
+    log.info('Exit CreateWindow()');
 }
 
 app.on('ready', createWindow);

@@ -108,10 +108,10 @@ int main(int argc, char* argv[])
 
 	// bind the input image
 	printf("Binding...\n");
-	binding.Bind(L"data_0", ImageFeatureValue::CreateFromVideoFrame(imageFrame));
+	binding.Bind(model.InputFeatures().GetAt(0).Name(), ImageFeatureValue::CreateFromVideoFrame(imageFrame));
 	// temp: bind the output (we don't support unbound outputs yet)
 	vector<int64_t> shape({ 1, 1000, 1, 1 });
-	binding.Bind(L"softmaxout_1", TensorFloat::Create(shape));
+	binding.Bind(model.OutputFeatures().GetAt(0).Name(), TensorFloat::Create(shape));
 
 	// now run the model
 	printf("Running the model...\n");

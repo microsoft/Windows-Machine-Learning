@@ -1,0 +1,14 @@
+namespace DXRenderComponent
+{
+    [default_interface]
+    runtimeclass RenderHelper
+    {
+        RenderHelper(
+            Windows.UI.Xaml.Media.Imaging.SurfaceImageSource source, 
+            Windows.Graphics.DirectX.Direct3D11.IDirect3DDevice device
+        );
+
+        Windows.Graphics.DirectX.Direct3D11.IDirect3DSurface BeginDraw(Int32 width, Int32 heigth);
+        void EndDraw();
+    }
+}

@@ -22,76 +22,6 @@ namespace SnapCandy
     public sealed class ImageHelper
     {
         /// <summary>
-        /// Crop image given a imageVariableDescription 
-        /// </summary>
-        /// <param name="inputVideoFrame"></param>
-        /// <returns></returns>
-        public static IAsyncOperation<VideoFrame> CenterCropImageAsync(VideoFrame inputVideoFrame, ImageFeatureDescriptor imageVariableDescription)
-        {
-            return CenterCropImageAsync(inputVideoFrame, imageVariableDescription.Width, imageVariableDescription.Height);
-        }
-
-        /// <summary>
-        /// Crop image given a target width and height 
-        /// </summary>
-        /// <param name="inputVideoFrame"></param>
-        /// <returns></returns>
-        public static IAsyncOperation<VideoFrame> CenterCropImageAsync(VideoFrame inputVideoFrame, uint targetWidth, uint targetHeight)
-        {
-            return AsyncInfo.Run(async (token) =>
-            {
-                bool useDX = inputVideoFrame.SoftwareBitmap == null;
-                VideoFrame result = null;
-                // Center crop
-                try
-                {
-
-                    // Since we will be center-cropping the image, figure which dimension has to be clipped
-                    var frameHeight = useDX ? inputVideoFrame.Direct3DSurface.Description.Height : inputVideoFrame.SoftwareBitmap.PixelHeight;
-                    var frameWidth = useDX ? inputVideoFrame.Direct3DSurface.Description.Width : inputVideoFrame.SoftwareBitmap.PixelWidth;
-
-                    Rect cropRect = GetCropRect(frameWidth, frameHeight, targetWidth, targetHeight);
-                    BitmapBounds cropBounds = new BitmapBounds()
-                    {
-                        Width = (uint)cropRect.Width,
-                        Height = (uint)cropRect.Height,
-                        X = (uint)cropRect.X,
-                        Y = (uint)cropRect.Y
-                    };
-
-                    // Create the VideoFrame to be bound as input for evaluation
-                    if (useDX)
-                    {
-                        if (inputVideoFrame.Direct3DSurface == null)
-                        {
-                            throw (new Exception("Invalid VideoFrame without SoftwareBitmap nor D3DSurface"));
-                        }
-
-                        result = new VideoFrame(BitmapPixelFormat.Bgra8,
-                                                (int)targetWidth,
-                                                (int)targetHeight,
-                                                BitmapAlphaMode.Premultiplied);
-                    }
-                    else
-                    {
-                        result = new VideoFrame(BitmapPixelFormat.Bgra8,
-                                                (int)targetWidth,
-                                                (int)targetHeight,
-                                                BitmapAlphaMode.Premultiplied);
-                    }
-
-                    await inputVideoFrame.CopyToAsync(result, cropBounds, null);
-                }
-                catch (Exception ex)
-                {
-                    Debug.WriteLine(ex.ToString());
-                }
-
-                return result;
-            });
-        }
-
-        /// <summary>
         /// Calculate the center crop bounds given a set of source and target dimensions
         /// </summary>
         /// <param name="frameWidth"></param>
@@ -135,29 +65,24 @@ namespace SnapCandy
             return AsyncInfo.Run(async (token) =>
             {
                 bool useDX = inputVideoFrame.SoftwareBitmap == null;
-                if (frameRenderer == null)
-                {
-                    throw (new InvalidOperationException("FrameRenderer is null"));
-                }
-
-                SoftwareBitmap softwareBitmap = null;
                 if (useDX)
                 {
-                    softwareBitmap = await SoftwareBitmap.CreateCopyFromSurfaceAsync(inputVideoFrame.Direct3DSurface);
-                    softwareBitmap = SoftwareBitmap.Convert(softwareBitmap, BitmapPixelFormat.Bgra8, BitmapAlphaMode.Premultiplied);
+                    //VideoFrame vf = new VideoFrame(BitmapPixelFormat.Bgra8, inputVideoFrame.)
+                    //softwareBitmap = await SoftwareBitmap.CreateCopyFromSurfaceAsync(inputVideoFrame.Direct3DSurface);
+                    //softwareBitmap = SoftwareBitmap.Convert(softwareBitmap, BitmapPixelFormat.Bgra8, BitmapAlphaMode.Premultiplied);
+                    frameRenderer.EndDraw();
                 }
                 else
                 {
-                    softwareBitmap = inputVideoFrame.SoftwareBitmap;
                     //softwareBitmap = new SoftwareBitmap(
                     //    inputVideoFrame.SoftwareBitmap.BitmapPixelFormat,
                     //    inputVideoFrame.SoftwareBitmap.PixelWidth,
                     //    inputVideoFrame.SoftwareBitmap.PixelHeight,
                     //    inputVideoFrame.SoftwareBitmap.BitmapAlphaMode);
                     //inputVideoFrame.SoftwareBitmap.CopyTo(softwareBitmap);
+                    frameRenderer.RenderFrame(inputVideoFrame.SoftwareBitmap);
                 }
 
-                frameRenderer.RenderFrame(softwareBitmap);
             });
         }
 

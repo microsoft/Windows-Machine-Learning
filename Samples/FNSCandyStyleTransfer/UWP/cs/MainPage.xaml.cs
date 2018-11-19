@@ -9,23 +9,24 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
+using Windows.AI.MachineLearning;
+using Windows.Foundation;
+using Windows.Graphics.DirectX.Direct3D11;
+using Windows.Graphics.Imaging;
+using Windows.Media;
 using Windows.Media.Capture;
+using Windows.Media.Capture.Frames;
+using Windows.Media.Core;
+using Windows.Media.MediaProperties;
+using Windows.Media.Playback;
 using Windows.Storage;
 using Windows.UI.Core;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
-using Windows.Graphics.Imaging;
-using Windows.AI.MachineLearning;
-using Windows.Media;
-using System.Threading;
-using Windows.Foundation;
-using Windows.Media.Playback;
-using Windows.Media.Capture.Frames;
-using Windows.Media.Core;
-using Windows.Media.MediaProperties;
 using Windows.UI.Xaml.Media.Imaging;
 
 namespace SnapCandy
@@ -44,15 +45,12 @@ namespace SnapCandy
         private MediaFrameReader _modelInputFrameReader;
 
         // States
-        private bool _isReadyForEval = true;
         private bool _isProcessingFrames = false;
         private bool _showInitialImageAndProgress = true;
-        private SemaphoreSlim _evaluationLock = new SemaphoreSlim(1);
         private SemaphoreSlim _frameAquisitionLock = new SemaphoreSlim(1);
         private bool _useGPU = true;
-        private DispatcherTimer inkEvaluationDispatcherTimer;
+        private DispatcherTimer _inkEvaluationDispatcherTimer;
         private bool _isrocessingImages = true;
-        private bool _proceedWithEval = true;
 
         // Rendering related
         private FrameRenderer _resultframeRenderer;
@@ -72,26 +70,30 @@ namespace SnapCandy
         private LearningModelDeviceKind m_inferenceDeviceSelected = LearningModelDeviceKind.Default;
         private LearningModelDevice m_device;
         private LearningModelSession m_session;
-        private LearningModelBinding m_binding;
-        uint m_outWidth, m_outHeight, m_inWidth, m_inHeight;
+        uint _outWidth, _outHeight, _inWidth, _inHeight;
         string m_outName, m_inName;
         private List<string> _labels = new List<string>();
-        VideoFrame _inputFrame = null;
+        object _nextFrame = null;  // can be a MediaFrameReference or a VideoFrame
         VideoFrame _outputFrame = null;
 
         // Debug
         private Stopwatch _perfStopwatch = new Stopwatch(); // performance Stopwatch used throughout
+        private DispatcherTimer _FramesPerSecondTimer = new DispatcherTimer();
+        private long _FramesPerSecond = 0;
+
+        private Thread _EvaluateThread;
 
         public MainPage()
         {
             this.InitializeComponent();
+            // Create our evaluate thread task
+            _EvaluateThread = new Thread(new ParameterizedThreadStart(EvaluateThreadProc));
+            _EvaluateThread.Start(this);
         }
 
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {
             Debug.WriteLine("OnNavigatedTo");
-            _resultframeRenderer = new FrameRenderer(UIResultImage);
-            _inputFrameRenderer = new FrameRenderer(UIInputImage);
             UIStyleList.ItemsSource = _kModelFileNames;
 
             UIInkCanvasInput.InkPresenter.InputDeviceTypes =
@@ -109,8 +111,22 @@ namespace SnapCandy
                 }
             );
 
+            // Create a 1 second timer
+            _FramesPerSecondTimer.Tick += _FramesPerSecond_Tick;
+            _FramesPerSecondTimer.Interval = new TimeSpan(0, 0, 1);
+            _FramesPerSecondTimer.Start();
+
             // Select first style
             UIStyleList.SelectedIndex = 0;
+        }
+
+        private void _FramesPerSecond_Tick(object sender, object e)
+        {
+            // how many frames did we present?
+            long intervalFramesPerSecond = _FramesPerSecond;
+            _FramesPerSecond = 0;
+
+            NotifyUser($"FramesPerSecond: {intervalFramesPerSecond}", NotifyType.StatusMessage);
         }
 
         /// <summary>
@@ -174,13 +190,9 @@ namespace SnapCandy
         private async Task LoadModelAsync(string modelFileName)
         {
             Debug.WriteLine("LoadModelAsync");
-            _evaluationLock.Wait();
             {
-                m_binding = null;
                 m_model = null;
                 m_session = null;
-                _isReadyForEval = false;
-
                 try
                 {
                     // Start stopwatch
@@ -205,8 +217,8 @@ namespace SnapCandy
                         int i = 0;
                         ImageFeatureDescriptor imgDesc = inputF as ImageFeatureDescriptor;
                         TensorFeatureDescriptor tfDesc = inputF as TensorFeatureDescriptor;
-                        m_inWidth = (uint)(imgDesc == null ? tfDesc.Shape[3] : imgDesc.Width);
-                        m_inHeight = (uint)(imgDesc == null ? tfDesc.Shape[2] : imgDesc.Height);
+                        _inWidth = (uint)(imgDesc == null ? tfDesc.Shape[3] : imgDesc.Width);
+                        _inHeight = (uint)(imgDesc == null ? tfDesc.Shape[2] : imgDesc.Height);
                         m_inName = inputF.Name;
 
                         Debug.WriteLine($"N: {(imgDesc == null ? tfDesc.Shape[0] : 1)}, " +
@@ -220,8 +232,8 @@ namespace SnapCandy
                         int i = 0;
                         ImageFeatureDescriptor imgDesc = outputF as ImageFeatureDescriptor;
                         TensorFeatureDescriptor tfDesc = outputF as TensorFeatureDescriptor;
-                        m_outWidth = (uint)(imgDesc == null ? tfDesc.Shape[3] : imgDesc.Width);
-                        m_outHeight = (uint)(imgDesc == null ? tfDesc.Shape[2] : imgDesc.Height);
+                        _outWidth = (uint)(imgDesc == null ? tfDesc.Shape[3] : imgDesc.Width);
+                        _outHeight = (uint)(imgDesc == null ? tfDesc.Shape[2] : imgDesc.Height);
                         m_outName = outputF.Name;
 
                         Debug.WriteLine($"N: {(imgDesc == null ? tfDesc.Shape[0] : 1)}, " +
@@ -231,13 +243,7 @@ namespace SnapCandy
                     }
                     // ### END OF DEBUG ###
 
-                    // Create output frame
-                    _outputFrame?.Dispose();
-                    _outputFrame = new VideoFrame(BitmapPixelFormat.Bgra8, (int)m_outWidth, (int)m_outHeight);
-
                     Debug.WriteLine($"Elapsed time: {_perfStopwatch.ElapsedMilliseconds} ms");
-
-                    _isReadyForEval = true;
                 }
                 catch (Exception ex)
                 {
@@ -245,7 +251,6 @@ namespace SnapCandy
                     Debug.WriteLine($"error: {ex.Message}");
                 }
             }
-            _evaluationLock.Release();
         }
 
         /// <summary>
@@ -256,13 +261,10 @@ namespace SnapCandy
         private async void UIButtonAcquireImage_Click(object sender, RoutedEventArgs e)
         {
             Debug.WriteLine("UIButtonAcquireImage_Click");
-            _evaluationLock.Wait();
             {
-                _proceedWithEval = false;
                 await CleanupCameraAsync();
                 CleanupInk();
             }
-            _evaluationLock.Release();
 
             UIInputImage.Visibility = Visibility.Visible;
             _showInitialImageAndProgress = true;
@@ -279,8 +281,7 @@ namespace SnapCandy
                 var vf = await ImageHelper.LoadVideoFrameFromStorageFileAsync(file);
                 await Task.Run(() =>
                 {
-                    _proceedWithEval = true;
-                    EvaluateVideoFrameAsync(vf).ConfigureAwait(false).GetAwaiter().GetResult();
+                    EvaluateVideoFrame(vf);
                 });
             }
 
@@ -296,13 +297,10 @@ namespace SnapCandy
         private async void UIButtonFilePick_Click(object sender, RoutedEventArgs e)
         {
             Debug.WriteLine("UIButtonFilePick_Click");
-            _evaluationLock.Wait();
             {
-                _proceedWithEval = false;
                 await CleanupCameraAsync();
                 CleanupInk();
             }
-            _evaluationLock.Release();
 
             UIInputImage.Visibility = Visibility.Visible;
             _showInitialImageAndProgress = true;
@@ -315,15 +313,8 @@ namespace SnapCandy
                 // use a default image
                 if (sender == null && e == null)
                 {
-                    if (_inputFrame == null)
-                    {
-                        var file = await StorageFile.GetFileFromApplicationUriAsync(new Uri($"ms-appx:///Assets/{_kDefaultImageFileName}"));
-                        inputFrame = await ImageHelper.LoadVideoFrameFromStorageFileAsync(file);
-                    }
-                    else
-                    {
-                        inputFrame = _inputFrame;
-                    }
+                    var file = await StorageFile.GetFileFromApplicationUriAsync(new Uri($"ms-appx:///Assets/{_kDefaultImageFileName}"));
+                    inputFrame = await ImageHelper.LoadVideoFrameFromStorageFileAsync(file);
                 }
                 else
                 {
@@ -338,8 +329,7 @@ namespace SnapCandy
                 {
                     await Task.Run(() =>
                     {
-                        _proceedWithEval = true;
-                        EvaluateVideoFrameAsync(inputFrame).ConfigureAwait(false).GetAwaiter().GetResult();
+                        EvaluateVideoFrame(inputFrame);
                     });
                 }
             }
@@ -359,69 +349,55 @@ namespace SnapCandy
         /// </summary>
         /// <param name="inputVideoFrame"></param>
         /// <returns></returns>
-        private async Task EvaluateVideoFrameAsync(VideoFrame inputVideoFrame)
+        private void EvaluateVideoFrame(VideoFrame inputVideoFrame)
         {
-            Debug.WriteLine("EvaluateVideoFrameAsync");
             LearningModelSession session = null;
-            bool isReadyForEval = false;
             bool showInitialImageAndProgress = true;
-            bool proceedWithEval = false;
-            _evaluationLock.Wait();
+
             {
                 session = m_session;
-                isReadyForEval = _isReadyForEval;
-                _isReadyForEval = false;
                 showInitialImageAndProgress = _showInitialImageAndProgress;
-                proceedWithEval = _proceedWithEval;
             }
-            _evaluationLock.Release();
 
             if ((inputVideoFrame != null) &&
                 (inputVideoFrame.SoftwareBitmap != null || inputVideoFrame.Direct3DSurface != null) &&
-                isReadyForEval &&
-                (session != null) &&
-                proceedWithEval)
+                (session != null))
             {
                 try
                 {
-                    _perfStopwatch.Restart();
-                    NotifyUser("Processing...", NotifyType.StatusMessage);
-                    await Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
+                    //Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
+                    //{
+                    //    if (showInitialImageAndProgress)
+                    //    {
+                    //        UIProcessingProgressRing.IsActive = true;
+                    //        UIProcessingProgressRing.Visibility = Visibility.Visible;
+                    //        UIButtonSaveImage.IsEnabled = false;
+                    //    }
+                    //}).GetResults();
+
+
+                    // for DX we need to create a new surface everytime
+                    if (_useGPU)
                     {
-                        if (showInitialImageAndProgress)
-                        {
-                            UIProcessingProgressRing.IsActive = true;
-                            UIProcessingProgressRing.Visibility = Visibility.Visible;
-                            UIButtonSaveImage.IsEnabled = false;
-                        }
-                    });
-
-                    // Crop the input image to communicate appropriately to the user what is being evaluated
-                    _inputFrame = await ImageHelper.CenterCropImageAsync(inputVideoFrame, m_inWidth, m_inHeight);
-
-                    _perfStopwatch.Stop();
-                    Int64 cropTime = _perfStopwatch.ElapsedMilliseconds;
-                    Debug.WriteLine($"Image handling: {cropTime}ms");
+                        // make it DX backed, on the same device that our inference is running on
+                        var surface = _resultframeRenderer.BeginDraw((int)_outWidth, (int)_outHeight);
+                        _outputFrame?.Dispose();
+                        _outputFrame = VideoFrame.CreateWithDirect3D11Surface(surface);
+                    }
 
                     // Bind and Eval
-                    if (_inputFrame != null)
+                    if (inputVideoFrame != null)
                     {
-                        _evaluationLock.Wait();
                         try
                         {
                             _perfStopwatch.Restart();
 
-                            // create bindings for the input and output buffers
-                            // ###### BUG 4794 - Reusing the same binding object currently fails to update output on 2nd+ eval call as of 07/17/2018
-                            //if (m_binding == null)
-                            {
-                                m_binding = new LearningModelBinding(session);
-                                ImageFeatureValue outputImageFeatureValue = ImageFeatureValue.CreateFromVideoFrame(_outputFrame);
-                                m_binding.Bind(m_outName, outputImageFeatureValue);
-                            }
+                            LearningModelBinding binding = new LearningModelBinding(session);
 
-                            ImageFeatureValue inputImageFeatureValue = ImageFeatureValue.CreateFromVideoFrame(_inputFrame);
-                            m_binding.Bind(m_inName, inputImageFeatureValue);
+                            binding.Bind(m_outName, _outputFrame);
+                            //TensorFloat tf = TensorFloat.Create();
+                            //binding.Bind(m_outName, tf);
+                            binding.Bind(m_inName, inputVideoFrame);
 
                             Int64 bindTime = _perfStopwatch.ElapsedMilliseconds;
                             Debug.WriteLine($"Binding: {bindTime}ms");
@@ -429,13 +405,13 @@ namespace SnapCandy
                             // render the input frame 
                             if (showInitialImageAndProgress)
                             {
-                                await ImageHelper.RenderFrameAsync(_inputFrameRenderer, _inputFrame);
+                                ImageHelper.RenderFrameAsync(_inputFrameRenderer, inputVideoFrame).GetResults();
                             }
 
                             // Process the frame with the model
                             _perfStopwatch.Restart();
 
-                            var results = m_session.Evaluate(m_binding, "test");
+                            var results = m_session.Evaluate(binding, "test");
 
                             _perfStopwatch.Stop();
                             Int64 evalTime = _perfStopwatch.ElapsedMilliseconds;
@@ -448,35 +424,25 @@ namespace SnapCandy
                                 Debug.WriteLine($"{output.Key} : {output.Value} -> {output.Value.GetType()}");
                             }
 
-                            // Display result
-                            //ImageFeatureValue outputImage = (results.Outputs[m_outputTensorDescription.Name] as ImageFeatureValue);
-                            //if(outputImage != null)
-                            //{
-                            //    _outputFrame = outputImage.VideoFrame;
-                            //}
-                            await ImageHelper.RenderFrameAsync(_resultframeRenderer, _outputFrame);
+                            // Display result, dont' wait for it to finish
+                            ImageHelper.RenderFrameAsync(_resultframeRenderer, _outputFrame);
                         }
                         catch (Exception ex)
                         {
                             NotifyUser(ex.Message, NotifyType.ErrorMessage);
                             Debug.WriteLine(ex.ToString());
                         }
-                        finally
-                        {
-                            _evaluationLock.Release();
-                        }
 
                         if (showInitialImageAndProgress)
                         {
-                            await Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
-                            {
-                                UIProcessingProgressRing.IsActive = false;
-                                UIProcessingProgressRing.Visibility = Visibility.Collapsed;
-                                UIButtonSaveImage.IsEnabled = true;
-                            });
+                            //Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
+                            //{
+                            //    UIProcessingProgressRing.IsActive = false;
+                            //    UIProcessingProgressRing.Visibility = Visibility.Collapsed;
+                            //    UIButtonSaveImage.IsEnabled = true;
+                            //}).GetResults();
                         }
 
-                        NotifyUser("Done!", NotifyType.StatusMessage);
                     }
                     else
                     {
@@ -489,12 +455,7 @@ namespace SnapCandy
                     Debug.WriteLine(ex.ToString());
                 }
 
-                _evaluationLock.Wait();
-                {
-                    _isReadyForEval = true;
-                }
-                _evaluationLock.Release();
-
+                _FramesPerSecond += 1;
                 _perfStopwatch.Reset();
             }
         }
@@ -541,10 +502,26 @@ namespace SnapCandy
 
             }).ContinueWith(async (antecedent) =>
         {
-            if (antecedent.IsCompletedSuccessfully && _isReadyForEval)
+            if (antecedent.IsCompletedSuccessfully)
             {
                 await Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
                 {
+                    // Create output frame
+                    _outputFrame?.Dispose();
+                    if (_useGPU)
+                    {
+                        // for DX we need to create the videoframe later, for each frame
+                        _resultframeRenderer = new FrameRenderer(UIResultImage, m_session.Device.Direct3D11Device, (int)_outWidth, (int)_outHeight);
+                        _inputFrameRenderer = new FrameRenderer(UIInputImage, m_session.Device.Direct3D11Device, (int)_outWidth, (int)_outHeight);
+                    }
+                    else
+                    {
+                        // make it CPU backed
+                        _outputFrame = new VideoFrame(BitmapPixelFormat.Bgra8, (int)_outWidth, (int)_outHeight);
+                        _resultframeRenderer = new FrameRenderer(UIResultImage);
+                        _inputFrameRenderer = new FrameRenderer(UIInputImage);
+                    }
+
                     NotifyUser($"Ready to stylize! ", NotifyType.StatusMessage);
                     UIImageControls.IsEnabled = true;
                     UIModelControls.IsEnabled = true;
@@ -569,6 +546,60 @@ namespace SnapCandy
             await ImageHelper.SaveVideoFrameToFilePickedAsync(_outputFrame);
         }
 
+        private async void _inkEvaluationDispatcherTimer_Tick(object sender, object e)
+        {
+            if (!_frameAquisitionLock.Wait(100))
+            {
+                return;
+            }
+            {
+                if (_isProcessingFrames)
+                {
+                    _frameAquisitionLock.Release();
+                    return;
+                }
+
+                _isProcessingFrames = true;
+            }
+            _frameAquisitionLock.Release();
+
+            try
+            {
+                if (UIInkControls.Visibility != Visibility.Visible)
+                {
+                    throw (new Exception("invisible control, will not attempt rendering"));
+                }
+                // Render the ink control to an image
+                RenderTargetBitmap renderBitmap = new RenderTargetBitmap();
+                await renderBitmap.RenderAsync(UIInkGrid);
+                var buffer = await renderBitmap.GetPixelsAsync();
+                var softwareBitmap = SoftwareBitmap.CreateCopyFromBuffer(buffer, BitmapPixelFormat.Bgra8, renderBitmap.PixelWidth, renderBitmap.PixelHeight, BitmapAlphaMode.Ignore);
+                buffer = null;
+                renderBitmap = null;
+
+                // Instantiate VideoFrame using the softwareBitmap of the ink
+                VideoFrame vf = VideoFrame.CreateWithSoftwareBitmap(softwareBitmap);
+
+                // queue up the next frame for EvaluateThreadProc
+                _frameAquisitionLock.Wait();
+                {
+                    _nextFrame = vf;
+                }
+                _frameAquisitionLock.Release();
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex.Message);
+            }
+
+            _frameAquisitionLock.Wait();
+            {
+                _isProcessingFrames = false;
+            }
+            _frameAquisitionLock.Release();
+
+        }
+
         /// <summary>
         /// Apply effect on ink handdrawn
         /// </summary>
@@ -577,14 +608,11 @@ namespace SnapCandy
         private async void UIButtonInking_Click(object sender, RoutedEventArgs e)
         {
             Debug.WriteLine("UIButtonInking_Click");
-            _evaluationLock.Wait();
             {
-                _proceedWithEval = false;
                 await CleanupCameraAsync();
                 CleanupInk();
                 CleanupInputImage();
             }
-            _evaluationLock.Release();
 
             UIInkControls.Visibility = Visibility.Visible;
             UIResultImage.Width = UIInkControls.Width;
@@ -594,66 +622,10 @@ namespace SnapCandy
             UIImageControls.IsEnabled = false;
             UIModelControls.IsEnabled = false;
 
-            inkEvaluationDispatcherTimer = new DispatcherTimer();
-            inkEvaluationDispatcherTimer.Tick += async (object a, object b) =>
-            {
-                if (!_frameAquisitionLock.Wait(100))
-                {
-                    return;
-                }
-                {
-                    if (_isProcessingFrames)
-                    {
-                        _frameAquisitionLock.Release();
-                        return;
-                    }
-
-                    _isProcessingFrames = true;
-                }
-                _frameAquisitionLock.Release();
-
-                try
-                {
-                    if (UIInkControls.Visibility != Visibility.Visible)
-                    {
-                        throw (new Exception("invisible control, will not attempt rendering"));
-                    }
-                    // Render the ink control to an image
-                    RenderTargetBitmap renderBitmap = new RenderTargetBitmap();
-                    await renderBitmap.RenderAsync(UIInkGrid);
-                    var buffer = await renderBitmap.GetPixelsAsync();
-                    var softwareBitmap = SoftwareBitmap.CreateCopyFromBuffer(buffer, BitmapPixelFormat.Bgra8, renderBitmap.PixelWidth, renderBitmap.PixelHeight, BitmapAlphaMode.Ignore);
-                    buffer = null;
-                    renderBitmap = null;
-
-                    // Instantiate VideoFrame using the softwareBitmap of the ink
-                    VideoFrame vf = VideoFrame.CreateWithSoftwareBitmap(softwareBitmap);
-
-                    // Evaluate the VideoFrame
-                    await Task.Run(() =>
-                    {
-                        EvaluateVideoFrameAsync(vf).ConfigureAwait(false).GetAwaiter().GetResult();
-                        _frameAquisitionLock.Wait();
-                        {
-                            _isProcessingFrames = false;
-                        }
-                        _frameAquisitionLock.Release();
-                    });
-                }
-                catch (Exception ex)
-                {
-                    Debug.WriteLine(ex.Message);
-                }
-            };
-
-            inkEvaluationDispatcherTimer.Interval = new TimeSpan(0, 0, 0, 0, 33);
-            inkEvaluationDispatcherTimer.Start();
-
-            _evaluationLock.Wait();
-            {
-                _proceedWithEval = true;
-            }
-            _evaluationLock.Release();
+            _inkEvaluationDispatcherTimer = new DispatcherTimer();
+            _inkEvaluationDispatcherTimer.Tick += _inkEvaluationDispatcherTimer_Tick;
+            _inkEvaluationDispatcherTimer.Interval = new TimeSpan(0, 0, 0, 0, 1000/30);
+            _inkEvaluationDispatcherTimer.Start();
 
             UIImageControls.IsEnabled = true;
             UIModelControls.IsEnabled = true;
@@ -668,15 +640,16 @@ namespace SnapCandy
             _frameAquisitionLock.Wait();
             try
             {
-                if (inkEvaluationDispatcherTimer != null)
+                if (_inkEvaluationDispatcherTimer != null)
                 {
-                    inkEvaluationDispatcherTimer.Stop();
-                    inkEvaluationDispatcherTimer = null;
+                    _inkEvaluationDispatcherTimer.Stop();
+                    _inkEvaluationDispatcherTimer = null;
                 }
                 UIInkCanvasInput.InkPresenter.StrokeContainer.Clear();
                 UIInkControls.Visibility = Visibility.Collapsed;
                 _showInitialImageAndProgress = true;
                 _isProcessingFrames = false;
+                _nextFrame = null;
             }
             catch (Exception ex)
             {
@@ -714,14 +687,11 @@ namespace SnapCandy
         private async void UIButtonLiveStream_Click(object sender, RoutedEventArgs e)
         {
             Debug.WriteLine("UIButtonLiveStream_Click");
-            _evaluationLock.Wait();
             {
-                _proceedWithEval = false;
                 await CleanupCameraAsync();
                 CleanupInk();
                 CleanupInputImage();
             }
-            _evaluationLock.Release();
 
             await InitializeMediaCaptureAsync();
         }
@@ -804,6 +774,47 @@ namespace SnapCandy
             UIResultImage.Height = UIMediaPlayerElement.Height;
         }
 
+
+        private static void EvaluateThreadProc(object param)
+        {
+            MainPage _this = (MainPage)param;
+            while (true)
+            {
+                object frame;
+
+                _this._frameAquisitionLock.Wait();
+                {
+                    frame = _this._nextFrame;
+                    _this._nextFrame = null;
+                }
+                _this._frameAquisitionLock.Release();
+
+                if (frame != null)
+                {
+                    VideoFrame vf = null;
+                    if (frame is MediaFrameReference)
+                    {
+                        vf = ((MediaFrameReference)frame).VideoMediaFrame.GetVideoFrame();
+                    }
+                    else if (frame is VideoFrame)
+                    {
+                        vf = (VideoFrame)frame;
+                    }
+
+                    if (vf != null)
+                    {
+                        _this.EvaluateVideoFrame(vf);
+                    }
+
+                    if (frame is MediaFrameReference)
+                    {
+                        ((MediaFrameReference)frame).Dispose();
+                    }
+                }
+                // Yield the rest of the time slice.
+                Thread.Sleep(0);
+            }
+        }
         /// <summary>
         /// A new frame from the camera is available
         /// </summary>
@@ -811,60 +822,16 @@ namespace SnapCandy
         /// <param name="args"></param>
         private async void _modelInputFrameReader_FrameArrived(MediaFrameReader sender, MediaFrameArrivedEventArgs args)
         {
-            Debug.WriteLine("_modelInputFrameReader_FrameArrived");
-            MediaFrameReference frame = null;
-
-            // Do not attempt processing of more than 1 frame at a time
+            // queue up the next frame for EvaluateThreadProc
             _frameAquisitionLock.Wait();
             {
-                if (_isProcessingFrames)
+                var latestFrame = sender.TryAcquireLatestFrame();
+                if (latestFrame != null)
                 {
-                    _frameAquisitionLock.Release();
-                    return;
-                }
-                try
-                {
-                    frame = sender.TryAcquireLatestFrame();
-                    _isProcessingFrames = true;
-                }
-                catch (Exception ex)
-                {
-                    Debug.WriteLine(ex.Message);
-                    NotifyUser(ex.Message, NotifyType.ErrorMessage);
-                    frame = null;
-                    _isProcessingFrames = false;
+                    _nextFrame = latestFrame;
                 }
             }
             _frameAquisitionLock.Release();
-
-            if ((frame != null) && (frame.VideoMediaFrame != null))
-            {
-                VideoFrame vf = null;
-
-                // Receive frames from the camera and transfer to system memory 
-                _perfStopwatch.Restart();
-                SoftwareBitmap softwareBitmap = frame.VideoMediaFrame.SoftwareBitmap;
-
-                if (softwareBitmap == null) // frames are coming as Direct3DSurface
-                {
-                    Debug.Assert(frame.VideoMediaFrame.Direct3DSurface != null);
-                    vf = VideoFrame.CreateWithDirect3D11Surface(frame.VideoMediaFrame.Direct3DSurface);
-                }
-                else
-                {
-                    vf = VideoFrame.CreateWithSoftwareBitmap(softwareBitmap);
-                }
-
-                await Task.Run(() =>
-                {
-                    EvaluateVideoFrameAsync(vf).ConfigureAwait(false).GetAwaiter().GetResult();
-                    _frameAquisitionLock.Wait();
-                    {
-                        _isProcessingFrames = false;
-                    }
-                    _frameAquisitionLock.Release();
-                });
-            }
         }
 
         /// <summary>
@@ -880,14 +847,11 @@ namespace SnapCandy
                 return;
             }
 
-            _evaluationLock.Wait();
             {
-                _proceedWithEval = false;
                 await CleanupCameraAsync();
                 CleanupInk();
                 CleanupInputImage();
             }
-            _evaluationLock.Release();
 
             UIImageControls.IsEnabled = false;
             UIModelControls.IsEnabled = false;
@@ -903,7 +867,8 @@ namespace SnapCandy
                 {
                     SourceGroup = _selectedMediaFrameSourceGroup,
                     PhotoCaptureSource = PhotoCaptureSource.Auto,
-                    MemoryPreference = MediaCaptureMemoryPreference.Cpu,
+                    //MemoryPreference = MediaCaptureMemoryPreference.Cpu,
+                    MemoryPreference = MediaCaptureMemoryPreference.Auto,
                     StreamingCaptureMode = StreamingCaptureMode.Video
                 };
 
@@ -915,12 +880,6 @@ namespace SnapCandy
                 {
                     await InitializeModelInputFrameReaderAsync();
                 }
-
-                _evaluationLock.Wait();
-                {
-                    _proceedWithEval = true;
-                }
-                _evaluationLock.Release();
             }
             catch (Exception ex)
             {
@@ -964,7 +923,6 @@ namespace SnapCandy
                 _modelInputFrameReader = null;
                 _modelInputFrameReader = await _mediaCapture.CreateFrameReaderAsync(_selectedMediaFrameSource, frameReaderSubtype);
                 _modelInputFrameReader.AcquisitionMode = MediaFrameReaderAcquisitionMode.Realtime;
-                _isProcessingFrames = false;
 
                 await _modelInputFrameReader.StartAsync();
 
@@ -987,8 +945,8 @@ namespace SnapCandy
             _frameAquisitionLock.Wait();
             try
             {
+                _nextFrame = null;
                 _showInitialImageAndProgress = true;
-                _isProcessingFrames = false;
                 if (_modelInputFrameReader != null)
                 {
                     _modelInputFrameReader.FrameArrived -= _modelInputFrameReader_FrameArrived;
@@ -1032,11 +990,36 @@ namespace SnapCandy
         private Image _imageElement;
         private SoftwareBitmap _backBuffer;
         private bool _taskRunning = false;
+        private DXRenderComponent.RenderHelper _renderHelper;
 
+        // use a DX renderer
+        public FrameRenderer(Image imageElement, IDirect3DDevice device, int width, int heigth)
+        {
+            _imageElement = imageElement;
+            _imageElement.Source = new SurfaceImageSource(width, heigth);
+            _renderHelper = new DXRenderComponent.RenderHelper(_imageElement.Source as SurfaceImageSource, device);
+        }
+        // use a CPU renderer
         public FrameRenderer(Image imageElement)
         {
             _imageElement = imageElement;
             _imageElement.Source = new SoftwareBitmapSource();
+        }
+
+        public void EndDraw()
+        {
+            // EndDraw will actually trigger rendering, this need to happen on the render thread
+            var task = _imageElement.Dispatcher.RunAsync(CoreDispatcherPriority.Normal,
+                async () =>
+                {
+                    _renderHelper.EndDraw();
+                });
+
+        }
+
+        public IDirect3DSurface BeginDraw(int width, int height)
+        {
+            return _renderHelper.BeginDraw(width, height);
         }
 
         public void RenderFrame(SoftwareBitmap softwareBitmap)

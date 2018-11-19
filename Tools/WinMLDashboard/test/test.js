@@ -14,7 +14,7 @@ var app = new Application({
 })
 
 describe("WinMLDashboard Tests", function () {
-    this.timeout(2000000);
+    this.timeout(3000000);
 
     // CSS selectors
     const openModelButton = '#openFileButton';
@@ -69,7 +69,7 @@ describe("WinMLDashboard Tests", function () {
 
         it('click install python environment', function () {
             return app.client
-                .click(pythonDownloadOption).waitForVisible('#modelToConvert', 1000*60*20)
+                .click(pythonDownloadOption).waitForVisible('#modelToConvert', 1000*3000)
         })
         
         it('sets model to convert', function () {

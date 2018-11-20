@@ -8,8 +8,11 @@ const log = require('electron-log');
 let mainWindow;
 let aboutWindow;
 
-log.transports.file.level = 'info'
+log.transports.file.level = 'info' 
 log.transports.console.level = 'info'
+
+const squirrelEvent = process.argv[1];
+log.info('Squirrel event: ' + squirrelEvent);
 
 if(require('electron-squirrel-startup'))
 {
@@ -53,8 +56,8 @@ function interceptFileProtocol() {
 }
 
 function createWindow() {
-    
     log.info("=================================================")
+    log.info('Enter CreateWindow()');
     interceptFileProtocol();
 
     mainWindow = new BrowserWindow({
@@ -78,6 +81,9 @@ function createWindow() {
             protocol: 'file',
         });
     }
+
+    log.info('loading URL ' + pageUrl);
+    
     mainWindow.loadURL(pageUrl);
 
     if (process.argv.includes('--dev-tools')) {
@@ -89,6 +95,8 @@ function createWindow() {
         log.info("main windows is closed.")
         log.info("=================================================")
     });
+
+    log.info('Exit CreateWindow()');
 }
 
 app.on('ready', createWindow);

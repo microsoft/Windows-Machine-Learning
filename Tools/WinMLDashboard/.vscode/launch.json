@@ -32,6 +32,14 @@
             ]
         },
         {
+            "name": "Debug Renderer - attach",
+            "type": "chrome",
+            "request": "attach",
+            "port": 9223,
+            "webRoot": "${workspaceFolder}",
+            "timeout": 30000
+        },
+        {
             "type": "chrome",
             "request": "launch",
             "name": "Launch Chrome",
@@ -39,7 +47,7 @@
             "webRoot": "${workspaceFolder}"
         },
         {
-            "name": "Debug Renderer process",
+            "name": "Debug Renderer - launch",
             "type": "chrome",
             "request": "launch",
             "runtimeExecutable": "${workspaceRoot}/node_modules/.bin/electron",

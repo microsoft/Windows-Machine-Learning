@@ -11,6 +11,8 @@ import { ModelProtoSingleton } from '../../../datastore/proto/modelProto';
 import IState from '../../../datastore/state';
 import './fixed-position-override.css';
 
+import { onOpen } from '../../../native/menu'
+
 const browserGlobal = window as any;
 
 interface IComponentProperties {
@@ -86,8 +88,9 @@ class Netron extends React.Component<IComponentProperties, IComponentState> {
                         <img className='logo absolute' src='winml_icon.ico' />
                         <img id='spinner' className='spinner logo absolute' src='spinner.svg' style={{display: 'none'}} />
                     </div>
-                    <button id='open-file-button' className='center' style={{top: '200px', width: '125px', opacity: 0}}>Open Model...</button>
-                    <input type="file" id="open-file-dialog" style={{display: 'none'}} multiple={false} accept=".onnx, .pb, .meta, .tflite, .keras, .h5, .json, .mlmodel, .caffemodel" />
+                    <button id='open-file-button' className='center' disabled={true}> Open Model...</button>
+                    <button id='openFileButton' className='center' style={{top: '200px', width: '125px'}} onClick={onOpen}>Open Model...</button>
+                    <input type="file" id="openFileButton" style={{display: 'none'}} multiple={false} accept=".onnx, .pb, .meta, .tflite, .keras, .h5, .json, .mlmodel, .caffemodel" />
                     <div style={{fontWeight: 'normal', color: '#e6e6e6', userSelect: 'none'}}>.</div>
                     <div style={{fontWeight: 600, color: '#e6e6e6', userSelect: 'none'}}>.</div>
                     <div style={{fontWeight: 'bold', color: '#e6e6e6', userSelect: 'none'}}>.</div>

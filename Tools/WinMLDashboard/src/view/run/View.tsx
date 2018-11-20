@@ -7,6 +7,7 @@ import IState from '../../datastore/state';
 
 import Select from 'react-select';
 
+import { MessageBar, MessageBarType } from 'office-ui-fabric-react/lib/MessageBar'
 import { Spinner } from 'office-ui-fabric-react/lib/Spinner';
 import { TextField } from 'office-ui-fabric-react/lib/TextField';
 import { packagedFile } from '../../native/appData';
@@ -15,6 +16,8 @@ import { execFilePromise } from '../../native/python';
 import './View.css';
 
 import Collapsible from '../../components/Collapsible';
+
+import log from 'electron-log';
 
 const modelRunnerPath = packagedFile('WinMLRunner.exe');
 
@@ -44,7 +47,6 @@ interface IComponentState {
     showPerf: boolean,
 }
 class RunView extends React.Component<IComponentProperties, IComponentState> {
-    private lastFile = '';
     constructor(props: IComponentProperties) {
         super(props);
         this.state = {
@@ -57,17 +59,18 @@ class RunView extends React.Component<IComponentProperties, IComponentState> {
             parameters: [],
             showPerf: false,
         }
+        log.info("Run view is created.");
     }
-
-    // public componentDidMount() {
-    //     if(this.props.file && this.props.file.path) {
-    //         if(!this.lastFile || this.props.file.path !== this.lastFile){
-    //             this.setState({model: this.props.file.path}, () => {this.setParameters()});
-    //         }
-    //         this.lastFile = this.props.file.path;
-    //     }
-    // }
-
+    public UNSAFE_componentWillReceiveProps(nextProps: IComponentProperties) {
+        if(nextProps.file.path && nextProps.file.path) {
+            if(!nextProps.file.path.endsWith(".onnx")){
+                return;
+            }
+            if(!(this.props.file && this.props.file.path) || this.props.file.path !== nextProps.file.path){
+                this.setState({model: nextProps.file.path}, () => {this.setParameters()})
+            }
+        }
+    }
     public render() {
         const collabsibleRef: React.RefObject<Collapsible> = React.createRef();
         return (
@@ -94,6 +97,12 @@ class RunView extends React.Component<IComponentProperties, IComponentState> {
     }
 
     private getView = () => {
+        const osInfo = require('os').release()
+        log.info(osInfo);
+        if(osInfo < '10.0.17763') {
+            const message = 'This functionality is available on Windows 10 October 2018 Update (1809) or newer version of OS.'
+            return <MessageBar messageBarType={MessageBarType.error}>{message}</MessageBar>
+        }
         switch(this.state.currentStep) {
             case Step.Running:
                 return <Spinner label="Running..." />;
@@ -127,13 +136,6 @@ class RunView extends React.Component<IComponentProperties, IComponentState> {
             { value: 'GPUHighPerformance', label: 'GPUHighPerformance' },
             { value: "GPUMinPower", label: 'GPUMinPower' }
           ];
-        
-        if(this.props.file && this.props.file.path && this.props.file.path !== this.lastFile) {
-            this.lastFile = this.props.file.path;
-            this.setState({model: this.props.file.path}, () => {this.setParameters()})
-        }
-        // const modelPath = this.state.model || this.props.file && this.props.file.path;
-
         return (
             <div className="Arguments">
                 <div className='DisplayFlex ModelPath'>
@@ -248,6 +250,7 @@ class RunView extends React.Component<IComponentProperties, IComponentState> {
     private printError = (error: string | Error) => {
         const message = typeof error === 'string' ? error : (`${error.stack ? `${error.stack}: ` : ''}${error.message}`);
         this.printMessage(message)
+        log.info(message);
     }
 
     private printMessage = (message: string) => {
@@ -264,25 +267,33 @@ class RunView extends React.Component<IComponentProperties, IComponentState> {
     };
 
     private execModelRunner = async() => {
+        log.info("start to run " + this.state.model);
         this.setState({
             console: '',
             currentStep: Step.Running,
         });
-        // const paramters = ['-model', this.state.model];
+        const runDialogOptions = {
+            message: '',
+            title: 'run result',
+        }
         try {
             await execFilePromise(modelRunnerPath, this.state.parameters, {}, this.outputListener);
         } catch (e) {
+            log.info(this.state.model + " is failed to run");
             this.printError(e);
             this.setState({
                 currentStep: Step.Idle,
             });
+            runDialogOptions.message = 'Run failed! See console log for details.'
+            require('electron').remote.dialog.showMessageBox(runDialogOptions)
             return;
         }
         this.setState({
             currentStep: Step.Success,
         });
-        // tslint:disable-next-line:no-console
-        console.log(this.state.currentStep.toString());
+        runDialogOptions.message = 'Run successful';
+        require('electron').remote.dialog.showMessageBox(runDialogOptions)
+        log.info(this.state.model + " run successful");
     }
 }
 

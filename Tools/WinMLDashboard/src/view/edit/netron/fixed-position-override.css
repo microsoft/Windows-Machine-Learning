@@ -18,3 +18,8 @@
     position: absolute;
     overflow: auto;
 }
+
+#open-file-button {
+    visibility: hidden;
+    background: transparent;
+}

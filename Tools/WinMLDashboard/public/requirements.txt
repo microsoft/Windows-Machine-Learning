@@ -1,6 +1,5 @@
 git+https://github.com/apple/coremltools
---extra-index-url http://aipkgs/repository/aiinfra/simple --trusted-host aipkgs 
-libsvm==3.22
+lightgbm==2.2.1
 winmltools==1.2.0.912
 tensorflow==1.11.0
 xgboost==0.80

@@ -12,35 +12,29 @@ export function createMenu(electron: typeof Electron) {
             label: 'File',
             submenu: [
                 { label: 'Open', accelerator: 'Ctrl+O', click: onOpen },
+                { label: 'Open Recent', click: onOpen, enabled: false },
                 { label: 'Save', accelerator: 'Ctrl+S', click: onSave, enabled: false },
-            ],
-        }, {
-            label: 'Edit',
-            submenu: [
-                { role: 'undo' },
-                { role: 'redo' },
-                { type: 'separator' },
-                { role: 'cut' },
-                { role: 'copy' },
-                { role: 'paste' },
-                { role: 'pasteandmatchstyle' },
-                { role: 'delete' },
-                { role: 'selectall '},
-            ],
-        }, {
-            label: 'View',
-            submenu: [
-                { role: 'toggledevtools' },
-                { type: 'separator' },
-                { role: 'resetzoom' },
-                { role: 'zoomin' },
-                { role: 'zoomout' },
-                { type: 'separator' },
-                { role: 'togglefullscreen '},
             ],
         }, {
             role: 'help',
             submenu: [
+                {
+                    label: 'Documentation',
+                    click() {
+                        const tpnUrl = 'https://github.com/Microsoft/Windows-Machine-Learning/blob/RS5/Tools/WinMLDashboard/README.md';
+                        require('electron').shell.openExternal(tpnUrl);
+                    },
+                },
+                { type: 'separator' },
+                {
+                    label: 'Report Issues/Request Features',
+                    click() {
+                        const tpnUrl = 'https://github.com/Microsoft/Windows-Machine-Learning/issues/new';
+                        require('electron').shell.openExternal(tpnUrl);
+                    },
+                },
+                { role: 'toggledevtools' },
+                { type: 'separator' },
                 {
                     label: 'Third Party Notice',
                     click() {
@@ -48,6 +42,7 @@ export function createMenu(electron: typeof Electron) {
                         require('electron').shell.openExternal(tpnUrl);
                     },
                 },
+                { type: 'separator' },
                 {
                     label: "About",
                     click() {

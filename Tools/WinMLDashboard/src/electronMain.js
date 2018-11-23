@@ -1,4 +1,5 @@
 const {app, ipcMain, protocol, BrowserWindow} = require('electron');
+
 const fs = require('fs');
 const path = require('path');
 const url = require('url');
@@ -55,17 +56,18 @@ function interceptFileProtocol() {
 }
 
 function createWindow() {
+    log.info("=================================================")
     log.info('Enter CreateWindow()');
-
     interceptFileProtocol();
 
     mainWindow = new BrowserWindow({
-        height: 600,
+        height: 1000,
         icon: path.join(__dirname, '../public/winml_icon.ico'),
-        width: 800,
+        width: 1200,
     });
     global.mainWindow = mainWindow;
-
+    
+    log.info("main window is created");
     let pageUrl;
     for (const arg of process.argv.slice(1)) {
         if (arg.includes('://')) {
@@ -90,6 +92,8 @@ function createWindow() {
 
     mainWindow.on('closed', () => {
         mainWindow = null;
+        log.info("main windows is closed.")
+        log.info("=================================================")
     });
 
     log.info('Exit CreateWindow()');
@@ -115,6 +119,8 @@ ipcMain.on('show-about-window', () => {
 })
 
 function openAboutWindow() {
+    
+  log.info("about window is opened.");
   if (aboutWindow) {
     aboutWindow.focus()
     return
@@ -134,6 +140,7 @@ function openAboutWindow() {
   aboutWindow.loadURL('file://' + __dirname + '/../public/about.html');
 
   aboutWindow.on('closed', () => {
+    log.info("about window is closed");
     aboutWindow = null
   })
 }

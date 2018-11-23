@@ -14,10 +14,10 @@ var app = new Application({
 })
 
 describe("WinMLDashboard Tests", function () {
-    this.timeout(200000);
+    this.timeout(3000000);
 
     // CSS selectors
-    const openModelButton = '#open-file-button';
+    const openModelButton = '#openFileButton';
     const modelPathInput = '#open-file-dialog';
     const editButton = '#Pivot0-Tab0';
     const convertViewButton = '#Pivot0-Tab1';
@@ -25,6 +25,7 @@ describe("WinMLDashboard Tests", function () {
     const convertView = '.ConvertView'
     const convertButton = '#ConvertButton'
     const modelToConvertTextFiled = '#modelToConvert'
+    const pythonDownloadOption = '#ChoiceGroupLabel18-__download'
 
     // Start spectron
     before(function () {
@@ -60,6 +61,17 @@ describe("WinMLDashboard Tests", function () {
                 .click(convertViewButton)
                 .element(mainView).element(convertView).should.eventually.exist
         });
+
+        it('shows install python options', function () {
+            return app.client
+                .element(pythonDownloadOption).isVisible
+        })
+
+        // it('click install python environment', function () {
+        //     return app.client
+        //         .click(pythonDownloadOption).waitForVisible('#modelToConvert', 1000*3000)
+        // })
+        
         it('sets model to convert', function () {
             return app.client
                 .element(modelToConvertTextFiled).exist

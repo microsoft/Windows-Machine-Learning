@@ -16,6 +16,8 @@ import './View.css';
 
 import Collapsible from '../../components/Collapsible';
 
+import log from 'electron-log';
+
 const modelRunnerPath = packagedFile('WinMLRunner.exe');
 
 interface IComponentProperties {
@@ -244,10 +246,9 @@ class RunView extends React.Component<IComponentProperties, IComponentState> {
             });
     }
 
-
-    private printError = (error: string | Error) => {
+    private logError = (error: string | Error) => {
         const message = typeof error === 'string' ? error : (`${error.stack ? `${error.stack}: ` : ''}${error.message}`);
-        this.printMessage(message)
+        log.error(message)
     }
 
     private printMessage = (message: string) => {
@@ -272,10 +273,9 @@ class RunView extends React.Component<IComponentProperties, IComponentState> {
         try {
             await execFilePromise(modelRunnerPath, this.state.parameters, {}, this.outputListener);
         } catch (e) {
-            this.printError(e);
-            this.setState({
-                currentStep: Step.Idle,
-            });
+            this.logError(e);
+            this.printMessage("\n---------------------------\nRun Failed!\n")
+            this.setState({currentStep: Step.Idle,});
             return;
         }
         this.setState({

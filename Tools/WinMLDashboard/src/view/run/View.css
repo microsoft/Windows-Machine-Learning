@@ -25,6 +25,8 @@
 .RunViewConsole {
     display: block;
     max-height: 400px;
+    color:#0012ff;
+    font-size: 12px;
 }
 
 .DeviceOption {

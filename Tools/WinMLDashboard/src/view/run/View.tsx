@@ -112,7 +112,7 @@ class RunView extends React.Component<IComponentProperties, IComponentState> {
                 <div className='ArgumentsControl'>
                     {this.getArgumentsView()}
                 </div>
-                <TextField id='paramters' readOnly={true} placeholder='paramters' value={this.state.parameters.join(' ')} label='paramters to model runner.exe' onChanged={this.updateParameters} />
+                <TextField id='paramters' readOnly={true} placeholder='paramters' value={this.state.parameters.join(' ')} label='Parameters to WinMLRunner' onChanged={this.updateParameters} />
                 <DefaultButton id='RunButton' text='Run' disabled={!this.state.model} onClick={this.execModelRunner}/>
             </div>
         )
@@ -246,11 +246,9 @@ class RunView extends React.Component<IComponentProperties, IComponentState> {
             });
     }
 
-
-    private printError = (error: string | Error) => {
+    private logError = (error: string | Error) => {
         const message = typeof error === 'string' ? error : (`${error.stack ? `${error.stack}: ` : ''}${error.message}`);
-        this.printMessage(message)
-        log.info(message);
+        log.error(message)
     }
 
     private printMessage = (message: string) => {
@@ -279,8 +277,10 @@ class RunView extends React.Component<IComponentProperties, IComponentState> {
         try {
             await execFilePromise(modelRunnerPath, this.state.parameters, {}, this.outputListener);
         } catch (e) {
+            this.logError(e);
+            this.printMessage("\n---------------------------\nRun Failed!\n")
+            
             log.info(this.state.model + " is failed to run");
-            this.printError(e);
             this.setState({
                 currentStep: Step.Idle,
             });

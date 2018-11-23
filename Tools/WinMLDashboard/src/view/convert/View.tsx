@@ -16,7 +16,6 @@ import { fileFromPath, showNativeOpenDialog, showNativeSaveDialog } from '../../
 import { downloadPip, downloadPython, getLocalPython, pip, python } from '../../native/python';
 import { isWeb } from '../../native/util';
 
-
 import './View.css';
 
 import log from 'electron-log';
@@ -127,6 +126,11 @@ class ConvertView extends React.Component<IComponentProperties, IComponentState>
         }))
     }
 
+    private logError = (error: string | Error) => {
+        const message = typeof error === 'string' ? error : (`${error.stack ? `${error.stack}: ` : ''}${error.message}`);
+        log.error(message)
+    }
+
     private printError = (error: string | Error) => {
         const message = typeof error === 'string' ? error : (`${error.stack ? `${error.stack}: ` : ''}${error.message}`);
         this.printMessage(message)
@@ -170,8 +174,10 @@ class ConvertView extends React.Component<IComponentProperties, IComponentState>
                 // reset pythonReinstall after environment is installed successfully
                 this.setState({pythonReinstall: false})
             } catch (error) {
+                // if python install failed, give opportunity to reinstall 
                 log.info("installation of python environment failed");
                 this.printError(error);
+                return;
             }
             
         }
@@ -259,10 +265,12 @@ class ConvertView extends React.Component<IComponentProperties, IComponentState>
         try {
             await python([packagedFile('convert.py'), source, framework, destination], {}, this.outputListener);
         } catch (e) {
+            this.logError(e);
+            this.printMessage("\n------------------------------------\nConversion failed!\n")
+            this.setState({ currentStep: Step.Idle});
             log.info("Conversion of " + this.state.source + " failed.");
             convertDialogOptions.message = 'convert failed!'
             require('electron').remote.dialog.showMessageBox(convertDialogOptions)
-            this.printError(e);
             return;
         }
 
@@ -270,7 +278,8 @@ class ConvertView extends React.Component<IComponentProperties, IComponentState>
         log.info(this.state.source + " is converted successfully.");
         convertDialogOptions.message = 'convert successfully!'
         require('electron').remote.dialog.showMessageBox(convertDialogOptions)
-        this.setState({ currentStep: Step.Idle, source: undefined, console:"convert successfully!!"});
+        this.setState({ currentStep: Step.Idle, source: undefined, console:"Converted successfully!! \n ONNX file loaded."});
+
         // TODO Show dialog (https://developer.microsoft.com/en-us/fabric#/components/dialog) asking whether we should open the converted model
         this.props.setFile(fileFromPath(destination));
         this.props.setSaveFileName(destination);

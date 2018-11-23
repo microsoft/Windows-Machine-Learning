@@ -103,7 +103,7 @@ class RunView extends React.Component<IComponentProperties, IComponentState> {
                 <div className='ArgumentsControl'>
                     {this.getArgumentsView()}
                 </div>
-                <TextField id='paramters' readOnly={true} placeholder='paramters' value={this.state.parameters.join(' ')} label='paramters to model runner.exe' onChanged={this.updateParameters} />
+                <TextField id='paramters' readOnly={true} placeholder='paramters' value={this.state.parameters.join(' ')} label='Parameters to WinMLRunner' onChanged={this.updateParameters} />
                 <DefaultButton id='RunButton' text='Run' disabled={!this.state.model} onClick={this.execModelRunner}/>
             </div>
         )

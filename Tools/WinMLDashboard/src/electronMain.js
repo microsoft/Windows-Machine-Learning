@@ -1,4 +1,4 @@
-const {app, ipcMain, protocol, BrowserWindow} = require('electron');
+const {app, ipcMain, protocol, BrowserWindow, dialog} = require('electron');
 
 const fs = require('fs');
 const path = require('path');
@@ -6,7 +6,6 @@ const url = require('url');
 const log = require('electron-log');
 
 let mainWindow;
-let aboutWindow;
 
 log.transports.file.level = 'info' 
 log.transports.console.level = 'info'
@@ -114,33 +113,51 @@ app.on('activate', () => {
 });
 
 ipcMain.on('show-about-window', () => {
-    
-    openAboutWindow()
+    showAboutDialog();   
 })
 
-function openAboutWindow() {
-    
-  log.info("about window is opened.");
-  if (aboutWindow) {
-    aboutWindow.focus()
-    return
-  }
+var pkg = {
+    get package (){
+        var package; 
+        if (!package) {
+            var appPath = app.getAppPath();
+            var file = appPath + '/build/pkginfo.json';
+            // if (fs.existsSync(file)) {
+            try {
+                var data = fs.readFileSync(file);
+                package = JSON.parse(data);
+                package.date = new Date(fs.statSync(file).mtime);
+            }
+            catch(_)
+            {
+                // package.commit = None;
+                // package.date = None;
+            }
+        }    
+        return package;
+    }    
+}
 
-  aboutWindow = new BrowserWindow({
-    height: 420,
-    icon: path.join(__dirname, '../public/winml_icon.ico'),
-    title: "About",
-    width: 420,
-  })
+function showAboutDialog() {
+    var details = [];
 
-  aboutWindow.setFullScreenable(false);
-  aboutWindow.setMinimizable(false);
-  aboutWindow.setResizable(false);
-  aboutWindow.setMenu(null);
-  aboutWindow.loadURL('file://' + __dirname + '/../public/about.html');
+    details.push('Version: ' + app.getVersion() + ' (pre-release)');
+    if (pkg.package){
+        var commit = pkg.package.commit; 
+        var date = pkg.package.date;
 
-  aboutWindow.on('closed', () => {
-    log.info("about window is closed");
-    aboutWindow = null
-  })
+        details.push('Commit: ' + commit);
+        if (date) {
+            details.push('Date: ' + (date.getMonth() + 1).toString() + '/' + date.getDate() + '/' + date.getFullYear())
+        }
+    }
+
+    var aboutDialogOptions = {
+        detail: details.join('\n'),
+        icon: path.join(__dirname, '../public/winml_icon.ico'),
+        message: app.getName(),
+        title: 'About'
+    };
+
+    dialog.showMessageBox(mainWindow, aboutDialogOptions);    
 }

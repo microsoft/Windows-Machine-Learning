@@ -35,7 +35,7 @@ class RightPanel extends React.Component<IComponentProperties, {}> {
         return (
             <div className="Unselectable">
                 <Resizable isRightPanel={true} visible={this.props.showRight}>
-                    <Label onClick={this.toggleRightPanel} >Model</Label>
+                    <Label className="toggleLabel" onClick={this.toggleRightPanel}>Model</Label>
                     <div className='Panel'>
                         <Collapsible label='Properties'>
                             <KeyValueEditor getState={this.getPropertiesFromState} schema={{ type: 'object' }} />

@@ -7,7 +7,7 @@ import { connect } from 'react-redux';
 
 import Collapsible from '../../components/Collapsible';
 import Resizable from '../../components/Resizable';
-import { setInputs, setOutputs } from '../../datastore/actionCreators';
+import { setInputs, setOutputs, setShowLeft } from '../../datastore/actionCreators';
 import { Proto } from '../../datastore/proto/proto';
 import IState from '../../datastore/state';
 
@@ -23,6 +23,7 @@ interface IComponentProperties {
     selectedNode: string,
     setInputs: typeof setInputs,
     setOutputs: typeof setOutputs,
+    setShowLeft: typeof setShowLeft,
     showLeft: boolean,
 }
 
@@ -86,17 +87,6 @@ class LeftPanel extends React.Component<IComponentProperties, {}> {
 
     private getContent() {
         const name = 'Input And Output';
-        // const modelPropertiesSelected = this.props.selectedNode === name;
-        // let input: any[];
-        // let output: any[];
-        // if (modelPropertiesSelected) {
-        //     input = this.props.modelInputs;
-        //     output = this.props.modelOutputs;
-        // } else {
-        //     const node = this.props.nodes[this.props.selectedNode];
-        //     ({ input, output, name } = node);
-        //     name = `Node: ${name ? `${name} (${node.opType})` : node.opType}`;
-        // }
 
         const input = this.props.modelInputs;
         const output = this.props.modelOutputs;
@@ -104,7 +94,7 @@ class LeftPanel extends React.Component<IComponentProperties, {}> {
         const outputsForm = this.buildConnectionList(output);
         return (
             <div>
-                <Label className='PanelName'>{name}</Label>
+                <Label className='PanelName' onClick={this.toggleLeft}>{name}</Label>
                 <div className='Panel'>
                     <Collapsible label='Inputs'>
                         {inputsForm}
@@ -116,9 +106,9 @@ class LeftPanel extends React.Component<IComponentProperties, {}> {
             </div>
         );
     }
-    // private toggleLeft = ()=> {
-    //     this.props.setShowLeft(false)
-    // }
+    private toggleLeft = ()=> {
+        this.props.setShowLeft(false)
+    }
     private buildConnectionList = (connections: any[]) => {
         return connections.map((x: any) => {
             const valueInfoProto = this.props.inputs[x] || this.props.outputs[x];
@@ -248,6 +238,7 @@ const mapStateToProps = (state: IState) => ({
 const mapDispatchToProps = {
     setInputs,
     setOutputs,
+    setShowLeft,
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(LeftPanel);

@@ -24,13 +24,7 @@ class RightPanel extends React.Component<IComponentProperties, {}> {
     constructor(props: any) {
         super(props);
     }
-    public UNSAFE_componentWillReceiveProps(nextProps: IComponentProperties) {
-        // tslint:disable-next-line:no-console
-        console.log('BBBBthis.props.showRight' + this.props.showRight)
-    }
     public render() {
-        // tslint:disable-next-line:no-console
-        console.log('this.props.showRight' + this.props.showRight)
 
         return (
             <div className="Unselectable">

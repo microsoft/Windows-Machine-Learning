@@ -69,13 +69,7 @@ const getFullType = (typeProto: any): string => {
 }
 
 class LeftPanel extends React.Component<IComponentProperties, {}> {
-    public UNSAFE_componentWillReceiveProps(nextProps: IComponentProperties) {
-        // tslint:disable-next-line:no-console
-        console.log('BBBBthis.props.showLeft' + nextProps.showLeft)
-    }
     public render() {
-        // tslint:disable-next-line:no-console
-        console.log('this.props.showLeft:' + this.props.showLeft)
         return (
             <div className="Unselectable">
                 <Resizable visible={this.props.showLeft}>

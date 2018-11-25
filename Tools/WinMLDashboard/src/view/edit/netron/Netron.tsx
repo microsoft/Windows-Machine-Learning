@@ -6,10 +6,12 @@ import 'netron/src/view-sidebar.css';
 import 'netron/src/view.css';
 import 'npm-font-open-sans/open-sans.css';
 
-import { setInputs, setMetadataProps, setModelInputs, setModelOutputs, setNodes, setOutputs, setProperties, setSelectedNode } from '../../../datastore/actionCreators';
+import { setInputs, setMetadataProps, setModelInputs, setModelOutputs, setNodes, setOutputs, setProperties, setSelectedNode, setShowLeft, setShowRight } from '../../../datastore/actionCreators';
 import { ModelProtoSingleton } from '../../../datastore/proto/modelProto';
 import IState from '../../../datastore/state';
 import './fixed-position-override.css';
+
+import { DefaultButton } from 'office-ui-fabric-react/lib/Button';
 
 import { onOpen } from '../../../native/menu'
 
@@ -27,6 +29,10 @@ interface IComponentProperties {
     setOutputs: typeof setOutputs,
     setProperties: typeof setProperties,
     setSelectedNode: typeof setSelectedNode,
+    setShowLeft: typeof setShowLeft,
+    setShowRight: typeof setShowRight,
+    showLeft: boolean,
+    showRight: boolean
 }
 
 interface IComponentState {
@@ -97,18 +103,8 @@ class Netron extends React.Component<IComponentProperties, IComponentState> {
                 </div>
                 <svg id='graph' className='graph' preserveAspectRatio='xMidYMid meet' width='100%' height='100%' />
                 <div id='toolbar' className='toolbar' style={{position: 'absolute', top: '10px', left: '10px', display: 'none',}}>
-                    <button id='model-properties-button' className='xxx' title='Model Properties'>
-                        <svg viewBox="0 0 100 100" width="24" height="24">
-                            <rect x="12" y="12" width="76" height="76" rx="16" ry="16" strokeWidth="8" stroke="#fff" />
-                            <line x1="30" y1="37" x2="70" y2="37" strokeWidth="8" strokeLinecap="round" stroke="#fff" />
-                            <line x1="30" y1="50" x2="70" y2="50" strokeWidth="8" strokeLinecap="round" stroke="#fff" />
-                            <line x1="30" y1="63" x2="70" y2="63" strokeWidth="8" strokeLinecap="round" stroke="#fff" />
-                            <rect x="12" y="12" width="76" height="76" rx="16" ry="16" strokeWidth="4" />
-                            <line x1="30" y1="37" x2="70" y2="37" strokeWidth="4" strokeLinecap="round" />
-                            <line x1="30" y1="50" x2="70" y2="50" strokeWidth="4" strokeLinecap="round" />
-                            <line x1="30" y1="63" x2="70" y2="63" strokeWidth="4" strokeLinecap="round" />
-                        </svg>
-                    </button>
+                    <button id='model-properties-button' className='xxx' title='Model Properties' />
+                    <DefaultButton id='EditButton' text='Edit' onClick={this.toggleLeftRight}/>
                     <button id='zoom-in-button' className='icon' title='Zoom In'>
                         <svg viewBox="0 0 100 100" width="24" height="24">
                             <circle cx="50" cy="50" r="35" strokeWidth="8" stroke="#fff" />
@@ -141,6 +137,16 @@ class Netron extends React.Component<IComponentProperties, IComponentState> {
         );
     }
 
+    private toggleLeftRight = () => {
+        if(this.props.showLeft && this.props.showRight) {
+            this.props.setShowLeft(false)
+            this.props.setShowRight(false)
+        }
+        else {
+            this.props.setShowLeft(true)
+            this.props.setShowRight(true)
+        }
+    }
     private propsToObject(props: any) {
         return props.reduce((acc: { [key: string]: string }, x: any) => {
             // metadataProps uses key, while model.properties uses name
@@ -187,11 +193,12 @@ class Netron extends React.Component<IComponentProperties, IComponentState> {
                     const title = args[1];
                     if (title === 'Model Properties') {
                         this.props.setSelectedNode(title);
-                        return;
                     } else {
                         this.props.setSelectedNode(undefined);
                     }
                 }
+                this.props.setShowLeft(false);
+                this.props.setShowRight(false);
                 return target.apply(thisArg, args);
             },
         };
@@ -205,11 +212,11 @@ class Netron extends React.Component<IComponentProperties, IComponentState> {
                 return target.apply(thisArg, args);
             },
         };
-        const panelCloseProxy = Proxy.revocable(browserGlobal.view._sidebar.open, panelCloseHandler);
-        browserGlobal.view._sidebar.open = panelCloseProxy.proxy;
+        const panelCloseProxy = Proxy.revocable(browserGlobal.view._sidebar.close, panelCloseHandler);
+        browserGlobal.view._sidebar.close = panelCloseProxy.proxy;
         this.proxiesRevoke.push(panelCloseProxy.revoke);
 
-        browserGlobal.view.showNodeProperties = (node: any) => this.props.setSelectedNode(node.graph.nodes.indexOf(node));
+        // browserGlobal.view.showNodeProperties = (node: any) => this.props.setSelectedNode(node.graph.nodes.indexOf(node));
     }
 
     private getModelProperties(modelProto: any) {
@@ -250,7 +257,11 @@ class Netron extends React.Component<IComponentProperties, IComponentState> {
             this.props.setNodes(proto.graph.node.filter((x: any) => x.opType !== 'Constant'));
             this.props.setMetadataProps(this.propsToObject(proto.metadataProps));
             this.props.setProperties(this.getModelProperties(proto));
+            this.props.setShowLeft(true);
+            this.props.setShowRight(true);
         } else {
+            this.props.setShowLeft(false);
+            this.props.setShowRight(false);
             this.props.setModelInputs(undefined);
             this.props.setModelOutputs(undefined);
             this.props.setNodes(undefined);
@@ -265,6 +276,8 @@ class Netron extends React.Component<IComponentProperties, IComponentState> {
 const mapStateToProps = (state: IState) => ({
     file: state.file,
     nodes: state.nodes,
+    showLeft: state.showLeft,
+    showRight: state.showRight,
 });
 
 const mapDispatchToProps = {
@@ -276,6 +289,8 @@ const mapDispatchToProps = {
     setOutputs,
     setProperties,
     setSelectedNode,
+    setShowLeft,
+    setShowRight
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(Netron);

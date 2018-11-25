@@ -23,6 +23,7 @@ interface IComponentProperties {
     selectedNode: string,
     setInputs: typeof setInputs,
     setOutputs: typeof setOutputs,
+    showLeft: boolean,
 }
 
 const denotationOptions = ['', 'IMAGE', 'AUDIO', 'TEXT', 'TENSOR'].map((key: string) => ({ key, text: key }));
@@ -67,30 +68,38 @@ const getFullType = (typeProto: any): string => {
 }
 
 class LeftPanel extends React.Component<IComponentProperties, {}> {
+    public UNSAFE_componentWillReceiveProps(nextProps: IComponentProperties) {
+        // tslint:disable-next-line:no-console
+        console.log('BBBBthis.props.showLeft' + nextProps.showLeft)
+    }
     public render() {
+        // tslint:disable-next-line:no-console
+        console.log('this.props.showLeft:' + this.props.showLeft)
         return (
             <div className="Unselectable">
-                <Resizable visible={this.props.selectedNode !== undefined}>
-                    {this.props.selectedNode !== undefined && this.getContent()}
+                <Resizable visible={this.props.showLeft}>
+                    {this.props.showLeft && this.getContent()}
                 </Resizable>
             </div>
         );
     }
 
     private getContent() {
-        let name = 'Model Properties';
-        const modelPropertiesSelected = this.props.selectedNode === name;
-        let input: any[];
-        let output: any[];
-        if (modelPropertiesSelected) {
-            input = this.props.modelInputs;
-            output = this.props.modelOutputs;
-        } else {
-            const node = this.props.nodes[this.props.selectedNode];
-            ({ input, output, name } = node);
-            name = `Node: ${name ? `${name} (${node.opType})` : node.opType}`;
-        }
+        const name = 'Input And Output';
+        // const modelPropertiesSelected = this.props.selectedNode === name;
+        // let input: any[];
+        // let output: any[];
+        // if (modelPropertiesSelected) {
+        //     input = this.props.modelInputs;
+        //     output = this.props.modelOutputs;
+        // } else {
+        //     const node = this.props.nodes[this.props.selectedNode];
+        //     ({ input, output, name } = node);
+        //     name = `Node: ${name ? `${name} (${node.opType})` : node.opType}`;
+        // }
 
+        const input = this.props.modelInputs;
+        const output = this.props.modelOutputs;
         const inputsForm = this.buildConnectionList(input);
         const outputsForm = this.buildConnectionList(output);
         return (
@@ -107,7 +116,9 @@ class LeftPanel extends React.Component<IComponentProperties, {}> {
             </div>
         );
     }
-
+    // private toggleLeft = ()=> {
+    //     this.props.setShowLeft(false)
+    // }
     private buildConnectionList = (connections: any[]) => {
         return connections.map((x: any) => {
             const valueInfoProto = this.props.inputs[x] || this.props.outputs[x];
@@ -231,6 +242,7 @@ const mapStateToProps = (state: IState) => ({
     nodes: state.nodes,
     outputs: state.outputs,
     selectedNode: state.selectedNode,
+    showLeft: state.showLeft,
 })
 
 const mapDispatchToProps = {

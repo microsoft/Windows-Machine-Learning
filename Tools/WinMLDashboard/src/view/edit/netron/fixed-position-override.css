@@ -23,3 +23,19 @@
     visibility: hidden;
     background: transparent;
 }
+
+#model-properties-button {
+    box-sizing: 0px;
+    width: 0px;
+    height: 0px;
+    visibility: hidden;
+    background: transparent;
+}
+
+#EditButton {
+    background: lightgray
+}
+
+#model-metadata-button {
+    right: 0px;
+}

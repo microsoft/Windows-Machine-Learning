@@ -1,16 +1,17 @@
 import * as React from 'react';
 import { connect } from 'react-redux';
 
-import { DefaultButton } from 'office-ui-fabric-react/lib/Button';
-
+import Select from 'react-select';
 import IState from '../../datastore/state';
 
-import Select from 'react-select';
-
+import { DefaultButton } from 'office-ui-fabric-react/lib/Button';
 import { MessageBar, MessageBarType } from 'office-ui-fabric-react/lib/MessageBar'
 import { Spinner } from 'office-ui-fabric-react/lib/Spinner';
 import { TextField } from 'office-ui-fabric-react/lib/TextField';
+
+import { setFile } from '../../datastore/actionCreators';
 import { packagedFile } from '../../native/appData';
+import { fileFromPath } from '../../native/dialog';
 import { showNativeOpenDialog } from '../../native/dialog';
 import { execFilePromise } from '../../native/python';
 import './View.css';
@@ -22,7 +23,8 @@ import log from 'electron-log';
 const modelRunnerPath = packagedFile('WinMLRunner.exe');
 
 interface IComponentProperties {
-    file: File
+    file: File,
+    setFile: typeof setFile,
 }
 
 interface ISelectOpition {
@@ -267,6 +269,7 @@ class RunView extends React.Component<IComponentProperties, IComponentState> {
     };
 
     private execModelRunner = async() => {
+        this.props.setFile(fileFromPath(this.state.model))
         log.info("start to run " + this.state.model);
         this.setState({
             console: '',
@@ -301,4 +304,8 @@ const mapStateToProps = (state: IState) => ({
     file: state.file,
 });
 
-export default connect(mapStateToProps)(RunView);
+const mapDispatchToProps = {
+    setFile,
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(RunView);

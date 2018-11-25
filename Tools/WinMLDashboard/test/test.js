@@ -25,7 +25,7 @@ describe("WinMLDashboard Tests", function () {
     const convertView = '.ConvertView'
     const convertButton = '#ConvertButton'
     const modelToConvertTextFiled = '#modelToConvert'
-    const pythonDownloadOption = '#ChoiceGroupLabel18-__download'
+    const pythonDownloadOption = '#ChoiceGroupLabel21-__download'
 
     // Start spectron
     before(function () {

@@ -70,9 +70,7 @@ int main(int argc, char* argv[])
 
 	// create D3D12Device
 	com_ptr<IUnknown> spIUnknownAdapter;
-
 	spFactory->EnumAdapters(selectedIndex, spAdapter.put());
-
 	spAdapter->QueryInterface(IID_IUnknown, spIUnknownAdapter.put_void());
 	com_ptr<ID3D12Device> spD3D12Device;
 	D3D12CreateDevice(spIUnknownAdapter.get(), D3D_FEATURE_LEVEL_12_0, _uuidof(ID3D12Device), spD3D12Device.put_void());
@@ -98,8 +96,7 @@ int main(int argc, char* argv[])
 	printf("model file loaded in %d ticks\n", ticks);
 
 	// now create a session and binding
-	//LearningModelSession session(model, spLearningDevice.as<LearningModelDevice>());
-	LearningModelSession session(model);
+	LearningModelSession session(model, spLearningDevice.as<LearningModelDevice>());
 	LearningModelBinding binding(session);
 
 	// load the image
@@ -111,7 +108,8 @@ int main(int argc, char* argv[])
 	binding.Bind(model.InputFeatures().GetAt(0).Name(), ImageFeatureValue::CreateFromVideoFrame(imageFrame));
 	// temp: bind the output (we don't support unbound outputs yet)
 	vector<int64_t> shape({ 1, 1000, 1, 1 });
-	binding.Bind(model.OutputFeatures().GetAt(0).Name(), TensorFloat::Create(shape));
+	hstring outputName = model.OutputFeatures().GetAt(0).Name();
+	binding.Bind(outputName, TensorFloat::Create(shape));
 
 	// now run the model
 	printf("Running the model...\n");
@@ -121,7 +119,7 @@ int main(int argc, char* argv[])
 	printf("model run took %d ticks\n", ticks);
 
 	// get the output
-	auto resultTensor = results.Outputs().Lookup(L"softmaxout_1").as<TensorFloat>();
+	auto resultTensor = results.Outputs().Lookup(outputName).as<TensorFloat>();
 	auto resultVector = resultTensor.GetAsVectorView();
 	PrintResults(resultVector);
 }

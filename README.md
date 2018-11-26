@@ -47,7 +47,7 @@ In Visual Studio 2017, the platform target defaults to ARM, so be sure to change
 Reminder: If you unzip individual samples, they will not build due to references to other portions of the ZIP file that were not unzipped. You must unzip the entire archive if you intend to build the samples.
 
 ## Feedback
-- For issues file a bug on [GitHub Issues](https://github.com/Microsoft/Windows-Machine-Learning/issues).
+- For issues, file a bug on [GitHub Issues](https://github.com/Microsoft/Windows-Machine-Learning/issues).
 - Ask questions on [Stack Overflow](https://stackoverflow.com/questions/tagged/windows-machine-learning).
 - Vote for popular feature requests on [Windows Developer Feedback](https://wpdev.uservoice.com/forums/110705-universal-windows-platform?category_id=341035) or include your own request.
 

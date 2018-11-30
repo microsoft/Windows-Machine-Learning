@@ -53,9 +53,15 @@ namespace BindingUtilities
         return SoftwareBitmap::CreateCopyFromBuffer(buffer, TypeHelper::GetBitmapPixelFormat(inputDataType), static_cast<int32_t>(width), static_cast<int32_t>(height));
     }
 
-    SoftwareBitmap LoadImageFile(const hstring& filePath, InputDataType inputDataType)
+    SoftwareBitmap LoadImageFile(const TensorFeatureDescriptor& imageDescriptor, InputDataType inputDataType, const hstring& filePath, const CommandLineArgs& args)
     {
         assert(inputDataType != InputDataType::Tensor);
+
+        // We assume NCHW and NCDHW
+        uint64_t width = imageDescriptor.Shape().GetAt(imageDescriptor.Shape().Size() - 1);
+        uint64_t height = imageDescriptor.Shape().GetAt(imageDescriptor.Shape().Size() - 2);
+        uint64_t channelCount = imageDescriptor.Shape().GetAt(1);
+        uint64_t batchCount = imageDescriptor.Shape().GetAt(0);
 
         try
         {
@@ -65,10 +71,33 @@ namespace BindingUtilities
             auto stream = file.OpenAsync(FileAccessMode::Read).get();
             // Create the decoder from the stream
             BitmapDecoder decoder = BitmapDecoder::CreateAsync(stream).get();
-            // get the bitmap
-            SoftwareBitmap softwareBitmap = decoder.GetSoftwareBitmapAsync(TypeHelper::GetBitmapPixelFormat(inputDataType), BitmapAlphaMode::Ignore).get();
-            
-            return softwareBitmap;
+
+            // If input dimensions are different from tensor input, then scale / crop while reading
+            if (args.AutoScale() &&
+                 ( decoder.PixelHeight() != height ||
+                   decoder.PixelWidth() != width))
+            {
+                if (!args.Silent())
+                    std::cout << std::endl << "Binding Utilities: AutoScaling input image to match model input dimensions...";
+
+                // Create a transform object with default parameters (no transform)
+                auto transform = BitmapTransform();
+                transform.ScaledHeight(height);
+                transform.ScaledWidth(width);
+                transform.InterpolationMode(args.AutoScaleInterpMode());
+
+                // get the bitmap
+                return decoder.GetSoftwareBitmapAsync(TypeHelper::GetBitmapPixelFormat(inputDataType),
+                    BitmapAlphaMode::Ignore,
+                    transform,
+                    ExifOrientationMode::RespectExifOrientation,
+                    ColorManagementMode::DoNotColorManage).get();
+            }
+            else
+            {
+                // get the bitmap
+                return decoder.GetSoftwareBitmapAsync(TypeHelper::GetBitmapPixelFormat(inputDataType), BitmapAlphaMode::Ignore).get();
+            }
         }
         catch (...)
         {
@@ -265,7 +294,8 @@ namespace BindingUtilities
         const std::wstring& imagePath,
         InputBindingType inputBindingType,
         InputDataType inputDataType,
-        const IDirect3DDevice winrtDevice
+        const IDirect3DDevice winrtDevice,
+        const CommandLineArgs& args
     )
     {
         auto imageDescriptor = featureDescriptor.try_as<TensorFeatureDescriptor>();
@@ -278,7 +308,7 @@ namespace BindingUtilities
 
         auto softwareBitmap = imagePath.empty()
             ? GenerateGarbageImage(imageDescriptor, inputDataType)
-            : LoadImageFile(imagePath.c_str(), inputDataType);
+            : LoadImageFile(imageDescriptor, inputDataType, imagePath.c_str(), args);
 
         auto videoFrame = CreateVideoFrame(softwareBitmap, inputBindingType, inputDataType, winrtDevice);
 

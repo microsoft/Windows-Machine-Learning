@@ -29,6 +29,7 @@ void CommandLineArgs::PrintUsage() {
     std::cout << "  -IgnoreFirstRun : ignore the first run in the perf results when calculating the average" << std::endl;
     std::cout << "  -silent: only errors are printed to the console" << std::endl;
     std::cout << "  -debug: print trace logs" << std::endl;
+    std::cout << "  -autoScale <interpolationMode>: Enable image autoscaling and set the interpolation mode [Nearest, Linear, Cubic, Fant]" << std::endl;
 }
 
 CommandLineArgs::CommandLineArgs()
@@ -117,6 +118,32 @@ CommandLineArgs::CommandLineArgs()
         else if ((_wcsicmp(args[i], L"-silent") == 0))
         {
             m_silent = true;
+        }
+        else if ((_wcsicmp(args[i], L"-autoScale") == 0) && (i + 1 < numArgs))
+        {
+            m_autoScale = true;
+            if (_wcsicmp(args[++i], L"Nearest") == 0)
+            {
+                m_autoScaleInterpMode = BitmapInterpolationMode::NearestNeighbor;
+            }
+            else if (_wcsicmp(args[i], L"Linear") == 0)
+            {
+                m_autoScaleInterpMode = BitmapInterpolationMode::Linear;
+            }
+            else if (_wcsicmp(args[i], L"Cubic") == 0)
+            {
+                m_autoScaleInterpMode = BitmapInterpolationMode::Cubic;
+            }
+            else if (_wcsicmp(args[i], L"Fant") == 0)
+            {
+                m_autoScaleInterpMode = BitmapInterpolationMode::Fant;
+            }
+            else
+            {
+                std::cout << "Unknown AutoScale Interpolation Mode!" << std::endl;
+                PrintUsage();
+                return;
+            }
         }
         else if ((_wcsicmp(args[i], L"/?") == 0))
         {

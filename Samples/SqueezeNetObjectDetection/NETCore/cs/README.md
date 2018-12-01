@@ -3,6 +3,7 @@
 This is a .NET Core application that uses SqueezeNet, a pre-trained machine learning model, to detect the predominant object in an image selected by the user from a file.
 
 Note: SqueezeNet was trained to work with image sizes of 224x224, so you must provide an image of size 224X224.
+Also, note that the asynchronous handlers defined in the code are required due to a limitation of .NET Core 2. With the release of .NET Core 3 you will be able to use the async/await pattern.
 
 ## Prerequisites
 

@@ -113,47 +113,31 @@ namespace SqueezeNetObjectDetectionNC
             }
         }
 
+        
+        private static T AsyncHelper<T> (IAsyncOperation<T> operation) 
+        {
+            AutoResetEvent waitHandle = new AutoResetEvent(false);
+            operation.Completed = new AsyncOperationCompletedHandler<T>((op, status) =>
+            {
+                waitHandle.Set();
+            });
+            waitHandle.WaitOne();
+            return operation.GetResults();
+        }
 
         private static ImageFeatureValue LoadImageFile()
         {
-            AutoResetEvent waitHandle = new AutoResetEvent(false);
+            StorageFile imageFile = AsyncHelper(StorageFile.GetFileFromPathAsync(_imagePath));
 
-            StorageFile imageFile = null;
-            StorageFile.GetFileFromPathAsync(_imagePath).Completed = new AsyncOperationCompletedHandler<StorageFile>((op, status) => 
-            {
-            imageFile = op.GetResults();
-            waitHandle.Set();
-            });
-            waitHandle.WaitOne();
+            IRandomAccessStream stream = AsyncHelper(imageFile.OpenReadAsync());
 
-            IRandomAccessStream stream = null;
-            imageFile.OpenReadAsync().Completed = new AsyncOperationCompletedHandler<IRandomAccessStreamWithContentType>((op, status) =>
-            {
-                stream = op.GetResults();
-                waitHandle.Set();
-            });
-            waitHandle.WaitOne();
+            BitmapDecoder decoder = AsyncHelper(BitmapDecoder.CreateAsync(stream));
 
-            BitmapDecoder decoder = null;
-            BitmapDecoder.CreateAsync(stream).Completed = new AsyncOperationCompletedHandler<BitmapDecoder>((op, status) =>
-            {
-                decoder = op.GetResults();
-                waitHandle.Set();
-            });
-            waitHandle.WaitOne();
+            SoftwareBitmap softwareBitmap = AsyncHelper(decoder.GetSoftwareBitmapAsync());
 
-            ImageFeatureValue imageFeatureValue = null;
-            decoder.GetSoftwareBitmapAsync().Completed = new AsyncOperationCompletedHandler<SoftwareBitmap>((op, status) =>
-            {
-                SoftwareBitmap softwareBitmap = op.GetResults();
-                softwareBitmap = SoftwareBitmap.Convert(softwareBitmap, BitmapPixelFormat.Bgra8, BitmapAlphaMode.Premultiplied);
-                VideoFrame inputImage = VideoFrame.CreateWithSoftwareBitmap(softwareBitmap);
-                imageFeatureValue = ImageFeatureValue.CreateFromVideoFrame(inputImage);
-                waitHandle.Set();
-            });
-            waitHandle.WaitOne();
-
-            return imageFeatureValue;
+            softwareBitmap = SoftwareBitmap.Convert(softwareBitmap, BitmapPixelFormat.Bgra8, BitmapAlphaMode.Premultiplied);
+            VideoFrame inputImage = VideoFrame.CreateWithSoftwareBitmap(softwareBitmap);
+            return ImageFeatureValue.CreateFromVideoFrame(inputImage);
         }
 
 

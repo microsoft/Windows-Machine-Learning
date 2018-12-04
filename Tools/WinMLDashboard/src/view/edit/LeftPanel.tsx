@@ -79,10 +79,20 @@ class LeftPanel extends React.Component<IComponentProperties, {}> {
     }
 
     private getContent() {
-        const name = 'Input And Output';
+        let name = '';
+        const modelPropertiesSelected = this.props.selectedNode === 'Model Properties';
+        let input: any[];
+        let output: any[];
+        if (modelPropertiesSelected || this.props.selectedNode === undefined) {
+            name = 'Input and Output'
+            input = this.props.modelInputs;
+            output = this.props.modelOutputs;
+        } else {
+            const node = this.props.nodes[this.props.selectedNode];
+            ({ input, output, name } = node);
+            name = `Node: ${name ? `${name} (${node.opType})` : node.opType}`;
+        }
 
-        const input = this.props.modelInputs;
-        const output = this.props.modelOutputs;
         const inputsForm = this.buildConnectionList(input);
         const outputsForm = this.buildConnectionList(output);
         return (

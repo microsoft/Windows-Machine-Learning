@@ -206,23 +206,17 @@ class Netron extends React.Component<IComponentProperties, IComponentState> {
 
         const panelOpenHandler = {
             apply: (target: any, thisArg: any, args: any) => {
-                if(this.state.isEdit) {
-                    const convertDialogOptions = {
-                        message: 'To view of details of nodes, change to view mode by clicking button "To View"'
-                    }
-                    require('electron').remote.dialog.showMessageBox(convertDialogOptions)
-                    return;
-                }
                 if (this.props.nodes) {
                     const title = args[1];
                     if (title === 'Model Properties') {
                         this.props.setSelectedNode(title);
+                        if(this.state.isEdit) {
+                            return;
+                        }
                     } else {
                         this.props.setSelectedNode(undefined);
                     }
                 }
-                this.props.setShowLeft(false);
-                this.props.setShowRight(false);
                 return target.apply(thisArg, args);
             },
         };
@@ -240,7 +234,19 @@ class Netron extends React.Component<IComponentProperties, IComponentState> {
         browserGlobal.view._sidebar.close = panelCloseProxy.proxy;
         this.proxiesRevoke.push(panelCloseProxy.revoke);
 
-        // browserGlobal.view.showNodeProperties = (node: any) => this.props.setSelectedNode(node.graph.nodes.indexOf(node));
+        const showNodePropertiesHandler = {
+            apply: (target: any, thisArg: any, args: any) => {
+                if(this.state.isEdit) {
+                    const node = args[0];
+                    this.props.setSelectedNode(node.graph.nodes.indexOf(node));
+                    return;
+                }
+                return target.apply(thisArg, args);
+            }
+        }
+        const showNodePropertiesProxy = Proxy.revocable(browserGlobal.view.showNodeProperties, showNodePropertiesHandler);
+        browserGlobal.view.showNodeProperties = showNodePropertiesProxy.proxy;
+        this.proxiesRevoke.push(showNodePropertiesProxy.revoke);
     }
 
     private getModelProperties(modelProto: any) {

@@ -9,7 +9,6 @@ struct CustomOperatorProvider :
         winrt::Windows::AI::MachineLearning::ILearningModelOperatorProvider,
         ILearningModelOperatorProviderNative>
 {
-    HMODULE m_library;
     winrt::com_ptr<IMLOperatorRegistry> m_registry;
 
     CustomOperatorProvider()
@@ -18,11 +17,6 @@ struct CustomOperatorProvider :
 
         RegisterSchemas();
         RegisterKernels();
-    }
-
-    ~CustomOperatorProvider()
-    {
-        FreeLibrary(m_library);
     }
 
     void RegisterSchemas()

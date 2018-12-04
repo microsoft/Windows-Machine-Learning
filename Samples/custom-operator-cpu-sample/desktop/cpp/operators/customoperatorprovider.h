@@ -14,21 +14,11 @@ struct CustomOperatorProvider :
 
     CustomOperatorProvider()
     {
-#if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)
-        m_library = LoadLibraryW(L"windows.ai.machinelearning.dll");
-#elif WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_PC_APP)
-        m_library = LoadPackagedLibrary(L"windows.ai.machinelearning.dll", 0 /*Reserved*/);
-#endif
-        using create_registry_delegate = HRESULT WINAPI (_COM_Outptr_ IMLOperatorRegistry** registry);
-        auto create_registry = reinterpret_cast<create_registry_delegate*>(GetProcAddress(m_library, "MLCreateOperatorRegistry"));
-        if (FAILED(create_registry(m_registry.put())))
-        {
-            __fastfail(0);
-        }
+        MLCreateOperatorRegistry(m_registry.put());
 
         RegisterSchemas();
         RegisterKernels();
-    }   
+    }
 
     ~CustomOperatorProvider()
     {

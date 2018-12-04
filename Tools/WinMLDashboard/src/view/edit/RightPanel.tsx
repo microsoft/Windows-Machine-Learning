@@ -5,7 +5,7 @@ import { connect } from 'react-redux';
 import Collapsible from '../../components/Collapsible';
 import KeyValueEditor from '../../components/KeyValueEditor'
 import Resizable from '../../components/Resizable';
-import { setMetadataProps, setShowRight } from '../../datastore/actionCreators';
+import { setMetadataProps } from '../../datastore/actionCreators';
 import IState, { IMetadataProps } from '../../datastore/state';
 import MetadataSchema from '../../schema/Metadata';
 
@@ -17,7 +17,6 @@ interface IComponentProperties {
     metadataProps: IMetadataProps,
     setMetadataProps: typeof setMetadataProps,
     showRight: boolean,
-    setShowRight: typeof setShowRight
 }
 
 class RightPanel extends React.Component<IComponentProperties, {}> {
@@ -29,7 +28,7 @@ class RightPanel extends React.Component<IComponentProperties, {}> {
         return (
             <div className="Unselectable">
                 <Resizable isRightPanel={true} visible={this.props.showRight}>
-                    <Label className="toggleLabel" onClick={this.toggleRightPanel}>Model</Label>
+                    <Label className="toggleLabel">Model</Label>
                     <div className='Panel'>
                         <Collapsible label='Properties'>
                             <KeyValueEditor getState={this.getPropertiesFromState} schema={{ type: 'object' }} />
@@ -41,9 +40,6 @@ class RightPanel extends React.Component<IComponentProperties, {}> {
                 </Resizable>
             </div>
         );
-    }
-    private toggleRightPanel = () => {
-        this.props.setShowRight(false);
     }
     private getMetadataPropsFromState = (state: IState) => state.metadataProps;
     private getPropertiesFromState = (state: IState) => state.properties;
@@ -58,7 +54,6 @@ const mapStateToProps = (state: IState) => ({
 
 const mapDispatchToProps = {
     setMetadataProps,
-    setShowRight,
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(RightPanel);

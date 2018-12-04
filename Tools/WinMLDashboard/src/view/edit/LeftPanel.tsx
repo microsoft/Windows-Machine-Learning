@@ -7,7 +7,7 @@ import { connect } from 'react-redux';
 
 import Collapsible from '../../components/Collapsible';
 import Resizable from '../../components/Resizable';
-import { setInputs, setOutputs, setShowLeft } from '../../datastore/actionCreators';
+import { setInputs, setOutputs } from '../../datastore/actionCreators';
 import { Proto } from '../../datastore/proto/proto';
 import IState from '../../datastore/state';
 
@@ -23,7 +23,6 @@ interface IComponentProperties {
     selectedNode: string,
     setInputs: typeof setInputs,
     setOutputs: typeof setOutputs,
-    setShowLeft: typeof setShowLeft,
     showLeft: boolean,
 }
 
@@ -88,7 +87,7 @@ class LeftPanel extends React.Component<IComponentProperties, {}> {
         const outputsForm = this.buildConnectionList(output);
         return (
             <div>
-                <Label className='PanelName' onClick={this.toggleLeft}>{name}</Label>
+                <Label className='PanelName'>{name}</Label>
                 <div className='Panel'>
                     <Collapsible label='Inputs'>
                         {inputsForm}
@@ -99,9 +98,6 @@ class LeftPanel extends React.Component<IComponentProperties, {}> {
                 </div>
             </div>
         );
-    }
-    private toggleLeft = ()=> {
-        this.props.setShowLeft(false)
     }
     private buildConnectionList = (connections: any[]) => {
         return connections.map((x: any) => {
@@ -232,7 +228,6 @@ const mapStateToProps = (state: IState) => ({
 const mapDispatchToProps = {
     setInputs,
     setOutputs,
-    setShowLeft,
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(LeftPanel);

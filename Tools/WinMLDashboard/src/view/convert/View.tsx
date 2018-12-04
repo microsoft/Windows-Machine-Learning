@@ -47,7 +47,6 @@ interface IComponentState {
     currentStep: Step,
     error?: Error | string,
     framework: string,
-    pythonReinstall: boolean,
     source?: string,
 }
 
@@ -62,7 +61,6 @@ class ConvertView extends React.Component<IComponentProperties, IComponentState>
             currentStep: Step.Idle,
             error, 
             framework: '',
-            pythonReinstall: false
         };
         log.info("Convert view is created.");
     }
@@ -96,7 +94,7 @@ class ConvertView extends React.Component<IComponentProperties, IComponentState>
     }
 
     private initializeState() {
-        this.setState({ currentStep: Step.Idle, console: '', error: undefined, framework: '', pythonReinstall: false});
+        this.setState({ currentStep: Step.Idle, console: '', error: undefined, framework: ''});
     }
 
     private getView() {
@@ -113,7 +111,7 @@ class ConvertView extends React.Component<IComponentProperties, IComponentState>
                 return <Spinner label="Converting..." />;
         }
         this.localPython = this.localPython || getLocalPython();
-        if (!this.localPython || this.state.pythonReinstall) {
+        if (!this.localPython) {
             return this.pythonChooser();
         }
         return this.converterView();
@@ -131,7 +129,7 @@ class ConvertView extends React.Component<IComponentProperties, IComponentState>
         const message = typeof error === 'string' ? error : (`${error.stack ? `${error.stack}: ` : ''}${error.message}`);
         this.printMessage(message)
         log.info(message);
-        this.setState({ currentStep: Step.Idle, error, pythonReinstall:true });
+        this.setState({ currentStep: Step.Idle, error, });
     }
 
     // tslint:disable-next-line:member-ordering
@@ -142,33 +140,26 @@ class ConvertView extends React.Component<IComponentProperties, IComponentState>
 
     private pythonChooser = () => {
         const options = [
-            { key: '__download', text: 'Download a new Python binary to be used exclusively by the WinML Dashboard' } as IChoiceGroupOption,
-            { key: '__Skip', text: 'Skip'} as IChoiceGroupOption
+            { key: '__download', text: 'Download a new Python binary to be used exclusively by the WinML Dashboard' } as IChoiceGroupOption
+            // { key: '__Skip', text: 'Skip'} as IChoiceGroupOption
         ];
         const onChange = async (ev: React.FormEvent<HTMLInputElement>, option: IChoiceGroupOption) => {
             // Clear console output
-            this.setState({console: '', pythonReinstall:true})
+            this.setState({console: '',})
             try {
-                if (option.key === '__download') {
-                    log.info("downloading python environment is selected.");
-                    this.setState({ currentStep: Step.Downloading });
-                    this.printMessage('start to downloading python\n')
-                    await downloadPython();
-                    this.setState({ currentStep: Step.GetPip });
-                    this.printMessage('start to downloading pip\n')
-                    await downloadPip(this.outputListener);
-                } else {
-                    this.setState({pythonReinstall: false})
-                    return;
-                }
+                log.info("downloading python environment is selected.");
+                this.setState({ currentStep: Step.Downloading });
+                this.printMessage('start to downloading python\n')
+                await downloadPython();
+                this.setState({ currentStep: Step.GetPip });
+                this.printMessage('start to downloading pip\n')
+                await downloadPip(this.outputListener);
                 log.info("start to download python environment.");
                 await pip(['install', packagedFile('libsvm-3.22-cp36-cp36m-win_amd64.whl')], this.outputListener);
                 this.setState({ currentStep: Step.InstallingRequirements });
                 await pip(['install', '-r', packagedFile('requirements.txt'), '--no-warn-script-location'], this.outputListener);
                 this.setState({ currentStep: Step.Idle });
                 log.info("python environment is installed successfully");
-                // reset pythonReinstall after environment is installed successfully
-                this.setState({pythonReinstall: false})
             } catch (error) {
                 log.info("installation of python environment failed");
                 this.printError(error);

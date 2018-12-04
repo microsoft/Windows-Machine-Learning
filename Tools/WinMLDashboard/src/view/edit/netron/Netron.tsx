@@ -37,6 +37,7 @@ interface IComponentProperties {
 
 interface IComponentState {
     graph: any,
+    isEdit: boolean,
     isOnnxModel: boolean,
     metadataProps: { [key: string]: string },
     properties: { [key: string]: string },
@@ -49,6 +50,7 @@ class Netron extends React.Component<IComponentProperties, IComponentState> {
         super(props);
         this.state = {
             graph: {},
+            isEdit: true,
             isOnnxModel: false,
             metadataProps: {},
             properties: {},
@@ -83,11 +85,12 @@ class Netron extends React.Component<IComponentProperties, IComponentState> {
         }
     }
 
-    public shouldComponentUpdate(nextProps: IComponentProperties, nextState: IComponentState) {
-        return false;  // Netron is a static page and all updates are handled by its JavaScript code
-    }
+    // public shouldComponentUpdate(nextProps: IComponentProperties, nextState: IComponentState) {
+    //     return false;  // Netron is a static page and all updates are handled by its JavaScript code
+    // }
 
     public render() {
+
         return (
             // Instead of hardcoding the page, a div with dangerouslySetInnerHTML could be used to include Netron's content
             <div className='netron-root'>
@@ -106,7 +109,7 @@ class Netron extends React.Component<IComponentProperties, IComponentState> {
                 <svg id='graph' className='graph' preserveAspectRatio='xMidYMid meet' width='100%' height='100%' />
                 <div id='toolbar' className='toolbar' style={{position: 'absolute', top: '10px', left: '10px', display: 'none',}}>
                     <button id='model-properties-button' className='xxx' title='Model Properties' disabled={!this.state.isOnnxModel}/>
-                    <DefaultButton id='EditButton' text='Edit' onClick={this.toggleLeftRight}/>
+                    <DefaultButton id='EditButton' text={this.state.isEdit? 'To View': 'To Edit'} onClick={this.toggleEditAndView}/>
                     <button id='zoom-in-button' className='icon' title='Zoom In'>
                         <svg viewBox="0 0 100 100" width="24" height="24">
                             <circle cx="50" cy="50" r="35" strokeWidth="8" stroke="#fff" />
@@ -139,19 +142,24 @@ class Netron extends React.Component<IComponentProperties, IComponentState> {
         );
     }
 
-    private toggleLeftRight = () => {
-        browserGlobal.view._sidebar.close();
+
+    private toggleEditAndView = () => {
+
         if(!this.state.isOnnxModel) {
             const convertDialogOptions = {
-                message: 'Only ONNX model is editable'
+                message: 'Only ONNX model is editable. Convert it first.'
             }
             require('electron').remote.dialog.showMessageBox(convertDialogOptions)
+            return;
         }
-        if(!this.state.isOnnxModel || (this.props.showLeft && this.props.showRight)) {
+        browserGlobal.view._sidebar.close();
+        if(this.state.isEdit) {
+            this.setState({isEdit: false})
             this.props.setShowLeft(false)
             this.props.setShowRight(false)
         }
         else {
+            this.setState({isEdit: true})
             this.props.setShowLeft(true)
             this.props.setShowRight(true)
         }
@@ -198,6 +206,13 @@ class Netron extends React.Component<IComponentProperties, IComponentState> {
 
         const panelOpenHandler = {
             apply: (target: any, thisArg: any, args: any) => {
+                if(this.state.isEdit) {
+                    const convertDialogOptions = {
+                        message: 'To view of details of nodes, change to view mode by clicking button "To View"'
+                    }
+                    require('electron').remote.dialog.showMessageBox(convertDialogOptions)
+                    return;
+                }
                 if (this.props.nodes) {
                     const title = args[1];
                     if (title === 'Model Properties') {
@@ -268,7 +283,8 @@ class Netron extends React.Component<IComponentProperties, IComponentState> {
             this.props.setProperties(this.getModelProperties(proto));
             this.props.setShowLeft(true);
             this.props.setShowRight(true);
-            this.setState({isOnnxModel: true})
+            this.setState({isOnnxModel: true});
+            this.setState({isEdit: true});
         } else {
             this.props.setShowLeft(false);
             this.props.setShowRight(false);
@@ -277,7 +293,8 @@ class Netron extends React.Component<IComponentProperties, IComponentState> {
             this.props.setNodes(undefined);
             this.props.setMetadataProps({});
             this.props.setProperties({});
-            this.setState({isOnnxModel: false})
+            this.setState({isOnnxModel: false});
+            this.setState({isEdit: false});
         }
         this.props.setSelectedNode(undefined);
         ModelProtoSingleton.proto = proto;

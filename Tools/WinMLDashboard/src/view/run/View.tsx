@@ -66,6 +66,7 @@ class RunView extends React.Component<IComponentProperties, IComponentState> {
     public UNSAFE_componentWillReceiveProps(nextProps: IComponentProperties) {
         if(nextProps.file.path && nextProps.file.path) {
             if(!nextProps.file.path.endsWith(".onnx")){
+                this.setState({model: ''}, () => {this.setParameters()})
                 return;
             }
             if(!(this.props.file && this.props.file.path) || this.props.file.path !== nextProps.file.path){

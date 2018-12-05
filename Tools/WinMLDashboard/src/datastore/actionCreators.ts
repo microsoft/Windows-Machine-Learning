@@ -1,6 +1,16 @@
 import * as actions from './actions';
 import { IMetadataProps, IProperties } from './state';
 
+export const setShowLeft = (showLeft: boolean) => ({
+    showLeft,
+    type: actions.SET_SHOWLEFT,
+})
+
+export const setShowRight = (showRight: boolean) => ({
+    showRight,
+    type: actions.SET_SHOWRIGHT,
+})
+
 export const setFile = (file?: File) => ({
     file,
     type: actions.SET_FILE,

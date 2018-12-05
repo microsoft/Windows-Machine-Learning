@@ -16,6 +16,7 @@
 
 .PanelName {
     text-align: center;
+    cursor: pointer;
 }
 
 .TensorName, .TensorDocumentationHover {
@@ -47,4 +48,8 @@
 .FormatIsNotOnnx {
     margin: 10px;
     font-size: medium;
+}
+
+.toggleLabel {
+    cursor: pointer;
 }

@@ -7,6 +7,9 @@ export interface IProperties {
 }
 
 export default interface IState {
+    showLeft: boolean,
+    showRight: boolean,
+
     file: File,
     saveFileName: string,
 

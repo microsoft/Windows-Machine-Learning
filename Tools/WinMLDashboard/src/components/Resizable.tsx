@@ -16,7 +16,7 @@ interface IComponentStates {
 export default class Resizable extends React.Component<IComponentProperties, IComponentStates> {
     public static defaultProps: Partial<IComponentProperties> = {
         isRightPanel: false,
-        visible: true,
+        visible: false,
     };
     constructor(props: any) {
         super(props);

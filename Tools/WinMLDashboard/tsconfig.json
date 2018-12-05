@@ -27,6 +27,7 @@
     "node_modules",
     "public",
     "scripts",
+    "release",
     "src/setupTests.ts",
     "webpack",
     "Windows ML Dashboard*",

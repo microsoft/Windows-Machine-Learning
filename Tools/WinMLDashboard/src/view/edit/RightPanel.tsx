@@ -16,6 +16,7 @@ interface IComponentProperties {
     nodes: any,
     metadataProps: IMetadataProps,
     setMetadataProps: typeof setMetadataProps,
+    showRight: boolean,
 }
 
 class RightPanel extends React.Component<IComponentProperties, {}> {
@@ -23,17 +24,11 @@ class RightPanel extends React.Component<IComponentProperties, {}> {
         super(props);
     }
     public render() {
-        if (this.props.metadataProps !== undefined && !this.props.nodes) {
-            return (
-                // TODO Make it a button to navigate to the Convert tab
-                <Label className='FormatIsNotOnnx'>To support editing, convert the model to ONNX first.</Label>
-            );
-        }
 
         return (
             <div className="Unselectable">
-                <Resizable isRightPanel={true}>
-                    <Label >Model</Label>
+                <Resizable isRightPanel={true} visible={this.props.showRight}>
+                    <Label className="toggleLabel">Model</Label>
                     <div className='Panel'>
                         <Collapsible label='Properties'>
                             <KeyValueEditor getState={this.getPropertiesFromState} schema={{ type: 'object' }} />
@@ -46,7 +41,6 @@ class RightPanel extends React.Component<IComponentProperties, {}> {
             </div>
         );
     }
-
     private getMetadataPropsFromState = (state: IState) => state.metadataProps;
     private getPropertiesFromState = (state: IState) => state.properties;
 }
@@ -55,6 +49,7 @@ const mapStateToProps = (state: IState) => ({
     metadataProps: state.metadataProps,
     nodes: state.nodes,
     properties: state.properties,
+    showRight: state.showRight,
 });
 
 const mapDispatchToProps = {

@@ -23,6 +23,7 @@ interface IComponentProperties {
     selectedNode: string,
     setInputs: typeof setInputs,
     setOutputs: typeof setOutputs,
+    showLeft: boolean,
 }
 
 const denotationOptions = ['', 'IMAGE', 'AUDIO', 'TEXT', 'TENSOR'].map((key: string) => ({ key, text: key }));
@@ -70,19 +71,20 @@ class LeftPanel extends React.Component<IComponentProperties, {}> {
     public render() {
         return (
             <div className="Unselectable">
-                <Resizable visible={this.props.selectedNode !== undefined}>
-                    {this.props.selectedNode !== undefined && this.getContent()}
+                <Resizable visible={this.props.showLeft}>
+                    {this.props.showLeft && this.getContent()}
                 </Resizable>
             </div>
         );
     }
 
     private getContent() {
-        let name = 'Model Properties';
-        const modelPropertiesSelected = this.props.selectedNode === name;
+        let name = '';
+        const modelPropertiesSelected = this.props.selectedNode === 'Model Properties';
         let input: any[];
         let output: any[];
-        if (modelPropertiesSelected) {
+        if (modelPropertiesSelected || this.props.selectedNode === undefined) {
+            name = 'Input and Output'
             input = this.props.modelInputs;
             output = this.props.modelOutputs;
         } else {
@@ -107,7 +109,6 @@ class LeftPanel extends React.Component<IComponentProperties, {}> {
             </div>
         );
     }
-
     private buildConnectionList = (connections: any[]) => {
         return connections.map((x: any) => {
             const valueInfoProto = this.props.inputs[x] || this.props.outputs[x];
@@ -231,6 +232,7 @@ const mapStateToProps = (state: IState) => ({
     nodes: state.nodes,
     outputs: state.outputs,
     selectedNode: state.selectedNode,
+    showLeft: state.showLeft,
 })
 
 const mapDispatchToProps = {

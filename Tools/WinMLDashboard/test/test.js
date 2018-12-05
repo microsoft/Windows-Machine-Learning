@@ -25,7 +25,7 @@ describe("WinMLDashboard Tests", function () {
     const convertView = '.ConvertView'
     const convertButton = '#ConvertButton'
     const modelToConvertTextFiled = '#modelToConvert'
-    const pythonDownloadOption = '#ChoiceGroupLabel18-__download'
+    const pythonDownloadOption = '#ChoiceGroupLabel21-__download'
 
     // Start spectron
     before(function () {
@@ -67,10 +67,10 @@ describe("WinMLDashboard Tests", function () {
                 .element(pythonDownloadOption).isVisible
         })
 
-        // it('click install python environment', function () {
-        //     return app.client
-        //         .click(pythonDownloadOption).waitForVisible('#modelToConvert', 1000*3000)
-        // })
+        it('click install python environment', function () {
+            return app.client
+                .click(pythonDownloadOption).waitForVisible('#modelToConvert', 1000*60*10)
+        })
         
         it('sets model to convert', function () {
             return app.client

@@ -106,7 +106,7 @@ class ConvertView extends React.Component<IComponentProperties, IComponentState>
             case Step.CreatingVenv:
                 return <Spinner label="Creating virtual environment..." />;
             case Step.InstallingRequirements:
-                return <Spinner label="Downloading and installing requirements..." />;
+                return <Spinner label="Downloading and installing requirements...(This may take more than 5 minutes)" />;
             case Step.Converting:
                 return <Spinner label="Converting..." />;
         }
@@ -149,12 +149,12 @@ class ConvertView extends React.Component<IComponentProperties, IComponentState>
             try {
                 log.info("downloading python environment is selected.");
                 this.setState({ currentStep: Step.Downloading });
-                this.printMessage('start to downloading python\n')
+                this.printMessage('start downloading python\n')
                 await downloadPython();
                 this.setState({ currentStep: Step.GetPip });
-                this.printMessage('start to downloading pip\n')
+                this.printMessage('start downloading pip\n')
                 await downloadPip(this.outputListener);
-                log.info("start to download python environment.");
+                log.info("start downloading python environment.");
                 await pip(['install', packagedFile('libsvm-3.22-cp36-cp36m-win_amd64.whl')], this.outputListener);
                 this.setState({ currentStep: Step.InstallingRequirements });
                 await pip(['install', '-r', packagedFile('requirements.txt'), '--no-warn-script-location'], this.outputListener);

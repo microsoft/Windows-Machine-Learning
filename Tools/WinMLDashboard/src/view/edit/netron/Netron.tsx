@@ -108,8 +108,8 @@ class Netron extends React.Component<IComponentProperties, IComponentState> {
                 </div>
                 <svg id='graph' className='graph' preserveAspectRatio='xMidYMid meet' width='100%' height='100%' />
                 <div id='toolbar' className='toolbar' style={{position: 'absolute', top: '10px', left: '10px', display: 'none',}}>
-                    <button id='model-properties-button' className='xxx' title='Model Properties' disabled={!this.state.isOnnxModel}/>
-                    <DefaultButton id='EditButton' text={this.state.isEdit? 'To View': 'To Edit'} onClick={this.toggleEditAndView}/>
+                    <button id='model-properties-button' className='xxx' title='Model Properties'/>
+                    <DefaultButton id='EditButton' text={'Edit/View'} onClick={this.toggleEditAndView}/>
                     <button id='zoom-in-button' className='icon' title='Zoom In'>
                         <svg viewBox="0 0 100 100" width="24" height="24">
                             <circle cx="50" cy="50" r="35" strokeWidth="8" stroke="#fff" />
@@ -152,13 +152,15 @@ class Netron extends React.Component<IComponentProperties, IComponentState> {
             require('electron').remote.dialog.showMessageBox(convertDialogOptions)
             return;
         }
-        browserGlobal.view._sidebar.close();
         if(this.state.isEdit) {
-            this.setState({isEdit: false})
+            this.setState({isEdit: false}, () => {document.getElementById('model-properties-button')!.click()})
             this.props.setShowLeft(false)
             this.props.setShowRight(false)
+            
+
         }
         else {
+            browserGlobal.view._sidebar.close();
             this.setState({isEdit: true})
             this.props.setShowLeft(true)
             this.props.setShowRight(true)
@@ -182,7 +184,7 @@ class Netron extends React.Component<IComponentProperties, IComponentState> {
 
     private onNetronInitialized = () => {
         // Reset document overflow property
-        document.documentElement.style.overflow = 'initial';
+        document.documentElement!.style.overflow = 'initial';
         this.installProxies();
     }
 

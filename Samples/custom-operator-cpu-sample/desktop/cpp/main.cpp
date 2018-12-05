@@ -270,6 +270,7 @@ int wmain(int argc, wchar_t * argv[])
 	}
 	else {
 		RunRelu(session);
-		return 0;
 	}
+
+	return 0;
 }

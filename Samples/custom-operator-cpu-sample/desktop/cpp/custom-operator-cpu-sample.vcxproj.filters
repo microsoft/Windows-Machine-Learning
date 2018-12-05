@@ -46,11 +46,11 @@
     <CopyFileToFolders Include="..\..\..\..\SharedContent\media\kitten_224.png">
       <Filter>input</Filter>
     </CopyFileToFolders>
-    <CopyFileToFolders Include="..\..\..\..\SharedContent\models\SqueezeNet.onnx">
-      <Filter>models</Filter>
-    </CopyFileToFolders>
     <CopyFileToFolders Include="Labels.txt">
       <Filter>output</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="models\squeezenet_debug.onnx">
+      <Filter>models</Filter>
     </CopyFileToFolders>
   </ItemGroup>
   <ItemGroup>

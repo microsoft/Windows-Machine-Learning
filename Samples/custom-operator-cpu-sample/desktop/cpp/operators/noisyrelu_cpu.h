@@ -1,6 +1,6 @@
 #pragma once
 
-#include <MLOperatorAuthor.h>
+#include "MLOperatorAuthor.h"
 
 struct NoisyReluShapeInferrer : winrt::implements<NoisyReluShapeInferrer, IMLOperatorShapeInferrer>
 {

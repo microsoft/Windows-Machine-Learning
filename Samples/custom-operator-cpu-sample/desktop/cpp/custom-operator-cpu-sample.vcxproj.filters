@@ -3,6 +3,9 @@
   <ItemGroup>
     <ClCompile Include="main.cpp" />
     <ClCompile Include="pch.cpp" />
+    <ClCompile Include="operators\debug_cpu.cpp">
+      <Filter>operators</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -13,6 +16,9 @@
       <Filter>operators</Filter>
     </ClInclude>
     <ClInclude Include="operators\relu_cpu.h">
+      <Filter>operators</Filter>
+    </ClInclude>
+    <ClInclude Include="operators\debug_cpu.h">
       <Filter>operators</Filter>
     </ClInclude>
   </ItemGroup>

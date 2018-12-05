@@ -43,14 +43,6 @@
     cursor: pointer;
 }
 
-#water-mark{
-    top: 700px;
-    font-size: 40%;
-    color: lightgray;
-    width:400px;
-    border: solid, 1px, red;
-}
-
 #EditButton {
     background: lightgray
 }

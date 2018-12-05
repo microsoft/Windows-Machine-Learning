@@ -260,7 +260,7 @@ void DebugOperatorFactory::RegisterDebugSchema(winrt::com_ptr<IMLOperatorRegistr
 {
 	MLOperatorSetId operatorSetId;
 	operatorSetId.domain = "";
-	operatorSetId.version = 8;
+	operatorSetId.version = 7;
 
 	MLOperatorSchemaDescription debugSchema;
 	debugSchema.name = "Debug";

@@ -231,7 +231,7 @@ struct NoisyReluOperatorFactory : winrt::implements<NoisyReluOperatorFactory, IM
         std::vector<const MLOperatorSchemaDescription*> schemas { &noisyReluSchema };
         registry->RegisterOperatorSetSchema(
             &operatorSetId,
-           76 /* baseline version */,
+            7 /* baseline version */,
             schemas.data(),
             static_cast<uint32_t>(schemas.size()),
             nullptr,

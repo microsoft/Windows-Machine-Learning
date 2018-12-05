@@ -58,7 +58,7 @@ struct CommandLineInterpreter
         return L"";
     }
 
-	bool IsDebug() {
+	bool IsDebugOperator() {
 		return 0 == _wcsicmp(L"debug", m_commandLineArgs[1].c_str());
 	}
 
@@ -191,7 +191,6 @@ void RunSqueezeNet(Session session, Model model, hstring imagePath) {
 }
 
 
-
 void RunRelu(Session session)
 {
 	printf("Create the ModelBinding binding collection.\n");
@@ -258,7 +257,8 @@ int wmain(int argc, wchar_t * argv[])
 	printf("Creating ModelSession.\n");
 	Session session(model, Device(Kind::Default));
 
-	if (args.IsDebug()) {
+	if (args.IsDebugOperator()) {
+		// debug operator sample model is squeezenet as it is best demonstrated on an image recognition model
 		hstring imagePath = args.GetImagePath();
 
 		if (imagePath.empty()) {

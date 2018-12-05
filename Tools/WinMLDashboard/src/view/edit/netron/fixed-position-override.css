@@ -32,6 +32,25 @@
     background: transparent;
 }
 
+#openFileButton {
+    background: rgb(44, 199, 247);
+    color: white;
+}
+
+#openFileButton:hover {
+    background-color: rgb(11, 130, 167);
+    color: lightgray;
+    cursor: pointer;
+}
+
+#water-mark{
+    top: 700px;
+    font-size: 40%;
+    color: lightgray;
+    width:400px;
+    border: solid, 1px, red;
+}
+
 #EditButton {
     background: lightgray
 }

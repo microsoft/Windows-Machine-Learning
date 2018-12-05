@@ -156,7 +156,7 @@ struct NoisyReluOperatorFactory : winrt::implements<NoisyReluOperatorFactory, IM
     {
         MLOperatorSetId operatorSetId;
         operatorSetId.domain = "";
-        operatorSetId.version = 7;
+        operatorSetId.version = 8;
 
         MLOperatorSchemaDescription noisyReluSchema;
         noisyReluSchema.name = "NoisyRelu";
@@ -231,7 +231,7 @@ struct NoisyReluOperatorFactory : winrt::implements<NoisyReluOperatorFactory, IM
         std::vector<const MLOperatorSchemaDescription*> schemas { &noisyReluSchema };
         registry->RegisterOperatorSetSchema(
             &operatorSetId,
-            6 /* baseline version */,
+           76 /* baseline version */,
             schemas.data(),
             static_cast<uint32_t>(schemas.size()),
             nullptr,

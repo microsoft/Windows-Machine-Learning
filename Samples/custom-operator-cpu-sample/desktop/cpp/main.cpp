@@ -16,7 +16,9 @@ wstring GetModulePath() {
 	wchar_t wzModuleFilePath[MAX_PATH + 1];
 	GetModuleFileName(NULL, wzModuleFilePath, MAX_PATH + 1);
 	wstring moduleFilePath(wzModuleFilePath);
-	return moduleFilePath;
+	return wstring(
+			moduleFilePath.begin(),
+			moduleFilePath.begin() + moduleFilePath.find_last_of(L"\\"));;
 }
 
 struct CommandLineInterpreter
@@ -32,14 +34,7 @@ struct CommandLineInterpreter
     {
         wchar_t wzModuleFilePath[MAX_PATH + 1];
         GetModuleFileName(NULL, wzModuleFilePath, MAX_PATH + 1);
-        wstring moduleFilePath = GetModulePath();
-
-        auto exePath =
-            wstring(
-                moduleFilePath.begin(),
-                moduleFilePath.begin() + moduleFilePath.find_last_of(L"\\"));
-
-        return exePath + L"\\" = pName;
+        return GetModulePath() + L"\\" = pName;
     }
 
     wstring TryGetModelPath()
@@ -92,11 +87,11 @@ void LoadLabels()
 	wstring labelsFileName = L"labels.txt";
 
 	// Parse labels from labels file.  We know the file's entries are already sorted in order.
-	wstring labelsFilePath = GetModulePath() + labelsFileName;
+	wstring labelsFilePath = GetModulePath() + L"\\" + labelsFileName;
 	ifstream labelFile(labelsFilePath, ifstream::in);
 	if (labelFile.fail())
 	{
-		printf("failed to load the %s file.  Make sure it exists in the same folder as the app\r\n", labelsFileName.c_str());
+		printf("failed to load the %ls file.  Make sure it exists in the same folder as the app\r\n", labelsFileName.c_str());
 		exit(EXIT_FAILURE);
 	}
 

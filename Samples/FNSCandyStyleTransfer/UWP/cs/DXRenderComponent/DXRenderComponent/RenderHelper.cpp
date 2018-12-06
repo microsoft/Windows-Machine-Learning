@@ -20,7 +20,7 @@ namespace winrt::DXRenderComponent::implementation
         check_hresult(_sourceNative->EndDraw());
     }
 
-    IDirect3DSurface RenderHelper::BeginDraw(int32_t width, int32_t heigth)
+    IDirect3DSurface RenderHelper::BeginDraw(uint32_t width, uint32_t heigth)
     {
         com_ptr<IDXGISurface> dxgiSurface;
         com_ptr<::IInspectable> inspectable;

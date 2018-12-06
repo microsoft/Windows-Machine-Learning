@@ -55,38 +55,6 @@ namespace SnapCandy
         }
 
         /// <summary>
-        /// Pass the input frame to a frame renderer and ensure proper image format is used
-        /// </summary>
-        /// <param name="inputVideoFrame"></param>
-        /// <param name="useDX"></param>
-        /// <returns></returns>
-        public static IAsyncAction RenderFrameAsync(FrameRenderer frameRenderer, VideoFrame inputVideoFrame)
-        {
-            return AsyncInfo.Run(async (token) =>
-            {
-                bool useDX = inputVideoFrame.SoftwareBitmap == null;
-                if (useDX)
-                {
-                    //VideoFrame vf = new VideoFrame(BitmapPixelFormat.Bgra8, inputVideoFrame.)
-                    //softwareBitmap = await SoftwareBitmap.CreateCopyFromSurfaceAsync(inputVideoFrame.Direct3DSurface);
-                    //softwareBitmap = SoftwareBitmap.Convert(softwareBitmap, BitmapPixelFormat.Bgra8, BitmapAlphaMode.Premultiplied);
-                    frameRenderer.EndDraw();
-                }
-                else
-                {
-                    //softwareBitmap = new SoftwareBitmap(
-                    //    inputVideoFrame.SoftwareBitmap.BitmapPixelFormat,
-                    //    inputVideoFrame.SoftwareBitmap.PixelWidth,
-                    //    inputVideoFrame.SoftwareBitmap.PixelHeight,
-                    //    inputVideoFrame.SoftwareBitmap.BitmapAlphaMode);
-                    //inputVideoFrame.SoftwareBitmap.CopyTo(softwareBitmap);
-                    frameRenderer.RenderFrame(inputVideoFrame.SoftwareBitmap);
-                }
-
-            });
-        }
-
-        /// <summary>
         /// Launch file picker for user to select a picture file and return a VideoFrame
         /// </summary>
         /// <returns>VideoFrame instanciated from the selected image file</returns>

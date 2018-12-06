@@ -8,7 +8,7 @@ namespace DXRenderComponent
             Windows.Graphics.DirectX.Direct3D11.IDirect3DDevice device
         );
 
-        Windows.Graphics.DirectX.Direct3D11.IDirect3DSurface BeginDraw(Int32 width, Int32 heigth);
+        Windows.Graphics.DirectX.Direct3D11.IDirect3DSurface BeginDraw(UInt32 width, UInt32 heigth);
         void EndDraw();
     }
 }

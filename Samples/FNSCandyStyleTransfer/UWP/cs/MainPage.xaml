@@ -23,113 +23,111 @@ Copyright (C) Microsoft Corporation. All rights reserved.
     </Page.Resources>
 
     <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
-        
-            <Grid>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="80"/>
-                    <RowDefinition Height="300*"/>
-                    <RowDefinition Height="30"/>
-                </Grid.RowDefinitions>
 
-                <!--Status and result display-->
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="80"/>
+                <RowDefinition Height="300*"/>
+                <RowDefinition Height="30"/>
+            </Grid.RowDefinitions>
+
+            <!--Status and result display-->
             <StackPanel x:Name="UIStatusPanel" Background="#BFFFFFFF" VerticalAlignment="Top" Grid.Row="0">
                 <ContentControl Name="UIModelControls">
-                        <StackPanel Orientation="Horizontal">
-                            <ToggleSwitch Name="UIToggleInferenceDevice"
-                                  OnContent="GPU"
-                                  OffContent="CPU"
-                                  IsOn="True"
-                                  Toggled="UIToggleInferenceDevice_Toggled" 
-                                  Margin="10,0,0,0"/>
+                    <StackPanel Orientation="Horizontal">
+                        <ToggleSwitch Name="UIToggleInferenceDevice"
+                                OnContent="GPU"
+                                OffContent="CPU"
+                                IsOn="True"
+                                Toggled="UIToggleInferenceDevice_Toggled" 
+                                Margin="10,0,0,0"/>
 
-                            <ListBox Name="UIStyleList" SelectionChanged="UIStyleList_SelectionChanged">
-                                <ListBox.ItemsPanel>
-                                    <ItemsPanelTemplate>
-                                        <VirtualizingStackPanel Orientation="Horizontal"/>
-                                    </ItemsPanelTemplate>
-                                </ListBox.ItemsPanel>
-                            </ListBox>
+                        <ListBox Name="UIStyleList" SelectionChanged="UIStyleList_SelectionChanged">
+                            <ListBox.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <VirtualizingStackPanel Orientation="Horizontal"/>
+                                </ItemsPanelTemplate>
+                            </ListBox.ItemsPanel>
+                        </ListBox>
 
-                        </StackPanel>
-                    </ContentControl>
+                    </StackPanel>
+                </ContentControl>
+                <!--Image preview and acquisition control-->
+                <ContentControl Name="UIImageControls"
+                        VerticalAlignment="Stretch" 
+                        HorizontalAlignment="Stretch"
+                        IsEnabled="False">
 
+                    <StackPanel Orientation="Horizontal">
+                        <Button Name="UIButtonLiveStream"
+                        ToolTipService.ToolTip="Camera preview"
+                        Click="UIButtonLiveStream_Click">
+                            <Button.Content>
+                                <SymbolIcon Symbol="Video"/>
+                            </Button.Content>
+                        </Button>
+                        <Button Name="UIButtonAcquireImage"
+                        ToolTipService.ToolTip="Take a photo"
+                        Click="UIButtonAcquireImage_Click">
+                            <Button.Content>
+                                <SymbolIcon Symbol="Camera"/>
+                            </Button.Content>
+                        </Button>
+                        <Button Name="UIButtonFilePick" 
+                        ToolTipService.ToolTip="Select an image from a file"
+                        Click="UIButtonFilePick_Click">
+                            <Button.Content>
+                                <SymbolIcon Symbol="OpenFile"/>
+                            </Button.Content>
+                        </Button>
+                        <Button Name="UIButtonInking" 
+                        ToolTipService.ToolTip="Draw on a canvas"
+                        Click="UIButtonInking_Click">
+                            <Button.Content>
+                                <SymbolIcon Symbol="Edit"/>
+                            </Button.Content>
+                        </Button>
+                        <Button Name="UIButtonSaveImage" 
+                        ToolTipService.ToolTip="Save the image result to a file"
+                        IsEnabled="false"
+                        VerticalAlignment="Bottom"
+                        Click="UIButtonSaveImage_Click" 
+                        Background="#FF939393" >
+                            <Button.Content>
+                                <SymbolIcon Symbol="Save"/>
+                            </Button.Content>
+                        </Button>
 
-                    <!--Image preview and acquisition control-->
-                    <ContentControl Name="UIImageControls"
-                            VerticalAlignment="Stretch" 
-                            HorizontalAlignment="Stretch"
-                            IsEnabled="False">
-
-                        <StackPanel Orientation="Horizontal">
-                            <Button Name="UIButtonLiveStream"
-                            ToolTipService.ToolTip="Camera preview"
-                            Click="UIButtonLiveStream_Click">
-                                <Button.Content>
-                                    <SymbolIcon Symbol="Video"/>
-                                </Button.Content>
-                            </Button>
-                            <Button Name="UIButtonAcquireImage"
-                            ToolTipService.ToolTip="Take a photo"
-                            Click="UIButtonAcquireImage_Click">
-                                <Button.Content>
-                                    <SymbolIcon Symbol="Camera"/>
-                                </Button.Content>
-                            </Button>
-                            <Button Name="UIButtonFilePick" 
-                            ToolTipService.ToolTip="Select an image from a file"
-                            Click="UIButtonFilePick_Click">
-                                <Button.Content>
-                                    <SymbolIcon Symbol="OpenFile"/>
-                                </Button.Content>
-                            </Button>
-                            <Button Name="UIButtonInking" 
-                            ToolTipService.ToolTip="Draw on a canvas"
-                            Click="UIButtonInking_Click">
-                                <Button.Content>
-                                    <SymbolIcon Symbol="Edit"/>
-                                </Button.Content>
-                            </Button>
-                            <Button Name="UIButtonSaveImage" 
-                            ToolTipService.ToolTip="Save the image result to a file"
-                            IsEnabled="false"
-                            VerticalAlignment="Bottom"
-                            Click="UIButtonSaveImage_Click" 
-                            Background="#FF939393" >
-                                <Button.Content>
-                                    <SymbolIcon Symbol="Save"/>
-                                </Button.Content>
-                            </Button>
-
-                        </StackPanel>
-                    </ContentControl>
-                </StackPanel>
-                <!--<StackPanel Orientation="Horizontal">-->
+                    </StackPanel>
+                </ContentControl>
+            </StackPanel>
+            <!--<StackPanel Orientation="Horizontal">-->
 
             <!--<Viewbox Stretch="Uniform" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Grid.Row="1">-->
-                <Grid Grid.Row="1">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="200*"/>
-                        <ColumnDefinition Width="200*"/>
-                    </Grid.ColumnDefinitions>
+            <Grid Grid.Row="1">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="200*"/>
+                    <ColumnDefinition Width="200*"/>
+                </Grid.ColumnDefinitions>
 
                 <Viewbox Stretch="Uniform">
                     <StackPanel Name="UIInkControls" 
-                                    Visibility="Collapsed"  
-                                    Grid.Column="0">
+                                Visibility="Collapsed"  
+                                Grid.Column="0">
                         <InkToolbar TargetInkCanvas="{x:Bind UIInkCanvasInput}" VerticalAlignment="Top" />
 
                         <!--inking canvas-->
                         <Viewbox Stretch="Uniform"  
-                                     MaxWidth="720"
-                                     MaxHeight="720">
+                                    MaxWidth="720"
+                                    MaxHeight="720">
                             <Grid BorderBrush="Black" 
-                                      BorderThickness="1">
+                                    BorderThickness="1">
                                 <Grid Name="UIInkGrid" 
-                                          Background="White"
-                                          MinWidth="200"
-                                          MinHeight="200"
-                                          MaxWidth="720"
-                                          MaxHeight="720">
+                                        Background="White"
+                                        MinWidth="200"
+                                        MinHeight="200"
+                                        MaxWidth="720"
+                                        MaxHeight="720">
                                     <InkCanvas Name="UIInkCanvasInput"/>
                                 </Grid>
                             </Grid>
@@ -138,59 +136,71 @@ Copyright (C) Microsoft Corporation. All rights reserved.
                 </Viewbox>
 
                 <!--Camera preview-->
-                    <MediaPlayerElement Name="UIMediaPlayerElement" 
-                                            Stretch="Uniform" 
-                                            AreTransportControlsEnabled="False" 
-                                            Canvas.ZIndex="-1"
-                                            MaxWidth="720"
-                                            MaxHeight="720"
-                                            Grid.Column="0"/>
+                <MediaPlayerElement Name="UIMediaPlayerElement" 
+                    Stretch="Uniform" 
+                    AreTransportControlsEnabled="False" 
+                    Canvas.ZIndex="-1"
+                    MaxWidth="720"
+                    MaxHeight="720"
+                    Grid.Column="0"/>
 
-                    <Image Name="UIInputImage"
-                               Grid.Column="0"
-                               Stretch="Uniform"
-                               MaxWidth="720"
-                               MaxHeight="720"/>
+                <Image Name="UIInputImage"
+                    Grid.Column="0"
+                    Stretch="Uniform"
+                    MaxWidth="720"
+                    MaxHeight="720"/>
 
-                    <Grid  Grid.Column="1" VerticalAlignment="Stretch">
+                <Grid  Grid.Column="1" VerticalAlignment="Stretch">
+                    <Image Name="UIResultImage"
+                        Stretch="None"
+                        MaxWidth="720"
+                        MaxHeight="720"/>
 
-                        <Image Name="UIResultImage"
-                                Stretch="Uniform"
-                                MaxWidth="720"
-                                MaxHeight="720"/>
-
-                        <ProgressRing Name="UIProcessingProgressRing" 
-                                      MaxWidth="720"
-                                      MaxHeight="720"
-                                      IsActive="false" 
-                                      Visibility="Collapsed"/>
-                    </Grid>
+                    <ProgressRing Name="UIProcessingProgressRing" 
+                        MaxWidth="720"
+                        MaxHeight="720"
+                        IsActive="false" 
+                        Visibility="Collapsed"/>
                 </Grid>
-                <!--</Viewbox>-->
-
-                <StackPanel Name="UICameraSelectionControls" Orientation="vertical" Visibility="Collapsed" VerticalAlignment="Bottom" HorizontalAlignment="Left" Grid.Row="1">
-                    <TextBlock Text="Camera: " Style="{StaticResource TextBlockStyling}"/>
-                    <ComboBox Name="UICmbCamera" SelectionChanged="UICmbCamera_SelectionChanged" Foreground="White" >
-                        <ComboBox.Background>
-                            <SolidColorBrush Color="Black" Opacity="0.3"/>
-                        </ComboBox.Background>
-                    </ComboBox>
-                    <TextBlock Text="Preview resolution: " Style="{StaticResource TextBlockStyling}"/>
-                    <TextBlock Name="UITxtBlockPreviewProperties" Text="0x0" Style="{StaticResource TextBlockStyling}"/>
-                </StackPanel>
+            </Grid>
+            <!--</Viewbox>-->
+            <StackPanel Name="UICameraSelectionControls" Orientation="vertical" Visibility="Collapsed" VerticalAlignment="Bottom" HorizontalAlignment="Left" Grid.Row="1">
+                <TextBlock Text="Camera: " Style="{StaticResource TextBlockStyling}"/>
+                <ComboBox Name="UICmbCamera" SelectionChanged="UICmbCamera_SelectionChanged" Foreground="White" >
+                    <ComboBox.Background>
+                        <SolidColorBrush Color="Black" Opacity="0.3"/>
+                    </ComboBox.Background>
+                </ComboBox>
+                <TextBlock Text="Preview resolution: " Style="{StaticResource TextBlockStyling}"/>
+                <TextBlock Name="UITxtBlockPreviewProperties" Text="0x0" Style="{StaticResource TextBlockStyling}"/>
+            </StackPanel>
 
             <Border x:Name="UIStatusBorder" Grid.Row="2">
-                <ScrollViewer VerticalScrollMode="Auto"  VerticalScrollBarVisibility="Auto" MaxHeight="200">
+                <StackPanel Orientation="Horizontal">
                     <TextBlock x:Name="StatusBlock" 
-                               Text="Select a style to begin"
-                               FontWeight="Bold" 
-                               MaxWidth="{Binding ElementName=Splitter, Path=ActualWidth}" 
-                               Margin="10,10,10,20" 
-                               TextWrapping="Wrap"  />
-                </ScrollViewer>
+                        Text="Select a style to begin"
+                        FontWeight="Bold" 
+                        Width="700" 
+                        Margin="10,2,0,0"
+                        TextWrapping="Wrap" />
+                    <TextBlock 
+                        Text="Capture FPS"
+                        Margin="10,2,0,0"
+                        FontWeight="Bold" />
+                    <TextBlock x:Name="CaptureFPS" 
+                        Text="0 fps"
+                        Margin="10,2,0,0"
+                        TextWrapping="Wrap" />
+                    <TextBlock 
+                        Text="Render FPS" 
+                        Margin="10,2,0,0"
+                        FontWeight="Bold"/>
+                    <TextBlock x:Name="RenderFPS"
+                        Text="0 fps"
+                        Margin="10,2,0,0"
+                        TextWrapping="Wrap" />
+                </StackPanel>
             </Border>
-
         </Grid>
-        
     </Grid>
 </Page>

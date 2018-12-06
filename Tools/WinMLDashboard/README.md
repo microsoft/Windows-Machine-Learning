@@ -1,8 +1,8 @@
 # WinML Dashboard
 
-WinML Dashboard is a tool for viewing, editing, converting, and validating machine learning models for [Windows ML](https://docs.microsoft.com/en-us/windows/ai/) inference engine, which is built into Windows 10 and evaluates trained models locally on Windows devices using hardware optimizations for CPU and GPU to enable high performance inferences.   
+WinML Dashboard is a tool for viewing, editing, converting, and validating machine learning models for [Windows ML](https://docs.microsoft.com/en-us/windows/ai/) inference engine. The engine is built into Windows 10 and evaluates trained models locally on Windows devices using hardware optimizations for CPU and GPU to enable high performance inferences.   
 
- Today there are several different frameworks available for training and evaluating machine learning models, which makes it difficult for app developers to intergate models into their product. Windows ML uses [ONNX](http://onnx.ai/) machine learning model format that allows conversion from one framework format to another, and this Dashboard makes it easy to convert models from different framework to ONNX. 
+Today there are several different frameworks available for training and evaluating machine learning models, which makes it difficult for app developers to intergate models into their product. Windows ML uses [ONNX](http://onnx.ai/) machine learning model format that allows conversion from one framework format to another, and this Dashboard makes it easy to convert models from different framework to ONNX. 
  
  This tool supports converting to ONNX from the following source frameworks:
  - Apple Core ML
@@ -12,17 +12,17 @@ WinML Dashboard is a tool for viewing, editing, converting, and validating machi
  - Xgboost
  - LibSVM
  
-The tools also validates the converted models by evaluating the model with built-in Windows ML inference engine using fake input data on CPU or GPU.
+The tools also validates the converted models by evaluating the model with built-in Windows ML inference engine using fake or real input data on CPU or GPU.
 
 ## Viewing and Editing Models
 
-WinML Dashboard uses [Netron](https://github.com/lutzroeder/netron) for viewing machine learning model. Although WinML uses ONNX format, the Netron viewer supports viewing several different framework formats. 
+The Dashboard uses [Netron](https://github.com/lutzroeder/netron) for viewing machine learning models. Although WinML uses ONNX format, the Netron viewer supports viewing several different framework formats. 
 
-Several times a developer may need to update certain model metadata, or fix inputs and outputs. This tools supports modifying model properties, metadata and input/output nodes of an ONNX model. 
+Several times a developer may need to update certain model metadata, or modify model input and output nodes. This tool supports modifying model properties, metadata and input/output nodes of an ONNX model. 
 
-Selecting Edit tab (center top as shown in the snip below) takes you to viewing and editing panel. The left pane in the panel allows editing Input and Output nodes, and the right pane allows editing Model properties. The center portion shows the graph.
+Selecting Edit tab (center top as shown in the snip below) takes you to viewing and editing panel. The left pane in the panel allows editing model input and output nodes, and the right pane allows editing Model properties. The center portion shows the graph.At this time, editing support to limited to model inpu/output node (and not inner nodes), model properties and model metadata.
 
-The Edit/View button switches from Edit model to View only mode. View only mode enables Netron viewer with its native features. 
+The Edit/View button switches from Edit mode to View-only mode. View-only mode enables Netron viewer's native features such as the ability to see detailed information for each node. 
 
 <img src='./public/Editor.PNG' width=800/>
 
@@ -42,6 +42,15 @@ You can choose various options such as CPU (default) vs GPU, real input vs fake 
 
 <img src="./public/RunView.png" width=800/>
 
+## Install
+
+You can install an early preview version of WinML Dashboard from here.
+[Download](link)
+
+Note that the prerelease version is not currently signed so you may see a warning about the binary being untrusted when you try to download and run the installer. 
+
+Alternatively, you can build the app from source following the instructions below. 
+
 ## Build from source
 
 #### Prerequisites
@@ -55,7 +64,7 @@ You can choose various options such as CPU (default) vs GPU, real input vs fake 
 
 > All four prerequisites should be **added to Enviroment Path**.
 
-#### Steps to build
+#### Steps to build and run
 
 1. `git clone https://github.com/Microsoft/Windows-Machine-Learning`
 
@@ -74,27 +83,11 @@ To open the **debug view** in the Electron app
 * Or select `View -> Toggle Dev Tools` in the application menu
 * Or press `Ctrl + Shift + I`.
 
-### Distribution
-
-To distribute the application, you can copy the whole `build` folder and the files `src/electronMain.js` and `package.json` to `node_modules/electron/dist/resources/app`, and distribute the folder `node_modules/electron/dist`. The final directory structure in `node_modules/electron/dist/resources` should be:
-
-```
-app/
-├───build/
-├───────...
-├───src/
-│   └───electronMain.js
-└───package.json
-```
-
-[Electron builder](https://github.com/electron-userland/electron-builder) can be used to generate installers. [See the documentation here](https://www.electron.build/).
-
-### Built with
-
-* [Electron](https://electronjs.org/)
-* [React](https://reactjs.org/)
-* [Redux](https://redux.js.org/)
+## Feedback
+- For issues, file a bug on [GitHub Issues](https://github.com/Microsoft/Windows-Machine-Learning/issues).
+- For feature requests, file an issue on [GitHub Issues](https://github.com/Microsoft/Windows-Machine-Learning/issues/new)
+- Ask questions on [Stack Overflow](https://stackoverflow.com/questions/tagged/windows-machine-learning).
 
 ### License
 
-This tool is under the MIT license. The license can be found at the root of this repository.
+This tool is under the MIT license. 

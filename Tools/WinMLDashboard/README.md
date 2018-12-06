@@ -24,7 +24,7 @@ Selecting Edit tab (center top as shown in the snip below) takes you to viewing 
 
 The Edit/View button switches from Edit model to View only mode. View only mode enables Netron viewer with its native features. 
 
-<img src="./public/Editor.png" height=500 width=600/>
+<img src='./public/Editor.PNG' width=800/>
 
 ## Converting Models
 
@@ -32,7 +32,7 @@ The "Convert" tab (see snip below) helps convert models from several different f
 
 In order to do the conversion, the tool installs a separate Python environment and a set of converter tools. This helps alleviate one of the biggest pain points of a typical developer - installing the right Python environment and tool chain for conversion. 
 
-<img src="./public/converter.png" height=500 width=600/>
+<img src="./public/Converter.png" width=800/>
 
 ## Validating Models
 
@@ -40,7 +40,7 @@ Once you have an ONNX model, you can validate whether the conversion has happene
 
 You can choose various options such as CPU (default) vs GPU, real input vs fake input (default) etc. The result of model evaluation appears in the console window at the bottom.
 
-<img src="./public/runview.png" height=500 width=600/>
+<img src="./public/RunView.png" width=800/>
 
 ## Build from source
 

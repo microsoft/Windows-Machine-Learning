@@ -1,14 +1,59 @@
-# Windows ML Dashboard
+# WinML Dashboard (preview)
 
-Developer dashboard for Windows ML and ONNX.
+WinML Dashboard is a tool for viewing, editing, converting, and validating machine learning models for [Windows ML](https://docs.microsoft.com/en-us/windows/ai/) inference engine. The engine is built into Windows 10 and evaluates trained models locally on Windows devices using hardware optimizations for CPU and GPU to enable high performance inferences.   
 
-## What you can with this tool
-1. The tool enables you to view and modify the metadata of the model and the metadata of input and output nodes.
+Today there are several different frameworks available for training and evaluating machine learning models, which makes it difficult for app developers to integate models into their product. Windows ML uses [ONNX](http://onnx.ai/) machine learning model format that allows conversion from one framework format to another, and this Dashboard makes it easy to convert models from different framework to ONNX. 
+ 
+ This tool supports converting to ONNX from the following source frameworks:
+ - Apple Core ML
+ - TensorFlow (subset of models convertible to ONNX)
+ - Keras
+ - Scikit-learn (subset of models convertible to ONNX)
+ - Xgboost
+ - LibSVM
+ 
+The tool also validates the converted model by evaluating the model with built-in Windows ML inference engine using synthetic (default) or real input data on CPU or GPU.
 
-![Editor](./public/EditorView.png)
+## Viewing and Editing Models
 
-2. The tool enables you to convert models to ONNX.
-![Conveter](./public/ConverterView.png)
+The Dashboard uses [Netron](https://github.com/lutzroeder/netron) for viewing machine learning models. Although WinML uses ONNX format, the Netron viewer supports viewing several different framework formats. 
+
+Many times a developer may need to update certain model metadata or modify model input and output nodes. This tool supports modifying model properties, metadata and input/output nodes of an ONNX model. 
+
+Selecting Edit tab (center top as shown in the snip below) takes you to viewing and editing panel. The left pane in the panel allows editing model input and output nodes, and the right pane allows editing Model properties. The center portion shows the graph. At this time, editing support to limited to model input/output node (and not inner nodes), model properties and model metadata.
+
+The Edit/View button switches from Edit mode to View-only mode. View-only mode enables Netron viewer's native features such as the ability to see detailed information for each node. 
+
+<img src='./public/Editor.PNG' width=800/>
+
+## Converting Models
+
+The "Convert" tab (see snip below) helps convert models from several different frameworks (as listed above) to ONNX format. 
+
+In order to do the conversion, the tool installs a separate Python environment and a set of converter tools. This helps alleviate one of the big pain points of a typical developer - installing the right Python environment and tool chain for conversion and validating the model. 
+
+<img src="./public/Converter.png" width=800/>
+
+## Validating Models
+
+Once you have an ONNX model, you can validate whether the conversion has happened successfully and that the model can be evaluated in Windows ML inference engine. This is done using the "Run" tab (see snip below).
+
+You can choose various options such as CPU (default) vs GPU, real input vs synthetic input (default) etc. The result of model evaluation appears in the console window at the bottom.
+
+Note that model validation feature is only available on [Windows 10 October 2018 Update](https://www.microsoft.com/en-us/software-download/windows10) or newer version of Windows 10 as the tool relies on built-in Windows ML inference engine. 
+
+<img src="./public/RunView.png" width=800/>
+
+## Install
+
+You can install an early preview version of WinML Dashboard from here.
+
+[Download Preview Version](link)
+
+Note that the prerelease version is not currently signed so you may see a warning about the binary being untrusted when you try to download and run the installer. 
+
+Alternatively, you can build the app from source following the instructions below. 
+
 ## Build from source
 
 #### Prerequisites
@@ -22,7 +67,7 @@ Developer dashboard for Windows ML and ONNX.
 
 > All four prerequisites should be **added to Enviroment Path**.
 
-#### Steps to build
+#### Steps to build and run
 
 1. `git clone https://github.com/Microsoft/Windows-Machine-Learning`
 
@@ -33,19 +78,6 @@ Developer dashboard for Windows ML and ONNX.
 
 > All available commands can be seen at [package.json](package.json).
 
-### How to use the tool
-
-1. Convert To Onnx File
-   * Click the `Convert` Tab
-   * Select the **sencond option (recommand)** to install python enviroment(take minutes). It would be save to select the first option if you are sure you have intalled all required python packages in `./public/requirement.txt`
-   * Click `browse` to locate your file to convert
-   * Click `convert` button to save the output file first and start conversion.
-2. Edit Onnx File
-   * Press `Cltr + O` to open a new Onnx file, and the default file is what you just converted from other platforms.
-   * The right panel is visible by default, which is designed to be used to change the metadata of the model.
-   * For left panel, click any node of the graph, or click the left button among the three left-top buttons. The left panel is designed to show and change the metadata of the Graph. **Only input node and output node are changeable, internal nodes are not**.
-   * Press `Ctrl + S` to **save the changes to the same file**.
-
 ### Debugging
 
 To open the **debug view** in the Electron app
@@ -54,27 +86,11 @@ To open the **debug view** in the Electron app
 * Or select `View -> Toggle Dev Tools` in the application menu
 * Or press `Ctrl + Shift + I`.
 
-### Distribution
-
-To distribute the application, you can copy the whole `build` folder and the files `src/electronMain.js` and `package.json` to `node_modules/electron/dist/resources/app`, and distribute the folder `node_modules/electron/dist`. The final directory structure in `node_modules/electron/dist/resources` should be:
-
-```
-app/
-├───build/
-├───────...
-├───src/
-│   └───electronMain.js
-└───package.json
-```
-
-[Electron builder](https://github.com/electron-userland/electron-builder) can be used to generate installers. [See the documentation here](https://www.electron.build/).
-
-### Built with
-
-* [Electron](https://electronjs.org/)
-* [React](https://reactjs.org/)
-* [Redux](https://redux.js.org/)
+## Feedback
+- For issues, file a bug on [GitHub Issues](https://github.com/Microsoft/Windows-Machine-Learning/issues).
+- For feature requests, file an issue on [GitHub Issues](https://github.com/Microsoft/Windows-Machine-Learning/issues/new)
+- Ask questions on [Stack Overflow](https://stackoverflow.com/questions/tagged/windows-machine-learning).
 
 ### License
 
-This tool is under the MIT license. The license can be found at the root of this repository.
+This tool is under the MIT license. 

@@ -2,6 +2,18 @@
 
 This is a desktop application that uses models containing custom operator definitions and implementations.
 
+To reuse the debug operator you will need to compile debug_cpu.cpp and debug_cpu.h into your project.
+Additionally you will need to compile customoperatorprovider.h into your project but first remove non DebugOperatorFactory functions in the RegisterSchemas and RegisterKernels subroutines.
+You also need to remove the include statements for relu_cpu.h and noisyrelu_cpu.h.
+
+Then when you initialize your LearningModel, pass in a custom provider like so:
+
+```
+ auto customOperatorProvider = winrt::make<CustomOperatorProvider>();
+ auto provider = customOperatorProvider.as<ILearningModelOperatorProvider>();
+ auto model = LearningModel::LoadFromFilePath(modelPath, provider);
+```
+
 ## Prerequisites
 
 - [Visual Studio 2017 Version 15.7.4 or Newer](https://developer.microsoft.com/en-us/windows/downloads)

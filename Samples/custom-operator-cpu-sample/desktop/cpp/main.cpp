@@ -11,7 +11,6 @@ using namespace Windows::Storage;
 using namespace Windows::AI::MachineLearning;
 using namespace std;
 
-
 wstring GetModulePath() {
     wchar_t wzModuleFilePath[MAX_PATH + 1];
     GetModuleFileName(NULL, wzModuleFilePath, MAX_PATH + 1);
@@ -28,7 +27,6 @@ struct CommandLineInterpreter
     CommandLineInterpreter(int argc, wchar_t * argv[]) :
         m_commandLineArgs(&argv[0], &argv[0] + argc)
     {}
-
 
     static wstring GetModelPath(const wchar_t* pName)
     {
@@ -72,14 +70,11 @@ struct CommandLineInterpreter
     }
 };
 
-
 using Model = LearningModel;
 using Binding = LearningModelBinding;
 using Device = LearningModelDevice;
 using Session = LearningModelSession;
 using Kind = LearningModelDeviceKind;
-
-
 vector<string> labels;
 
 void LoadLabels()
@@ -94,7 +89,6 @@ void LoadLabels()
         printf("failed to load the %ls file.  Make sure it exists in the same folder as the app\r\n", labelsFileName.c_str());
         exit(EXIT_FAILURE);
     }
-
     string s;
     while (getline(labelFile, s, ','))
     {
@@ -228,7 +222,6 @@ void RunRelu(Session session)
     {
         printf("%f\n", resultItem);
     }
-
     printf("Done\n");
 }
 
@@ -271,6 +264,5 @@ int wmain(int argc, wchar_t * argv[])
     else {
         RunRelu(session);
     }
-
     return 0;
 }

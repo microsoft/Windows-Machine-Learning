@@ -195,7 +195,6 @@ struct NoisyReluOperatorFactory : winrt::implements<NoisyReluOperatorFactory, IM
         noisyReluSchema.typeConstraints = typeConstraints.data();
         noisyReluSchema.typeConstraintCount = static_cast<uint32_t>(typeConstraints.size());
 
-
         MLOperatorAttribute noisyReluMeanAttribute;
         noisyReluMeanAttribute.name = "mean";
         noisyReluMeanAttribute.required = false;
@@ -261,7 +260,6 @@ struct NoisyReluOperatorFactory : winrt::implements<NoisyReluOperatorFactory, IM
         std::vector<MLOperatorEdgeTypeConstrant> typeConstraints{ typeConstraint };
         kernelDescription.typeConstraints = typeConstraints.data();
         kernelDescription.typeConstraintCount = static_cast<uint32_t>(typeConstraints.size());
-
 
         MLOperatorAttributeNameValue noisyReluMeanAttributeValue;
         noisyReluMeanAttributeValue.name = "mean";

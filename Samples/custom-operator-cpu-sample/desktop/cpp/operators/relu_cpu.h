@@ -81,7 +81,6 @@ struct ReluOperator: winrt::implements<ReluOperator, IMLOperatorKernel>
             }
         }
 
-
         return S_OK;
     }
 

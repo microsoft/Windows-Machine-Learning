@@ -9,7 +9,6 @@ struct DebugShapeInferrer : winrt::implements<DebugShapeInferrer, IMLOperatorSha
 
 struct DebugOperator : winrt::implements<DebugOperator, IMLOperatorKernel>
 {
-
     winrt::hstring m_filePath;
     winrt::hstring m_fileType;
 

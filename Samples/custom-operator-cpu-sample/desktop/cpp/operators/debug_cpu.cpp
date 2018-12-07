@@ -3,7 +3,6 @@
 #include "../pch.h"
 #include "debug_cpu.h"
 
-
 using namespace winrt;
 using namespace Windows::Foundation;
 using namespace Windows::Foundation::Collections;
@@ -14,12 +13,10 @@ using namespace Windows::Storage;
 using namespace winrt::Windows::Storage::Streams;
 using namespace std;
 
-
 static const int CHANNELS = 1;
 static const int HEIGHT = 2;
 static const int WIDTH = 3;
 static const int NUM_DIMENSIONS = 4;
-
 
 HRESULT DebugShapeInferrer::InferOutputShapes (IMLOperatorShapeInferenceContext* context) noexcept
 {
@@ -41,8 +38,8 @@ HRESULT DebugShapeInferrer::InferOutputShapes (IMLOperatorShapeInferenceContext*
 }
 
 template <typename T>
-void WriteToPng(vector<uint32_t> inputDims, T* inputData, uint32_t size, hstring m_filePath) {
-    
+void WriteToPng(vector<uint32_t> inputDims, T* inputData, uint32_t size, hstring m_filePath)
+{    
     // expects nchw format
     if (inputDims.size() != NUM_DIMENSIONS) {
         return;
@@ -60,12 +57,10 @@ void WriteToPng(vector<uint32_t> inputDims, T* inputData, uint32_t size, hstring
     wchar_t buf[MAX_PATH];
     _wgetcwd(buf, 256);
     StorageFolder parentFolder = StorageFolder::GetFolderFromPathAsync(buf).get();
-
     int pixelsPerImage = inputDims.at(HEIGHT) * inputDims.at(WIDTH);
 
     // for each output channel at this point in the network
     for (int i = 0; i < inputDims.at(CHANNELS); i++) {
-
         // create png file
         size_t outSize = 0;
         wstring suffix = L"_" + to_wstring(i);
@@ -86,8 +81,6 @@ void WriteToPng(vector<uint32_t> inputDims, T* inputData, uint32_t size, hstring
 
         // select image pixels
         vector<uint8_t> sub_vector(byteCopy.begin() + (i * pixelsPerImage), byteCopy.begin() + ((i + 1) * pixelsPerImage));
-
-
         DataWriter writer;
         writer.WriteBytes(sub_vector);
         SoftwareBitmap softwareBitmap(BitmapPixelFormat::Gray8, inputDims.at(HEIGHT), inputDims.at(WIDTH));
@@ -116,7 +109,6 @@ void WriteToText(vector<uint32_t> inputDims, T* inputData, uint32_t size, hstrin
     outputFile.close();
 }
 
-
 template <typename T>
 void ComputeInternal(IMLOperatorTensor* pInputTensor, IMLOperatorTensor* pOutputTensor, uint32_t size,
                     vector<uint32_t> inputDims, hstring m_filePath, hstring m_fileType)
@@ -133,7 +125,6 @@ void ComputeInternal(IMLOperatorTensor* pInputTensor, IMLOperatorTensor* pOutput
     else if (winrt::to_string(m_fileType) == "text") {
         WriteToText(inputDims, inputData, size, m_filePath, dataType);
     }
-    
     // only useful if the debug output is used for some reason 
     // (not necessary since debug output can be consumed by no nodes without changing model execution
     memcpy(outputData, inputData, size);
@@ -146,7 +137,6 @@ void ComputeInternal(IMLOperatorTensor* pInputTensor, IMLOperatorTensor* pOutput
 // of this method must be thread-safe.
 HRESULT DebugOperator::Compute(IMLOperatorKernelContext* context)
 {
-
     try
     {
         // Get the input tensor
@@ -226,7 +216,6 @@ HRESULT DebugOperator::Compute(IMLOperatorKernelContext* context)
                         break;
                 }
         }
-
         return S_OK;
     }
     catch (...)
@@ -235,14 +224,12 @@ HRESULT DebugOperator::Compute(IMLOperatorKernelContext* context)
     }
 }
 
-
 HRESULT DebugOperatorFactory::CreateKernel(
     IMLOperatorKernelCreationContext* context,
     IMLOperatorKernel** kernel)
 {
     try
     {
-
         int filePathSize;
         context->GetStringAttributeElementLength("file_path", 0, reinterpret_cast<uint32_t*>(&filePathSize));
         char* filePath = new char[filePathSize];
@@ -334,7 +321,6 @@ void DebugOperatorFactory::RegisterDebugSchema(winrt::com_ptr<IMLOperatorRegistr
     debugSchema.typeConstraints = typeConstraints.data();
     debugSchema.typeConstraintCount = static_cast<uint32_t>(typeConstraints.size());
 
-
     MLOperatorAttribute debugFilePathAttribute;
     debugFilePathAttribute.name = "file_path";
     debugFilePathAttribute.required = false;
@@ -398,14 +384,11 @@ void DebugOperatorFactory::RegisterDebugKernel(winrt::com_ptr<IMLOperatorRegistr
         CreateEdgeDescriptor(MLOperatorEdgeType::Tensor, MLOperatorTensorDataType::Int16),
         CreateEdgeDescriptor(MLOperatorEdgeType::Tensor, MLOperatorTensorDataType::Int32),
         CreateEdgeDescriptor(MLOperatorEdgeType::Tensor, MLOperatorTensorDataType::Int64),
-        CreateEdgeDescriptor(MLOperatorEdgeType::Tensor, MLOperatorTensorDataType::String),
         CreateEdgeDescriptor(MLOperatorEdgeType::Tensor, MLOperatorTensorDataType::Bool),
         CreateEdgeDescriptor(MLOperatorEdgeType::Tensor, MLOperatorTensorDataType::Float16),
         CreateEdgeDescriptor(MLOperatorEdgeType::Tensor, MLOperatorTensorDataType::Double),
         CreateEdgeDescriptor(MLOperatorEdgeType::Tensor, MLOperatorTensorDataType::UInt32),
-        CreateEdgeDescriptor(MLOperatorEdgeType::Tensor, MLOperatorTensorDataType::UInt64),
-        //CreateEdgeDescriptor(MLOperatorEdgeType::Tensor, MLOperatorTensorDataType::Complex64),
-        //CreateEdgeDescriptor(MLOperatorEdgeType::Tensor, MLOperatorTensorDataType::Complex128)
+        CreateEdgeDescriptor(MLOperatorEdgeType::Tensor, MLOperatorTensorDataType::UInt64)
     };
     typeConstraint.allowedTypes = allowedEdges.data();
     typeConstraint.allowedTypeCount = static_cast<uint32_t>(allowedEdges.size());
@@ -414,14 +397,12 @@ void DebugOperatorFactory::RegisterDebugKernel(winrt::com_ptr<IMLOperatorRegistr
     kernelDescription.typeConstraints = typeConstraints.data();
     kernelDescription.typeConstraintCount = static_cast<uint32_t>(typeConstraints.size());
 
-
     MLOperatorAttributeNameValue debugFilePathAttributeValue;
     debugFilePathAttributeValue.name = "fail-path";
     debugFilePathAttributeValue.type = MLOperatorAttributeType::String;
     debugFilePathAttributeValue.valueCount = 1;
     static const char* defaultFilePath[] = { "" };
     debugFilePathAttributeValue.strings = defaultFilePath;
-
 
     std::vector<MLOperatorAttributeNameValue> attributeDefaultValues{ debugFilePathAttributeValue };
     kernelDescription.defaultAttributes = attributeDefaultValues.data();
@@ -438,4 +419,3 @@ void DebugOperatorFactory::RegisterDebugKernel(winrt::com_ptr<IMLOperatorRegistr
         shareInferrer.get()
     );
 }
-

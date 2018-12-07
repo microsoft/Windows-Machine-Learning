@@ -4,7 +4,6 @@
 #include "relu_cpu.h"
 #include "debug_cpu.h"
 
-
 struct CustomOperatorProvider :
     winrt::implements<
         CustomOperatorProvider,

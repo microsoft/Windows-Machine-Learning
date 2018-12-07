@@ -32,6 +32,17 @@
     background: transparent;
 }
 
+#openFileButton {
+    background: rgb(44, 199, 247);
+    color: white;
+}
+
+#openFileButton:hover {
+    background-color: rgb(11, 130, 167);
+    color: lightgray;
+    cursor: pointer;
+}
+
 #EditButton {
     background: lightgray
 }

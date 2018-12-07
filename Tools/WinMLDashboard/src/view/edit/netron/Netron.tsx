@@ -55,6 +55,7 @@ class Netron extends React.Component<IComponentProperties, IComponentState> {
             metadataProps: {},
             properties: {},
         }
+        this.props.setShowRight(true);
     }
 
     public componentDidMount() {
@@ -90,7 +91,13 @@ class Netron extends React.Component<IComponentProperties, IComponentState> {
     // }
 
     public render() {
-
+        const inlineStyle = {
+            color:'lightgray',
+            fontSize:'50px',
+            fontStyle: 'oblique',
+            top: '600px', 
+            width: '400px'
+        }
         return (
             // Instead of hardcoding the page, a div with dangerouslySetInnerHTML could be used to include Netron's content
             <div className='netron-root'>
@@ -100,7 +107,8 @@ class Netron extends React.Component<IComponentProperties, IComponentState> {
                         <img id='spinner' className='spinner logo absolute' src='spinner.svg' style={{display: 'none'}} />
                     </div>
                     <button id='open-file-button' className='center' disabled={true}> Open Model...</button>
-                    <button id='openFileButton' className='center' style={{top: '200px', width: '125px'}} onClick={onOpen}>Open Model...</button>
+                    <button id='openFileButton' className='center' style={{top: '200px', width: '100px'}} onClick={onOpen}>Open Model</button>
+                    <p className='center' style={inlineStyle}>WinML Dashboard</p>
                     <input type="file" id="openFileButton" style={{display: 'none'}} multiple={false} accept=".onnx, .pb, .meta, .tflite, .keras, .h5, .json, .mlmodel, .caffemodel" />
                     <div style={{fontWeight: 'normal', color: '#e6e6e6', userSelect: 'none'}}>.</div>
                     <div style={{fontWeight: 600, color: '#e6e6e6', userSelect: 'none'}}>.</div>
@@ -144,7 +152,6 @@ class Netron extends React.Component<IComponentProperties, IComponentState> {
 
 
     private toggleEditAndView = () => {
-
         if(!this.state.isOnnxModel) {
             const convertDialogOptions = {
                 message: 'Only ONNX model is editable. Convert it first.'
@@ -156,8 +163,6 @@ class Netron extends React.Component<IComponentProperties, IComponentState> {
             this.setState({isEdit: false}, () => {document.getElementById('model-properties-button')!.click()})
             this.props.setShowLeft(false)
             this.props.setShowRight(false)
-            
-
         }
         else {
             browserGlobal.view._sidebar.close();

@@ -13,7 +13,7 @@ export function createMenu(electron: typeof Electron) {
             submenu: [
                 { label: 'Open', accelerator: 'Ctrl+O', click: onOpen },
                 { label: 'Open Recent', click: onOpen, enabled: false },
-                { label: 'Save', accelerator: 'Ctrl+S', click: onSave, enabled: false },
+                { label: 'Save', accelerator: 'Ctrl+S', click: onSave},
             ],
         }, {
             role: 'help',

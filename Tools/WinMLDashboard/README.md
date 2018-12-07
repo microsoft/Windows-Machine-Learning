@@ -2,7 +2,7 @@
 
 WinML Dashboard is a tool for viewing, editing, converting, and validating machine learning models for [Windows ML](https://docs.microsoft.com/en-us/windows/ai/) inference engine. The engine is built into Windows 10 and evaluates trained models locally on Windows devices using hardware optimizations for CPU and GPU to enable high performance inferences.   
 
-Today there are several different frameworks available for training and evaluating machine learning models, which makes it difficult for app developers to intergate models into their product. Windows ML uses [ONNX](http://onnx.ai/) machine learning model format that allows conversion from one framework format to another, and this Dashboard makes it easy to convert models from different framework to ONNX. 
+Today there are several different frameworks available for training and evaluating machine learning models, which makes it difficult for app developers to integate models into their product. Windows ML uses [ONNX](http://onnx.ai/) machine learning model format that allows conversion from one framework format to another, and this Dashboard makes it easy to convert models from different framework to ONNX. 
  
  This tool supports converting to ONNX from the following source frameworks:
  - Apple Core ML
@@ -12,15 +12,15 @@ Today there are several different frameworks available for training and evaluati
  - Xgboost
  - LibSVM
  
-The tools also validates the converted models by evaluating the model with built-in Windows ML inference engine using fake or real input data on CPU or GPU.
+The tool also validates the converted model by evaluating the model with built-in Windows ML inference engine using fake or real input data on CPU or GPU.
 
 ## Viewing and Editing Models
 
 The Dashboard uses [Netron](https://github.com/lutzroeder/netron) for viewing machine learning models. Although WinML uses ONNX format, the Netron viewer supports viewing several different framework formats. 
 
-Several times a developer may need to update certain model metadata, or modify model input and output nodes. This tool supports modifying model properties, metadata and input/output nodes of an ONNX model. 
+Many times a developer may need to update certain model metadata or modify model input and output nodes. This tool supports modifying model properties, metadata and input/output nodes of an ONNX model. 
 
-Selecting Edit tab (center top as shown in the snip below) takes you to viewing and editing panel. The left pane in the panel allows editing model input and output nodes, and the right pane allows editing Model properties. The center portion shows the graph.At this time, editing support to limited to model inpu/output node (and not inner nodes), model properties and model metadata.
+Selecting Edit tab (center top as shown in the snip below) takes you to viewing and editing panel. The left pane in the panel allows editing model input and output nodes, and the right pane allows editing Model properties. The center portion shows the graph. At this time, editing support to limited to model input/output node (and not inner nodes), model properties and model metadata.
 
 The Edit/View button switches from Edit mode to View-only mode. View-only mode enables Netron viewer's native features such as the ability to see detailed information for each node. 
 
@@ -39,6 +39,8 @@ In order to do the conversion, the tool installs a separate Python environment a
 Once you have an ONNX model, you can validate whether the conversion has happened successfully and that the model can be evaluated in Windows ML inference engine. This is done using the "Run" tab (see snip below).
 
 You can choose various options such as CPU (default) vs GPU, real input vs fake input (default) etc. The result of model evaluation appears in the console window at the bottom.
+
+Note that model validation feature is only available on [Windows 10 October 2018 Update](https://www.microsoft.com/en-us/software-download/windows10) or newer version of Windows 10 as the tool relies on built-in Windows ML inference engine. 
 
 <img src="./public/RunView.png" width=800/>
 

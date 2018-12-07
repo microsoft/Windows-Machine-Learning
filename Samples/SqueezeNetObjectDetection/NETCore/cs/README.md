@@ -5,7 +5,7 @@ This is a .NET Core 2 application that uses SqueezeNet, a pre-trained machine le
 Note: SqueezeNet was trained to work with image sizes of 224x224, so you must provide an image of size 224X224.
 Also, the asynchronous handlers defined in the code are required due to a limitation of .NET Core 2. With the release of .NET Core 3 you will be able to use the async/await pattern.
 
-To get access to Windows.AI.MachineLearning and various other Windows classes you can add an assembly reference for Windows.winmd (C:\Program Files (x86)\Windows Kits\10\UnionMetadata\[version]\Windows.winmd)
+To get access to Windows.AI.MachineLearning and various other Windows classes you need to add an assembly reference for Windows.winmd (C:\Program Files (x86)\Windows Kits\10\UnionMetadata\[version]\Windows.winmd)
 
 ## Prerequisites
 

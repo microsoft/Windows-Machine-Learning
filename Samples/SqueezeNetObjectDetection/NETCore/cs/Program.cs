@@ -3,22 +3,18 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
-
 using Windows.Storage;
 using Windows.Graphics.Imaging;
 using Windows.Storage.Streams;
 using Windows.AI.MachineLearning;
 using Windows.Foundation;
 using Windows.Media;
-
 using Newtonsoft.Json;
-
 
 namespace SqueezeNetObjectDetectionNC
 {
     class ImageInference
     {
-
         // globals
         private static LearningModelDeviceKind _deviceKind = LearningModelDeviceKind.Default;
         private static string _deviceName = "default";
@@ -29,11 +25,9 @@ namespace SqueezeNetObjectDetectionNC
         private static LearningModelSession _session;
         private static List<string> _labels = new List<string>();
 
-       
         // usage: SqueezeNet [modelfile] [imagefile] [cpu|directx]
         static int Main(string[] args)
         {
-
             if (!ParseArgs(args))
             {
                 Console.WriteLine("Usage: [executable_name] [modelfile] [imagefile] [cpu|directx]");
@@ -59,7 +53,6 @@ namespace SqueezeNetObjectDetectionNC
             LearningModelBinding binding = new LearningModelBinding(_session);
             binding.Bind(_model.InputFeatures.ElementAt(0).Name, imageTensor);
 
-
             Console.WriteLine("Running the model...");
             ticks = Environment.TickCount;
             var results = _session.Evaluate(binding, "RunId");
@@ -69,7 +62,6 @@ namespace SqueezeNetObjectDetectionNC
             // retrieve results from evaluation
             var resultTensor = results.Outputs[_model.OutputFeatures.ElementAt(0).Name] as TensorFloat;
             var resultVector = resultTensor.GetAsVectorView();
-
             PrintResults(resultVector);
             return 0;
         }
@@ -128,13 +120,9 @@ namespace SqueezeNetObjectDetectionNC
         private static ImageFeatureValue LoadImageFile()
         {
             StorageFile imageFile = AsyncHelper(StorageFile.GetFileFromPathAsync(_imagePath));
-
             IRandomAccessStream stream = AsyncHelper(imageFile.OpenReadAsync());
-
             BitmapDecoder decoder = AsyncHelper(BitmapDecoder.CreateAsync(stream));
-
             SoftwareBitmap softwareBitmap = AsyncHelper(decoder.GetSoftwareBitmapAsync());
-
             softwareBitmap = SoftwareBitmap.Convert(softwareBitmap, BitmapPixelFormat.Bgra8, BitmapAlphaMode.Premultiplied);
             VideoFrame inputImage = VideoFrame.CreateWithSoftwareBitmap(softwareBitmap);
             return ImageFeatureValue.CreateFromVideoFrame(inputImage);
@@ -143,7 +131,6 @@ namespace SqueezeNetObjectDetectionNC
 
         private static void PrintResults(IReadOnlyList<float> resultVector)
         {
-
             // load the labels
             LoadLabels();
             // Find the top 3 probabilities

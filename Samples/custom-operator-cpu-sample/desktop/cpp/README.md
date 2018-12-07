@@ -3,7 +3,7 @@
 This is a desktop application that uses models containing custom operator definitions and implementations.
 The necessary code is included to define and register these custom operators. API reference:  https://docs.microsoft.com/en-us/windows/ai/custom-operators
 
-# Included custom operators
+## Included custom operators
 There are three custom operators included in this sample: Relu, NoisyRelu and Debug.
 The Relu custom operator is replacing an existing operator while NoisyRelu and Debug are new operators.
 
@@ -20,7 +20,7 @@ There are two attributes required for this operator:
 
 The Relu and NoisyRelu operator client code curates its own input data, but the Debug operator client code accepts an input image and runs a modified SqueezeNet model.
 
-# Adding Debug operator to your app
+## Adding Debug operator to your app
 1. Compile debug_cpu.cpp and debug_cpu.h into your project.
 2. Compile customoperatorprovider.h into your project but first remove non DebugOperatorFactory functions in the RegisterSchemas and RegisterKernels subroutines and remove the include statements for relu_cpu.h and noisyrelu_cpu.h.
 3. When you initialize your LearningModel, pass in a custom provider like so:

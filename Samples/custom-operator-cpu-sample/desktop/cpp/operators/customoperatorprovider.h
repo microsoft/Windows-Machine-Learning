@@ -25,7 +25,7 @@ struct CustomOperatorProvider :
     {
         NoisyReluOperatorFactory::RegisterNoisyReluSchema(m_registry);
 
-		DebugOperatorFactory::RegisterDebugSchema(m_registry);
+        DebugOperatorFactory::RegisterDebugSchema(m_registry);
     }
 
     void RegisterKernels()
@@ -36,8 +36,8 @@ struct CustomOperatorProvider :
         // Add a new operator kernel for Relu
         NoisyReluOperatorFactory::RegisterNoisyReluKernel(m_registry);
 
-		// Add a new operator kernel for Debug
-		DebugOperatorFactory::RegisterDebugKernel(m_registry);
+        // Add a new operator kernel for Debug
+        DebugOperatorFactory::RegisterDebugKernel(m_registry);
     }
 
     STDMETHOD(GetRegistry)(IMLOperatorRegistry** ppOperatorRegistry)

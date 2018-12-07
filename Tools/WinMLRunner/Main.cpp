@@ -6,6 +6,8 @@
 #include <filesystem>
 #include <d3d11.h>
 #include <Windows.Graphics.DirectX.Direct3D11.interop.h>
+#include <initguid.h>
+#include <dxcore.h>
 
 Profiler<WINML_MODEL_TEST_PERF> g_Profiler;
 
@@ -253,6 +255,9 @@ HRESULT EvaluateModel(
         else if ((TypeHelper::GetWinmlDeviceKind(deviceType) != LearningModelDeviceKind::Cpu) && (adapterIndex != -1))
         {
             HRESULT hr = S_OK;
+            IUnknown* pAdapter = NULL;
+
+#if 0
 
             com_ptr<IDXGIFactory1> dxgiFactory1;
             hr = CreateDXGIFactory1(__uuidof(IDXGIFactory), dxgiFactory1.put_void());
@@ -270,13 +275,63 @@ HRESULT EvaluateModel(
             dxgiAdapter1->GetDesc1(&adapterDesc1);
             printf("Use adapter : %S\n", adapterDesc1.Description);
 
+            pAdapter = dxgiAdapter1.get();
+
+#else
+
+#if 1
+            com_ptr<IDXCoreAdapterFactory> spFactory;
+
+            typedef HRESULT
+            (WINAPI *PFN_DXCoreCreateAdapterFactory)(
+                _In_ REFIID riid,
+                _COM_Outptr_ void** factory
+                );
+
+            PFN_DXCoreCreateAdapterFactory pfnDXCoreCreateAdapterFactory;
+
+            HMODULE hDXCore = LoadLibrary(TEXT("dxcore.dll"));
+            THROW_IF_FAILED(hr);
+
+            pfnDXCoreCreateAdapterFactory = (PFN_DXCoreCreateAdapterFactory)GetProcAddress(hDXCore, "DXCoreCreateAdapterFactory");
+            THROW_IF_FAILED(hr);
+
+            hr = pfnDXCoreCreateAdapterFactory(__uuidof(IDXCoreAdapterFactory), spFactory.put_void());
+
+#else
+
+            hr = DXCoreCreateAdapterFactory(__uuidof(IDXCoreAdapterFactory), spFactory.put_void());
+
+#endif
+            THROW_IF_FAILED(hr);
+
+            com_ptr<IDXCoreAdapterList> spAdapterList;
+
+            const GUID dxGUIDs[] = { DXCORE_ADAPTER_ATTRIBUTE_D3D_CORE_COMPUTE };
+
+            hr = spFactory->GetAdapterList(dxGUIDs, ARRAYSIZE(dxGUIDs), spAdapterList.put());
+            THROW_IF_FAILED(hr);
+
+            com_ptr<IDXCoreAdapter> spAdapter;
+            hr = spAdapterList->GetItem(adapterIndex, spAdapter.put());
+            THROW_IF_FAILED(hr);
+
+            CHAR driverDescription[128];
+
+            spAdapter->QueryProperty(DXCoreProperty::DriverDescription, sizeof(driverDescription), driverDescription);
+            printf("Use adapter : %s\n", driverDescription);
+
+            pAdapter = spAdapter.get();
+
+#endif
+
             D3D12_COMMAND_LIST_TYPE commandQueueType = D3D12_COMMAND_LIST_TYPE_DIRECT;
 
             com_ptr<ID3D12Device> d3d12Device;
-            hr = D3D12CreateDevice(dxgiAdapter1.get(), D3D_FEATURE_LEVEL::D3D_FEATURE_LEVEL_11_0, __uuidof(ID3D12Device), d3d12Device.put_void());
+            hr = D3D12CreateDevice(pAdapter, D3D_FEATURE_LEVEL::D3D_FEATURE_LEVEL_11_0, __uuidof(ID3D12Device), d3d12Device.put_void());
             if (FAILED(hr))
             {
-                hr = D3D12CreateDevice(dxgiAdapter1.get(), D3D_FEATURE_LEVEL::D3D_FEATURE_LEVEL_1_0_CORE, __uuidof(ID3D12Device), d3d12Device.put_void());
+                hr = D3D12CreateDevice(pAdapter, D3D_FEATURE_LEVEL::D3D_FEATURE_LEVEL_1_0_CORE, __uuidof(ID3D12Device), d3d12Device.put_void());
 
                 commandQueueType = D3D12_COMMAND_LIST_TYPE_COMPUTE;
             }
@@ -321,7 +376,7 @@ HRESULT EvaluateModel(
     // Add one more iteration if we ignore the first run
     uint32_t numIterations = args.NumIterations() + args.IgnoreFirstRun();
 
-    bool isGarbageData = !args.CsvPath().empty() || !args.ImagePath().empty();
+    bool isGarbageData = args.CsvPath().empty() && args.ImagePath().empty();
 
     // Run the binding + evaluate multiple times and average the results
     for (uint32_t i = 0; i < numIterations; i++)

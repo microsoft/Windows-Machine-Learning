@@ -6,10 +6,12 @@ import 'netron/src/view-sidebar.css';
 import 'netron/src/view.css';
 import 'npm-font-open-sans/open-sans.css';
 
-import { setInputs, setMetadataProps, setModelInputs, setModelOutputs, setNodes, setOutputs, setProperties, setSelectedNode, setShowLeft, setShowRight } from '../../../datastore/actionCreators';
+import { setFile, setInputs, setMetadataProps, setModelInputs, setModelOutputs, setNodes, setOutputs, setProperties, setSelectedNode, setShowLeft, setShowRight } from '../../../datastore/actionCreators';
 import { ModelProtoSingleton } from '../../../datastore/proto/modelProto';
 import IState from '../../../datastore/state';
 import './fixed-position-override.css';
+
+import { fileFromPath } from '../../../native/dialog';
 
 import { DefaultButton } from 'office-ui-fabric-react/lib/Button';
 
@@ -21,6 +23,7 @@ interface IComponentProperties {
     // Redux properties
     file: File,
     nodes: { [key: string]: any },
+    setFile: typeof setFile,
     setInputs: typeof setInputs,
     setMetadataProps: typeof setMetadataProps,
     setModelInputs: typeof setModelInputs,
@@ -38,6 +41,7 @@ interface IComponentProperties {
 interface IComponentState {
     graph: any,
     isEdit: boolean,
+    isInit: boolean,
     isOnnxModel: boolean,
     metadataProps: { [key: string]: string },
     properties: { [key: string]: string },
@@ -51,6 +55,7 @@ class Netron extends React.Component<IComponentProperties, IComponentState> {
         this.state = {
             graph: {},
             isEdit: true,
+            isInit: true,
             isOnnxModel: false,
             metadataProps: {},
             properties: {},
@@ -69,6 +74,7 @@ class Netron extends React.Component<IComponentProperties, IComponentState> {
         } else {
             this.onNetronInitialized();
         }
+        
     }
 
     public componentWillUnmount() {
@@ -97,7 +103,7 @@ class Netron extends React.Component<IComponentProperties, IComponentState> {
             fontStyle: 'oblique',
             top: '600px', 
             width: '400px'
-        }
+        }      
         return (
             // Instead of hardcoding the page, a div with dangerouslySetInnerHTML could be used to include Netron's content
             <div className='netron-root'>
@@ -188,6 +194,25 @@ class Netron extends React.Component<IComponentProperties, IComponentState> {
     }
 
     private onNetronInitialized = () => {
+        // Open the ONNX file when open with this APP.
+        if(this.state.isInit){
+            const supportedFileExts = ['onnx', 'pb', 'meta', 'tflite', 'keras', 'h5', 'json', 'mlmodel', 'caffemodel']
+            if(require('electron').remote.process.argv.length >= 2) {
+                const filePath = require('electron').remote.process.argv[1];
+                const fileExt = filePath.split('.').pop()
+                if(supportedFileExts.indexOf(fileExt) >= 0) {
+                    this.props.setFile(fileFromPath(filePath));
+                }
+                else if(filePath !== '.'){
+                    const runDialogOptions = {
+                        message: 'This file cannot be opened with WinML Dashboard',
+                        title: 'File open failed',
+                    }
+                    require('electron').remote.dialog.showMessageBox(runDialogOptions)
+                }
+            }
+            this.setState({isInit: false})
+        }
         // Reset document overflow property
         document.documentElement!.style.overflow = 'initial';
         this.installProxies();
@@ -322,6 +347,7 @@ const mapStateToProps = (state: IState) => ({
 });
 
 const mapDispatchToProps = {
+    setFile,
     setInputs,
     setMetadataProps,
     setModelInputs,

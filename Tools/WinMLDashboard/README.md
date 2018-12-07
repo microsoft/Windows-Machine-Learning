@@ -12,7 +12,7 @@ Today there are several different frameworks available for training and evaluati
  - Xgboost
  - LibSVM
  
-The tool also validates the converted model by evaluating the model with built-in Windows ML inference engine using fake or real input data on CPU or GPU.
+The tool also validates the converted model by evaluating the model with built-in Windows ML inference engine using synthetic (default) or real input data on CPU or GPU.
 
 ## Viewing and Editing Models
 
@@ -38,7 +38,7 @@ In order to do the conversion, the tool installs a separate Python environment a
 
 Once you have an ONNX model, you can validate whether the conversion has happened successfully and that the model can be evaluated in Windows ML inference engine. This is done using the "Run" tab (see snip below).
 
-You can choose various options such as CPU (default) vs GPU, real input vs fake input (default) etc. The result of model evaluation appears in the console window at the bottom.
+You can choose various options such as CPU (default) vs GPU, real input vs synthetic input (default) etc. The result of model evaluation appears in the console window at the bottom.
 
 Note that model validation feature is only available on [Windows 10 October 2018 Update](https://www.microsoft.com/en-us/software-download/windows10) or newer version of Windows 10 as the tool relies on built-in Windows ML inference engine. 
 

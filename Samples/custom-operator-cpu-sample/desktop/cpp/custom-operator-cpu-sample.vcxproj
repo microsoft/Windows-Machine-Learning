@@ -147,13 +147,15 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
     </None>
+    <None Include="README.md" />
   </ItemGroup>
   <ItemGroup>
-    <CopyFileToFolders Include="models\squeezenet_debug.onnx">
-      <DeploymentContent>true</DeploymentContent>
+    <CopyFileToFolders Include="models\squeezenet_debug_all_outputs.onnx">
       <FileType>Document</FileType>
     </CopyFileToFolders>
-    <None Include="README.md" />
+    <CopyFileToFolders Include="models\squeezenet_debug_one_output.onnx">
+      <FileType>Document</FileType>
+    </CopyFileToFolders>
   </ItemGroup>
   <ItemGroup>
     <CopyFileToFolders Include="labels.txt" />

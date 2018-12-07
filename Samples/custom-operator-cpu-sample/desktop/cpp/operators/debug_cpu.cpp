@@ -14,6 +14,13 @@ using namespace Windows::Storage;
 using namespace winrt::Windows::Storage::Streams;
 using namespace std;
 
+
+static const int CHANNELS = 1;
+static const int HEIGHT = 2;
+static const int WIDTH = 3;
+static const int NUM_DIMENSIONS = 4;
+
+
 HRESULT DebugShapeInferrer::InferOutputShapes (IMLOperatorShapeInferenceContext* context) noexcept
 {
 	try
@@ -33,87 +40,103 @@ HRESULT DebugShapeInferrer::InferOutputShapes (IMLOperatorShapeInferenceContext*
 	}
 }
 
+template <typename T>
+void WriteToPng(vector<uint32_t> inputDims, T* inputData, uint32_t size, hstring m_filePath) {
+	
+	// expects nchw format
+	if (inputDims.size() != NUM_DIMENSIONS) {
+		return;
+	}
 
-template <typename T, typename U = T>
+	// Convert data into pixel bytes
+	// TODO: add option to normalize data
+	// currently if data values increase beyond the capacity of a byte then information will be lost
+	vector<uint8_t> byteCopy;
+	for (int i = 0; i < size; i++) {
+		byteCopy.push_back( static_cast<uint8_t>(inputData[i]));
+	}
+
+	// Get current directory
+	wchar_t buf[MAX_PATH];
+	_wgetcwd(buf, 256);
+	StorageFolder parentFolder = StorageFolder::GetFolderFromPathAsync(buf).get();
+
+	int pixelsPerImage = inputDims.at(HEIGHT) * inputDims.at(WIDTH);
+
+	// for each output channel at this point in the network
+	for (int i = 0; i < inputDims.at(CHANNELS); i++) {
+
+		// create png file
+		size_t outSize = 0;
+		wstring suffix = L"_" + to_wstring(i);
+		wstring ext = L".png";
+		wstring finalPath{ m_filePath };
+		if (finalPath.compare(finalPath.size() - ext.size(), finalPath.size(), ext) != 0) {
+			// append .png extension to filename
+			finalPath += suffix;
+			finalPath += ext;
+		}
+		else {
+			finalPath = finalPath.substr(0, finalPath.size() - ext.size()) + suffix + ext;
+		}
+
+		StorageFile outputFile = parentFolder.CreateFileAsync(finalPath, CreationCollisionOption::ReplaceExisting).get();
+		IRandomAccessStream stream = outputFile.OpenAsync(FileAccessMode::ReadWrite).get();
+		BitmapEncoder encoder = BitmapEncoder::CreateAsync(BitmapEncoder::PngEncoderId(), stream).get();
+
+		// select image pixels
+		vector<uint8_t> sub_vector(byteCopy.begin() + (i * pixelsPerImage), byteCopy.begin() + ((i + 1) * pixelsPerImage));
+
+
+		DataWriter writer;
+		writer.WriteBytes(sub_vector);
+		SoftwareBitmap softwareBitmap(BitmapPixelFormat::Gray8, inputDims.at(HEIGHT), inputDims.at(WIDTH));
+		IBuffer buffer = writer.DetachBuffer();
+		softwareBitmap.CopyFromBuffer(buffer);
+		// target pixel format is arbitrary because each channel will have equal value
+		encoder.SetSoftwareBitmap(SoftwareBitmap::Convert(softwareBitmap, BitmapPixelFormat::Bgra8));
+		encoder.FlushAsync().get();
+		stream.Close();
+	}
+}
+
+template <typename T>
+void WriteToText(vector<uint32_t> inputDims, T* inputData, uint32_t size, hstring m_filePath, MLOperatorTensorDataType dataType) {
+	ofstream outputFile;
+	outputFile.open(winrt::to_string(m_filePath));
+	outputFile << "dimensions: ";
+	std::copy(begin(inputDims), end(inputDims), std::ostream_iterator<uint32_t>(outputFile, ", "));
+	outputFile << "\ndata type: ";
+	outputFile << (int)dataType;
+	outputFile << "\ndata: ";
+	for (int i = 0; i < size; i++) {
+		outputFile << inputData[i];
+		outputFile << ", ";
+	}
+	outputFile.close();
+}
+
+
+template <typename T>
 void ComputeInternal(IMLOperatorTensor* pInputTensor, IMLOperatorTensor* pOutputTensor, uint32_t size,
-					vector<uint32_t> inputDims, hstring m_filePath, hstring m_fileType/*, hstring m_pixelEncoding*/)
+					vector<uint32_t> inputDims, hstring m_filePath, hstring m_fileType)
 {
 	// Just copy the data from output to input
 	// Then print the input out to a file
 	auto inputData = static_cast<T*>(pInputTensor->GetData());
-	auto outputData = static_cast<U*>(pOutputTensor->GetData());
+	auto outputData = static_cast<T*>(pOutputTensor->GetData());
 	auto dataType = pInputTensor->GetTensorDataType();
 	
 	if (to_string(m_fileType) == "png") {
-
-		// Convert data into pixel bytes
-		uint8_t *byteCopy = new uint8_t[size];
-		for (int i = 0; i < size; i++) {
-			byteCopy[i] = (uint8_t) inputData[i];
-		}
-
-		// Get current directory
-		wchar_t *buf = _wgetcwd(NULL, 256);
-		StorageFolder parentFolder = StorageFolder::GetFolderFromPathAsync(buf).get();
-		free(buf);
-
-		int pixelsPerImage = inputDims.at(2) * inputDims.at(3);
-
-		// for each output channel at this point in the network
-		for (int i = 0; i < inputDims.at(1); i++) {
-
-			// create png file
-			size_t outSize = 0;
-			wstring suffix = L"_" + to_wstring(i);
-			wstring ext = L".png";
-			wstring finalPath{ m_filePath };
-			if (finalPath.compare(finalPath.size() - ext.size(), finalPath.size(), ext) != 0) {
-				// append .png extension to filename
-				finalPath += suffix;
-			} else {
-				finalPath = finalPath.substr(0, finalPath.size() - ext.size()) + suffix + ext;
-			}
-			
-			StorageFile outputFile = parentFolder.CreateFileAsync(finalPath, CreationCollisionOption::ReplaceExisting).get();
-			IRandomAccessStream stream = outputFile.OpenAsync(FileAccessMode::ReadWrite).get();
-			BitmapEncoder encoder = BitmapEncoder::CreateAsync(BitmapEncoder::PngEncoderId(), stream).get();
-
-			// select image pixels
-			array_view<const uint8_t> arrView(byteCopy + (i * pixelsPerImage), byteCopy + ((i + 1) * pixelsPerImage));
-			
-			DataWriter writer;
-			writer.WriteBytes(arrView);
-			SoftwareBitmap softwareBitmap(BitmapPixelFormat::Gray8, inputDims.at(2), inputDims.at(3));
-			IBuffer buffer = writer.DetachBuffer();
-			softwareBitmap.CopyFromBuffer(buffer);
-			// target pixel format is arbitrary because each channel will have equal value
-			encoder.SetSoftwareBitmap(SoftwareBitmap::Convert(softwareBitmap, BitmapPixelFormat::Bgra8));
-			encoder.FlushAsync().get();
-			stream.Close();
-		}
-		delete[] byteCopy;
-
+		WriteToPng(inputDims, inputData, size, m_filePath);
 	}
 	else if (winrt::to_string(m_fileType) == "text") {
-		ofstream outputFile;
-		outputFile.open(winrt::to_string(m_filePath));
-		outputFile << "dimensions: ";
-		std::copy(begin(inputDims), end(inputDims), std::ostream_iterator<uint32_t>(outputFile, ", "));
-		outputFile << "\ndata type: ";
-		outputFile << (int)dataType;
-		outputFile << "\ndata: ";
-		for (int i = 0; i < size; i++) {
-			outputFile << inputData[i];
-			outputFile << ", ";
-		}
-		outputFile.close();
+		WriteToText(inputDims, inputData, size, m_filePath, dataType);
 	}
 	
 	// only useful if the debug output is used for some reason 
 	// (not necessary since debug output can be consumed by no nodes without changing model execution
-	for (int i = 0; i < size; i++) {
-		outputData[i] = inputData[i];
-	}
+	memcpy(outputData, inputData, size);
 
 }
 
@@ -221,18 +244,18 @@ HRESULT DebugOperatorFactory::CreateKernel(
 	{
 
 		int filePathSize;
-		context->GetStringAttributeElementLength("file-path", 0, reinterpret_cast<uint32_t*>(&filePathSize));
+		context->GetStringAttributeElementLength("file_path", 0, reinterpret_cast<uint32_t*>(&filePathSize));
 		char* filePath = new char[filePathSize];
-		context->GetStringAttributeElement("file-path", 0, filePathSize, filePath);
+		context->GetStringAttributeElement("file_path", 0, filePathSize, filePath);
 
 		wchar_t* widePath = new wchar_t[strlen(filePath) + 1];
 		size_t outSize = 0;
 		mbstowcs_s(&outSize, widePath, strlen(filePath) + 1, filePath, _TRUNCATE);
 
 		int fileTypeSize;
-		context->GetStringAttributeElementLength("file-type", 0, reinterpret_cast<uint32_t*>(&fileTypeSize));
+		context->GetStringAttributeElementLength("file_type", 0, reinterpret_cast<uint32_t*>(&fileTypeSize));
 		char* fileType = new char[fileTypeSize];
-		context->GetStringAttributeElement("file-type", 0, fileTypeSize, fileType);
+		context->GetStringAttributeElement("file_type", 0, fileTypeSize, fileType);
 
 		wchar_t* wideType = new wchar_t[strlen(fileType) + 1];
 		mbstowcs_s(&outSize, wideType, strlen(fileType) + 1, fileType, _TRUNCATE);
@@ -313,12 +336,12 @@ void DebugOperatorFactory::RegisterDebugSchema(winrt::com_ptr<IMLOperatorRegistr
 
 
 	MLOperatorAttribute debugFilePathAttribute;
-	debugFilePathAttribute.name = "file-path";
+	debugFilePathAttribute.name = "file_path";
 	debugFilePathAttribute.required = false;
 	debugFilePathAttribute.type = MLOperatorAttributeType::String;
 
 	MLOperatorAttribute debugFileTypeAttribute;
-	debugFileTypeAttribute.name = "file-type";
+	debugFileTypeAttribute.name = "file_type";
 	debugFileTypeAttribute.required = false;
 	debugFileTypeAttribute.type = MLOperatorAttributeType::String;
 
@@ -327,14 +350,14 @@ void DebugOperatorFactory::RegisterDebugSchema(winrt::com_ptr<IMLOperatorRegistr
 	debugSchema.attributeCount = static_cast<uint32_t>(attributes.size());
 
 	MLOperatorAttributeNameValue debugFilePathAttributeValue;
-	debugFilePathAttributeValue.name = "file-path";
+	debugFilePathAttributeValue.name = "file_path";
 	debugFilePathAttributeValue.type = MLOperatorAttributeType::String;
 	debugFilePathAttributeValue.valueCount = 1;
 	static const char* defaultPaths[] = { "" };
 	debugFilePathAttributeValue.strings = defaultPaths;
 
 	MLOperatorAttributeNameValue debugFileTypeAttributeValue;
-	debugFileTypeAttributeValue.name = "file-type";
+	debugFileTypeAttributeValue.name = "file_type";
 	debugFileTypeAttributeValue.type = MLOperatorAttributeType::String;
 	debugFileTypeAttributeValue.valueCount = 1;
 	static const char* defaultTypes[] = { "png" };

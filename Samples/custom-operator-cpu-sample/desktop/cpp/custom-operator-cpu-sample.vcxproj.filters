@@ -43,17 +43,20 @@
     <CopyFileToFolders Include="models\relu.onnx">
       <Filter>models</Filter>
     </CopyFileToFolders>
-    <CopyFileToFolders Include="models\squeezenet_debug.onnx">
-      <Filter>models</Filter>
-    </CopyFileToFolders>
     <CopyFileToFolders Include="labels.txt">
       <Filter>output</Filter>
     </CopyFileToFolders>
+    <CopyFileToFolders Include="models\squeezenet_debug_all_outputs.onnx">
+      <Filter>models</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="models\squeezenet_debug_one_output.onnx">
+      <Filter>models</Filter>
+    </CopyFileToFolders>
   </ItemGroup>
   <ItemGroup>
-    <None Include="README.md" />
     <None Include="..\..\..\..\SharedContent\media\kitten_224.png">
       <Filter>input</Filter>
     </None>
+    <None Include="README.md" />
   </ItemGroup>
 </Project>

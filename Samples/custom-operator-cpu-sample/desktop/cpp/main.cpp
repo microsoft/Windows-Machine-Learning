@@ -43,7 +43,7 @@ struct CommandLineInterpreter
         {
             if (0 == _wcsicmp(L"debug", m_commandLineArgs[1].c_str()))
             {
-                return GetModelPath(L"squeezenet_debug.onnx");
+                return GetModelPath(L"squeezenet_debug_one_output.onnx");
             }
             else if (0 == _wcsicmp(L"relu", m_commandLineArgs[1].c_str()))
             {

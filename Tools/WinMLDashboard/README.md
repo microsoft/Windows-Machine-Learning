@@ -86,6 +86,11 @@ To open the **debug view** in the Electron app
 * Or select `View -> Toggle Dev Tools` in the application menu
 * Or press `Ctrl + Shift + I`.
 
+### Getting Models
+
+- [ONNX Model Zoo](https://github.com/onnx/models)
+
+
 ## Feedback
 - For issues, file a bug on [GitHub Issues](https://github.com/Microsoft/Windows-Machine-Learning/issues).
 - For feature requests, file an issue on [GitHub Issues](https://github.com/Microsoft/Windows-Machine-Learning/issues/new)

@@ -203,13 +203,6 @@ class Netron extends React.Component<IComponentProperties, IComponentState> {
                 if(supportedFileExts.indexOf(fileExt) >= 0) {
                     this.props.setFile(fileFromPath(filePath));
                 }
-                else if(filePath !== '.'){
-                    const runDialogOptions = {
-                        message: 'This file cannot be opened with WinML Dashboard',
-                        title: 'File open failed',
-                    }
-                    require('electron').remote.dialog.showMessageBox(runDialogOptions)
-                }
             }
             this.setState({isInit: false})
         }

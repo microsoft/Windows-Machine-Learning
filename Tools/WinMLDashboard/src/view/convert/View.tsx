@@ -1,3 +1,4 @@
+import * as fs from 'fs';
 import * as React from 'react';
 import { connect } from 'react-redux';
 
@@ -235,14 +236,27 @@ class ConvertView extends React.Component<IComponentProperties, IComponentState>
             });
     }
 
+    private deleteCacheFile = (filePath: string) => {
+        fs.stat(filePath, (err, stats) => {
+            if (err) {
+                log.info(err);
+                return;
+            }
+            fs.unlink(filePath, (error: NodeJS.ErrnoException) => {
+                 if(error) {
+                    log.info(error);
+                    return;
+                 }
+                 log.info(filePath + ' deleted successfully');
+            });  
+         });
+    }
+
     private convert = async () => {
         this.initializeState();
         const source = this.state.source!;
         const framework = this.state.framework;
-        const destination = await showNativeSaveDialog({ filters: [{ name: 'ONNX model', extensions: ['onnx'] }, { name: 'ONNX text protobuf', extensions: ['prototxt'] }] });
-        if (!destination) {
-            return;
-        }
+        
         if (!framework) {
             return;
         }
@@ -254,7 +268,7 @@ class ConvertView extends React.Component<IComponentProperties, IComponentState>
 
         this.setState({ currentStep: Step.Converting });
         try {
-            await python([packagedFile('convert.py'), source, framework, destination], {}, this.outputListener);
+            await python([packagedFile('convert.py'), source, framework, packagedFile('tempConvertResult.onnx')], {}, this.outputListener);
         } catch (e) {
             this.logError(e);
             this.printMessage("\n------------------------------------\nConversion failed!\n")
@@ -264,13 +278,23 @@ class ConvertView extends React.Component<IComponentProperties, IComponentState>
             require('electron').remote.dialog.showMessageBox(convertDialogOptions)
             return;
         }
-
         // Convert successfully
         log.info(this.state.source + " is converted successfully.");
         convertDialogOptions.message = 'convert successfully!'
         require('electron').remote.dialog.showMessageBox(convertDialogOptions)
-        this.setState({ currentStep: Step.Idle, source: undefined, console:"Converted successfully!! \n ONNX file loaded."});
+        this.setState({ currentStep: Step.Idle, source: undefined, console:"Converted successfully!!"});
 
+        const destination = await showNativeSaveDialog({ filters: [{ name: 'ONNX model', extensions: ['onnx'] }, { name: 'ONNX text protobuf', extensions: ['prototxt'] }] });
+        if (!destination) {
+            this.deleteCacheFile(packagedFile('tempConvertResult.onnx'));
+            return;
+        }
+        else {
+            fs.copyFileSync(packagedFile('tempConvertResult.onnx'), destination);
+        }
+        this.deleteCacheFile(packagedFile('tempConvertResult.onnx'));
+        
+        this.setState({ currentStep: Step.Idle, source: undefined, console:"Converted successfully!! \n Saved to" + destination + "\n ONNX file loaded."});
         // TODO Show dialog (https://developer.microsoft.com/en-us/fabric#/components/dialog) asking whether we should open the converted model
         this.props.setFile(fileFromPath(destination));
         this.props.setSaveFileName(destination);

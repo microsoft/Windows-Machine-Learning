@@ -6,7 +6,6 @@ import onnx
 from onnx import helper
 import argparse
 
-
 def create_modified_model(args):
     model_path = path.join(path.dirname(path.abspath(__file__)), args.model_path)
     modified_path = path.join(path.dirname(path.abspath(__file__)), args.modified_path)
@@ -18,6 +17,7 @@ def create_modified_model(args):
     inserted_node.CopyFrom(helper.make_node('Debug', [args.intermediate_output], ['unused_' + args.intermediate_output], file_type=args.debug_file_type, file_path=valid_output_path))
 
     onnx.save(model, modified_path)
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()

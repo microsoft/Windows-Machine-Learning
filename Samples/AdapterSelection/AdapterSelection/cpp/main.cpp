@@ -20,6 +20,7 @@ void LoadLabels();
 VideoFrame LoadImageFile(hstring filePath);
 void PrintResults(IVectorView<float> results);
 bool ParseArgs(int argc, char* argv[]);
+LearningModelDevice getLMDFromAdapterIndex(int index, IDXGIFactory *pFactory);
 
 int main(int argc, char* argv[])
 {
@@ -46,41 +47,24 @@ int main(int argc, char* argv[])
 		spAdapter = nullptr;
 	}
 
+    LearningModelDevice device = nullptr;
 	if (i == 0) {
-		printf("There are no available adapters\n");
-		return -1;
-	}
+		printf("There are no available adapters, running on CPU...\n");
+        device = LearningModelDevice(LearningModelDeviceKind::Cpu);
+    }
+    else {
+        // user selects adapter
+        printf("Please enter the index of the adapter you want to use...\n");
+        int selectedIndex;
+        while (!(cin >> selectedIndex) || selectedIndex < 0 || selectedIndex >= i) {
+            cin.clear();
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+            printf("Invalid index, please try again.\n");
+        }
+        printf("Selected adapter at index %d\n", selectedIndex);
 
-	// user selects adapter
-	printf("Please enter the index of the adapter you want to use...\n");
-	int selectedIndex;
-
-	while (!(cin >> selectedIndex) || selectedIndex < 0 || selectedIndex >= i) {
-		cin.clear();
-		cin.ignore(numeric_limits<streamsize>::max(), '\n');
-		printf("Invalid index, please try again.\n");
-	}
-	printf("Selected adapter at index %d\n", selectedIndex);
-
-	// create D3D12Device
-	com_ptr<IUnknown> spIUnknownAdapter;
-	spFactory->EnumAdapters(selectedIndex, spAdapter.put());
-	spAdapter->QueryInterface(IID_IUnknown, spIUnknownAdapter.put_void());
-	com_ptr<ID3D12Device> spD3D12Device;
-	D3D12CreateDevice(spIUnknownAdapter.get(), D3D_FEATURE_LEVEL_12_0, _uuidof(ID3D12Device), spD3D12Device.put_void());
-
-	// create D3D12 command queue from device
-	D3D12_COMMAND_QUEUE_DESC queueDesc = {};
-	queueDesc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;
-	queueDesc.Type = D3D12_COMMAND_LIST_TYPE_DIRECT;
-	com_ptr<ID3D12CommandQueue> spCommandQueue;
-	spD3D12Device->CreateCommandQueue(&queueDesc, IID_PPV_ARGS(spCommandQueue.put()));
-
-	// create LearningModelDevice from command queue	
-	com_ptr<ILearningModelDeviceFactoryNative> dFactory =
-		get_activation_factory<LearningModelDevice, ILearningModelDeviceFactoryNative>();
-	com_ptr<::IUnknown> spLearningDevice;
-	dFactory->CreateFromD3D12CommandQueue(spCommandQueue.get(), spLearningDevice.put());
+        device = getLMDFromAdapterIndex(selectedIndex, spFactory.get());
+    }
 
 	// load the model
 	printf("Loading modelfile '%ws' on the selected device\n", modelPath.c_str());
@@ -90,7 +74,7 @@ int main(int argc, char* argv[])
 	printf("model file loaded in %d ticks\n", ticks);
 
 	// now create a session and binding
-	LearningModelSession session(model, spLearningDevice.as<LearningModelDevice>());
+	LearningModelSession session(model, device);
 	LearningModelBinding binding(session);
 
 	// load the image
@@ -116,6 +100,31 @@ int main(int argc, char* argv[])
 	auto resultTensor = results.Outputs().Lookup(outputName).as<TensorFloat>();
 	auto resultVector = resultTensor.GetAsVectorView();
 	PrintResults(resultVector);
+}
+
+LearningModelDevice getLMDFromAdapterIndex(int index, IDXGIFactory *pFactory) {
+
+    // create D3D12Device
+    com_ptr<IDXGIAdapter> spAdapter;
+    pFactory->EnumAdapters(index, spAdapter.put());
+    com_ptr<IUnknown> spIUnknownAdapter;
+    spAdapter->QueryInterface(IID_IUnknown, spIUnknownAdapter.put_void());
+    com_ptr<ID3D12Device> spD3D12Device;
+    D3D12CreateDevice(spIUnknownAdapter.get(), D3D_FEATURE_LEVEL_12_0, _uuidof(ID3D12Device), spD3D12Device.put_void());
+
+    // create D3D12 command queue from device
+    D3D12_COMMAND_QUEUE_DESC queueDesc = {};
+    queueDesc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;
+    queueDesc.Type = D3D12_COMMAND_LIST_TYPE_DIRECT;
+    com_ptr<ID3D12CommandQueue> spCommandQueue;
+    spD3D12Device->CreateCommandQueue(&queueDesc, IID_PPV_ARGS(spCommandQueue.put()));
+
+    // create LearningModelDevice from command queue	
+    com_ptr<ILearningModelDeviceFactoryNative> dFactory =
+        get_activation_factory<LearningModelDevice, ILearningModelDeviceFactoryNative>();
+    com_ptr<::IUnknown> spLearningDevice;
+    dFactory->CreateFromD3D12CommandQueue(spCommandQueue.get(), spLearningDevice.put());
+    return spLearningDevice.as<LearningModelDevice>();
 }
 
 bool ParseArgs(int argc, char* argv[])

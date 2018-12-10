@@ -23,7 +23,6 @@ bool ParseArgs(int argc, char* argv[]);
 
 int main(int argc, char* argv[])
 {
-
 	init_apartment();
 
 	if (ParseArgs(argc, argv) == false)
@@ -38,7 +37,6 @@ int main(int argc, char* argv[])
 	com_ptr<IDXGIAdapter> spAdapter;
 
 	UINT i;
-
 	for (i = 0; spFactory->EnumAdapters(i, spAdapter.put()) != DXGI_ERROR_NOT_FOUND ; ++i)
 	{
 		DXGI_ADAPTER_DESC pDesc;
@@ -62,7 +60,6 @@ int main(int argc, char* argv[])
 		cin.ignore(numeric_limits<streamsize>::max(), '\n');
 		printf("Invalid index, please try again.\n");
 	}
-
 	printf("Selected adapter at index %d\n", selectedIndex);
 
 	// create D3D12Device

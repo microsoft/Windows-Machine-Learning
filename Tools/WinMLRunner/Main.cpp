@@ -13,7 +13,6 @@ using namespace winrt::Windows::Graphics::DirectX::Direct3D11;
 
 LearningModel LoadModel(const std::wstring path, bool capturePerf, bool silent, OutputHelper& output)
 {
-    Timer timer;
     LearningModel model = nullptr;
     output.PrintLoadingInfo(path);
 
@@ -22,14 +21,12 @@ LearningModel LoadModel(const std::wstring path, bool capturePerf, bool silent, 
         if (capturePerf)
         {
             WINML_PROFILING_START(g_Profiler, WINML_MODEL_TEST_PERF::LOAD_MODEL);
-            timer.Start();
         }
         model = LearningModel::LoadFromFilePath(path);
 
         if (capturePerf)
         {
             WINML_PROFILING_STOP(g_Profiler, WINML_MODEL_TEST_PERF::LOAD_MODEL);
-            output.m_clockLoadTime = timer.Stop();
         }
     }
     catch (hresult_error hr)
@@ -104,11 +101,8 @@ HRESULT BindInputFeatures(const LearningModel& model, const LearningModelBinding
     {
         context.Clear();
 
-        Timer timer;
-
         if (capturePerf)
         {
-            timer.Start();
             WINML_PROFILING_START(g_Profiler, WINML_MODEL_TEST_PERF::BIND_VALUE);
         }
 
@@ -121,7 +115,6 @@ HRESULT BindInputFeatures(const LearningModel& model, const LearningModelBinding
         if (capturePerf)
         {
             WINML_PROFILING_STOP(g_Profiler, WINML_MODEL_TEST_PERF::BIND_VALUE);
-            output.m_clockBindTimes.push_back(timer.Stop());
         }
 
         if (!args.Silent())
@@ -153,12 +146,8 @@ HRESULT EvaluateModel(
 
     try
     {
-        // Timer measures wall-clock time between the last two start/stop calls.
-        Timer timer;
-
         if (capturePerf)
         {
-            timer.Start();
             WINML_PROFILING_START(g_Profiler, WINML_MODEL_TEST_PERF::EVAL_MODEL);
         }
 
@@ -167,7 +156,6 @@ HRESULT EvaluateModel(
         if (capturePerf)
         {
             WINML_PROFILING_STOP(g_Profiler, WINML_MODEL_TEST_PERF::EVAL_MODEL);
-            output.m_clockEvalTimes.push_back(timer.Stop());
         }
     }
     catch (winrt::hresult_error hr)
@@ -296,8 +284,9 @@ HRESULT EvaluateModel(
             return evalResult;
         }
     }
-
+    //Clean up session resources
     session.Close();
+    session.~LearningModelSession();
 
     return S_OK;
 }
@@ -347,8 +336,7 @@ HRESULT EvaluateModels(
                     {
                         if (args.PerfCapture())
                         {
-                            output.ResetBindAndEvalTImes();
-                            g_Profiler.Reset();
+                            g_Profiler.Reset(WINML_MODEL_TEST_PERF::BIND_VALUE, WINML_MODEL_TEST_PERF::COUNT);
                         }
 
                         if (inputDataType != InputDataType::Tensor)

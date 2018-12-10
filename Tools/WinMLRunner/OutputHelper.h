@@ -322,19 +322,19 @@ public:
             if (bNewFile)
             {
                 fout << "Model Name" << ","
-                    << "Model Binding" << ","
-                    << "Input Binding" << ","
-                    << "Input Type" << ","
-                    << "Device Creation Location" << ","
-                    << "Iterations" << ","
-                    << "First Run Ignored" << ","
-                    << "Load (ms)" << ","
-                    << "Bind (ms)" << ","
-                    << "Evaluate (ms)" << ","
-                    << "Total Time (ms)" << ","
-                    << "Working Set Memory usage (evaluate) (MB)" << ","
-                    << "GPU Dedicated memory usage (evaluate) (MB)" << ","
-                    << "GPU Shared memory usage (evaluate) (MB)" << std::endl;
+                     << "Model Binding" << ","
+                     << "Input Binding" << ","
+                     << "Input Type" << ","
+                     << "Device Creation Location" << ","
+                     << "Iterations" << ","
+                     << "First Run Ignored" << ","
+                     << "Load (ms)" << ","
+                     << "Bind (ms)" << ","
+                     << "Evaluate (ms)" << ","
+                     << "Total Time (ms)" << ","
+                     << "Working Set Memory usage (evaluate) (MB)" << ","
+                     << "GPU Dedicated memory usage (evaluate) (MB)" << ","
+                     << "GPU Shared memory usage (evaluate) (MB)" << std::endl;
             }
 
             fout << modelName << ","

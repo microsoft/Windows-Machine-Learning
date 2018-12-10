@@ -2,7 +2,7 @@ import { ipcRenderer } from 'electron';
 import { setFile, setSaveFileName } from "../datastore/actionCreators";
 import { ModelProtoSingleton } from "../datastore/proto/modelProto";
 import store from "../datastore/store";
-import { save, showOpenDialog } from "./dialog";
+import { save, showNativeSaveDialog, showOpenDialog } from "./dialog";
 import { isWeb } from "./util";
 
 export function createMenu(electron: typeof Electron) {
@@ -13,7 +13,8 @@ export function createMenu(electron: typeof Electron) {
             submenu: [
                 { label: 'Open', accelerator: 'Ctrl+O', click: onOpen },
                 { label: 'Open Recent', click: onOpen, enabled: false },
-                { label: 'Save', accelerator: 'Ctrl+S', click: onSave},
+                { label: 'Save', accelerator: 'Ctrl+S', click: onSave },
+                { label: 'Save As', accelerator: 'Ctrl+Shift+S', click: onSaveAs },
             ],
         }, {
             role: 'help',
@@ -101,12 +102,20 @@ async function onSave() {
     if (!ModelProtoSingleton.proto) {
         return;
     }
-    const suggestedPath = store.getState().saveFileName || 'model.onnx';
-    const selectedPath = await save(ModelProtoSingleton.serialize(), suggestedPath,
-        [{ name: 'ONNX model', extensions: [ 'onnx', 'prototxt' ] }]);
-    if (selectedPath && selectedPath !== suggestedPath) {
-        store.dispatch(setSaveFileName(suggestedPath));
+    const saveFilePath = store.getState().saveFileName || 'model.onnx';
+    await save(ModelProtoSingleton.serialize(), saveFilePath);
+}
+
+async function onSaveAs() {
+    if (!ModelProtoSingleton.proto) {
+        return;
     }
+    const filters: Electron.FileFilter[] = [{ name: 'ONNX model', extensions: [ 'onnx', 'prototxt' ] }]
+    const saveAsFilePath = await showNativeSaveDialog({ defaultPath: store.getState().saveFileName, filters });
+    if (!saveAsFilePath) {
+        return;
+    }
+    await save(ModelProtoSingleton.serialize(), saveAsFilePath);
 }
 
 export async function onOpen() {

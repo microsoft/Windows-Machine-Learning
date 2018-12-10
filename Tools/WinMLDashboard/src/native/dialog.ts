@@ -74,18 +74,10 @@ export function showNativeSaveDialog(options: Electron.SaveDialogOptions) {
     return new Promise<string>(resolve => dialog.showSaveDialog(options, resolve));
 }
 
-export async function save(data: Uint8Array, filename: string, filters: Electron.FileFilter[]) {
+export async function save(data: Uint8Array, filename: string) {
     if (getElectron()) {
-        if (!path.isAbsolute(filename)) {
-            // If a suggested filename is given instead of a full path, show a save dialog
-            filename = await showNativeSaveDialog({ defaultPath: filename, filters });
-            if (!filename) {
-                return;
-            }
-        }
         // Save contents
         fs.writeFileSync(filename, new Buffer(data));
-        return filename;
     }
     showWebSaveDialog(data, filename);
     return;

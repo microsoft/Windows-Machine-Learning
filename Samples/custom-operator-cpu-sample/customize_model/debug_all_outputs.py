@@ -23,7 +23,7 @@ def create_modified_model(args):
     for output in intermediate_outputs:
         inserted_node = model.graph.node.add()
         valid_output_path = output.replace('/', '\\')
-        inserted_node.CopyFrom(helper.make_node('Debug', [output], ['unused_' + output], file_type=args.debug_file_type, file_path=valid_output_path + '\\' + valid_output_path))
+        inserted_node.CopyFrom(helper.make_node('Debug', [output], ['unused_' + output], file_type=args.debug_file_type, file_path=path.join(valid_output_path,  valid_output_path)))
 
     onnx.save(model, modified_path)
 

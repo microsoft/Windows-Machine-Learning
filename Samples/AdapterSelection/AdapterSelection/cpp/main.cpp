@@ -20,7 +20,7 @@ void LoadLabels();
 VideoFrame LoadImageFile(hstring filePath);
 void PrintResults(IVectorView<float> results);
 bool ParseArgs(int argc, char* argv[]);
-LearningModelDevice getLMDFromAdapterIndex(int index, IDXGIFactory *pFactory);
+LearningModelDevice getLearningModelDeviceFromAdapterIndex(int index, IDXGIFactory *pFactory);
 
 int main(int argc, char* argv[])
 {
@@ -63,7 +63,7 @@ int main(int argc, char* argv[])
         }
         printf("Selected adapter at index %d\n", selectedIndex);
 
-        device = getLMDFromAdapterIndex(selectedIndex, spFactory.get());
+        device = getLearningModelDeviceFromAdapterIndex(selectedIndex, spFactory.get());
     }
 
 	// load the model
@@ -102,7 +102,7 @@ int main(int argc, char* argv[])
 	PrintResults(resultVector);
 }
 
-LearningModelDevice getLMDFromAdapterIndex(int index, IDXGIFactory *pFactory) {
+LearningModelDevice getLearningModelDeviceFromAdapterIndex(int index, IDXGIFactory *pFactory) {
 
     // create D3D12Device
     com_ptr<IDXGIAdapter> spAdapter;

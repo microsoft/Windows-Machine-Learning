@@ -323,6 +323,7 @@ HRESULT EvaluateModels(
         // Map and Sequence bindings are not supported yet
         if (!tensorDescriptor)
         {
+            std::wcout << L"Model: " + path + L" has an input type that isn't supported by WinMLRunner yet." << std::endl;
             continue;
         }
 

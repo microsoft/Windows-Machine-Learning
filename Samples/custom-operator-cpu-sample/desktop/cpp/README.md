@@ -8,28 +8,13 @@ There are three custom operators included in this sample: Relu, NoisyRelu and De
 The Relu custom operator is replacing an existing operator while NoisyRelu and Debug are new operators.
 
 Relu transforms the input data using the function max(0, input). Noisy Relu is a variant of Relu which introduces Guassian noise.
-For more information on these functions: https://en.wikipedia.org/wiki/Rectifier_(neural_networks)#Noisy_ReLUs
+For more information on these functions: 
+https://en.wikipedia.org/wiki/Rectifier_(neural_networks)#Noisy_ReLUs
 
-The Debug Operator is designed to help with debugging intermediate outputs.
-There are two attributes required for this operator:
-  1. file_type: [png|text] The format to export intermediate outputs.
-		png will interpret and export intermediate output as an image and requires tensor data in NCHW format.
-		text will output raw tensor data in human readable format
-  2. file_path: The file path to export intermediate outputs. Note that the parent directory of this file must exist. 
-		It is recommended for png debug operators consuming tensor data with many channels to output to its own directory since a png will be created for each channel.
+The Debug custom operator is designed to help with debugging intermediate outputs. The operator and how to include it in your own workflow is described in detail here: 
+[debug_readme.md](../../debug_readme.md)
 
 The Relu and NoisyRelu operator client code curates its own input data, but the Debug operator client code accepts an input image and runs a modified SqueezeNet model.
-
-## Adding Debug operator to your app
-1. Compile debug_cpu.cpp and debug_cpu.h into your project.
-2. Compile customoperatorprovider.h into your project but first remove non DebugOperatorFactory functions in the RegisterSchemas and RegisterKernels subroutines and remove the include statements for relu_cpu.h and noisyrelu_cpu.h.
-3. When you initialize your LearningModel, pass in a custom provider like so:
-```
- auto customOperatorProvider = winrt::make<CustomOperatorProvider>();
- auto provider = customOperatorProvider.as<ILearningModelOperatorProvider>();
- auto model = LearningModel::LoadFromFilePath(modelPath, provider);
-```
-4. Modify your input graph to include the Debug Operator as demonstrated in customize-model\debug_one_output.py
 
 ## Prerequisites
 

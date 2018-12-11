@@ -284,7 +284,7 @@ HRESULT EvaluateModel(
             return evalResult;
         }
     }
-    //Clean up session resources
+    // Clean up session resources
     session.Close();
     session.~LearningModelSession();
 
@@ -337,7 +337,7 @@ HRESULT EvaluateModels(
                     {
                         if (args.PerfCapture())
                         {
-                            //Resets all values from profiler for bind and evaluate.
+                            // Resets all values from profiler for bind and evaluate.
                             g_Profiler.Reset(WINML_MODEL_TEST_PERF::BIND_VALUE, WINML_MODEL_TEST_PERF::COUNT);
                         }
 

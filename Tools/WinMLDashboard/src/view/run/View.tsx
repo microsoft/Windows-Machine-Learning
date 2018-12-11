@@ -289,14 +289,14 @@ class RunView extends React.Component<IComponentProperties, IComponentState> {
                 currentStep: Step.Idle,
             });
             runDialogOptions.message = 'Run failed! See console log for details.'
-            require('electron').remote.dialog.showMessageBox(runDialogOptions)
+            require('electron').remote.dialog.showMessageBox(require('electron').remote.getCurrentWindow(), runDialogOptions)
             return;
         }
         this.setState({
             currentStep: Step.Success,
         });
         runDialogOptions.message = 'Run successful';
-        require('electron').remote.dialog.showMessageBox(runDialogOptions)
+        require('electron').remote.dialog.showMessageBox(require('electron').remote.getCurrentWindow(), runDialogOptions)
         log.info(this.state.model + " run successful");
     }
 }

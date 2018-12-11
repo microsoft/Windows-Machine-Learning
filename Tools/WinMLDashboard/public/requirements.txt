@@ -8,5 +8,3 @@ Keras-Preprocessing==1.0.5
 protobuf==3.6.1
 PyYAML==3.13
 scipy==1.1.0
-typing==3.6.4
-typing-extensions==3.6.5

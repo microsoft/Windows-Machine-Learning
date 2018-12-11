@@ -162,7 +162,7 @@ class Netron extends React.Component<IComponentProperties, IComponentState> {
             const convertDialogOptions = {
                 message: 'Only ONNX model is editable. Convert it first.'
             }
-            require('electron').remote.dialog.showMessageBox(convertDialogOptions)
+            require('electron').remote.dialog.showMessageBox(require('electron').remote.getCurrentWindow(), convertDialogOptions)
             return;
         }
         if(this.state.isEdit) {

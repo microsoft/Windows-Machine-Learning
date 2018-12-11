@@ -157,6 +157,10 @@ class ConvertView extends React.Component<IComponentProperties, IComponentState>
             { key: '__download', text: 'Download a new Python binary to be used exclusively by the WinML Dashboard' } as IChoiceGroupOption
             // { key: '__Skip', text: 'Skip'} as IChoiceGroupOption
         ];
+        const pythonDialogOptions = {
+            message: '',
+            title: 'python environment installation',
+        }
         const onChange = async (ev: React.FormEvent<HTMLInputElement>, option: IChoiceGroupOption) => {
             // Clear console output
             this.setState({console: '',})
@@ -169,17 +173,21 @@ class ConvertView extends React.Component<IComponentProperties, IComponentState>
                 this.printMessage('start downloading pip\n')
                 await downloadPip(this.outputListener);
                 log.info("start downloading python environment.");
+                this.setState({ currentStep: Step.InstallingRequirements });
                 await pip(['install', packagedFile('libsvm-3.22-cp36-cp36m-win_amd64.whl')], this.outputListener);
                 await pip(['install', packagedFile('winmltools-1.3.0a0-py2.py3-none-any.whl')], this.outputListener);
                 await pip(['install', packagedFile('tf2onnx-0.4.0-py3-none-any.whl')], this.outputListener);
-                this.setState({ currentStep: Step.InstallingRequirements });
                 await pip(['install', '-r', packagedFile('requirements.txt'), '--no-warn-script-location'], this.outputListener);
                 this.setState({ currentStep: Step.Idle });
                 log.info("python environment is installed successfully");
+                pythonDialogOptions.message = 'python environment is installed successfully!'
+                require('electron').remote.dialog.showMessageBox(require('electron').remote.getCurrentWindow(), pythonDialogOptions)
             } catch (error) {
                 // if python install failed, give opportunity to reinstall 
                 log.info("installation of python environment failed");
                 this.printError(error);
+                pythonDialogOptions.message = 'installation of python environment failed!'
+                require('electron').remote.dialog.showMessageBox(require('electron').remote.getCurrentWindow(), pythonDialogOptions)
                 return;
             }
             
@@ -222,7 +230,7 @@ class ConvertView extends React.Component<IComponentProperties, IComponentState>
                 <div className={this.state.framework === 'TensorFlow' ? ' ' : 'hidden'}>
                     <div className='DisplayFlex'>
                         <label className='label'>Output Names: </label>
-                        <TextField id='outputNames' className='outputNames' placeholder='output:0, output:1' value={this.state.outputNames}  onChanged={this.setOutputNames} />
+                        <TextField id='outputNames' className='outputNames' placeholder='output:0 output:1' value={this.state.outputNames}  onChanged={this.setOutputNames} />
                     </div>
                 </div>
                 <DefaultButton id='ConvertButton' text='Convert' disabled={!this.state.source || !this.state.framework} onClick={this.convert}/>
@@ -297,13 +305,13 @@ class ConvertView extends React.Component<IComponentProperties, IComponentState>
             this.setState({ currentStep: Step.Idle});
             log.info("Conversion of " + this.state.source + " failed.");
             convertDialogOptions.message = 'convert failed!'
-            require('electron').remote.dialog.showMessageBox(convertDialogOptions)
+            require('electron').remote.dialog.showMessageBox(require('electron').remote.getCurrentWindow(), convertDialogOptions)
             return;
         }
         // Convert successfully
         log.info(this.state.source + " is converted successfully.");
         convertDialogOptions.message = 'convert successfully!'
-        require('electron').remote.dialog.showMessageBox(convertDialogOptions)
+        require('electron').remote.dialog.showMessageBox(require('electron').remote.getCurrentWindow(), convertDialogOptions)
         this.setState({ currentStep: Step.Idle, source: undefined, console:"Converted successfully!!"});
 
         const destination = await showNativeSaveDialog({ filters: [{ name: 'ONNX model', extensions: ['onnx'] }, { name: 'ONNX text protobuf', extensions: ['prototxt'] }] });

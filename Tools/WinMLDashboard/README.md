@@ -1,8 +1,8 @@
 # WinML Dashboard (preview)
 
-WinML Dashboard is a tool for viewing, editing, converting, and validating machine learning models for [Windows ML](https://docs.microsoft.com/en-us/windows/ai/) inference engine. The engine is built into Windows 10 and evaluates trained models locally on Windows devices using hardware optimizations for CPU and GPU to enable high performance inferences.   
+WinML Dashboard is a tool for **viewing**, **editing**, **converting**, and **validating** machine learning models for [Windows ML](https://docs.microsoft.com/en-us/windows/ai/) inference engine. The engine is built into Windows 10 and evaluates trained models locally on Windows devices using hardware optimizations for CPU and GPU to enable high performance inferences.   
 
-Today there are several different frameworks available for training and evaluating machine learning models, which makes it difficult for app developers to integate models into their product. Windows ML uses [ONNX](http://onnx.ai/) machine learning model format that allows conversion from one framework format to another, and this Dashboard makes it easy to convert models from different framework to ONNX. 
+Today there are several different frameworks available for training and evaluating machine learning models, which makes it difficult for app developers to integate models into their product. Windows ML uses [ONNX](http://onnx.ai/) machine learning model format that allows conversion from one framework format to another, and this Dashboard makes it easy to convert models from different frameworks to ONNX. 
  
  This tool supports converting to ONNX from the following source frameworks:
  - Apple Core ML
@@ -12,7 +12,7 @@ Today there are several different frameworks available for training and evaluati
  - Xgboost
  - LibSVM
  
-The tool also validates the converted model by evaluating the model with built-in Windows ML inference engine using synthetic (default) or real input data on CPU or GPU.
+The tool also allows validation of the converted model by evaluating the model with built-in Windows ML inference engine using synthetic data (default) or real input data on CPU or GPU.
 
 ## Viewing and Editing Models
 
@@ -20,15 +20,15 @@ The Dashboard uses [Netron](https://github.com/lutzroeder/netron) for viewing ma
 
 Many times a developer may need to update certain model metadata or modify model input and output nodes. This tool supports modifying model properties, metadata and input/output nodes of an ONNX model. 
 
-Selecting Edit tab (center top as shown in the snip below) takes you to viewing and editing panel. The left pane in the panel allows editing model input and output nodes, and the right pane allows editing Model properties. The center portion shows the graph. At this time, editing support to limited to model input/output node (and not inner nodes), model properties and model metadata.
+Selecting **Edit** tab (center top as shown in the snip below) takes you to viewing and editing panel. The left pane in the panel allows editing model input and output nodes, and the right pane allows editing Model properties. The center portion shows the graph. At this time, editing support to limited to model input/output node (and not inner nodes), model properties and model metadata.
 
-The Edit/View button switches from Edit mode to View-only mode. View-only mode enables Netron viewer's native features such as the ability to see detailed information for each node. 
+The **Edit/View** button switches from Edit mode to View-only mode and vice versa. View-only mode doesn't allow editing and enables Netron viewer's native features such as the ability to see detailed information for each node. 
 
 <img src='./public/Editor.PNG' width=800/>
 
 ## Converting Models
 
-The "Convert" tab (see snip below) helps convert models from several different frameworks (as listed above) to ONNX format. 
+The **Convert** tab (see snip below) helps convert models from several different frameworks (as listed above) to ONNX format. 
 
 In order to do the conversion, the tool installs a separate Python environment and a set of converter tools. This helps alleviate one of the big pain points of a typical developer - installing the right Python environment and tool chain for conversion and validating the model. 
 
@@ -36,7 +36,7 @@ In order to do the conversion, the tool installs a separate Python environment a
 
 ## Validating Models
 
-Once you have an ONNX model, you can validate whether the conversion has happened successfully and that the model can be evaluated in Windows ML inference engine. This is done using the "Run" tab (see snip below).
+Once you have an ONNX model, you can validate whether the conversion has happened successfully and that the model can be evaluated in Windows ML inference engine. This is done using the **Run** tab (see snip below).
 
 You can choose various options such as CPU (default) vs GPU, real input vs synthetic input (default) etc. The result of model evaluation appears in the console window at the bottom.
 
@@ -85,6 +85,11 @@ To open the **debug view** in the Electron app
 * Run it with flag `--dev-tools`
 * Or select `View -> Toggle Dev Tools` in the application menu
 * Or press `Ctrl + Shift + I`.
+
+### Getting Models
+
+- [ONNX Model Zoo](https://github.com/onnx/models)
+
 
 ## Feedback
 - For issues, file a bug on [GitHub Issues](https://github.com/Microsoft/Windows-Machine-Learning/issues).

@@ -41,6 +41,6 @@ Here are netron visualizations of SqueezeNet's first section before and after ru
     | | | |
     |:-------------------------:|:-------------------------:|:-------------------------:|
     |<img width="1604" src=customize_model/img/squeezenet.png>  Original | <img width="1604" src="customize_model/img/squeezenet_debug_single_output.png">[debug_single_output.py](customize_model/scripts/debug_single_output.py)|<img width="1604" src="customize_model/img/squeezenet_debug_all_outputs.png">[debug_all_outputs.py](customize_model/scripts/debug_all_outputs.py)|
-    |
+    
 
-    All together, you are defining and passing in a custom operator provider which recognizes the debug operator, and then you are configuring your input onnx model to contain these debug operators as required for your specific use case.
+All together, you are defining and passing in to your LearningModel a custom operator provider which recognizes the Debug operator. Then you are configuring your input onnx model to contain these Debug operators as required for your specific debugging use case.

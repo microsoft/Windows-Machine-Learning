@@ -6,8 +6,9 @@ import onnxmltools
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Convert model to ONNX.')
-    parser.add_argument('source', help='source CoreML or Keras model')
+    parser.add_argument('source', help='source  model')
     parser.add_argument('framework', help='source framework model comes from')
+    parser.add_argument('outputNames', help='names of output nodes')
     parser.add_argument('destination', help='destination ONNX model (ONNX or prototxt extension)')
     parser.add_argument('--name', default='WimMLDashboardConvertedModel', help='(ONNX output only) model name')
     return parser.parse_args()
@@ -70,6 +71,28 @@ def libSVM_converter(args):
                                 input_features=[('input', FloatTensorType([1, 'None']))])
     save_onnx(onnx_model, args.destination)
 
+def convert_tensorflow_file(filename, output_names, destination, debug=True):
+    from tensorflow.core.framework import graph_pb2
+    import tensorflow as tf
+    import tf2onnx
+    import onnx
+    graph_def = graph_pb2.GraphDef()
+    with open(filename, 'rb') as file:
+        graph_def.ParseFromString(file.read())
+    g = tf.import_graph_def(graph_def, name='')
+    with tf.Session(graph=g) as sess:
+        converted_model = winmltools.convert_tensorflow(sess.graph, continue_on_error=True, verbose=True, output_names=output_names, build_number=17763)
+        onnx.checker.check_model(converted_model)
+    if debug:
+        with open(destination, 'wb') as file:
+            file.write(converted_model.SerializeToString())
+    tf.reset_default_graph()
+
+def tensorFlow_converter(args):
+    convert_tensorflow_file(args.source, args.outputNames.split(), args.destination)
+
+
+
 def onnx_converter(args):
     onnx_model = winmltools.load_model(args.source)
     save_onnx(onnx_model, args.destination)
@@ -80,7 +103,7 @@ framework_converters = {
     'scikit-learn': scikit_learn_converter,
     'xgboost': xgboost_converter,
     'libsvm': libSVM_converter,
-    #'tensorflow': TensorFlow_converter
+    'tensorflow': tensorFlow_converter
 }
 
 suffix_converters = {

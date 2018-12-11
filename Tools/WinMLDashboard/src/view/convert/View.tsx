@@ -4,7 +4,7 @@ import { connect } from 'react-redux';
 
 import { DefaultButton } from 'office-ui-fabric-react/lib/Button';
 import { ChoiceGroup, IChoiceGroupOption } from 'office-ui-fabric-react/lib/ChoiceGroup';
-// import { MessageBar, MessageBarType } from 'office-ui-fabric-react/lib/MessageBar';
+import { MessageBar, MessageBarType } from 'office-ui-fabric-react/lib/MessageBar';
 import { Spinner } from 'office-ui-fabric-react/lib/Spinner';
 import { TextField } from 'office-ui-fabric-react/lib/TextField';
 import Select from 'react-select';
@@ -47,6 +47,7 @@ interface IComponentState {
     currentStep: Step,
     error?: Error | string,
     framework: string,
+    outputNames: string,
     source?: string,
 }
 
@@ -56,11 +57,12 @@ class ConvertView extends React.Component<IComponentProperties, IComponentState>
     constructor(props: IComponentProperties) {
         super(props);
         const error = isWeb() ? "The converter can't be run in the web interface" : undefined;
-        this.state = { 
+        this.state = {
             console: '', 
             currentStep: Step.Idle,
             error, 
             framework: '',
+            outputNames: '',
         };
         log.info("Convert view is created.");
     }
@@ -98,6 +100,13 @@ class ConvertView extends React.Component<IComponentProperties, IComponentState>
     }
 
     private getView() {
+        const { error } = this.state;
+        if (error) {
+            const message = typeof error === 'string' ? error : (`${error.stack ? `${error.stack}: ` : ''}${error.message}`);
+            // tslint:disable-next-line:no-console
+            console.log(message);
+            return <MessageBar messageBarType={MessageBarType.error}>{message}</MessageBar>
+        }
         switch (this.state.currentStep) {
             case Step.Downloading:
                 return <Spinner label="Downloading Python..." />;
@@ -161,6 +170,8 @@ class ConvertView extends React.Component<IComponentProperties, IComponentState>
                 await downloadPip(this.outputListener);
                 log.info("start downloading python environment.");
                 await pip(['install', packagedFile('libsvm-3.22-cp36-cp36m-win_amd64.whl')], this.outputListener);
+                await pip(['install', packagedFile('winmltools-1.3.0a0-py2.py3-none-any.whl')], this.outputListener);
+                await pip(['install', packagedFile('tf2onnx-0.4.0-py3-none-any.whl')], this.outputListener);
                 this.setState({ currentStep: Step.InstallingRequirements });
                 await pip(['install', '-r', packagedFile('requirements.txt'), '--no-warn-script-location'], this.outputListener);
                 this.setState({ currentStep: Step.Idle });
@@ -183,26 +194,36 @@ class ConvertView extends React.Component<IComponentProperties, IComponentState>
     }
 
     private converterView = () => {
-        const options = [
+        const frameworkOptions = [
             { value: 'Coreml', label: 'Coreml' },
             { value: 'Keras', label: 'Keras' },
             { value: 'scikit-learn', label: 'scikit-learn' },
             { value: "xgboost", label: 'xgboost' },
-            { value: 'libSVM', label: 'libSVM' }
+            { value: 'libSVM', label: 'libSVM' },
+            { value: 'TensorFlow', label: 'TensorFlow' },
           ];
         return (
-            <div>
-                <div className='DisplayFlex ModelConvertBrowser'>
-                    <TextField id='modelToConvert' placeholder='Path' value={this.state.source} label='Model to convert' onChanged={this.setSource} />
+            <div className="ModelConvert">
+                <div className='DisplayFlex'>
+                    <label className='label'>Model to convert: </label>
+                    <TextField id='modelToConvert' placeholder='Path' value={this.state.source}  onChanged={this.setSource} />
                     <DefaultButton id='ConverterModelInputBrowse' text='Browse' onClick={this.browseSource}/>
                 </div>
-                <div className='Frameworks'>
-                    <p>Source Framework: </p>
-                    <Select
+                <br />
+                <div className='DisplayFlex'>
+                    <label className='label'>Source Framework: </label>
+                    <Select className='FrameworkOptions'
                         value={this.newOption(this.state.framework)}
                         onChange={this.setFramework}
-                        options={options}
+                        options={frameworkOptions}
                     />
+                </div>
+                <br />
+                <div className={this.state.framework === 'TensorFlow' ? ' ' : 'hidden'}>
+                    <div className='DisplayFlex'>
+                        <label className='label'>Output Names: </label>
+                        <TextField id='outputNames' className='outputNames' placeholder='output:0, output:1' value={this.state.outputNames}  onChanged={this.setOutputNames} />
+                    </div>
                 </div>
                 <DefaultButton id='ConvertButton' text='Convert' disabled={!this.state.source || !this.state.framework} onClick={this.convert}/>
             </div>
@@ -212,8 +233,11 @@ class ConvertView extends React.Component<IComponentProperties, IComponentState>
     private newOption = (framework: string):ISelectOpition => {
         return {
             label: framework,
-            value: framework
+            value: framework,
         }
+    }
+    private setOutputNames = (outputNames: string) => {
+        this.setState({outputNames})
     }
 
     private setFramework = (framework: ISelectOpition) => {
@@ -254,10 +278,8 @@ class ConvertView extends React.Component<IComponentProperties, IComponentState>
 
     private convert = async () => {
         this.initializeState();
-        const source = this.state.source!;
-        const framework = this.state.framework;
         
-        if (!framework) {
+        if (!this.state.framework) {
             return;
         }
         const convertDialogOptions = {
@@ -268,7 +290,7 @@ class ConvertView extends React.Component<IComponentProperties, IComponentState>
 
         this.setState({ currentStep: Step.Converting });
         try {
-            await python([packagedFile('convert.py'), source, framework, packagedFile('tempConvertResult.onnx')], {}, this.outputListener);
+            await python([packagedFile('convert.py'), this.state.source!, this.state.framework, this.state.outputNames, packagedFile('tempConvertResult.onnx')], {}, this.outputListener);
         } catch (e) {
             this.logError(e);
             this.printMessage("\n------------------------------------\nConversion failed!\n")

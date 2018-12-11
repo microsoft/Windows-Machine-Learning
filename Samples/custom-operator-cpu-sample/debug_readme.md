@@ -44,3 +44,7 @@ Here are netron visualizations of SqueezeNet's first section before and after ru
     
 
 All together, you are defining and passing in to your LearningModel a custom operator provider which recognizes the Debug operator. Then you are configuring your input onnx model to contain these Debug operators as required for your specific debugging use case.
+
+## License
+
+MIT. See [LICENSE file](https://github.com/Microsoft/Windows-Machine-Learning/blob/master/LICENSE).

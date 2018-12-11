@@ -8,7 +8,7 @@
 #include <iomanip>
 
 using namespace winrt::Windows::AI::MachineLearning;
-using namespace Windows::Storage::Streams;
+using namespace winrt::Windows::Storage::Streams;
 
 // Stores performance information and handles output to the command line and CSV files.
 class OutputHelper
@@ -140,12 +140,6 @@ public:
         double gpuEvalSharedMemoryUsage = profiler[EVAL_MODEL].GetAverage(CounterType::GPU_SHARED_MEM_USAGE);
         double gpuEvalDedicatedMemoryUsage = profiler[EVAL_MODEL].GetAverage(CounterType::GPU_DEDICATED_MEM_USAGE);
 
-        double totalBindTime = std::accumulate(m_clockBindTimes.begin(), m_clockBindTimes.end(), 0.0);
-        double clockBindTime = totalBindTime / (double)numIterations;
-
-        double totalEvalTime = std::accumulate(m_clockEvalTimes.begin(), m_clockEvalTimes.end(), 0.0);
-        double clockEvalTime = totalEvalTime / (double)numIterations;
-
         if (!m_silent)
         {
             double totalTime = (isnan(loadTime) ? 0 : loadTime) + bindTime + evalTime;
@@ -164,11 +158,7 @@ public:
             std::cout << "  Bind: " << bindTime << " ms" << std::endl;
             std::cout << "  Evaluate: " << evalTime << " ms" << std::endl;
             std::cout << "  Total Time: " << totalTime << " ms" << std::endl;
-            std::cout << "  Wall-Clock Load: " << m_clockLoadTime << " ms" << std::endl;
-            std::cout << "  Wall-Clock Bind: " << clockBindTime << " ms" << std::endl;
-            std::cout << "  Wall-Clock Evaluate: " << clockEvalTime << " ms" << std::endl;
-            std::cout << "  Total Wall-Clock Time: " << (m_clockLoadTime + clockBindTime + clockEvalTime) << " ms" << std::endl;
-            std::cout << "  Working Set Memory usage (evaluate): " << gpuEvalDedicatedMemoryUsage << " MB" << std::endl;
+            std::cout << "  Working Set Memory usage (evaluate): " << evalMemoryUsage << " MB" << std::endl;
             std::cout << "  Dedicated Memory Usage (evaluate): " << gpuEvalDedicatedMemoryUsage << " MB" << std::endl;
             std::cout << "  Shared Memory Usage (evaluate): " << gpuEvalSharedMemoryUsage << " MB" << std::endl;
 
@@ -308,12 +298,6 @@ public:
         double gpuEvalSharedMemoryUsage = profiler[EVAL_MODEL].GetAverage(CounterType::GPU_SHARED_MEM_USAGE);
         double gpuEvalDedicatedMemoryUsage = profiler[EVAL_MODEL].GetAverage(CounterType::GPU_DEDICATED_MEM_USAGE);
 
-        double totalBindTime = std::accumulate(m_clockBindTimes.begin(), m_clockBindTimes.end(), 0.0);
-        double clockBindTime = totalBindTime / (double)numIterations;
-
-        double totalEvalTime = std::accumulate(m_clockEvalTimes.begin(), m_clockEvalTimes.end(), 0.0);
-        double clockEvalTime = totalEvalTime / (double)numIterations;
-
         double totalTime = (isnan(loadTime) ? 0 : loadTime) + bindTime + evalTime;
 
         if (!m_csvFileName.empty())
@@ -350,11 +334,7 @@ public:
                      << "Total Time (ms)" << ","
                      << "Working Set Memory usage (evaluate) (MB)" << ","
                      << "GPU Dedicated memory usage (evaluate) (MB)" << ","
-                     << "GPU Shared memory usage (evaluate) (MB)" << ","
-                     << "Wall-clock Load (ms)" << ","
-                     << "Wall-clock Bind (ms)" << ","
-                     << "Wall-clock Evaluate (ms)" << ","
-                     << "Wall-clock total time (ms)" << std::endl;
+                     << "GPU Shared memory usage (evaluate) (MB)" << std::endl;
             }
 
             fout << modelName << ","
@@ -370,35 +350,13 @@ public:
                  << totalTime << ","
                  << evalMemoryUsage << ","
                  << gpuEvalDedicatedMemoryUsage << ","
-                 << gpuEvalSharedMemoryUsage << ","
-                 << m_clockLoadTime << ","
-                 << clockBindTime << ","
-                 << clockEvalTime << ","
-                 << m_clockLoadTime + clockBindTime + clockEvalTime << std::endl;
+                 << gpuEvalSharedMemoryUsage << std::endl;
 
             fout.close();
         }
     }
-    
-    void ResetBindAndEvalTImes() 
-    {
-         m_clockEvalTime = 0;
-         m_clockBindTime = 0;
-
-         m_clockBindTimes.clear();
-         m_clockEvalTimes.clear();
-    }
-
-    double m_clockLoadTime = 0;
-
-    std::vector<double> m_clockBindTimes;
-    std::vector<double> m_clockEvalTimes;
 
 private:
     std::wstring m_csvFileName;
-
-    double m_clockBindTime = 0;
-    double m_clockEvalTime = 0;
-
     bool m_silent = false;
 };

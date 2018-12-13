@@ -39,7 +39,7 @@
     "@types/prop-types": "^15.5.4",
     "@types/react": "^16.4.7",
     "@types/react-dom": "^16.0.6",
-    "@types/react-redux": "^6.0.5",
+    "@types/react-redux": "^6.0.11",
     "@types/react-select": "^2.0.6",
     "@types/webdriverio": "^4.13.0",
     "@types/yauzl": "^2.9.0",
@@ -47,7 +47,7 @@
     "babel-minify": "^0.4.3",
     "chai": "^4.2.0",
     "chai-as-promised": "^7.1.1",
-    "electron": "^3.0.4",
+    "electron": "^3.0.11",
     "electron-winstaller": "^2.7.0",
     "mocha": "^5.2.0",
     "npm-font-open-sans": "^1.1.0",
@@ -61,7 +61,7 @@
     "react-select": "^2.1.1",
     "redux": "^4.0.0",
     "spectron": "^5.0.0",
-    "typescript": "^2.9.2",
+    "typescript": "^3.2.2",
     "yauzl": "^2.10.0"
   }
 }

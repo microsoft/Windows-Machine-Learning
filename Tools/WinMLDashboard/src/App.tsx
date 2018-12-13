@@ -3,8 +3,9 @@ import * as React from 'react';
 
 import { initializeIcons } from './fonts';
 import ConvertView from './view/convert/View';
+import DebugView from './view/debugging/View';
 import EditView from './view/edit/View';
-import RunView from './view/run/View'
+import RunView from './view/run/View';
 
 import './App.css';
 
@@ -17,6 +18,7 @@ const views = {
     // tslint:disable-next-line:object-literal-sort-keys
     Convert: <ConvertView />,
     Run: <RunView />,
+    Debug: <DebugView />
 };
 
 class App extends React.Component<{}, IComponentState> {

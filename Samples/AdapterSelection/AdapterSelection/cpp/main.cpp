@@ -20,7 +20,7 @@ void LoadLabels();
 VideoFrame LoadImageFile(hstring filePath);
 void PrintResults(IVectorView<float> results);
 bool ParseArgs(int argc, char* argv[]);
-LearningModelDevice getLearningModelDeviceFromAdapterIndex(int index, IDXGIFactory *pFactory);
+LearningModelDevice getLearningModelDeviceFromAdapter(com_ptr<IDXGIAdapter1> spAdapter);
 
 int main(int argc, char* argv[])
 {
@@ -33,22 +33,30 @@ int main(int argc, char* argv[])
 	}
 
 	// display all adapters
-	com_ptr<IDXGIFactory> spFactory;
+	com_ptr<IDXGIFactory1> spFactory;
 	CreateDXGIFactory(__uuidof(IDXGIFactory), (void**)(spFactory.put()));
-	com_ptr<IDXGIAdapter> spAdapter;
-
-	UINT i;
-	for (i = 0; spFactory->EnumAdapters(i, spAdapter.put()) != DXGI_ERROR_NOT_FOUND ; ++i)
-	{
-		DXGI_ADAPTER_DESC pDesc;
-		spAdapter->GetDesc(&pDesc);
-		printf("Index: %d, Description: ", i);
-		wcout << pDesc.Description << endl;
-		spAdapter = nullptr;
-	}
-
+    std::vector <com_ptr<IDXGIAdapter1>> validAdapters;
+    for (UINT i = 0; ; ++i) {
+        com_ptr<IDXGIAdapter1> spAdapter;
+        if (spFactory->EnumAdapters1(i, spAdapter.put()) != S_OK) {
+            break;
+        } 
+        DXGI_ADAPTER_DESC1 pDesc;
+        spAdapter->GetDesc1(&pDesc);
+        
+        // is a software adapter
+        if (pDesc.Flags == DXGI_ADAPTER_FLAG_SOFTWARE || (pDesc.VendorId == 0x1414 && pDesc.DeviceId == 0x8c)) {
+            continue;
+        } 
+        // valid GPU adapter
+        else {
+            printf("Index: %" PRIu64 ", Description: %ls\n", validAdapters.size(), pDesc.Description);
+            wcout << pDesc.Description << endl;
+            validAdapters.push_back(spAdapter);
+        }
+    }
     LearningModelDevice device = nullptr;
-	if (i == 0) {
+	if (validAdapters.size() == 0) {
 		printf("There are no available adapters, running on CPU...\n");
         device = LearningModelDevice(LearningModelDeviceKind::Cpu);
     }
@@ -56,14 +64,14 @@ int main(int argc, char* argv[])
         // user selects adapter
         printf("Please enter the index of the adapter you want to use...\n");
         int selectedIndex;
-        while (!(cin >> selectedIndex) || selectedIndex < 0 || selectedIndex >= i) {
+        while (!(cin >> selectedIndex) || selectedIndex < 0 || selectedIndex >= validAdapters.size()) {
             cin.clear();
             cin.ignore(numeric_limits<streamsize>::max(), '\n');
             printf("Invalid index, please try again.\n");
         }
         printf("Selected adapter at index %d\n", selectedIndex);
 
-        device = getLearningModelDeviceFromAdapterIndex(selectedIndex, spFactory.get());
+        device = getLearningModelDeviceFromAdapter(validAdapters.at(selectedIndex));
     }
 
 	// load the model
@@ -102,11 +110,9 @@ int main(int argc, char* argv[])
 	PrintResults(resultVector);
 }
 
-LearningModelDevice getLearningModelDeviceFromAdapterIndex(int index, IDXGIFactory *pFactory) {
+LearningModelDevice getLearningModelDeviceFromAdapter(com_ptr<IDXGIAdapter1> spAdapter) {
 
     // create D3D12Device
-    com_ptr<IDXGIAdapter> spAdapter;
-    pFactory->EnumAdapters(index, spAdapter.put());
     com_ptr<IUnknown> spIUnknownAdapter;
     spAdapter->QueryInterface(IID_IUnknown, spIUnknownAdapter.put_void());
     com_ptr<ID3D12Device> spD3D12Device;

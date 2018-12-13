@@ -1,6 +1,8 @@
 #pragma once
 
 #define _SILENCE_ALL_CXX17_DEPRECATION_WARNINGS
+#include <vcruntime.h>
+#include <windows.h>
 // unknown.h needs to be inlcuded before any winrt headers
 #include <unknwn.h>
 #include <winrt/Windows.AI.MachineLearning.h>
@@ -19,7 +21,9 @@
 #include <numeric>
 #include <cassert>
 #include <fstream>
+#include <Windows.AI.MachineLearning.Native.h>
 #include <dxgi1_6.h>
+#include <d3d12.h>
 #include "TypeHelper.h"
 #include "TimerHelper.h"
 

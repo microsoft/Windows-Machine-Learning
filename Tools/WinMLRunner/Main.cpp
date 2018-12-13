@@ -6,8 +6,12 @@
 #include <filesystem>
 #include <d3d11.h>
 #include <Windows.Graphics.DirectX.Direct3D11.interop.h>
+#include <initguid.h>
+#include <dxcore.h>
 
 Profiler<WINML_MODEL_TEST_PERF> g_Profiler;
+
+#define THROW_IF_FAILED(hr) { if (FAILED(hr)) throw hresult_error(hr); }
 
 using namespace winrt::Windows::Graphics::DirectX::Direct3D11;
 
@@ -198,9 +202,12 @@ HRESULT EvaluateModel(
 
     LearningModelSession session = nullptr;
     IDirect3DDevice winrtDevice = nullptr;
+    com_ptr<::IUnknown> spUnkLearningModelDevice;
 
     try
     {
+        UINT adapterIndex = args.GPUAdapterIndex();
+
         if (deviceCreationLocation == DeviceCreationLocation::ClientCode)
         {
             // Creating the device on the client and using it to create the video frame and initialize the session makes sure that everything is on
@@ -233,6 +240,105 @@ HRESULT EvaluateModel(
             LearningModelDevice learningModelDevice = LearningModelDevice::CreateFromDirect3D11Device(winrtDevice);
             session = LearningModelSession(model, learningModelDevice);
         }
+        else if ((TypeHelper::GetWinmlDeviceKind(deviceType) != LearningModelDeviceKind::Cpu) && (adapterIndex != -1))
+        {
+            HRESULT hr = S_OK;
+            IUnknown* pAdapter = NULL;
+
+#if 0
+
+            com_ptr<IDXGIFactory1> dxgiFactory1;
+            hr = CreateDXGIFactory1(__uuidof(IDXGIFactory), dxgiFactory1.put_void());
+            THROW_IF_FAILED(hr);
+
+            com_ptr<IDXGIAdapter1> dxgiAdapter1;
+            hr = dxgiFactory1->EnumAdapters1(adapterIndex, dxgiAdapter1.put());
+            if (FAILED(hr))
+            {
+                printf("Invalid adapter index : %d\n", adapterIndex);
+                throw hresult(hr);
+            }
+
+            DXGI_ADAPTER_DESC1 adapterDesc1;
+            dxgiAdapter1->GetDesc1(&adapterDesc1);
+            printf("Use adapter : %S\n", adapterDesc1.Description);
+
+            pAdapter = dxgiAdapter1.get();
+
+#else
+
+#if 1
+            com_ptr<IDXCoreAdapterFactory> spFactory;
+
+            typedef HRESULT
+            (WINAPI *PFN_DXCoreCreateAdapterFactory)(
+                _In_ REFIID riid,
+                _COM_Outptr_ void** factory
+                );
+
+            PFN_DXCoreCreateAdapterFactory pfnDXCoreCreateAdapterFactory;
+
+            HMODULE hDXCore = LoadLibrary(TEXT("dxcore.dll"));
+            THROW_IF_FAILED(hr);
+
+            pfnDXCoreCreateAdapterFactory = (PFN_DXCoreCreateAdapterFactory)GetProcAddress(hDXCore, "DXCoreCreateAdapterFactory");
+            THROW_IF_FAILED(hr);
+
+            hr = pfnDXCoreCreateAdapterFactory(__uuidof(IDXCoreAdapterFactory), spFactory.put_void());
+
+#else
+
+            hr = DXCoreCreateAdapterFactory(__uuidof(IDXCoreAdapterFactory), spFactory.put_void());
+
+#endif
+            THROW_IF_FAILED(hr);
+
+            com_ptr<IDXCoreAdapterList> spAdapterList;
+
+            const GUID dxGUIDs[] = { DXCORE_ADAPTER_ATTRIBUTE_D3D_CORE_COMPUTE };
+
+            hr = spFactory->GetAdapterList(dxGUIDs, ARRAYSIZE(dxGUIDs), spAdapterList.put());
+            THROW_IF_FAILED(hr);
+
+            com_ptr<IDXCoreAdapter> spAdapter;
+            hr = spAdapterList->GetItem(adapterIndex, spAdapter.put());
+            THROW_IF_FAILED(hr);
+
+            CHAR driverDescription[128];
+
+            spAdapter->QueryProperty(DXCoreProperty::DriverDescription, sizeof(driverDescription), driverDescription);
+            printf("Use adapter : %s\n", driverDescription);
+
+            pAdapter = spAdapter.get();
+
+#endif
+
+            D3D12_COMMAND_LIST_TYPE commandQueueType = D3D12_COMMAND_LIST_TYPE_DIRECT;
+
+            com_ptr<ID3D12Device> d3d12Device;
+            hr = D3D12CreateDevice(pAdapter, D3D_FEATURE_LEVEL::D3D_FEATURE_LEVEL_11_0, __uuidof(ID3D12Device), d3d12Device.put_void());
+            if (FAILED(hr))
+            {
+                hr = D3D12CreateDevice(pAdapter, D3D_FEATURE_LEVEL::D3D_FEATURE_LEVEL_1_0_CORE, __uuidof(ID3D12Device), d3d12Device.put_void());
+
+                commandQueueType = D3D12_COMMAND_LIST_TYPE_COMPUTE;
+            }
+            THROW_IF_FAILED(hr);
+
+            com_ptr<ID3D12CommandQueue> d3d12CommandQueue;
+            D3D12_COMMAND_QUEUE_DESC commandQueueDesc = {};
+            commandQueueDesc.Type = commandQueueType;
+
+            hr = d3d12Device->CreateCommandQueue(&commandQueueDesc, __uuidof(ID3D12CommandQueue), d3d12CommandQueue.put_void());
+            THROW_IF_FAILED(hr);
+
+            auto factory = get_activation_factory<LearningModelDevice, ILearningModelDeviceFactoryNative>();
+
+            hr = factory->CreateFromD3D12CommandQueue(d3d12CommandQueue.get(), spUnkLearningModelDevice.put());
+            THROW_IF_FAILED(hr);
+
+            session = LearningModelSession(model, spUnkLearningModelDevice.as<LearningModelDevice>());
+        }
         else
         {
             session = LearningModelSession(model, TypeHelper::GetWinmlDeviceKind(deviceType));
@@ -258,7 +364,7 @@ HRESULT EvaluateModel(
     // Add one more iteration if we ignore the first run
     uint32_t numIterations = args.NumIterations() + args.IgnoreFirstRun();
 
-    bool isGarbageData = !args.CsvPath().empty() || !args.ImagePath().empty();
+    bool isGarbageData = args.CsvPath().empty() && args.ImagePath().empty();
 
     // Run the binding + evaluate multiple times and average the results
     for (uint32_t i = 0; i < numIterations; i++)
@@ -485,6 +591,8 @@ int main(int argc, char** argv)
     {
         output.SetDefaultCSVFileName();
     }
+
+    D3D12EnableExperimentalFeatures(1, &D3D12ComputeOnlyDevices, NULL, 0);
 
     if (!args.ModelPath().empty() || !args.FolderPath().empty())
     {

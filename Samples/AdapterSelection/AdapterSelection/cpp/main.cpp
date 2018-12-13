@@ -110,7 +110,7 @@ LearningModelDevice getLearningModelDeviceFromAdapterIndex(int index, IDXGIFacto
     com_ptr<IUnknown> spIUnknownAdapter;
     spAdapter->QueryInterface(IID_IUnknown, spIUnknownAdapter.put_void());
     com_ptr<ID3D12Device> spD3D12Device;
-    D3D12CreateDevice(spIUnknownAdapter.get(), D3D_FEATURE_LEVEL_12_0, _uuidof(ID3D12Device), spD3D12Device.put_void());
+    D3D12CreateDevice(spIUnknownAdapter.get(), D3D_FEATURE_LEVEL_11_0, _uuidof(ID3D12Device), spD3D12Device.put_void());
 
     // create D3D12 command queue from device
     D3D12_COMMAND_QUEUE_DESC queueDesc = {};

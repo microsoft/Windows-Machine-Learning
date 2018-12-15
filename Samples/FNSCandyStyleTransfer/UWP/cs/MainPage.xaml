@@ -155,7 +155,10 @@ Copyright (C) Microsoft Corporation. All rights reserved.
                         Stretch="None"
                         MaxWidth="720"
                         MaxHeight="720"/>
-
+                    <SwapChainPanel Name="UIResultSwapChainPanel"
+                        Height="720"
+                        Width="720"
+                        Visibility="Collapsed"/>
                     <ProgressRing Name="UIProcessingProgressRing" 
                         MaxWidth="720"
                         MaxHeight="720"

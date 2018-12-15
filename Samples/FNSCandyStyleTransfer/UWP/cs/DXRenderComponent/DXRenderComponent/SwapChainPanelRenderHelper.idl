@@ -1,0 +1,19 @@
+namespace DXRenderComponent
+{
+    [default_interface]
+    runtimeclass SwapChainPanelRenderHelper
+    {
+        SwapChainPanelRenderHelper(
+            Windows.UI.Xaml.Controls.SwapChainPanel swapChainPanel,
+            Windows.Graphics.DirectX.Direct3D11.IDirect3DDevice device,
+            UInt32 width,
+            UInt32 height
+        );
+
+        Windows.Graphics.DirectX.Direct3D11.IDirect3DSurface GetBackBuffer();
+        UInt32 GetBackBufferIndex();
+        UInt32 GetBufferCount();
+        void Present();
+        void WaitForPresentReady();
+    }
+}

@@ -105,10 +105,6 @@
       <DependentUpon>MainPage.xaml</DependentUpon>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="rain_princess.cs" />
-    <Compile Include="udnie.cs" />
-    <Compile Include="wave.cs" />
-    <Compile Include="winmlperf_coreml_FNS-Candy_prerelease.cs" />
   </ItemGroup>
   <ItemGroup>
     <AppxManifest Include="Package.appxmanifest">

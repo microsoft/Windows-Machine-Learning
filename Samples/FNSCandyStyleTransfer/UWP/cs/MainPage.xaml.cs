@@ -67,14 +67,25 @@ namespace SnapCandy
         };
         private const string _kDefaultImageFileName = "DefaultImage.jpg";
         private string _modelFileName = null;
-        private LearningModel m_model = null;
-        private LearningModelDevice m_device;
         private LearningModelSession _session;
         int _outWidth, _outHeight, _inWidth, _inHeight;
         string m_outName, m_inName;
         private List<string> _labels = new List<string>();
         object _nextFrame = null;  // can be a MediaFrameReference or a VideoFrame
+
         VideoFrame _outputFrame = null;
+        LearningModelBinding _binding = null;
+
+        class FrameResources
+        {
+            ~FrameResources()
+            {
+                _outputFrame?.Dispose();
+            }
+            public VideoFrame _outputFrame;
+            public LearningModelBinding _binding;
+        }
+        FrameResources[] _frameResources = null;
 
         // Debug
         private Stopwatch _perfStopwatch = new Stopwatch(); // performance Stopwatch used throughout
@@ -194,7 +205,8 @@ namespace SnapCandy
         /// <returns></returns>
         private async Task LoadModelAsync(string modelFileName, IDirect3DDevice device = null)
         {
-            m_model = null;
+            _session?.Model.Dispose();
+            _session?.Dispose();
             _session = null;
             try
             {
@@ -203,7 +215,7 @@ namespace SnapCandy
 
                 // Load Model
                 StorageFile modelFile = await StorageFile.GetFileFromApplicationUriAsync(new Uri($"ms-appx:///Assets/{modelFileName}.onnx"));
-                m_model = await LearningModel.LoadFromStorageFileAsync(modelFile);
+                LearningModel model = await LearningModel.LoadFromStorageFileAsync(modelFile);
 
                 // Stop stopwatch
                 _perfStopwatch.Stop();
@@ -211,20 +223,20 @@ namespace SnapCandy
                 // Setting preferred inference device given user's intent
                 if (_useGPU && device != null)
                 {
-                    _session = new LearningModelSession(m_model, LearningModelDevice.CreateFromDirect3D11Device(device));
+                    _session = new LearningModelSession(model, LearningModelDevice.CreateFromDirect3D11Device(device));
                 }
                 else if (_useGPU)
                 {
-                    _session = new LearningModelSession(m_model, new LearningModelDevice(LearningModelDeviceKind.DirectXHighPerformance));
+                    _session = new LearningModelSession(model, new LearningModelDevice(LearningModelDeviceKind.DirectXHighPerformance));
                 }
                 else
                 {
-                    _session = new LearningModelSession(m_model, new LearningModelDevice(LearningModelDeviceKind.Cpu));
+                    _session = new LearningModelSession(model, new LearningModelDevice(LearningModelDeviceKind.Cpu));
                 }
 
                 // Debugging logic to see the input and output of ther model and retrieve dimensions of input/output variables
                 // ### DEBUG ###
-                foreach (var inputF in m_model.InputFeatures)
+                foreach (var inputF in model.InputFeatures)
                 {
                     Debug.WriteLine($"input | kind:{inputF.Kind}, name:{inputF.Name}, type:{inputF.GetType()}");
                     int i = 0;
@@ -239,7 +251,7 @@ namespace SnapCandy
                         $"Height:{(imgDesc == null ? tfDesc.Shape[2] : imgDesc.Height)}, " +
                         $"Width: {(imgDesc == null ? tfDesc.Shape[3] : imgDesc.Width)}");
                 }
-                foreach (var outputF in m_model.OutputFeatures)
+                foreach (var outputF in model.OutputFeatures)
                 {
                     Debug.WriteLine($"output | kind:{outputF.Kind}, name:{outputF.Name}, type:{outputF.GetType()}");
                     int i = 0;
@@ -356,28 +368,40 @@ namespace SnapCandy
 
         private void RenderFrame(FrameRenderer renderer, VideoFrame frame, bool outputFrame = false)
         {
+            // run this on the UI thread
             var task = Dispatcher.RunAsync(CoreDispatcherPriority.Normal,
                 async () =>
                 {
                     bool useDX = (frame.SoftwareBitmap == null);
                     if (useDX)
                     {
-                        renderer.EndDraw();
+                        Debug.WriteLine($"Presenting BackBuffer{_resultframeRenderer.GetBackBufferIndex()}");
+                        renderer.Present();
                     }
                     else
                     {
                         renderer.RenderFrame(frame.SoftwareBitmap);
                     }
+                    _RenderFPS += 1;
                     if (outputFrame)
                     {
-                        //Thread.Sleep(100);
-                        // create the frame renderers and output frames
-                        frame.Dispose();
                         if (_useGPU)
                         {
-                            // make a DX backed output frame, on the same device that our inference is running on
-                            var surface = _resultframeRenderer.BeginDraw(_outWidth, _outHeight);
-                            _outputFrame = VideoFrame.CreateWithDirect3D11Surface(surface);
+                            var fr = _frameResources[_resultframeRenderer.GetBackBufferIndex()];
+                            if (fr == null)
+                            {
+                                // make our output frames and binding objects          
+                                fr = new FrameResources();
+                                var surface = _resultframeRenderer.GetBackBuffer();
+                                fr._outputFrame = VideoFrame.CreateWithDirect3D11Surface(surface);
+                                fr._binding = new LearningModelBinding(_session);
+                                _frameResources[_resultframeRenderer.GetBackBufferIndex()] = fr;
+                            }
+
+                            Debug.WriteLine($"Using BackBuffer{_resultframeRenderer.GetBackBufferIndex()}");
+
+                            _outputFrame = fr._outputFrame;
+                            _binding = fr._binding;
                         }
                         else
                         {
@@ -451,12 +475,10 @@ namespace SnapCandy
                         {
                             _perfStopwatch.Restart();
 
-                            LearningModelBinding binding = new LearningModelBinding(session);
-
-                            binding.Bind(m_outName, _outputFrame);
-                            //TensorFloat tf = TensorFloat.Create();
-                            //binding.Bind(m_outName, tf);
-                            binding.Bind(m_inName, inputVideoFrame);
+                            // clear out the results from the previous binding
+                            _binding?.Clear();
+                            _binding.Bind(m_outName, outputFrame);
+                            _binding.Bind(m_inName, inputVideoFrame);
 
                             Int64 bindTime = _perfStopwatch.ElapsedMilliseconds;
                             Debug.WriteLine($"Binding: {bindTime}ms");
@@ -470,18 +492,11 @@ namespace SnapCandy
                             // Process the frame with the model
                             _perfStopwatch.Restart();
 
-                            var results = _session.Evaluate(binding, "test");
+                            var results = _session.Evaluate(_binding, "test");
 
                             _perfStopwatch.Stop();
                             Int64 evalTime = _perfStopwatch.ElapsedMilliseconds;
                             Debug.WriteLine($"Eval: {evalTime}ms");
-
-                            // Parse result
-                            IReadOnlyDictionary<string, object> outputs = results.Outputs;
-                            foreach (var output in outputs)
-                            {
-                                Debug.WriteLine($"{output.Key} : {output.Value} -> {output.Value.GetType()}");
-                            }
 
                             // Display result, dont' wait for it to finish
                             RenderFrame(_resultframeRenderer, outputFrame, true);
@@ -514,7 +529,6 @@ namespace SnapCandy
                     Debug.WriteLine(ex.ToString());
                 }
 
-                _RenderFPS += 1;
                 _perfStopwatch.Reset();
             }
         }
@@ -535,19 +549,38 @@ namespace SnapCandy
             UIStyleList_SelectionChanged(null, null);
         }
 
-        private void ResetFrameRendering()
+        private void WaitForFrameRendering()
+        {
+            if (_resultframeRenderer != null)
+            {
+                _resultframeRenderer.WaitForFrameRendering();
+            }
+        }
+
+        private void InitializeFrameRendering()
         {
             _outputFrame?.Dispose();
 
             // create the frame renderers and output frames
             if (_useGPU)
             {
-                _resultframeRenderer = new FrameRenderer(UIResultImage, _session.Device.Direct3D11Device, _outWidth, _outHeight);
-                _inputFrameRenderer = new FrameRenderer(UIInputImage, _session.Device.Direct3D11Device, _outWidth, _outHeight);
+                // switch from the image xaml control to the swapchain xaml control
+                UIResultImage.Visibility = Visibility.Collapsed;
+                UIResultSwapChainPanel.Visibility = Visibility.Visible;
 
-                // make a DX backed output frame, on the same device that our inference is running on
-                var surface = _resultframeRenderer.BeginDraw(_outWidth, _outHeight);
-                _outputFrame = VideoFrame.CreateWithDirect3D11Surface(surface);
+                _resultframeRenderer = new FrameRenderer(UIResultSwapChainPanel, _session.Device.Direct3D11Device, _outWidth, _outHeight);
+                //_inputFrameRenderer = new FrameRenderer(UIInputImage, _session.Device.Direct3D11Device, _outWidth, _outHeight);
+
+                // make our output frames and binding objects          
+                _frameResources = new FrameResources[_resultframeRenderer.GetBufferCount()];
+                var fr = new FrameResources();
+                var surface = _resultframeRenderer.GetBackBuffer();
+                fr._outputFrame = VideoFrame.CreateWithDirect3D11Surface(surface);
+                fr._binding = new LearningModelBinding(_session);
+                _frameResources[_resultframeRenderer.GetBackBufferIndex()] = fr;
+
+                _outputFrame = fr._outputFrame;
+                _binding = fr._binding;
             }
             else
             {
@@ -840,6 +873,8 @@ namespace SnapCandy
                 object frame;
                 VideoFrame outputFrame = null;
 
+                _this.WaitForFrameRendering();
+
                 _this._frameAquisitionLock.Wait();
                 {
                     frame = _this._nextFrame;
@@ -951,7 +986,7 @@ namespace SnapCandy
                 await LoadModelAsync(_modelFileName, _mediaCapture.MediaCaptureSettings.Direct3D11Device);
 
                 // Reset the frame renderers
-                ResetFrameRendering();
+                InitializeFrameRendering();
 
                 // initialize the frame reader
                 await InitializeModelInputFrameReaderAsync();
@@ -1065,7 +1100,13 @@ namespace SnapCandy
         private Image _imageElement;
         private SoftwareBitmap _backBuffer;
         private bool _taskRunning = false;
-        private DXRenderComponent.RenderHelper _renderHelper;
+        private DXRenderComponent.ImageSourceRenderHelper _imageHelper;
+        private DXRenderComponent.SwapChainPanelRenderHelper _panelHelper;
+
+        public FrameRenderer(SwapChainPanel panel, IDirect3DDevice device, int width, int heigth)
+        {
+            _panelHelper = new DXRenderComponent.SwapChainPanelRenderHelper(panel, device, (uint)width, (uint)heigth);
+        }
 
         // use a DX renderer
         public FrameRenderer(Image imageElement, IDirect3DDevice device, int width, int heigth)
@@ -1073,7 +1114,7 @@ namespace SnapCandy
             _imageElement = imageElement;
             var surfaceSource = new SurfaceImageSource(width, heigth);
             _imageElement.Source = surfaceSource;
-            _renderHelper = new DXRenderComponent.RenderHelper(surfaceSource, device);
+            _imageHelper = new DXRenderComponent.ImageSourceRenderHelper(surfaceSource, device);
         }
         // use a CPU renderer
         public FrameRenderer(Image imageElement)
@@ -1082,16 +1123,44 @@ namespace SnapCandy
             _imageElement.Source = new SoftwareBitmapSource();
         }
 
+        public void WaitForFrameRendering()
+        {
+            if (_panelHelper != null)
+            {
+                _panelHelper.WaitForPresentReady();
+            }
+        }
+
+        public UInt32 GetBackBufferIndex()
+        {
+            return _panelHelper.GetBackBufferIndex();
+        }
+
+        public UInt32 GetBufferCount()
+        {
+            return _panelHelper.GetBufferCount();
+        }
+
+        public IDirect3DSurface GetBackBuffer()
+        {
+            return _panelHelper.GetBackBuffer();
+        }
+
+        public void Present()
+        {
+            _panelHelper.Present();
+        }
+
         public void EndDraw()
         {
-            _renderHelper.EndDraw();
+            _imageHelper.EndDraw();
         }
 
         public IDirect3DSurface BeginDraw(int width, int height)
         {
             UInt32 w = (UInt32)width;
             UInt32 h = (UInt32)height;
-            return _renderHelper.BeginDraw(w, h);
+            return _imageHelper.BeginDraw(w, h);
         }
 
         public void RenderFrame(SoftwareBitmap softwareBitmap)

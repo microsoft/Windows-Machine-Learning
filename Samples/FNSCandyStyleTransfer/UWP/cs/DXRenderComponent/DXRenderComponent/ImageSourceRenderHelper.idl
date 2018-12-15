@@ -1,10 +1,10 @@
 namespace DXRenderComponent
 {
     [default_interface]
-    runtimeclass RenderHelper
+    runtimeclass ImageSourceRenderHelper
     {
-        RenderHelper(
-            Windows.UI.Xaml.Media.Imaging.SurfaceImageSource source, 
+        ImageSourceRenderHelper(
+            Windows.UI.Xaml.Media.Imaging.SurfaceImageSource source,
             Windows.Graphics.DirectX.Direct3D11.IDirect3DDevice device
         );
 

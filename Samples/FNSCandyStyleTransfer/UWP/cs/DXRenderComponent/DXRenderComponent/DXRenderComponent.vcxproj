@@ -96,30 +96,30 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
-    <ClInclude Include="RenderHelper.h">
-      <DependentUpon>RenderHelper.idl</DependentUpon>
+    <ClInclude Include="ImageSourceRenderHelper.h">
+      <DependentUpon>ImageSourceRenderHelper.idl</DependentUpon>
     </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="RenderHelper.cpp">
-      <DependentUpon>RenderHelper.idl</DependentUpon>
+    <ClCompile Include="ImageSourceRenderHelper.cpp">
+      <DependentUpon>ImageSourceRenderHelper.idl</DependentUpon>
     </ClCompile>
+    <ClCompile Include="SwapChainPanelRenderHelper.cpp">
+      <DependentUpon>SwapChainPanelRenderHelper.idl</DependentUpon>
+    </ClCompile>
+    <ClInclude Include="SwapChainPanelRenderHelper.h">
+      <DependentUpon>SwapChainPanelRenderHelper.idl</DependentUpon>
+    </ClInclude>
     <ClCompile Include="$(GeneratedFilesDir)module.g.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <Midl Include="RenderHelper.idl" />
+    <Midl Include="ImageSourceRenderHelper.idl" />
+    <Midl Include="SwapChainPanelRenderHelper.idl" />
   </ItemGroup>
   <ItemGroup>
     <None Include="DXRenderComponent.def" />
     <None Include="packages.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <Text Include="readme.txt">
-      <DeploymentContent>false</DeploymentContent>
-    </Text>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

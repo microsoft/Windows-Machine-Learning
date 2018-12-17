@@ -24,11 +24,11 @@ const modelRunnerPath = packagedFile('WinMLRunner.exe');
 
 interface IComponentProperties {
     file: File,
+    intermediateOutputs: string[],
     setFile: typeof setFile,
-    modelInputs: string[],
 }
 
-interface ISelectOpition {
+interface ISelectOption {
     label: string;
     value: string;
 }
@@ -39,20 +39,15 @@ enum Step {
     Success,
 }
 
-enum DebugFormat {
-    text = 'text',
-    png = 'png'
-}
-
 interface IComponentState {
     console: string,
     currentStep: Step,
+    debugFormat: string,
+    debugOutput: string,
     device: string,
     inputPath: string,
     inputType: string,
     model: string,
-    debugOutput: string,
-    debugFormat: DebugFormat,
     parameters: string[],
     showPerf: boolean,
 }
@@ -62,12 +57,12 @@ class DebugView extends React.Component<IComponentProperties, IComponentState> {
         this.state = {
             console: '',
             currentStep: Step.Idle,
+            debugFormat: '',
+            debugOutput: '',
             device: '',
             inputPath: '',
             inputType: '',
             model: '',
-            debugOutput: '',
-            debugFormat: DebugFormat.text,
             parameters: [],
             showPerf: false,
         }
@@ -102,7 +97,7 @@ class DebugView extends React.Component<IComponentProperties, IComponentState> {
         )
     }
 
-    private newOption = (item: string):ISelectOpition => {
+    private newOption = (item: string):ISelectOption => {
         return {
             label: item,
             value: item
@@ -150,15 +145,16 @@ class DebugView extends React.Component<IComponentProperties, IComponentState> {
             { value: "GPUMinPower", label: 'GPUMinPower' }
           ];
         const debugFormatOptions = [
-            { value: 'text', label: 'text'},
-            { value: 'png', label: 'png'}
+            { value: 'text', label: 'text' },
+            { value: 'png', label: 'png' }
         ]
         const debugInputOptions = [];
-        if (this.props.modelInputs != null) {
-            for (const input of this.props.modelInputs) {
+        if (this.props.intermediateOutputs != null) {
+            for (const input of this.props.intermediateOutputs) {
                 debugInputOptions.push(this.newOption(input));
             }
         }
+
 
         return (
             <div className="Arguments">
@@ -203,7 +199,7 @@ class DebugView extends React.Component<IComponentProperties, IComponentState> {
                     <label className="label">Debug format:</label>
                     <Select className="DebugOption"
                         value={this.newOption(this.state.debugFormat)}
-                        //onChange={this.setDevice}
+                        onChange={this.setDebugFormat}
                         options={debugFormatOptions}
                     />
                 </div>
@@ -218,17 +214,18 @@ class DebugView extends React.Component<IComponentProperties, IComponentState> {
 
     private setModel = (model: string) => {
         this.setState({ model }, () => {this.setParameters()} )
+        this.props.setFile(fileFromPath(this.state.model))
     }
 
-    private setDebugOutput = (output: string) => {
-        this.setState({debugOutput: output})
+    private setDebugOutput = (output: ISelectOption) => {
+        this.setState({debugOutput: output.value})
     }
 
-    private setDebugFormat = (format: DebugFormat) => {
-        this.setState({debugFormat: format})
+    private setDebugFormat = (format: ISelectOption) => {
+        this.setState({debugFormat: format.value})
     }
 
-    private setDevice = (device: ISelectOpition) => {
+    private setDevice = (device: ISelectOption) => {
         this.setState({device: device.value}, () => {this.setParameters()})
     }
 
@@ -312,7 +309,6 @@ class DebugView extends React.Component<IComponentProperties, IComponentState> {
     };
 
     private execModelRunner = async() => {
-        this.props.setFile(fileFromPath(this.state.model))
         log.info("start to run " + this.state.model);
         this.setState({
             console: '',
@@ -347,7 +343,8 @@ class DebugView extends React.Component<IComponentProperties, IComponentState> {
 
 const mapStateToProps = (state: IState) => ({
     file: state.file,
-    modelInputs: state.modelInputs,
+    intermediateOutputs: state.intermediateOutputs
+
 });
 
 const mapDispatchToProps = {

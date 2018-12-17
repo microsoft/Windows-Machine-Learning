@@ -6,7 +6,7 @@ import 'netron/src/view-sidebar.css';
 import 'netron/src/view.css';
 import 'npm-font-open-sans/open-sans.css';
 
-import { setInputs, setMetadataProps, setModelInputs, setModelOutputs, setNodes, setOutputs, setProperties, setSelectedNode, setShowLeft, setShowRight } from '../../../datastore/actionCreators';
+import { setInputs, setIntermediateOutputs, setMetadataProps, setModelInputs, setModelOutputs, setNodes, setOutputs, setProperties, setSelectedNode, setShowLeft, setShowRight } from '../../../datastore/actionCreators';
 import { ModelProtoSingleton } from '../../../datastore/proto/modelProto';
 import IState from '../../../datastore/state';
 import './fixed-position-override.css';
@@ -22,6 +22,7 @@ interface IComponentProperties {
     file: File,
     nodes: { [key: string]: any },
     setInputs: typeof setInputs,
+    setIntermediateOutputs: typeof setIntermediateOutputs,
     setMetadataProps: typeof setMetadataProps,
     setModelInputs: typeof setModelInputs,
     setModelOutputs: typeof setModelOutputs,
@@ -291,13 +292,23 @@ class Netron extends React.Component<IComponentProperties, IComponentState> {
             this.props.setModelOutputs(outputs);
             this.props.setInputs(this.valueListToObject(proto.graph.input));
             this.props.setOutputs(this.valueListToObject(proto.graph.output));
-            this.props.setNodes(proto.graph.node.filter((x: any) => x.opType !== 'Constant'));
+            const nodes = proto.graph.node.filter((x: any) => x.opType !== 'Constant');
+            this.props.setNodes(nodes);
+            const intermediateOutputs: string[] = []
+            for (const nodeKey of Object.keys(nodes)) {
+                intermediateOutputs.push(...(nodes[nodeKey].output))
+            }
+            this.props.setIntermediateOutputs(intermediateOutputs);
+
             this.props.setMetadataProps(this.propsToObject(proto.metadataProps));
             this.props.setProperties(this.getModelProperties(proto));
             this.props.setShowLeft(true);
             this.props.setShowRight(true);
             this.setState({isOnnxModel: true});
             this.setState({isEdit: true});
+
+            
+
         } else {
             this.props.setShowLeft(false);
             this.props.setShowRight(false);
@@ -323,6 +334,7 @@ const mapStateToProps = (state: IState) => ({
 
 const mapDispatchToProps = {
     setInputs,
+    setIntermediateOutputs,
     setMetadataProps,
     setModelInputs,
     setModelOutputs,

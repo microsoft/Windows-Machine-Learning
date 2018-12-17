@@ -12,6 +12,8 @@ export function rootReducer(state: IState, action: any) {
             return { ...state, file: action.file };
         case actions.SET_INPUTS:
             return { ...state, inputs: action.inputs };
+        case actions.SET_INTERMEDIATE_OUTPUTS:
+            return { ...state, intermediateOutputs: action.intermediateOutputs}
         case actions.SET_OUTPUTS:
             return { ...state, outputs: action.outputs };
         case actions.SET_METADATA_PROPS:

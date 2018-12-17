@@ -21,6 +21,11 @@ export const setInputs = (inputs?: { [key: string]: any }) => ({
     type: actions.SET_INPUTS,
 })
 
+export const setIntermediateOutputs = (intermediateOutputs?: string[]) => ({
+    intermediateOutputs,
+    type: actions.SET_INTERMEDIATE_OUTPUTS
+})
+
 export const setMetadataProps = (metadataProps: IMetadataProps) => ({
     metadataProps,
     type: actions.SET_METADATA_PROPS,

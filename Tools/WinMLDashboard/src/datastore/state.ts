@@ -14,6 +14,7 @@ export default interface IState {
     saveFileName: string,
 
     inputs: { [key: string]: any },
+    intermediateOutputs: string[],
     metadataProps: IMetadataProps,
     modelInputs: string[],
     modelOutputs: string[],

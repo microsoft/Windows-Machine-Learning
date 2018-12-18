@@ -18,7 +18,7 @@ Gaining access to intermediate data as it flows through your model during infere
 		It is recommended for png Debug operators consuming tensor data with many channels to output to its own directory since a png will be created for each channel.
 
 ## How to use the Debug Operator
-The Debug operator is planned be added to a future release of onnx runtime, but until then you will need to compile custom operator code into your app.
+The Debug operator is planned be added to a future release of Windows Machine Learning, but until then you will need to compile custom operator code into your app.
 1. Compile [debug_cpu.cpp](desktop/cpp/operators/debug_cpu.cpp) and [debug_cpu.h](desktop/cpp/operators/debug_cpu.h) into your project.
 2. Compile [customoperatorprovider.h](desktop/cpp/operators/customoperatorprovider.h) into your project but first modify the RegisterSchemas and RegisterKernels subroutines by removing any non DebugOperatorFactory functions and removing the include statements for relu_cpu.h and noisyrelu_cpu.h.
 3. When you initialize your LearningModel, pass in a custom provider like so:

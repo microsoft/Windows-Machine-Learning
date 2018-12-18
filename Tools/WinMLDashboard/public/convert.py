@@ -86,11 +86,15 @@ def libSVM_converter(args):
                                 initial_types=[('input', FloatTensorType([1, 'None']))])
     return onnx_model
 
-def convert_tensorflow_file(filename, opset, output_names, destination, debug=True):
-    from tensorflow.core.framework import graph_pb2
-    import tensorflow as tf
+def convert_tensorflow_file(filename, opset, output_names):
+    import winmltools
+    import tensorflow
     import tf2onnx
+    from tensorflow.core.framework import graph_pb2
+    from tensorflow.python.tools import freeze_graph
     import onnx
+    import tensorflow as tf
+
     graph_def = graph_pb2.GraphDef()
     with open(filename, 'rb') as file:
         graph_def.ParseFromString(file.read())
@@ -99,13 +103,9 @@ def convert_tensorflow_file(filename, opset, output_names, destination, debug=Tr
         converted_model = winmltools.convert_tensorflow(sess.graph, opset, continue_on_error=True, verbose=True, output_names=output_names)
         onnx.checker.check_model(converted_model)
     return converted_model
-    # if debug:
-    #     with open(destination, 'wb') as file:
-    #         file.write(converted_model.SerializeToString())
-    # tf.reset_default_graph()
 
 def tensorFlow_converter(args):
-    convert_tensorflow_file(args.source, get_opset(args.ONNXVersion), args.outputNames.split(), args.destination)
+    return convert_tensorflow_file(args.source, get_opset(args.ONNXVersion), args.outputNames.split())
 
 def onnx_converter(args):
     onnx_model = winmltools.load_model(args.source)
@@ -150,7 +150,12 @@ def main(args):
     if(args.quantizationOption and 'none' != args.quantizationOption):
         onnx_model = winmltools.quantize(onnx_model, use_dequantize_linear=get_useDequantize(args.quantizationOption))
     
-    save_onnx(onnx_model, args.destination)
+    
+    if 'tensorflow' == framework:
+        with open(args.destination, 'wb') as file:
+            file.write(onnx_model.SerializeToString())
+    else:
+        save_onnx(onnx_model, args.destination)
 
 
 if __name__ == '__main__':

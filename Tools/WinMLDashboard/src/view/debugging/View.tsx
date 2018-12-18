@@ -43,7 +43,7 @@ interface IComponentState {
     console: string,
     currentStep: Step,
     debugFormat: string,
-    debugOutput: string,
+    debugOutputs: string[],
     device: string,
     inputPath: string,
     inputType: string,
@@ -58,7 +58,7 @@ class DebugView extends React.Component<IComponentProperties, IComponentState> {
             console: '',
             currentStep: Step.Idle,
             debugFormat: '',
-            debugOutput: '',
+            debugOutputs: [],
             device: '',
             inputPath: '',
             inputType: '',
@@ -102,6 +102,14 @@ class DebugView extends React.Component<IComponentProperties, IComponentState> {
             label: item,
             value: item
         }
+    }
+
+    private newOptions = (items: string[]):ISelectOption[] => {
+        const options = [];
+        for (const item of items) {
+            options.push({ label: item, value: item });
+        }
+        return options;
     }
 
     private getView = () => {
@@ -192,7 +200,8 @@ class DebugView extends React.Component<IComponentProperties, IComponentState> {
                 <div className='DisplayFlex Debug'>
                     <label className="label">Debug intermediate output:</label>
                     <Select className="DebugOption"
-                        value={this.newOption(this.state.debugOutput)}
+                        isMulti={true}
+                        value={this.newOptions(this.state.debugOutputs)}
                         onChange={this.setDebugOutput}
                         options={debugInputOptions}
                     />
@@ -217,8 +226,12 @@ class DebugView extends React.Component<IComponentProperties, IComponentState> {
         this.props.setFile(fileFromPath(this.state.model))
     }
 
-    private setDebugOutput = (output: ISelectOption) => {
-        this.setState({debugOutput: output.value})
+    private setDebugOutput = (outputs: ISelectOption[]) => {
+        const outputValues = [];
+        for (const output of outputs) {
+            outputValues.push(output.value);
+        }
+        this.setState({debugOutputs: outputValues})
     }
 
     private setDebugFormat = (format: ISelectOption) => {

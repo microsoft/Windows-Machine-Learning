@@ -10,7 +10,7 @@
     width: 100%;
 }
 
-.FrameworkOptions, .ONNXVersionOptions, .inputShape {
+.FrameworkOptions, .ONNXVersionOptions, .QuantiazationOpstions, .inputShape {
     width: 20%;
 }
 

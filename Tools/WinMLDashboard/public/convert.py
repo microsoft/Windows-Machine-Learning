@@ -8,6 +8,8 @@ def parse_args():
     parser = argparse.ArgumentParser(description='Convert model to ONNX.')
     parser.add_argument('source', help='source  model')
     parser.add_argument('framework', help='source framework model comes from')
+    parser.add_argument('ONNXVersion', help='which ONNX Version to convert to')
+    parser.add_argument('quantizationOption', help='on which OS to quantize' )
     parser.add_argument('outputNames', help='names of output nodes')
     parser.add_argument('destination', help='destination ONNX model (ONNX or prototxt extension)')
     parser.add_argument('--name', default='WimMLDashboardConvertedModel', help='(ONNX output only) model name')
@@ -27,6 +29,19 @@ def save_onnx(onnx_model, destination):
     else:
         raise RuntimeError('Conversion to extension {} is not supported'.format(destination_extension))
 
+def get_opset(ONNXVersion):
+    if '1.2' == ONNXVersion:
+        return 7
+    elif '1.3' == ONNXVersion:
+        return 8
+    else:
+        return 7
+
+def get_useDequantize(quantizationOption):
+    if '19H1' == quantizationOption:
+        return True
+    else:
+        return False
 
 def coreml_converter(args):
     # When imported, CoreML tools checks for the current version of Keras and TF and prints warnings if they are
@@ -36,42 +51,42 @@ def coreml_converter(args):
     sys.modules['keras'] = None
     import coremltools
     source_model = coremltools.utils.load_spec(args.source)
-    onnx_model = winmltools.convert_coreml(source_model, args.name)
-    save_onnx(onnx_model, args.destination)
+    onnx_model = winmltools.convert_coreml(source_model, get_opset(args.ONNXVersion), args.name)
+    return onnx_model
 
 
 def keras_converter(args):
     from keras.models import load_model
     source_model = load_model(args.source)
     destination_extension = get_extension(args.destination)
-    onnx_model = winmltools.convert_keras(source_model)
-    save_onnx(onnx_model, args.destination)
+    onnx_model = winmltools.convert_keras(source_model, get_opset(args.ONNXVersion))
+    return onnx_model
 
 def scikit_learn_converter(args):
     from sklearn.externals import joblib
     source_model = joblib.load(args.source) 
     from onnxmltools.convert.common.data_types import FloatTensorType
-    onnx_model = winmltools.convert_sklearn(source_model,
+    onnx_model = winmltools.convert_sklearn(source_model, get_opset(args.ONNXVersion),
                                   input_features=[('input', FloatTensorType(source_model.coef_.shape))])
-    save_onnx(onnx_model, args.destination)
+    return onnx_model
 
 def xgboost_converter(args):
     from sklearn.externals import joblib
     source_model = joblib.load(args.source)
     from onnxmltools.convert.common.data_types import FloatTensorType
-    onnx_model = winmltools.convert_xgboost(source_model,
+    onnx_model = winmltools.convert_xgboost(source_model, get_opset(args.ONNXVersion),
                                 input_features=[('input', FloatTensorType([1, source_model.feature_importances_.shape[0]]))])
-    save_onnx(onnx_model, args.destination)
+    return onnx_model
 
 def libSVM_converter(args):
     import svmutil
     source_model = svmutil.svm_load_model(args.source)
     from onnxmltools.convert.common.data_types import FloatTensorType
-    onnx_model = winmltools.convert_libsvm(source_model,
+    onnx_model = winmltools.convert_libsvm(source_model, get_opset(args.ONNXVersion),
                                 input_features=[('input', FloatTensorType([1, 'None']))])
-    save_onnx(onnx_model, args.destination)
+    return onnx_model
 
-def convert_tensorflow_file(filename, output_names, destination, debug=True):
+def convert_tensorflow_file(filename, opset, output_names, destination, debug=True):
     from tensorflow.core.framework import graph_pb2
     import tensorflow as tf
     import tf2onnx
@@ -81,21 +96,20 @@ def convert_tensorflow_file(filename, output_names, destination, debug=True):
         graph_def.ParseFromString(file.read())
     g = tf.import_graph_def(graph_def, name='')
     with tf.Session(graph=g) as sess:
-        converted_model = winmltools.convert_tensorflow(sess.graph, continue_on_error=True, verbose=True, output_names=output_names, build_number=17763)
+        converted_model = winmltools.convert_tensorflow(sess.graph, opset, continue_on_error=True, verbose=True, output_names=output_names)
         onnx.checker.check_model(converted_model)
-    if debug:
-        with open(destination, 'wb') as file:
-            file.write(converted_model.SerializeToString())
-    tf.reset_default_graph()
+    return converted_model
+    # if debug:
+    #     with open(destination, 'wb') as file:
+    #         file.write(converted_model.SerializeToString())
+    # tf.reset_default_graph()
 
 def tensorFlow_converter(args):
-    convert_tensorflow_file(args.source, args.outputNames.split(), args.destination)
-
-
+    convert_tensorflow_file(args.source, get_opset(args.ONNXVersion), args.outputNames.split(), args.destination)
 
 def onnx_converter(args):
     onnx_model = winmltools.load_model(args.source)
-    save_onnx(onnx_model, args.destination)
+    return onnx_model
 
 framework_converters = {
     'coreml': coreml_converter,
@@ -127,10 +141,16 @@ def main(args):
     if frame_converter and suffix_converter and (frame_converter != suffix_converter):
         raise RuntimeError('model with extension {} do not come from {}'.format(source_extension, framework))
 
+    onnx_model = None
     if frame_converter:
-        frame_converter(args)
+        onnx_model = frame_converter(args)
     else:
-        suffix_converter(args)
+        onnx_model = suffix_converter(args)
+    
+    if(args.quantizationOption and 'none' != args.quantizationOption):
+        onnx_model = winmltools.quantize(onnx_model, use_dequantize_linear=get_useDequantize(args.quantizationOption))
+    
+    save_onnx(onnx_model, args.destination)
 
 
 if __name__ == '__main__':

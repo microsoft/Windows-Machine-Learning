@@ -12,7 +12,12 @@ Gaining access to intermediate data as it flows through your model during infere
 
 	*png*: interprets and exports intermediate output as an image and requires tensor data in NCHW format. This is useful for computer vision scenarios where you seek to gain additional visual insight as to how features are being extracted through a model.
 
-	*text*: outputs raw tensor data in human readable format.
+	*text*: outputs raw tensor data in following human readable format:
+	```		
+	dimensions: [dimensions comma-delimited]
+	data_type: [data type]
+	data: [tensor data comma-delimted]
+	```
 
 2. file_path: The file path to export intermediate outputs. Note that the parent directory of this file must exist. 
 		It is recommended for png Debug operators consuming tensor data with many channels to output to its own directory since a png will be created for each channel.

@@ -32,7 +32,7 @@ struct CommandLineInterpreter
     {
         wchar_t wzModuleFilePath[MAX_PATH + 1];
         GetModuleFileName(NULL, wzModuleFilePath, MAX_PATH + 1);
-        return GetModulePath() + L"\\" = pName;
+        return GetModulePath() + L"\\" + pName;
     }
 
     wstring TryGetModelPath()

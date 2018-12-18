@@ -61,13 +61,13 @@ class ConvertView extends React.Component<IComponentProperties, IComponentState>
         super(props);
         const error = isWeb() ? "The converter can't be run in the web interface" : undefined;
         this.state = {
-            ONNXVersion: {label: '1.2', value: '1.2(V7)'},
+            ONNXVersion: {value: '1.2', label: '1.2(V7)'},
             console: '', 
             currentStep: Step.Idle,
             error, 
             framework: '',
             outputNames: '',
-            quantizationOption:  {label: 'none', value: 'None'},
+            quantizationOption:  {value: 'none', label: 'None'},
         };
         log.info("Convert view is created.");
     }
@@ -180,7 +180,7 @@ class ConvertView extends React.Component<IComponentProperties, IComponentState>
                 log.info("start downloading python environment.");
                 this.setState({ currentStep: Step.InstallingRequirements });
                 await pip(['install', packagedFile('libsvm-3.22-cp36-cp36m-win_amd64.whl')], this.outputListener);
-                await pip(['install', packagedFile('winmltools-1.3.0a0-py2.py3-none-any.whl')], this.outputListener);
+                await pip(['install', packagedFile('winmltools-1.3.0-py2.py3-none-any.whl')], this.outputListener);
                 await pip(['install', '-r', packagedFile('requirements.txt'), '--no-warn-script-location'], this.outputListener);
                 this.setState({ currentStep: Step.Idle });
                 log.info("python environment is installed successfully");

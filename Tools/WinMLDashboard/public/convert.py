@@ -67,7 +67,7 @@ def scikit_learn_converter(args):
     source_model = joblib.load(args.source) 
     from onnxmltools.convert.common.data_types import FloatTensorType
     onnx_model = winmltools.convert_sklearn(source_model, get_opset(args.ONNXVersion),
-                                  input_features=[('input', FloatTensorType(source_model.coef_.shape))])
+                                  initial_types=[('input', FloatTensorType(source_model.coef_.shape))])
     return onnx_model
 
 def xgboost_converter(args):
@@ -75,7 +75,7 @@ def xgboost_converter(args):
     source_model = joblib.load(args.source)
     from onnxmltools.convert.common.data_types import FloatTensorType
     onnx_model = winmltools.convert_xgboost(source_model, get_opset(args.ONNXVersion),
-                                input_features=[('input', FloatTensorType([1, source_model.feature_importances_.shape[0]]))])
+                                initial_types=[('input', FloatTensorType(shape=[1, 'None']))])
     return onnx_model
 
 def libSVM_converter(args):
@@ -83,7 +83,7 @@ def libSVM_converter(args):
     source_model = svmutil.svm_load_model(args.source)
     from onnxmltools.convert.common.data_types import FloatTensorType
     onnx_model = winmltools.convert_libsvm(source_model, get_opset(args.ONNXVersion),
-                                input_features=[('input', FloatTensorType([1, 'None']))])
+                                initial_types=[('input', FloatTensorType([1, 'None']))])
     return onnx_model
 
 def convert_tensorflow_file(filename, opset, output_names, destination, debug=True):

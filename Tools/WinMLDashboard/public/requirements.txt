@@ -7,3 +7,6 @@ Keras-Preprocessing==1.0.5
 protobuf==3.6.1
 PyYAML==3.13
 scipy==1.1.0
+scikit-learn==0.20.1
+xgboost==0.81
+lightgbm==2.2.2

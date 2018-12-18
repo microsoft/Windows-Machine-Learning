@@ -244,28 +244,8 @@ HRESULT EvaluateModel(
         {
             HRESULT hr = S_OK;
             IUnknown* pAdapter = NULL;
-
-#if 0
-
-            com_ptr<IDXGIFactory1> dxgiFactory1;
-            hr = CreateDXGIFactory1(__uuidof(IDXGIFactory), dxgiFactory1.put_void());
-            THROW_IF_FAILED(hr);
-
-            com_ptr<IDXGIAdapter1> dxgiAdapter1;
-            hr = dxgiFactory1->EnumAdapters1(adapterIndex, dxgiAdapter1.put());
-            if (FAILED(hr))
-            {
-                printf("Invalid adapter index : %d\n", adapterIndex);
-                throw hresult(hr);
-            }
-
-            DXGI_ADAPTER_DESC1 adapterDesc1;
-            dxgiAdapter1->GetDesc1(&adapterDesc1);
-            printf("Use adapter : %S\n", adapterDesc1.Description);
-
-            pAdapter = dxgiAdapter1.get();
-
-#else
+            D3D_FEATURE_LEVEL d3dFeatureLevel = D3D_FEATURE_LEVEL::D3D_FEATURE_LEVEL_1_0_CORE;
+            D3D12_COMMAND_LIST_TYPE commandQueueType = D3D12_COMMAND_LIST_TYPE_COMPUTE;
 
 #if 1
             com_ptr<IDXCoreAdapterFactory> spFactory;
@@ -309,20 +289,32 @@ HRESULT EvaluateModel(
             spAdapter->QueryProperty(DXCoreProperty::DriverDescription, sizeof(driverDescription), driverDescription);
             printf("Use adapter : %s\n", driverDescription);
 
-            pAdapter = spAdapter.get();
+            com_ptr<IDXGIAdapter> spDxgiAdapter;
 
-#endif
+            if (spAdapter->IsDXAttributeSupported(DXCORE_ADAPTER_ATTRIBUTE_D3D_GRFX))
+            {
+                d3dFeatureLevel = D3D_FEATURE_LEVEL::D3D_FEATURE_LEVEL_11_0;
+                commandQueueType = D3D12_COMMAND_LIST_TYPE_DIRECT;
 
-            D3D12_COMMAND_LIST_TYPE commandQueueType = D3D12_COMMAND_LIST_TYPE_DIRECT;
+                com_ptr<IDXGIFactory4> dxgiFactory4;
+                hr = CreateDXGIFactory2(0, __uuidof(IDXGIFactory4), dxgiFactory4.put_void());
+                THROW_IF_FAILED(hr);
+
+                LUID adapterLuid;
+                spAdapter->GetLUID(&adapterLuid);
+
+                hr = dxgiFactory4->EnumAdapterByLuid(adapterLuid, __uuidof(IDXGIAdapter), spDxgiAdapter.put_void());
+                THROW_IF_FAILED(hr);
+
+                pAdapter = spDxgiAdapter.get();
+            }
+            else
+            {
+                pAdapter = spAdapter.get();
+            }
 
             com_ptr<ID3D12Device> d3d12Device;
-            hr = D3D12CreateDevice(pAdapter, D3D_FEATURE_LEVEL::D3D_FEATURE_LEVEL_11_0, __uuidof(ID3D12Device), d3d12Device.put_void());
-            if (FAILED(hr))
-            {
-                hr = D3D12CreateDevice(pAdapter, D3D_FEATURE_LEVEL::D3D_FEATURE_LEVEL_1_0_CORE, __uuidof(ID3D12Device), d3d12Device.put_void());
-
-                commandQueueType = D3D12_COMMAND_LIST_TYPE_COMPUTE;
-            }
+            hr = D3D12CreateDevice(pAdapter, d3dFeatureLevel, __uuidof(ID3D12Device), d3d12Device.put_void());
             THROW_IF_FAILED(hr);
 
             com_ptr<ID3D12CommandQueue> d3d12CommandQueue;

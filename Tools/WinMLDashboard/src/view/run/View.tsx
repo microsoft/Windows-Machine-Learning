@@ -70,7 +70,7 @@ class RunView extends React.Component<IComponentProperties, IComponentState> {
         log.info("Run view is created.");
     }
     public UNSAFE_componentWillReceiveProps(nextProps: IComponentProperties) {
-        if(nextProps.file.path && nextProps.file.path) {
+        if(nextProps.file && nextProps.file.path) {
             if(!nextProps.file.path.endsWith(".onnx")){
                 this.setState({model: ''}, () => {this.setParameters()})
             }
@@ -318,7 +318,7 @@ class RunView extends React.Component<IComponentProperties, IComponentState> {
 const mapStateToProps = (state: IState) => ({
     file: state.file,
     properties: state.properties,
-    quantizationOption: state.quatizationOption
+    quantizationOption: state.quantizationOption
 });
 
 const mapDispatchToProps = {

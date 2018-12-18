@@ -21,6 +21,6 @@ export default interface IState {
     outputs: { [key: string]: any },
     properties: IProperties,
     // quantization options: {'none', 'RS5', '19H1'}
-    quatizationOption: string,
+    quantizationOption: string,
     selectedNode: string,
 }

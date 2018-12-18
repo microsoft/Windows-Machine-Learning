@@ -44,13 +44,13 @@ interface IComponentProperties {
 }
 
 interface IComponentState {
-    ONNXVersion: string,
+    ONNXVersion: ISelectOpition,
     console: string,
     currentStep: Step,
     error?: Error | string,
     framework: string,
     outputNames: string,
-    quantizationOption: string,
+    quantizationOption: ISelectOpition,
     source?: string,
 }
 
@@ -61,13 +61,13 @@ class ConvertView extends React.Component<IComponentProperties, IComponentState>
         super(props);
         const error = isWeb() ? "The converter can't be run in the web interface" : undefined;
         this.state = {
-            ONNXVersion: '',
+            ONNXVersion: {label: '1.2', value: '1.2(V7)'},
             console: '', 
             currentStep: Step.Idle,
             error, 
             framework: '',
             outputNames: '',
-            quantizationOption: 'none',
+            quantizationOption:  {label: 'none', value: 'None'},
         };
         log.info("Convert view is created.");
     }
@@ -240,13 +240,13 @@ class ConvertView extends React.Component<IComponentProperties, IComponentState>
                     />
                     <label className='label'>ONNX Version: </label>
                     <Select className='ONNXVersionOptions'
-                        value={this.newOption(this.state.ONNXVersion)}
+                        value={this.newOption(this.state.ONNXVersion.label)}
                         onChange={this.setONNXVersion}
                         options={ONNXVersionOptions}
                     />
                     <label className='label'>Quantization: </label>
                     <Select className='QuantiazationOpstions'
-                        value={this.newOption(this.state.quantizationOption)}
+                        value={this.newOption(this.state.quantizationOption.label)}
                         onChange={this.setQuantization}
                         options={QuantiazationOptions}
                     />
@@ -274,15 +274,15 @@ class ConvertView extends React.Component<IComponentProperties, IComponentState>
     }
 
     private setONNXVersion = (ONNXVersion: ISelectOpition) => {
-        this.setState({ONNXVersion: ONNXVersion.value})
+        this.setState({ONNXVersion})
     }
 
     private setFramework = (framework: ISelectOpition) => {
         this.setState({framework: framework.value})
     }
 
-    private setQuantization = (Quantization: ISelectOpition) => {
-        this.setState({quantizationOption: Quantization.value})
+    private setQuantization = (quantizationOption: ISelectOpition) => {
+        this.setState({quantizationOption})
     }
 
     private setSource = (source?: string) => {
@@ -333,8 +333,8 @@ class ConvertView extends React.Component<IComponentProperties, IComponentState>
         try {
             await python([packagedFile('convert.py'), this.state.source!, 
                                                     this.state.framework, 
-                                                    this.state.ONNXVersion,
-                                                    this.state.quantizationOption,
+                                                    this.state.ONNXVersion.value,
+                                                    this.state.quantizationOption.value,
                                                     this.state.outputNames, 
                                                     packagedFile('tempConvertResult.onnx')], {}, this.outputListener);
         } catch (e) {
@@ -364,11 +364,9 @@ class ConvertView extends React.Component<IComponentProperties, IComponentState>
         
         this.setState({ currentStep: Step.Idle, source: undefined, console:"Converted successfully!! \n Saved to" + destination + "\n ONNX file loaded."});
         // TODO Show dialog (https://developer.microsoft.com/en-us/fabric#/components/dialog) asking whether we should open the converted model
-        
-        this.props.setQuantizationOption(this.state.quantizationOption)
+        this.props.setQuantizationOption(this.state.quantizationOption.value)
         this.props.setFile(fileFromPath(destination));
-        this.props.setSaveFileName(destination); 
-        log.info("convert " + this.state.quantizationOption)
+        this.props.setSaveFileName(destination);
     }
 }
 

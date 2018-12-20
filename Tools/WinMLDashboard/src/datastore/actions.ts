@@ -1,10 +1,11 @@
-import { IMetadataProps, IProperties } from './state';
+import { IDebugNode, IMetadataProps, IProperties } from './state';
 
 export const SET_SHOWLEFT = 'SET_SHOWLEFT';
 export const SET_SHOWRIGHT = 'SET_SHOWRIGHT';
 export const SET_FILE = 'SET_FILE';
+export const SET_DEBUG_NODES = 'SET_DEBUG_NODES';
 export const SET_INPUTS = 'SET_INPUTS';
-export const SET_INTERMEDIATE_OUTPUTS = 'SET_INTERMEDIATE_OUTPUTS'
+export const SET_INTERMEDIATE_OUTPUTS = 'SET_INTERMEDIATE_OUTPUTS';
 export const SET_METADATA_PROPS = 'SET_METADATA_PROPS';
 export const SET_MODEL_INPUTS = 'SET_MODEL_INPUTS';
 export const SET_MODEL_OUTPUTS = 'SET_MODEL_OUTPUTS';
@@ -20,6 +21,7 @@ export interface IAction {
 
     file: File,
     nodes: { [key: string]: any },
+    debugNodes: IDebugNode[] ,
     saveFileName: string,
     type: string,
 

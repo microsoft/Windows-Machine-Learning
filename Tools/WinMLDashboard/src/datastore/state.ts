@@ -6,6 +6,11 @@ export interface IProperties {
     [key: string]: string
 }
 
+export interface IDebugNode {
+    output: string,
+    fileType: string,
+}
+
 export default interface IState {
     showLeft: boolean,
     showRight: boolean,
@@ -13,6 +18,7 @@ export default interface IState {
     file: File,
     saveFileName: string,
 
+    debugNodes: IDebugNode[],
     inputs: { [key: string]: any },
     intermediateOutputs: string[],
     metadataProps: IMetadataProps,

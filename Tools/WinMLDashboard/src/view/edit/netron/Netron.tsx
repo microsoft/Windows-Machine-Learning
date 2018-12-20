@@ -280,7 +280,7 @@ class Netron extends React.Component<IComponentProperties, IComponentState> {
     }
 
     private updateDataStore = (model: any) => {
-        const proto = model._model
+        const proto = model._model;
         ModelProtoSingleton.proto = null;
         // FIXME What to do when model has multiple graphs?
         const graph = model.graphs[0];

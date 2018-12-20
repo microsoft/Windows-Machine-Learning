@@ -84,7 +84,7 @@ class LeftPanel extends React.Component<IComponentProperties, {}> {
         let input: any[];
         let output: any[];
         if (modelPropertiesSelected || this.props.selectedNode === undefined) {
-            name = 'Input and Output'
+            name = 'Input and Output';
             input = this.props.modelInputs;
             output = this.props.modelOutputs;
         } else {

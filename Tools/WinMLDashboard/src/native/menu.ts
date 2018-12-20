@@ -103,7 +103,7 @@ async function onSave() {
         return;
     }
     const saveFilePath = store.getState().saveFileName || 'model.onnx';
-    await save(ModelProtoSingleton.serialize(), saveFilePath);
+    await save(ModelProtoSingleton.serialize(false), saveFilePath);
 }
 
 async function onSaveAs() {
@@ -115,7 +115,7 @@ async function onSaveAs() {
     if (!saveAsFilePath) {
         return;
     }
-    await save(ModelProtoSingleton.serialize(), saveAsFilePath);
+    await save(ModelProtoSingleton.serialize(false), saveAsFilePath);
 }
 
 export async function onOpen() {

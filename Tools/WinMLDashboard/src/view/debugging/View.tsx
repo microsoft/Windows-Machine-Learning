@@ -1,19 +1,27 @@
 import * as React from 'react';
 import { connect } from 'react-redux';
 
+
+import { setDebugNodes, setFile } from '../../datastore/actionCreators';
+import { ModelProtoSingleton } from "../../datastore/proto/modelProto";
+import IState, { IDebugNode } from '../../datastore/state';
+
 import Select from 'react-select';
-import IState from '../../datastore/state';
 
 import { DefaultButton } from 'office-ui-fabric-react/lib/Button';
 import { MessageBar, MessageBarType } from 'office-ui-fabric-react/lib/MessageBar'
 import { Spinner } from 'office-ui-fabric-react/lib/Spinner';
 import { TextField } from 'office-ui-fabric-react/lib/TextField';
 
-import { setFile } from '../../datastore/actionCreators';
+import { clearLocalDebugDir, getLocalDebugDir } from '../../native/appData';
 import { packagedFile } from '../../native/appData';
 import { fileFromPath } from '../../native/dialog';
+import { save } from "../../native/dialog";
 import { showNativeOpenDialog } from '../../native/dialog';
 import { execFilePromise } from '../../native/python';
+
+import * as path from 'path';
+
 import './View.css';
 
 import Collapsible from '../../components/Collapsible';
@@ -23,8 +31,10 @@ import log from 'electron-log';
 const modelRunnerPath = packagedFile('WinMLRunner.exe');
 
 interface IComponentProperties {
+    debugNodes: IDebugNode[],
     file: File,
     intermediateOutputs: string[],
+    setDebugNodes: typeof setDebugNodes,
     setFile: typeof setFile,
 }
 
@@ -51,6 +61,7 @@ interface IComponentState {
     parameters: string[],
     showPerf: boolean,
 }
+
 class DebugView extends React.Component<IComponentProperties, IComponentState> {
     constructor(props: IComponentProperties) {
         super(props);
@@ -113,7 +124,7 @@ class DebugView extends React.Component<IComponentProperties, IComponentState> {
     }
 
     private getView = () => {
-        const osInfo = require('os').release()
+        const osInfo = require('os').release();
         log.info(osInfo);
         if(osInfo < '10.0.17763') {
             const message = 'This functionality is available on Windows 10 October 2018 Update (1809) or newer version of OS.'
@@ -153,7 +164,7 @@ class DebugView extends React.Component<IComponentProperties, IComponentState> {
             { value: "GPUMinPower", label: 'GPUMinPower' }
           ];
         const debugFormatOptions = [
-            { value: 'text', label: 'text' },
+            { value: 'txt', label: 'text' },
             { value: 'png', label: 'png' }
         ]
         const debugInputOptions = [];
@@ -246,11 +257,15 @@ class DebugView extends React.Component<IComponentProperties, IComponentState> {
         this.setState({inputPath}, () => {this.setParameters()})
     }
 
+    private getDebugModelPath() {
+        return path.join(getLocalDebugDir(), path.basename(this.state.model));
+    }
+
     private setParameters = () => {
         const tempParameters = []
         if(this.state.model) {
-            tempParameters.push('-model')
-            tempParameters.push(this.state.model)
+            tempParameters.push('-model');
+            tempParameters.push(this.getDebugModelPath());
         }
         if(this.state.device) {
             switch(this.state.device) {
@@ -323,6 +338,16 @@ class DebugView extends React.Component<IComponentProperties, IComponentState> {
 
     private execModelRunner = async() => {
         log.info("start to run " + this.state.model);
+        const updatedDebugNodes: IDebugNode[] = this.props.debugNodes === undefined || this.props.debugNodes == null ? [] : this.props.debugNodes;
+        for (const debugOutput of this.state.debugOutputs) {
+            updatedDebugNodes.push( { output: debugOutput, fileType: this.state.debugFormat} );
+        }
+        this.props.setDebugNodes(updatedDebugNodes);
+
+        // serialize debug model to temp debug data folder
+        clearLocalDebugDir();
+        save(ModelProtoSingleton.serialize(true), this.getDebugModelPath());
+
         this.setState({
             console: '',
             currentStep: Step.Running,
@@ -355,12 +380,13 @@ class DebugView extends React.Component<IComponentProperties, IComponentState> {
 }
 
 const mapStateToProps = (state: IState) => ({
+    debugNodes: state.debugNodes,
     file: state.file,
-    intermediateOutputs: state.intermediateOutputs
-
+    intermediateOutputs: state.intermediateOutputs,
 });
 
 const mapDispatchToProps = {
+    setDebugNodes,
     setFile,
 }
 

@@ -1,3 +1,5 @@
+import * as md5 from 'md5';
+
 export interface IMetadataProps {
     [key: string]: string
 }
@@ -9,6 +11,21 @@ export interface IProperties {
 export interface IDebugNode {
     output: string,
     fileType: string,
+    getMd5Hash(): string,
+}
+
+export class DebugNode implements IDebugNode {
+    public output: string;
+    public fileType: string;
+
+    constructor(output: string, fileType: string) {
+        this.output = output;
+        this.fileType = fileType;
+    }
+
+    public getMd5Hash() {
+        return md5(this.output + this.fileType);
+    }
 }
 
 export default interface IState {

@@ -42,7 +42,6 @@ class ModelProto extends Proto {
         }
         const clone = Proto.types.ModelProto.fromObject(this.proto);
         if (debug) {            
-            // Need to actually construct a onnx node rather than our own structure
             clone.graph.node = [ ...clone.graph.node, ...this.createDebugProtoNodes() ]
         }
         const writer = Proto.types.ModelProto.encode(clone);
@@ -59,12 +58,12 @@ class ModelProto extends Proto {
             const fileTypeProps = {name: 'file_type', type: 'STRING', s: node.fileType };
             const fileTypeAttrProto = onnx.AttributeProto.fromObject(fileTypeProps);
 
-            // const outputFile:string = node.fileType;
-            // encoding throws exception if _ is in the name
-            const filePathProps = {name: 'file_path', type: 'STRING', s: "tempname"};
-            const filePathAttrProto =  onnx.AttributeProto.fromObject(filePathProps);
+            // the detached head of Netron we are using has a bug that string attributes cannot have non alphanumeric
+            // therefore I will generate a md5 hash using the node output and the file type for the file path attribute
+            const filePathProps = {name: 'file_path', type: 'STRING', s: node.getMd5Hash()};
+            const filePathAttrProto = onnx.AttributeProto.fromObject(filePathProps);
             
-            const nodeProps = {opType: 'Debug', input: [node.output], output: ['unused'], attribute: [fileTypeAttrProto, filePathAttrProto]};
+            const nodeProps = {opType: 'Debug', input: [node.output], output: ['unused_' + node.output], attribute: [fileTypeAttrProto, filePathAttrProto]};
             nodeProtos.push(onnx.NodeProto.fromObject(nodeProps));
         }
         return nodeProtos;

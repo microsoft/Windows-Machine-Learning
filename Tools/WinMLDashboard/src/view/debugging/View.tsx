@@ -4,7 +4,7 @@ import { connect } from 'react-redux';
 
 import { setDebugNodes, setFile } from '../../datastore/actionCreators';
 import { ModelProtoSingleton } from "../../datastore/proto/modelProto";
-import IState, { IDebugNode } from '../../datastore/state';
+import IState, { DebugNode, IDebugNode } from '../../datastore/state';
 
 import Select from 'react-select';
 
@@ -340,7 +340,7 @@ class DebugView extends React.Component<IComponentProperties, IComponentState> {
         log.info("start to run " + this.state.model);
         const updatedDebugNodes: IDebugNode[] = this.props.debugNodes === undefined || this.props.debugNodes == null ? [] : this.props.debugNodes;
         for (const debugOutput of this.state.debugOutputs) {
-            updatedDebugNodes.push( { output: debugOutput, fileType: this.state.debugFormat} );
+            updatedDebugNodes.push( new DebugNode(debugOutput, this.state.debugFormat));
         }
         this.props.setDebugNodes(updatedDebugNodes);
 

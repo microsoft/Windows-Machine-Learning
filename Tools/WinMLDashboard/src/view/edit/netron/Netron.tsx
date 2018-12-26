@@ -83,7 +83,7 @@ class Netron extends React.Component<IComponentProperties, IComponentState> {
             return;
         }
         if (nextProps.file && nextProps.file !== this.props.file) {
-            browserGlobal.__view__._host._openFile(nextProps.file);
+            browserGlobal.host._openFile(nextProps.file);
         }
     }
 
@@ -191,16 +191,16 @@ class Netron extends React.Component<IComponentProperties, IComponentState> {
     private onNetronInitialized = () => {
         // Reset document overflow property
         document.documentElement!.style.overflow = 'initial';
-        //this.installProxies();
+        this.installProxies();
     }
 
     private installProxies = () => {
         // Install proxy on browserGlobal.view.loadBuffer and update the data store
-        const MFSOpenHandler = {
+        const loadBufferHandler = {
             apply: (target: any, thisArg: any, args: any) => {
-                const [context, callback] = args;
+                const [buffer, identifier, callback] = args;
                 // Patch the callback to update our data store first
-                return target.call(thisArg, context, (err: Error, model: any) => {
+                return target.call(thisArg, buffer, identifier, (err: Error, model: any) => {
                     if (!err) {
                         this.updateDataStore(model);
                     }
@@ -208,9 +208,9 @@ class Netron extends React.Component<IComponentProperties, IComponentState> {
                 });
             },
         };
-        const MFSOpenProxy = Proxy.revocable(browserGlobal.view.ModelFactoryService, MFSOpenHandler);
-        // browserGlobal.view.ModelFactoryService = MFSOpenProxy.proxy;
-        this.proxiesRevoke.push(MFSOpenProxy.revoke);
+        const loadBufferProxy = Proxy.revocable(browserGlobal.view.loadBuffer, loadBufferHandler);
+        browserGlobal.view.loadBuffer = loadBufferProxy.proxy;
+        this.proxiesRevoke.push(loadBufferProxy.revoke);
 
         const panelOpenHandler = {
             apply: (target: any, thisArg: any, args: any) => {
@@ -228,8 +228,8 @@ class Netron extends React.Component<IComponentProperties, IComponentState> {
                 return target.apply(thisArg, args);
             },
         };
-        const panelOpenProxy = Proxy.revocable(browserGlobal.__view__._sidebar.open, panelOpenHandler);
-        browserGlobal.__view__._sidebar.open = panelOpenProxy.proxy;
+        const panelOpenProxy = Proxy.revocable(browserGlobal.view._sidebar.open, panelOpenHandler);
+        browserGlobal.view._sidebar.open = panelOpenProxy.proxy;
         this.proxiesRevoke.push(panelOpenProxy.revoke);
 
         const panelCloseHandler = {
@@ -238,8 +238,8 @@ class Netron extends React.Component<IComponentProperties, IComponentState> {
                 return target.apply(thisArg, args);
             },
         };
-        const panelCloseProxy = Proxy.revocable(browserGlobal.__view__._sidebar.close, panelCloseHandler);
-        browserGlobal.__view__._sidebar.close = panelCloseProxy.proxy;
+        const panelCloseProxy = Proxy.revocable(browserGlobal.view._sidebar.close, panelCloseHandler);
+        browserGlobal.view._sidebar.close = panelCloseProxy.proxy;
         this.proxiesRevoke.push(panelCloseProxy.revoke);
 
         const showNodePropertiesHandler = {
@@ -252,7 +252,7 @@ class Netron extends React.Component<IComponentProperties, IComponentState> {
                 return target.apply(thisArg, args);
             }
         }
-        const showNodePropertiesProxy = Proxy.revocable(browserGlobal.__view__.showNodeProperties, showNodePropertiesHandler);
+        const showNodePropertiesProxy = Proxy.revocable(browserGlobal.view.showNodeProperties, showNodePropertiesHandler);
         browserGlobal.view.showNodeProperties = showNodePropertiesProxy.proxy;
         this.proxiesRevoke.push(showNodePropertiesProxy.revoke);
     }
@@ -279,7 +279,6 @@ class Netron extends React.Component<IComponentProperties, IComponentState> {
         return properties;
     }
 
-    
     private updateDataStore = (model: any) => {
         const proto = model._model;
         ModelProtoSingleton.proto = null;

@@ -55,12 +55,12 @@ class ModelProto extends Proto {
         }
         const nodeProtos = [];
         for (const node of this.debugNodes) {
-            const fileTypeProps = {name: 'file_type', type: 'STRING', s: node.fileType };
+            const fileTypeProps = {name: 'file_type', type: 'STRING', s: window.btoa(node.fileType) };
             const fileTypeAttrProto = onnx.AttributeProto.fromObject(fileTypeProps);
 
             // the detached head of Netron we are using has a bug that string attributes cannot have non alphanumeric
             // therefore I will generate a md5 hash using the node output and the file type for the file path attribute
-            const filePathProps = {name: 'file_path', type: 'STRING', s: node.getMd5Hash()};
+            const filePathProps = {name: 'file_path', type: 'STRING', s: window.btoa(node.getMd5Hash())};
             const filePathAttrProto = onnx.AttributeProto.fromObject(filePathProps);
             
             const nodeProps = {opType: 'Debug', input: [node.output], output: ['unused_' + node.output], attribute: [fileTypeAttrProto, filePathAttrProto]};

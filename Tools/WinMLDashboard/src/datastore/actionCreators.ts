@@ -1,5 +1,5 @@
 import * as actions from './actions';
-import { IDebugNode, IMetadataProps, IProperties } from './state';
+import { IDebugNodeMap, IMetadataProps, IProperties } from './state';
 
 export const setShowLeft = (showLeft: boolean) => ({
     showLeft,
@@ -16,7 +16,7 @@ export const setFile = (file?: File) => ({
     type: actions.SET_FILE,
 })
 
-export const setDebugNodes = (debugNodes?: IDebugNode[]) => ({
+export const setDebugNodes = (debugNodes?: IDebugNodeMap) => ({
     debugNodes,
     type: actions.SET_DEBUG_NODES,
 })

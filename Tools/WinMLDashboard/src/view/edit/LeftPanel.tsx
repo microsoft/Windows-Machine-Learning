@@ -5,25 +5,34 @@ import { TextField } from 'office-ui-fabric-react/lib/TextField';
 import * as React from 'react';
 import { connect } from 'react-redux';
 
+import Select from 'react-select';
+
 import Collapsible from '../../components/Collapsible';
 import Resizable from '../../components/Resizable';
-import { setInputs, setOutputs } from '../../datastore/actionCreators';
+import { setDebugNodes, setInputs, setOutputs } from '../../datastore/actionCreators';
 import { Proto } from '../../datastore/proto/proto';
-import IState from '../../datastore/state';
+import IState, { DebugFormat, IDebugNodeMap } from '../../datastore/state';
 
 import './Panel.css';
 
 interface IComponentProperties {
     // Redux properties
+    debugNodes: IDebugNodeMap,
     inputs: { [key: string]: any },
     modelInputs: string[];
     modelOutputs: string[];
     nodes: { [key: string]: any },
     outputs: { [key: string]: any },
     selectedNode: string,
+    setDebugNodes: typeof setDebugNodes,
     setInputs: typeof setInputs,
     setOutputs: typeof setOutputs,
     showLeft: boolean,
+}
+
+interface ISelectOption {
+    label: string;
+    value: string;
 }
 
 const denotationOptions = ['', 'IMAGE', 'AUDIO', 'TEXT', 'TENSOR'].map((key: string) => ({ key, text: key }));
@@ -68,6 +77,12 @@ const getFullType = (typeProto: any): string => {
 }
 
 class LeftPanel extends React.Component<IComponentProperties, {}> {
+
+    constructor(props: IComponentProperties) {
+        super(props);
+        this.setDebugNodeFormats = this.setDebugNodeFormats.bind(this);
+    }
+
     public render() {
         return (
             <div className="Unselectable">
@@ -78,7 +93,7 @@ class LeftPanel extends React.Component<IComponentProperties, {}> {
         );
     }
 
-    private getContent() {
+    private getContent = () => {
         let name = '';
         const modelPropertiesSelected = this.props.selectedNode === 'Model Properties';
         let input: any[];
@@ -91,14 +106,24 @@ class LeftPanel extends React.Component<IComponentProperties, {}> {
             const node = this.props.nodes[this.props.selectedNode];
             ({ input, output, name } = node);
             name = `Node: ${name ? `${name} (${node.opType})` : node.opType}`;
+            
         }
 
         const inputsForm = this.buildConnectionList(input);
         const outputsForm = this.buildConnectionList(output);
+
         return (
             <div>
                 <Label className='PanelName'>{name}</Label>
                 <div className='Panel'>
+                    <Collapsible label='Debug'>
+                        <Select 
+                            isMulti={true}
+                            value={this.newOptions(this.getDebugNodeFormats())}
+                            onChange={this.setDebugNodeFormats}
+                            options={this.newOptions(Object.keys(DebugFormat))}
+                        />
+                    </Collapsible>
                     <Collapsible label='Inputs'>
                         {inputsForm}
                     </Collapsible>
@@ -223,9 +248,56 @@ class LeftPanel extends React.Component<IComponentProperties, {}> {
             );
         });
     }
+
+    private getDebugNodeFormats = () => {
+        if (this.props.selectedNode !== undefined && this.props.selectedNode !== null) {
+            const target = this.props.nodes[this.props.selectedNode];
+            if (target !== undefined && target !== null) {
+                if (this.props.debugNodes.hasOwnProperty(target.output)) {
+                    return this.props.debugNodes[target.output];
+                }
+            }
+        }
+        return [];
+    }
+
+    private setDebugNodeFormats = (debugFormatOptions: ISelectOption[]) => {
+        if (this.props.selectedNode !== undefined && this.props.selectedNode !== null) {
+            const target = this.props.nodes[this.props.selectedNode];
+            if (target !== undefined && target !== null) {
+                const debugFormats = this.getValues(debugFormatOptions);
+                const debugNodesCopy = Object.assign({}, this.props.debugNodes);
+                if (debugFormats.length === 0) {
+                    if (debugNodesCopy.hasOwnProperty(target.output)) {
+                        delete debugNodesCopy[target.output];
+                    }
+                } else {
+                    debugNodesCopy[target.output] = debugFormats;
+                    this.props.setDebugNodes(debugNodesCopy);
+                }
+            }
+        }
+    }
+
+    private newOptions = (items: string[]): ISelectOption[] => {
+        const options = [];
+        for (const item of items) {
+            options.push({ label: item, value: item });
+        }
+        return options;
+    }
+
+    private getValues = (options: ISelectOption[]): any[] => {
+        const values = [];
+        for (const option of options) {
+            values.push(option.value);
+        }
+        return values;
+    }
 }
 
 const mapStateToProps = (state: IState) => ({
+    debugNodes: state.debugNodes,
     inputs: state.inputs,
     modelInputs: state.modelInputs,
     modelOutputs: state.modelOutputs,
@@ -236,6 +308,7 @@ const mapStateToProps = (state: IState) => ({
 })
 
 const mapDispatchToProps = {
+    setDebugNodes,
     setInputs,
     setOutputs,
 };

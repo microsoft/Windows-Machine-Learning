@@ -1,4 +1,4 @@
-import { IDebugNode, IMetadataProps, IProperties } from './state';
+import { DebugFormat, IMetadataProps, IProperties } from './state';
 
 export const SET_SHOWLEFT = 'SET_SHOWLEFT';
 export const SET_SHOWRIGHT = 'SET_SHOWRIGHT';
@@ -21,7 +21,7 @@ export interface IAction {
 
     file: File,
     nodes: { [key: string]: any },
-    debugNodes: IDebugNode[] ,
+    debugNodes: { [output: string]: DebugFormat[] } ,
     saveFileName: string,
     type: string,
 

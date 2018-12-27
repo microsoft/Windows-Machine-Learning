@@ -4,7 +4,7 @@ import { connect } from 'react-redux';
 
 import { setDebugNodes, setFile } from '../../datastore/actionCreators';
 import { ModelProtoSingleton } from "../../datastore/proto/modelProto";
-import IState, { DebugNode, IDebugNode } from '../../datastore/state';
+import IState, { DebugFormat, IDebugNodeMap } from '../../datastore/state';
 
 import Select from 'react-select';
 
@@ -31,7 +31,7 @@ import log from 'electron-log';
 const modelRunnerPath = packagedFile('WinMLRunner.exe');
 
 interface IComponentProperties {
-    debugNodes: IDebugNode[],
+    debugNodes: IDebugNodeMap,
     file: File,
     intermediateOutputs: string[],
     setDebugNodes: typeof setDebugNodes,
@@ -157,23 +157,7 @@ class DebugView extends React.Component<IComponentProperties, IComponentState> {
         }
       }
     private getArgumentsView = () => {
-        const deviceOptions = [
-            { value: 'CPU', label: 'CPU' },
-            { value: 'GPU', label: 'GPU' },
-            { value: 'GPUHighPerformance', label: 'GPUHighPerformance' },
-            { value: "GPUMinPower", label: 'GPUMinPower' }
-          ];
-        const debugFormatOptions = [
-            { value: 'txt', label: 'text' },
-            { value: 'png', label: 'png' }
-        ]
-        const debugInputOptions = [];
-        if (this.props.intermediateOutputs != null) {
-            for (const input of this.props.intermediateOutputs) {
-                debugInputOptions.push(this.newOption(input));
-            }
-        }
-
+        const devices = [ 'CPU', 'GPU', 'GPUHighPerformance', 'GPUMinPower' ];
 
         return (
             <div className="Arguments">
@@ -188,7 +172,7 @@ class DebugView extends React.Component<IComponentProperties, IComponentState> {
                     <Select className="DeviceOption"
                         value={this.newOption(this.state.device)}
                         onChange={this.setDevice}
-                        options={deviceOptions}
+                        options={this.newOptions(devices)}
                     />
                     <form className="perfForm">
                         <label className="labelPerf">
@@ -214,13 +198,14 @@ class DebugView extends React.Component<IComponentProperties, IComponentState> {
                         isMulti={true}
                         value={this.newOptions(this.state.debugOutputs)}
                         onChange={this.setDebugOutput}
-                        options={debugInputOptions}
+                        options={this.props.intermediateOutputs == null ? [] : this.newOptions(this.props.intermediateOutputs)}
                     />
                     <label className="label">Debug format:</label>
                     <Select className="DebugOption"
+                        isMulti={true}
                         value={this.newOption(this.state.debugFormat)}
                         onChange={this.setDebugFormat}
-                        options={debugFormatOptions}
+                        options={this.newOptions(Object.keys(DebugFormat))}
                     />
                 </div>
             </div>
@@ -338,11 +323,11 @@ class DebugView extends React.Component<IComponentProperties, IComponentState> {
 
     private execModelRunner = async() => {
         log.info("start to run " + this.state.model);
-        const updatedDebugNodes: IDebugNode[] = this.props.debugNodes === undefined || this.props.debugNodes == null ? [] : this.props.debugNodes;
+        /*const updatedDebugNodes: IDebugNode[] = this.props.debugNodes === undefined || this.props.debugNodes == null ? [] : this.props.debugNodes;
         for (const debugOutput of this.state.debugOutputs) {
-            updatedDebugNodes.push( new DebugNode(debugOutput, this.state.debugFormat));
+            updatedDebugNodes.push( new DebugNode(debugOutput, [this.state.debugFormat]));
         }
-        this.props.setDebugNodes(updatedDebugNodes);
+        this.props.setDebugNodes(updatedDebugNodes);*/
 
         // serialize debug model to temp debug data folder
         clearLocalDebugDir();

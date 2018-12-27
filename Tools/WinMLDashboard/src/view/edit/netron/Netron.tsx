@@ -6,7 +6,7 @@ import 'netron/src/view-sidebar.css';
 import 'netron/src/view.css';
 import 'npm-font-open-sans/open-sans.css';
 
-import { setInputs, setIntermediateOutputs, setMetadataProps, setModelInputs, setModelOutputs, setNodes, setOutputs, setProperties, setSelectedNode, setShowLeft, setShowRight } from '../../../datastore/actionCreators';
+import { setDebugNodes, setInputs, setIntermediateOutputs, setMetadataProps, setModelInputs, setModelOutputs, setNodes, setOutputs, setProperties, setSelectedNode, setShowLeft, setShowRight } from '../../../datastore/actionCreators';
 import { ModelProtoSingleton } from '../../../datastore/proto/modelProto';
 import IState from '../../../datastore/state';
 import './fixed-position-override.css';
@@ -21,6 +21,7 @@ interface IComponentProperties {
     // Redux properties
     file: File,
     nodes: { [key: string]: any },
+    setDebugNodes: typeof setDebugNodes,
     setInputs: typeof setInputs,
     setIntermediateOutputs: typeof setIntermediateOutputs,
     setMetadataProps: typeof setMetadataProps,
@@ -321,6 +322,7 @@ class Netron extends React.Component<IComponentProperties, IComponentState> {
             this.setState({isEdit: false});
         }
         this.props.setSelectedNode(undefined);
+        this.props.setDebugNodes({});
         ModelProtoSingleton.proto = proto;
     };
 }
@@ -333,6 +335,7 @@ const mapStateToProps = (state: IState) => ({
 });
 
 const mapDispatchToProps = {
+    setDebugNodes,
     setInputs,
     setIntermediateOutputs,
     setMetadataProps,

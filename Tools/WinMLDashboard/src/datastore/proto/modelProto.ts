@@ -1,13 +1,17 @@
-import { IDebugNode, IMetadataProps } from '../state';
+import * as md5 from 'md5';
+import * as path from 'path';
+import { mkdir } from '../../native/appData';
+import { IDebugNodeMap, IMetadataProps } from '../state';
 import { Proto } from './proto';
+
 
 class ModelProto extends Proto {
 
     // debug nodes will be added to the model proto only right before serialization
     // now serialization with be parametrized by whether we are serializing the debugged model or not
-    private debugNodes: IDebugNode[];
+    private debugNodes: IDebugNodeMap;
 
-    public setDebugNodes(debugNodes: IDebugNode[]) {
+    public setDebugNodes(debugNodes: IDebugNodeMap) {
         this.debugNodes = debugNodes;
     }
 
@@ -40,7 +44,7 @@ class ModelProto extends Proto {
         if (!Proto.getOnnx() || !this.proto) {
             return;
         }
-        const clone = Proto.types.ModelProto.fromObject(this.proto);
+        const clone = Object.assign({}, this.proto);
         if (debug) {            
             clone.graph.node = [ ...clone.graph.node, ...this.createDebugProtoNodes() ]
         }
@@ -54,17 +58,22 @@ class ModelProto extends Proto {
             return [];
         }
         const nodeProtos = [];
-        for (const node of this.debugNodes) {
-            const fileTypeProps = {name: 'file_type', type: 'STRING', s: window.btoa(node.fileType) };
-            const fileTypeAttrProto = onnx.AttributeProto.fromObject(fileTypeProps);
+        for (const output of Object.keys(this.debugNodes)) {
+            for (const fileType of this.debugNodes[output]) {
+                // the detached head of Netron we are using expects a base64 encoded string
+                const fileTypeProps = {name: 'file_type', type: 'STRING', s: window.btoa(fileType) };
+                const fileTypeAttrProto = onnx.AttributeProto.fromObject(fileTypeProps);
+                const parentDebugDir = mkdir(md5(output));
+                const debugDir = mkdir(path.join(parentDebugDir, fileType));
+                const filePathProps = {name: 'file_path', type: 'STRING', s: window.btoa(debugDir)};
+                const filePathAttrProto = onnx.AttributeProto.fromObject(filePathProps);
+                
+                const nodeProps = {attribute: [fileTypeAttrProto, filePathAttrProto],
+                                     input: [output], opType: 'Debug', output: ['unused_' + output + fileType]};
+                nodeProtos.push(onnx.NodeProto.fromObject(nodeProps));
+            }
 
-            // the detached head of Netron we are using has a bug that string attributes cannot have non alphanumeric
-            // therefore I will generate a md5 hash using the node output and the file type for the file path attribute
-            const filePathProps = {name: 'file_path', type: 'STRING', s: window.btoa(node.getMd5Hash())};
-            const filePathAttrProto = onnx.AttributeProto.fromObject(filePathProps);
-            
-            const nodeProps = {opType: 'Debug', input: [node.output], output: ['unused_' + node.output], attribute: [fileTypeAttrProto, filePathAttrProto]};
-            nodeProtos.push(onnx.NodeProto.fromObject(nodeProps));
+           
         }
         return nodeProtos;
     }

@@ -184,10 +184,6 @@ class DebugView extends React.Component<IComponentProperties, IComponentState> {
                     <TextField id='InputPath' placeholder='(Optional) image/csv Path' value={this.state.inputPath} onChanged={this.setInputPath} />
                     <DefaultButton id='InputPathBrowse' text='Browse' onClick={this.browseInput}/>
                 </div>
-                <br />
-                <div className='DisplayFlex Debug'>
-                    <label className="label">Debug intermediate output:</label>
-                </div>
             </div>
         )
     }

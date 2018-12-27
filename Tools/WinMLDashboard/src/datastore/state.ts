@@ -24,7 +24,6 @@ export default interface IState {
 
     debugNodes: IDebugNodeMap,
     inputs: { [key: string]: any },
-    intermediateOutputs: string[],
     metadataProps: IMetadataProps,
     modelInputs: string[],
     modelOutputs: string[],

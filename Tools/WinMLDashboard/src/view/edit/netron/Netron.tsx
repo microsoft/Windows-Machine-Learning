@@ -6,7 +6,7 @@ import 'netron/src/view-sidebar.css';
 import 'netron/src/view.css';
 import 'npm-font-open-sans/open-sans.css';
 
-import { setDebugNodes, setInputs, setIntermediateOutputs, setMetadataProps, setModelInputs, setModelOutputs, setNodes, setOutputs, setProperties, setSelectedNode, setShowLeft, setShowRight } from '../../../datastore/actionCreators';
+import { setDebugNodes, setInputs, setMetadataProps, setModelInputs, setModelOutputs, setNodes, setOutputs, setProperties, setSelectedNode, setShowLeft, setShowRight } from '../../../datastore/actionCreators';
 import { ModelProtoSingleton } from '../../../datastore/proto/modelProto';
 import IState from '../../../datastore/state';
 import './fixed-position-override.css';
@@ -23,7 +23,6 @@ interface IComponentProperties {
     nodes: { [key: string]: any },
     setDebugNodes: typeof setDebugNodes,
     setInputs: typeof setInputs,
-    setIntermediateOutputs: typeof setIntermediateOutputs,
     setMetadataProps: typeof setMetadataProps,
     setModelInputs: typeof setModelInputs,
     setModelOutputs: typeof setModelOutputs,
@@ -295,12 +294,6 @@ class Netron extends React.Component<IComponentProperties, IComponentState> {
             this.props.setOutputs(this.valueListToObject(proto.graph.output));
             const nodes = proto.graph.node.filter((x: any) => x.opType !== 'Constant');
             this.props.setNodes(nodes);
-            const intermediateOutputs: string[] = []
-            for (const nodeKey of Object.keys(nodes)) {
-                intermediateOutputs.push(...(nodes[nodeKey].output))
-            }
-            this.props.setIntermediateOutputs(intermediateOutputs);
-
             this.props.setMetadataProps(this.propsToObject(proto.metadataProps));
             this.props.setProperties(this.getModelProperties(proto));
             this.props.setShowLeft(true);
@@ -337,7 +330,6 @@ const mapStateToProps = (state: IState) => ({
 const mapDispatchToProps = {
     setDebugNodes,
     setInputs,
-    setIntermediateOutputs,
     setMetadataProps,
     setModelInputs,
     setModelOutputs,

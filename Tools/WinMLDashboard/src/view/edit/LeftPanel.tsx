@@ -112,18 +112,21 @@ class LeftPanel extends React.Component<IComponentProperties, {}> {
         const inputsForm = this.buildConnectionList(input);
         const outputsForm = this.buildConnectionList(output);
 
+
         return (
             <div>
                 <Label className='PanelName'>{name}</Label>
                 <div className='Panel'>
-                    <Collapsible label='Debug'>
-                        <Select 
-                            isMulti={true}
-                            value={this.newOptions(this.getDebugNodeFormats())}
-                            onChange={this.setDebugNodeFormats}
-                            options={this.newOptions(Object.keys(DebugFormat))}
-                        />
-                    </Collapsible>
+                    {this.props.selectedNode !== undefined && this.props.selectedNode !== null ?
+                        <Collapsible label='Debug'>
+                            <Select 
+                                isMulti={true}
+                                value={this.newOptions(this.getDebugNodeFormats())}
+                                onChange={this.setDebugNodeFormats}
+                                options={this.newOptions(Object.keys(DebugFormat))}
+                            />
+                        </Collapsible>
+                    : null}
                     <Collapsible label='Inputs'>
                         {inputsForm}
                     </Collapsible>

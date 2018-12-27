@@ -2,9 +2,9 @@ import * as React from 'react';
 import { connect } from 'react-redux';
 
 
-import { setDebugNodes, setFile } from '../../datastore/actionCreators';
+import { setFile } from '../../datastore/actionCreators';
 import { ModelProtoSingleton } from "../../datastore/proto/modelProto";
-import IState, { DebugFormat, IDebugNodeMap } from '../../datastore/state';
+import IState from '../../datastore/state';
 
 import Select from 'react-select';
 
@@ -31,10 +31,7 @@ import log from 'electron-log';
 const modelRunnerPath = packagedFile('WinMLRunner.exe');
 
 interface IComponentProperties {
-    debugNodes: IDebugNodeMap,
     file: File,
-    intermediateOutputs: string[],
-    setDebugNodes: typeof setDebugNodes,
     setFile: typeof setFile,
 }
 
@@ -52,8 +49,6 @@ enum Step {
 interface IComponentState {
     console: string,
     currentStep: Step,
-    debugFormat: string,
-    debugOutputs: string[],
     device: string,
     inputPath: string,
     inputType: string,
@@ -68,8 +63,6 @@ class DebugView extends React.Component<IComponentProperties, IComponentState> {
         this.state = {
             console: '',
             currentStep: Step.Idle,
-            debugFormat: '',
-            debugOutputs: [],
             device: '',
             inputPath: '',
             inputType: '',
@@ -194,19 +187,6 @@ class DebugView extends React.Component<IComponentProperties, IComponentState> {
                 <br />
                 <div className='DisplayFlex Debug'>
                     <label className="label">Debug intermediate output:</label>
-                    <Select className="DebugOption"
-                        isMulti={true}
-                        value={this.newOptions(this.state.debugOutputs)}
-                        onChange={this.setDebugOutput}
-                        options={this.props.intermediateOutputs == null ? [] : this.newOptions(this.props.intermediateOutputs)}
-                    />
-                    <label className="label">Debug format:</label>
-                    <Select className="DebugOption"
-                        isMulti={true}
-                        value={this.newOption(this.state.debugFormat)}
-                        onChange={this.setDebugFormat}
-                        options={this.newOptions(Object.keys(DebugFormat))}
-                    />
                 </div>
             </div>
         )
@@ -220,18 +200,6 @@ class DebugView extends React.Component<IComponentProperties, IComponentState> {
     private setModel = (model: string) => {
         this.setState({ model }, () => {this.setParameters()} )
         this.props.setFile(fileFromPath(this.state.model))
-    }
-
-    private setDebugOutput = (outputs: ISelectOption[]) => {
-        const outputValues = [];
-        for (const output of outputs) {
-            outputValues.push(output.value);
-        }
-        this.setState({debugOutputs: outputValues})
-    }
-
-    private setDebugFormat = (format: ISelectOption) => {
-        this.setState({debugFormat: format.value})
     }
 
     private setDevice = (device: ISelectOption) => {
@@ -323,13 +291,6 @@ class DebugView extends React.Component<IComponentProperties, IComponentState> {
 
     private execModelRunner = async() => {
         log.info("start to run " + this.state.model);
-        /*const updatedDebugNodes: IDebugNode[] = this.props.debugNodes === undefined || this.props.debugNodes == null ? [] : this.props.debugNodes;
-        for (const debugOutput of this.state.debugOutputs) {
-            updatedDebugNodes.push( new DebugNode(debugOutput, [this.state.debugFormat]));
-        }
-        this.props.setDebugNodes(updatedDebugNodes);*/
-
-        // serialize debug model to temp debug data folder
         clearLocalDebugDir();
         save(ModelProtoSingleton.serialize(true), this.getDebugModelPath());
 
@@ -365,13 +326,10 @@ class DebugView extends React.Component<IComponentProperties, IComponentState> {
 }
 
 const mapStateToProps = (state: IState) => ({
-    debugNodes: state.debugNodes,
     file: state.file,
-    intermediateOutputs: state.intermediateOutputs,
 });
 
 const mapDispatchToProps = {
-    setDebugNodes,
     setFile,
 }
 

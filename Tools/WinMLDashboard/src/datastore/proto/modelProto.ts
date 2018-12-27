@@ -44,12 +44,18 @@ class ModelProto extends Proto {
         if (!Proto.getOnnx() || !this.proto) {
             return;
         }
-        const clone = Object.assign({}, this.proto);
-        if (debug) {            
-            clone.graph.node = [ ...clone.graph.node, ...this.createDebugProtoNodes() ]
+        if (debug) {     
+            // only need to copy parts of this.proto which are mutated during the debug case
+            const nodeClone = this.proto.graph.node.slice();       
+            this.proto.graph.node = [ ...this.proto.graph.node, ...this.createDebugProtoNodes() ]
+            const writer = Proto.types.ModelProto.encode(this.proto);
+            const data = writer.finish();
+            this.proto.graph.node = nodeClone;
+            return data;
+        } else {
+            const writer = Proto.types.ModelProto.encode(this.proto);
+            return writer.finish();
         }
-        const writer = Proto.types.ModelProto.encode(clone);
-        return writer.finish();
     }
 
     private createDebugProtoNodes() {

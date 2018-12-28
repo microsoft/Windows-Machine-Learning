@@ -11,7 +11,7 @@ Profiler<WINML_MODEL_TEST_PERF> g_Profiler;
 
 using namespace winrt::Windows::Graphics::DirectX::Direct3D11;
 
-LearningModel LoadModel(const std::wstring path, bool capturePerf, bool silent, OutputHelper& output)
+LearningModel LoadModel(const std::wstring path, bool capturePerf, OutputHelper& output, const CommandLineArgs& args, uint32_t iterationNum)
 {
     LearningModel model = nullptr;
     output.PrintLoadingInfo(path);
@@ -27,6 +27,10 @@ LearningModel LoadModel(const std::wstring path, bool capturePerf, bool silent, 
         if (capturePerf)
         {
             WINML_PROFILING_STOP(g_Profiler, WINML_MODEL_TEST_PERF::LOAD_MODEL);
+            if (args.PerIterCapture())
+            {
+                output.SaveLoadTimes(g_Profiler, iterationNum);
+            }
         }
     }
     catch (hresult_error hr)
@@ -93,7 +97,7 @@ std::vector<ILearningModelFeatureValue> GenerateInputFeatures(
     return inputFeatures;
 }
 
-HRESULT BindInputFeatures(const LearningModel& model, const LearningModelBinding& context, const std::vector<ILearningModelFeatureValue>& inputFeatures, const CommandLineArgs& args, OutputHelper& output, bool capturePerf)
+HRESULT BindInputFeatures(const LearningModel& model, const LearningModelBinding& context, const std::vector<ILearningModelFeatureValue>& inputFeatures, const CommandLineArgs& args, OutputHelper& output, bool capturePerf, uint32_t iterationNum)
 {
     assert(model.InputFeatures().Size() == inputFeatures.size());
 
@@ -115,6 +119,10 @@ HRESULT BindInputFeatures(const LearningModel& model, const LearningModelBinding
         if (capturePerf)
         {
             WINML_PROFILING_STOP(g_Profiler, WINML_MODEL_TEST_PERF::BIND_VALUE);
+            if (args.PerIterCapture())
+            {
+                output.SaveBindTimes(g_Profiler, iterationNum);
+            }
         }
 
         if (!args.Silent())
@@ -139,7 +147,8 @@ HRESULT EvaluateModel(
     bool isGarbageData,
     const CommandLineArgs& args,
     OutputHelper& output,
-    bool capturePerf
+    bool capturePerf,
+    uint32_t iterationNum
 )
 {
     LearningModelEvaluationResult result = nullptr;
@@ -156,6 +165,10 @@ HRESULT EvaluateModel(
         if (capturePerf)
         {
             WINML_PROFILING_STOP(g_Profiler, WINML_MODEL_TEST_PERF::EVAL_MODEL);
+            if (args.PerIterCapture())
+            {
+                output.SaveEvalPerformance(g_Profiler, iterationNum);
+            }
         }
     }
     catch (winrt::hresult_error hr)
@@ -258,17 +271,17 @@ HRESULT EvaluateModel(
     // Add one more iteration if we ignore the first run
     uint32_t numIterations = args.NumIterations() + args.IgnoreFirstRun();
 
-    bool isGarbageData = !args.CsvPath().empty() || !args.ImagePath().empty();
+    bool isGarbageData = args.CsvPath().empty() && args.ImagePath().empty();
 
     // Run the binding + evaluate multiple times and average the results
     for (uint32_t i = 0; i < numIterations; i++)
     {
-        bool captureIterationPerf = args.PerfCapture() && (!args.IgnoreFirstRun() || i > 0);
+        bool captureIterationPerf = (args.PerfCapture() && (!args.IgnoreFirstRun() || i > 0)) || (args.PerIterCapture());
 
         output.PrintBindingInfo(i + 1, deviceType, inputBindingType, inputDataType, deviceCreationLocation);
 
         std::vector<ILearningModelFeatureValue> inputFeatures = GenerateInputFeatures(model, args, inputBindingType, inputDataType, winrtDevice);
-        HRESULT bindInputResult = BindInputFeatures(model, context, inputFeatures, args, output, captureIterationPerf);
+        HRESULT bindInputResult = BindInputFeatures(model, context, inputFeatures, args, output, captureIterationPerf, i);
 
         if (FAILED(bindInputResult))
         {
@@ -277,7 +290,7 @@ HRESULT EvaluateModel(
 
         output.PrintEvaluatingInfo(i + 1, deviceType, inputBindingType, inputDataType, deviceCreationLocation);
 
-        HRESULT evalResult = EvaluateModel(model, context, session, isGarbageData, args, output, captureIterationPerf);
+        HRESULT evalResult = EvaluateModel(model, context, session, isGarbageData, args, output, captureIterationPerf, i);
 
         if (FAILED(evalResult))
         {
@@ -309,7 +322,7 @@ HRESULT EvaluateModels(
 
         try
         {
-            model = LoadModel(path, args.PerfCapture(), args.Silent(), output);
+            model = LoadModel(path, args.PerfCapture() || args.PerIterCapture(), output, args, 0);
         }
         catch (hresult_error hr)
         {
@@ -335,7 +348,7 @@ HRESULT EvaluateModels(
                 {
                     for (auto deviceCreationLocation : deviceCreationLocations)
                     {
-                        if (args.PerfCapture())
+                        if (args.PerfCapture() || args.PerIterCapture())
                         {
                             // Resets all values from profiler for bind and evaluate.
                             g_Profiler.Reset(WINML_MODEL_TEST_PERF::BIND_VALUE, WINML_MODEL_TEST_PERF::COUNT);
@@ -370,6 +383,11 @@ HRESULT EvaluateModels(
                                 TypeHelper::Stringify(deviceCreationLocation),
                                 args.IgnoreFirstRun()
                             );
+                        }
+
+                        if (args.PerIterCapture())
+                        {
+                            output.WritePerformanceDataToCSVPerIteration(g_Profiler, args, args.ModelPath(), args.ImagePath());
                         }
                     }
                 }
@@ -471,7 +489,7 @@ int main(int argc, char** argv)
     winrt::init_apartment();
 
     CommandLineArgs args;
-    OutputHelper output(args.Silent());
+    OutputHelper output(args.NumIterations(), args.Silent());
 
     // Profiler is a wrapper class that captures and stores timing and memory usage data on the
     // CPU and GPU.
@@ -484,6 +502,10 @@ int main(int argc, char** argv)
     else
     {
         output.SetDefaultCSVFileName();
+    }
+
+    if (args.PerIterCapture()) {
+        output.SetDefaultCSVFileNamePerIteration();
     }
 
     if (!args.ModelPath().empty() || !args.FolderPath().empty())

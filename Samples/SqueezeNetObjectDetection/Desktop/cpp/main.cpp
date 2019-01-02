@@ -17,7 +17,6 @@ vector<string> labels;
 string labelsFileName("labels.txt");
 LearningModelDeviceKind deviceKind = LearningModelDeviceKind::Default;
 string deviceName = "default";
-hstring modelPath;
 hstring imagePath;
 
 // helper functions
@@ -26,6 +25,14 @@ void LoadLabels();
 VideoFrame LoadImageFile(hstring filePath);
 void PrintResults(IVectorView<float> results);
 bool ParseArgs(int argc, char* argv[]);
+
+wstring GetModelPath()
+{
+    wostringstream woss;
+    woss << GetModulePath().c_str();
+    woss << "SqueezeNet.onnx";
+    return woss.str();
+}
 
 // MAIN !
 // usage: SqueezeNet [modelfile] [imagefile] [cpu|directx]
@@ -39,6 +46,9 @@ int main(int argc, char* argv[])
         printf("Usage: %s [modelfile] [imagefile] [cpu|directx]", argv[0]);
         return -1;
     }
+
+    // Get model path
+    auto modelPath = GetModelPath();
 
     // load the model
     printf("Loading modelfile '%ws' on the '%s' device\n", modelPath.c_str(), deviceName.c_str());
@@ -76,18 +86,16 @@ int main(int argc, char* argv[])
 
 bool ParseArgs(int argc, char* argv[])
 {
-    if (argc < 3)
+    if (argc < 2)
     {
         return false;
     }
-    // get the model file
-    modelPath = hstring(wstring_to_utf8().from_bytes(argv[1]));
     // get the image file
-    imagePath = hstring(wstring_to_utf8().from_bytes(argv[2]));
+    imagePath = hstring(wstring_to_utf8().from_bytes(argv[1]));
     // did they pass a fourth arg?
-    if (argc >= 4)
+    if (argc >= 3)
     {
-        deviceName = argv[3];
+        deviceName = argv[2];
         if (deviceName == "cpu")
         {
             deviceKind = LearningModelDeviceKind::Cpu;
@@ -136,7 +144,7 @@ void LoadLabels()
     while (std::getline(labelFile, s, ','))
     {
         int labelValue = atoi(s.c_str());
-        if (labelValue >= labels.size())
+        if (static_cast<uint32_t>(labelValue) >= labels.size())
         {
             labels.resize(labelValue + 1);
         }

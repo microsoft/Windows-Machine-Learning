@@ -1,89 +1,210 @@
-resources:
+﻿resources:
+
 - repo: self
+  clean: true
+
 queue:
+
   name: Package ES CodeHub Lab E
+
   demands: 
   - Agent.Name -equals PKGESCHLABE029
   - msbuild
   - visualstudio
 
-#Your build pipeline references the ‘BuildPlatform’ variable, which you’ve selected to be settable at queue time. Create or edit the build pipeline for this YAML file, define the variable on the Variables tab, and then select the option to make it settable at queue time. See https://go.microsoft.com/fwlink/?linkid=865971
-
-#Your build pipeline references the ‘BuildConfiguration’ variable, which you’ve selected to be settable at queue time. Create or edit the build pipeline for this YAML file, define the variable on the Variables tab, and then select the option to make it settable at queue time. See https://go.microsoft.com/fwlink/?linkid=865971
-
-#Your build pipeline references the ‘BuildPlatform’ variable, which you’ve selected to be settable at queue time. Create or edit the build pipeline for this YAML file, define the variable on the Variables tab, and then select the option to make it settable at queue time. See https://go.microsoft.com/fwlink/?linkid=865971
-
-#Your build pipeline references the ‘BuildConfiguration’ variable, which you’ve selected to be settable at queue time. Create or edit the build pipeline for this YAML file, define the variable on the Variables tab, and then select the option to make it settable at queue time. See https://go.microsoft.com/fwlink/?linkid=865971
-
-#Your build pipeline references the ‘BuildPlatform’ variable, which you’ve selected to be settable at queue time. Create or edit the build pipeline for this YAML file, define the variable on the Variables tab, and then select the option to make it settable at queue time. See https://go.microsoft.com/fwlink/?linkid=865971
-
-#Your build pipeline references the ‘BuildConfiguration’ variable, which you’ve selected to be settable at queue time. Create or edit the build pipeline for this YAML file, define the variable on the Variables tab, and then select the option to make it settable at queue time. See https://go.microsoft.com/fwlink/?linkid=865971
-
-#Your build pipeline references the ‘BuildPlatform’ variable, which you’ve selected to be settable at queue time. Create or edit the build pipeline for this YAML file, define the variable on the Variables tab, and then select the option to make it settable at queue time. See https://go.microsoft.com/fwlink/?linkid=865971
-
-#Your build pipeline references the ‘BuildConfiguration’ variable, which you’ve selected to be settable at queue time. Create or edit the build pipeline for this YAML file, define the variable on the Variables tab, and then select the option to make it settable at queue time. See https://go.microsoft.com/fwlink/?linkid=865971
-
-#Your build pipeline references the ‘BuildPlatform’ variable, which you’ve selected to be settable at queue time. Create or edit the build pipeline for this YAML file, define the variable on the Variables tab, and then select the option to make it settable at queue time. See https://go.microsoft.com/fwlink/?linkid=865971
-
-#Your build pipeline references the ‘BuildConfiguration’ variable, which you’ve selected to be settable at queue time. Create or edit the build pipeline for this YAML file, define the variable on the Variables tab, and then select the option to make it settable at queue time. See https://go.microsoft.com/fwlink/?linkid=865971
-
-#Your build pipeline references the ‘BuildPlatform’ variable, which you’ve selected to be settable at queue time. Create or edit the build pipeline for this YAML file, define the variable on the Variables tab, and then select the option to make it settable at queue time. See https://go.microsoft.com/fwlink/?linkid=865971
-
-#Your build pipeline references the ‘BuildConfiguration’ variable, which you’ve selected to be settable at queue time. Create or edit the build pipeline for this YAML file, define the variable on the Variables tab, and then select the option to make it settable at queue time. See https://go.microsoft.com/fwlink/?linkid=865971
 
 steps:
-- task: VSBuild@1
-  displayName: 'Build FNSCandyStyleTransfer-UWP-CS'
+
+- powershell: |
+   # Write your powershell commands here.
+   
+   Write-Host "Hello World"
+   
+   # Use the environment variables input below to pass secret variables to this script.
+   dir "${ENV:programfiles(x86)}\windows Kits\10\include\10.0.17763.0\"
+   
+  displayName: 'Check SDK Version 17763 is present'
+
+
+- task: DotNetCoreInstaller@0
+
+  displayName: 'Use .NET Core sdk 2.1.300'
+
   inputs:
-    solution: Samples/FNSCandyStyleTransfer/UWP/CS/snapcandy.sln
-    vsVersion: 15.0
-    platform: '$(BuildPlatform)'
-    configuration: '$(BuildConfiguration)'
-    msbuildArchitecture: x64
+
+    version: 2.1.300
+
+
+- task: NuGetToolInstaller@0
+
+  displayName: 'Use NuGet 4.9.2'
+
+  inputs:
+
+    versionSpec: 4.9.2
+
+
+- task: NuGetCommand@2
+
+  displayName: 'NuGet restore'
+
 
 - task: VSBuild@1
-  displayName: 'Build MNIST-UWP-cppcx '
-  inputs:
-    solution: 'Samples/MNIST/UWP/cppcx/mnist_cppcx.sln'
-    vsVersion: 15.0
-    platform: '$(BuildPlatform)'
-    configuration: '$(BuildConfiguration)'
-    msbuildArchitecture: x64
-  condition: succeededOrFailed()
 
-- task: VSBuild@1
-  displayName: 'Build MNIST-UWP-cs'
-  inputs:
-    solution: 'Samples/MNIST/UWP/cs/mnist_demo.sln'
-    vsVersion: 15.0
-    platform: '$(BuildPlatform)'
-    configuration: '$(BuildConfiguration)'
-    msbuildArchitecture: x64
-  condition: succeededOrFailed()
-
-- task: VSBuild@1
   displayName: 'Build MNIST-Tutorial-cs'
+
   inputs:
+
     solution: 'Samples/MNIST/Tutorial/cs/mnist_demo.sln'
     vsVersion: 15.0
+    msbuildArgs: '/p:AppxPackageSigningEnabled=false -v:diag /p:OutDir=$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\'
     platform: '$(BuildPlatform)'
     configuration: '$(BuildConfiguration)'
+    clean: true
     msbuildArchitecture: x64
+    createLogFile: true
+
   condition: succeededOrFailed()
+
 
 - task: VSBuild@1
-  displayName: 'Build SqueezenetObjectDetection'
+
+  displayName: 'Build MNIST-UWP-cs'
+
   inputs:
-    solution: Samples/SqueezeNetObjectDetection/squeezenetobjectdetection.sln
+
+    solution: 'Samples/MNIST/UWP/cs/mnist_demo.sln'
     vsVersion: 15.0
+    msbuildArgs: '/p:AppxPackageSigningEnabled=false -v:diag'
     platform: '$(BuildPlatform)'
     configuration: '$(BuildConfiguration)'
+    clean: true
     msbuildArchitecture: x64
+    createLogFile: true
+
   condition: succeededOrFailed()
 
-- task: PublishBuildArtifacts@1
-  displayName: 'Publish Artifact: Samples'
+
+- task: VSBuild@1
+
+  displayName: 'Build SqueezenetObjectDetection'
+
   inputs:
-    PathtoPublish: '/Samples/release/$(BuildPlatform)/$(BuildConfiguration)'
-    ArtifactName: Samples
-  enabled: false
+
+    solution: Samples/SqueezeNetObjectDetection/squeezenetobjectdetection.sln
+    vsVersion: 15.0
+    msbuildArgs: '/p:AppxPackageSigningEnabled=false -v:diag /p:OutDir=$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\'
+    platform: '$(BuildPlatform)'
+    configuration: '$(BuildConfiguration)'
+    clean: true
+    msbuildArchitecture: x64
+    createLogFile: true
+
+  condition: succeededOrFailed()
+
+
+- task: VSBuild@1
+
+  displayName: 'Build FNSCandyStyleTransfer-UWP-CS'
+
+  inputs:
+
+    solution: Samples/FNSCandyStyleTransfer/UWP/CS/snapcandy.sln
+    vsVersion: 15.0
+    msbuildArgs: '/p:AppxPackageSigningEnabled=false -v:diag  /p:OutDir=$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\'
+    platform: '$(BuildPlatform)'
+    configuration: '$(BuildConfiguration)'
+    clean: true
+    msbuildArchitecture: x64
+    createLogFile: true
+
+  condition: succeededOrFailed()
+
+
+- task: VSBuild@1
+
+  displayName: 'Build MNIST-UWP-cppcx '
+
+  inputs:
+
+    solution: 'Samples/MNIST/UWP/cppcx/mnist_cppcx.sln'
+    vsVersion: 15.0
+    msbuildArgs: '/p:AppxPackageSigningEnabled=false -v:diag /p:OutDir=$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\'
+    platform: '$(BuildPlatform)'
+    configuration: '$(BuildConfiguration)'
+    clean: true
+    msbuildArchitecture: x64
+    createLogFile: true
+
+  condition: succeededOrFailed()
+
+
+- task: VSBuild@1
+
+  displayName: 'Build CustomTensorization Sample'
+
+  inputs:
+
+    solution: Samples/CustomTensorization/CustomTensorization.sln
+    vsVersion: 15.0
+    msbuildArgs: '/p:AppxPackageSigningEnabled=false -v:diag /p:OutDir=$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\'
+    platform: '$(BuildPlatform)'
+    configuration: '$(BuildConfiguration)'
+    clean: true
+    msbuildArchitecture: x64
+    createLogFile: true
+
+  condition: succeededOrFailed()
+
+
+- task: VSBuild@1
+
+  displayName: 'Build Emoji Sample'
+
+  inputs:
+
+    solution: Samples/Emoji8/UWP/cs/Emoji8.sln
+    vsVersion: 15.0
+    msbuildArgs: '/p:AppxPackageSigningEnabled=false -v:diag /p:OutDir=$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\'
+    platform: '$(BuildPlatform)'
+    configuration: '$(BuildConfiguration)'
+    clean: true
+    msbuildArchitecture: x64
+    createLogFile: true
+
+  condition: succeededOrFailed()
+
+
+- task: VSBuild@1
+
+  displayName: 'Build AdapterSelection Sample '
+
+  inputs:
+
+    solution: Samples/AdapterSelection/AdapterSelection.sln
+    vsVersion: 15.0
+    msbuildArgs: '/p:AppxPackageSigningEnabled=false -v:diag /p:OutDir=$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\'
+    platform: '$(BuildPlatform)'
+    configuration: '$(BuildConfiguration)'
+    clean: true
+    msbuildArchitecture: x64
+    createLogFile: true
+
+  condition: succeededOrFailed()
+
+
+- task: PublishBuildArtifacts@1
+
+  displayName: 'Publish Artifact: Samples'
+
+  inputs:
+
+    PathtoPublish: '$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\'
+    ArtifactName: WinMLPublicSamples
+
+
+  condition: succeededOrFailed()
+
+
+
+

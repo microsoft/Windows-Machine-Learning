@@ -22,8 +22,8 @@
     <ClCompile Include=".\src\Main.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="WinMLRunner.obj.vcxproj">
-      <Project>{81ea9cc6-8a26-4583-b1a4-84740ef815c8}</Project>
+    <ProjectReference Include="WinMLRunner (Static Library).vcxproj">
+      <Project>{cbcfa9fb-39bc-457d-8ed7-6f1287777649}</Project>
     </ProjectReference>
   </ItemGroup>
   <PropertyGroup Label="Globals">
@@ -83,9 +83,13 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
+    <OutDir>$(SolutionDir)x86\$(Configuration)\</OutDir>
+    <IntDir>x86\$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
+    <OutDir>$(SolutionDir)x86\$(Configuration)\</OutDir>
+    <IntDir>x86\$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>

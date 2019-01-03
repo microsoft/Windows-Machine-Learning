@@ -187,14 +187,12 @@ void PrintResults(IVectorView<float> results)
         uint32_t index;
     };
     vector<result> sortedResults;
-
     for (uint32_t i = 0; i < results.Size(); i++) {
         result curr;
         curr.probability = results.GetAt(i);
         curr.index = i;
         sortedResults.push_back(curr);
     }
-
     std::sort(sortedResults.begin(), sortedResults.end(),
         [](result const &a, result const &b) { return a.probability > b.probability; });
 

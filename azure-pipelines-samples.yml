@@ -8,7 +8,6 @@ queue:
   name: Package ES CodeHub Lab E
 
   demands: 
-  - Agent.Name -equals PKGESCHLABE029
   - msbuild
   - visualstudio
 

@@ -58,6 +58,9 @@ steps:
 
   displayName: 'NuGet restore'
 
+  inputs:
+    restoreSolution: 'Samples/CustomOperatorCPU/desktop/cpp/custom-operator-cpu-sample.sln'
+
 
 - task: VSBuild@1
 

@@ -82,8 +82,8 @@ namespace BindingUtilities
 
                 // Create a transform object with default parameters (no transform)
                 auto transform = BitmapTransform();
-                transform.ScaledHeight(height);
-                transform.ScaledWidth(width);
+                transform.ScaledHeight(static_cast<uint32_t>(height));
+                transform.ScaledWidth(static_cast<uint32_t>(width));
                 transform.InterpolationMode(args.AutoScaleInterpMode());
 
                 // get the bitmap

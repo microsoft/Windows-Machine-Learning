@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.27703.2026
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "custom-operator-cpu-sample", "custom-operator-cpu-sample.vcxproj", "{2BF804D4-DAA2-42BE-9F21-0E94F021EF53}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "custom-operator-cpu-sample", "custom-operator-cpu-sample.vcxproj", "{CF96E198-6C50-4115-AA97-64A1F60DF064}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -34,6 +34,6 @@ Global
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {0ACB1AE2-0B70-4F2E-9FF5-27A3EDF2B775}
+		SolutionGuid = {9CC09084-A006-442F-8871-54E34D218DEC}
 	EndGlobalSection
 EndGlobal

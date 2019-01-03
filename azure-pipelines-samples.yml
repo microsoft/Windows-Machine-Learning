@@ -13,6 +13,17 @@ queue:
   - visualstudio
 
 
+variables:
+
+  BuildConfiguration: Release
+  BuildPlatform: x64
+  SamplesBin: SamplesBin
+  system.collectionId: ee8504d9-65a6-4f6c-85ed-0ad4265128ee
+  system.debug: false
+  system.definitionId: 611
+  system.teamProject: WindowsAI
+  WINDOWS_WINMD: C:\Program Files (x86)\Windows Kits\10\UnionMetadata\10.0.17763.0\Windows.winmd
+
 steps:
 
 - powershell: |
@@ -182,6 +193,24 @@ steps:
   inputs:
 
     solution: Samples/AdapterSelection/AdapterSelection.sln
+    vsVersion: 15.0
+    msbuildArgs: '/p:AppxPackageSigningEnabled=false -v:diag /p:OutDir=$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\'
+    platform: '$(BuildPlatform)'
+    configuration: '$(BuildConfiguration)'
+    clean: true
+    msbuildArchitecture: x64
+    createLogFile: true
+
+  condition: succeededOrFailed()
+
+
+- task: VSBuild@1
+
+  displayName: 'Build CustomOperatorCPU Sample '
+
+  inputs:
+
+    solution: Samples/CustomOperatorCPU/desktop/cpp/custom-operator-cpu-sample.sln
     vsVersion: 15.0
     msbuildArgs: '/p:AppxPackageSigningEnabled=false -v:diag /p:OutDir=$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\'
     platform: '$(BuildPlatform)'

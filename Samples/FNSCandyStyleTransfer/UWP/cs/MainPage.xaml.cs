@@ -448,7 +448,7 @@ namespace SnapCandy
 
 
                     // Bind and Eval
-                    if (true)
+                    if (false)
                     {
                         _perfStopwatch.Restart();
                         BitmapBounds inBounds = new BitmapBounds();
@@ -578,6 +578,8 @@ namespace SnapCandy
                 fr._outputFrame = VideoFrame.CreateWithDirect3D11Surface(surface);
                 fr._binding = new LearningModelBinding(_session);
                 _frameResources[_resultframeRenderer.GetBackBufferIndex()] = fr;
+
+                Debug.WriteLine($"Using BackBuffer{_resultframeRenderer.GetBackBufferIndex()}");
 
                 _outputFrame = fr._outputFrame;
                 _binding = fr._binding;

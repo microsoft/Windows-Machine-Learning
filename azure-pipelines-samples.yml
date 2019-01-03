@@ -61,6 +61,24 @@ steps:
 
 - task: VSBuild@1
 
+  displayName: 'Build CustomOperatorCPU Sample '
+
+  inputs:
+
+    solution: Samples/CustomOperatorCPU/desktop/cpp/custom-operator-cpu-sample.sln
+    vsVersion: 15.0
+    msbuildArgs: '/p:AppxPackageSigningEnabled=false -v:diag /p:OutDir=$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\'
+    platform: '$(BuildPlatform)'
+    configuration: '$(BuildConfiguration)'
+    clean: true
+    msbuildArchitecture: x64
+    createLogFile: true
+
+  condition: succeededOrFailed()
+
+
+- task: VSBuild@1
+
   displayName: 'Build MNIST-Tutorial-cs'
 
   inputs:
@@ -203,24 +221,6 @@ steps:
   condition: succeededOrFailed()
 
 
-- task: VSBuild@1
-
-  displayName: 'Build CustomOperatorCPU Sample '
-
-  inputs:
-
-    solution: Samples/CustomOperatorCPU/desktop/cpp/custom-operator-cpu-sample.sln
-    vsVersion: 15.0
-    msbuildArgs: '/p:AppxPackageSigningEnabled=false -v:diag /p:OutDir=$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\'
-    platform: '$(BuildPlatform)'
-    configuration: '$(BuildConfiguration)'
-    clean: true
-    msbuildArchitecture: x64
-    createLogFile: true
-
-  condition: succeededOrFailed()
-
-
 - task: PublishBuildArtifacts@1
 
   displayName: 'Publish Artifact: Samples'
@@ -232,7 +232,3 @@ steps:
 
 
   condition: succeededOrFailed()
-
-
-
-

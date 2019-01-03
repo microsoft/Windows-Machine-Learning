@@ -196,7 +196,7 @@ void PrintResults(IVectorView<float> results)
     }
 
     std::sort(sortedResults.begin(), sortedResults.end(),
-        [](result const &a, result const &b) { return a.probability < b.probability; });
+        [](result const &a, result const &b) { return a.probability > b.probability; });
 
     // Display the result
     for (int i = 0; i < 3; i++)

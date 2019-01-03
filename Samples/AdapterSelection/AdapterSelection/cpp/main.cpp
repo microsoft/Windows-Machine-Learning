@@ -205,30 +205,31 @@ VideoFrame LoadImageFile(hstring filePath)
 
 void PrintResults(IVectorView<float> results)
 {
-	// load the labels
-	LoadLabels();
-	// Find the top 3 probabilities
-	vector<float> topProbabilities(3);
-	vector<int> topProbabilityLabelIndexes(3);
-	// SqueezeNet returns a list of 1000 options, with probabilities for each, loop through all
-	for (uint32_t i = 0; i < results.Size(); i++)
-	{
-		// is it one of the top 3?
-		for (int j = 0; j < 3; j++)
-		{
-			if (results.GetAt(i) > topProbabilities[j])
-			{
-				topProbabilityLabelIndexes[j] = i;
-				topProbabilities[j] = results.GetAt(i);
-				break;
-			}
-		}
-	}
-	// Display the result
-	for (int i = 0; i < 3; i++)
-	{
-		printf("%s with confidence of %f\n", labels[topProbabilityLabelIndexes[i]].c_str(), topProbabilities[i]);
-	}
+    // load the labels
+    LoadLabels();
+
+    struct result {
+        float probability;
+        uint32_t index;
+    };
+    vector<result> sortedResults;
+
+    for (uint32_t i = 0; i < results.Size(); i++) {
+        result curr;
+        curr.probability = results.GetAt(i);
+        curr.index = i;
+        sortedResults.push_back(curr);
+    }
+
+    std::sort(sortedResults.begin(), sortedResults.end(),
+        [](result const &a, result const &b) { return a.probability > b.probability; });
+
+    // Display the result
+    for (int i = 0; i < 3; i++)
+    {
+        result curr = sortedResults.at(i);
+        printf("%s with confidence of %f\n", labels[curr.index].c_str(), curr.probability);
+    }
 }
 
 int32_t WINRT_CALL WINRT_CoIncrementMTAUsage(void** cookie) noexcept

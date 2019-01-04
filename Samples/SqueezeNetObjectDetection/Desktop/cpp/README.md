@@ -45,7 +45,7 @@ Note: SqueezeNet was trained to work with image sizes of 224x224, so you must pr
   model run took 31 ticks
   tabby, tabby cat with confidence of 0.931461
   Egyptian cat with confidence of 0.065307
-  Persian cat with confidence of 0.000193
+  tiger cat with confidence of 0.002927
   ```
 
 ## License

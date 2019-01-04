@@ -280,7 +280,17 @@ HRESULT EvaluateModel(
 
         output.PrintBindingInfo(i + 1, deviceType, inputBindingType, inputDataType, deviceCreationLocation);
 
-        std::vector<ILearningModelFeatureValue> inputFeatures = GenerateInputFeatures(model, args, inputBindingType, inputDataType, winrtDevice);
+        std::vector<ILearningModelFeatureValue> inputFeatures;
+        try
+        {
+            inputFeatures = GenerateInputFeatures(model, args, inputBindingType, inputDataType, winrtDevice);
+        }
+        catch (hresult_error hr)
+        {
+            std::cout << "\nGenerating Input Features [FAILED]" << std::endl;
+            std::wcout << hr.message().c_str() << std::endl;
+            return hr.code();
+        }
         HRESULT bindInputResult = BindInputFeatures(model, context, inputFeatures, args, output, captureIterationPerf, i);
 
         if (FAILED(bindInputResult))

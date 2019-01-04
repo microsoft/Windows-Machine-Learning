@@ -13,6 +13,8 @@ namespace DXRenderComponent
         Windows.Graphics.DirectX.Direct3D11.IDirect3DSurface GetBackBuffer();
         UInt32 GetBackBufferIndex();
         UInt32 GetBufferCount();
+        void AcquireResource(Windows.Graphics.DirectX.Direct3D11.IDirect3DSurface surface);
+        void ReleaseResource(Windows.Graphics.DirectX.Direct3D11.IDirect3DSurface surface);
         void Present();
         void WaitForPresentReady();
     }

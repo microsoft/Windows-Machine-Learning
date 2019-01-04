@@ -239,7 +239,6 @@ namespace SnapCandy
                 foreach (var inputF in model.InputFeatures)
                 {
                     Debug.WriteLine($"input | kind:{inputF.Kind}, name:{inputF.Name}, type:{inputF.GetType()}");
-                    int i = 0;
                     ImageFeatureDescriptor imgDesc = inputF as ImageFeatureDescriptor;
                     TensorFeatureDescriptor tfDesc = inputF as TensorFeatureDescriptor;
                     _inWidth = (int)(imgDesc == null ? tfDesc.Shape[3] : imgDesc.Width);
@@ -254,7 +253,6 @@ namespace SnapCandy
                 foreach (var outputF in model.OutputFeatures)
                 {
                     Debug.WriteLine($"output | kind:{outputF.Kind}, name:{outputF.Name}, type:{outputF.GetType()}");
-                    int i = 0;
                     ImageFeatureDescriptor imgDesc = outputF as ImageFeatureDescriptor;
                     TensorFeatureDescriptor tfDesc = outputF as TensorFeatureDescriptor;
                     _outWidth = (int)(imgDesc == null ? tfDesc.Shape[3] : imgDesc.Width);
@@ -376,6 +374,7 @@ namespace SnapCandy
                     if (useDX)
                     {
                         Debug.WriteLine($"Presenting BackBuffer{_resultframeRenderer.GetBackBufferIndex()}");
+                        renderer.ReleaseResource(frame.Direct3DSurface);
                         renderer.Present();
                     }
                     else
@@ -400,6 +399,7 @@ namespace SnapCandy
 
                             Debug.WriteLine($"Using BackBuffer{_resultframeRenderer.GetBackBufferIndex()}");
 
+                            _resultframeRenderer.AcquireResource(fr._outputFrame.Direct3DSurface);
                             _outputFrame = fr._outputFrame;
                             _binding = fr._binding;
                         }
@@ -419,7 +419,7 @@ namespace SnapCandy
         /// </summary>
         /// <param name="inputVideoFrame"></param>
         /// <returns></returns>
-        private void EvaluateVideoFrame(VideoFrame inputVideoFrame, VideoFrame outputFrame)
+        private async void EvaluateVideoFrame(VideoFrame inputVideoFrame, VideoFrame outputFrame)
         {
             LearningModelSession session = null;
             bool showInitialImageAndProgress = true;
@@ -448,7 +448,7 @@ namespace SnapCandy
 
 
                     // Bind and Eval
-                    if (false)
+                    if (false && inputVideoFrame != null)
                     {
                         _perfStopwatch.Restart();
                         BitmapBounds inBounds = new BitmapBounds();
@@ -466,7 +466,7 @@ namespace SnapCandy
                         outBounds.X = outBounds.Y = 0;
                         outBounds.Width = (uint)_outWidth;
                         outBounds.Height = (uint)_outHeight;
-                        inputVideoFrame.CopyToAsync(outputFrame, inBounds, outBounds).GetResults();
+                        await inputVideoFrame.CopyToAsync(outputFrame, inBounds, outBounds);
                         RenderFrame(_resultframeRenderer, outputFrame, true);
                     }
                     else if (inputVideoFrame != null)
@@ -1146,6 +1146,16 @@ namespace SnapCandy
         public IDirect3DSurface GetBackBuffer()
         {
             return _panelHelper.GetBackBuffer();
+        }
+
+        public void AcquireResource(IDirect3DSurface surface)
+        {
+            _panelHelper.AcquireResource(surface);
+        }
+
+        public void ReleaseResource(IDirect3DSurface surface)
+        {
+            _panelHelper.ReleaseResource(surface);
         }
 
         public void Present()

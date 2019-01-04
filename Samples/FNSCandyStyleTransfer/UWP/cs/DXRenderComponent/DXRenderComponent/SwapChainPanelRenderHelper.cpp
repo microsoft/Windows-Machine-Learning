@@ -83,7 +83,7 @@ namespace winrt::DXRenderComponent::implementation
         _swapChain = swapChain1.as< IDXGISwapChain3>();
         check_hresult(_panelNative->SetSwapChain(_swapChain.get()));
 
-        _waitHandle = _swapChain->GetFrameLatencyWaitableObject();
+        //_waitHandle = _swapChain->GetFrameLatencyWaitableObject();
 
         // Ensure that DXGI does not queue more than one frame at a time. This both reduces 
         // latency and ensures that the application will only render after each VSync, minimizing 
@@ -93,6 +93,7 @@ namespace winrt::DXRenderComponent::implementation
 
         // now create the 11on12 device so we can use 11 surfaces for XAML
         IUnknown* queues = m_commandQueue.get();
+        com_ptr<ID3D11DeviceContext> spContext;
         check_hresult(D3D11On12CreateDevice(
             m_device.get(),                     // input 12 device
             D3D11_CREATE_DEVICE_BGRA_SUPPORT,   // this is needed for Direct2D/interop rendering
@@ -102,11 +103,33 @@ namespace winrt::DXRenderComponent::implementation
             1,
             0,                                  // GPU node (we are using 0)
             m_device11.put(),                   // output 11 device
-            nullptr,                            // device context
+            spContext.put(),                    // device context
             nullptr                             // output feature level
         ));
 
         m_device11on12 = m_device11.as<ID3D11On12Device>();
+        spContext.as(m_deviceContext11);
+
+        InitializeFences();
+    }
+
+    void SwapChainPanelRenderHelper::InitializeFences()
+    {
+        com_ptr<ID3D11Device5> device11_5;
+        handle sharedFence;
+
+        m_device11.as(device11_5);
+        check_hresult(device11_5->CreateFence(0, D3D11_FENCE_FLAG_SHARED, IID_PPV_ARGS(_d3d11Fence.put())));
+
+        check_hresult(_d3d11Fence->CreateSharedHandle(NULL, GENERIC_ALL, nullptr, sharedFence.put()));
+        check_hresult(m_device->OpenSharedHandle(sharedFence.get(), IID_PPV_ARGS(_d3d12Fence.put())));
+    }
+
+    void SwapChainPanelRenderHelper::GPUSyncD3D11ToD3D12()
+    {
+        UINT64 currentFence = _fenceValue++;
+        check_hresult(m_deviceContext11->Signal(_d3d11Fence.get(), currentFence));
+        check_hresult(m_commandQueue->Wait(_d3d12Fence.get(), currentFence));
     }
 
     uint32_t SwapChainPanelRenderHelper::GetBufferCount()
@@ -139,11 +162,14 @@ namespace winrt::DXRenderComponent::implementation
         check_hresult(m_device11on12->CreateWrappedResource(
             resource.get(),
             &d3d11Flags, 
-            D3D12_RESOURCE_STATE_RENDER_TARGET, 
+            D3D12_RESOURCE_STATE_COMMON, // D3D12_RESOURCE_STATE_RENDER_TARGET
             D3D12_RESOURCE_STATE_PRESENT,
             IID_PPV_ARGS(resource11.put())
         ));
 
+        // create returns them already in the acquired state
+
+        // get it as a dxgi surface
         dxgiSurface = resource11.as<IDXGISurface>();
 
         // return it as a winrt object
@@ -151,6 +177,38 @@ namespace winrt::DXRenderComponent::implementation
         surface = inspectable.as<::IDirect3DSurface>();
         return surface;
     }
+
+    void SwapChainPanelRenderHelper::AcquireResource(Windows::Graphics::DirectX::Direct3D11::IDirect3DSurface surface)
+    {
+        // get the native dxgi device
+        com_ptr<IDXGISurface> dxgiSurface;
+        com_ptr<ID3D11Resource> resource11;
+        com_ptr<IDirect3DDxgiInterfaceAccess> dxgiInterfaceAccess = surface.as<IDirect3DDxgiInterfaceAccess>();
+        check_hresult(dxgiInterfaceAccess->GetInterface(IID_PPV_ARGS(dxgiSurface.put())));
+        dxgiSurface.as(resource11);
+
+        // acquire the wrapped resource
+        ID3D11Resource * p = resource11.get();
+        m_device11on12->AcquireWrappedResources(&p, 1);
+    }
+
+    void SwapChainPanelRenderHelper::ReleaseResource(Windows::Graphics::DirectX::Direct3D11::IDirect3DSurface surface)
+    {
+        // get the native dxgi device
+        com_ptr<IDXGISurface> dxgiSurface;
+        com_ptr<ID3D11Resource> resource11;
+        com_ptr<IDirect3DDxgiInterfaceAccess> dxgiInterfaceAccess = surface.as<IDirect3DDxgiInterfaceAccess>();
+        check_hresult(dxgiInterfaceAccess->GetInterface(IID_PPV_ARGS(dxgiSurface.put())));
+        dxgiSurface.as(resource11);
+
+        // release the wrapped resource
+        ID3D11Resource * p = resource11.get();
+        m_device11on12->ReleaseWrappedResources(&p, 1);
+
+        // and flush the 11 cmd lists
+        m_deviceContext11->Flush();
+    }
+
     void SwapChainPanelRenderHelper::Present()
     {
         // flip the backbuffer and queue it for presentation

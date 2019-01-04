@@ -128,31 +128,35 @@ namespace SqueezeNetObjectDetectionNC
             return ImageFeatureValue.CreateFromVideoFrame(inputImage);
         }
 
-
         private static void PrintResults(IReadOnlyList<float> resultVector)
         {
             // load the labels
             LoadLabels();
-            // Find the top 3 probabilities
-            List<float> topProbabilities = new List<float>() { 0.0f, 0.0f, 0.0f };
-            List<int> topProbabilityLabelIndexes = new List<int>() { 0, 0, 0 };
-            // SqueezeNet returns a list of 1000 options, with probabilities for each, loop through all
-            for (int i = 0; i < resultVector.Count(); i++)
+
+            List<(int index, float probability)> indexedResults = new List<(int, float)>();
+            for (int i = 0; i < resultVector.Count; i++)
             {
-                // is it one of the top 3?
-                for (int j = 0; j < 3; j++)
-                {
-                    if (resultVector[i] > topProbabilities[j])
-                    {
-                        topProbabilityLabelIndexes[j] = i;
-                        topProbabilities[j] = resultVector[i];
-                        break;
-                    }
-                }
+                indexedResults.Add((index: i, probability: resultVector.ElementAt(i)));
             }
+            indexedResults.Sort((a, b) =>
+            {
+                if (a.probability < b.probability)
+                {
+                    return 1;
+                }
+                else if (a.probability > b.probability)
+                {
+                    return -1;
+                }
+                else
+                {
+                    return 0;
+                }
+            });
+
             for (int i = 0; i < 3; i++)
             {
-                Console.WriteLine($"\"{ _labels[topProbabilityLabelIndexes[i]]}\" with confidence of { topProbabilities[i]}");
+                Console.WriteLine($"\"{ _labels[indexedResults[i].index]}\" with confidence of { indexedResults[i].probability}");
             }
         }
     }

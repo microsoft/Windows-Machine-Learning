@@ -44,7 +44,7 @@ The file path for the Windows.winmd file may be: ```C:\Program Files (x86)\Windo
   model run took 31 ticks
   "tabby, tabby cat" with confidence of 0.931461
   "Egyptian cat" with confidence of 0.065307
-  "Persian cat" with confidence of 0.000193
+  "tiger cat" with confidence of 0.002927
   ```
 
 ## License

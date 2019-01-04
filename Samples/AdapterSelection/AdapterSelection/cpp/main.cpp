@@ -208,27 +208,21 @@ void PrintResults(IVectorView<float> results)
     // load the labels
     LoadLabels();
 
-    struct result {
-        float probability;
-        uint32_t index;
-    };
-    vector<result> sortedResults;
-
+    vector<pair<float, uint32_t>> sortedResults;
     for (uint32_t i = 0; i < results.Size(); i++) {
-        result curr;
-        curr.probability = results.GetAt(i);
-        curr.index = i;
+        pair<float, uint32_t> curr;
+        curr.first = results.GetAt(i);
+        curr.second = i;
         sortedResults.push_back(curr);
     }
-
     std::sort(sortedResults.begin(), sortedResults.end(),
-        [](result const &a, result const &b) { return a.probability > b.probability; });
+        [](pair<float, uint32_t> const &a, pair<float, uint32_t> const &b) { return a.first > b.first; });
 
     // Display the result
     for (int i = 0; i < 3; i++)
     {
-        result curr = sortedResults.at(i);
-        printf("%s with confidence of %f\n", labels[curr.index].c_str(), curr.probability);
+        pair<float, uint32_t> curr = sortedResults.at(i);
+        printf("%s with confidence of %f\n", labels[curr.second].c_str(), curr.first);
     }
 }
 

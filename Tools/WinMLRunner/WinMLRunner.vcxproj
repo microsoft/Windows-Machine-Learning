@@ -30,8 +30,8 @@
     <ClCompile Include="src/main.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="WinMLRunnerDLL.vcxproj">
-      <Project>{81ea9cc6-8a26-4583-b1a4-84740ef815c8}</Project>
+    <ProjectReference Include="WinMLRunnerStaticLib.vcxproj">
+      <Project>{c3bcbea1-90e6-426f-88ac-64c274bcef45}</Project>
     </ProjectReference>
   </ItemGroup>
   <PropertyGroup Label="Globals">
@@ -205,6 +205,7 @@
       </PrecompiledHeaderFile>
       <PrecompiledHeaderOutputFile />
       <LanguageStandard>stdcpp17</LanguageStandard>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -229,6 +230,7 @@
       <PrecompiledHeaderOutputFile>
       </PrecompiledHeaderOutputFile>
       <LanguageStandard>stdcpp17</LanguageStandard>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -253,6 +255,7 @@
       <AdditionalIncludeDirectories>..\WinMLRunner;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PrecompiledHeaderOutputFile />
       <LanguageStandard>stdcpp17</LanguageStandard>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>

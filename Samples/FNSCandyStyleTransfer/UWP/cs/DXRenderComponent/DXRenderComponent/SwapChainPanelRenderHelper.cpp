@@ -227,4 +227,10 @@ namespace winrt::DXRenderComponent::implementation
         }
     }
 
+    uint32_t SwapChainPanelRenderHelper::GetPresentCount()
+    {
+        DXGI_FRAME_STATISTICS stats;
+        _swapChain->GetFrameStatistics(&stats);
+        return stats.PresentCount;
+    }
 }

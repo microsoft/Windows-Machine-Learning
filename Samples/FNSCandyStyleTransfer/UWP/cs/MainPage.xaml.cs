@@ -91,7 +91,8 @@ namespace SnapCandy
         private Stopwatch _perfStopwatch = new Stopwatch(); // performance Stopwatch used throughout
         private DispatcherTimer _FramesPerSecondTimer = new DispatcherTimer();
         private long _CaptureFPS = 0;
-        private long _RenderFPS = 0;
+        private long _LastPresentCount = 0;
+        private int _LastFPSTick = 0;
 
         private Thread _EvaluateThread;
 
@@ -134,14 +135,28 @@ namespace SnapCandy
 
         private void _FramesPerSecond_Tick(object sender, object e)
         {
+            // how many seconds has it been?
+            int fpsTick = System.Environment.TickCount;
+            float numberOfSeconds = ((float)(fpsTick - _LastFPSTick)) / (float)1000;
+            _LastFPSTick = fpsTick;
+
             // how many frames did we capture?
-            long intervalFPS = _CaptureFPS;
+            long intervalFPS = (long)(((float)_CaptureFPS) / numberOfSeconds);
             _CaptureFPS = 0;
             NotifyUser(CaptureFPS, $"{intervalFPS}", NotifyType.StatusMessage);
+            
+            // what was the last present count ?
+            if (_resultframeRenderer != null)
+            {
+                UInt32 presentCount = _resultframeRenderer.GetPresentCount();
+                intervalFPS = (long)(((float)(presentCount - _LastPresentCount)) / numberOfSeconds);
+                _LastPresentCount = presentCount;
+            }
+            else
+            {
+                intervalFPS = 0;
+            }
 
-            // how many frames did we render?
-            intervalFPS = _RenderFPS;
-            _RenderFPS = 0;
             NotifyUser(RenderFPS, $"{intervalFPS}", NotifyType.StatusMessage);
         }
 
@@ -381,7 +396,6 @@ namespace SnapCandy
                     {
                         renderer.RenderFrame(frame.SoftwareBitmap);
                     }
-                    _RenderFPS += 1;
                     if (outputFrame)
                     {
                         if (_useGPU)
@@ -1152,6 +1166,11 @@ namespace SnapCandy
         {
             _panelHelper.AcquireResource(surface);
         }
+        public UInt32 GetPresentCount()
+        {
+            return _panelHelper.GetPresentCount();
+        }
+
 
         public void ReleaseResource(IDirect3DSurface surface)
         {

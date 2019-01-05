@@ -22,6 +22,8 @@ namespace winrt::DXRenderComponent::implementation
         void Present();
         void WaitForPresentReady();
 
+        uint32_t GetPresentCount();
+
     private:
 
         void InitializeFences();

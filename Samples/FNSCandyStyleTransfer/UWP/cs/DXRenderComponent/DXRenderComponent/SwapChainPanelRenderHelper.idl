@@ -17,5 +17,7 @@ namespace DXRenderComponent
         void ReleaseResource(Windows.Graphics.DirectX.Direct3D11.IDirect3DSurface surface);
         void Present();
         void WaitForPresentReady();
+
+        UInt32 GetPresentCount();
     }
 }

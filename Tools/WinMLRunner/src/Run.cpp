@@ -287,7 +287,7 @@ HRESULT EvaluateModel(
         }
         catch (hresult_error hr)
         {
-            std::cout << "\nGenerating Input Features [FAILED]" << std::endl;
+            std::wcout << "\nGenerating Input Features [FAILED]" << std::endl;
             std::wcout << hr.message().c_str() << std::endl;
             return hr.code();
         }

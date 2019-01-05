@@ -1,7 +1,7 @@
 #include "CommandLineArgs.h"
 #include "Run.h"
 
-int main(int argc, char** argv)
+int main()
 {
     CommandLineArgs args;
     return run(args);

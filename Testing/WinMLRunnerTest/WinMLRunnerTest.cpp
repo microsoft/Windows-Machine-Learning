@@ -509,7 +509,7 @@ namespace WinMLRunnerTest
 
         TEST_METHOD(TestPrintUsage)
         {
-            const std::wstring command = BuildCommand({ EXE_PATH});
+            const std::wstring command = BuildCommand({ EXE_PATH });
             Assert::AreEqual(0, RunProc((wchar_t *)command.c_str()));
         }
     };

@@ -26,10 +26,6 @@ variables:
 steps:
 
 - powershell: |
-   # Write your powershell commands here.
-   
-   Write-Host "Hello World"
-   
    # Use the environment variables input below to pass secret variables to this script.
    dir "${ENV:programfiles(x86)}\windows Kits\10\include\10.0.17763.0\"
    

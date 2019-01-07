@@ -39,6 +39,7 @@ Required command-Line arguments:
 -output <CSV path>       : Path to the CSV where the perf results will be written.
 -IgnoreFirstRun          : Will ignore the first run in the perf results when calculating the average
 -silent                  : Silent mode (only errors will be printed to the console)
+-savePerIterationPerf	 : Save per iteration performance results to csv file.
 -debug                   : Will start a trace logging session.
 -autoScale <mode>        : Will automatically scale an input image to match the required input dimensions of the model.  Pass in the interpolation mode, one of ["Nearest", "Linear", "Cubic", "Fant"].
 

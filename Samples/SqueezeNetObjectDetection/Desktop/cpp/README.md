@@ -33,7 +33,7 @@ Note: SqueezeNet was trained to work with image sizes of 224x224, so you must pr
 3. Change the current folder to the folder containing the built EXE (`cd <path-to-exe>`).
 4. Run the executable as shown below. Make sure to replace the install location with what matches yours:
   ```
-  SqueezeNetObjectDetection.exe C:\Repos\Windows-Machine-Learning\SharedContent\models\SqueezeNet.onnx C:\Repos\Windows-Machine-Learning\SharedContent\media\kitten_224.png
+  SqueezeNetObjectDetection.exe C:\Repos\Windows-Machine-Learning\SharedContent\media\kitten_224.png
   ```
 5. You should get output similar to the following:
   ```
@@ -45,7 +45,7 @@ Note: SqueezeNet was trained to work with image sizes of 224x224, so you must pr
   model run took 31 ticks
   tabby, tabby cat with confidence of 0.931461
   Egyptian cat with confidence of 0.065307
-  Persian cat with confidence of 0.000193
+  tiger cat with confidence of 0.002927
   ```
 
 ## License

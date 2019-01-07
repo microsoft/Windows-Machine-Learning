@@ -11,9 +11,8 @@ Profiler<WINML_MODEL_TEST_PERF> g_Profiler;
 
 using namespace winrt::Windows::Graphics::DirectX::Direct3D11;
 
-LearningModel LoadModel(const std::wstring path, bool capturePerf, bool silent, OutputHelper& output)
+LearningModel LoadModel(const std::wstring path, bool capturePerf, OutputHelper& output, const CommandLineArgs& args, uint32_t iterationNum)
 {
-    Timer timer;
     LearningModel model = nullptr;
     output.PrintLoadingInfo(path);
 
@@ -22,14 +21,16 @@ LearningModel LoadModel(const std::wstring path, bool capturePerf, bool silent, 
         if (capturePerf)
         {
             WINML_PROFILING_START(g_Profiler, WINML_MODEL_TEST_PERF::LOAD_MODEL);
-            timer.Start();
         }
         model = LearningModel::LoadFromFilePath(path);
 
         if (capturePerf)
         {
             WINML_PROFILING_STOP(g_Profiler, WINML_MODEL_TEST_PERF::LOAD_MODEL);
-            output.m_clockLoadTime = timer.Stop();
+            if (args.PerIterCapture())
+            {
+                output.SaveLoadTimes(g_Profiler, iterationNum);
+            }
         }
     }
     catch (hresult_error hr)
@@ -96,7 +97,7 @@ std::vector<ILearningModelFeatureValue> GenerateInputFeatures(
     return inputFeatures;
 }
 
-HRESULT BindInputFeatures(const LearningModel& model, const LearningModelBinding& context, const std::vector<ILearningModelFeatureValue>& inputFeatures, const CommandLineArgs& args, OutputHelper& output, bool capturePerf)
+HRESULT BindInputFeatures(const LearningModel& model, const LearningModelBinding& context, const std::vector<ILearningModelFeatureValue>& inputFeatures, const CommandLineArgs& args, OutputHelper& output, bool capturePerf, uint32_t iterationNum)
 {
     assert(model.InputFeatures().Size() == inputFeatures.size());
 
@@ -104,11 +105,8 @@ HRESULT BindInputFeatures(const LearningModel& model, const LearningModelBinding
     {
         context.Clear();
 
-        Timer timer;
-
         if (capturePerf)
         {
-            timer.Start();
             WINML_PROFILING_START(g_Profiler, WINML_MODEL_TEST_PERF::BIND_VALUE);
         }
 
@@ -121,7 +119,10 @@ HRESULT BindInputFeatures(const LearningModel& model, const LearningModelBinding
         if (capturePerf)
         {
             WINML_PROFILING_STOP(g_Profiler, WINML_MODEL_TEST_PERF::BIND_VALUE);
-            output.m_clockBindTimes.push_back(timer.Stop());
+            if (args.PerIterCapture())
+            {
+                output.SaveBindTimes(g_Profiler, iterationNum);
+            }
         }
 
         if (!args.Silent())
@@ -146,19 +147,16 @@ HRESULT EvaluateModel(
     bool isGarbageData,
     const CommandLineArgs& args,
     OutputHelper& output,
-    bool capturePerf
+    bool capturePerf,
+    uint32_t iterationNum
 )
 {
     LearningModelEvaluationResult result = nullptr;
 
     try
     {
-        // Timer measures wall-clock time between the last two start/stop calls.
-        Timer timer;
-
         if (capturePerf)
         {
-            timer.Start();
             WINML_PROFILING_START(g_Profiler, WINML_MODEL_TEST_PERF::EVAL_MODEL);
         }
 
@@ -167,7 +165,10 @@ HRESULT EvaluateModel(
         if (capturePerf)
         {
             WINML_PROFILING_STOP(g_Profiler, WINML_MODEL_TEST_PERF::EVAL_MODEL);
-            output.m_clockEvalTimes.push_back(timer.Stop());
+            if (args.PerIterCapture())
+            {
+                output.SaveEvalPerformance(g_Profiler, iterationNum);
+            }
         }
     }
     catch (winrt::hresult_error hr)
@@ -270,17 +271,17 @@ HRESULT EvaluateModel(
     // Add one more iteration if we ignore the first run
     uint32_t numIterations = args.NumIterations() + args.IgnoreFirstRun();
 
-    bool isGarbageData = !args.CsvPath().empty() || !args.ImagePath().empty();
+    bool isGarbageData = args.CsvPath().empty() && args.ImagePath().empty();
 
     // Run the binding + evaluate multiple times and average the results
     for (uint32_t i = 0; i < numIterations; i++)
     {
-        bool captureIterationPerf = args.PerfCapture() && (!args.IgnoreFirstRun() || i > 0);
+        bool captureIterationPerf = (args.PerfCapture() && (!args.IgnoreFirstRun() || i > 0)) || (args.PerIterCapture());
 
         output.PrintBindingInfo(i + 1, deviceType, inputBindingType, inputDataType, deviceCreationLocation);
 
         std::vector<ILearningModelFeatureValue> inputFeatures = GenerateInputFeatures(model, args, inputBindingType, inputDataType, winrtDevice);
-        HRESULT bindInputResult = BindInputFeatures(model, context, inputFeatures, args, output, captureIterationPerf);
+        HRESULT bindInputResult = BindInputFeatures(model, context, inputFeatures, args, output, captureIterationPerf, i);
 
         if (FAILED(bindInputResult))
         {
@@ -289,15 +290,16 @@ HRESULT EvaluateModel(
 
         output.PrintEvaluatingInfo(i + 1, deviceType, inputBindingType, inputDataType, deviceCreationLocation);
 
-        HRESULT evalResult = EvaluateModel(model, context, session, isGarbageData, args, output, captureIterationPerf);
+        HRESULT evalResult = EvaluateModel(model, context, session, isGarbageData, args, output, captureIterationPerf, i);
 
         if (FAILED(evalResult))
         {
             return evalResult;
         }
     }
-
+    // Clean up session resources
     session.Close();
+    session.~LearningModelSession();
 
     return S_OK;
 }
@@ -320,7 +322,7 @@ HRESULT EvaluateModels(
 
         try
         {
-            model = LoadModel(path, args.PerfCapture(), args.Silent(), output);
+            model = LoadModel(path, args.PerfCapture() || args.PerIterCapture(), output, args, 0);
         }
         catch (hresult_error hr)
         {
@@ -334,6 +336,7 @@ HRESULT EvaluateModels(
         // Map and Sequence bindings are not supported yet
         if (!tensorDescriptor)
         {
+            std::wcout << L"Model: " + path + L" has an input type that isn't supported by WinMLRunner yet." << std::endl;
             continue;
         }
 
@@ -345,10 +348,10 @@ HRESULT EvaluateModels(
                 {
                     for (auto deviceCreationLocation : deviceCreationLocations)
                     {
-                        if (args.PerfCapture())
+                        if (args.PerfCapture() || args.PerIterCapture())
                         {
-                            output.ResetBindAndEvalTImes();
-                            g_Profiler.Reset();
+                            // Resets all values from profiler for bind and evaluate.
+                            g_Profiler.Reset(WINML_MODEL_TEST_PERF::BIND_VALUE, WINML_MODEL_TEST_PERF::COUNT);
                         }
 
                         if (inputDataType != InputDataType::Tensor)
@@ -380,6 +383,11 @@ HRESULT EvaluateModels(
                                 TypeHelper::Stringify(deviceCreationLocation),
                                 args.IgnoreFirstRun()
                             );
+                        }
+
+                        if (args.PerIterCapture())
+                        {
+                            output.WritePerformanceDataToCSVPerIteration(g_Profiler, args, args.ModelPath(), args.ImagePath());
                         }
                     }
                 }
@@ -481,7 +489,7 @@ int main(int argc, char** argv)
     winrt::init_apartment();
 
     CommandLineArgs args;
-    OutputHelper output(args.Silent());
+    OutputHelper output(args.NumIterations(), args.Silent());
 
     // Profiler is a wrapper class that captures and stores timing and memory usage data on the
     // CPU and GPU.
@@ -494,6 +502,10 @@ int main(int argc, char** argv)
     else
     {
         output.SetDefaultCSVFileName();
+    }
+
+    if (args.PerIterCapture()) {
+        output.SetDefaultCSVFileNamePerIteration();
     }
 
     if (!args.ModelPath().empty() || !args.FolderPath().empty())

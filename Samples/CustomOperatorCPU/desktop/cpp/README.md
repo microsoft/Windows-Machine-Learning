@@ -61,7 +61,7 @@ The Relu and NoisyRelu operator client code curates its own input data, but the 
   model run took 203 ticks
   tabby, tabby cat with confidence of 0.931461
   Egyptian cat with confidence of 0.065307
-  Persian cat with confidence of 0.000193
+  tiger cat with confidence of 0.002927
   ```
   Relu:
   ```

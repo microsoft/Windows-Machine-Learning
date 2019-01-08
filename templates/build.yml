@@ -3,7 +3,7 @@ parameters:
   BuildPlatform: 'x64'
 
 jobs:
-- job: $(BuildConfiguration)_$(BuildPlatform)
+- job: ${{ parameters.BuildConfiguration }}_${{ parameters.BuildPlatform }}
 
   pool: Package ES CodeHub Lab E
 

@@ -17,3 +17,28 @@ jobs:
   parameters:
     BuildConfiguration: Release
     BuildPlatform: x64
+
+- template: templates/build.yml
+  parameters:
+    BuildConfiguration: Debug
+    BuildPlatform: x64
+
+- template: templates/build.yml
+  parameters:
+    BuildConfiguration: Release
+    BuildPlatform: ARM
+
+- template: templates/build.yml
+  parameters:
+    BuildConfiguration: Debug
+    BuildPlatform: ARM
+
+- template: templates/build.yml
+  parameters:
+    BuildConfiguration: Release
+    BuildPlatform: x86
+
+- template: templates/build.yml
+  parameters:
+    BuildConfiguration: Debug
+    BuildPlatform: x86

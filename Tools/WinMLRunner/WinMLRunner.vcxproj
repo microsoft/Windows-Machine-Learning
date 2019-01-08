@@ -70,6 +70,7 @@
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v141</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
+    <WindowsAppContainer>false</WindowsAppContainer>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
@@ -140,9 +141,13 @@
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
-      <AdditionalDependencies>dxgi.lib;d3d12.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalOptions>WindowsApp.lib %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalDependencies>mincore.lib;windowsapp.lib;d3d12.lib;dxgi.lib;d3d11.lib</AdditionalDependencies>
+      <AdditionalOptions>
+      </AdditionalOptions>
       <DelayLoadDLLs>dxgi.dll;d3d11.dll</DelayLoadDLLs>
+      <IgnoreAllDefaultLibraries>
+      </IgnoreAllDefaultLibraries>
+      <IgnoreSpecificDefaultLibraries>kernel32.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -156,9 +161,13 @@
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
-      <AdditionalDependencies>dxgi.lib;d3d12.lib;windowsapp.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalOptions>WindowsApp.lib %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalDependencies>mincore.lib;windowsapp.lib;d3d12.lib;dxgi.lib;d3d11.lib</AdditionalDependencies>
+      <AdditionalOptions>
+      </AdditionalOptions>
       <DelayLoadDLLs>dxgi.dll;d3d11.dll</DelayLoadDLLs>
+      <IgnoreAllDefaultLibraries>
+      </IgnoreAllDefaultLibraries>
+      <IgnoreSpecificDefaultLibraries>kernel32.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">
@@ -172,9 +181,13 @@
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
-      <AdditionalDependencies>dxgi.lib;d3d12.lib;windowsapp.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalOptions>WindowsApp.lib %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalDependencies>mincore.lib;windowsapp.lib;d3d12.lib;dxgi.lib;d3d11.lib</AdditionalDependencies>
+      <AdditionalOptions>
+      </AdditionalOptions>
       <DelayLoadDLLs>dxgi.dll;d3d11.dll</DelayLoadDLLs>
+      <IgnoreAllDefaultLibraries>
+      </IgnoreAllDefaultLibraries>
+      <IgnoreSpecificDefaultLibraries>kernel32.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -192,9 +205,13 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <SubSystem>Console</SubSystem>
-      <AdditionalDependencies>dxgi.lib;d3d12.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalOptions>WindowsApp.lib %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalDependencies>mincore.lib;windowsapp.lib;d3d12.lib;dxgi.lib;d3d11.lib</AdditionalDependencies>
+      <AdditionalOptions>
+      </AdditionalOptions>
       <DelayLoadDLLs>dxgi.dll;d3d11.dll</DelayLoadDLLs>
+      <IgnoreAllDefaultLibraries>
+      </IgnoreAllDefaultLibraries>
+      <IgnoreSpecificDefaultLibraries>kernel32.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -212,9 +229,13 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <SubSystem>Console</SubSystem>
-      <AdditionalDependencies>dxgi.lib;d3d12.lib;windowsapp.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalOptions>WindowsApp.lib %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalDependencies>mincore.lib;windowsapp.lib;d3d12.lib;dxgi.lib;d3d11.lib</AdditionalDependencies>
+      <AdditionalOptions>
+      </AdditionalOptions>
       <DelayLoadDLLs>dxgi.dll;d3d11.dll</DelayLoadDLLs>
+      <IgnoreAllDefaultLibraries>
+      </IgnoreAllDefaultLibraries>
+      <IgnoreSpecificDefaultLibraries>kernel32.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">
@@ -232,9 +253,13 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <SubSystem>Console</SubSystem>
-      <AdditionalDependencies>dxgi.lib;d3d12.lib;windowsapp.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalOptions>WindowsApp.lib %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalDependencies>mincore.lib;windowsapp.lib;d3d12.lib;dxgi.lib;d3d11.lib</AdditionalDependencies>
+      <AdditionalOptions>
+      </AdditionalOptions>
       <DelayLoadDLLs>dxgi.dll;d3d11.dll</DelayLoadDLLs>
+      <IgnoreAllDefaultLibraries>
+      </IgnoreAllDefaultLibraries>
+      <IgnoreSpecificDefaultLibraries>kernel32.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
     </Link>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

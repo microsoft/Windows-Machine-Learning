@@ -20,7 +20,6 @@ void LoadLabels();
 VideoFrame LoadImageFile(hstring filePath);
 void PrintResults(IVectorView<float> results);
 bool ParseArgs(int argc, char* argv[]);
-LearningModelDevice getLearningModelDeviceFromAdapter(com_ptr<IDXGIAdapter1> spAdapter);
 
 int main(int argc, char* argv[])
 {
@@ -32,29 +31,14 @@ int main(int argc, char* argv[])
 		return -1;
 	}
 
-	// display all adapters
-	com_ptr<IDXGIFactory1> spFactory;
-	CreateDXGIFactory(__uuidof(IDXGIFactory), (void**)(spFactory.put()));
-    std::vector <com_ptr<IDXGIAdapter1>> validAdapters;
-    for (UINT i = 0; ; ++i) {
-        com_ptr<IDXGIAdapter1> spAdapter;
-        if (spFactory->EnumAdapters1(i, spAdapter.put()) != S_OK) {
-            break;
-        } 
+    std::vector <com_ptr<IDXGIAdapter1>> validAdapters = AdapterSelection::EnumerateAdapters(true);
+    for (int i = 0; i < validAdapters.size(); i++) {
         DXGI_ADAPTER_DESC1 pDesc;
-        spAdapter->GetDesc1(&pDesc);
-        
-        // is a software adapter
-        if (pDesc.Flags == DXGI_ADAPTER_FLAG_SOFTWARE || (pDesc.VendorId == 0x1414 && pDesc.DeviceId == 0x8c)) {
-            continue;
-        } 
-        // valid GPU adapter
-        else {
-            printf("Index: %" PRIu64 ", Description: %ls\n", validAdapters.size(), pDesc.Description);
-            wcout << pDesc.Description << endl;
-            validAdapters.push_back(spAdapter);
-        }
+        com_ptr<IDXGIAdapter1> currAdapter = validAdapters.at(i);
+        currAdapter->GetDesc1(&pDesc);
+        printf("Index: %d, Description: %ls\n", i, pDesc.Description);
     }
+
     LearningModelDevice device = nullptr;
 	if (validAdapters.size() == 0) {
 		printf("There are no available adapters, running on CPU...\n");
@@ -70,8 +54,7 @@ int main(int argc, char* argv[])
             printf("Invalid index, please try again.\n");
         }
         printf("Selected adapter at index %d\n", selectedIndex);
-
-        device = getLearningModelDeviceFromAdapter(validAdapters.at(selectedIndex));
+        device = AdapterSelection::GetLearningModelDeviceFromAdapter(validAdapters.at(selectedIndex));
     }
 
 	// load the model
@@ -108,29 +91,6 @@ int main(int argc, char* argv[])
 	auto resultTensor = results.Outputs().Lookup(outputName).as<TensorFloat>();
 	auto resultVector = resultTensor.GetAsVectorView();
 	PrintResults(resultVector);
-}
-
-LearningModelDevice getLearningModelDeviceFromAdapter(com_ptr<IDXGIAdapter1> spAdapter) {
-
-    // create D3D12Device
-    com_ptr<IUnknown> spIUnknownAdapter;
-    spAdapter->QueryInterface(IID_IUnknown, spIUnknownAdapter.put_void());
-    com_ptr<ID3D12Device> spD3D12Device;
-    D3D12CreateDevice(spIUnknownAdapter.get(), D3D_FEATURE_LEVEL_11_0, _uuidof(ID3D12Device), spD3D12Device.put_void());
-
-    // create D3D12 command queue from device
-    D3D12_COMMAND_QUEUE_DESC queueDesc = {};
-    queueDesc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;
-    queueDesc.Type = D3D12_COMMAND_LIST_TYPE_DIRECT;
-    com_ptr<ID3D12CommandQueue> spCommandQueue;
-    spD3D12Device->CreateCommandQueue(&queueDesc, IID_PPV_ARGS(spCommandQueue.put()));
-
-    // create LearningModelDevice from command queue	
-    com_ptr<ILearningModelDeviceFactoryNative> dFactory =
-        get_activation_factory<LearningModelDevice, ILearningModelDeviceFactoryNative>();
-    com_ptr<::IUnknown> spLearningDevice;
-    dFactory->CreateFromD3D12CommandQueue(spCommandQueue.get(), spLearningDevice.put());
-    return spLearningDevice.as<LearningModelDevice>();
 }
 
 bool ParseArgs(int argc, char* argv[])

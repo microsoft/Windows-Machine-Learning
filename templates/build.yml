@@ -13,8 +13,8 @@ jobs:
 
   steps:
     
-  - powershell: |
-    dir "${ENV:programfiles(x86)}\windows Kits\10\include\10.0.17763.0\"
+  - powershell:
+    script: dir "${ENV:programfiles(x86)}\windows Kits\10\include\10.0.17763.0\"
     
     displayName: 'Check SDK Version 17763 is present'
 

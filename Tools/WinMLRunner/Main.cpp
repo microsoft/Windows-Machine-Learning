@@ -289,6 +289,8 @@ HRESULT EvaluateModel(
             spAdapter->QueryProperty(DXCoreProperty::DriverDescription, sizeof(driverDescription), driverDescription);
             printf("Use adapter : %s\n", driverDescription);
 
+            pAdapter = spAdapter.get();
+
             com_ptr<IDXGIAdapter> spDxgiAdapter;
 
             if (spAdapter->IsDXAttributeSupported(DXCORE_ADAPTER_ATTRIBUTE_D3D_GRFX))
@@ -298,19 +300,17 @@ HRESULT EvaluateModel(
 
                 com_ptr<IDXGIFactory4> dxgiFactory4;
                 hr = CreateDXGIFactory2(0, __uuidof(IDXGIFactory4), dxgiFactory4.put_void());
-                THROW_IF_FAILED(hr);
+                if (hr == S_OK)
+                {
+                    LUID adapterLuid;
+                    spAdapter->GetLUID(&adapterLuid);
 
-                LUID adapterLuid;
-                spAdapter->GetLUID(&adapterLuid);
-
-                hr = dxgiFactory4->EnumAdapterByLuid(adapterLuid, __uuidof(IDXGIAdapter), spDxgiAdapter.put_void());
-                THROW_IF_FAILED(hr);
-
-                pAdapter = spDxgiAdapter.get();
-            }
-            else
-            {
-                pAdapter = spAdapter.get();
+                    hr = dxgiFactory4->EnumAdapterByLuid(adapterLuid, __uuidof(IDXGIAdapter), spDxgiAdapter.put_void());
+                    if (hr == S_OK)
+                    {
+                        pAdapter = spDxgiAdapter.get();
+                    }
+                }
             }
 
             com_ptr<ID3D12Device> d3d12Device;

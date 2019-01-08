@@ -3,7 +3,7 @@ parameters:
   BuildPlatform: 'x64'
 
 jobs:
-- job: ${{BuildConfiguration}}|${{BuildPlatform}}
+- job: ${{ parameters.BuildConfiguration }}|${{ parameters.BuildPlatform }}
 
   pool: Package ES CodeHub Lab E
 
@@ -14,6 +14,7 @@ jobs:
   steps:
     
   - powershell:
+    type: inline
     script: dir "${ENV:programfiles(x86)}\windows Kits\10\include\10.0.17763.0\"
     
     displayName: 'Check SDK Version 17763 is present'

@@ -3,19 +3,8 @@
 - repo: self
   clean: true
 
-queue:
-
-  name: Package ES CodeHub Lab E
-
-  demands: 
-  - msbuild
-  - visualstudio
-
-
 variables:
 
-  BuildConfiguration: Release
-  BuildPlatform: x64
   SamplesBin: SamplesBin
   system.collectionId: ee8504d9-65a6-4f6c-85ed-0ad4265128ee
   system.debug: false

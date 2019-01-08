@@ -4,7 +4,13 @@ parameters:
 
 jobs:
 - job: ${{BuildConfiguration}}|${{BuildPlatform}}
-  
+
+  pool: Package ES CodeHub Lab E
+
+  demands: 
+  - msbuild
+  - visualstudio
+
   steps:
     
   - powershell: |

@@ -9,9 +9,6 @@
     <ClInclude Include="..\..\..\..\SharedContent\models\SqueezeNet.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\..\..\..\SharedContent\models\SqueezeNet.onnx">
-      <Filter>SharedContent</Filter>
-    </None>
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>

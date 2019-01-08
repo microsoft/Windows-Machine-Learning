@@ -185,7 +185,7 @@ jobs:
     condition: succeededOrFailed()
 
 
-    - task: VSBuild@1
+  - task: VSBuild@1
 
     displayName: 'Build Emoji Sample'
 

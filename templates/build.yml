@@ -169,11 +169,11 @@ jobs:
 
   - task: VSBuild@1
 
-    displayName: 'Build Emoji Sample'
+    displayName: 'Build AdapterSelection Sample '
 
     inputs:
 
-      solution: Samples/Emoji8/UWP/cs/Emoji8.sln
+      solution: Samples/AdapterSelection/AdapterSelection.sln
       vsVersion: 15.0
       msbuildArgs: '/p:AppxPackageSigningEnabled=false -v:diag /p:OutDir=$(System.DefaultWorkingDirectory)\bin\${{ parameters.BuildPlatform }}\${{ parameters.BuildConfiguration }}\'
       platform: '${{ parameters.BuildPlatform }}'
@@ -185,13 +185,13 @@ jobs:
     condition: succeededOrFailed()
 
 
-  - task: VSBuild@1
+    - task: VSBuild@1
 
-    displayName: 'Build AdapterSelection Sample '
+    displayName: 'Build Emoji Sample'
 
     inputs:
 
-      solution: Samples/AdapterSelection/AdapterSelection.sln
+      solution: Samples/Emoji8/UWP/cs/Emoji8.sln
       vsVersion: 15.0
       msbuildArgs: '/p:AppxPackageSigningEnabled=false -v:diag /p:OutDir=$(System.DefaultWorkingDirectory)\bin\${{ parameters.BuildPlatform }}\${{ parameters.BuildConfiguration }}\'
       platform: '${{ parameters.BuildPlatform }}'

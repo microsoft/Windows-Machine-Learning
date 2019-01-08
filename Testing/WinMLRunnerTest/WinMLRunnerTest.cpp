@@ -461,14 +461,6 @@ namespace WinMLRunnerTest
             Assert::AreEqual(0, RunProc((wchar_t *)command.c_str()));
         }
 
-        TEST_METHOD(ProvidedImageBadBinding)
-        {
-            const std::wstring modelPath = CURRENT_PATH + L"SqueezeNet.onnx";
-            const std::wstring inputPath = CURRENT_PATH + L"fish_112.png";
-            const std::wstring command = BuildCommand({ EXE_PATH, L"-model ", modelPath, L"-input", inputPath });
-            Assert::AreNotEqual(0, RunProc((wchar_t *)command.c_str()));
-        }
-
         TEST_METHOD(AutoScaleImage)
         {
             const std::wstring modelPath = CURRENT_PATH + L"SqueezeNet.onnx";
@@ -511,6 +503,20 @@ namespace WinMLRunnerTest
         {
             const std::wstring command = BuildCommand({ EXE_PATH });
             Assert::AreEqual(0, RunProc((wchar_t *)command.c_str()));
+        }
+        TEST_METHOD(TestWinMLRunnerDllLinking)
+        {
+            //Run DLL Linked Executable and check if success
+            const std::wstring winmlRunnerDllLinkedExecutablePath = CURRENT_PATH + L"WinMLRunner_Link_DLL.exe";
+            const std::wstring modelPath = CURRENT_PATH + L"SqueezeNet.onnx";
+            const std::wstring command = BuildCommand({ winmlRunnerDllLinkedExecutablePath,  L"-model", modelPath });
+            Assert::AreEqual(0, RunProc((wchar_t *)command.c_str()));
+
+            //Remove WinMLRunnerDLL and then run DLL Linked Executable and check if failed
+            std::string winmlRunnerDLLPath(CURRENT_PATH.begin(), CURRENT_PATH.end());
+            winmlRunnerDLLPath += "WinMLRunnerDLL.dll";
+            remove(winmlRunnerDLLPath.c_str());
+            Assert::AreNotEqual(0, RunProc((wchar_t *)command.c_str()));
         }
     };
 }

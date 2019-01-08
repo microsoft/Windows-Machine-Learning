@@ -4,7 +4,7 @@
 class CommandLineArgs
 {
 public:
-    CommandLineArgs();
+    __declspec(dllexport) CommandLineArgs();
     void PrintUsage();
 
     bool UseGPUHighPerformance() const { return m_useGPUHighPerformance; }

@@ -2,10 +2,10 @@
 #include "OutputHelper.h"
 #include "ModelBinding.h"
 #include "BindingUtilities.h"
-#include "CommandLineArgs.h"
 #include <filesystem>
 #include <d3d11.h>
 #include <Windows.Graphics.DirectX.Direct3D11.interop.h>
+#include "Run.h"
 
 Profiler<WINML_MODEL_TEST_PERF> g_Profiler;
 
@@ -280,7 +280,17 @@ HRESULT EvaluateModel(
 
         output.PrintBindingInfo(i + 1, deviceType, inputBindingType, inputDataType, deviceCreationLocation);
 
-        std::vector<ILearningModelFeatureValue> inputFeatures = GenerateInputFeatures(model, args, inputBindingType, inputDataType, winrtDevice);
+        std::vector<ILearningModelFeatureValue> inputFeatures;
+        try
+        {
+            inputFeatures = GenerateInputFeatures(model, args, inputBindingType, inputDataType, winrtDevice);
+        }
+        catch (hresult_error hr)
+        {
+            std::wcout << "\nGenerating Input Features [FAILED]" << std::endl;
+            std::wcout << hr.message().c_str() << std::endl;
+            return hr.code();
+        }
         HRESULT bindInputResult = BindInputFeatures(model, context, inputFeatures, args, output, captureIterationPerf, i);
 
         if (FAILED(bindInputResult))
@@ -483,12 +493,10 @@ std::vector<DeviceCreationLocation> FetchDeviceCreationLocations(const CommandLi
     return deviceCreationLocations;
 }
 
-int main(int argc, char** argv)
+int run(CommandLineArgs& args)
 {
     // Initialize COM in a multi-threaded environment.
     winrt::init_apartment();
-
-    CommandLineArgs args;
     OutputHelper output(args.NumIterations(), args.Silent());
 
     // Profiler is a wrapper class that captures and stores timing and memory usage data on the

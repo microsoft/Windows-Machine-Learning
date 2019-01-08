@@ -49,7 +49,7 @@ namespace WinMLRunnerTest
     {
         std::ifstream fin;
         fin.open(OUTPUT_PATH);
-        return std::count(std::istreambuf_iterator<char>(fin), std::istreambuf_iterator<char>(), '\n');
+        return static_cast<size_t>(std::count(std::istreambuf_iterator<char>(fin), std::istreambuf_iterator<char>(), '\n'));
     }
 
     static void RemoveModelsFromFolder(std::initializer_list<std::string>&& modelList)
@@ -440,46 +440,32 @@ namespace WinMLRunnerTest
 
         TEST_METHOD(ProvidedImageInputCpuAndGpu)
         {
-            auto const curPath = FileHelper::GetModulePath();
-            std::wstring command = curPath +
-                L"./WinMLRunner " + L"-model " + curPath + L"SqueezeNet.onnx "
-                + L" -input " + curPath + L"fish.png";
-            Assert::AreEqual(0, RunProc((wchar_t *)command.c_str()));
+            const std::wstring modelPath = CURRENT_PATH + L"SqueezeNet.onnx";
+            const std::wstring inputPath = CURRENT_PATH + L"fish.png";
+            const std::wstring command = BuildCommand({ EXE_PATH, L"-model ", modelPath, L"-input", inputPath });
         }
 
         TEST_METHOD(ProvidedImageInputOnlyCpu)
         {
-            auto const curPath = FileHelper::GetModulePath();
-            std::wstring command = curPath +
-                L"./WinMLRunner " + L"-model " + curPath + L"SqueezeNet.onnx " + L"-CPU"
-                + L" -input " + curPath + L"fish.png";
+            const std::wstring modelPath = CURRENT_PATH + L"SqueezeNet.onnx";
+            const std::wstring inputPath = CURRENT_PATH + L"fish.png";
+            const std::wstring command = BuildCommand({ EXE_PATH, L"-model ", modelPath, L"-input", inputPath, L"-CPU" });
             Assert::AreEqual(0, RunProc((wchar_t *)command.c_str()));
         }
 
         TEST_METHOD(ProvidedImageInputOnlyGpu)
         {
-            auto const curPath = FileHelper::GetModulePath();
-            std::wstring command = curPath +
-                L"./WinMLRunner " + L"-model " + curPath + L"SqueezeNet.onnx " + L"-GPU"
-                + L" -input " + curPath + L"fish.png";
+            const std::wstring modelPath = CURRENT_PATH + L"SqueezeNet.onnx";
+            const std::wstring inputPath = CURRENT_PATH + L"fish.png";
+            const std::wstring command = BuildCommand({ EXE_PATH, L"-model ", modelPath, L"-input", inputPath, L"-GPU" });
             Assert::AreEqual(0, RunProc((wchar_t *)command.c_str()));
-        }
-
-        TEST_METHOD(ProvidedImageBadBinding)
-        {
-            auto const curPath = FileHelper::GetModulePath();
-            std::wstring command = curPath +
-                L"./WinMLRunner " + L"-model " + curPath + L"SqueezeNet.onnx "
-                + L" -input " + curPath + L"fish_112.png";
-            Assert::AreNotEqual(0, RunProc((wchar_t *)command.c_str()));
         }
 
         TEST_METHOD(AutoScaleImage)
         {
-            auto const curPath = FileHelper::GetModulePath();
-            std::wstring command = curPath +
-                L"./WinMLRunner " + L"-model " + curPath + L"SqueezeNet.onnx "
-                + L" -input " + curPath + L"fish_112.png -autoScale Cubic";
+            const std::wstring modelPath = CURRENT_PATH + L"SqueezeNet.onnx";
+            const std::wstring inputPath = CURRENT_PATH + L"fish_112.png";
+            const std::wstring command = BuildCommand({ EXE_PATH, L"-model ", modelPath, L"-input", inputPath, L"-autoScale", L"Cubic" });
             Assert::AreEqual(0, RunProc((wchar_t*)command.c_str()));
         }
     };
@@ -489,19 +475,17 @@ namespace WinMLRunnerTest
     public:
         TEST_METHOD(ProvidedCSVInput)
         {
-            auto const curPath = FileHelper::GetModulePath();
-            std::wstring command = curPath +
-                L"./WinMLRunner " + L"-model " + curPath + L"SqueezeNet.onnx "
-                + L" -input " + curPath + L"kitten_224.csv";
+            const std::wstring modelPath = CURRENT_PATH + L"SqueezeNet.onnx";
+            const std::wstring inputPath = CURRENT_PATH + L"kitten_224.csv";
+            const std::wstring command = BuildCommand({ EXE_PATH, L"-model", modelPath, L"-input", inputPath });
             Assert::AreEqual(0, RunProc((wchar_t *)command.c_str()));
         }
 
         TEST_METHOD(ProvidedCSVBadBinding)
         {
-            auto const curPath = FileHelper::GetModulePath();
-            std::wstring command = curPath +
-                L"./WinMLRunner " + L"-model " + curPath + L"SqueezeNet.onnx "
-                + L" -input " + curPath + L"horizontal-crop.csv";
+            const std::wstring modelPath = CURRENT_PATH + L"SqueezeNet.onnx";
+            const std::wstring inputPath = CURRENT_PATH + L"horizontal-crop.csv";
+            const std::wstring command = BuildCommand({ EXE_PATH, L"-model", modelPath, L"-input", inputPath });
             Assert::AreNotEqual(0, RunProc((wchar_t *)command.c_str()));
         }
     };
@@ -511,16 +495,28 @@ namespace WinMLRunnerTest
     public:
         TEST_METHOD(LoadModelFailModelNotFound)
         {
-            auto const curPath = FileHelper::GetModulePath();
-            std::wstring command = curPath + L"./WinMLRunner " + L"-model invalid_model_name";
+            const std::wstring command = BuildCommand({ EXE_PATH, L"-model", L"invalid_model_name" });
             Assert::AreNotEqual(0, RunProc((wchar_t *)command.c_str()));
         }
 
         TEST_METHOD(TestPrintUsage)
         {
-            auto const curPath = FileHelper::GetModulePath();
-            std::wstring command = curPath + L"./WinMLRunner";
+            const std::wstring command = BuildCommand({ EXE_PATH });
             Assert::AreEqual(0, RunProc((wchar_t *)command.c_str()));
+        }
+        TEST_METHOD(TestWinMLRunnerDllLinking)
+        {
+            //Run DLL Linked Executable and check if success
+            const std::wstring winmlRunnerDllLinkedExecutablePath = CURRENT_PATH + L"WinMLRunner_Link_DLL.exe";
+            const std::wstring modelPath = CURRENT_PATH + L"SqueezeNet.onnx";
+            const std::wstring command = BuildCommand({ winmlRunnerDllLinkedExecutablePath,  L"-model", modelPath });
+            Assert::AreEqual(0, RunProc((wchar_t *)command.c_str()));
+
+            //Remove WinMLRunnerDLL and then run DLL Linked Executable and check if failed
+            std::string winmlRunnerDLLPath(CURRENT_PATH.begin(), CURRENT_PATH.end());
+            winmlRunnerDLLPath += "WinMLRunnerDLL.dll";
+            remove(winmlRunnerDLLPath.c_str());
+            Assert::AreNotEqual(0, RunProc((wchar_t *)command.c_str()));
         }
     };
 }

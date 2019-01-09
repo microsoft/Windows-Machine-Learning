@@ -302,12 +302,11 @@ HRESULT EvaluateModel(
 
                 try
                 {
-                    hr = CreateDXGIFactory2(0, __uuidof(IDXGIFactory4), dxgiFactory4.put_void());
+                    hr = CreateDXGIFactory2SEH(dxgiFactory4.put_void());
                 }
                 catch (...)
                 {
-                    // DXGI doesn't throw exception, this should be from delayed-load
-                    hr = HRESULT_FROM_WIN32(ERROR_MOD_NOT_FOUND);
+                    hr = E_FAIL;
                 }
 
                 if (hr == S_OK)
@@ -571,6 +570,23 @@ std::vector<DeviceCreationLocation> FetchDeviceCreationLocations(const CommandLi
     }
 
     return deviceCreationLocations;
+}
+
+HRESULT CreateDXGIFactory2SEH(void **pIDXGIFactory)
+{
+    HRESULT hr;
+
+    __try
+    {
+        hr = CreateDXGIFactory2(0, __uuidof(IDXGIFactory4), pIDXGIFactory);
+    }
+    __except (GetExceptionCode() == VcppException(ERROR_SEVERITY_ERROR, ERROR_MOD_NOT_FOUND) ?
+        EXCEPTION_EXECUTE_HANDLER : EXCEPTION_CONTINUE_SEARCH)
+    {
+        hr = HRESULT_FROM_WIN32(ERROR_MOD_NOT_FOUND);
+    }
+
+    return hr;
 }
 
 int main(int argc, char** argv)

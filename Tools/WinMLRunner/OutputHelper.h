@@ -111,19 +111,17 @@ public:
         {
             std::cout << "WinML Runner" << std::endl;
 
-            com_ptr<IDXGIFactory6> factory;
+            com_ptr<IDXGIFactory4> factory;
             HRESULT hr;
 
             try
             {
-                hr = CreateDXGIFactory1(__uuidof(IDXGIFactory6), factory.put_void());
+                hr = CreateDXGIFactory2SEH(factory.put_void());
             }
-            catch(...)
+            catch (...)
             {
-                // DXGI doesn't throw exception, this should be from delayed-load
-                hr = HRESULT_FROM_WIN32(ERROR_MOD_NOT_FOUND);
+                hr = E_FAIL;
             }
-
             if (hr != S_OK)
             {
                 return;

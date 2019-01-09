@@ -92,3 +92,15 @@ inline void ThrowFailure(const std::wstring &errorMsg)
 {
 	throw errorMsg;
 }
+
+//
+// Delay load exception information
+//
+#ifndef FACILITY_VISUALCPP
+#define FACILITY_VISUALCPP  ((LONG)0x6d)
+#endif
+
+#define VcppException(sev,err)  ((sev) | (FACILITY_VISUALCPP<<16) | err)
+
+HRESULT CreateDXGIFactory2SEH(void **pIDXGIFactory);
+

@@ -299,7 +299,17 @@ HRESULT EvaluateModel(
                 commandQueueType = D3D12_COMMAND_LIST_TYPE_DIRECT;
 
                 com_ptr<IDXGIFactory4> dxgiFactory4;
-                hr = CreateDXGIFactory2(0, __uuidof(IDXGIFactory4), dxgiFactory4.put_void());
+
+                try
+                {
+                    hr = CreateDXGIFactory2(0, __uuidof(IDXGIFactory4), dxgiFactory4.put_void());
+                }
+                catch (...)
+                {
+                    // DXGI doesn't throw exception, this should be from delayed-load
+                    hr = HRESULT_FROM_WIN32(ERROR_MOD_NOT_FOUND);
+                }
+
                 if (hr == S_OK)
                 {
                     LUID adapterLuid;

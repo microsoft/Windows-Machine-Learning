@@ -106,7 +106,6 @@
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
     <Compile Include="GameText.cs" />
-    <Compile Include="model.cs" />
     <Compile Include="Pages\PageHelpers\GifHelpers.cs" />
     <Compile Include="Pages\PageHelpers\XAMLConverters.cs" />
     <Compile Include="Services\CameraService.cs" />

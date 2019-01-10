@@ -9,12 +9,10 @@ Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Debug|ARM = Debug|ARM
-		Debug|ARM64 = Debug|ARM64
 		Debug|x64 = Debug|x64
 		Debug|x86 = Debug|x86
 		Release|Any CPU = Release|Any CPU
 		Release|ARM = Release|ARM
-		Release|ARM64 = Release|ARM64
 		Release|x64 = Release|x64
 		Release|x86 = Release|x86
 	EndGlobalSection
@@ -25,7 +23,6 @@ Global
 		{8CBEC912-AFBF-4F0D-9178-6AE8280CCA0C}.Debug|ARM.ActiveCfg = Debug|ARM
 		{8CBEC912-AFBF-4F0D-9178-6AE8280CCA0C}.Debug|ARM.Build.0 = Debug|ARM
 		{8CBEC912-AFBF-4F0D-9178-6AE8280CCA0C}.Debug|ARM.Deploy.0 = Debug|ARM
-		{8CBEC912-AFBF-4F0D-9178-6AE8280CCA0C}.Debug|ARM64.ActiveCfg = Debug|x64
 		{8CBEC912-AFBF-4F0D-9178-6AE8280CCA0C}.Debug|x64.ActiveCfg = Debug|x64
 		{8CBEC912-AFBF-4F0D-9178-6AE8280CCA0C}.Debug|x64.Build.0 = Debug|x64
 		{8CBEC912-AFBF-4F0D-9178-6AE8280CCA0C}.Debug|x64.Deploy.0 = Debug|x64
@@ -36,7 +33,6 @@ Global
 		{8CBEC912-AFBF-4F0D-9178-6AE8280CCA0C}.Release|ARM.ActiveCfg = Release|ARM
 		{8CBEC912-AFBF-4F0D-9178-6AE8280CCA0C}.Release|ARM.Build.0 = Release|ARM
 		{8CBEC912-AFBF-4F0D-9178-6AE8280CCA0C}.Release|ARM.Deploy.0 = Release|ARM
-		{8CBEC912-AFBF-4F0D-9178-6AE8280CCA0C}.Release|ARM64.ActiveCfg = Release|ARM64
 		{8CBEC912-AFBF-4F0D-9178-6AE8280CCA0C}.Release|x64.ActiveCfg = Release|x64
 		{8CBEC912-AFBF-4F0D-9178-6AE8280CCA0C}.Release|x64.Build.0 = Release|x64
 		{8CBEC912-AFBF-4F0D-9178-6AE8280CCA0C}.Release|x64.Deploy.0 = Release|x64

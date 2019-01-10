@@ -8,11 +8,9 @@ EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|ARM = Debug|ARM
-		Debug|ARM64 = Debug|ARM64
 		Debug|x64 = Debug|x64
 		Debug|x86 = Debug|x86
 		Release|ARM = Release|ARM
-		Release|ARM64 = Release|ARM64
 		Release|x64 = Release|x64
 		Release|x86 = Release|x86
 	EndGlobalSection
@@ -20,9 +18,6 @@ Global
 		{97D29DB4-FA18-4816-A9A5-FFBFCFC0104C}.Debug|ARM.ActiveCfg = Debug|ARM
 		{97D29DB4-FA18-4816-A9A5-FFBFCFC0104C}.Debug|ARM.Build.0 = Debug|ARM
 		{97D29DB4-FA18-4816-A9A5-FFBFCFC0104C}.Debug|ARM.Deploy.0 = Debug|ARM
-		{97D29DB4-FA18-4816-A9A5-FFBFCFC0104C}.Debug|ARM64.ActiveCfg = Debug|ARM64
-		{97D29DB4-FA18-4816-A9A5-FFBFCFC0104C}.Debug|ARM64.Build.0 = Debug|ARM64
-		{97D29DB4-FA18-4816-A9A5-FFBFCFC0104C}.Debug|ARM64.Deploy.0 = Debug|ARM64
 		{97D29DB4-FA18-4816-A9A5-FFBFCFC0104C}.Debug|x64.ActiveCfg = Debug|x64
 		{97D29DB4-FA18-4816-A9A5-FFBFCFC0104C}.Debug|x64.Build.0 = Debug|x64
 		{97D29DB4-FA18-4816-A9A5-FFBFCFC0104C}.Debug|x64.Deploy.0 = Debug|x64
@@ -32,9 +27,6 @@ Global
 		{97D29DB4-FA18-4816-A9A5-FFBFCFC0104C}.Release|ARM.ActiveCfg = Release|ARM
 		{97D29DB4-FA18-4816-A9A5-FFBFCFC0104C}.Release|ARM.Build.0 = Release|ARM
 		{97D29DB4-FA18-4816-A9A5-FFBFCFC0104C}.Release|ARM.Deploy.0 = Release|ARM
-		{97D29DB4-FA18-4816-A9A5-FFBFCFC0104C}.Release|ARM64.ActiveCfg = Release|ARM64
-		{97D29DB4-FA18-4816-A9A5-FFBFCFC0104C}.Release|ARM64.Build.0 = Release|ARM64
-		{97D29DB4-FA18-4816-A9A5-FFBFCFC0104C}.Release|ARM64.Deploy.0 = Release|ARM64
 		{97D29DB4-FA18-4816-A9A5-FFBFCFC0104C}.Release|x64.ActiveCfg = Release|x64
 		{97D29DB4-FA18-4816-A9A5-FFBFCFC0104C}.Release|x64.Build.0 = Release|x64
 		{97D29DB4-FA18-4816-A9A5-FFBFCFC0104C}.Release|x64.Deploy.0 = Release|x64

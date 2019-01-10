@@ -23,7 +23,7 @@ jobs:
     BuildConfiguration: Debug
     BuildPlatform: x64
 
-# ARM/ARM64 builds are disabled in the build configuration for desktop app projects
+# ARM builds are disabled in the build configuration for desktop app projects
 - template: templates/build.yml
   parameters:
     BuildConfiguration: Release
@@ -33,16 +33,6 @@ jobs:
   parameters:
     BuildConfiguration: Debug
     BuildPlatform: ARM
-
-- template: templates/build.yml
-  parameters:
-    BuildConfiguration: Release
-    BuildPlatform: ARM64
-
-- template: templates/build.yml
-  parameters:
-    BuildConfiguration: Debug
-    BuildPlatform: ARM64
 
 - template: templates/build.yml
   parameters:

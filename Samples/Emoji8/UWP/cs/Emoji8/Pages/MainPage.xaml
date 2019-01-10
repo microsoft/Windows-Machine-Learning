@@ -1,0 +1,68 @@
+﻿<Page
+    x:Class="Emoji8.MainPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Emoji8"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:controls="using:Microsoft.Toolkit.Uwp.UI.Controls"
+    xmlns:extensions="using:Microsoft.Toolkit.Uwp.UI.Extensions"
+    mc:Ignorable="d">
+
+    <Grid x:Name="Root" Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" extensions:FrameworkElementExtensions.EnableActualSizeBinding="True">
+
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto" MaxHeight="20"/>
+            </Grid.RowDefinitions>
+
+            <!--display Emoji8 logo-->
+            <Grid Grid.Row="0" Margin="0,32,0,0">
+                <Image HorizontalAlignment="Center" Source="ms-appx:///Assets/emoji8.png" MaxHeight="72" Margin="160,0,160,0"></Image>
+            </Grid>
+
+            <!--display initialization screen instructions for user-->
+            <Grid Grid.Row="1">
+                <Viewbox MaxWidth="800" Margin="15">
+                    <TextBlock x:Name="instructions" Text="" Margin="0,20,0,0" HorizontalAlignment="Center" TextWrapping="Wrap" FontSize="36"></TextBlock>
+                </Viewbox>
+            </Grid>
+
+            <!--display emoji carousel that updates position based on model evaluation and/or user input-->
+            <Grid Grid.Row="2">
+                <Viewbox>
+                    <controls:Carousel x:Name="CarouselControl"
+                            InvertPositive="True"
+                            ItemDepth="300"
+                            ItemMargin="0"
+                            ItemRotationX="0"
+                            ItemRotationY="45"
+                            ItemRotationZ ="0"
+                            Orientation="Horizontal"
+                            SelectedIndex="6">
+                        <controls:Carousel.EasingFunction>
+                            <CubicEase EasingMode="EaseOut" />
+                        </controls:Carousel.EasingFunction>
+                        <controls:Carousel.ItemTemplate>
+                            <DataTemplate>
+                                <FontIcon x:Name="Icon" FontFamily="Segoe UI Emoji" Glyph="{Binding Icon}" FontSize="400"/>
+                            </DataTemplate>
+                        </controls:Carousel.ItemTemplate>
+                    </controls:Carousel>
+                </Viewbox>
+            </Grid>
+
+            <!--display button for starting gameplay-->
+            <Grid Grid.Row="3" MaxHeight="112" Margin="10">
+                <Viewbox>
+                    <Button  x:Name="StartButton" x:Uid="StartButton" Margin="0,4,0,32" IsEnabled="False" Content="" FontSize="20" Click="Start_Click" Style="{StaticResource ButtonIconStyle}">
+                    </Button>
+                </Viewbox>
+            </Grid>
+        </Grid>
+
+    </Grid>
+</Page>

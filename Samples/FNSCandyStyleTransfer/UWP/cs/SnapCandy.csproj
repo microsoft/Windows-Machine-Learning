@@ -164,15 +164,10 @@
     <Content Include="Assets\la_muse.onnx">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="Assets\rain_princess.onnx">
+    <Content Include="Assets\candy.onnx">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Assets\wave.onnx">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Assets\winmlperf_coreml_FNS-Candy_prerelease.onnx">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
+    <Content Include="Assets\mosaic.onnx" />
     <None Include="SnapCandy_TemporaryKey.pfx" />
   </ItemGroup>
   <ItemGroup>

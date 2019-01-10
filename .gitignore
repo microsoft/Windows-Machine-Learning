@@ -286,4 +286,6 @@ __pycache__/
 *.btm.cs
 *.odx.cs
 *.xsd.cs
-/Samples/FNSCandyStyleTransfer/UWP/cs/DXRenderComponent/DXRenderComponent/Generated Files
+
+# UWP Generated files
+**/Generated Files/

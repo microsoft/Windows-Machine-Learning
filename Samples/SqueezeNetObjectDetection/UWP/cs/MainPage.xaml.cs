@@ -195,15 +195,6 @@ namespace SqueezeNetObjectDetection
                     ImageFeatureValue imageTensor = ImageFeatureValue.CreateFromVideoFrame(inputFrame);
                     binding.Bind("data_0", imageTensor);
 
-                    // temp: there is a bug where winml doesn't allow unbound outputs yet, prebind the output!
-                    {
-                        TensorFeatureDescriptor outputTensorDescription = _model.OutputFeatures.FirstOrDefault(
-                            feature => feature.Name == "softmaxout_1"
-                            ) as TensorFeatureDescriptor;
-                        TensorFloat outputTensor = TensorFloat.Create(outputTensorDescription.Shape);
-                        binding.Bind("softmaxout_1", outputTensor);
-                    }
-
                     StatusBlock.Text = "Running model...";
 
                     int ticks = Environment.TickCount;

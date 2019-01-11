@@ -197,9 +197,18 @@ namespace BindingUtilities
             case TensorKind::Float:
             {
                 ModelBinding<float> binding(description);
-                auto elementStrings = csvFilePath.empty() ? std::vector<std::string>(binding.GetDataBufferSize()) : ParseCSVElementStrings(csvFilePath);
-                WriteDataToBinding<float>(elementStrings, binding);
-                return TensorFloat::CreateFromArray(binding.GetShapeBuffer(), binding.GetDataBuffer());
+                if (csvFilePath.empty())
+                {
+                    float* data = binding.GetData();
+                    memset(data, 0, binding.GetDataBufferSize());
+                    return TensorFloat::CreateFromArray(binding.GetShapeBuffer(), binding.GetDataBuffer());
+                }
+                else
+                {
+                    auto elementStrings = ParseCSVElementStrings(csvFilePath);
+                    WriteDataToBinding<float>(elementStrings, binding);
+                    return TensorFloat::CreateFromArray(binding.GetShapeBuffer(), binding.GetDataBuffer());
+                }
             }
             break;
             case TensorKind::Float16:

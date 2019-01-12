@@ -83,8 +83,7 @@ std::vector<ILearningModelFeatureValue> GenerateInputFeatures(
         if (inputDataType == InputDataType::Tensor || i > 0)
         {
             // For now, only the first input can be bound with real data
-            std::wstring csvPath = i == 0 ? args.CsvPath() : std::wstring();
-            auto tensorFeature = BindingUtilities::CreateBindableTensor(description, csvPath);
+            auto tensorFeature = BindingUtilities::CreateBindableTensor(description, args);
             inputFeatures.push_back(tensorFeature);
         }
         else
@@ -144,7 +143,6 @@ HRESULT EvaluateModel(
     const LearningModel& model,
     const LearningModelBinding& context,
     LearningModelSession& session,
-    bool isGarbageData,
     const CommandLineArgs& args,
     OutputHelper& output,
     bool capturePerf,
@@ -183,7 +181,7 @@ HRESULT EvaluateModel(
         std::cout << "[SUCCESS]" << std::endl;
     }
 
-    if (!isGarbageData && !args.Silent())
+    if (!args.IsGarbageInput() && !args.Silent())
     {
         BindingUtilities::PrintEvaluationResults(model, args, result.Outputs());
     }
@@ -271,8 +269,6 @@ HRESULT EvaluateModel(
     // Add one more iteration if we ignore the first run
     uint32_t numIterations = args.NumIterations() + args.IgnoreFirstRun();
 
-    bool isGarbageData = args.CsvPath().empty() && args.ImagePath().empty();
-
     // Run the binding + evaluate multiple times and average the results
     for (uint32_t i = 0; i < numIterations; i++)
     {
@@ -300,7 +296,7 @@ HRESULT EvaluateModel(
 
         output.PrintEvaluatingInfo(i + 1, deviceType, inputBindingType, inputDataType, deviceCreationLocation);
 
-        HRESULT evalResult = EvaluateModel(model, context, session, isGarbageData, args, output, captureIterationPerf, i);
+        HRESULT evalResult = EvaluateModel(model, context, session, args, output, captureIterationPerf, i);
 
         if (FAILED(evalResult))
         {

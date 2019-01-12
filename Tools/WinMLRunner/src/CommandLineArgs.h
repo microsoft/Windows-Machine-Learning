@@ -63,6 +63,12 @@ public:
         return m_createDeviceInWinML || !m_createDeviceOnClient;
     }
 
+    bool IsGarbageInput() const
+    {
+        // When there is no image or csv input provided, then garbage input binding is used.
+        return m_imagePath.empty() && m_csvData.empty();
+    }
+
     uint32_t NumIterations() const { return m_numIterations; }
 
 private:

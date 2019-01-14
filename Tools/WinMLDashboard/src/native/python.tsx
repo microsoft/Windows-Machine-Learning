@@ -5,9 +5,9 @@ import * as os from 'os';
 import * as path from 'path';
 import * as yauzl from 'yauzl';
 
-import { mkdir } from '../native/appData';
+import { mkdir, winmlDataFolder } from '../native/appData';
 
-const localPython = mkdir('./python');
+const localPython = mkdir(winmlDataFolder, 'python');
 const embeddedPythonBinary = path.join(localPython, 'python.exe');
 
 function filterPythonBinaries(binaries: string[]) {
@@ -19,7 +19,7 @@ function filterPythonBinaries(binaries: string[]) {
                 const binary = execFileSync(x, ['-c', 'import venv; import sys; print(sys.executable)'], { encoding: 'utf8' });
                 acc.push(binary.trim());
             } catch(_) {
-                // Ignore binary if unavailable or no venv support
+                // Ignore binary if unavailable or no vcode .env support
             }
         }
         return acc;

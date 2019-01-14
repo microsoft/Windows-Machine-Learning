@@ -242,15 +242,15 @@ namespace BindingUtilities
             break;
             case TensorKind::Int8:
             {
-                ModelBinding<int8_t> binding(description);
+                ModelBinding<uint8_t> binding(description);
                 if (args.IsGarbageInput())
                 {
-                    memset(binding.GetData(), 0, sizeof(int8_t) * binding.GetDataBufferSize());
+                    memset(binding.GetData(), 0, sizeof(uint8_t) * binding.GetDataBufferSize());
                 }
                 else
                 {
                     elementStrings = ParseCSVElementStrings(args.CsvPath());
-                    WriteDataToBinding<int8_t>(elementStrings, binding);
+                    WriteDataToBinding<uint8_t>(elementStrings, binding);
                 }
                 return TensorInt8Bit::CreateFromArray(binding.GetShapeBuffer(), binding.GetDataBuffer());
             }

@@ -136,6 +136,7 @@
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Assets\mnist.h" />
     <ClInclude Include="mnist.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="App.xaml.h">

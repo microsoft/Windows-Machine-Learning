@@ -149,7 +149,6 @@ void PrintResults(IVectorView<float> results)
     }
 }
 
-
 void RunSqueezeNet(Session session, Model model, hstring imagePath) {
     LearningModelBinding bindings(session);
 

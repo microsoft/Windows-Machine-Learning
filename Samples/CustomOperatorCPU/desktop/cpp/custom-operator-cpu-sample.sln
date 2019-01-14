@@ -18,13 +18,13 @@ Global
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{2BF804D4-DAA2-42BE-9F21-0E94F021EF53}.Debug|Any CPU.ActiveCfg = Debug|Win32
-		{2BF804D4-DAA2-42BE-9F21-0E94F021EF53}.Debug|ARM.ActiveCfg = Debug|Win32
-		{2BF804D4-DAA2-42BE-9F21-0E94F021EF53}.Debug|x64.ActiveCfg = Debug|x64
-		{2BF804D4-DAA2-42BE-9F21-0E94F021EF53}.Debug|x64.Build.0 = Debug|x64
+		{2BF804D4-DAA2-42BE-9F21-0E94F021EF53}.Debug|ARM.ActiveCfg = Release|ARM
+		{2BF804D4-DAA2-42BE-9F21-0E94F021EF53}.Debug|x64.ActiveCfg = Debug|Win32
+		{2BF804D4-DAA2-42BE-9F21-0E94F021EF53}.Debug|x64.Build.0 = Debug|Win32
 		{2BF804D4-DAA2-42BE-9F21-0E94F021EF53}.Debug|x86.ActiveCfg = Debug|Win32
 		{2BF804D4-DAA2-42BE-9F21-0E94F021EF53}.Debug|x86.Build.0 = Debug|Win32
 		{2BF804D4-DAA2-42BE-9F21-0E94F021EF53}.Release|Any CPU.ActiveCfg = Release|Win32
-		{2BF804D4-DAA2-42BE-9F21-0E94F021EF53}.Release|ARM.ActiveCfg = Release|Win32
+		{2BF804D4-DAA2-42BE-9F21-0E94F021EF53}.Release|ARM.ActiveCfg = Release|ARM
 		{2BF804D4-DAA2-42BE-9F21-0E94F021EF53}.Release|x64.ActiveCfg = Release|x64
 		{2BF804D4-DAA2-42BE-9F21-0E94F021EF53}.Release|x64.Build.0 = Release|x64
 		{2BF804D4-DAA2-42BE-9F21-0E94F021EF53}.Release|x86.ActiveCfg = Release|Win32
@@ -34,6 +34,6 @@ Global
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {0ACB1AE2-0B70-4F2E-9FF5-27A3EDF2B775}
+		SolutionGuid = {9CC09084-A006-442F-8871-54E34D218DEC}
 	EndGlobalSection
 EndGlobal

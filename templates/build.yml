@@ -209,8 +209,10 @@ jobs:
 
     inputs:
 
-      PathtoPublish: '$(System.DefaultWorkingDirectory)\bin\${{ parameters.BuildPlatform }}\${{ parameters.BuildConfiguration }}\'
-      ArtifactName: WinMLPublicSamples
+      pathtoPublish: '$(System.DefaultWorkingDirectory)\bin\${{ parameters.BuildPlatform }}\${{ parameters.BuildConfiguration }}\'
+      artifactName: WinMLPublicSamples
+      parallel: true
+      parallelCount: 8
 
 
     condition: succeededOrFailed()

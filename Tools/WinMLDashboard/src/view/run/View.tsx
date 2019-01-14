@@ -293,7 +293,6 @@ class RunView extends React.Component<IComponentProperties, IComponentState> {
     };
 
     private execModelRunner = async() => {
-        this.props.setFile(fileFromPath(this.state.model))
         log.info("start to run " + this.state.model);
 
         // serialize debug onnx model

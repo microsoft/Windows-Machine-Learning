@@ -5,9 +5,9 @@ import * as os from 'os';
 import * as path from 'path';
 import * as yauzl from 'yauzl';
 
-import { mkdir, winmlDataFolder } from '../native/appData';
+import { mkdir } from '../native/appData';
 
-const localPython = mkdir(winmlDataFolder, 'python');
+const localPython = mkdir('./python');
 const embeddedPythonBinary = path.join(localPython, 'python.exe');
 
 function filterPythonBinaries(binaries: string[]) {

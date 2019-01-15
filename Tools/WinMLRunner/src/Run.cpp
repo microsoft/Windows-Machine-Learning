@@ -2,10 +2,10 @@
 #include "OutputHelper.h"
 #include "ModelBinding.h"
 #include "BindingUtilities.h"
-#include "CommandLineArgs.h"
 #include <filesystem>
 #include <d3d11.h>
 #include <Windows.Graphics.DirectX.Direct3D11.interop.h>
+#include "Run.h"
 
 Profiler<WINML_MODEL_TEST_PERF> g_Profiler;
 
@@ -83,8 +83,7 @@ std::vector<ILearningModelFeatureValue> GenerateInputFeatures(
         if (inputDataType == InputDataType::Tensor || i > 0)
         {
             // For now, only the first input can be bound with real data
-            std::wstring csvPath = i == 0 ? args.CsvPath() : std::wstring();
-            auto tensorFeature = BindingUtilities::CreateBindableTensor(description, csvPath);
+            auto tensorFeature = BindingUtilities::CreateBindableTensor(description, args);
             inputFeatures.push_back(tensorFeature);
         }
         else
@@ -144,7 +143,6 @@ HRESULT EvaluateModel(
     const LearningModel& model,
     const LearningModelBinding& context,
     LearningModelSession& session,
-    bool isGarbageData,
     const CommandLineArgs& args,
     OutputHelper& output,
     bool capturePerf,
@@ -183,7 +181,7 @@ HRESULT EvaluateModel(
         std::cout << "[SUCCESS]" << std::endl;
     }
 
-    if (!isGarbageData && !args.Silent())
+    if (!args.IsGarbageInput() && !args.Silent())
     {
         BindingUtilities::PrintEvaluationResults(model, args, result.Outputs());
     }
@@ -271,8 +269,6 @@ HRESULT EvaluateModel(
     // Add one more iteration if we ignore the first run
     uint32_t numIterations = args.NumIterations() + args.IgnoreFirstRun();
 
-    bool isGarbageData = args.CsvPath().empty() && args.ImagePath().empty();
-
     // Run the binding + evaluate multiple times and average the results
     for (uint32_t i = 0; i < numIterations; i++)
     {
@@ -280,7 +276,17 @@ HRESULT EvaluateModel(
 
         output.PrintBindingInfo(i + 1, deviceType, inputBindingType, inputDataType, deviceCreationLocation);
 
-        std::vector<ILearningModelFeatureValue> inputFeatures = GenerateInputFeatures(model, args, inputBindingType, inputDataType, winrtDevice);
+        std::vector<ILearningModelFeatureValue> inputFeatures;
+        try
+        {
+            inputFeatures = GenerateInputFeatures(model, args, inputBindingType, inputDataType, winrtDevice);
+        }
+        catch (hresult_error hr)
+        {
+            std::wcout << "\nGenerating Input Features [FAILED]" << std::endl;
+            std::wcout << hr.message().c_str() << std::endl;
+            return hr.code();
+        }
         HRESULT bindInputResult = BindInputFeatures(model, context, inputFeatures, args, output, captureIterationPerf, i);
 
         if (FAILED(bindInputResult))
@@ -290,7 +296,7 @@ HRESULT EvaluateModel(
 
         output.PrintEvaluatingInfo(i + 1, deviceType, inputBindingType, inputDataType, deviceCreationLocation);
 
-        HRESULT evalResult = EvaluateModel(model, context, session, isGarbageData, args, output, captureIterationPerf, i);
+        HRESULT evalResult = EvaluateModel(model, context, session, args, output, captureIterationPerf, i);
 
         if (FAILED(evalResult))
         {
@@ -483,12 +489,10 @@ std::vector<DeviceCreationLocation> FetchDeviceCreationLocations(const CommandLi
     return deviceCreationLocations;
 }
 
-int main(int argc, char** argv)
+int run(CommandLineArgs& args)
 {
     // Initialize COM in a multi-threaded environment.
     winrt::init_apartment();
-
-    CommandLineArgs args;
     OutputHelper output(args.NumIterations(), args.Silent());
 
     // Profiler is a wrapper class that captures and stores timing and memory usage data on the

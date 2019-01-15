@@ -435,7 +435,7 @@ public:
                      << "Evaluate (ms)" << "," << std::endl;
             }
 
-            for (int i = 0; i < args.NumIterations(); i++) 
+            for (uint32_t i = 0; i < args.NumIterations(); i++)
             {
                 fout << modelName << ","
                      << imgName << ","

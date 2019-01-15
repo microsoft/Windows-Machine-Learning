@@ -26,6 +26,7 @@
 #include <string>
 #include <codecvt>
 #include <fstream>
+#include <inttypes.h>
 #include <algorithm>
 
 

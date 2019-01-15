@@ -4,7 +4,7 @@
 class CommandLineArgs
 {
 public:
-    CommandLineArgs();
+    __declspec(dllexport) CommandLineArgs();
     void PrintUsage();
 
     bool UseGPUHighPerformance() const { return m_useGPUHighPerformance; }
@@ -61,6 +61,12 @@ public:
     {
         // By Default we create the device in WinML if no flag is specified
         return m_createDeviceInWinML || !m_createDeviceOnClient;
+    }
+
+    bool IsGarbageInput() const
+    {
+        // When there is no image or csv input provided, then garbage input binding is used.
+        return m_imagePath.empty() && m_csvData.empty();
     }
 
     uint32_t NumIterations() const { return m_numIterations; }

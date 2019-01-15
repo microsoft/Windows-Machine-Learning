@@ -7,9 +7,13 @@
 #include <utility>
 #include <codecvt>
 #include <iomanip>
+#include <dxgi.h>
+#include <Windows.Graphics.DirectX.Direct3D11.interop.h>
 
 using namespace winrt::Windows::AI::MachineLearning;
 using namespace winrt::Windows::Storage::Streams;
+using namespace ::Windows::Graphics::DirectX::Direct3D11;
+using namespace winrt::Windows::Graphics::DirectX::Direct3D11;
 
 // Stores performance information and handles output to the command line and CSV files.
 class OutputHelper
@@ -133,6 +137,29 @@ public:
                 std::wcout << L"GPU: " << description.Description << std::endl;
                 std::cout << std::endl;
             }
+        }
+    }
+
+    void PrintLearningModelDevice(LearningModelDevice& device)
+    {
+        IDirect3DDevice d3dDevice = device.Direct3D11Device();
+        com_ptr<IDirect3DDxgiInterfaceAccess> dxgi;
+        dxgi = d3dDevice.as<IDirect3DDxgiInterfaceAccess>();
+        if (dxgi)
+        {
+            com_ptr<IDXGIDevice> dxgiDevice;
+            dxgi->GetInterface(__uuidof(IDXGIDevice), dxgiDevice.put_void());
+            com_ptr<IDXGIAdapter> adapter;
+            dxgiDevice->GetAdapter(adapter.put());
+            DXGI_ADAPTER_DESC description;
+            if (SUCCEEDED(adapter->GetDesc(&description)))
+            {
+                std::wcout << L"\nCreating Session with GPU: " << description.Description << std::endl;
+            }
+        }
+        else
+        {
+            std::cout << "\nCreating Session with CPU device" << std::endl;
         }
     }
 

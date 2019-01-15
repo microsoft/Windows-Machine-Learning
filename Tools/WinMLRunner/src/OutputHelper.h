@@ -140,8 +140,14 @@ public:
         }
     }
 
-    void PrintLearningModelDevice(LearningModelDevice& device)
+    void PrintLearningModelDevice(DeviceType deviceType, LearningModelDevice& device)
     {
+        if (deviceType == DeviceType::CPU)
+        {
+            std::cout << "\nCreating Session with CPU device" << std::endl;
+            return;
+        }
+
         IDirect3DDevice d3dDevice = device.Direct3D11Device();
         com_ptr<IDirect3DDxgiInterfaceAccess> dxgi;
         dxgi = d3dDevice.try_as<IDirect3DDxgiInterfaceAccess>();
@@ -159,7 +165,7 @@ public:
         }
         else
         {
-            std::cout << "\nCreating Session with CPU device" << std::endl;
+            std::cout << "Failed to Print Learning Model Device Information" << std::endl;
         }
     }
 

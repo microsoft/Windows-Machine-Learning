@@ -144,7 +144,7 @@ public:
     {
         IDirect3DDevice d3dDevice = device.Direct3D11Device();
         com_ptr<IDirect3DDxgiInterfaceAccess> dxgi;
-        dxgi = d3dDevice.as<IDirect3DDxgiInterfaceAccess>();
+        dxgi = d3dDevice.try_as<IDirect3DDxgiInterfaceAccess>();
         if (dxgi)
         {
             com_ptr<IDXGIDevice> dxgiDevice;

@@ -72,7 +72,8 @@ std::vector<ILearningModelFeatureValue> GenerateInputFeatures(
     const CommandLineArgs& args,
     InputBindingType inputBindingType,
     InputDataType inputDataType,
-    const IDirect3DDevice winrtDevice)
+    const IDirect3DDevice winrtDevice,
+    uint32_t iterationNum)
 {
     std::vector<ILearningModelFeatureValue> inputFeatures;
 
@@ -88,7 +89,7 @@ std::vector<ILearningModelFeatureValue> GenerateInputFeatures(
         }
         else
         {
-            auto imageFeature = BindingUtilities::CreateBindableImage(description, args.ImagePath(), inputBindingType, inputDataType, winrtDevice, args);
+            auto imageFeature = BindingUtilities::CreateBindableImage(description, args.ImagePath(), inputBindingType, inputDataType, winrtDevice, args, iterationNum);
             inputFeatures.push_back(imageFeature);
         }
     }
@@ -123,11 +124,6 @@ HRESULT BindInputFeatures(const LearningModel& model, const LearningModelBinding
                 output.SaveBindTimes(g_Profiler, iterationNum);
             }
         }
-
-        if (!args.Silent())
-        {
-            std::cout << "[SUCCESS]" << std::endl;
-        }
     }
     catch (hresult_error hr)
     {
@@ -140,6 +136,7 @@ HRESULT BindInputFeatures(const LearningModel& model, const LearningModelBinding
 }
 
 HRESULT EvaluateModel(
+    LearningModelEvaluationResult& result,
     const LearningModel& model,
     const LearningModelBinding& context,
     LearningModelSession& session,
@@ -149,8 +146,6 @@ HRESULT EvaluateModel(
     uint32_t iterationNum
 )
 {
-    LearningModelEvaluationResult result = nullptr;
-
     try
     {
         if (capturePerf)
@@ -175,17 +170,6 @@ HRESULT EvaluateModel(
         std::wcout << hr.message().c_str() << std::endl;
         return hr.code();
     }
-
-    if (!args.Silent())
-    {
-        std::cout << "[SUCCESS]" << std::endl;
-    }
-
-    if (!args.IsGarbageInput() && !args.Silent())
-    {
-        BindingUtilities::PrintEvaluationResults(model, args, result.Outputs());
-    }
-
     return S_OK;
 }
 
@@ -272,17 +256,18 @@ HRESULT EvaluateModel(
     // Add one more iteration if we ignore the first run
     uint32_t numIterations = args.NumIterations() + args.IgnoreFirstRun();
 
+    bool isGarbageData = args.IsGarbageInput();
+    std::string completionString = "\n";
+
     // Run the binding + evaluate multiple times and average the results
     for (uint32_t i = 0; i < numIterations; i++)
     {
         bool captureIterationPerf = (args.PerfCapture() && (!args.IgnoreFirstRun() || i > 0)) || (args.PerIterCapture());
 
-        output.PrintBindingInfo(i + 1, deviceType, inputBindingType, inputDataType, deviceCreationLocation);
-
         std::vector<ILearningModelFeatureValue> inputFeatures;
         try
         {
-            inputFeatures = GenerateInputFeatures(model, args, inputBindingType, inputDataType, winrtDevice);
+            inputFeatures = GenerateInputFeatures(model, args, inputBindingType, inputDataType, winrtDevice, i);
         }
         catch (hresult_error hr)
         {
@@ -290,22 +275,46 @@ HRESULT EvaluateModel(
             std::wcout << hr.message().c_str() << std::endl;
             return hr.code();
         }
+
         HRESULT bindInputResult = BindInputFeatures(model, context, inputFeatures, args, output, captureIterationPerf, i);
 
         if (FAILED(bindInputResult))
         {
+            output.PrintBindingInfo(i + 1, deviceType, inputBindingType, inputDataType, deviceCreationLocation, "[FAILED]");
             return bindInputResult;
         }
+        else if (!args.TerseOutput() || i == 0)
+        {
+            output.PrintBindingInfo(i + 1, deviceType, inputBindingType, inputDataType, deviceCreationLocation, "[SUCCESS]");
+        }
 
-        output.PrintEvaluatingInfo(i + 1, deviceType, inputBindingType, inputDataType, deviceCreationLocation);
-
-        HRESULT evalResult = EvaluateModel(model, context, session, args, output, captureIterationPerf, i);
+        LearningModelEvaluationResult result = nullptr;
+        HRESULT evalResult = EvaluateModel(result, model, context, session, args, output, captureIterationPerf, i);
 
         if (FAILED(evalResult))
         {
+            output.PrintEvaluatingInfo(i + 1, deviceType, inputBindingType, inputDataType, deviceCreationLocation, "[FAILED]");
             return evalResult;
         }
+        else if (!args.TerseOutput() || i == 0)
+        {
+            output.PrintEvaluatingInfo(i + 1, deviceType, inputBindingType, inputDataType, deviceCreationLocation, "[SUCCESS]");
+
+            // Only print eval results on the first iteration, iff it's not garbage data
+            if (!isGarbageData)
+            {
+                BindingUtilities::PrintEvaluationResults(model, args, result.Outputs());
+            }
+
+            if (args.TerseOutput() && numIterations > 1)
+            {
+                printf("Binding and Evaluating %d more time%s...", numIterations-1, (numIterations == 2 ? "" : "s"));
+                completionString = "[SUCCESS]\n";
+            }
+        }
     }
+    printf("%s", completionString.c_str());
+
     // Clean up session resources
     session.Close();
     session.~LearningModelSession();
@@ -496,7 +505,7 @@ int run(CommandLineArgs& args)
 {
     // Initialize COM in a multi-threaded environment.
     winrt::init_apartment();
-    OutputHelper output(args.NumIterations(), args.Silent());
+    OutputHelper output(args.NumIterations());
 
     // Profiler is a wrapper class that captures and stores timing and memory usage data on the
     // CPU and GPU.

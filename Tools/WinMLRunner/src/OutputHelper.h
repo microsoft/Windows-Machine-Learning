@@ -19,9 +19,8 @@ using namespace winrt::Windows::Graphics::DirectX::Direct3D11;
 class OutputHelper
 {
 public:
-    OutputHelper(int numIterations, bool silent)
+    OutputHelper(int numIterations)
     {
-        m_silent = silent;
         m_clockLoadTimes.resize(numIterations, 0.0);
         m_clockBindTimes.resize(numIterations, 0.0);
         m_clockEvalTimes.resize(numIterations, 0.0);
@@ -34,109 +33,93 @@ public:
 
     void PrintLoadingInfo(const std::wstring& modelPath) const
     {
-        if (!m_silent)
-        {
-            wprintf(L"Loading model (path = %s)...\n", modelPath.c_str());
-        }
+        wprintf(L"Loading model (path = %s)...\n", modelPath.c_str());
     }
 
-    void PrintBindingInfo(uint32_t iteration, DeviceType deviceType, InputBindingType inputBindingType, InputDataType inputDataType, DeviceCreationLocation deviceCreationLocation) const
+    void PrintBindingInfo(uint32_t iteration, DeviceType deviceType, InputBindingType inputBindingType, InputDataType inputDataType, DeviceCreationLocation deviceCreationLocation, const std::string& status) const
     {
-        if (!m_silent)
-        {
-            printf(
-                "Binding (device = %s, iteration = %d, inputBinding = %s, inputDataType = %s, deviceCreationLocation = %s)...",
-                TypeHelper::Stringify(deviceType).c_str(),
-                iteration,
-                TypeHelper::Stringify(inputBindingType).c_str(),
-                TypeHelper::Stringify(inputDataType).c_str(),
-                TypeHelper::Stringify(deviceCreationLocation).c_str()
-            );
-        }
+        printf(
+            "Binding (device = %s, iteration = %d, inputBinding = %s, inputDataType = %s, deviceCreationLocation = %s)...%s\n",
+            TypeHelper::Stringify(deviceType).c_str(),
+            iteration,
+            TypeHelper::Stringify(inputBindingType).c_str(),
+            TypeHelper::Stringify(inputDataType).c_str(),
+            TypeHelper::Stringify(deviceCreationLocation).c_str(),
+            status.c_str()
+        );
     }
 
-    void PrintEvaluatingInfo(uint32_t iteration, DeviceType deviceType, InputBindingType inputBindingType, InputDataType inputDataType, DeviceCreationLocation deviceCreationLocation) const
+    void PrintEvaluatingInfo(uint32_t iteration, DeviceType deviceType, InputBindingType inputBindingType, InputDataType inputDataType, DeviceCreationLocation deviceCreationLocation, const std::string &status) const
     {
-        if (!m_silent)
-        {
-            printf(
-                "Evaluating (device = %s, iteration = %d, inputBinding = %s, inputDataType = %s, deviceCreationLocation = %s)...",
-                TypeHelper::Stringify(deviceType).c_str(),
-                iteration,
-                TypeHelper::Stringify(inputBindingType).c_str(),
-                TypeHelper::Stringify(inputDataType).c_str(),
-                TypeHelper::Stringify(deviceCreationLocation).c_str()
-            );
-        }
+        printf(
+            "Evaluating (device = %s, iteration = %d, inputBinding = %s, inputDataType = %s, deviceCreationLocation = %s)...%s\n",
+            TypeHelper::Stringify(deviceType).c_str(),
+            iteration,
+            TypeHelper::Stringify(inputBindingType).c_str(),
+            TypeHelper::Stringify(inputDataType).c_str(),
+            TypeHelper::Stringify(deviceCreationLocation).c_str(),
+            status.c_str()
+        );
     }
 
     void PrintModelInfo(std::wstring modelPath, LearningModel model) const
     {
-        if (!m_silent)
-        {
-            std::cout << "=================================================================" << std::endl;
-            std::wcout << "Name: " << model.Name().c_str() << std::endl;
-            std::wcout << "Author: " << model.Author().c_str() << std::endl;
-            std::wcout << "Version: " << model.Version() << std::endl;
-            std::wcout << "Domain: " << model.Domain().c_str() << std::endl;
-            std::wcout << "Description: " << model.Description().c_str() << std::endl;
-            std::wcout << "Path: " << modelPath << std::endl;
-            std::cout << "Support FP16: " << std::boolalpha << doesModelContainFP16(model) << std::endl;
+        std::cout << "=================================================================" << std::endl;
+        std::wcout << "Name: " << model.Name().c_str() << std::endl;
+        std::wcout << "Author: " << model.Author().c_str() << std::endl;
+        std::wcout << "Version: " << model.Version() << std::endl;
+        std::wcout << "Domain: " << model.Domain().c_str() << std::endl;
+        std::wcout << "Description: " << model.Description().c_str() << std::endl;
+        std::wcout << "Path: " << modelPath << std::endl;
+        std::cout << "Support FP16: " << std::boolalpha << doesModelContainFP16(model) << std::endl;
 
-            std::cout << std::endl;
-            //print out information about input of model
-            std::cout << "Input Feature Info:" << std::endl;
-            for (auto&& inputFeature : model.InputFeatures())
-            {
-                PrintFeatureDescriptorInfo(inputFeature);
-            }
-            //print out information about output of model
-            std::cout << "Output Feature Info:" << std::endl;
-            for (auto&& outputFeature : model.OutputFeatures())
-            {
-                PrintFeatureDescriptorInfo(outputFeature);
-            }
-            std::cout << "=================================================================" << std::endl;
-            std::cout << std::endl;
+        std::cout << std::endl;
+        //print out information about input of model
+        std::cout << "Input Feature Info:" << std::endl;
+        for (auto&& inputFeature : model.InputFeatures())
+        {
+            PrintFeatureDescriptorInfo(inputFeature);
         }
+        //print out information about output of model
+        std::cout << "Output Feature Info:" << std::endl;
+        for (auto&& outputFeature : model.OutputFeatures())
+        {
+            PrintFeatureDescriptorInfo(outputFeature);
+        }
+        std::cout << "=================================================================" << std::endl;
+        std::cout << std::endl;
     }
 
     void PrintFeatureDescriptorInfo(const ILearningModelFeatureDescriptor &descriptor) const
     {
-        if (!m_silent)
+        //IMPORTANT: This learningModelFeatureKind array needs to match the "enum class 
+        //LearningModelFeatureKind" idl in Windows.AI.MachineLearning.0.h
+        const std::string learningModelFeatureKind[] =
         {
-            //IMPORTANT: This learningModelFeatureKind array needs to match the "enum class 
-            //LearningModelFeatureKind" idl in Windows.AI.MachineLearning.0.h
-            const std::string learningModelFeatureKind[] =
-            {
-                "Tensor",
-                "Sequence",
-                "Map",
-                "Image",
-            };
-            std::wstring name(descriptor.Name());
-            std::wcout << "Name: " << name << std::endl;
-            std::wcout << "Feature Kind: " << FeatureDescriptorToString(descriptor) << std::endl;
-            std::cout << std::endl;
-        }
+            "Tensor",
+            "Sequence",
+            "Map",
+            "Image",
+        };
+        std::wstring name(descriptor.Name());
+        std::wcout << "Name: " << name << std::endl;
+        std::wcout << "Feature Kind: " << FeatureDescriptorToString(descriptor) << std::endl;
+        std::cout << std::endl;
     }
 
     void PrintHardwareInfo() const
     {
-        if (!m_silent)
-        {
-            std::cout << "WinML Runner" << std::endl;
+        std::cout << "WinML Runner" << std::endl;
 
-            com_ptr<IDXGIFactory6> factory;
-            CreateDXGIFactory1(__uuidof(IDXGIFactory6), factory.put_void());
-            com_ptr<IDXGIAdapter> adapter;
-            factory->EnumAdapters(0, adapter.put());
-            DXGI_ADAPTER_DESC description;
-            if (SUCCEEDED(adapter->GetDesc(&description)))
-            {
-                std::wcout << L"GPU: " << description.Description << std::endl;
-                std::cout << std::endl;
-            }
+        com_ptr<IDXGIFactory6> factory;
+        CreateDXGIFactory1(__uuidof(IDXGIFactory6), factory.put_void());
+        com_ptr<IDXGIAdapter> adapter;
+        factory->EnumAdapters(0, adapter.put());
+        DXGI_ADAPTER_DESC description;
+        if (SUCCEEDED(adapter->GetDesc(&description)))
+        {
+            std::wcout << L"GPU: " << description.Description << std::endl;
+            std::cout << std::endl;
         }
     }
 
@@ -185,30 +168,27 @@ public:
         double gpuEvalSharedMemoryUsage = profiler[EVAL_MODEL].GetAverage(CounterType::GPU_SHARED_MEM_USAGE);
         double gpuEvalDedicatedMemoryUsage = profiler[EVAL_MODEL].GetAverage(CounterType::GPU_DEDICATED_MEM_USAGE);
 
-        if (!m_silent)
-        {
-            double totalTime = (isnan(loadTime) ? 0 : loadTime) + bindTime + evalTime;
+        double totalTime = (isnan(loadTime) ? 0 : loadTime) + bindTime + evalTime;
 
-            std::cout << std::endl;
+        std::cout << std::endl;
 
-            printf("Results (device = %s, numIterations = %d, inputBinding = %s, inputDataType = %s, deviceCreationLocation = %s):\n",
-                TypeHelper::Stringify(deviceType).c_str(),
-                numIterations,
-                TypeHelper::Stringify(inputBindingType).c_str(),
-                TypeHelper::Stringify(inputDataType).c_str(),
-                TypeHelper::Stringify(deviceCreationLocation).c_str()
-            );
+        printf("Results (device = %s, numIterations = %d, inputBinding = %s, inputDataType = %s, deviceCreationLocation = %s):\n",
+            TypeHelper::Stringify(deviceType).c_str(),
+            numIterations,
+            TypeHelper::Stringify(inputBindingType).c_str(),
+            TypeHelper::Stringify(inputDataType).c_str(),
+            TypeHelper::Stringify(deviceCreationLocation).c_str()
+        );
 
-            std::cout << "  Load: " << (isnan(loadTime) ? "N/A" : std::to_string(loadTime) + " ms") << std::endl;
-            std::cout << "  Bind: " << bindTime << " ms" << std::endl;
-            std::cout << "  Evaluate: " << evalTime << " ms" << std::endl;
-            std::cout << "  Total Time: " << totalTime << " ms" << std::endl;
-            std::cout << "  Working Set Memory usage (evaluate): " << evalMemoryUsage << " MB" << std::endl;
-            std::cout << "  Dedicated Memory Usage (evaluate): " << gpuEvalDedicatedMemoryUsage << " MB" << std::endl;
-            std::cout << "  Shared Memory Usage (evaluate): " << gpuEvalSharedMemoryUsage << " MB" << std::endl;
+        std::cout << "  Load: " << (isnan(loadTime) ? "N/A" : std::to_string(loadTime) + " ms") << std::endl;
+        std::cout << "  Bind: " << bindTime << " ms" << std::endl;
+        std::cout << "  Evaluate: " << evalTime << " ms" << std::endl;
+        std::cout << "  Total Time: " << totalTime << " ms" << std::endl;
+        std::cout << "  Working Set Memory usage (evaluate): " << evalMemoryUsage << " MB" << std::endl;
+        std::cout << "  Dedicated Memory Usage (evaluate): " << gpuEvalDedicatedMemoryUsage << " MB" << std::endl;
+        std::cout << "  Shared Memory Usage (evaluate): " << gpuEvalSharedMemoryUsage << " MB" << std::endl;
 
-            std::cout << std::endl << std::endl << std::endl;
-        }
+        std::cout << std::endl << std::endl << std::endl;
     }
 
     static std::wstring FeatureDescriptorToString(const ILearningModelFeatureDescriptor &descriptor)
@@ -495,8 +475,6 @@ private:
     std::wstring m_csvFileName;
     std::wstring m_csvFileNamePerIteration;
     std::string fileNameIter;
-
-    bool m_silent = false;
 
     std::vector<double> m_EvalTime;
     std::vector<double> m_CPUWorkingDiff;

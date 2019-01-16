@@ -53,7 +53,7 @@ namespace BindingUtilities
         return SoftwareBitmap::CreateCopyFromBuffer(buffer, TypeHelper::GetBitmapPixelFormat(inputDataType), static_cast<int32_t>(width), static_cast<int32_t>(height));
     }
 
-    SoftwareBitmap LoadImageFile(const TensorFeatureDescriptor& imageDescriptor, InputDataType inputDataType, const hstring& filePath, const CommandLineArgs& args)
+    SoftwareBitmap LoadImageFile(const TensorFeatureDescriptor& imageDescriptor, InputDataType inputDataType, const hstring& filePath, const CommandLineArgs& args, uint32_t iterationNum)
     {
         assert(inputDataType != InputDataType::Tensor);
 
@@ -77,7 +77,7 @@ namespace BindingUtilities
                  ( decoder.PixelHeight() != height ||
                    decoder.PixelWidth() != width))
             {
-                if (!args.Silent())
+                if (!args.TerseOutput() || iterationNum == 0)
                     std::cout << std::endl << "Binding Utilities: AutoScaling input image to match model input dimensions...";
 
                 // Create a transform object with default parameters (no transform)
@@ -373,7 +373,8 @@ namespace BindingUtilities
         InputBindingType inputBindingType,
         InputDataType inputDataType,
         const IDirect3DDevice winrtDevice,
-        const CommandLineArgs& args
+        const CommandLineArgs& args,
+        uint32_t iterationNum
     )
     {
         auto imageDescriptor = featureDescriptor.try_as<TensorFeatureDescriptor>();
@@ -386,7 +387,7 @@ namespace BindingUtilities
 
         auto softwareBitmap = imagePath.empty()
             ? GenerateGarbageImage(imageDescriptor, inputDataType)
-            : LoadImageFile(imageDescriptor, inputDataType, imagePath.c_str(), args);
+            : LoadImageFile(imageDescriptor, inputDataType, imagePath.c_str(), args, iterationNum);
 
         auto videoFrame = CreateVideoFrame(softwareBitmap, inputBindingType, inputDataType, winrtDevice);
 
@@ -417,8 +418,6 @@ namespace BindingUtilities
 
     void PrintEvaluationResults(const LearningModel& model, const CommandLineArgs& args, const IMapView<hstring, winrt::Windows::Foundation::IInspectable>& results)
     {
-        if (args.Silent()) return;
-        
         std::cout << "Outputting results.. " << std::endl;
         
         for (auto&& desc : model.OutputFeatures())

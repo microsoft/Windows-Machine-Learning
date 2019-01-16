@@ -7,11 +7,9 @@
 #include <Windows.Graphics.DirectX.Direct3D11.interop.h>
 #include "Run.h"
 
-Profiler<WINML_MODEL_TEST_PERF> g_Profiler;
-
 using namespace winrt::Windows::Graphics::DirectX::Direct3D11;
 
-LearningModel LoadModel(const std::wstring path, bool capturePerf, OutputHelper& output, const CommandLineArgs& args, uint32_t iterationNum)
+LearningModel LoadModel(const std::wstring path, bool capturePerf, OutputHelper& output, const CommandLineArgs& args, uint32_t iterationNum, Profiler<WINML_MODEL_TEST_PERF>& g_Profiler)
 {
     LearningModel model = nullptr;
     output.PrintLoadingInfo(path);
@@ -97,7 +95,7 @@ std::vector<ILearningModelFeatureValue> GenerateInputFeatures(
     return inputFeatures;
 }
 
-HRESULT BindInputFeatures(const LearningModel& model, const LearningModelBinding& context, const std::vector<ILearningModelFeatureValue>& inputFeatures, const CommandLineArgs& args, OutputHelper& output, bool capturePerf, uint32_t iterationNum)
+HRESULT BindInputFeatures(const LearningModel& model, const LearningModelBinding& context, const std::vector<ILearningModelFeatureValue>& inputFeatures, const CommandLineArgs& args, OutputHelper& output, bool capturePerf, uint32_t iterationNum, Profiler<WINML_MODEL_TEST_PERF>& g_Profiler)
 {
     assert(model.InputFeatures().Size() == inputFeatures.size());
 
@@ -143,7 +141,8 @@ HRESULT EvaluateModel(
     const CommandLineArgs& args,
     OutputHelper& output,
     bool capturePerf,
-    uint32_t iterationNum
+    uint32_t iterationNum,
+    Profiler<WINML_MODEL_TEST_PERF>& g_Profiler
 )
 {
     try
@@ -183,7 +182,8 @@ HRESULT EvaluateModel(
     DeviceType deviceType,
     InputBindingType inputBindingType,
     InputDataType inputDataType,
-    DeviceCreationLocation deviceCreationLocation
+    DeviceCreationLocation deviceCreationLocation,
+    Profiler<WINML_MODEL_TEST_PERF>& g_Profiler
 )
 {
     if (model == nullptr)
@@ -276,7 +276,7 @@ HRESULT EvaluateModel(
             return hr.code();
         }
 
-        HRESULT bindInputResult = BindInputFeatures(model, context, inputFeatures, args, output, captureIterationPerf, i);
+        HRESULT bindInputResult = BindInputFeatures(model, context, inputFeatures, args, output, captureIterationPerf, i, g_Profiler);
 
         if (FAILED(bindInputResult))
         {
@@ -289,7 +289,7 @@ HRESULT EvaluateModel(
         }
 
         LearningModelEvaluationResult result = nullptr;
-        HRESULT evalResult = EvaluateModel(result, model, context, session, args, output, captureIterationPerf, i);
+        HRESULT evalResult = EvaluateModel(result, model, context, session, args, output, captureIterationPerf, i, g_Profiler);
 
         if (FAILED(evalResult))
         {
@@ -329,7 +329,8 @@ HRESULT EvaluateModels(
     const std::vector<InputDataType>& inputDataTypes,
     const std::vector<DeviceCreationLocation> deviceCreationLocations,
     const CommandLineArgs& args,
-    OutputHelper& output
+    OutputHelper& output,
+    Profiler<WINML_MODEL_TEST_PERF>& g_Profiler
 )
 {
     output.PrintHardwareInfo();
@@ -340,7 +341,7 @@ HRESULT EvaluateModels(
 
         try
         {
-            model = LoadModel(path, args.IsPerformanceCapture() || args.IsPerIterationCapture(), output, args, 0);
+            model = LoadModel(path, args.IsPerformanceCapture() || args.IsPerIterationCapture(), output, args, 0, g_Profiler);
         }
         catch (hresult_error hr)
         {
@@ -381,7 +382,7 @@ HRESULT EvaluateModels(
                             }
                         }
 
-                        HRESULT evalHResult = EvaluateModel(model, args, output, deviceType, inputBindingType, inputDataType, deviceCreationLocation);
+                        HRESULT evalHResult = EvaluateModel(model, args, output, deviceType, inputBindingType, inputDataType, deviceCreationLocation, g_Profiler);
 
                         if (FAILED(evalHResult))
                         {
@@ -501,7 +502,7 @@ std::vector<DeviceCreationLocation> FetchDeviceCreationLocations(const CommandLi
     return deviceCreationLocations;
 }
 
-int run(CommandLineArgs& args)
+int run(CommandLineArgs& args, Profiler<WINML_MODEL_TEST_PERF>& g_Profiler)
 {
     // Initialize COM in a multi-threaded environment.
     winrt::init_apartment();
@@ -532,7 +533,7 @@ int run(CommandLineArgs& args)
         std::vector<DeviceCreationLocation> deviceCreationLocations = FetchDeviceCreationLocations(args);
         std::vector<std::wstring> modelPaths = args.ModelPath().empty() ? GetModelsInDirectory(args, &output) : std::vector<std::wstring>(1, args.ModelPath());
 
-        return EvaluateModels(modelPaths, deviceTypes, inputBindingTypes, inputDataTypes, deviceCreationLocations, args, output);
+        return EvaluateModels(modelPaths, deviceTypes, inputBindingTypes, inputDataTypes, deviceCreationLocations, args, output, g_Profiler);
     }
 
     return 0;

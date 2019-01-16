@@ -242,11 +242,14 @@ HRESULT EvaluateModel(
 
             winrtDevice = inspectableDevice.as<IDirect3DDevice>();
             LearningModelDevice learningModelDevice = LearningModelDevice::CreateFromDirect3D11Device(winrtDevice);
+            output.PrintLearningModelDevice(deviceType, learningModelDevice);
             session = LearningModelSession(model, learningModelDevice);
         }
         else
         {
-            session = LearningModelSession(model, TypeHelper::GetWinmlDeviceKind(deviceType));
+            LearningModelDevice learningModelDevice(TypeHelper::GetWinmlDeviceKind(deviceType));
+            output.PrintLearningModelDevice(deviceType, learningModelDevice);
+            session = LearningModelSession(model, learningModelDevice);
         }
     }
     catch (hresult_error hr)

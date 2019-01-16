@@ -416,8 +416,11 @@ const static std::vector<std::wstring> CounterTypeName =
 class PerfCounterStatistics
 {
 public:
-    PerfCounterStatistics() : m_bDisabled(true)
+    PerfCounterStatistics()
     {
+        m_bDisabled = false;
+        Reset();
+        m_bDisabled = true;
     }
 
     void Enable()

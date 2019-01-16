@@ -15,8 +15,6 @@ int main(int argc, char *argv[])
         argsList.push_back(converter.from_bytes(argv[i]));
     }
     CommandLineArgs commandLineArgs(argsList);
-    commandLineArgs.TogglePerformanceCapture(true);
-    Profiler<WINML_MODEL_TEST_PERF> g_Profiler;
-
-    return run(commandLineArgs, g_Profiler);;
+    Profiler<WINML_MODEL_TEST_PERF> profiler;
+    return run(commandLineArgs, profiler);;
 }

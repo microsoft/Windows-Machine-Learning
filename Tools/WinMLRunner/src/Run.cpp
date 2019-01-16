@@ -9,7 +9,7 @@
 
 using namespace winrt::Windows::Graphics::DirectX::Direct3D11;
 
-LearningModel LoadModel(const std::wstring path, bool capturePerf, OutputHelper& output, const CommandLineArgs& args, uint32_t iterationNum, Profiler<WINML_MODEL_TEST_PERF>& g_Profiler)
+LearningModel LoadModel(const std::wstring path, bool capturePerf, OutputHelper& output, const CommandLineArgs& args, uint32_t iterationNum, Profiler<WINML_MODEL_TEST_PERF>& profiler)
 {
     LearningModel model = nullptr;
     output.PrintLoadingInfo(path);
@@ -18,16 +18,16 @@ LearningModel LoadModel(const std::wstring path, bool capturePerf, OutputHelper&
     {
         if (capturePerf)
         {
-            WINML_PROFILING_START(g_Profiler, WINML_MODEL_TEST_PERF::LOAD_MODEL);
+            WINML_PROFILING_START(profiler, WINML_MODEL_TEST_PERF::LOAD_MODEL);
         }
         model = LearningModel::LoadFromFilePath(path);
 
         if (capturePerf)
         {
-            WINML_PROFILING_STOP(g_Profiler, WINML_MODEL_TEST_PERF::LOAD_MODEL);
+            WINML_PROFILING_STOP(profiler, WINML_MODEL_TEST_PERF::LOAD_MODEL);
             if (args.IsPerIterationCapture())
             {
-                output.SaveLoadTimes(g_Profiler, iterationNum);
+                output.SaveLoadTimes(profiler, iterationNum);
             }
         }
     }
@@ -95,7 +95,7 @@ std::vector<ILearningModelFeatureValue> GenerateInputFeatures(
     return inputFeatures;
 }
 
-HRESULT BindInputFeatures(const LearningModel& model, const LearningModelBinding& context, const std::vector<ILearningModelFeatureValue>& inputFeatures, const CommandLineArgs& args, OutputHelper& output, bool capturePerf, uint32_t iterationNum, Profiler<WINML_MODEL_TEST_PERF>& g_Profiler)
+HRESULT BindInputFeatures(const LearningModel& model, const LearningModelBinding& context, const std::vector<ILearningModelFeatureValue>& inputFeatures, const CommandLineArgs& args, OutputHelper& output, bool capturePerf, uint32_t iterationNum, Profiler<WINML_MODEL_TEST_PERF>& profiler)
 {
     assert(model.InputFeatures().Size() == inputFeatures.size());
 
@@ -105,7 +105,7 @@ HRESULT BindInputFeatures(const LearningModel& model, const LearningModelBinding
 
         if (capturePerf)
         {
-            WINML_PROFILING_START(g_Profiler, WINML_MODEL_TEST_PERF::BIND_VALUE);
+            WINML_PROFILING_START(profiler, WINML_MODEL_TEST_PERF::BIND_VALUE);
         }
 
         for (uint32_t i = 0; i < model.InputFeatures().Size(); i++)
@@ -116,10 +116,10 @@ HRESULT BindInputFeatures(const LearningModel& model, const LearningModelBinding
 
         if (capturePerf)
         {
-            WINML_PROFILING_STOP(g_Profiler, WINML_MODEL_TEST_PERF::BIND_VALUE);
+            WINML_PROFILING_STOP(profiler, WINML_MODEL_TEST_PERF::BIND_VALUE);
             if (args.IsPerIterationCapture())
             {
-                output.SaveBindTimes(g_Profiler, iterationNum);
+                output.SaveBindTimes(profiler, iterationNum);
             }
         }
     }
@@ -142,24 +142,24 @@ HRESULT EvaluateModel(
     OutputHelper& output,
     bool capturePerf,
     uint32_t iterationNum,
-    Profiler<WINML_MODEL_TEST_PERF>& g_Profiler
+    Profiler<WINML_MODEL_TEST_PERF>& profiler
 )
 {
     try
     {
         if (capturePerf)
         {
-            WINML_PROFILING_START(g_Profiler, WINML_MODEL_TEST_PERF::EVAL_MODEL);
+            WINML_PROFILING_START(profiler, WINML_MODEL_TEST_PERF::EVAL_MODEL);
         }
 
         result = session.Evaluate(context, L"");
 
         if (capturePerf)
         {
-            WINML_PROFILING_STOP(g_Profiler, WINML_MODEL_TEST_PERF::EVAL_MODEL);
+            WINML_PROFILING_STOP(profiler, WINML_MODEL_TEST_PERF::EVAL_MODEL);
             if (args.IsPerIterationCapture())
             {
-                output.SaveEvalPerformance(g_Profiler, iterationNum);
+                output.SaveEvalPerformance(profiler, iterationNum);
             }
         }
     }
@@ -183,7 +183,7 @@ HRESULT EvaluateModel(
     InputBindingType inputBindingType,
     InputDataType inputDataType,
     DeviceCreationLocation deviceCreationLocation,
-    Profiler<WINML_MODEL_TEST_PERF>& g_Profiler
+    Profiler<WINML_MODEL_TEST_PERF>& profiler
 )
 {
     if (model == nullptr)
@@ -276,7 +276,7 @@ HRESULT EvaluateModel(
             return hr.code();
         }
 
-        HRESULT bindInputResult = BindInputFeatures(model, context, inputFeatures, args, output, captureIterationPerf, i, g_Profiler);
+        HRESULT bindInputResult = BindInputFeatures(model, context, inputFeatures, args, output, captureIterationPerf, i, profiler);
 
         if (FAILED(bindInputResult))
         {
@@ -289,7 +289,7 @@ HRESULT EvaluateModel(
         }
 
         LearningModelEvaluationResult result = nullptr;
-        HRESULT evalResult = EvaluateModel(result, model, context, session, args, output, captureIterationPerf, i, g_Profiler);
+        HRESULT evalResult = EvaluateModel(result, model, context, session, args, output, captureIterationPerf, i, profiler);
 
         if (FAILED(evalResult))
         {
@@ -330,7 +330,7 @@ HRESULT EvaluateModels(
     const std::vector<DeviceCreationLocation> deviceCreationLocations,
     const CommandLineArgs& args,
     OutputHelper& output,
-    Profiler<WINML_MODEL_TEST_PERF>& g_Profiler
+    Profiler<WINML_MODEL_TEST_PERF>& profiler
 )
 {
     output.PrintHardwareInfo();
@@ -341,7 +341,7 @@ HRESULT EvaluateModels(
 
         try
         {
-            model = LoadModel(path, args.IsPerformanceCapture() || args.IsPerIterationCapture(), output, args, 0, g_Profiler);
+            model = LoadModel(path, args.IsPerformanceCapture() || args.IsPerIterationCapture(), output, args, 0, profiler);
         }
         catch (hresult_error hr)
         {
@@ -370,7 +370,7 @@ HRESULT EvaluateModels(
                         if (args.IsPerformanceCapture() || args.IsPerIterationCapture())
                         {
                             // Resets all values from profiler for bind and evaluate.
-                            g_Profiler.Reset(WINML_MODEL_TEST_PERF::BIND_VALUE, WINML_MODEL_TEST_PERF::COUNT);
+                            profiler.Reset(WINML_MODEL_TEST_PERF::BIND_VALUE, WINML_MODEL_TEST_PERF::COUNT);
                         }
 
                         if (inputDataType != InputDataType::Tensor)
@@ -382,7 +382,7 @@ HRESULT EvaluateModels(
                             }
                         }
 
-                        HRESULT evalHResult = EvaluateModel(model, args, output, deviceType, inputBindingType, inputDataType, deviceCreationLocation, g_Profiler);
+                        HRESULT evalHResult = EvaluateModel(model, args, output, deviceType, inputBindingType, inputDataType, deviceCreationLocation, profiler);
 
                         if (FAILED(evalHResult))
                         {
@@ -391,9 +391,9 @@ HRESULT EvaluateModels(
 
                         if (args.IsPerformanceCapture())
                         {
-                            output.PrintResults(g_Profiler, args.NumIterations(), deviceType, inputBindingType, inputDataType, deviceCreationLocation);
+                            output.PrintResults(profiler, args.NumIterations(), deviceType, inputBindingType, inputDataType, deviceCreationLocation);
                             output.WritePerformanceDataToCSV(
-                                g_Profiler,
+                                profiler,
                                 args.NumIterations(),
                                 path,
                                 TypeHelper::Stringify(deviceType),
@@ -406,7 +406,7 @@ HRESULT EvaluateModels(
 
                         if (args.IsPerIterationCapture())
                         {
-                            output.WritePerformanceDataToCSVPerIteration(g_Profiler, args, args.ModelPath(), args.ImagePath());
+                            output.WritePerformanceDataToCSVPerIteration(profiler, args, args.ModelPath(), args.ImagePath());
                         }
                     }
                 }
@@ -502,7 +502,7 @@ std::vector<DeviceCreationLocation> FetchDeviceCreationLocations(const CommandLi
     return deviceCreationLocations;
 }
 
-int run(CommandLineArgs& args, Profiler<WINML_MODEL_TEST_PERF>& g_Profiler)
+int run(CommandLineArgs& args, Profiler<WINML_MODEL_TEST_PERF>& profiler)
 {
     // Initialize COM in a multi-threaded environment.
     winrt::init_apartment();
@@ -510,7 +510,7 @@ int run(CommandLineArgs& args, Profiler<WINML_MODEL_TEST_PERF>& g_Profiler)
 
     // Profiler is a wrapper class that captures and stores timing and memory usage data on the
     // CPU and GPU.
-    g_Profiler.Enable();
+    profiler.Enable();
 
     if (!args.OutputPath().empty())
     {
@@ -533,7 +533,7 @@ int run(CommandLineArgs& args, Profiler<WINML_MODEL_TEST_PERF>& g_Profiler)
         std::vector<DeviceCreationLocation> deviceCreationLocations = FetchDeviceCreationLocations(args);
         std::vector<std::wstring> modelPaths = args.ModelPath().empty() ? GetModelsInDirectory(args, &output) : std::vector<std::wstring>(1, args.ModelPath());
 
-        return EvaluateModels(modelPaths, deviceTypes, inputBindingTypes, inputDataTypes, deviceCreationLocations, args, output, g_Profiler);
+        return EvaluateModels(modelPaths, deviceTypes, inputBindingTypes, inputDataTypes, deviceCreationLocations, args, output, profiler);
     }
 
     return 0;

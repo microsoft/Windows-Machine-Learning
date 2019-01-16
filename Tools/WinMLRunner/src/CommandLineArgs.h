@@ -4,7 +4,7 @@
 class CommandLineArgs
 {
 public:
-    __declspec(dllexport) CommandLineArgs(std::vector<std::wstring> & args);
+    __declspec(dllexport) CommandLineArgs(std::vector<std::wstring>& args);
     void PrintUsage();
     bool IsUsingGPUHighPerformance() const { return m_useGPUHighPerformance; }
     bool IsUsingGPUMinPower() const { return m_useGPUMinPower; }

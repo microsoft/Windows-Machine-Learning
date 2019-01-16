@@ -1,3 +1,3 @@
 #include "CommandLineArgs.h"
 
-__declspec(dllexport) int run(CommandLineArgs& args, Profiler<WINML_MODEL_TEST_PERF>& g_Profiler);
+__declspec(dllexport) int run(CommandLineArgs& args, Profiler<WINML_MODEL_TEST_PERF>& profiler);

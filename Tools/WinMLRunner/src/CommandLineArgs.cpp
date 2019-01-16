@@ -33,9 +33,9 @@ void CommandLineArgs::PrintUsage() {
     std::cout << "  -autoScale <interpolationMode>: Enable image autoscaling and set the interpolation mode [Nearest, Linear, Cubic, Fant]" << std::endl;
 }
 
-CommandLineArgs::CommandLineArgs(std::vector<std::wstring> & args)
+CommandLineArgs::CommandLineArgs(std::vector<std::wstring>& args)
 {
-    for (int i = 0; i < args.size(); i++)
+    for (UINT i = 0; i < args.size(); i++)
     {
         if ((_wcsicmp(args[i].c_str(), L"-CPU") == 0))
         {

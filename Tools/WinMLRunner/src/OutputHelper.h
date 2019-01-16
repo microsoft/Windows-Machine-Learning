@@ -140,7 +140,7 @@ public:
         }
     }
 
-    void PrintLearningModelDevice(DeviceType deviceType, LearningModelDevice& device)
+    void PrintLearningModelDevice(DeviceType deviceType, const LearningModelDevice& device)
     {
         if (deviceType == DeviceType::CPU)
         {

@@ -1,0 +1,3 @@
+tabby, tabby cat with confidence of 0.931461
+Egyptian cat with confidence of 0.065306
+tiger cat with confidence of 0.002927

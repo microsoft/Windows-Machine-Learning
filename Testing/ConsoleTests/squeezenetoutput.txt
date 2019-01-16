@@ -1,0 +1,9 @@
+Loading modelfile 'C:\Users\orlevari\repos\Windows-Machine-Learning\Testing\ConsoleTests\SqueezeNet.onnx' on the 'default' device
+model file loaded in 391 ticks
+Loading the image...
+Binding...
+Running the model...
+model run took 15 ticks
+tabby, tabby cat with confidence of 0.931461
+Egyptian cat with confidence of 0.065306
+tiger cat with confidence of 0.002927

@@ -73,7 +73,7 @@ namespace BindingUtilities
             BitmapDecoder decoder = BitmapDecoder::CreateAsync(stream).get();
 
             // If input dimensions are different from tensor input, then scale / crop while reading
-            if (args.AutoScale() &&
+            if (args.IsAutoScale() &&
                  ( decoder.PixelHeight() != height ||
                    decoder.PixelWidth() != width))
             {

@@ -7,17 +7,18 @@ public:
     __declspec(dllexport) CommandLineArgs();
     void PrintUsage();
 
-    bool UseGPUHighPerformance() const { return m_useGPUHighPerformance; }
-    bool UseGPUMinPower() const { return m_useGPUMinPower; }
+    bool IsUsingGPUHighPerformance() const { return m_useGPUHighPerformance; }
+    bool IsUsingGPUMinPower() const { return m_useGPUMinPower; }
     bool UseBGR() const { return m_useBGR; }
-    bool UseGPUBoundInput() const { return m_useGPUBoundInput; }
-    bool IgnoreFirstRun() const { return m_ignoreFirstRun; }
-    bool PerfCapture() const { return m_perfCapture; }
-    bool EnableDebugOutput() const { return m_debug; }
+    bool IsUsingGPUBoundInput() const { return m_useGPUBoundInput; }
+    bool IsIgnoreFirstRun() const { return m_ignoreFirstRun; }
+    bool IsPerformanceCapture() const { return m_perfCapture; }
+    bool IsDebugOutputEnabled() const { return m_debug; }
     bool Silent() const { return m_silent; }
-    bool PerIterCapture() const { return m_perIterCapture; }
-    bool CreateDeviceOnClient() const { return m_createDeviceOnClient; }
-    bool AutoScale() const { return m_autoScale; }
+    bool IsPerIterationCapture() const { return m_perIterCapture; }
+    bool IsCreateDeviceOnClient() const { return m_createDeviceOnClient; }
+    bool IsAutoScale() const { return m_autoScale; }
+
     BitmapInterpolationMode AutoScaleInterpMode() const { return m_autoScaleInterpMode; }
    
     const std::wstring& ImagePath() const { return m_imagePath; }
@@ -25,8 +26,6 @@ public:
     const std::wstring& OutputPath() const { return m_outputPath; }
     const std::wstring& FolderPath() const { return m_modelFolderPath; }
     const std::wstring& ModelPath() const { return m_modelPath; }
-
-    void SetModelPath(std::wstring path) { m_modelPath = path; }
 
     bool UseRGB() const
     {
@@ -70,6 +69,27 @@ public:
     }
 
     uint32_t NumIterations() const { return m_numIterations; }
+
+    void ToggleCPU(const bool useCPU) { m_useCPU = useCPU; }
+    void ToggleGPU(const bool useGPU) { m_useGPU = useGPU; }
+    void ToggleGPUHighPerformance(const bool useGPUHighPerformance) { m_useGPUHighPerformance = useGPUHighPerformance; }
+    void ToggleUseGPUMinPower(const bool useGPUMinPower) { m_useGPUMinPower = useGPUMinPower; }
+    void ToggleCreateDeviceOnClient(const bool createDeviceOnClient) { m_createDeviceOnClient = createDeviceOnClient; }
+    void ToggleCreateDeviceInWinML(const bool createDeviceInWinML) { m_createDeviceInWinML = createDeviceInWinML; }
+    void ToggleCPUBoundInput(const bool useCPUBoundInput) { m_useCPUBoundInput = useCPUBoundInput; }
+    void ToggleGPUBoundInput(const bool useGPUBoundInput) { m_useGPUBoundInput = useGPUBoundInput; }
+    void ToggleUseRGB(const bool useRGBImage) {m_useRGB = useRGBImage;}
+    void ToggleUseBGR(const bool useBGRImage) {m_useBGR = useBGRImage;}
+    void ToggleUseTensor(const bool useTensor) { m_useTensor = useTensor; }
+    void TogglePerformanceCapture(const bool perfCapture) { m_perfCapture = perfCapture; }
+    void ToggleIgnoreFirstRun(const bool ignoreFirstRun) { m_ignoreFirstRun=ignoreFirstRun;}
+    void TogglePerIterationPerformanceCapture(const bool perIterCapture) { m_perIterCapture = perIterCapture; }
+    void ToggleDebugOutput(const bool debug) { m_debug = debug; }
+
+
+    void SetModelPath(const std::wstring modelPath) { m_modelPath = modelPath; }
+    void SetInputDataPath(const std::wstring inputDataPath) { m_inputData = inputDataPath; }
+    void SetPerformanceCSVPath(const std::wstring performanceCSVPath) { m_outputPath = performanceCSVPath; }
 
 private:
     bool m_perfCapture = false;

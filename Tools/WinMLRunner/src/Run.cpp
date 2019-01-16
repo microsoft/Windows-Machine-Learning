@@ -27,7 +27,7 @@ LearningModel LoadModel(const std::wstring path, bool capturePerf, OutputHelper&
         if (capturePerf)
         {
             WINML_PROFILING_STOP(g_Profiler, WINML_MODEL_TEST_PERF::LOAD_MODEL);
-            if (args.PerIterCapture())
+            if (args.IsPerIterationCapture())
             {
                 output.SaveLoadTimes(g_Profiler, iterationNum);
             }
@@ -118,7 +118,7 @@ HRESULT BindInputFeatures(const LearningModel& model, const LearningModelBinding
         if (capturePerf)
         {
             WINML_PROFILING_STOP(g_Profiler, WINML_MODEL_TEST_PERF::BIND_VALUE);
-            if (args.PerIterCapture())
+            if (args.IsPerIterationCapture())
             {
                 output.SaveBindTimes(g_Profiler, iterationNum);
             }
@@ -163,7 +163,7 @@ HRESULT EvaluateModel(
         if (capturePerf)
         {
             WINML_PROFILING_STOP(g_Profiler, WINML_MODEL_TEST_PERF::EVAL_MODEL);
-            if (args.PerIterCapture())
+            if (args.IsPerIterationCapture())
             {
                 output.SaveEvalPerformance(g_Profiler, iterationNum);
             }
@@ -259,7 +259,7 @@ HRESULT EvaluateModel(
         return hr.code();
     }
 
-    if (args.EnableDebugOutput())
+    if (args.IsDebugOutputEnabled())
     {
         // Enables trace log output. 
         session.EvaluationProperties().Insert(L"EnableDebugOutput", nullptr);
@@ -270,12 +270,12 @@ HRESULT EvaluateModel(
     bool useInputData = false;
     
     // Add one more iteration if we ignore the first run
-    uint32_t numIterations = args.NumIterations() + args.IgnoreFirstRun();
+    uint32_t numIterations = args.NumIterations() + args.IsIgnoreFirstRun();
 
     // Run the binding + evaluate multiple times and average the results
     for (uint32_t i = 0; i < numIterations; i++)
     {
-        bool captureIterationPerf = (args.PerfCapture() && (!args.IgnoreFirstRun() || i > 0)) || (args.PerIterCapture());
+        bool captureIterationPerf = (args.IsPerformanceCapture() && (!args.IsIgnoreFirstRun() || i > 0)) || (args.IsPerIterationCapture());
 
         output.PrintBindingInfo(i + 1, deviceType, inputBindingType, inputDataType, deviceCreationLocation);
 
@@ -331,7 +331,7 @@ HRESULT EvaluateModels(
 
         try
         {
-            model = LoadModel(path, args.PerfCapture() || args.PerIterCapture(), output, args, 0);
+            model = LoadModel(path, args.IsPerformanceCapture() || args.IsPerIterationCapture(), output, args, 0);
         }
         catch (hresult_error hr)
         {
@@ -357,7 +357,7 @@ HRESULT EvaluateModels(
                 {
                     for (auto deviceCreationLocation : deviceCreationLocations)
                     {
-                        if (args.PerfCapture() || args.PerIterCapture())
+                        if (args.IsPerformanceCapture() || args.IsPerIterationCapture())
                         {
                             // Resets all values from profiler for bind and evaluate.
                             g_Profiler.Reset(WINML_MODEL_TEST_PERF::BIND_VALUE, WINML_MODEL_TEST_PERF::COUNT);
@@ -379,7 +379,7 @@ HRESULT EvaluateModels(
                             return evalHResult;
                         }
 
-                        if (args.PerfCapture())
+                        if (args.IsPerformanceCapture())
                         {
                             output.PrintResults(g_Profiler, args.NumIterations(), deviceType, inputBindingType, inputDataType, deviceCreationLocation);
                             output.WritePerformanceDataToCSV(
@@ -390,11 +390,11 @@ HRESULT EvaluateModels(
                                 TypeHelper::Stringify(inputDataType),
                                 TypeHelper::Stringify(inputBindingType),
                                 TypeHelper::Stringify(deviceCreationLocation),
-                                args.IgnoreFirstRun()
+                                args.IsIgnoreFirstRun()
                             );
                         }
 
-                        if (args.PerIterCapture())
+                        if (args.IsPerIterationCapture())
                         {
                             output.WritePerformanceDataToCSVPerIteration(g_Profiler, args, args.ModelPath(), args.ImagePath());
                         }
@@ -445,12 +445,12 @@ std::vector<DeviceType> FetchDeviceTypes(const CommandLineArgs& args)
         deviceTypes.push_back(DeviceType::DefaultGPU);
     }
 
-    if (args.UseGPUHighPerformance())
+    if (args.IsUsingGPUHighPerformance())
     {
         deviceTypes.push_back(DeviceType::HighPerfGPU);
     }
 
-    if (args.UseGPUMinPower())
+    if (args.IsUsingGPUMinPower())
     {
         deviceTypes.push_back(DeviceType::MinPowerGPU);
     }
@@ -467,7 +467,7 @@ std::vector<InputBindingType> FetchInputBindingTypes(const CommandLineArgs& args
         inputBindingTypes.push_back(InputBindingType::CPU);
     }
 
-    if (args.UseGPUBoundInput())
+    if (args.IsUsingGPUBoundInput())
     {
         inputBindingTypes.push_back(InputBindingType::GPU);
     }
@@ -484,7 +484,7 @@ std::vector<DeviceCreationLocation> FetchDeviceCreationLocations(const CommandLi
         deviceCreationLocations.push_back(DeviceCreationLocation::WinML);
     }
 
-    if (args.CreateDeviceOnClient())
+    if (args.IsCreateDeviceOnClient())
     {
         deviceCreationLocations.push_back(DeviceCreationLocation::ClientCode);
     }
@@ -511,7 +511,7 @@ int run(CommandLineArgs& args)
         output.SetDefaultCSVFileName();
     }
 
-    if (args.PerIterCapture()) {
+    if (args.IsPerIterationCapture()) {
         output.SetDefaultCSVFileNamePerIteration();
     }
 

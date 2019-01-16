@@ -33,113 +33,110 @@ void CommandLineArgs::PrintUsage() {
     std::cout << "  -autoScale <interpolationMode>: Enable image autoscaling and set the interpolation mode [Nearest, Linear, Cubic, Fant]" << std::endl;
 }
 
-CommandLineArgs::CommandLineArgs()
+CommandLineArgs::CommandLineArgs(std::vector<std::wstring>& args)
 {
-    int numArgs = 0;
-    LPWSTR* args = CommandLineToArgvW(GetCommandLineW(), &numArgs);
-
-    for (int i = 0; i < numArgs; i++)
+    for (UINT i = 0; i < args.size(); i++)
     {
-        if ((_wcsicmp(args[i], L"-CPU") == 0))
+        if ((_wcsicmp(args[i].c_str(), L"-CPU") == 0))
         {
             m_useCPU = true;
         }
-        else if ((_wcsicmp(args[i], L"-GPU") == 0))
+        else if ((_wcsicmp(args[i].c_str(), L"-GPU") == 0))
         {
             m_useGPU = true;
         }
-        else if ((_wcsicmp(args[i], L"-GPUHighPerformance") == 0))
+        else if ((_wcsicmp(args[i].c_str(), L"-GPUHighPerformance") == 0))
         {
             m_useGPUHighPerformance = true;
         }
-        else if ((_wcsicmp(args[i], L"-GPUMinPower") == 0))
+        else if ((_wcsicmp(args[i].c_str(), L"-GPUMinPower") == 0))
         {
             m_useGPUMinPower = true;
         }
-        else if ((_wcsicmp(args[i], L"-CreateDeviceOnClient") == 0))
+        else if ((_wcsicmp(args[i].c_str(), L"-CreateDeviceOnClient") == 0))
         {
             m_createDeviceOnClient = true;
         }
-        else if ((_wcsicmp(args[i], L"-CreateDeviceInWinML") == 0))
+        else if ((_wcsicmp(args[i].c_str(), L"-CreateDeviceInWinML") == 0))
         {
             m_createDeviceInWinML = true;
         }
-        else if ((_wcsicmp(args[i], L"-iterations") == 0) && (i + 1 < numArgs))
+        else if ((_wcsicmp(args[i].c_str(), L"-iterations") == 0) && (i + 1 < args.size()))
         {
-            m_numIterations = static_cast<UINT>(_wtoi(args[++i]));
+            m_numIterations = static_cast<UINT>(_wtoi(args[++i].c_str()));
         }
-        else if ((_wcsicmp(args[i], L"-model") == 0) && (i + 1 < numArgs))
+        else if ((_wcsicmp(args[i].c_str(), L"-model") == 0) && (i + 1 < args.size()))
         {
             m_modelPath = args[++i];
         }
-        else if ((_wcsicmp(args[i], L"-folder") == 0) && (i + 1 < numArgs))
+        else if ((_wcsicmp(args[i].c_str(), L"-folder") == 0) && (i + 1 < args.size()))
         {
             m_modelFolderPath = args[++i];
         }
-        else if ((_wcsicmp(args[i], L"-input") == 0))
+        else if ((_wcsicmp(args[i].c_str(), L"-input") == 0))
         {
             m_inputData = args[++i];
         }
-        else if ((_wcsicmp(args[i], L"-output") == 0))
+        else if ((_wcsicmp(args[i].c_str(), L"-output") == 0))
         {
             m_outputPath = args[++i];
         }
-        else if ((_wcsicmp(args[i], L"-RGB") == 0))
+        else if ((_wcsicmp(args[i].c_str(), L"-RGB") == 0))
         {
             m_useRGB = true;
         }
-        else if ((_wcsicmp(args[i], L"-BGR") == 0))
+        else if ((_wcsicmp(args[i].c_str(), L"-BGR") == 0))
         {
             m_useBGR = true;
         }
-        else if ((_wcsicmp(args[i], L"-tensor") == 0))
+        else if ((_wcsicmp(args[i].c_str(), L"-tensor") == 0))
         {
             m_useTensor = true;
         }
-        else if ((_wcsicmp(args[i], L"-CPUBoundInput") == 0))
+        else if ((_wcsicmp(args[i].c_str(), L"-CPUBoundInput") == 0))
         {
             m_useCPUBoundInput = true;
         }
-        else if ((_wcsicmp(args[i], L"-GPUBoundInput") == 0))
+        else if ((_wcsicmp(args[i].c_str(), L"-GPUBoundInput") == 0))
         {
             m_useGPUBoundInput = true;
         }
-        else if ((_wcsicmp(args[i], L"-IgnoreFirstRun") == 0))
+        else if ((_wcsicmp(args[i].c_str(), L"-IgnoreFirstRun") == 0))
         {
             m_ignoreFirstRun = true;
         }
-        else if ((_wcsicmp(args[i], L"-perf") == 0))
+        else if ((_wcsicmp(args[i].c_str(), L"-perf") == 0))
         {
             m_perfCapture = true;
         }
-        else if ((_wcsicmp(args[i], L"-debug") == 0))
+        else if ((_wcsicmp(args[i].c_str(), L"-debug") == 0))
         {
             m_debug = true;
         }
-        else if ((_wcsicmp(args[i], L"-savePerIterationPerf") == 0))
+        else if ((_wcsicmp(args[i].c_str(), L"-savePerIterationPerf") == 0))
         {
             m_perIterCapture = true;
         }
-        else if ((_wcsicmp(args[i], L"-terse") == 0))
+        else if ((_wcsicmp(args[i].c_str(), L"-terse") == 0))
         {
             m_terseOutput = true;
         }
-        else if ((_wcsicmp(args[i], L"-autoScale") == 0) && (i + 1 < numArgs))
+        else if ((_wcsicmp(args[i].c_str(), L"-autoScale") == 0) && (i + 1 < args.size()))
         {
             m_autoScale = true;
-            if (_wcsicmp(args[++i], L"Nearest") == 0)
+            if (_wcsicmp(args[++i].c_str(), L"Nearest") == 0)
             {
                 m_autoScaleInterpMode = BitmapInterpolationMode::NearestNeighbor;
             }
-            else if (_wcsicmp(args[i], L"Linear") == 0)
+            else if (_wcsicmp(args[i].c_str(), L"Linear") == 0)
             {
                 m_autoScaleInterpMode = BitmapInterpolationMode::Linear;
             }
-            else if (_wcsicmp(args[i], L"Cubic") == 0)
+            else if (_wcsicmp(args[i].c_str(), L"Cubic") == 0)
             {
                 m_autoScaleInterpMode = BitmapInterpolationMode::Cubic;
             }
-            else if (_wcsicmp(args[i], L"Fant") == 0)
+            else if (_wcsicmp(args[i].c_str(), L"Fant") == 0)
             {
                 m_autoScaleInterpMode = BitmapInterpolationMode::Fant;
             }
@@ -150,7 +147,7 @@ CommandLineArgs::CommandLineArgs()
                 return;
             }
         }
-        else if ((_wcsicmp(args[i], L"/?") == 0))
+        else if ((_wcsicmp(args[i].c_str(), L"/?") == 0))
         {
             PrintUsage();
             return;

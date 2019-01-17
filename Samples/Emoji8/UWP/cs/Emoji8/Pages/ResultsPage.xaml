@@ -1,0 +1,265 @@
+﻿<Page
+	x:Class="Emoji8.ResultsPage"
+	xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	xmlns:local="using:Emoji8"
+	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:media="using:Microsoft.Toolkit.Uwp.UI.Media"
+    xmlns:controls="using:Microsoft.Toolkit.Uwp.UI.Controls"
+    xmlns:extensions="using:Microsoft.Toolkit.Uwp.UI.Extensions"
+    xmlns:animations="using:Microsoft.Toolkit.Uwp.UI.Animations"
+    mc:Ignorable="d">
+	<Page.Resources>
+		
+	</Page.Resources>
+
+	<Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+        <!--Sets background as blown up, blurred & emoji-tinted version of the highest scoring pic from game session-->
+        <Grid Name="ResultsPageBackground" Visibility="Collapsed">
+            <Image x:Name="BestPicBackground" Stretch="UniformToFill"></Image>
+            <Border Background="#33FFC83D" />
+            <Border>
+                <Border.Background>
+                    <media:BackdropBlurBrush Amount="30.0" />
+                </Border.Background>
+            </Border>
+        </Grid>
+
+        <!--First screen that displays temporary message as gifs are being generated-->
+        <Grid Name="LoadingResultsScreen">
+            <Viewbox MaxWidth="800" Margin="15">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    <TextBlock Grid.Row="0"  x:Uid="LoadingResultsMessage" HorizontalAlignment="Center" VerticalAlignment="Center" Text="" TextAlignment="Center" FontSize="36"/>
+                    <ProgressRing Grid.Row="1" IsActive="True" HorizontalAlignment="Center" VerticalAlignment="Center"
+                  Foreground="Green"
+                  Width="100" 
+                  Height="100" />
+                </Grid>
+            </Viewbox>
+        </Grid>
+        
+        <!--Second screen that contains images, loaded gifs, and options to share and/or play again-->
+        <Grid Name="ResultsLoadedScreen" Visibility="Collapsed" Padding="0,0,0,25">
+            <Grid.RowDefinitions>
+                
+                <!-- Animated Gif -->
+                <RowDefinition Height="*" />
+
+                <!-- Results (Images) View -->
+                <RowDefinition Height="0.5*" />
+                
+            </Grid.RowDefinitions>
+
+            <!--Displays gif with superimposed game logo and actionable buttons-->
+            <Grid Grid.Row="0" Margin="25" HorizontalAlignment="Center" VerticalAlignment="Center">
+                <Viewbox x:Name="vb">
+                    <Grid>
+                        <controls:DropShadowPanel BlurRadius="40.0"
+                                ShadowOpacity="0.50"
+                                OffsetX="0.0"
+                                OffsetY="0.0"
+                                Color="Black">
+                            <Grid Background="White" Padding="25,25,25,10">
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="*" />
+                                        <RowDefinition Height="Auto" />
+                                    </Grid.RowDefinitions>
+
+                                    <!--Displays gif if one was generated-->
+                                    <Border Grid.Row="0" BorderThickness="10" BorderBrush="Black">
+                                        <Image x:Name="Gif" MaxWidth="960"></Image>
+                                    </Border>
+                                    
+                                    <!--Displays oops monkey emoji if no gif was generated (due to lack of captured videoframes)-->
+                                    <Border Grid.Row="0" BorderThickness="10" BorderBrush="Black">
+                                        <FontIcon Visibility="Collapsed" x:Name="OopsEmojiGifReplacement" Glyph="&#x1F64A;" FontSize="300" FontFamily="Segoe UI Emoji" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
+
+                                    <!--Because why not-->
+                                    <InkCanvas Grid.Row="0" x:Name="inkCanvas"/>
+                                    
+                                    <Image x:Name="Emoji8Logo" Source="ms-appx:///Assets/emoji8.png" Margin="20" Grid.Row="0" HorizontalAlignment="Right" Height="100" VerticalAlignment="Bottom"/>
+                                    <TextBlock Grid.Row="1" x:Uid="BestMomentsText" x:Name="BestMomentsText"  HorizontalAlignment="Left" VerticalAlignment="Center" Text="" FontSize="44" Margin="0,10,0,0"></TextBlock>
+                                    <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right" BorderBrush="White" Margin="0,10,0,0">
+                                        <Button MinWidth="256" MinHeight="60" FontSize="32" Margin="10,10,10,10" x:Name="ShareButton" x:Uid="ShareButtonText" Content="" Click="ShareButtonClicked" Height="Auto" Width="Auto" VerticalAlignment="Center" HorizontalAlignment="Center"></Button>
+                                        <Button MinWidth="182" MinHeight="60" FontSize="32" Margin="10,10,0,10" x:Name="PlayAgainButton" x:Uid="PlayAgainButtonText" Content="" Click="PlayAgain" Height="Auto" Width="Auto" VerticalAlignment="Center" HorizontalAlignment="Center"></Button>
+                                    </StackPanel>
+                                </Grid>
+                            </Grid>
+                        </controls:DropShadowPanel>
+                    </Grid>
+                </Viewbox>
+            </Grid>
+
+            <!--Displays results for each emoji in the order presented during the game session-->
+            <ItemsControl Grid.Row="1" Name="ResultsView" ItemsSource="{Binding ResultsEmojis}" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="20,0,20,0">
+
+                <!-- ItemsPanelTemplate -->
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <controls:UniformGrid Columns="4" />
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+
+                <!-- ItemTemplate -->
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="local:Emoji">
+                        <Viewbox>
+                            <controls:DropShadowPanel BlurRadius="150.0"
+                                    ShadowOpacity="0.50"
+                                    Margin="100,100,100,100"
+                                    OffsetX="0.0"
+                                    OffsetY="0.0"
+                                    Color="Black">
+
+                                <!--Individual emoji information is arranged like a polaroid picture top-down-->
+                                <StackPanel Orientation="Vertical" Padding="100,100,100,100" Background="White" >
+                                    <Grid>
+
+                                        <!--Displays videoframe associated with emoji if one was captured during gameplay-->
+                                        <Border BorderThickness="25" BorderBrush="Black" Visibility="{Binding ShowOopsIcon, Converter={StaticResource InvertBoolConverter}}">
+                                            <Image x:Name="imageControl" Visibility="{Binding ShowOopsIcon, Converter={StaticResource InvertBoolConverter}}" Source="{Binding BestPic}" HorizontalAlignment="Center" Height="Auto" Width="Auto" />
+                                        </Border>
+
+                                        <!--Display oops monkey emoji if no videoframe was recorded-->
+                                        <Border BorderThickness="0" BorderBrush="Black" Visibility="{Binding ShowOopsIcon}">
+                                            <FontIcon x:Name="OopsEmoji" Visibility="{Binding ShowOopsIcon}" Glyph="&#x1F64A;" FontSize="300" FontFamily="Segoe UI Emoji" HorizontalAlignment="Center" VerticalAlignment="Center"></FontIcon>
+                                        </Border>
+
+                                        <!--Positions superimposed emoji fonticon over bottom-right corner of captured picture-->
+                                        <Grid>
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="14*"/>
+                                                <RowDefinition Height="7*"/>
+                                                <RowDefinition Height=".5*"/>
+                                            </Grid.RowDefinitions>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="2*" />
+                                                <ColumnDefinition Width="*" />
+                                            </Grid.ColumnDefinitions>
+                                            <Viewbox Grid.Row="1" Grid.Column="2">
+                                                <FontIcon x:Name="BestEmoji" Visibility="{Binding ShowOopsIcon, Converter={StaticResource InvertBoolConverter}}" Glyph="{Binding Icon}" FontFamily="Segoe UI Emoji" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                            </Viewbox>
+                                        </Grid>
+                                    </Grid>
+
+                                    <!--Displays emotion name and score (or lack of score)-->
+                                    <Grid HorizontalAlignment="Stretch" Margin="0,70,0,0">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="auto"/>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="auto"/>
+                                        </Grid.ColumnDefinitions>
+                                        
+                                        <!--Displays score for present videoframe-->
+                                        <TextBlock Grid.Column="0" Visibility="{Binding ShowOopsIcon, Converter={StaticResource InvertBoolConverter}}" Text="{Binding Name}" FontSize="148" HorizontalAlignment="Left"/>
+                                        <TextBlock Grid.Column="2" Visibility="{Binding ShowOopsIcon, Converter={StaticResource InvertBoolConverter}}" Text="{Binding BestScore, Converter={StaticResource StringFormatConverter},
+											     ConverterParameter='{}{0:P}'}" FontSize="148" Margin="40,0,0,0" HorizontalAlignment="Right"/>
+                                        
+                                        <!--Displays quantifiable reason for oops monkey emoji-->
+                                        <TextBlock Grid.Column="0" Visibility="{Binding ShowOopsIcon}" Text="{Binding Name}" FontSize="48" HorizontalAlignment="Left"/>
+                                        <TextBlock Grid.Column="2" Visibility="{Binding ShowOopsIcon}" Text="{Binding BestScore, Converter={StaticResource StringFormatConverter},
+											     ConverterParameter='{}{0:P}'}" FontSize="48" HorizontalAlignment="Right"/>
+                                    </Grid>
+                                   
+                                </StackPanel>
+                            </controls:DropShadowPanel>
+                        </Viewbox>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </Grid>
+
+        <!--Provides dark background image tint for area surrounding popups-->
+        <Grid Visibility="Collapsed" x:Name="DarkPopupBackground" Opacity="0.00" Background="Black">
+        </Grid>
+
+        <!--Confirms current logged-in user wants to make a post (continue) or allows new user to log in-->        
+        <Border x:Name="ContinueQuestionPopup"                
+                Visibility="Collapsed"
+                VerticalAlignment="Center"
+                HorizontalAlignment="Center">
+                <Border BorderBrush="{StaticResource ApplicationForegroundThemeBrush}" 
+				Background="{StaticResource ApplicationPageBackgroundThemeBrush}"
+				BorderThickness="2" Width="Auto" Height="Auto">
+                <animations:Implicit.ShowAnimations>
+                    <animations:OpacityAnimation Duration="0:0:1" From="0" To="1.0"></animations:OpacityAnimation>
+                </animations:Implicit.ShowAnimations>
+                <animations:Implicit.HideAnimations>
+                    <animations:ScalarAnimation Target="Opacity" Duration="0:0:1" To="0.0"></animations:ScalarAnimation>
+                </animations:Implicit.HideAnimations>
+                <Grid x:Name="ContinueContent" Padding="25,35,25,25">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    <Ellipse x:Name="TwitterBorder" Grid.Row="0" Height="60" Width="60">
+                        <Ellipse.Fill>
+                            <ImageBrush x:Name="TwitterProfilePic"/>
+                        </Ellipse.Fill>
+                    </Ellipse>
+                    <TextBlock Grid.Row="1" x:Name="ContinueText" FontSize="24.667" Margin="10,10,10,20" HorizontalAlignment="Center"/>
+                    <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="10,10,10,10">
+                        <Button x:Uid="ContinueYes" MinHeight="32" MinWidth="75" FontSize="20" Content="" Click="ContinueAsLoggedInUserClickedYes" HorizontalAlignment="Center" Margin="0,0,15,0"/>
+                        <Button x:Uid="ContinueNo" MinHeight="32" MinWidth="75" FontSize="20" Content="" Click="ContinueAsLoggedInUserClickedNo" HorizontalAlignment="Center"/>
+                    </StackPanel>
+                </Grid>
+            </Border>
+        </Border>
+
+        <!--Allows user to preview gif and its associated text before sending a tweet-->
+        <controls:DropShadowPanel x:Name="PostTweetBorder"
+                x:Load="True"
+                BlurRadius="40"
+                Margin="20"
+                Visibility="Collapsed"
+                VerticalAlignment="Center"
+                HorizontalAlignment="Center">
+            <animations:Implicit.ShowAnimations>
+                <animations:OpacityAnimation Duration="0:0:1" From="0" To="1.0"></animations:OpacityAnimation>
+            </animations:Implicit.ShowAnimations>
+            <animations:Implicit.HideAnimations>
+                <animations:ScalarAnimation Target="Opacity" Duration="0:0:1" To="0.0"></animations:ScalarAnimation>
+            </animations:Implicit.HideAnimations>
+            <Border BorderBrush="{StaticResource ApplicationForegroundThemeBrush}" 
+			        Background="{StaticResource ApplicationPageBackgroundThemeBrush}"
+			        BorderThickness="2">
+                <Grid x:Name="PostTweetContent" Padding="25,25,25,0">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*"></RowDefinition>
+                        <RowDefinition Height="Auto"></RowDefinition>
+                        <RowDefinition Height="Auto"></RowDefinition>
+                    </Grid.RowDefinitions>
+                    <Image Grid.Row="0"
+                           x:Name="brandedGif"
+                           MaxHeight="540"
+                           Margin="0,0,0,10"
+                           extensions:FrameworkElementExtensions.EnableActualSizeBinding="True"></Image>
+                    <TextBox Grid.Row="1"
+                             HorizontalAlignment="Stretch"
+                             x:Name="TweetText"
+                             x:Uid="TweetCaption"
+                             FontSize="20"
+                             Width="{Binding ElementName=brandedGif, Path=(extensions:FrameworkElementExtensions.ActualWidth)}"
+                             TextWrapping="Wrap" 
+                             Header="" 
+                             Text="" ></TextBox>
+                    <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center" Padding="20">
+                        <Button x:Uid="TweetItButton" MinHeight="36" MinWidth="75" FontSize="20" Content="" Click="PostTweetClickedShare" HorizontalAlignment="Center" Margin="0,0,15,0"/>
+                        <Button x:Uid="CancelButton" MinHeight="36" MinWidth="75" FontSize="20" Content="" Click="PostTweetClickedCancel" HorizontalAlignment="Center"/>
+                    </StackPanel>
+                </Grid>
+            </Border>
+        </controls:DropShadowPanel>
+
+    </Grid>
+</Page>

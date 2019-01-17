@@ -1,0 +1,63 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="main.cpp" />
+    <ClCompile Include="pch.cpp" />
+    <ClCompile Include="operators\debug_cpu.cpp">
+      <Filter>operators</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="pch.h" />
+    <ClInclude Include="operators\customoperatorprovider.h">
+      <Filter>operators</Filter>
+    </ClInclude>
+    <ClInclude Include="operators\noisyrelu_cpu.h">
+      <Filter>operators</Filter>
+    </ClInclude>
+    <ClInclude Include="operators\relu_cpu.h">
+      <Filter>operators</Filter>
+    </ClInclude>
+    <ClInclude Include="operators\debug_cpu.h">
+      <Filter>operators</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="models">
+      <UniqueIdentifier>{012512a6-a503-4634-a562-1ee6af70fdae}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="operators">
+      <UniqueIdentifier>{aa9d9755-2868-4f16-bf4f-971006eb745d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="input">
+      <UniqueIdentifier>{397953d2-fcfa-440a-bf21-f7e8e088b7d2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="output">
+      <UniqueIdentifier>{cc5428ae-be01-4d04-96a8-4075e932a574}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <CopyFileToFolders Include="models\noisy_relu.onnx">
+      <Filter>models</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="models\relu.onnx">
+      <Filter>models</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="labels.txt">
+      <Filter>output</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="models\squeezenet_debug_all_outputs.onnx">
+      <Filter>models</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="models\squeezenet_debug_one_output.onnx">
+      <Filter>models</Filter>
+    </CopyFileToFolders>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\..\..\SharedContent\media\kitten_224.png">
+      <Filter>input</Filter>
+    </None>
+    <None Include="README.md" />
+    <None Include="packages.config" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,45 @@
+﻿resources:
+
+- repo: self
+  clean: true
+
+variables:
+
+  SamplesBin: SamplesBin
+  system.collectionId: ee8504d9-65a6-4f6c-85ed-0ad4265128ee
+  system.debug: false
+  system.definitionId: 612
+  system.teamProject: WindowsAI
+  WINDOWS_WINMD: C:\Program Files (x86)\Windows Kits\10\UnionMetadata\10.0.17763.0\Windows.winmd
+
+jobs:
+- template: templates/build.yml
+  parameters:
+    BuildConfiguration: Release
+    BuildPlatform: x64
+
+- template: templates/build.yml
+  parameters:
+    BuildConfiguration: Debug
+    BuildPlatform: x64
+
+# ARM builds are disabled in the build configuration for desktop app projects
+- template: templates/build.yml
+  parameters:
+    BuildConfiguration: Release
+    BuildPlatform: ARM
+
+- template: templates/build.yml
+  parameters:
+    BuildConfiguration: Debug
+    BuildPlatform: ARM
+
+- template: templates/build.yml
+  parameters:
+    BuildConfiguration: Release
+    BuildPlatform: x86
+
+- template: templates/build.yml
+  parameters:
+    BuildConfiguration: Debug
+    BuildPlatform: x86

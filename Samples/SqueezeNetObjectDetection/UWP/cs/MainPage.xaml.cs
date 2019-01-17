@@ -195,15 +195,6 @@ namespace SqueezeNetObjectDetection
                     ImageFeatureValue imageTensor = ImageFeatureValue.CreateFromVideoFrame(inputFrame);
                     binding.Bind("data_0", imageTensor);
 
-                    // temp: there is a bug where winml doesn't allow unbound outputs yet, prebind the output!
-                    {
-                        TensorFeatureDescriptor outputTensorDescription = _model.OutputFeatures.FirstOrDefault(
-                            feature => feature.Name == "softmaxout_1"
-                            ) as TensorFeatureDescriptor;
-                        TensorFloat outputTensor = TensorFloat.Create(outputTensorDescription.Shape);
-                        binding.Bind("softmaxout_1", outputTensor);
-                    }
-
                     StatusBlock.Text = "Running model...";
 
                     int ticks = Environment.TickCount;
@@ -212,34 +203,37 @@ namespace SqueezeNetObjectDetection
                     var results = await _session.EvaluateAsync(binding, $"Run { ++_runCount } ");
 
                     ticks = Environment.TickCount - ticks;
+                    string message = $"Run took { ticks } ticks";
 
                     // retrieve results from evaluation
                     var resultTensor = results.Outputs["softmaxout_1"] as TensorFloat;
                     var resultVector = resultTensor.GetAsVectorView();
 
                     // Find the top 3 probabilities
-                    List<float> topProbabilities = new List<float>() { 0.0f, 0.0f, 0.0f };
-                    List<int> topProbabilityLabelIndexes = new List<int>() { 0, 0, 0 };
-                    // SqueezeNet returns a list of 1000 options, with probabilities for each, loop through all
-                    for (int i = 0; i < resultVector.Count(); i++)
+                    List<(int index, float probability)> indexedResults = new List<(int, float)>();
+                    for (int i = 0; i < resultVector.Count; i++)
                     {
-                        // is it one of the top 3?
-                        for (int j = 0; j < 3; j++)
-                        {
-                            if (resultVector[i] > topProbabilities[j])
-                            {
-                                topProbabilityLabelIndexes[j] = i;
-                                topProbabilities[j] = resultVector[i];
-                                break;
-                            }
-                        }
+                        indexedResults.Add((index: i, probability: resultVector.ElementAt(i)));
                     }
+                    indexedResults.Sort((a, b) =>
+                    {
+                        if (a.probability < b.probability)
+                        {
+                            return 1;
+                        }
+                        else if (a.probability > b.probability)
+                        {
+                            return -1;
+                        }
+                        else
+                        {
+                            return 0;
+                        }
+                    });
 
-                    // Display the result
-                    string message = $"Run took { ticks } ticks";
                     for (int i = 0; i < 3; i++)
                     {
-                        message += $"\n\"{ _labels[topProbabilityLabelIndexes[i]]}\" with confidence of { topProbabilities[i]}";
+                        message += $"\n\"{ _labels[indexedResults[i].index]}\" with confidence of { indexedResults[i].probability}";
                     }
                     StatusBlock.Text = message;
                 }

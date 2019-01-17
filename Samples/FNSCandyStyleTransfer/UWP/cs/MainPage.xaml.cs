@@ -61,11 +61,10 @@ namespace SnapCandy
         // WinML related
         private readonly List<string> _kModelFileNames = new List<string>
         {
-            "winmlperf_coreml_FNS-Candy_prerelease",
+            "candy",
+            "mosaic",
             "la_muse",
-            "rain_princess",
-            "udnie",
-            "wave"
+            "udnie"
         };
         private const string _kDefaultImageFileName = "DefaultImage.jpg";
         private LearningModel m_model = null;

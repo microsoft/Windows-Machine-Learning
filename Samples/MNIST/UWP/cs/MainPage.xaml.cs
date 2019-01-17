@@ -9,14 +9,15 @@ using Windows.UI.Xaml.Media.Imaging;
 using Windows.AI.MachineLearning;
 using Windows.Media;
 using Windows.Storage.Streams;
+using System.Threading.Tasks;
 
 namespace MNIST_Demo
 {
     public sealed partial class MainPage : Page
     {
-        private mnistModel modelGen = new mnistModel();
+        private mnistModel modelGen;
         private mnistInput mnistInput = new mnistInput();
-        private mnistOutput mnistOutput = new mnistOutput();
+        private mnistOutput mnistOutput;
         //private LearningModelSession    session;
         private Helper helper = new Helper();
         RenderTargetBitmap renderBitmap = new RenderTargetBitmap();
@@ -36,14 +37,14 @@ namespace MNIST_Demo
                     IgnoreTilt = true,
                 }
             );
-            LoadModel();
+            LoadModelAsync();
         }
 
-        private async void LoadModel()
+        private async Task LoadModelAsync()
         {
-            Uri uri = new Uri("ms-appx:///Assets/mnist.onnx");
-            StorageFile stf = await StorageFile.GetFileFromApplicationUriAsync(uri);
-            modelGen = await mnistModel.CreateFromStreamAsync(stf as IRandomAccessStreamReference);
+            //Load a machine learning model
+            StorageFile modelFile = await StorageFile.GetFileFromApplicationUriAsync(new Uri($"ms-appx:///Assets/mnist.onnx"));
+            modelGen = await mnistModel.CreateFromStreamAsync(modelFile as IRandomAccessStreamReference);
         }
 
         private async void recognizeButton_Click(object sender, RoutedEventArgs e)
@@ -51,15 +52,16 @@ namespace MNIST_Demo
             //Bind model input with contents from InkCanvas
             VideoFrame vf = await helper.GetHandWrittenImage(inkGrid);
             mnistInput.Input3 = ImageFeatureValue.CreateFromVideoFrame(vf);
+            
             //Evaluate the model
             mnistOutput = await modelGen.EvaluateAsync(mnistInput);
 
             //Convert output to datatype
-            IReadOnlyList<float> VectorImage = mnistOutput.Plus214_Output_0.GetAsVectorView();
-            IList<float> ImageList = VectorImage.ToList();
+            IReadOnlyList<float> vectorImage = mnistOutput.Plus214_Output_0.GetAsVectorView();
+            IList<float> imageList = vectorImage.ToList();
 
             //LINQ query to check for highest probability digit
-            var maxIndex = ImageList.IndexOf(ImageList.Max());
+            var maxIndex = imageList.IndexOf(imageList.Max());
 
             //Display the results
             numberLabel.Text = maxIndex.ToString();

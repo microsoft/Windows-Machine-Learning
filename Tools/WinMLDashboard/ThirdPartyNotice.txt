@@ -364,7 +364,7 @@ SOFTWARE.
 
 
 ================================================
-typescript 2.9.2 
+typescript 3.2.2 
 Copyright (c) Microsoft Corporation. All rights reserved. 
 
 electron-squirrel-startup 1.0.0
@@ -392,7 +392,7 @@ and limitations under the License.
 @types/prop-types 15.5.4
 @types/react 16.4.6
 @types/react-dom 16.0.6
-@types/react-redux 6.0.4
+@types/react-redux 6.0.11
 @types/yauzl 2.9.0
 @types/webdriverio 4.13.0
 =====

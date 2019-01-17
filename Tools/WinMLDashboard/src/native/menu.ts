@@ -2,7 +2,7 @@ import { ipcRenderer } from 'electron';
 import { setFile, setSaveFileName } from "../datastore/actionCreators";
 import { ModelProtoSingleton } from "../datastore/proto/modelProto";
 import store from "../datastore/store";
-import { save, showNativeSaveDialog, showOpenDialog } from "./dialog";
+import { fileFromPath, save, showNativeSaveDialog, showOpenDialog } from "./dialog";
 import { isWeb } from "./util";
 
 export function createMenu(electron: typeof Electron) {
@@ -116,6 +116,8 @@ async function onSaveAs() {
         return;
     }
     await save(ModelProtoSingleton.serialize(), saveAsFilePath);
+    store.dispatch(setFile(fileFromPath(saveAsFilePath)));
+    store.dispatch(setSaveFileName(saveAsFilePath));
 }
 
 export async function onOpen() {

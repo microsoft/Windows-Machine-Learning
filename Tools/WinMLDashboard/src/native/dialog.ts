@@ -78,6 +78,7 @@ export async function save(data: Uint8Array, filename: string) {
     if (getElectron()) {
         // Save contents
         fs.writeFileSync(filename, new Buffer(data));
+        return
     }
     showWebSaveDialog(data, filename);
     return;

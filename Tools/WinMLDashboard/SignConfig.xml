@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="utf-8" ?>
-<SignConfigXML>
- <job platform="" certSubject="CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US" configuration="Release" jobname="Windows Machine Learning" approvers="">
-    <file signType="Authenticode" src="__INPATHROOT__\release\WinMLDashboard.exe" dest="__OUTPATHROOT__\release\WinMLDashboard.exe" />
-    <file signType="Authenticode" src="__INPATHROOT__\installer\WinMLDashboard_setup_0.5.1.exe" dest="__OUTPATHROOT__\installer\WinMLDashboard_setup_0.5.1.exe" />
- </job>
-</SignConfigXML>

@@ -21,6 +21,8 @@
 #include <string>
 #include <codecvt>
 #include <fstream>
+#include <sstream>
+#include <algorithm>
 
 using convert_type = std::codecvt_utf8<wchar_t>;
 using wstring_to_utf8 = std::wstring_convert<convert_type, wchar_t>;

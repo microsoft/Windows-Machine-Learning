@@ -26,6 +26,8 @@
 #include <string>
 #include <codecvt>
 #include <fstream>
+#include <inttypes.h>
+#include <algorithm>
 
 
 using convert_type = std::codecvt_utf8<wchar_t>;

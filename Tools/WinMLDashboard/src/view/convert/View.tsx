@@ -218,7 +218,7 @@ class ConvertView extends React.Component<IComponentProperties, IComponentState>
             { value: '1.2', label: '1.2(V7)' },
             { value: '1.3', label: '1.3(V8)' },
         ]
-        const QuantiazationOptions = [
+        const QuantizationOptions = [
             { value: 'none', label: 'None' },
             { value: 'RS5', label: 'Quantize on OS 1809' },
             { value: '19H1', label: 'Quantize on pre-release of 19H1' },
@@ -226,35 +226,35 @@ class ConvertView extends React.Component<IComponentProperties, IComponentState>
         return (
             <div className="ModelConvert">
                 <div className='DisplayFlex'>
-                    <label className='label'>Model to convert: </label>
+                    <label className='label-left-align'>Model to convert: </label>
                     <TextField id='modelToConvert' placeholder='Path' value={this.state.source}  onChanged={this.setSource} />
                     <DefaultButton id='ConverterModelInputBrowse' text='Browse' onClick={this.browseSource}/>
                 </div>
                 <br />
                 <div className='DisplayFlex'>
-                    <label className='label'>Source Framework: </label>
+                    <label className='label-left-align'>Source Framework: </label>
                     <Select className='FrameworkOptions'
                         value={this.newOption(this.state.framework)}
                         onChange={this.setFramework}
                         options={FrameworkOptions}
                     />
-                    <label className='label'>ONNX Version: </label>
+                    <label className='label-center-align'>ONNX Version: </label>
                     <Select className='ONNXVersionOptions'
                         value={this.newOption(this.state.ONNXVersion.label)}
                         onChange={this.setONNXVersion}
                         options={ONNXVersionOptions}
                     />
-                    <label className='label'>Quantization: </label>
-                    <Select className='QuantiazationOpstions'
+                    <label className='label-center-align'>Quantization: </label>
+                    <Select className='QuantizationOptions'
                         value={this.newOption(this.state.quantizationOption.label)}
                         onChange={this.setQuantization}
-                        options={QuantiazationOptions}
+                        options={QuantizationOptions}
                     />
                 </div>
                 <br />
                 <div className={this.state.framework === 'TensorFlow' ? ' ' : 'hidden'}>
                     <div className='DisplayFlex'>
-                        <label className='label'>Output Names: </label>
+                        <label className='label-left-align'>Output Names: </label>
                         <TextField id='outputNames' className='outputNames' placeholder='output:0 output:1' value={this.state.outputNames}  onChanged={this.setOutputNames} />
                     </div>
                 </div>

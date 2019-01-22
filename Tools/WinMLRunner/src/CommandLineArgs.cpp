@@ -25,7 +25,7 @@ void CommandLineArgs::PrintUsage() {
     std::cout << "  -perf : capture timing measurements" << std::endl;
     std::cout << "  -iterations : # times perf measurements will be run/averaged" << std::endl;
     std::cout << "  -input <fully qualified path>: binds image or CSV to model" << std::endl;
-    std::cout << "  -output <fully qualified path>: csv file to write the perf results to" << std::endl;
+    std::cout << "  -perfOutput optional:<fully qualified path>: csv file to write the perf results to" << std::endl;
     std::cout << "  -IgnoreFirstRun : ignore the first run in the perf results when calculating the average" << std::endl;
     std::cout << "  -savePerIterationPerf : save per iteration performance results to csv file" << std::endl;
     std::cout << "  -debug: print trace logs" << std::endl;
@@ -77,9 +77,13 @@ CommandLineArgs::CommandLineArgs(std::vector<std::wstring>& args)
         {
             m_inputData = args[++i];
         }
-        else if ((_wcsicmp(args[i].c_str(), L"-output") == 0))
+        else if ((_wcsicmp(args[i].c_str(), L"-perfOutput") == 0))
         {
-            m_outputPath = args[++i];
+            if (i + 1 < args.size() && args[++i][0] != *L"-")
+            {
+                m_outputPath = args[++i];
+            }
+            m_perfOutput = true;
         }
         else if ((_wcsicmp(args[i].c_str(), L"-RGB") == 0))
         {

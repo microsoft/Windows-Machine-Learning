@@ -377,7 +377,7 @@ public:
             if (bNewFile)
             {
                 fout << "Model Name" << ","
-                     << "Model Binding" << ","
+                     << "Device Type" << ","
                      << "Input Binding" << ","
                      << "Input Type" << ","
                      << "Device Creation Location" << ","

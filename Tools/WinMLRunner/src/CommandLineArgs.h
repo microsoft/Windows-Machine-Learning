@@ -4,6 +4,7 @@
 class CommandLineArgs
 {
 public:
+    CommandLineArgs() {};
     __declspec(dllexport) CommandLineArgs(std::vector<std::wstring>& args);
     void PrintUsage();
     bool IsUsingGPUHighPerformance() const { return m_useGPUHighPerformance; }
@@ -17,6 +18,8 @@ public:
     bool IsPerIterationCapture() const { return m_perIterCapture; }
     bool IsCreateDeviceOnClient() const { return m_createDeviceOnClient; }
     bool IsAutoScale() const { return m_autoScale; }
+    bool IsOutputPerf() const { return m_perfOutput; }
+
 
     BitmapInterpolationMode AutoScaleInterpMode() const { return m_autoScaleInterpMode; }
    
@@ -84,12 +87,17 @@ public:
     void ToggleIgnoreFirstRun(const bool ignoreFirstRun) { m_ignoreFirstRun=ignoreFirstRun;}
     void TogglePerIterationPerformanceCapture(const bool perIterCapture) { m_perIterCapture = perIterCapture; }
     void ToggleDebugOutput(const bool debug) { m_debug = debug; }
+    void ToggleTerseOutput(const bool terseOutput) { m_terseOutput = terseOutput; }
 
 
     void SetModelPath(const std::wstring modelPath) { m_modelPath = modelPath; }
     void SetInputDataPath(const std::wstring inputDataPath) { m_inputData = inputDataPath; }
-    void SetPerformanceCSVPath(const std::wstring performanceCSVPath) { m_outputPath = performanceCSVPath; }
-
+    void SetPerformanceCSVPath(const std::wstring performanceCSVPath)
+    {
+        m_outputPath = performanceCSVPath;
+        m_perfOutput = true;
+    }
+    void SetRunIterations(const uint32_t iterations) { m_numIterations = iterations; }
 private:
     bool m_perfCapture = false;
     bool m_useCPU = false;
@@ -108,6 +116,7 @@ private:
     bool m_perIterCapture = false;
     bool m_terseOutput = false;
     bool m_autoScale = false;
+    bool m_perfOutput = false;
     BitmapInterpolationMode m_autoScaleInterpMode = BitmapInterpolationMode::Cubic;
 
     std::wstring m_modelFolderPath;

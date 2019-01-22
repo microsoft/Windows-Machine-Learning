@@ -1,6 +1,7 @@
 #pragma once
-
+#ifndef _SILENCE_ALL_CXX17_DEPRECATION_WARNINGS
 #define _SILENCE_ALL_CXX17_DEPRECATION_WARNINGS
+#endif
 // unknown.h needs to be inlcuded before any winrt headers
 #include <unknwn.h>
 #include <winrt/Windows.AI.MachineLearning.h>

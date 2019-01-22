@@ -4,7 +4,8 @@
 class CommandLineArgs
 {
 public:
-    __declspec(dllexport) CommandLineArgs(std::vector<std::wstring>& args);
+    CommandLineArgs() {};
+    CommandLineArgs(const std::vector<std::wstring>& args);
     void PrintUsage();
     bool IsUsingGPUHighPerformance() const { return m_useGPUHighPerformance; }
     bool IsUsingGPUMinPower() const { return m_useGPUMinPower; }
@@ -17,12 +18,14 @@ public:
     bool IsPerIterationCapture() const { return m_perIterCapture; }
     bool IsCreateDeviceOnClient() const { return m_createDeviceOnClient; }
     bool IsAutoScale() const { return m_autoScale; }
+    bool IsOutputPerf() const { return m_perfOutput; }
+
 
     BitmapInterpolationMode AutoScaleInterpMode() const { return m_autoScaleInterpMode; }
    
     const std::wstring& ImagePath() const { return m_imagePath; }
     const std::wstring& CsvPath() const { return m_csvData; }
-    const std::wstring& OutputPath() const { return m_outputPath; }
+    const std::wstring& OutputPath() const { return m_perfOutputPath; }
     const std::wstring& FolderPath() const { return m_modelFolderPath; }
     const std::wstring& ModelPath() const { return m_modelPath; }
 
@@ -69,27 +72,32 @@ public:
 
     uint32_t NumIterations() const { return m_numIterations; }
 
-    void ToggleCPU(const bool useCPU) { m_useCPU = useCPU; }
-    void ToggleGPU(const bool useGPU) { m_useGPU = useGPU; }
-    void ToggleGPUHighPerformance(const bool useGPUHighPerformance) { m_useGPUHighPerformance = useGPUHighPerformance; }
-    void ToggleUseGPUMinPower(const bool useGPUMinPower) { m_useGPUMinPower = useGPUMinPower; }
-    void ToggleCreateDeviceOnClient(const bool createDeviceOnClient) { m_createDeviceOnClient = createDeviceOnClient; }
-    void ToggleCreateDeviceInWinML(const bool createDeviceInWinML) { m_createDeviceInWinML = createDeviceInWinML; }
-    void ToggleCPUBoundInput(const bool useCPUBoundInput) { m_useCPUBoundInput = useCPUBoundInput; }
-    void ToggleGPUBoundInput(const bool useGPUBoundInput) { m_useGPUBoundInput = useGPUBoundInput; }
-    void ToggleUseRGB(const bool useRGBImage) {m_useRGB = useRGBImage;}
-    void ToggleUseBGR(const bool useBGRImage) {m_useBGR = useBGRImage;}
-    void ToggleUseTensor(const bool useTensor) { m_useTensor = useTensor; }
-    void TogglePerformanceCapture(const bool perfCapture) { m_perfCapture = perfCapture; }
-    void ToggleIgnoreFirstRun(const bool ignoreFirstRun) { m_ignoreFirstRun=ignoreFirstRun;}
-    void TogglePerIterationPerformanceCapture(const bool perIterCapture) { m_perIterCapture = perIterCapture; }
-    void ToggleDebugOutput(const bool debug) { m_debug = debug; }
+    void ToggleCPU(bool useCPU) { m_useCPU = useCPU; }
+    void ToggleGPU(bool useGPU) { m_useGPU = useGPU; }
+    void ToggleGPUHighPerformance(bool useGPUHighPerformance) { m_useGPUHighPerformance = useGPUHighPerformance; }
+    void ToggleUseGPUMinPower(bool useGPUMinPower) { m_useGPUMinPower = useGPUMinPower; }
+    void ToggleCreateDeviceOnClient(bool createDeviceOnClient) { m_createDeviceOnClient = createDeviceOnClient; }
+    void ToggleCreateDeviceInWinML(bool createDeviceInWinML) { m_createDeviceInWinML = createDeviceInWinML; }
+    void ToggleCPUBoundInput(bool useCPUBoundInput) { m_useCPUBoundInput = useCPUBoundInput; }
+    void ToggleGPUBoundInput(bool useGPUBoundInput) { m_useGPUBoundInput = useGPUBoundInput; }
+    void ToggleUseRGB(bool useRGBImage) {m_useRGB = useRGBImage;}
+    void ToggleUseBGR(bool useBGRImage) {m_useBGR = useBGRImage;}
+    void ToggleUseTensor(bool useTensor) { m_useTensor = useTensor; }
+    void TogglePerformanceCapture(bool perfCapture) { m_perfCapture = perfCapture; }
+    void ToggleIgnoreFirstRun(bool ignoreFirstRun) { m_ignoreFirstRun=ignoreFirstRun;}
+    void TogglePerIterationPerformanceCapture(bool perIterCapture) { m_perIterCapture = perIterCapture; }
+    void ToggleDebugOutput(bool debug) { m_debug = debug; }
+    void ToggleTerseOutput(bool terseOutput) { m_terseOutput = terseOutput; }
 
 
-    void SetModelPath(const std::wstring modelPath) { m_modelPath = modelPath; }
-    void SetInputDataPath(const std::wstring inputDataPath) { m_inputData = inputDataPath; }
-    void SetPerformanceCSVPath(const std::wstring performanceCSVPath) { m_outputPath = performanceCSVPath; }
-
+    void SetModelPath(const std::wstring& modelPath) { m_modelPath = modelPath; }
+    void SetInputDataPath(const std::wstring& inputDataPath) { m_inputData = inputDataPath; }
+    void SetPerformanceCSVPath(const std::wstring& performanceCSVPath)
+    {
+        m_perfOutputPath = performanceCSVPath;
+        m_perfOutput = true;
+    }
+    void SetRunIterations(const uint32_t iterations) { m_numIterations = iterations; }
 private:
     bool m_perfCapture = false;
     bool m_useCPU = false;
@@ -108,6 +116,7 @@ private:
     bool m_perIterCapture = false;
     bool m_terseOutput = false;
     bool m_autoScale = false;
+    bool m_perfOutput = false;
     BitmapInterpolationMode m_autoScaleInterpMode = BitmapInterpolationMode::Cubic;
 
     std::wstring m_modelFolderPath;
@@ -115,6 +124,6 @@ private:
     std::wstring m_imagePath;
     std::wstring m_csvData;
     std::wstring m_inputData;
-    std::wstring m_outputPath;
+    std::wstring m_perfOutputPath;
     uint32_t m_numIterations = 1;
 };

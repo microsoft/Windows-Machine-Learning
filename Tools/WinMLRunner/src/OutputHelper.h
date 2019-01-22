@@ -340,10 +340,10 @@ public:
     void WritePerformanceDataToCSV(
         const Profiler<WINML_MODEL_TEST_PERF> &profiler,
         int numIterations, std::wstring model,
-        std::string modelBinding,
-        std::string inputBinding,
-        std::string inputType,
-        std::string deviceCreationLocation,
+        std::string& deviceType,
+        std::string& inputBinding,
+        std::string& inputType,
+        std::string& deviceCreationLocation,
         bool firstRunIgnored
     ) const
     {
@@ -377,7 +377,7 @@ public:
             if (bNewFile)
             {
                 fout << "Model Name" << ","
-                     << "Model Binding" << ","
+                     << "Device Type" << ","
                      << "Input Binding" << ","
                      << "Input Type" << ","
                      << "Device Creation Location" << ","
@@ -393,7 +393,7 @@ public:
             }
 
             fout << modelName << ","
-                 << modelBinding << ","
+                 << deviceType << ","
                  << inputBinding << ","
                  << inputType << ","
                  << deviceCreationLocation << ","

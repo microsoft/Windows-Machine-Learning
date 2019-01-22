@@ -22,8 +22,8 @@ Required command-Line arguments:
 -folder <path>           : Fully qualifed path to a folder with .onnx and/or .pb models, will run all of the models in the folder.
 
 #Optional command-line arguments:
--perf                    : Captures GPU, CPU, and wall-clock time measurements. 
--iterations <int>        : Number of times to evaluate the model when capturing performance measurements.
+-Perf                    : Captures GPU, CPU, and wall-clock time measurements.
+-Iterations <int>        : Number of times to evaluate the model when capturing performance measurements.
 -CPU                     : Will create a session on the CPU.
 -GPU                     : Will create a session on the GPU.
 -GPUHighPerformance      : Will create a session with the most powerful GPU device available.
@@ -34,14 +34,14 @@ Required command-Line arguments:
 -GPUBoundInput           : Will bind the input to the GPU.
 -BGR                     : Will load the input as a BGR image.
 -RGB                     : Will load the input as an RGB image.
--tensor                  : Will load the input as a tensor.
--input <image/CSV path>  : Will bind image/data from CSV to model.
--output <CSV path>       : Path to the CSV where the perf results will be written.
+-Tensor                  : Will load the input as a tensor.
+-Input <image/CSV path>  : Will bind image/data from CSV to model.
+-PerfOutput <CSV path>   : Path to the CSV where the perf results will be written.
 -IgnoreFirstRun          : Will ignore the first run in the perf results when calculating the average
--savePerIterationPerf	 : Save per iteration performance results to csv file.
--debug                   : Will start a trace logging session.
--terse                   : Will suppress repetitive console output (initial iteration and summary info will be output).
--autoScale <mode>        : Will automatically scale an input image to match the required input dimensions of the model.  Pass in the interpolation mode, one of ["Nearest", "Linear", "Cubic", "Fant"].
+-SavePerIterationPerf	 : Save per iteration performance results to csv file.
+-Debug                   : Will start a trace logging session.
+-Terse                   : Will suppress repetitive console output (initial iteration and summary info will be output).
+-AutoScale <mode>        : Will automatically scale an input image to match the required input dimensions of the model.  Pass in the interpolation mode, one of ["Nearest", "Linear", "Cubic", "Fant"].
 
  ```
 

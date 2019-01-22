@@ -196,7 +196,8 @@ HRESULT EvaluateModel(
 
     try
     {
-        if (deviceCreationLocation == DeviceCreationLocation::ClientCode)
+        if (deviceCreationLocation == DeviceCreationLocation::ClientCode
+            && deviceType != DeviceType::CPU)
         {
             // Creating the device on the client and using it to create the video frame and initialize the session makes sure that everything is on
             // the same device. This usually avoids an expensive cross-device and cross-videoframe copy via the VideoFrame pipeline.
@@ -392,16 +393,19 @@ HRESULT EvaluateModels(
                         if (args.IsPerformanceCapture())
                         {
                             output.PrintResults(profiler, args.NumIterations(), deviceType, inputBindingType, inputDataType, deviceCreationLocation);
-                            output.WritePerformanceDataToCSV(
-                                profiler,
-                                args.NumIterations(),
-                                path,
-                                TypeHelper::Stringify(deviceType),
-                                TypeHelper::Stringify(inputDataType),
-                                TypeHelper::Stringify(inputBindingType),
-                                TypeHelper::Stringify(deviceCreationLocation),
-                                args.IsIgnoreFirstRun()
-                            );
+                            if (args.IsOutputPerf())
+                            {
+                                output.WritePerformanceDataToCSV(
+                                    profiler,
+                                    args.NumIterations(),
+                                    path,
+                                    TypeHelper::Stringify(deviceType),
+                                    TypeHelper::Stringify(inputDataType),
+                                    TypeHelper::Stringify(inputBindingType),
+                                    TypeHelper::Stringify(deviceCreationLocation),
+                                    args.IsIgnoreFirstRun()
+                                );
+                            }
                         }
 
                         if (args.IsPerIterationCapture())

@@ -72,22 +72,22 @@ public:
 
     uint32_t NumIterations() const { return m_numIterations; }
 
-    void ToggleCPU(const bool useCPU) { m_useCPU = useCPU; }
-    void ToggleGPU(const bool useGPU) { m_useGPU = useGPU; }
-    void ToggleGPUHighPerformance(const bool useGPUHighPerformance) { m_useGPUHighPerformance = useGPUHighPerformance; }
-    void ToggleUseGPUMinPower(const bool useGPUMinPower) { m_useGPUMinPower = useGPUMinPower; }
-    void ToggleCreateDeviceOnClient(const bool createDeviceOnClient) { m_createDeviceOnClient = createDeviceOnClient; }
-    void ToggleCreateDeviceInWinML(const bool createDeviceInWinML) { m_createDeviceInWinML = createDeviceInWinML; }
-    void ToggleCPUBoundInput(const bool useCPUBoundInput) { m_useCPUBoundInput = useCPUBoundInput; }
-    void ToggleGPUBoundInput(const bool useGPUBoundInput) { m_useGPUBoundInput = useGPUBoundInput; }
-    void ToggleUseRGB(const bool useRGBImage) {m_useRGB = useRGBImage;}
-    void ToggleUseBGR(const bool useBGRImage) {m_useBGR = useBGRImage;}
-    void ToggleUseTensor(const bool useTensor) { m_useTensor = useTensor; }
-    void TogglePerformanceCapture(const bool perfCapture) { m_perfCapture = perfCapture; }
-    void ToggleIgnoreFirstRun(const bool ignoreFirstRun) { m_ignoreFirstRun=ignoreFirstRun;}
-    void TogglePerIterationPerformanceCapture(const bool perIterCapture) { m_perIterCapture = perIterCapture; }
-    void ToggleDebugOutput(const bool debug) { m_debug = debug; }
-    void ToggleTerseOutput(const bool terseOutput) { m_terseOutput = terseOutput; }
+    void ToggleCPU(bool useCPU) { m_useCPU = useCPU; }
+    void ToggleGPU(bool useGPU) { m_useGPU = useGPU; }
+    void ToggleGPUHighPerformance(bool useGPUHighPerformance) { m_useGPUHighPerformance = useGPUHighPerformance; }
+    void ToggleUseGPUMinPower(bool useGPUMinPower) { m_useGPUMinPower = useGPUMinPower; }
+    void ToggleCreateDeviceOnClient(bool createDeviceOnClient) { m_createDeviceOnClient = createDeviceOnClient; }
+    void ToggleCreateDeviceInWinML(bool createDeviceInWinML) { m_createDeviceInWinML = createDeviceInWinML; }
+    void ToggleCPUBoundInput(bool useCPUBoundInput) { m_useCPUBoundInput = useCPUBoundInput; }
+    void ToggleGPUBoundInput(bool useGPUBoundInput) { m_useGPUBoundInput = useGPUBoundInput; }
+    void ToggleUseRGB(bool useRGBImage) {m_useRGB = useRGBImage;}
+    void ToggleUseBGR(bool useBGRImage) {m_useBGR = useBGRImage;}
+    void ToggleUseTensor(bool useTensor) { m_useTensor = useTensor; }
+    void TogglePerformanceCapture(bool perfCapture) { m_perfCapture = perfCapture; }
+    void ToggleIgnoreFirstRun(bool ignoreFirstRun) { m_ignoreFirstRun=ignoreFirstRun;}
+    void TogglePerIterationPerformanceCapture(bool perIterCapture) { m_perIterCapture = perIterCapture; }
+    void ToggleDebugOutput(bool debug) { m_debug = debug; }
+    void ToggleTerseOutput(bool terseOutput) { m_terseOutput = terseOutput; }
 
 
     void SetModelPath(const std::wstring& modelPath) { m_modelPath = modelPath; }

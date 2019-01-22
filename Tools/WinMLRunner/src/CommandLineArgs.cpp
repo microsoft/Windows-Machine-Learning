@@ -81,7 +81,7 @@ CommandLineArgs::CommandLineArgs(std::vector<std::wstring>& args)
         {
             if (i + 1 < args.size() && args[++i][0] != *L"-")
             {
-                m_outputPath = args[++i];
+                m_outputPath = args[i];
             }
             m_perfOutput = true;
         }

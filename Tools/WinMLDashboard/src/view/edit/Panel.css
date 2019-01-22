@@ -1,0 +1,55 @@
+.Unselectable {
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    -o-user-select: none;
+    user-select: none;
+    text-align: center;
+}
+
+.Panel {
+    text-align: left;
+    min-width: 290px;
+    background-color: #f8f8f8;
+}
+
+.PanelName {
+    text-align: center;
+    cursor: pointer;
+}
+
+.TensorName, .TensorDocumentationHover {
+    display: block;
+    margin: 5px 5px;
+}
+
+.TensorDocumentationHover {
+    cursor: pointer;
+}
+
+.DenotationLabel {
+    margin: 2px !important;
+    width: 110px;
+}
+
+.DenotationComboBox {
+    margin: 2px;
+    flex: 1;
+}
+
+.DocString {
+    text-align: center;
+    vertical-align: middle;
+    height: 100%;
+    margin: 20px;
+}
+
+.FormatIsNotOnnx {
+    margin: 10px;
+    font-size: medium;
+}
+
+.toggleLabel {
+    cursor: pointer;
+}

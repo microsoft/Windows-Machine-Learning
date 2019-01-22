@@ -1,0 +1,52 @@
+/* Overrides fixed elements in Netron */
+.netron-root {
+    all: initial;
+    height: 100%;
+    flex-grow: 1;
+    position: relative;
+}
+
+.background {
+    position: static;
+}
+
+.center {
+    position: absolute;
+}
+
+.sidebar {
+    position: absolute;
+    overflow: auto;
+}
+
+#open-file-button {
+    visibility: hidden;
+    background: transparent;
+}
+
+#model-properties-button {
+    box-sizing: 0px;
+    width: 0px;
+    height: 0px;
+    visibility: hidden;
+    background: transparent;
+}
+
+#openFileButton {
+    background: rgb(44, 199, 247);
+    color: white;
+}
+
+#openFileButton:hover {
+    background-color: rgb(11, 130, 167);
+    color: lightgray;
+    cursor: pointer;
+}
+
+#EditButton {
+    background: lightgray
+}
+
+#model-metadata-button {
+    right: 0px;
+}

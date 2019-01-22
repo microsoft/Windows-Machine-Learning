@@ -1,0 +1,49 @@
+# See https://help.github.com/ignore-files/ for more about ignoring files.
+
+# dependencies
+/node_modules
+
+# testing
+/coverage
+
+# production
+/build
+/dist
+/Windows ML Dashboard*
+
+# installer
+/release
+/installer
+
+# misc
+.DS_Store
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# vscode 
+.vscode/*
+
+# generated static files
+public/*
+!public/favicon.ico
+!public/index.html 
+!public/manifest.json
+!public/winml_icon.ico
+!public/about.html
+!public/about.css
+!public/convert.py
+!public/requirements.txt
+!public/ConverterView.png
+!public/EditorView.png
+!public/progress_bar.gif
+!public/WinMLRunner.exe
+!public/libsvm-3.22-cp36-cp36m-win_amd64.whl
+!public/winmltools-1.3.0-py2.py3-none-any.whl
+
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+yarn.lock
+package-lock.json

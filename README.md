@@ -2,6 +2,8 @@
 |---------|--------------|
 | All Samples | [[![Build Status](https://mscodehub.visualstudio.com/WindowsAI/_apis/build/status/winml/WinML%20Public%20Samples%20CI%20Build%20(Github-yml)?branchName=master)](https://mscodehub.visualstudio.com/WindowsAI/_build/latest?definitionId=612?branchName=master) |
 | WinmlRunner | [![Build status](https://mscodehub.visualstudio.com/DefaultCollection/WindowsAI/_apis/build/status/winml/WinML%20Dashboard%20CI%20Build)](https://mscodehub.visualstudio.com/DefaultCollection/WindowsAI/_build/latest?definitionId=602) |
+| WinML Dashboard | [![Build status](https://mscodehub.visualstudio.com/DefaultCollection/WindowsAI/_apis/build/status/winml/WinML%20Dashboard%20CI%20Build)](https://mscodehub.visualstudio.com/DefaultCollection/WindowsAI/_build/latest?definitionId=601) |
+
 
 # Windows ML
 

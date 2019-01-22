@@ -5,7 +5,7 @@ class CommandLineArgs
 {
 public:
     CommandLineArgs() {};
-    __declspec(dllexport) CommandLineArgs(std::vector<std::wstring>& args);
+    CommandLineArgs(const std::vector<std::wstring>& args);
     void PrintUsage();
     bool IsUsingGPUHighPerformance() const { return m_useGPUHighPerformance; }
     bool IsUsingGPUMinPower() const { return m_useGPUMinPower; }
@@ -25,7 +25,7 @@ public:
    
     const std::wstring& ImagePath() const { return m_imagePath; }
     const std::wstring& CsvPath() const { return m_csvData; }
-    const std::wstring& OutputPath() const { return m_outputPath; }
+    const std::wstring& OutputPath() const { return m_perfOutputPath; }
     const std::wstring& FolderPath() const { return m_modelFolderPath; }
     const std::wstring& ModelPath() const { return m_modelPath; }
 
@@ -90,11 +90,11 @@ public:
     void ToggleTerseOutput(const bool terseOutput) { m_terseOutput = terseOutput; }
 
 
-    void SetModelPath(const std::wstring modelPath) { m_modelPath = modelPath; }
-    void SetInputDataPath(const std::wstring inputDataPath) { m_inputData = inputDataPath; }
-    void SetPerformanceCSVPath(const std::wstring performanceCSVPath)
+    void SetModelPath(const std::wstring& modelPath) { m_modelPath = modelPath; }
+    void SetInputDataPath(const std::wstring& inputDataPath) { m_inputData = inputDataPath; }
+    void SetPerformanceCSVPath(const std::wstring& performanceCSVPath)
     {
-        m_outputPath = performanceCSVPath;
+        m_perfOutputPath = performanceCSVPath;
         m_perfOutput = true;
     }
     void SetRunIterations(const uint32_t iterations) { m_numIterations = iterations; }
@@ -124,6 +124,6 @@ private:
     std::wstring m_imagePath;
     std::wstring m_csvData;
     std::wstring m_inputData;
-    std::wstring m_outputPath;
+    std::wstring m_perfOutputPath;
     uint32_t m_numIterations = 1;
 };

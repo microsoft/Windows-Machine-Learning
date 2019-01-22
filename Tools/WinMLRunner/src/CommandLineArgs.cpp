@@ -21,19 +21,19 @@ void CommandLineArgs::PrintUsage() {
     std::cout << "  -GPUBoundInput : bind the input to the GPU" << std::endl;
     std::cout << "  -RGB : load the input as an RGB image" << std::endl;
     std::cout << "  -BGR : load the input as a BGR image" << std::endl;
-    std::cout << "  -tensor : load the input as a tensor" << std::endl;
-    std::cout << "  -perf : capture timing measurements" << std::endl;
-    std::cout << "  -iterations : # times perf measurements will be run/averaged" << std::endl;
-    std::cout << "  -input <fully qualified path>: binds image or CSV to model" << std::endl;
-    std::cout << "  -perfOutput optional:<fully qualified path>: csv file to write the perf results to" << std::endl;
+    std::cout << "  -Tensor : load the input as a tensor" << std::endl;
+    std::cout << "  -Perf : capture timing measurements" << std::endl;
+    std::cout << "  -Iterations : # times perf measurements will be run/averaged" << std::endl;
+    std::cout << "  -Input <fully qualified path>: binds image or CSV to model" << std::endl;
+    std::cout << "  -PerfOutput optional:<fully qualified path>: csv file to write the perf results to" << std::endl;
     std::cout << "  -IgnoreFirstRun : ignore the first run in the perf results when calculating the average" << std::endl;
-    std::cout << "  -savePerIterationPerf : save per iteration performance results to csv file" << std::endl;
-    std::cout << "  -debug: print trace logs" << std::endl;
-    std::cout << "  -terse: Terse Mode (suppresses repetitive console output)" << std::endl;
-    std::cout << "  -autoScale <interpolationMode>: Enable image autoscaling and set the interpolation mode [Nearest, Linear, Cubic, Fant]" << std::endl;
+    std::cout << "  -SavePerIterationPerf : save per iteration performance results to csv file" << std::endl;
+    std::cout << "  -Debug: print trace logs" << std::endl;
+    std::cout << "  -Terse: Terse Mode (suppresses repetitive console output)" << std::endl;
+    std::cout << "  -AutoScale <interpolationMode>: Enable image autoscaling and set the interpolation mode [Nearest, Linear, Cubic, Fant]" << std::endl;
 }
 
-CommandLineArgs::CommandLineArgs(std::vector<std::wstring>& args)
+CommandLineArgs::CommandLineArgs(const std::vector<std::wstring>& args)
 {
     for (UINT i = 0; i < args.size(); i++)
     {
@@ -61,27 +61,27 @@ CommandLineArgs::CommandLineArgs(std::vector<std::wstring>& args)
         {
             m_createDeviceInWinML = true;
         }
-        else if ((_wcsicmp(args[i].c_str(), L"-iterations") == 0) && (i + 1 < args.size()))
+        else if ((_wcsicmp(args[i].c_str(), L"-Iterations") == 0) && (i + 1 < args.size()))
         {
             m_numIterations = static_cast<UINT>(_wtoi(args[++i].c_str()));
         }
-        else if ((_wcsicmp(args[i].c_str(), L"-model") == 0) && (i + 1 < args.size()))
+        else if ((_wcsicmp(args[i].c_str(), L"-Model") == 0) && (i + 1 < args.size()))
         {
             m_modelPath = args[++i];
         }
-        else if ((_wcsicmp(args[i].c_str(), L"-folder") == 0) && (i + 1 < args.size()))
+        else if ((_wcsicmp(args[i].c_str(), L"-Folder") == 0) && (i + 1 < args.size()))
         {
             m_modelFolderPath = args[++i];
         }
-        else if ((_wcsicmp(args[i].c_str(), L"-input") == 0))
+        else if ((_wcsicmp(args[i].c_str(), L"-Input") == 0))
         {
             m_inputData = args[++i];
         }
-        else if ((_wcsicmp(args[i].c_str(), L"-perfOutput") == 0))
+        else if ((_wcsicmp(args[i].c_str(), L"-PerfOutput") == 0))
         {
-            if (i + 1 < args.size() && args[++i][0] != *L"-")
+            if (i + 1 < args.size() && args[i+1][0] != L'-')
             {
-                m_outputPath = args[i];
+                m_perfOutputPath = args[++i];
             }
             m_perfOutput = true;
         }
@@ -93,7 +93,7 @@ CommandLineArgs::CommandLineArgs(std::vector<std::wstring>& args)
         {
             m_useBGR = true;
         }
-        else if ((_wcsicmp(args[i].c_str(), L"-tensor") == 0))
+        else if ((_wcsicmp(args[i].c_str(), L"-Tensor") == 0))
         {
             m_useTensor = true;
         }
@@ -109,23 +109,23 @@ CommandLineArgs::CommandLineArgs(std::vector<std::wstring>& args)
         {
             m_ignoreFirstRun = true;
         }
-        else if ((_wcsicmp(args[i].c_str(), L"-perf") == 0))
+        else if ((_wcsicmp(args[i].c_str(), L"-Perf") == 0))
         {
             m_perfCapture = true;
         }
-        else if ((_wcsicmp(args[i].c_str(), L"-debug") == 0))
+        else if ((_wcsicmp(args[i].c_str(), L"-Debug") == 0))
         {
             m_debug = true;
         }
-        else if ((_wcsicmp(args[i].c_str(), L"-savePerIterationPerf") == 0))
+        else if ((_wcsicmp(args[i].c_str(), L"-SavePerIterationPerf") == 0))
         {
             m_perIterCapture = true;
         }
-        else if ((_wcsicmp(args[i].c_str(), L"-terse") == 0))
+        else if ((_wcsicmp(args[i].c_str(), L"-Terse") == 0))
         {
             m_terseOutput = true;
         }
-        else if ((_wcsicmp(args[i].c_str(), L"-autoScale") == 0) && (i + 1 < args.size()))
+        else if ((_wcsicmp(args[i].c_str(), L"-AutoScale") == 0) && (i + 1 < args.size()))
         {
             m_autoScale = true;
             if (_wcsicmp(args[++i].c_str(), L"Nearest") == 0)

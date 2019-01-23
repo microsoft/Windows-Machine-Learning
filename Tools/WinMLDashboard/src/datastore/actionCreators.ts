@@ -11,6 +11,10 @@ export const setShowRight = (showRight: boolean) => ({
     type: actions.SET_SHOWRIGHT,
 })
 
+export const setQuantizationOption = (quantizationOption: string) => ({
+    quantizationOption,
+    type: actions.SET_QUANTIZATIONOPTION,
+})
 export const setFile = (file?: File) => ({
     file,
     type: actions.SET_FILE,

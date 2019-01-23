@@ -7,7 +7,9 @@ export function rootReducer(state: IState, action: any) {
         case actions.SET_SHOWLEFT:
             return {...state, showLeft: action.showLeft};
         case actions.SET_SHOWRIGHT:
-            return {...state, showRight: action.showRight};
+            return {...state, showRight: action.showRight}; 
+        case actions.SET_QUANTIZATIONOPTION:
+            return {...state, quantizationOption: action.quantizationOption};
         case actions.SET_FILE: 
             return { ...state, file: action.file };
         case actions.SET_DEBUG_NODES:

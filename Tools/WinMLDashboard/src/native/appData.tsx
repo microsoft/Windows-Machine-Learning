@@ -4,7 +4,7 @@ import * as path from 'path';
 const nodeProcess = process;
 const env = nodeProcess.env;
 
-export const appData = env.APPDATA ||
+export const appData = env.LOCALAPPDATA ||
     path.join(env.HOME || '/tmp', process.platform === 'darwin' ? 'Library/Preferences' : '.local/share');
 
 export function mkdir(...directory: string[]) {

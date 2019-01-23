@@ -1,0 +1,20 @@
+﻿body {
+  /* Uncomment this to enable scrolling and zooming
+  touch-action: manipulation;
+  */
+}
+
+div.statusBlock {
+    font-weight: bold;
+}
+
+select
+{
+    height: 40px;
+    width: 200px;
+}
+button
+{
+    height: 40px;
+    width: 100px;
+}

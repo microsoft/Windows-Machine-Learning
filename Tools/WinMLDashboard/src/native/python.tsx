@@ -19,7 +19,7 @@ function filterPythonBinaries(binaries: string[]) {
                 const binary = execFileSync(x, ['-c', 'import venv; import sys; print(sys.executable)'], { encoding: 'utf8' });
                 acc.push(binary.trim());
             } catch(_) {
-                // Ignore binary if unavailable or no venv support
+                // Ignore binary if unavailable or no vcode .env support
             }
         }
         return acc;

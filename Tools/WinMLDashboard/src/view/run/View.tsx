@@ -30,8 +30,14 @@ import log from 'electron-log';
 
 const modelRunnerPath = packagedFile('WinMLRunner.exe');
 
+export interface IProperties {
+    [key: string]: string
+}
+
 interface IComponentProperties {
     file: File,
+    properties: IProperties,
+    quantizationOption: string,
     setFile: typeof setFile,
 }
 
@@ -86,12 +92,11 @@ class RunView extends React.Component<IComponentProperties, IComponentState> {
         log.info("Run view is created.");
     }
     public UNSAFE_componentWillReceiveProps(nextProps: IComponentProperties) {
-        if(nextProps.file.path && nextProps.file.path) {
+        if(nextProps.file && nextProps.file.path) {
             if(!nextProps.file.path.endsWith(".onnx")){
                 this.setState({model: ''}, () => {this.setParameters()})
-                return;
             }
-            if(!(this.props.file && this.props.file.path) || this.props.file.path !== nextProps.file.path){
+            else if(!(this.props.file && this.props.file.path) || this.props.file.path !== nextProps.file.path){
                 this.setState({model: nextProps.file.path}, () => {this.setParameters()})
             }
         }
@@ -131,7 +136,16 @@ class RunView extends React.Component<IComponentProperties, IComponentState> {
 
     private getView = () => {
         const osInfo = require('os').release()
-        log.info(osInfo);
+        log.info("run " + this.props.quantizationOption)
+        let opset:number = 7
+        if(this.props.properties !== undefined && this.props.properties['opsetImport.ai.onnx'] !== undefined) {
+            opset = parseInt(this.props.properties['opsetImport.ai.onnx'], 10);
+        }
+        // model of ONNX1.3 has to be run on 19H1
+        if(opset === 8 && osInfo < '10.0.18267') {
+            const message = 'ONNX 1.3 Runtime is supported on Windows 10 pre-release of 19H1. Please update your OS to 18267+'
+            return <MessageBar messageBarType={MessageBarType.error}>{message}</MessageBar>
+        }
         if(osInfo < '10.0.17763') {
             const message = 'This functionality is available on Windows 10 October 2018 Update (1809) or newer version of OS.'
             return <MessageBar messageBarType={MessageBarType.error}>{message}</MessageBar>
@@ -320,20 +334,22 @@ class RunView extends React.Component<IComponentProperties, IComponentState> {
                 currentStep: Step.Idle,
             });
             runDialogOptions.message = 'Run failed! See console log for details.'
-            require('electron').remote.dialog.showMessageBox(runDialogOptions)
+            require('electron').remote.dialog.showMessageBox(require('electron').remote.getCurrentWindow(), runDialogOptions)
             return;
         }
         this.setState({
             currentStep: Step.Success,
         });
         runDialogOptions.message = 'Run successful';
-        require('electron').remote.dialog.showMessageBox(runDialogOptions)
+        require('electron').remote.dialog.showMessageBox(require('electron').remote.getCurrentWindow(), runDialogOptions)
         log.info(this.state.model + " run successful");
     }
 }
 
 const mapStateToProps = (state: IState) => ({
     file: state.file,
+    properties: state.properties,
+    quantizationOption: state.quantizationOption
 });
 
 const mapDispatchToProps = {

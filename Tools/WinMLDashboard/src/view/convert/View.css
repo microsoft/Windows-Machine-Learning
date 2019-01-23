@@ -6,8 +6,12 @@
     flex-direction: column;
 }
 
-.ModelConvertBrowser {
+.ModelConvert {
     width: 100%;
+}
+
+.FrameworkOptions, .ONNXVersionOptions, .QuantizationOptions, .inputShape {
+    width: 20%;
 }
 
 .ms-TextField, .ConvertViewControls {
@@ -25,10 +29,23 @@
     font-size: 12px;
 }
 
-#ConverterModelInputBrowse {
-    margin: 24px 5px 0px;
-}
-
 #ConvertButton {
     margin: 5px 0px;
+}
+
+.label-left-align {
+    width: 10%;
+    display: flex;
+    align-items: center;
+}
+
+.label-center-align {
+    width: 10%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.hidden {
+    display: none;
 }

@@ -1,8 +1,20 @@
-import { IMetadataProps } from '../state';
+import * as md5 from 'md5';
+import * as path from 'path';
+import { mkdir } from '../../native/appData';
+import { IDebugNodeMap, IMetadataProps } from '../state';
 import { Proto } from './proto';
 
 
 class ModelProto extends Proto {
+
+    // debug nodes will be added to the model proto only right before serialization
+    // now serialization with be parametrized by whether we are serializing the debugged model or not
+    private debugNodes: IDebugNodeMap;
+
+    public setDebugNodes(debugNodes: IDebugNodeMap) {
+        this.debugNodes = debugNodes;
+    }
+
     public setInputs(inputs: { [key: string]: any }) {
         if (!Proto.getOnnx() || !this.proto) {
             return;
@@ -28,11 +40,48 @@ class ModelProto extends Proto {
         this.proto.graph.output = Object.keys(outputs).map((name: string) => ({ name, ...outputs[name] }));
     }
 
-    public serialize() {
-        Proto.getOnnx();
-        const clone = Proto.types.ModelProto.fromObject(this.proto);
-        const writer = Proto.types.ModelProto.encode(clone);
-        return writer.finish();
+    public serialize(debug: boolean) {
+        if (!Proto.getOnnx() || !this.proto) {
+            return;
+        }
+        if (debug) {     
+            // only need to copy parts of this.proto which are mutated during the debug case
+            const nodeClone = this.proto.graph.node.slice();       
+            this.proto.graph.node = [ ...this.proto.graph.node, ...this.createDebugProtoNodes() ]
+            const writer = Proto.types.ModelProto.encode(this.proto);
+            const data = writer.finish();
+            this.proto.graph.node = nodeClone;
+            return data;
+        } else {
+            const writer = Proto.types.ModelProto.encode(this.proto);
+            return writer.finish();
+        }
+    }
+
+    private createDebugProtoNodes() {
+        const onnx = Proto.getOnnx();
+        if (!onnx) {
+            return [];
+        }
+        const nodeProtos = [];
+        for (const output of Object.keys(this.debugNodes)) {
+            for (const fileType of this.debugNodes[output]) {
+                // the detached head of Netron we are using expects a base64 encoded string
+                const fileTypeProps = {name: 'file_type', type: 'STRING', s: window.btoa(fileType) };
+                const fileTypeAttrProto = onnx.AttributeProto.fromObject(fileTypeProps);
+                const parentDebugDir = mkdir(md5(output));
+                const debugDir = mkdir(path.join(parentDebugDir, fileType));
+                const filePathProps = {name: 'file_path', type: 'STRING', s: window.btoa(debugDir)};
+                const filePathAttrProto = onnx.AttributeProto.fromObject(filePathProps);
+                
+                const nodeProps = {attribute: [fileTypeAttrProto, filePathAttrProto],
+                                     input: [output], opType: 'Debug', output: ['unused_' + output + fileType]};
+                nodeProtos.push(onnx.NodeProto.fromObject(nodeProps));
+            }
+
+           
+        }
+        return nodeProtos;
     }
 }
 

@@ -61,7 +61,7 @@ class ConvertView extends React.Component<IComponentProperties, IComponentState>
         super(props);
         const error = isWeb() ? "The converter can't be run in the web interface" : undefined;
         this.state = {
-            ONNXVersion: {value: '1.2', label: '1.2(V7)'},
+            ONNXVersion: {value: '1.2', label: '1.2 (opset V7)'},
             console: '', 
             currentStep: Step.Idle,
             error, 
@@ -215,13 +215,13 @@ class ConvertView extends React.Component<IComponentProperties, IComponentState>
             { value: 'TensorFlow', label: 'TensorFlow' },
           ];
         const ONNXVersionOptions = [
-            { value: '1.2', label: '1.2(V7)' },
-            { value: '1.3', label: '1.3(V8)' },
+            { value: '1.2', label: '1.2 (opset V7)' },
+            { value: '1.3', label: '1.3 (opset V8)' },
         ]
         const QuantizationOptions = [
             { value: 'none', label: 'None' },
-            { value: 'RS5', label: 'Quantize on OS 1809' },
-            { value: '19H1', label: 'Quantize on pre-release of 19H1' },
+            { value: 'RS5', label: 'Type1', title: 'Quantize on OS 1809' },
+            { value: '19H1', label: 'Type2', title: 'Quantize on pre-release of 19H1' },
         ]
         return (
             <div className="ModelConvert">
@@ -244,7 +244,11 @@ class ConvertView extends React.Component<IComponentProperties, IComponentState>
                         onChange={this.setONNXVersion}
                         options={ONNXVersionOptions}
                     />
-                    <label className='label-center-align'>Quantization: </label>
+                    <label className='label-center-align'>
+                        Quantization
+                        <img onClick={this.openReadMe} src="https://shots.jotform.com/kade/Screenshots/blue_question_mark.png"
+                        title="WinMLTools provides quantization tool to reduce the memory footprint of the model." height="18px"/>: 
+                    </label>
                     <Select className='QuantizationOptions'
                         value={this.newOption(this.state.quantizationOption.label)}
                         onChange={this.setQuantization}
@@ -258,11 +262,15 @@ class ConvertView extends React.Component<IComponentProperties, IComponentState>
                         <TextField id='outputNames' className='outputNames' placeholder='output:0 output:1' value={this.state.outputNames}  onChanged={this.setOutputNames} />
                     </div>
                 </div>
-                <DefaultButton id='ConvertButton' text='Convert' disabled={!this.state.source || !this.state.framework} onClick={this.convert}/>
+                <DefaultButton id='ConvertButton' text='Convert' disabled={!this.state.source || (!this.state.framework && this.state.quantizationOption.value === 'none')} onClick={this.convert}/>
             </div>
         );
     }
-
+    
+    private openReadMe = () => {
+        const tpnUrl = 'https://github.com/Microsoft/Windows-Machine-Learning/tree/master/Tools/WinMLDashboard#converting-models';
+        require('electron').shell.openExternal(tpnUrl);
+    }
     private newOption = (framework: string):ISelectOpition => {
         return {
             label: framework,
@@ -320,9 +328,6 @@ class ConvertView extends React.Component<IComponentProperties, IComponentState>
     private convert = async () => {
         this.initializeState();
         
-        if (!this.state.framework) {
-            return;
-        }
         const convertDialogOptions = {
             message: '',
             title: 'convert result',

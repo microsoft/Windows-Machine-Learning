@@ -49,3 +49,10 @@
 .hidden {
     display: none;
 }
+
+.QuantizationDiv {
+    background: url('http://dummyimage.com/100x100/000/fff');
+}
+.QuantizationDiv:hover {
+    background: url('http://dummyimage.com/100x100/eb00eb/fff');
+}

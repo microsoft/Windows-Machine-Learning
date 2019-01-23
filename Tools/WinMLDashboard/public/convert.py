@@ -112,6 +112,7 @@ def onnx_converter(args):
     return onnx_model
 
 framework_converters = {
+    '': onnx_converter,
     'coreml': coreml_converter,
     'keras': keras_converter,
     'scikit-learn': scikit_learn_converter,
@@ -124,7 +125,7 @@ suffix_converters = {
     'h5': keras_converter,
     'keras': keras_converter,
     'mlmodel': coreml_converter,
-    'onnx': coreml_converter,
+    'onnx': onnx_converter,
 }
 
 

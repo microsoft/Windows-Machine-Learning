@@ -395,14 +395,18 @@ HRESULT EvaluateModels(
                             output.PrintResults(profiler, args.NumIterations(), deviceType, inputBindingType, inputDataType, deviceCreationLocation);
                             if (args.IsOutputPerf())
                             {
+                                std::string deviceTypeStringified = TypeHelper::Stringify(deviceType);
+                                std::string inputDataTypeStringified = TypeHelper::Stringify(inputDataType);
+                                std::string inputBindingTypeStringified = TypeHelper::Stringify(inputBindingType);
+                                std::string deviceCreationLocationStringified = TypeHelper::Stringify(deviceCreationLocation);
                                 output.WritePerformanceDataToCSV(
                                     profiler,
                                     args.NumIterations(),
                                     path,
-                                    TypeHelper::Stringify(deviceType),
-                                    TypeHelper::Stringify(inputDataType),
-                                    TypeHelper::Stringify(inputBindingType),
-                                    TypeHelper::Stringify(deviceCreationLocation),
+                                    deviceTypeStringified,
+                                    inputDataTypeStringified,
+                                    inputBindingTypeStringified,
+                                    deviceCreationLocationStringified,
                                     args.IsIgnoreFirstRun()
                                 );
                             }

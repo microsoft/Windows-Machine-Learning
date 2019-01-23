@@ -1,4 +1,4 @@
-import * as fs from 'fs';
+import * as fs from 'fs-extra';
 import * as path from 'path';
 
 const nodeProcess = process;
@@ -13,6 +13,15 @@ export function mkdir(...directory: string[]) {
         fs.mkdirSync(joined);
     }
     return joined;
+}
+
+export function getLocalDebugDir() {
+    // only makes directory if not exists
+    return mkdir(winmlDataFolder, 'debug');
+}
+
+export function clearLocalDebugDir() {
+    fs.removeSync(path.join(winmlDataFolder, 'debug'));
 }
 
 export function packagedFile(...filePath: string[]) {

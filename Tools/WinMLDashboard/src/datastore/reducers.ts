@@ -12,6 +12,8 @@ export function rootReducer(state: IState, action: any) {
             return {...state, quantizationOption: action.quantizationOption};
         case actions.SET_FILE: 
             return { ...state, file: action.file };
+        case actions.SET_DEBUG_NODES:
+            return { ...state, debugNodes: action.debugNodes }
         case actions.SET_INPUTS:
             return { ...state, inputs: action.inputs };
         case actions.SET_OUTPUTS:

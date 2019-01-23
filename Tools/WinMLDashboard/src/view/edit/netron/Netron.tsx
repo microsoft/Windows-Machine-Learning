@@ -6,7 +6,7 @@ import 'netron/src/view-sidebar.css';
 import 'netron/src/view.css';
 import 'npm-font-open-sans/open-sans.css';
 
-import { setFile, setInputs, setMetadataProps, setModelInputs, setModelOutputs, setNodes, setOutputs, setProperties, setSelectedNode, setShowLeft, setShowRight } from '../../../datastore/actionCreators';
+import { setDebugNodes, setFile, setInputs, setMetadataProps, setModelInputs, setModelOutputs, setNodes, setOutputs, setProperties, setSelectedNode, setShowLeft, setShowRight } from '../../../datastore/actionCreators';
 import { ModelProtoSingleton } from '../../../datastore/proto/modelProto';
 import IState from '../../../datastore/state';
 import './fixed-position-override.css';
@@ -23,6 +23,7 @@ interface IComponentProperties {
     // Redux properties
     file: File,
     nodes: { [key: string]: any },
+    setDebugNodes: typeof setDebugNodes,
     setFile: typeof setFile,
     setInputs: typeof setInputs,
     setMetadataProps: typeof setMetadataProps,
@@ -297,7 +298,7 @@ class Netron extends React.Component<IComponentProperties, IComponentState> {
     }
 
     private updateDataStore = (model: any) => {
-        const proto = model._model
+        const proto = model._model;
         ModelProtoSingleton.proto = null;
         // FIXME What to do when model has multiple graphs?
         const graph = model.graphs[0];
@@ -309,7 +310,8 @@ class Netron extends React.Component<IComponentProperties, IComponentState> {
             this.props.setModelOutputs(outputs);
             this.props.setInputs(this.valueListToObject(proto.graph.input));
             this.props.setOutputs(this.valueListToObject(proto.graph.output));
-            this.props.setNodes(proto.graph.node.filter((x: any) => x.opType !== 'Constant'));
+            const nodes = proto.graph.node.filter((x: any) => x.opType !== 'Constant');
+            this.props.setNodes(nodes);
             this.props.setMetadataProps(this.propsToObject(proto.metadataProps));
             this.props.setProperties(this.getModelProperties(proto));
             this.props.setShowLeft(true);
@@ -328,6 +330,7 @@ class Netron extends React.Component<IComponentProperties, IComponentState> {
             this.setState({isEdit: false});
         }
         this.props.setSelectedNode(undefined);
+        this.props.setDebugNodes({});
         ModelProtoSingleton.proto = proto;
     };
 }
@@ -340,6 +343,7 @@ const mapStateToProps = (state: IState) => ({
 });
 
 const mapDispatchToProps = {
+    setDebugNodes,
     setFile,
     setInputs,
     setMetadataProps,

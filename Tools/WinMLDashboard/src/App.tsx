@@ -4,7 +4,7 @@ import * as React from 'react';
 import { initializeIcons } from './fonts';
 import ConvertView from './view/convert/View';
 import EditView from './view/edit/View';
-import RunView from './view/run/View'
+import RunView from './view/run/View';
 
 import './App.css';
 
@@ -16,7 +16,7 @@ const views = {
     Edit: <EditView />,
     // tslint:disable-next-line:object-literal-sort-keys
     Convert: <ConvertView />,
-    Run: <RunView />,
+    Run: <RunView />
 };
 
 class App extends React.Component<{}, IComponentState> {

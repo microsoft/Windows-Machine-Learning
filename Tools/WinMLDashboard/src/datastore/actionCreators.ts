@@ -1,5 +1,5 @@
 import * as actions from './actions';
-import { IMetadataProps, IProperties } from './state';
+import { IDebugNodeMap, IMetadataProps, IProperties } from './state';
 
 export const setShowLeft = (showLeft: boolean) => ({
     showLeft,
@@ -18,6 +18,11 @@ export const setQuantizationOption = (quantizationOption: string) => ({
 export const setFile = (file?: File) => ({
     file,
     type: actions.SET_FILE,
+})
+
+export const setDebugNodes = (debugNodes?: IDebugNodeMap) => ({
+    debugNodes,
+    type: actions.SET_DEBUG_NODES,
 })
 
 export const setInputs = (inputs?: { [key: string]: any }) => ({

@@ -4,6 +4,7 @@ import { connect } from 'react-redux';
 
 import { DefaultButton } from 'office-ui-fabric-react/lib/Button';
 import { ChoiceGroup, IChoiceGroupOption } from 'office-ui-fabric-react/lib/ChoiceGroup';
+import { Label } from 'office-ui-fabric-react/lib/Label';
 import { MessageBar, MessageBarType } from 'office-ui-fabric-react/lib/MessageBar';
 import { Spinner } from 'office-ui-fabric-react/lib/Spinner';
 import { TextField } from 'office-ui-fabric-react/lib/TextField';
@@ -226,25 +227,25 @@ class ConvertView extends React.Component<IComponentProperties, IComponentState>
         return (
             <div className="ModelConvert">
                 <div className='DisplayFlex'>
-                    <label className='label-left-align'>Model to convert: </label>
+                    <Label className='label-left-align'>Model to convert: </Label>
                     <TextField id='modelToConvert' placeholder='Path' value={this.state.source}  onChanged={this.setSource} />
                     <DefaultButton id='ConverterModelInputBrowse' text='Browse' onClick={this.browseSource}/>
                 </div>
                 <br />
                 <div className='DisplayFlex'>
-                    <label className='label-left-align'>Source Framework: </label>
+                    <Label className='label-left-align'>Source Framework: </Label>
                     <Select className='FrameworkOptions'
                         value={this.newOption(this.state.framework)}
                         onChange={this.setFramework}
                         options={FrameworkOptions}
                     />
-                    <label className='label-center-align'>ONNX Version: </label>
+                    <Label className='label-center-align'>ONNX Version: </Label>
                     <Select className='ONNXVersionOptions'
                         value={this.newOption(this.state.ONNXVersion.label)}
                         onChange={this.setONNXVersion}
                         options={ONNXVersionOptions}
                     />
-                    <label className='label-center-align'>Quantization: </label>
+                    <Label className='label-center-align'>Quantization: </Label>
                     <Select className='QuantizationOptions'
                         value={this.newOption(this.state.quantizationOption.label)}
                         onChange={this.setQuantization}
@@ -254,7 +255,7 @@ class ConvertView extends React.Component<IComponentProperties, IComponentState>
                 <br />
                 <div className={this.state.framework === 'TensorFlow' ? ' ' : 'hidden'}>
                     <div className='DisplayFlex'>
-                        <label className='label-left-align'>Output Names: </label>
+                        <Label className='label-left-align'>Output Names: </Label>
                         <TextField id='outputNames' className='outputNames' placeholder='output:0 output:1' value={this.state.outputNames}  onChanged={this.setOutputNames} />
                     </div>
                 </div>

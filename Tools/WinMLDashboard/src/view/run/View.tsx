@@ -9,6 +9,7 @@ import IState from '../../datastore/state';
 import Select from 'react-select';
 
 import { DefaultButton } from 'office-ui-fabric-react/lib/Button';
+import { Label } from 'office-ui-fabric-react/lib/Label';
 import { MessageBar, MessageBarType } from 'office-ui-fabric-react/lib/MessageBar'
 import { Spinner } from 'office-ui-fabric-react/lib/Spinner';
 import { TextField } from 'office-ui-fabric-react/lib/TextField';
@@ -169,13 +170,13 @@ class RunView extends React.Component<IComponentProperties, IComponentState> {
         return (
             <div className="Arguments">
                 <div className='DisplayFlex ModelPath'>
-                    <label className="label">Model Path: </label>
+                    <Label className="label">Model Path: </Label>
                     <TextField id='modelToRun' placeholder='Model Path' value={this.state.model} onChanged={this.setModel} />
                     <DefaultButton id='ModelPathBrowse' text='Browse' onClick={this.browseModel}/>
                 </div>
                 <br />
                 <div className='DisplayFlex Device'>
-                    <label className="label">Devices: </label>
+                    <Label className="label">Devices: </Label>
                     <Select className="DropdownOption"
                         value={this.newOption(this.state.device)}
                         onChange={this.setDevice}
@@ -184,7 +185,7 @@ class RunView extends React.Component<IComponentProperties, IComponentState> {
                 </div>
                 <br />
                 <div className='DisplayFlex Capture'>
-                    <label className="label">Capture: </label>
+                    <Label className="label">Capture: </Label>
                     <Select className="DropdownOption"
                         value={this.newOption(this.state.capture)}
                         onChange={this.setCapture}
@@ -193,7 +194,7 @@ class RunView extends React.Component<IComponentProperties, IComponentState> {
                 </div>
                 <br />
                 <div className='DisplayFlex Input'>
-                    <label className="label">Input Path: </label>
+                    <Label className="label">Input Path: </Label>
                     <TextField id='InputPath' placeholder='(Optional) image/csv Path' value={this.state.inputPath} onChanged={this.setInputPath} />
                     <DefaultButton id='InputPathBrowse' text='Browse' onClick={this.browseInput}/>
                 </div>

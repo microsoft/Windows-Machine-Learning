@@ -340,10 +340,10 @@ public:
     void WritePerformanceDataToCSV(
         const Profiler<WINML_MODEL_TEST_PERF> &profiler,
         int numIterations, std::wstring model,
-        std::string& deviceType,
-        std::string& inputBinding,
-        std::string& inputType,
-        std::string& deviceCreationLocation,
+        const std::string& deviceType,
+        const std::string& inputBinding,
+        const std::string& inputType,
+        const std::string& deviceCreationLocation,
         bool firstRunIgnored
     ) const
     {

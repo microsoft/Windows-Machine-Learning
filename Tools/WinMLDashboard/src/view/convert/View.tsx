@@ -220,8 +220,8 @@ class ConvertView extends React.Component<IComponentProperties, IComponentState>
         ]
         const QuantizationOptions = [
             { value: 'none', label: 'None' },
-            { value: 'RS5', label: 'Type1', title: 'Quantize on OS 1809' },
-            { value: '19H1', label: 'Type2', title: 'Quantize on pre-release of 19H1' },
+            { value: 'RS5', label: 'Type1'},
+            { value: '19H1', label: 'Type2'},
         ]
         return (
             <div className="ModelConvert">

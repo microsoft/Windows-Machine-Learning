@@ -19,8 +19,8 @@ public:
         switch (inputDataType)
         {
             case InputDataType::Tensor: return "Tensor";
-            case InputDataType::ImageRGB: return "RGB Image";
-            case InputDataType::ImageBGR: return "BGR Image";
+            case InputDataType::ImageRGB: return "RGB_Image";
+            case InputDataType::ImageBGR: return "BGR_Image";
         }
 
         throw "No name found for this InputDataType";
@@ -43,8 +43,8 @@ public:
         {
             case DeviceType::CPU: return "CPU";
             case DeviceType::DefaultGPU: return "GPU";
-            case DeviceType::MinPowerGPU: return "GPU (min power)";
-            case DeviceType::HighPerfGPU: return "GPU (high perf)";
+            case DeviceType::MinPowerGPU: return "GPU_Min_Power";
+            case DeviceType::HighPerfGPU: return "GPU_High_Performance";
         }
 
         throw "No name found for this DeviceType.";
@@ -54,9 +54,9 @@ public:
     {
         switch (inputSourceType)
         {
-            case InputSourceType::ImageFile: return "Image File";
-            case InputSourceType::CSVFile: return "CSV File";
-            case InputSourceType::GeneratedData: return "Generated Data";
+            case InputSourceType::ImageFile: return "Image_File";
+            case InputSourceType::CSVFile: return "CSV_File";
+            case InputSourceType::GeneratedData: return "Generated_Data";
         }
 
         throw "No name found for this DeviceType.";
@@ -66,7 +66,7 @@ public:
     {
         switch (deviceCreationLocation)
         {
-            case DeviceCreationLocation::ClientCode: return "Client Code";
+            case DeviceCreationLocation::ClientCode: return "Client";
             case DeviceCreationLocation::WinML: return "WinML";
         }
 

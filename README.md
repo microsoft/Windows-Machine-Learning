@@ -13,11 +13,10 @@ In this repo, you will find sample apps that demonstrate how to use Windows ML t
 
 For additional information on Windows ML, including step-by-step tutorials and how-to guides, please visit the [Windows ML documentation](https://docs.microsoft.com/en-us/windows/ai/).
 
-## Requirements
+## Developer Tools
+- **[WinML Dashboard](https://github.com/Microsoft/Windows-Machine-Learning/tree/master/Tools/WinMLDashboard)**: a GUI-based tool for viewing, editing, converting, and validating machine learning models for Windows ML inference engine. 
 
-- [Visual Studio 2017 Version 15.7.4 or Newer](https://developer.microsoft.com/en-us/windows/downloads)
-- [Windows 10 - Build 17738 or higher](https://www.microsoft.com/en-us/software-download/windowsinsiderpreviewiso)
-- [Windows SDK - Build 17738 or higher](https://www.microsoft.com/en-us/software-download/windowsinsiderpreviewSDK)
+- **[WinMLRunner](https://github.com/Microsoft/Windows-Machine-Learning/tree/master/Tools/WinMLRunner)**: a command-line tool that can run .onnx or .pb models where the input and output variables are tensors or images. It is a very handy tool to quickly validate an ONNX model. It will attempt to load, bind, and evaluate a model and print out helpful messages. It also captures performance measurements. 
 
 ## Sample apps
 
@@ -35,10 +34,13 @@ These generic examples show how to use various models and input feeds with Windo
 - **[AdapterSelection](https://github.com/Microsoft/Windows-Machine-Learning/tree/master/Samples/AdapterSelection)**: a desktop app that demonstrates how to choose a specific device adapter for running your model
 - **[PlaneIdentifier](https://github.com/Microsoft/Windows-AppConsult-Samples-UWP/tree/master/PlaneIdentifier)**: a UWP app and a WPF app packaged with the Desktop Bridge, sharing the same model trained using [Azure Custom Vision service](https://customvision.ai/). For step-by-step instructions for this sample, please see the blog post [Upgrade your WinML application to the latest bits](https://blogs.msdn.microsoft.com/appconsult/2018/11/06/upgrade-your-winml-application-to-the-latest-bits/).
 
-## Developer Tools
-- **[WinMLRunner](https://github.com/Microsoft/Windows-Machine-Learning/tree/master/Tools/WinMLRunner)**: a command-line tool that can run .onnx or .pb models where the input and output variables are tensors or images. It is a very handy tool to quickly validate an ONNX model. It will attempt to load, bind, and evaluate a model and print out helpful messages. It also captures performance measurements. 
-
 ## Using the samples
+### Requirements
+
+- [Visual Studio 2017 Version 15.7.4 or Newer](https://developer.microsoft.com/en-us/windows/downloads)
+- [Windows 10 - Build 17738 or higher](https://www.microsoft.com/en-us/software-download/windowsinsiderpreviewiso)
+- [Windows SDK - Build 17738 or higher](https://www.microsoft.com/en-us/software-download/windowsinsiderpreviewSDK)
+
 The easiest way to use these samples without using Git is to download the zip file containing the current version (using the following link or by clicking the "Download ZIP" button on the repo page). You can then unzip the entire archive and use the samples in Visual Studio 2017.
 
 [Download the samples ZIP](https://github.com/Microsoft/Windows-Machine-Learning/archive/master.zip)
@@ -54,12 +56,6 @@ Reminder: If you unzip individual samples, they will not build due to references
 - For issues, file a bug on [GitHub Issues](https://github.com/Microsoft/Windows-Machine-Learning/issues).
 - Ask questions on [Stack Overflow](https://stackoverflow.com/questions/tagged/windows-machine-learning).
 - Vote for popular feature requests on [Windows Developer Feedback](https://wpdev.uservoice.com/forums/110705-universal-windows-platform?category_id=341035) or include your own request.
-
-## Release Notes
-**Build 17723**
-- Requires ONNX v1.2 or higher.
-- Supports F16 datatypes with GPU-based model inferences for better performance and reduced model footprint. You can use [WinMLTools](https://pypi.org/project/winmltools/) to convert your models from FP32 to FP16.
-- Allows desktop apps to consume Windows.AI.MachineLearning APIs with WinRT/C++.
 
 ## Related Projects
  - [ONNX: Open Neural Network Exchange Project](https://onnx.ai/).

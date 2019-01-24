@@ -246,7 +246,7 @@ class ConvertView extends React.Component<IComponentProperties, IComponentState>
                     />
                     <label className='label-center-align'>
                         Quantization
-                        <img onClick={this.openReadMe} src="https://shots.jotform.com/kade/Screenshots/blue_question_mark.png"
+                        <img onClick={this.openReadMe} src="https://github.com/Microsoft/Windows-Machine-Learning/blob/user/xianz/winmldb/Tools/WinMLDashboard/public/quesionmark"
                         title="WinMLTools provides quantization feature to reduce the memory footprint of the model." height="16px"/>: 
                     </label>
                     <Select className='QuantizationOptions'

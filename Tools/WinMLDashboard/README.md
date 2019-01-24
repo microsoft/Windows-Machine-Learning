@@ -35,8 +35,8 @@ In order to do the conversion, the tool installs a separate Python environment a
 WinMLTools provides quantization feature to reduce the memory footprint of the model.
 
 For **quantization**:
-|   |   |
-|---|---|
+|Type |Usage   |
+|-----|--------|
 |**Type1**|Do not use dequantize_linear option, the converted model can only be run in Win10 released before [Version 1809 (OS build 17763)](https://support.microsoft.com/en-us/help/4464619/windows-10-update-history)|
 |**Type2**|Use dequantize_linear option, the converted model can also be run in Win10 release after Version 1809 (OS build 17763)|
 

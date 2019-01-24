@@ -246,7 +246,9 @@ class ConvertView extends React.Component<IComponentProperties, IComponentState>
                     />
                     <label className='label-center-align'>
                         Quantization
-                        <img onClick={this.openReadMe} src="https://github.com/Microsoft/Windows-Machine-Learning/blob/user/xianz/winmldb/Tools/WinMLDashboard/public/quesionmark"
+                        <img onClick={this.openReadMe} src={packagedFile('questionmark.png')}
+                        onMouseOver = {this.hover}
+                        onMouseOut = {this.unhover}
                         title="WinMLTools provides quantization feature to reduce the memory footprint of the model." height="16px"/>: 
                     </label>
                     <Select className='QuantizationOptions'
@@ -267,6 +269,13 @@ class ConvertView extends React.Component<IComponentProperties, IComponentState>
         );
     }
     
+    private hover = (event: React.MouseEvent<HTMLImageElement>) => {
+        event.currentTarget.setAttribute('src', packagedFile('questionmark2.png'))
+    }
+
+    private unhover = (event: React.MouseEvent<HTMLImageElement>) => {
+        event.currentTarget.setAttribute('src', packagedFile('questionmark.png'))
+    }
     private openReadMe = () => {
         const tpnUrl = 'https://github.com/Microsoft/Windows-Machine-Learning/tree/master/Tools/WinMLDashboard#converting-models';
         require('electron').shell.openExternal(tpnUrl);

@@ -42,6 +42,7 @@ public/*
 !public/libsvm-3.22-cp36-cp36m-win_amd64.whl
 !public/winmltools-1.3.0-py2.py3-none-any.whl
 !public/questionmark.png
+!public/questionmark2.png
 
 npm-debug.log*
 yarn-debug.log*

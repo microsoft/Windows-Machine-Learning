@@ -202,18 +202,19 @@ jobs:
 
     condition: succeededOrFailed()
 
-# publish build artifacts is failing for various platform/configurations non-deterministically. commenting out of master for now
-#  - task: PublishBuildArtifacts@1
-#
-#    displayName: 'Publish Artifact: Samples'
-#
-#    inputs:
-#
-#      pathtoPublish: '$(System.DefaultWorkingDirectory)\bin\${{ parameters.BuildPlatform }}\${{ parameters.BuildConfiguration }}\'
-#      artifactName: WinMLPublicSamples
-#      parallel: true
-#      parallelCount: 8
-#
-#
-#    condition: succeededOrFailed()
+  - task: CopyFiles@2
+    inputs:
+      targetFolder: '$(Build.ArtifactStagingDirectory)'
+      sourceFolder: 'Samples/AdapterSelection/${{ parameters.BuildPlatform }}/${{ parameters.BuildConfiguration }}/'
+
+ # publish build artifacts is failing for various platform/configurations non-deterministically. commenting out of master for now
+  - task: PublishBuildArtifacts@1
+
+    displayName: 'Publish Artifact: Samples'
+
+    inputs:
+      pathtoPublish: '$(Build.ArtifactStagingDirectory)'
+      artifactName: WinMLPublicSamples
+
+    condition: succeededOrFailed()
 

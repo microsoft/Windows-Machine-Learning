@@ -13,7 +13,9 @@ export function rootReducer(state: IState, action: any) {
         case actions.SET_FILE: 
             return { ...state, file: action.file };
         case actions.SET_DEBUG_NODES:
-            return { ...state, debugNodes: action.debugNodes }
+            return { ...state, debugNodes: action.debugNodes };
+        case actions.SET_INSERT_NODES:
+            return {...state, insertNodes: action.insertNodes };
         case actions.SET_INPUTS:
             return { ...state, inputs: action.inputs };
         case actions.SET_OUTPUTS:

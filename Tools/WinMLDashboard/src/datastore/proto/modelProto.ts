@@ -1,7 +1,7 @@
 import * as md5 from 'md5';
 import * as path from 'path';
 import { mkdir } from '../../native/appData';
-import { IDebugNodeMap, IMetadataProps } from '../state';
+import { AttributeType, IDebugNodeMap, IInsertNode, IMetadataProps } from '../state';
 import { Proto } from './proto';
 
 
@@ -9,10 +9,15 @@ class ModelProto extends Proto {
 
     // debug nodes will be added to the model proto only right before serialization
     // now serialization with be parametrized by whether we are serializing the debugged model or not
-    private debugNodes: IDebugNodeMap;
+    private debugNodes: IDebugNodeMap = {};
+    private insertNodes: IInsertNode[] = [];
 
     public setDebugNodes(debugNodes: IDebugNodeMap) {
         this.debugNodes = debugNodes;
+    }
+
+    public setInsertNodes(insertNodes: IInsertNode[]) {
+        this.insertNodes = insertNodes;
     }
 
     public setInputs(inputs: { [key: string]: any }) {
@@ -44,10 +49,18 @@ class ModelProto extends Proto {
         if (!Proto.getOnnx() || !this.proto) {
             return;
         }
-        if (debug) {     
-            // only need to copy parts of this.proto which are mutated during the debug case
+        const needDebug = debug && Object.keys(this.debugNodes).length !== 0;
+        const needInsert = this.insertNodes.length !== 0;
+
+        // will need to save temp version of node protobuf
+        if (needDebug || needInsert) {
             const nodeClone = this.proto.graph.node.slice();       
-            this.proto.graph.node = [ ...this.proto.graph.node, ...this.createDebugProtoNodes() ]
+            if (needDebug) {
+                this.proto.graph.node = [ ...this.proto.graph.node, ...this.createDebugProtoNodes() ];
+            }
+            if (needInsert) {
+                this.proto.graph.node = [ ...this.proto.graph.node, ...this.createInsertProtoNodes() ];
+            }
             const writer = Proto.types.ModelProto.encode(this.proto);
             const data = writer.finish();
             this.proto.graph.node = nodeClone;
@@ -55,6 +68,39 @@ class ModelProto extends Proto {
         } else {
             const writer = Proto.types.ModelProto.encode(this.proto);
             return writer.finish();
+        }
+    }
+
+    private createInsertProtoNodes() {
+        const onnx = Proto.getOnnx();
+        if (!onnx) {
+            return [];
+        }
+        
+        const nodeProtos = [];
+        for (const insertNode of this.insertNodes) {
+            const nodeProps: any = {input: insertNode.input, opType: insertNode.opType, output: insertNode.output};
+            const attrPropsArr = [];
+            for (const attr of insertNode.requiredAttributes.concat(insertNode.optionalAttributes)) {
+                const attrProps = {name: attr.name, type: attr.type };
+                const dataKey = this.getAttributeDataPropName(attr.type);
+                attrProps[dataKey] = attr.value;
+                const attrProto = onnx.AttributeProto.fromObject(attrProps);
+                attrPropsArr.push(attrProto);
+            }
+            nodeProps.attribute = attrPropsArr;
+            nodeProtos.push(onnx.NodeProto.fromObject(nodeProps));
+        }
+        return nodeProtos;
+    }
+
+    private getAttributeDataPropName(type: AttributeType) {
+        if (type === AttributeType.float) {
+            return 'f';
+        } else if (type === AttributeType.integer) {
+            return 'i';
+        } else {
+            return 's';
         }
     }
 

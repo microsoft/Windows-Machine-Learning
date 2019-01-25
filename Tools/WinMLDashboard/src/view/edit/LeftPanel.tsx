@@ -1,17 +1,15 @@
-import { ComboBox, IComboBoxOption } from 'office-ui-fabric-react/lib/ComboBox';
+import { ComboBox, IComboBox, IComboBoxOption } from 'office-ui-fabric-react/lib/ComboBox';
 import { ExpandingCardMode, HoverCard, IExpandingCardProps } from 'office-ui-fabric-react/lib/HoverCard';
 import { Label } from 'office-ui-fabric-react/lib/Label';
 import { TextField } from 'office-ui-fabric-react/lib/TextField';
 import * as React from 'react';
 import { connect } from 'react-redux';
 
-import Select from 'react-select';
-
 import Collapsible from '../../components/Collapsible';
 import Resizable from '../../components/Resizable';
 import { setDebugNodes, setInputs, setOutputs } from '../../datastore/actionCreators';
 import { Proto } from '../../datastore/proto/proto';
-import IState, { DebugFormat, IDebugNodeMap } from '../../datastore/state';
+import IState, { DebugFormat, IDebugNodeMap, InsertDirection, InsertOperatorType } from '../../datastore/state';
 
 import './Panel.css';
 
@@ -30,9 +28,10 @@ interface IComponentProperties {
     showLeft: boolean,
 }
 
-interface ISelectOption {
-    label: string;
-    value: string;
+
+interface IComponentState {
+    insertDirection: InsertDirection,
+    insertOperatorType: InsertOperatorType,
 }
 
 const denotationOptions = ['', 'IMAGE', 'AUDIO', 'TEXT', 'TENSOR'].map((key: string) => ({ key, text: key }));
@@ -76,10 +75,14 @@ const getFullType = (typeProto: any): string => {
     return 'unknown';
 }
 
-class LeftPanel extends React.Component<IComponentProperties, {}> {
+class LeftPanel extends React.Component<IComponentProperties, IComponentState> {
 
     constructor(props: IComponentProperties) {
         super(props);
+        this.state = {
+            insertDirection: InsertDirection.Before,
+            insertOperatorType: InsertOperatorType.Add,
+        }
         this.setDebugNodeFormats = this.setDebugNodeFormats.bind(this);
     }
 
@@ -119,14 +122,32 @@ class LeftPanel extends React.Component<IComponentProperties, {}> {
                 <div className='Panel'>
                     {this.props.selectedNode !== undefined && this.props.selectedNode !== null ?
                         <Collapsible label='Debug'>
-                            <Select 
-                                isMulti={true}
-                                value={this.newOptions(this.getDebugNodeFormats())}
+                            <ComboBox
+                                multiSelect={true}
+                                label='Debug'
+                                className='DenotationComboBox'
+                                options={Object.keys(DebugFormat).map((key: string) => ({ key, text: key }))}
+                                text={this.getDebugNodeFormats()}
                                 onChange={this.setDebugNodeFormats}
-                                options={this.newOptions(Object.keys(DebugFormat))}
-                            />
+                                />
                         </Collapsible>
                     : null}
+                    <Collapsible label='Insert'>
+                        <ComboBox
+                            label='Direction'
+                            defaultSelectedKey={InsertDirection.Before}
+                            className='DenotationComboBox'
+                            options={Object.keys(InsertDirection).map((key: string) => ({ key, text: key }))}
+                            text={this.state.insertDirection}
+                            onChange={this.setInsertDirection} />
+                        <ComboBox
+                            label='Operator Type'
+                            defaultSelectedKey={InsertOperatorType.Add}
+                            className='DenotationComboBox'
+                            options={Object.keys(InsertOperatorType).map((key: string) => ({ key, text: key }))}
+                            text={this.state.insertOperatorType}
+                            onChange={this.setInsertOperatorType} />
+                    </Collapsible>
                     <Collapsible label='Inputs'>
                         {inputsForm}
                     </Collapsible>
@@ -172,7 +193,7 @@ class LeftPanel extends React.Component<IComponentProperties, {}> {
             const isModelOutput = this.props.modelOutputs.includes(x);
             const disabled = !isModelInput && !isModelOutput;
             const valueInfoProtoCopy = () => Proto.types.ValueInfoProto.fromObject(Proto.types.ValueInfoProto.toObject(valueInfoProto));
-            const tensorDenotationChanged = (option?: IComboBoxOption, index?: number, value?: string) => {
+            const tensorDenotationChanged = (event: React.FormEvent<IComboBox>, option?: IComboBoxOption, index?: number, value?: string) => {
                 const nextValueInfoProto = valueInfoProtoCopy();
                 nextValueInfoProto.type.denotation = value || option!.text;
                 this.props[isModelInput ? 'setInputs' : 'setOutputs']({
@@ -185,7 +206,7 @@ class LeftPanel extends React.Component<IComponentProperties, {}> {
             if (valueInfoProto.type.tensorType) {
                 const getValueInfoDimensions = (valueInfo: any) => valueInfo.type.tensorType.shape.dim;
                 shapeEditor = getValueInfoDimensions(valueInfoProto).map((dim: any, index: number) => {
-                    const dimensionChanged = (value: string) => {
+                    const dimensionChanged = (event: React.FormEvent<HTMLInputElement | HTMLTextAreaElement>, value: string) => {
                         const nextValueInfoProto = valueInfoProtoCopy();
                         const dimension = getValueInfoDimensions(nextValueInfoProto)[index]
                         if (value) {
@@ -200,7 +221,7 @@ class LeftPanel extends React.Component<IComponentProperties, {}> {
                             [x]: nextValueInfoProto,
                         });
                     }
-                    const dimensionDenotationChanged = (option?: IComboBoxOption) => {
+                    const dimensionDenotationChanged = (event: React.FormEvent<IComboBox>, option?: IComboBoxOption) => {
                         const nextValueInfoProto = valueInfoProtoCopy();
                         getValueInfoDimensions(nextValueInfoProto)[index].denotation = option!.text;
                         this.props[isModelInput ? 'setInputs' : 'setOutputs']({
@@ -219,14 +240,14 @@ class LeftPanel extends React.Component<IComponentProperties, {}> {
                                     type='number'
                                     placeholder='None'
                                     disabled={disabled}
-                                    onChanged={dimensionChanged} />
+                                    onChange={dimensionChanged} />
                                 <ComboBox
                                     label='Denotation'
                                     defaultSelectedKey={dim.denotation}
                                     className='DenotationComboBox'
                                     options={dimensionDenotationOptions}
                                     disabled={disabled}
-                                    onChanged={dimensionDenotationChanged} />
+                                    onChange={dimensionDenotationChanged} />
                             </div>
                         </div>
                     );
@@ -244,7 +265,7 @@ class LeftPanel extends React.Component<IComponentProperties, {}> {
                             text={valueInfoProto.type.denotation}
                             options={denotationOptions}
                             disabled={!isModelInput && !isModelOutput}
-                            onChanged={tensorDenotationChanged} />
+                            onChange={tensorDenotationChanged} />
                     </div>
                     {shapeEditor}
                 </div>
@@ -257,45 +278,40 @@ class LeftPanel extends React.Component<IComponentProperties, {}> {
             const target = this.props.nodes[this.props.selectedNode];
             if (target !== undefined && target !== null) {
                 if (this.props.debugNodes.hasOwnProperty(target.output)) {
-                    return this.props.debugNodes[target.output];
+                    return this.props.debugNodes[target.output].toString();
                 }
             }
         }
-        return [];
+        return '';
     }
 
-    private setDebugNodeFormats = (debugFormatOptions: ISelectOption[]) => {
+    private setDebugNodeFormats (event: React.FormEvent<IComboBox>, format: IComboBoxOption) {
         if (this.props.selectedNode !== undefined && this.props.selectedNode !== null) {
             const target = this.props.nodes[this.props.selectedNode];
             if (target !== undefined && target !== null) {
-                const debugFormats = this.getValues(debugFormatOptions);
                 const debugNodesCopy = Object.assign({}, this.props.debugNodes);
-                if (debugFormats.length === 0) {
-                    if (debugNodesCopy.hasOwnProperty(target.output)) {
-                        delete debugNodesCopy[target.output];
+                if (debugNodesCopy.hasOwnProperty(target.output)) {
+                    const formatIndex = debugNodesCopy[target.output].findIndex((element, index, array) => element === format.text);
+                    if (format.selected && formatIndex === -1) {
+                        debugNodesCopy[target.output].push(format.text as DebugFormat);
+                    } else if (!format.selected && formatIndex !== -1) {
+                        debugNodesCopy[target.output].splice(formatIndex, 1);
                     }
-                } else {
-                    debugNodesCopy[target.output] = debugFormats;
+                    this.props.setDebugNodes(debugNodesCopy);
+                } else if (format.selected) {
+                    debugNodesCopy[target.output] = [format.text as DebugFormat];
                     this.props.setDebugNodes(debugNodesCopy);
                 }
             }
         }
     }
 
-    private newOptions = (items: string[]): ISelectOption[] => {
-        const options = [];
-        for (const item of items) {
-            options.push({ label: item, value: item });
-        }
-        return options;
+    private setInsertDirection = (event: React.FormEvent<IComboBox>, insertDirection: IComboBoxOption) => {
+        this.setState({insertDirection: insertDirection.text as InsertDirection});
     }
 
-    private getValues = (options: ISelectOption[]): any[] => {
-        const values = [];
-        for (const option of options) {
-            values.push(option.value);
-        }
-        return values;
+    private setInsertOperatorType = (event: React.FormEvent<IComboBox>, insertOperatorType: IComboBoxOption) => {
+        this.setState({insertOperatorType: insertOperatorType.text as InsertOperatorType});
     }
 }
 

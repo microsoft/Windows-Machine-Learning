@@ -22,7 +22,7 @@ export function createMenu(electron: typeof Electron) {
                 {
                     label: 'Documentation',
                     click() {
-                        const tpnUrl = 'https://github.com/Microsoft/Windows-Machine-Learning/blob/RS5/Tools/WinMLDashboard/README.md';
+                        const tpnUrl = 'https://github.com/Microsoft/Windows-Machine-Learning/blob/master/Tools/WinMLDashboard/README.md';
                         require('electron').shell.openExternal(tpnUrl);
                     },
                 },
@@ -39,7 +39,7 @@ export function createMenu(electron: typeof Electron) {
                 {
                     label: 'Third Party Notice',
                     click() {
-                        const tpnUrl = 'https://github.com/Microsoft/Windows-Machine-Learning/blob/RS5/Tools/WinMLDashboard/ThirdPartyNotice.txt';
+                        const tpnUrl = 'https://github.com/Microsoft/Windows-Machine-Learning/blob/master/Tools/WinMLDashboard/ThirdPartyNotice.txt';
                         require('electron').shell.openExternal(tpnUrl);
                     },
                 },

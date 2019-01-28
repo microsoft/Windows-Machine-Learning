@@ -247,35 +247,14 @@ HRESULT EvaluateModel(
             D3D_FEATURE_LEVEL d3dFeatureLevel = D3D_FEATURE_LEVEL::D3D_FEATURE_LEVEL_1_0_CORE;
             D3D12_COMMAND_LIST_TYPE commandQueueType = D3D12_COMMAND_LIST_TYPE_COMPUTE;
 
-#if 1
             com_ptr<IDXCoreAdapterFactory> spFactory;
 
-            typedef HRESULT
-            (WINAPI *PFN_DXCoreCreateAdapterFactory)(
-                _In_ REFIID riid,
-                _COM_Outptr_ void** factory
-                );
-
-            PFN_DXCoreCreateAdapterFactory pfnDXCoreCreateAdapterFactory;
-
-            HMODULE hDXCore = LoadLibrary(TEXT("dxcore.dll"));
-            THROW_IF_FAILED(hr);
-
-            pfnDXCoreCreateAdapterFactory = (PFN_DXCoreCreateAdapterFactory)GetProcAddress(hDXCore, "DXCoreCreateAdapterFactory");
-            THROW_IF_FAILED(hr);
-
-            hr = pfnDXCoreCreateAdapterFactory(__uuidof(IDXCoreAdapterFactory), spFactory.put_void());
-
-#else
-
             hr = DXCoreCreateAdapterFactory(__uuidof(IDXCoreAdapterFactory), spFactory.put_void());
-
-#endif
             THROW_IF_FAILED(hr);
 
             com_ptr<IDXCoreAdapterList> spAdapterList;
 
-            const GUID dxGUIDs[] = { DXCORE_ADAPTER_ATTRIBUTE_D3D_CORE_COMPUTE };
+            const GUID dxGUIDs[] = { DXCORE_ADAPTER_ATTRIBUTE_D3D12_CORE_COMPUTE };
 
             hr = spFactory->GetAdapterList(dxGUIDs, ARRAYSIZE(dxGUIDs), spAdapterList.put());
             THROW_IF_FAILED(hr);
@@ -293,7 +272,7 @@ HRESULT EvaluateModel(
 
             com_ptr<IDXGIAdapter> spDxgiAdapter;
 
-            if (spAdapter->IsDXAttributeSupported(DXCORE_ADAPTER_ATTRIBUTE_D3D_GRFX))
+            if (spAdapter->IsDXAttributeSupported(DXCORE_ADAPTER_ATTRIBUTE_D3D12_GRFX))
             {
                 d3dFeatureLevel = D3D_FEATURE_LEVEL::D3D_FEATURE_LEVEL_11_0;
                 commandQueueType = D3D12_COMMAND_LIST_TYPE_DIRECT;

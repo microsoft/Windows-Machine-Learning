@@ -47,7 +47,7 @@
     <VCProjectVersion>15.0</VCProjectVersion>
     <ProjectGuid>{81EA9CC6-8A26-4583-B1A4-84740EF815C8}</ProjectGuid>
     <RootNamespace>Benchmark</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.18298.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.18318.0</WindowsTargetPlatformVersion>
     <ProjectName>WinMLRunner</ProjectName>
     <WindowsSDKDesktopARM64Support>true</WindowsSDKDesktopARM64Support>
   </PropertyGroup>

@@ -45,7 +45,7 @@ For **ONNX Version:**
 
 |Version     |For Windows 10 Build|
 |------------|--------------------|
-|1.2         |[1809 (OS build 17763)(https://support.microsoft.com/en-us/help/4464619/windows-10-update-history)|
+|1.2         |[1809 (OS build 17763)](https://support.microsoft.com/en-us/help/4464619/windows-10-update-history)|
 |1.3         |after 1809 (OS build 17763)|
 
 <img src="./public/Converter.png" width=800/>

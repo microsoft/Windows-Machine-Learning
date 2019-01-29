@@ -56,7 +56,7 @@ Note that model validation feature is only available on [Windows 10 October 2018
 
 You can install an early preview version of WinML Dashboard from here.
 
-[Download Preview Version](link)
+[Download Preview Version](https://github.com/Microsoft/Windows-Machine-Learning/releases)
 
 Note that the prerelease version is not currently signed so you may see a warning about the binary being untrusted when you try to download and run the installer. 
 

@@ -37,6 +37,9 @@
   <ItemGroup>
     <ResourceCompile Include="src/WinMLRunner.rc" />
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="src\resource.h" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>
     <ProjectGuid>{31653A2F-02CC-4A95-9880-BF86965FB262}</ProjectGuid>

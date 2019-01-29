@@ -43,6 +43,23 @@ jobs:
 
   - task: VSBuild@1
 
+    displayName: 'Build AdapterSelection Sample '
+
+    inputs:
+
+      solution: Samples/AdapterSelection/AdapterSelection.sln
+      vsVersion: 15.0
+      msbuildArgs: '/p:AppxPackageSigningEnabled=false -v:diag /p:OutDir=$(System.DefaultWorkingDirectory)\bin\${{ parameters.BuildPlatform }}\${{ parameters.BuildConfiguration }}\'
+      platform: '${{ parameters.BuildPlatform }}'
+      configuration: '${{ parameters.BuildConfiguration }}'
+      clean: true
+      msbuildArchitecture: x64
+      createLogFile: true
+
+    condition: succeededOrFailed()
+
+  - task: VSBuild@1
+
     displayName: 'Build CustomOperatorCPU Sample '
 
     inputs:
@@ -166,25 +183,6 @@ jobs:
 
     condition: succeededOrFailed()
 
-
-  - task: VSBuild@1
-
-    displayName: 'Build AdapterSelection Sample '
-
-    inputs:
-
-      solution: Samples/AdapterSelection/AdapterSelection.sln
-      vsVersion: 15.0
-      msbuildArgs: '/p:AppxPackageSigningEnabled=false -v:diag /p:OutDir=$(System.DefaultWorkingDirectory)\bin\${{ parameters.BuildPlatform }}\${{ parameters.BuildConfiguration }}\'
-      platform: '${{ parameters.BuildPlatform }}'
-      configuration: '${{ parameters.BuildConfiguration }}'
-      clean: true
-      msbuildArchitecture: x64
-      createLogFile: true
-
-    condition: succeededOrFailed()
-
-
   - task: VSBuild@1
 
     displayName: 'Build Emoji Sample'
@@ -202,18 +200,19 @@ jobs:
 
     condition: succeededOrFailed()
 
-# publish build artifacts is failing for various platform/configurations non-deterministically. commenting out of master for now
-#  - task: PublishBuildArtifacts@1
-#
-#    displayName: 'Publish Artifact: Samples'
-#
-#    inputs:
-#
-#      pathtoPublish: '$(System.DefaultWorkingDirectory)\bin\${{ parameters.BuildPlatform }}\${{ parameters.BuildConfiguration }}\'
-#      artifactName: WinMLPublicSamples
-#      parallel: true
-#      parallelCount: 8
-#
-#
-#    condition: succeededOrFailed()
+  - task: CopyFiles@2
+    inputs:
+      targetFolder: '$(Build.ArtifactStagingDirectory)'
+      sourceFolder: '$(System.DefaultWorkingDirectory)\bin\${{ parameters.BuildPlatform }}\${{ parameters.BuildConfiguration }}\'
+
+ # publish build artifacts is failing for various platform/configurations non-deterministically. commenting out of master for now
+  - task: PublishBuildArtifacts@1
+
+    displayName: 'Publish Artifact: Samples'
+
+    inputs:
+      pathtoPublish: '$(Build.ArtifactStagingDirectory)'
+      artifactName: WinMLPublicSamples
+
+    condition: succeededOrFailed()
 

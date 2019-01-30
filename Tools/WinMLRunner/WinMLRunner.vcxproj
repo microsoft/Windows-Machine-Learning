@@ -160,7 +160,7 @@
       <AdditionalDependencies>mincore.lib;windowsapp.lib;d3d12.lib;dxgi.lib;d3d11.lib</AdditionalDependencies>
       <AdditionalOptions>
       </AdditionalOptions>
-      <DelayLoadDLLs>dxgi.dll;d3d11.dll</DelayLoadDLLs>
+      <DelayLoadDLLs>dxgi.dll;d3d11.dll; ext-ms-win-dxcore-l1-1-0.dll</DelayLoadDLLs>
       <IgnoreAllDefaultLibraries>
       </IgnoreAllDefaultLibraries>
       <IgnoreSpecificDefaultLibraries>kernel32.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
@@ -186,7 +186,7 @@
       <AdditionalDependencies>mincore.lib;windowsapp.lib;d3d12.lib;dxgi.lib;d3d11.lib</AdditionalDependencies>
       <AdditionalOptions>
       </AdditionalOptions>
-      <DelayLoadDLLs>dxgi.dll;d3d11.dll</DelayLoadDLLs>
+      <DelayLoadDLLs>dxgi.dll;d3d11.dll; ext-ms-win-dxcore-l1-1-0.dll</DelayLoadDLLs>
       <IgnoreAllDefaultLibraries>
       </IgnoreAllDefaultLibraries>
       <IgnoreSpecificDefaultLibraries>kernel32.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
@@ -212,7 +212,7 @@
       <AdditionalDependencies>mincore.lib;windowsapp.lib;d3d12.lib;dxgi.lib;d3d11.lib</AdditionalDependencies>
       <AdditionalOptions>
       </AdditionalOptions>
-      <DelayLoadDLLs>dxgi.dll;d3d11.dll</DelayLoadDLLs>
+      <DelayLoadDLLs>dxgi.dll;d3d11.dll; ext-ms-win-dxcore-l1-1-0.dll</DelayLoadDLLs>
       <IgnoreAllDefaultLibraries>
       </IgnoreAllDefaultLibraries>
       <IgnoreSpecificDefaultLibraries>kernel32.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
@@ -243,7 +243,7 @@
       <AdditionalDependencies>mincore.lib;windowsapp.lib;d3d12.lib;dxgi.lib;d3d11.lib</AdditionalDependencies>
       <AdditionalOptions>
       </AdditionalOptions>
-      <DelayLoadDLLs>dxgi.dll;d3d11.dll</DelayLoadDLLs>
+      <DelayLoadDLLs>dxgi.dll;d3d11.dll; ext-ms-win-dxcore-l1-1-0.dll</DelayLoadDLLs>
       <IgnoreAllDefaultLibraries>
       </IgnoreAllDefaultLibraries>
       <IgnoreSpecificDefaultLibraries>kernel32.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
@@ -273,7 +273,7 @@
       <AdditionalDependencies>mincore.lib;windowsapp.lib;d3d12.lib;dxgi.lib;d3d11.lib</AdditionalDependencies>
       <AdditionalOptions>
       </AdditionalOptions>
-      <DelayLoadDLLs>dxgi.dll;d3d11.dll</DelayLoadDLLs>
+      <DelayLoadDLLs>dxgi.dll;d3d11.dll; ext-ms-win-dxcore-l1-1-0.dll</DelayLoadDLLs>
       <IgnoreAllDefaultLibraries>
       </IgnoreAllDefaultLibraries>
       <IgnoreSpecificDefaultLibraries>kernel32.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
@@ -303,7 +303,7 @@
       <AdditionalDependencies>mincore.lib;windowsapp.lib;d3d12.lib;dxgi.lib;d3d11.lib</AdditionalDependencies>
       <AdditionalOptions>
       </AdditionalOptions>
-      <DelayLoadDLLs>dxgi.dll;d3d11.dll</DelayLoadDLLs>
+      <DelayLoadDLLs>dxgi.dll;d3d11.dll; ext-ms-win-dxcore-l1-1-0.dll</DelayLoadDLLs>
       <IgnoreAllDefaultLibraries>
       </IgnoreAllDefaultLibraries>
       <IgnoreSpecificDefaultLibraries>kernel32.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>

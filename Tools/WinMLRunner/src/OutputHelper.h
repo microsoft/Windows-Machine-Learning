@@ -111,7 +111,6 @@ public:
     {
         std::cout << "WinML Runner" << std::endl;
 
-        
         com_ptr<IDXGIFactory4> factory;
         HRESULT hr;
 

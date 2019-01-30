@@ -19,6 +19,10 @@ For additional information on Windows ML, including step-by-step tutorials and h
 
   <img src='./Tools/WinMLDashboard/public/EditorView2.PNG' width=800/>
 
+- **[WinML Code Generator (mlgen)](https://marketplace.visualstudio.com/items?itemName=WinML.mlgen)**: a Visual Studio extension to help you get started using WinML APIs on UWP apps by generating a template code when you add a trained ONNX file into the UWP project. From the template code you can load a model, create a session, bind inputs, and evaluate with wrapper codes. See [docs](https://docs.microsoft.com/en-us/windows/ai/mlgen) for more info.
+
+  Download for [VS 2017](https://marketplace.visualstudio.com/items?itemName=WinML.mlgen), [VS 2019](https://marketplace.visualstudio.com/items?itemName=WinML.MLGenV2)
+
 - **[WinMLRunner](https://github.com/Microsoft/Windows-Machine-Learning/tree/master/Tools/WinMLRunner)**: a command-line tool that can run .onnx or .pb models where the input and output variables are tensors or images. It is a very handy tool to quickly validate an ONNX model. It will attempt to load, bind, and evaluate a model and print out helpful messages. It also captures performance measurements. 
 
 ## Sample apps

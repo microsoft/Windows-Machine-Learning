@@ -201,9 +201,9 @@ HRESULT EvaluateModel(
 
     try
     {
-        UINT adapterIndex = args.GPUAdapterIndex();
+        UINT adapterIndex = args.GetGPUAdapterIndex();
 
-        if (deviceCreationLocation == DeviceCreationLocation::ClientCode && && deviceType != DeviceType::CPU)
+        if (deviceCreationLocation == DeviceCreationLocation::ClientCode && deviceType != DeviceType::CPU)
         {
             // Creating the device on the client and using it to create the video frame and initialize the session makes sure that everything is on
             // the same device. This usually avoids an expensive cross-device and cross-videoframe copy via the VideoFrame pipeline.

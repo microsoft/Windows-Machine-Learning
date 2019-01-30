@@ -111,8 +111,22 @@ public:
     {
         std::cout << "WinML Runner" << std::endl;
 
-        com_ptr<IDXGIFactory6> factory;
-        CreateDXGIFactory1(__uuidof(IDXGIFactory6), factory.put_void());
+        
+        com_ptr<IDXGIFactory4> factory;
+        HRESULT hr;
+
+        try
+        {
+            hr = CreateDXGIFactory2SEH(factory.put_void());
+        }
+        catch (...)
+        {
+            hr = E_FAIL;
+        }
+        if (hr != S_OK)
+        {
+            return;
+        }
         com_ptr<IDXGIAdapter> adapter;
         factory->EnumAdapters(0, adapter.put());
         DXGI_ADAPTER_DESC description;

@@ -5,7 +5,7 @@ resultPromise = electronInstaller.createWindowsInstaller({
     appDirectory: path.join('./release/WinMLDashboard-win32-x64'), 
     authors: 'Microsoft Corporation',
     exe: 'WinMLDashboard.exe',
-    iconUrl: 'https://github.com/Microsoft/Windows-Machine-Learning/blob/RS5/Tools/WinMLDashboard/public/winml_icon.ico',
+    iconUrl: 'https://github.com/Microsoft/Windows-Machine-Learning/blob/master/Tools/WinMLDashboard/public/winml_icon.ico',
     loadingGif: './public/progress_bar.gif',
     noMsi: true,
     outputDirectory: path.join('./installer'), 

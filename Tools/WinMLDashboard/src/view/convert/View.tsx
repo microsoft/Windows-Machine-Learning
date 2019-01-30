@@ -1,4 +1,5 @@
 import * as fs from 'fs';
+import * as path from 'path';
 import * as React from 'react';
 import { connect } from 'react-redux';
 
@@ -8,6 +9,8 @@ import { MessageBar, MessageBarType } from 'office-ui-fabric-react/lib/MessageBa
 import { Spinner } from 'office-ui-fabric-react/lib/Spinner';
 import { TextField } from 'office-ui-fabric-react/lib/TextField';
 import Select from 'react-select';
+
+import { winmlDataFolder } from '../../native/appData';
 
 import Collapsible from '../../components/Collapsible';
 import { setFile, setQuantizationOption, setSaveFileName } from '../../datastore/actionCreators';
@@ -125,7 +128,7 @@ class ConvertView extends React.Component<IComponentProperties, IComponentState>
                 return <Spinner label="Converting..." />;
         }
         this.localPython = this.localPython || getLocalPython();
-        if (!this.localPython) {
+        if (!this.localPython || !fs.existsSync(path.join(winmlDataFolder, '/python/PIResult.txt'))) {
             return this.pythonChooser();
         }
         return this.converterView();
@@ -184,6 +187,10 @@ class ConvertView extends React.Component<IComponentProperties, IComponentState>
                 await pip(['install', '-r', packagedFile('requirements.txt'), '--no-warn-script-location'], this.outputListener);
                 this.setState({ currentStep: Step.Idle });
                 log.info("python environment is installed successfully");
+                fs.writeFile(path.join(winmlDataFolder, '/python/PIResult.txt'), 'Python is installed successfully!', (err) => {
+                    if (err) { throw err; }
+                    log.info('PIResult.txt Saved!');
+                  });
                 pythonDialogOptions.message = 'python environment is installed successfully!'
                 require('electron').remote.dialog.showMessageBox(require('electron').remote.getCurrentWindow(), pythonDialogOptions)
             } catch (error) {
@@ -362,7 +369,7 @@ class ConvertView extends React.Component<IComponentProperties, IComponentState>
         }
         // Convert successfully
         log.info(this.state.source + " is converted successfully.");
-        convertDialogOptions.message = 'convert successfully!'
+        convertDialogOptions.message = 'Converted successfully!'
         require('electron').remote.dialog.showMessageBox(require('electron').remote.getCurrentWindow(), convertDialogOptions)
         this.setState({ currentStep: Step.Idle, source: undefined, console:"Converted successfully!!"});
 

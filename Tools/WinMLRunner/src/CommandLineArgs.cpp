@@ -54,7 +54,7 @@ CommandLineArgs::CommandLineArgs(const std::vector<std::wstring>& args)
         {
             m_useGPUMinPower = true;
         }
-        else if ((_wcsicmp(args[i].c_str(), L"-GPUAdapterIndex") == 0) && (i + 1 < args.size()))
+        else if ((_wcsicmp(args[i].c_str(), L"-GPUAdapterIndex") == 0) && i + 1 < args.size() && args[i + 1][0] != L'-')
         {
             m_useGPU = true;
             m_adapterIndex = static_cast<UINT>(_wtoi(args[++i].c_str()));

@@ -41,7 +41,6 @@
     <ClInclude Include="src\resource.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <CppWinRTEnabled>true</CppWinRTEnabled>
     <VCProjectVersion>15.0</VCProjectVersion>
     <ProjectGuid>{31653A2F-02CC-4A95-9880-BF86965FB262}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
@@ -157,7 +156,7 @@
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
-      <AdditionalDependencies>mincore.lib;windowsapp.lib;d3d12.lib;dxgi.lib;d3d11.lib</AdditionalDependencies>
+      <AdditionalDependencies>mincore.lib;windowsapp.lib;d3d12.lib;dxgi.lib;d3d11.lib;onecore.lib</AdditionalDependencies>
       <AdditionalOptions>
       </AdditionalOptions>
       <DelayLoadDLLs>dxgi.dll;d3d11.dll; ext-ms-win-dxcore-l1-1-0.dll</DelayLoadDLLs>
@@ -300,7 +299,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <SubSystem>Console</SubSystem>
-      <AdditionalDependencies>mincore.lib;windowsapp.lib;d3d12.lib;dxgi.lib;d3d11.lib</AdditionalDependencies>
+      <AdditionalDependencies>mincore.lib;windowsapp.lib;d3d12.lib;dxgi.lib;d3d11.lib;onecore.lib</AdditionalDependencies>
       <AdditionalOptions>
       </AdditionalOptions>
       <DelayLoadDLLs>dxgi.dll;d3d11.dll; ext-ms-win-dxcore-l1-1-0.dll</DelayLoadDLLs>

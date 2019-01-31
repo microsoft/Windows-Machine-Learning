@@ -202,7 +202,7 @@ jobs:
 
   - task: CopyFiles@2
     inputs:
-      targetFolder: '$(Build.ArtifactStagingDirectory)'
+      targetFolder: '$(Build.ArtifactStagingDirectory)\${{ parameters.BuildPlatform }}\${{ parameters.BuildConfiguration }}\'
       sourceFolder: '$(System.DefaultWorkingDirectory)\bin\${{ parameters.BuildPlatform }}\${{ parameters.BuildConfiguration }}\'
 
  # publish build artifacts is failing for various platform/configurations non-deterministically. commenting out of master for now

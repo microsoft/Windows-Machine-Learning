@@ -238,6 +238,12 @@ HRESULT EvaluateModel(
         }
         else if ((TypeHelper::GetWinmlDeviceKind(deviceType) != LearningModelDeviceKind::Cpu) && (adapterIndex != -1))
         {
+            HMODULE library{ nullptr };
+            library = LoadLibrary(L"ext-ms-win-dxcore-l1-1-0.dll");
+            if (!library)
+            {
+                throw hresult_invalid_argument(L"ERROR: DXCORE isn't supported on this machine.");
+            }
             HRESULT hr = S_OK;
             IUnknown* pAdapter = NULL;
             D3D_FEATURE_LEVEL d3dFeatureLevel = D3D_FEATURE_LEVEL::D3D_FEATURE_LEVEL_1_0_CORE;

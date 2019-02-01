@@ -126,13 +126,19 @@ public:
         {
             return;
         }
+
+        //Print All Adapters
         com_ptr<IDXGIAdapter> adapter;
-        factory->EnumAdapters(0, adapter.put());
-        DXGI_ADAPTER_DESC description;
-        if (SUCCEEDED(adapter->GetDesc(&description)))
+        for (UINT i = 0; ; ++i)
         {
-            std::wcout << L"GPU: " << description.Description << std::endl;
-            std::cout << std::endl;
+            com_ptr<IDXGIAdapter1> spAdapter;
+            if (factory->EnumAdapters1(i, spAdapter.put()) != S_OK)
+            {
+                break;
+            }
+            DXGI_ADAPTER_DESC1 pDesc;
+            spAdapter->GetDesc1(&pDesc);
+            printf("Index: %d, Description: %ls\n", i, pDesc.Description);
         }
     }
 

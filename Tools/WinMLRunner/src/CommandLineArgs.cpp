@@ -58,7 +58,8 @@ CommandLineArgs::CommandLineArgs(const std::vector<std::wstring>& args)
         else if ((_wcsicmp(args[i].c_str(), L"-GPUAdapterIndex") == 0) && i + 1 < args.size() && args[i + 1][0] != L'-')
         {
             HMODULE library{ nullptr };
-            if (!IsApiSetImplemented("ext-ms-win-dxcore-l1-1-0"))
+            library = LoadLibrary(L"ext-ms-win-dxcore-l1-1-0");
+            if (!library)
             {
                 throw hresult_invalid_argument(L"ERROR: DXCORE isn't supported on this machine. GpuAdapterIndex flag should only be used with DXCore supported machines.");
             }

@@ -50,7 +50,7 @@ int main(int argc, char* argv[])
         } 
         // valid GPU adapter
         else {
-            printf("Index: %" PRIu64 ", Description: %ls\n", validAdapters.size(), pDesc.Description);
+            printf("Index: %d, Description: %ls\n", static_cast<int>(validAdapters.size()), pDesc.Description);
             wcout << pDesc.Description << endl;
             validAdapters.push_back(spAdapter);
         }
@@ -64,7 +64,7 @@ int main(int argc, char* argv[])
         // user selects adapter
         printf("Please enter the index of the adapter you want to use...\n");
         int selectedIndex;
-        while (!(cin >> selectedIndex) || selectedIndex < 0 || selectedIndex >= validAdapters.size()) {
+        while (!(cin >> selectedIndex) || selectedIndex < 0 || selectedIndex >= static_cast<int>(validAdapters.size())) {
             cin.clear();
             cin.ignore(numeric_limits<streamsize>::max(), '\n');
             printf("Invalid index, please try again.\n");
@@ -179,7 +179,7 @@ void LoadLabels()
 	while (std::getline(labelFile, s, ','))
 	{
 		int labelValue = atoi(s.c_str());
-		if (labelValue >= labels.size())
+		if (labelValue >= static_cast<int>(labels.size()))
 		{
 			labels.resize(labelValue + 1);
 		}

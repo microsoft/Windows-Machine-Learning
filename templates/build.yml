@@ -205,7 +205,6 @@ jobs:
       targetFolder: '$(Build.ArtifactStagingDirectory)\${{ parameters.BuildPlatform }}\${{ parameters.BuildConfiguration }}\'
       sourceFolder: '$(System.DefaultWorkingDirectory)\bin\${{ parameters.BuildPlatform }}\${{ parameters.BuildConfiguration }}\'
 
- # publish build artifacts is failing for various platform/configurations non-deterministically. commenting out of master for now
   - task: PublishBuildArtifacts@1
 
     displayName: 'Publish Artifact: Samples'

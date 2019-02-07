@@ -27,6 +27,7 @@ void CommandLineArgs::PrintUsage() {
     std::cout << "  -Input <fully qualified path>: binds image or CSV to model" << std::endl;
     std::cout << "  -PerfOutput optional:<fully qualified path>: csv file to write the perf results to" << std::endl;
     std::cout << "  -SavePerIterationPerf : save per iteration performance results to csv file" << std::endl;
+    std::cout << "  -SaveTensorData <saveMode>: save first iteration or all iteration output tensor results to csv file [First, All]" << std::endl;
     std::cout << "  -Debug: print trace logs" << std::endl;
     std::cout << "  -Terse: Terse Mode (suppresses repetitive console output)" << std::endl;
     std::cout << "  -AutoScale <interpolationMode>: Enable image autoscaling and set the interpolation mode [Nearest, Linear, Cubic, Fant]" << std::endl;
@@ -146,6 +147,24 @@ CommandLineArgs::CommandLineArgs(const std::vector<std::wstring>& args)
             else
             {
                 std::cout << "Unknown AutoScale Interpolation Mode!" << std::endl;
+                PrintUsage();
+                return;
+            }
+        }
+        else if ((_wcsicmp(args[i].c_str(), L"-SaveTensorData") == 0) && (i + 1 < args.size()))
+        {
+            m_saveTensor = true;
+            if (_wcsicmp(args[++i].c_str(), L"First") == 0)
+            {
+                m_saveTensorMode = "First";
+            }
+            else if (_wcsicmp(args[i].c_str(), L"All") == 0)
+            {
+                m_saveTensorMode = "All";
+            }
+            else
+            {
+                std::cout << "Unknown Mode!" << std::endl;
                 PrintUsage();
                 return;
             }

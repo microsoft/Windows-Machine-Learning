@@ -7,6 +7,9 @@
 #include <fstream>
 #include <algorithm>
 #include <vector>
+#include <direct.h>
+#include <iomanip>
+#include <codecvt>
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 static HRESULT RunProc(LPWSTR commandLine)
@@ -67,6 +70,47 @@ namespace WinMLRunnerTest
             system(copyCommand.c_str());
         }
     }
+
+	bool CompareTensors(std::wstring trueTensor)
+	{
+		auto time = std::time(nullptr);
+		struct tm localTime;
+		localtime_s(&localTime, &time);
+		std::ostringstream oss;
+		oss << std::put_time(&localTime, "%Y-%m-%d_%H.%M.%S");
+
+		std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
+		std::string folderName = "PerIterationRun[" + oss.str() + "]\\softmaxout1GpuIteration1.csv";
+		std::wstring csvTensor = converter.from_bytes(folderName);
+		bool check = true;
+
+		if (trueTensor.length() > 0 && csvTensor.length() > 0)
+		{
+			std::ifstream trueFin;
+			std::ifstream fin;
+			trueFin.open(trueTensor, std::ios_base::app);
+			fin.open(csvTensor);
+
+			std::string value;
+			std::string trueValue;
+			int i = 0;
+			while (trueFin.good() && fin.good())
+			{
+				std::getline(trueFin, trueValue, ',');
+				std::getline(trueFin, trueValue, '\n');
+				std::getline(fin, value, ',');
+				std::getline(fin, value, '\n');
+				i++;
+				if (i == 1 || i == 1002) continue;
+				if (abs(std::stof(trueValue) - std::stof(value)) > 0.01)
+				{
+					check = false;
+				}
+				if (!check) break;
+			}
+		}
+		return check;
+	}
 
 	TEST_CLASS(GarbageInputTest)
 	{
@@ -432,6 +476,13 @@ namespace WinMLRunnerTest
             // We need to expect one more line because of the header
             Assert::AreEqual(static_cast<size_t>(49), GetOutputCSVLineCount());
         }
+		TEST_METHOD(GarbageInputOnlyGpuSaveTensor)
+		{
+			const std::wstring modelPath = CURRENT_PATH + L"SqueezeNet.onnx";
+			const std::wstring command = BuildCommand({ EXE_PATH, L"-model", modelPath, L"-output", OUTPUT_PATH,L"-SaveTensorData", L"First", L"-GPU", L"-RGB" });
+			Assert::AreEqual(S_OK, RunProc((wchar_t *)command.c_str()));
+			Assert::AreEqual(true, CompareTensors(L"softmaxout1GpuIteration1Garbage.csv"));
+		}
 	};
 
     TEST_CLASS(ImageInputTest)
@@ -468,6 +519,22 @@ namespace WinMLRunnerTest
             const std::wstring command = BuildCommand({ EXE_PATH, L"-model ", modelPath, L"-input", inputPath, L"-autoScale", L"Cubic" });
             Assert::AreEqual(S_OK, RunProc((wchar_t*)command.c_str()));
         }
+		TEST_METHOD(ProvidedImageInputOnlyGpuSaveTensor)
+		{
+			const std::wstring modelPath = CURRENT_PATH + L"SqueezeNet.onnx";
+			const std::wstring inputPath = CURRENT_PATH + L"fish.png";
+			const std::wstring command = BuildCommand({ EXE_PATH, L"-model ", modelPath, L"-input", inputPath, L"-SaveTensorData", L"First", L"-GPU" });
+			Assert::AreEqual(S_OK, RunProc((wchar_t*)command.c_str()));
+			Assert::AreEqual(true, CompareTensors(L"softmaxout1GpuIteration1.csv"));
+		}
+		TEST_METHOD(ProvidedImageInputOnlyCpuSaveTensor)
+		{
+			const std::wstring modelPath = CURRENT_PATH + L"SqueezeNet.onnx";
+			const std::wstring inputPath = CURRENT_PATH + L"fish.png";
+			const std::wstring command = BuildCommand({ EXE_PATH, L"-model ", modelPath, L"-input", inputPath, L"-SaveTensorData", L"First", L"-CPU" });
+			Assert::AreEqual(S_OK, RunProc((wchar_t*)command.c_str()));
+			Assert::AreEqual(true, CompareTensors(L"softmaxout1CpuIteration1.csv"));
+		}
     };
 
     TEST_CLASS(CsvInputTest)
@@ -488,6 +555,14 @@ namespace WinMLRunnerTest
             const std::wstring command = BuildCommand({ EXE_PATH, L"-model", modelPath, L"-input", inputPath });
             Assert::AreEqual(HRESULT_FROM_WIN32(ERROR_INVALID_PARAMETER), RunProc((wchar_t *)command.c_str()));
         }
+		TEST_METHOD(ProvidedCSVInputSaveTensor)
+		{
+			const std::wstring modelPath = CURRENT_PATH + L"SqueezeNet.onnx";
+			const std::wstring inputPath = CURRENT_PATH + L"kitten_224.csv";
+			const std::wstring command = BuildCommand({ EXE_PATH, L"-model", modelPath, L"-input", inputPath, L"-SaveTensorData", L"First", L"-GPU" });
+			Assert::AreEqual(S_OK, RunProc((wchar_t *)command.c_str()));
+			Assert::AreEqual(true, CompareTensors(L"softmaxout1GpuIteration1Csv.csv"));
+		}
     };
 
     TEST_CLASS(OtherTests)

@@ -3,7 +3,7 @@
 #include <time.h>
 #include "Common.h"
 #include "ModelBinding.h"
-#include "CommandLineArgs.h"
+#include "Windows.AI.Machinelearning.Native.h"
 
 using namespace winrt::Windows::Media;
 using namespace winrt::Windows::Storage;
@@ -12,6 +12,27 @@ using namespace winrt::Windows::Foundation::Collections;
 using namespace winrt::Windows::Graphics::DirectX;
 using namespace winrt::Windows::Graphics::Imaging;
 using namespace winrt::Windows::Graphics::DirectX::Direct3D11;
+
+inline size_t hash_data(void const* ptr, size_t const bytes) noexcept
+{
+#ifdef _WIN64
+	constexpr size_t fnv_offset_basis = 14695981039346656037ULL;
+	constexpr size_t fnv_prime = 1099511628211ULL;
+#else
+	constexpr size_t fnv_offset_basis = 2166136261U;
+	constexpr size_t fnv_prime = 16777619U;
+#endif
+	size_t result = fnv_offset_basis;
+	uint8_t const* const buffer = static_cast<uint8_t const*>(ptr);
+
+	for (size_t next = 0; next < bytes; ++next)
+	{
+		result ^= buffer[next];
+		result *= fnv_prime;
+	}
+
+	return result;
+}
 
 namespace BindingUtilities
 {
@@ -492,6 +513,72 @@ namespace BindingUtilities
                 }
             }
             std::cout << std::endl;
+        }
+    }
+
+    void SaveEvaluationResults(const LearningModel &model, const CommandLineArgs &args, const IMapView<hstring, winrt::Windows::Foundation::IInspectable>& results, OutputHelper &output, uint32_t iterationNum)
+    {
+        std::string iterationResult;
+        size_t hash = 0;
+
+        for (auto&& desc : model.OutputFeatures())
+        {
+            if (desc.Kind() == LearningModelFeatureKind::Tensor)
+            {
+                std::wstring name(desc.Name());
+                std::string tempName;
+                for (int i = 0; i < name.size(); i++)
+                {
+                    if (isalnum(name[i]))
+                    {
+                        tempName += name[i];
+                    }
+                }
+                TensorFeatureDescriptor tensorDescriptor = desc.as<TensorFeatureDescriptor>();
+                TensorKind tensorKind = tensorDescriptor.TensorKind();
+
+                switch (tensorKind)
+                {
+                
+                case TensorKind::Float:
+                {
+                    com_ptr<ITensorNative> itn = results.Lookup(desc.Name()).as<ITensorNative>();
+                    float* Tensor;
+                    uint32_t uCapacity;
+                    HRESULT(itn->GetBuffer(reinterpret_cast<BYTE**>(&Tensor), &uCapacity));
+                    hash = hash_data(Tensor, uCapacity);
+
+                    UINT maxIndex = 0;
+                    auto maxValue = *Tensor;
+                    UINT size = uCapacity / sizeof(float_t);
+                    for (UINT i = 0; i < size; i++)
+                    {
+                        float val = *(Tensor+i);
+                        if (maxValue < val)
+                        {
+                            maxValue = val;
+                            maxIndex = i;
+                        }
+                    }
+                    iterationResult = "Index: " + std::to_string(maxIndex) + "; Value: " + std::to_string(maxValue);
+                    output.WriteTensorResultToCSV(Tensor, iterationNum, args, uCapacity, tempName);
+                }
+                break;
+
+                default:
+                {
+                    std::cout << "BindingUtilities: output type not implemented.";
+                }
+                break;
+                }
+                output.SaveResult(iterationNum - 1, iterationResult, hash);
+            }
+
+            else if (desc.Kind() == LearningModelFeatureKind::Sequence)
+            {
+                std::cout << "**********WARNING**********\nSequence Type Output Encountered\n Output Tensor not saved";
+                std::cout << "**********WARNING**********\nSequence Type Output Encountered\n Output Tensor not saved";
+            }
         }
     }
  };

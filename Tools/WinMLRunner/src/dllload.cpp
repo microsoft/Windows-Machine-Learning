@@ -1,7 +1,7 @@
 #include "FileHelper.h"
 #include <winrt/Windows.Foundation.h>
 #include <winstring.h>
-
+#include "Common.h"
 extern "C"
 {
     HRESULT __stdcall OS_RoGetActivationFactory(HSTRING classId, GUID const& iid, void** factory) noexcept;
@@ -26,20 +26,28 @@ int32_t __stdcall WINRT_RoGetActivationFactory(void* classId, winrt::guid const&
     std::wstring_view name{ WindowsGetStringRawBuffer(static_cast<HSTRING>(classId), nullptr), WindowsGetStringLen(static_cast<HSTRING>(classId)) };
     HMODULE library{ nullptr };
 
-    std::wstring winmlDllPath = FileHelper::GetModulePath() + L"Windows.AI.MachineLearning.dll";
-
-    if (starts_with(name, L"Windows.AI.MachineLearning."))
+    if (starts_with(name, L"Windows.AI.MachineLearning.") && g_loadDllFromLocal) //If we want to load Windows.Ai.MachineLearning.dll from local path
     {
-        const wchar_t* libPath = winmlDllPath.c_str();
-        library = LoadLibraryW(libPath);
+        if (g_loadWinMLDllPath.empty()) //If no path was specified, we get the dll from the same directory as WinMLRunner.exe
+        {
+            library = LoadLibraryW((FileHelper::GetModulePath() + L"Windows.AI.MachineLearning.dll").c_str());
+            if (!library)
+            {
+                std::cout << "ERROR: Loading Windows.Ai.MachineLearning.dll from local failed! Check if it is contained in the same directory." << std::endl;
+                return HRESULT_FROM_WIN32(GetLastError());
+            }
+        }
+        else //Otherwise, we get the dll from the path that was specified.
+        {
+            library = LoadLibraryW(g_loadWinMLDllPath.c_str());
+            if (!library)
+            {
+                std::cout << "ERROR: Loading Windows.Ai.MachineLearning.dll from local failed! Check if it is contained in the path that was specified." << std::endl;
+                return HRESULT_FROM_WIN32(GetLastError());
+            }
+        }
     }
-    else
-    {
-        return OS_RoGetActivationFactory(static_cast<HSTRING>(classId), iid, factory);
-    }
-
-    // If the library is not found, get the default one
-    if (!library)
+    else //If we don't want to load Windows.Ai.MachineLearning.dll from local path, then it will go through the OS normally.
     {
         return OS_RoGetActivationFactory(static_cast<HSTRING>(classId), iid, factory);
     }

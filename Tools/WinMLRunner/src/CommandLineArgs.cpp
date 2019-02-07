@@ -2,9 +2,11 @@
 #include <string>
 #include <iostream>
 #include "CommandLineArgs.h"
+#include "Filehelper.h"
 
 using namespace Windows::AI::MachineLearning;
-
+bool g_loadDllFromLocal = false; //global flag to check if user wants to load Windows.AI.MachineLearning.dll from local directory.
+std::wstring g_loadWinMLDllPath = L""; //If user wants to load Windows.AI.MachineLearning.dll from specific local directory, this will hold the DLL path.
 void CommandLineArgs::PrintUsage() {
     std::cout << "WinML Runner" << std::endl;
     std::cout << " ---------------------------------------------------------------" << std::endl;
@@ -32,6 +34,7 @@ void CommandLineArgs::PrintUsage() {
     std::cout << "  -Debug: print trace logs" << std::endl;
     std::cout << "  -Terse: Terse Mode (suppresses repetitive console output)" << std::endl;
     std::cout << "  -AutoScale <interpolationMode>: Enable image autoscaling and set the interpolation mode [Nearest, Linear, Cubic, Fant]" << std::endl;
+    std::cout << "  -LoadWinMLFromLocal optional:<fully qualified path> Loads Windows.Ai.MachineLearning.dll from optionally defined folder path. If path isn't specified then the DLL will be loaded from the same directory as WinMLRunner.exe" << std::endl;
 }
 
 CommandLineArgs::CommandLineArgs(const std::vector<std::wstring>& args)
@@ -169,6 +172,38 @@ CommandLineArgs::CommandLineArgs(const std::vector<std::wstring>& args)
                 PrintUsage();
                 return;
             }
+        }
+        else if ((_wcsicmp(args[i].c_str(), L"-LoadWinMLFromLocal") == 0))
+        {
+            std::cout << "Loading Windows.AI.MachineLearning.dll from local directory specified. Validating if this can be done.." << std::endl;
+            if (i + 1 < args.size() && args[i+1][0] != L'-')
+            {
+                std::cout << "Folder path containing Windows.Ai.MachineLearning.dll was specified, attempting to load from path.. " << std::endl;
+                HMODULE library = LoadLibraryW((args[i + 1] + L"Windows.AI.MachineLearning.dll").c_str());
+                if (!library)
+                {
+                    throw hresult_invalid_argument(L"ERROR: Loading Windows.Ai.MachineLearning.dll from local failed! Check if it is contained in the path that was specified.");
+                }
+                else
+                {
+                    std::wcout << "Successfully validated: " << args[i + 1] + L"Windows.AI.MachineLearning.dll" << std::endl;
+                }
+                g_loadWinMLDllPath = args[++i];
+            }
+            else
+            {
+                std::cout << "Windows.Ai.MachineLearning.dll path wasn't specified, attempting to load from same directory as WinMLRunner.exe" << std::endl;
+                HMODULE library = LoadLibraryW((FileHelper::GetModulePath() + L"Windows.AI.MachineLearning.dll").c_str());
+                if (!library)
+                {
+                    throw hresult_invalid_argument(L"ERROR: Loading Windows.Ai.MachineLearning.dll from local failed! Check if it is contained in the same directory.");
+                }
+                else
+                {
+                    std::wcout << "Successfully validated: " << FileHelper::GetModulePath() + L"Windows.AI.MachineLearning.dll" << std::endl;
+                }
+            }
+            g_loadDllFromLocal = true;
         }
         else if ((_wcsicmp(args[i].c_str(), L"/?") == 0))
         {

@@ -28,6 +28,7 @@ public:
     const std::wstring& OutputPath() const { return m_perfOutputPath; }
     const std::wstring& FolderPath() const { return m_modelFolderPath; }
     const std::wstring& ModelPath() const { return m_modelPath; }
+    UINT GetGPUAdapterIndex() const { return m_adapterIndex; }
 
     bool UseRGB() const
     {
@@ -124,6 +125,7 @@ private:
     bool m_autoScale = false;
     bool m_perfOutput = false;
     BitmapInterpolationMode m_autoScaleInterpMode = BitmapInterpolationMode::Cubic;
+    UINT m_adapterIndex = -1;
     bool m_saveTensor = false;
     std::string m_saveTensorMode = "First";
 

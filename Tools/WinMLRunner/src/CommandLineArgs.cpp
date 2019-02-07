@@ -2,6 +2,7 @@
 #include <string>
 #include <iostream>
 #include "CommandLineArgs.h"
+#include <apiquery2.h>
 
 using namespace Windows::AI::MachineLearning;
 
@@ -15,6 +16,7 @@ void CommandLineArgs::PrintUsage() {
     std::cout << "  -GPU : run model on default GPU" << std::endl;
     std::cout << "  -GPUHighPerformance : run model on GPU with highest performance" << std::endl;
     std::cout << "  -GPUMinPower : run model on GPU with the least power" << std::endl;
+    std::cout << "  -GPUAdapterIndex : run model on GPU specified by its index in DXGI enumeration. NOTE: Please only use this flag on DXCore supported machines." << std::endl;
     std::cout << "  -CreateDeviceOnClient : create the device on the client and pass it to WinML" << std::endl;
     std::cout << "  -CreateDeviceInWinML : create the device inside WinML" << std::endl;
     std::cout << "  -CPUBoundInput : bind the input to the CPU" << std::endl;
@@ -53,6 +55,17 @@ CommandLineArgs::CommandLineArgs(const std::vector<std::wstring>& args)
         else if ((_wcsicmp(args[i].c_str(), L"-GPUMinPower") == 0))
         {
             m_useGPUMinPower = true;
+        }
+        else if ((_wcsicmp(args[i].c_str(), L"-GPUAdapterIndex") == 0) && i + 1 < args.size() && args[i + 1][0] != L'-')
+        {
+            HMODULE library{ nullptr };
+            library = LoadLibrary(L"ext-ms-win-dxcore-l1-1-0");
+            if (!library)
+            {
+                throw hresult_invalid_argument(L"ERROR: DXCORE isn't supported on this machine. GpuAdapterIndex flag should only be used with DXCore supported machines.");
+            }
+            m_useGPU = true;
+            m_adapterIndex = static_cast<UINT>(_wtoi(args[++i].c_str()));
         }
         else if ((_wcsicmp(args[i].c_str(), L"-CreateDeviceOnClient") == 0))
         {

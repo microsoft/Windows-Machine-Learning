@@ -2,6 +2,8 @@
 #ifndef _SILENCE_ALL_CXX17_DEPRECATION_WARNINGS
 #define _SILENCE_ALL_CXX17_DEPRECATION_WARNINGS
 #endif
+#include <vcruntime.h>
+#include <windows.h>
 // unknown.h needs to be inlcuded before any winrt headers
 #include <unknwn.h>
 #include <winrt/Windows.AI.MachineLearning.h>
@@ -20,7 +22,9 @@
 #include <numeric>
 #include <cassert>
 #include <fstream>
+#include <Windows.AI.MachineLearning.Native.h>
 #include <dxgi1_6.h>
+#include <d3d12.h>
 #include "TypeHelper.h"
 #include "TimerHelper.h"
 
@@ -89,3 +93,15 @@ inline void ThrowFailure(const std::wstring &errorMsg)
 {
 	throw errorMsg;
 }
+
+//
+// Delay load exception information
+//
+#ifndef FACILITY_VISUALCPP
+#define FACILITY_VISUALCPP  ((LONG)0x6d)
+#endif
+
+#define VcppException(sev,err)  ((sev) | (FACILITY_VISUALCPP<<16) | err)
+
+HRESULT CreateDXGIFactory2SEH(void **pIDXGIFactory);
+

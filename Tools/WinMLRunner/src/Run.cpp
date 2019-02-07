@@ -105,7 +105,7 @@ HRESULT BindInputFeatures(const LearningModel& model, const LearningModelBinding
 
         if (capturePerf)
         {
-            WINML_PROFILING_START(profiler, WINML_MODEL_TEST_PERF::BIND_VALUE);
+            WINML_PROFILING_START(profiler, iterationNum == 0 ? WINML_MODEL_TEST_PERF::BIND_VALUE_FIRST_RUN : WINML_MODEL_TEST_PERF::BIND_VALUE);
         }
 
         for (uint32_t i = 0; i < model.InputFeatures().Size(); i++)
@@ -116,7 +116,7 @@ HRESULT BindInputFeatures(const LearningModel& model, const LearningModelBinding
 
         if (capturePerf)
         {
-            WINML_PROFILING_STOP(profiler, WINML_MODEL_TEST_PERF::BIND_VALUE);
+            WINML_PROFILING_STOP(profiler, iterationNum == 0 ? WINML_MODEL_TEST_PERF::BIND_VALUE_FIRST_RUN : WINML_MODEL_TEST_PERF::BIND_VALUE);
             if (args.IsPerIterationCapture())
             {
                 output.SaveBindTimes(profiler, iterationNum);
@@ -149,14 +149,14 @@ HRESULT EvaluateModel(
     {
         if (capturePerf)
         {
-            WINML_PROFILING_START(profiler, WINML_MODEL_TEST_PERF::EVAL_MODEL);
+            WINML_PROFILING_START(profiler, iterationNum == 0 ? WINML_MODEL_TEST_PERF::EVAL_MODEL_FIRST_RUN : WINML_MODEL_TEST_PERF::EVAL_MODEL);
         }
 
         result = session.Evaluate(context, L"");
 
         if (capturePerf)
         {
-            WINML_PROFILING_STOP(profiler, WINML_MODEL_TEST_PERF::EVAL_MODEL);
+            WINML_PROFILING_STOP(profiler, iterationNum == 0 ? WINML_MODEL_TEST_PERF::EVAL_MODEL_FIRST_RUN : WINML_MODEL_TEST_PERF::EVAL_MODEL);
             if (args.IsPerIterationCapture())
             {
                 output.SaveEvalPerformance(profiler, iterationNum);
@@ -228,13 +228,29 @@ HRESULT EvaluateModel(
             winrtDevice = inspectableDevice.as<IDirect3DDevice>();
             LearningModelDevice learningModelDevice = LearningModelDevice::CreateFromDirect3D11Device(winrtDevice);
             output.PrintLearningModelDevice(deviceType, learningModelDevice);
+            if (args.IsPerformanceCapture())
+            {
+                WINML_PROFILING_START(profiler, WINML_MODEL_TEST_PERF::CREATE_SESSION);
+            }
             session = LearningModelSession(model, learningModelDevice);
+            if (args.IsPerformanceCapture())
+            {
+                WINML_PROFILING_STOP(profiler, WINML_MODEL_TEST_PERF::CREATE_SESSION);
+            }
         }
         else
         {
             LearningModelDevice learningModelDevice(TypeHelper::GetWinmlDeviceKind(deviceType));
             output.PrintLearningModelDevice(deviceType, learningModelDevice);
+            if (args.IsPerformanceCapture())
+            {
+                WINML_PROFILING_START(profiler, WINML_MODEL_TEST_PERF::CREATE_SESSION);
+            }
             session = LearningModelSession(model, learningModelDevice);
+            if (args.IsPerformanceCapture())
+            {
+                WINML_PROFILING_STOP(profiler, WINML_MODEL_TEST_PERF::CREATE_SESSION);
+            }
         }
     }
     catch (hresult_error hr)
@@ -253,17 +269,14 @@ HRESULT EvaluateModel(
     LearningModelBinding context(session);
 
     bool useInputData = false;
-    
-    // Add one more iteration if we ignore the first run
-    uint32_t numIterations = args.NumIterations() + args.IsIgnoreFirstRun();
 
     bool isGarbageData = args.IsGarbageInput();
     std::string completionString = "\n";
 
     // Run the binding + evaluate multiple times and average the results
-    for (uint32_t i = 0; i < numIterations; i++)
+    for (uint32_t i = 0; i < args.NumIterations(); i++)
     {
-        bool captureIterationPerf = (args.IsPerformanceCapture() && (!args.IsIgnoreFirstRun() || i > 0)) || (args.IsPerIterationCapture());
+        bool captureIterationPerf = args.IsPerformanceCapture() || args.IsPerIterationCapture();
 
         std::vector<ILearningModelFeatureValue> inputFeatures;
         try
@@ -307,9 +320,9 @@ HRESULT EvaluateModel(
                 BindingUtilities::PrintEvaluationResults(model, args, result.Outputs());
             }
 
-            if (args.TerseOutput() && numIterations > 1)
+            if (args.TerseOutput() && args.NumIterations() > 1)
             {
-                printf("Binding and Evaluating %d more time%s...", numIterations-1, (numIterations == 2 ? "" : "s"));
+                printf("Binding and Evaluating %d more time%s...", args.NumIterations()-1, (args.NumIterations() == 2 ? "" : "s"));
                 completionString = "[SUCCESS]\n";
             }
         }
@@ -392,7 +405,7 @@ HRESULT EvaluateModels(
 
                         if (args.IsPerformanceCapture())
                         {
-                            output.PrintResults(profiler, args.NumIterations(), deviceType, inputBindingType, inputDataType, deviceCreationLocation);
+                            output.PrintResults(profiler, args.NumIterations(), deviceType, inputBindingType, inputDataType, deviceCreationLocation, args.IsPerformanceConsoleOutputVerbose());
                             if (args.IsOutputPerf())
                             {
                                 std::string deviceTypeStringified = TypeHelper::Stringify(deviceType);
@@ -406,8 +419,7 @@ HRESULT EvaluateModels(
                                     deviceTypeStringified,
                                     inputDataTypeStringified,
                                     inputBindingTypeStringified,
-                                    deviceCreationLocationStringified,
-                                    args.IsIgnoreFirstRun()
+                                    deviceCreationLocationStringified
                                 );
                             }
                         }

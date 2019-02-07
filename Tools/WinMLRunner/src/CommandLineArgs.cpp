@@ -22,11 +22,10 @@ void CommandLineArgs::PrintUsage() {
     std::cout << "  -RGB : load the input as an RGB image" << std::endl;
     std::cout << "  -BGR : load the input as a BGR image" << std::endl;
     std::cout << "  -Tensor : load the input as a tensor" << std::endl;
-    std::cout << "  -Perf : capture timing measurements" << std::endl;
+    std::cout << "  -Perf optional:<all>: capture timing measurements. Specifying \"all\" will output all measurements" << std::endl;
     std::cout << "  -Iterations : # times perf measurements will be run/averaged" << std::endl;
     std::cout << "  -Input <fully qualified path>: binds image or CSV to model" << std::endl;
     std::cout << "  -PerfOutput optional:<fully qualified path>: csv file to write the perf results to" << std::endl;
-    std::cout << "  -IgnoreFirstRun : ignore the first run in the perf results when calculating the average" << std::endl;
     std::cout << "  -SavePerIterationPerf : save per iteration performance results to csv file" << std::endl;
     std::cout << "  -Debug: print trace logs" << std::endl;
     std::cout << "  -Terse: Terse Mode (suppresses repetitive console output)" << std::endl;
@@ -105,12 +104,12 @@ CommandLineArgs::CommandLineArgs(const std::vector<std::wstring>& args)
         {
             m_useGPUBoundInput = true;
         }
-        else if ((_wcsicmp(args[i].c_str(), L"-IgnoreFirstRun") == 0))
-        {
-            m_ignoreFirstRun = true;
-        }
         else if ((_wcsicmp(args[i].c_str(), L"-Perf") == 0))
         {
+            if (i + 1 < args.size() && args[i + 1][0] != L'-' && (_wcsicmp(args[i+1].c_str(), L"all") == 0))
+            {
+                m_perfConsoleOutputAll = true;
+            }
             m_perfCapture = true;
         }
         else if ((_wcsicmp(args[i].c_str(), L"-Debug") == 0))

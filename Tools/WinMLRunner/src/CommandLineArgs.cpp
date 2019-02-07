@@ -22,7 +22,7 @@ void CommandLineArgs::PrintUsage() {
     std::cout << "  -RGB : load the input as an RGB image" << std::endl;
     std::cout << "  -BGR : load the input as a BGR image" << std::endl;
     std::cout << "  -Tensor : load the input as a tensor" << std::endl;
-    std::cout << "  -Perf optional:<all>: capture timing measurements. Specifying \"all\" will output all measurements" << std::endl;
+    std::cout << "  -Perf optional:<all>: capture performance measurements such as timing and memory usage. Specifying \"all\" will output all measurements" << std::endl;
     std::cout << "  -Iterations : # times perf measurements will be run/averaged" << std::endl;
     std::cout << "  -Input <fully qualified path>: binds image or CSV to model" << std::endl;
     std::cout << "  -PerfOutput optional:<fully qualified path>: csv file to write the perf results to" << std::endl;

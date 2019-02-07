@@ -22,7 +22,7 @@ Required command-Line arguments:
 -folder <path>           : Fully qualifed path to a folder with .onnx and/or .pb models, will run all of the models in the folder.
 
 #Optional command-line arguments:
--Perf                    : optional:<all>: capture CPU and GPU timing measurements. Specifying "all" will output all measurements
+-Perf                    : optional:<all>:  capture performance measurements such as timing and memory usage. Specifying "all" will output all measurements
 -Iterations <int>        : Number of times to evaluate the model when capturing performance measurements.
 -CPU                     : Will create a session on the CPU.
 -GPU                     : Will create a session on the GPU.

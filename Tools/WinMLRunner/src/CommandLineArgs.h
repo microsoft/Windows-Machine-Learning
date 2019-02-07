@@ -19,7 +19,7 @@ public:
     bool IsCreateDeviceOnClient() const { return m_createDeviceOnClient; }
     bool IsAutoScale() const { return m_autoScale; }
     bool IsOutputPerf() const { return m_perfOutput; }
-
+    bool IsSaveTensor() const { return m_saveTensor; }
 
     BitmapInterpolationMode AutoScaleInterpMode() const { return m_autoScaleInterpMode; }
    
@@ -99,6 +99,12 @@ public:
         m_perfOutput = true;
     }
     void SetRunIterations(const uint32_t iterations) { m_numIterations = iterations; }
+
+    std::string SaveTensorMode() const
+    {
+        return m_saveTensorMode;
+    }
+
 private:
     bool m_perfCapture = false;
     bool m_useCPU = false;
@@ -120,6 +126,8 @@ private:
     bool m_perfOutput = false;
     BitmapInterpolationMode m_autoScaleInterpMode = BitmapInterpolationMode::Cubic;
     UINT m_adapterIndex = -1;
+    bool m_saveTensor = false;
+    std::string m_saveTensorMode = "First";
 
     std::wstring m_modelFolderPath;
     std::wstring m_modelPath;

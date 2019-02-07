@@ -173,6 +173,11 @@ HRESULT EvaluateModel(
         std::wcout << hr.message().c_str() << std::endl;
         return hr.code();
     }
+
+    if (args.IsSaveTensor())
+    {
+        BindingUtilities::SaveEvaluationResults(model, args, result.Outputs(), output, iterationNum + 1);
+    }
     return S_OK;
 }
 
@@ -401,6 +406,11 @@ HRESULT EvaluateModel(
     }
     printf("%s", completionString.c_str());
 
+    if (args.IsSaveTensor() || args.IsPerIterationCapture())
+    {
+        output.WritePerIterationPerformance(args, args.ModelPath(), args.ImagePath());
+    }
+
     // Clean up session resources
     session.Close();
     session.~LearningModelSession();
@@ -495,11 +505,6 @@ HRESULT EvaluateModels(
                                     args.IsIgnoreFirstRun()
                                 );
                             }
-                        }
-
-                        if (args.IsPerIterationCapture())
-                        {
-                            output.WritePerformanceDataToCSVPerIteration(profiler, args, args.ModelPath(), args.ImagePath());
                         }
                     }
                 }
@@ -631,7 +636,9 @@ int run(CommandLineArgs& args, Profiler<WINML_MODEL_TEST_PERF>& profiler)
         output.SetDefaultCSVFileName();
     }
 
-    if (args.IsPerIterationCapture()) {
+    if (args.IsSaveTensor() || args.IsPerIterationCapture())
+    {
+        output.SetDefaultPerIterationFolder();
         output.SetDefaultCSVFileNamePerIteration();
     }
 

@@ -6,7 +6,6 @@
 #include <apiquery2.h>
 
 using namespace Windows::AI::MachineLearning;
-bool g_loadWinMLDllFromLocal = false; //global flag to check if user wants to load Windows.AI.MachineLearning.dll from local directory.
 std::wstring g_loadWinMLDllPath = L""; //If user wants to load Windows.AI.MachineLearning.dll from specific local directory, this will hold the DLL path.
 void CommandLineArgs::PrintUsage() {
     std::cout << "WinML Runner" << std::endl;

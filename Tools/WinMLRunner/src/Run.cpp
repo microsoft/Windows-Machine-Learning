@@ -627,6 +627,10 @@ int run(CommandLineArgs& args, Profiler<WINML_MODEL_TEST_PERF>& profiler)
     // CPU and GPU.
     profiler.Enable();
 
+    //If Windows.AI.MachineLearning.dll or DirectML's local path was specified then print it out
+    std::wcout << L"Windows.AI.MachineLearning.dll location: " << (!g_loadWinMLDllPath.empty() ? g_loadWinMLDllPath : L"Will load from system as needed") << std::endl;
+    std::wcout << L"Directml.dll location: " << (!args.DirectMLLocalPath().empty() ? args.DirectMLLocalPath() : L"Will load from system as needed") << std::endl;
+
     if (!args.OutputPath().empty())
     {
         output.SetCSVFileName(args.OutputPath());

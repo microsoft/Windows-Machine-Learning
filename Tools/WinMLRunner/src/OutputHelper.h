@@ -141,7 +141,7 @@ public:
             }
             DXGI_ADAPTER_DESC1 pDesc;
             spAdapter->GetDesc1(&pDesc);
-            printf("Index: %d, Description: %ls\n", i, pDesc.Description);
+            printf("Adapter Index: %d, Description: %ls\n", i, pDesc.Description);
         }
     }
 

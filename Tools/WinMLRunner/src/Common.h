@@ -28,7 +28,6 @@
 #include "TypeHelper.h"
 #include "TimerHelper.h"
 
-extern bool g_loadDllFromLocal;
 extern std::wstring g_loadWinMLDllPath;
 
 enum WINML_MODEL_TEST_PERF

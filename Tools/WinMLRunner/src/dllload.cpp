@@ -26,26 +26,14 @@ int32_t __stdcall WINRT_RoGetActivationFactory(void* classId, winrt::guid const&
     std::wstring_view name{ WindowsGetStringRawBuffer(static_cast<HSTRING>(classId), nullptr), WindowsGetStringLen(static_cast<HSTRING>(classId)) };
     HMODULE library{ nullptr };
 
-    if (starts_with(name, L"Windows.AI.MachineLearning.") && g_loadDllFromLocal) //If we want to load Windows.Ai.MachineLearning.dll from local path
+    if (starts_with(name, L"Windows.AI.MachineLearning.") && !g_loadWinMLDllPath.empty()) //If we want to load Windows.Ai.MachineLearning.dll from local path
     {
-        if (g_loadWinMLDllPath.empty()) //If no path was specified, we get the dll from the same directory as WinMLRunner.exe
-        {
-            library = LoadLibraryW((FileHelper::GetModulePath() + L"Windows.AI.MachineLearning.dll").c_str());
-            if (!library)
-            {
-                std::cout << "ERROR: Loading Windows.Ai.MachineLearning.dll from local failed! Check if it is contained in the same directory." << std::endl;
-                return HRESULT_FROM_WIN32(GetLastError());
-            }
-        }
-        else //Otherwise, we get the dll from the path that was specified.
-        {
             library = LoadLibraryW(g_loadWinMLDllPath.c_str());
             if (!library)
             {
-                std::cout << "ERROR: Loading Windows.Ai.MachineLearning.dll from local failed! Check if it is contained in the path that was specified." << std::endl;
+                std::cout << "ERROR: Loading Windows.AI.MachineLearning.dll from local failed! Check if it is contained in the path that was specified." << std::endl;
                 return HRESULT_FROM_WIN32(GetLastError());
             }
-        }
     }
     else //If we don't want to load Windows.Ai.MachineLearning.dll from local path, then it will go through the OS normally.
     {

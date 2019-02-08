@@ -29,6 +29,7 @@ public:
     const std::wstring& FolderPath() const { return m_modelFolderPath; }
     const std::wstring& ModelPath() const { return m_modelPath; }
     UINT GetGPUAdapterIndex() const { return m_adapterIndex; }
+    const std::wstring& DirectMLLocalPath() const { return m_directLocalPath; }
 
     bool UseRGB() const
     {
@@ -127,13 +128,14 @@ private:
     BitmapInterpolationMode m_autoScaleInterpMode = BitmapInterpolationMode::Cubic;
     UINT m_adapterIndex = -1;
     bool m_saveTensor = false;
-    std::string m_saveTensorMode = "First";
 
+    std::string m_saveTensorMode = "First";
     std::wstring m_modelFolderPath;
     std::wstring m_modelPath;
     std::wstring m_imagePath;
     std::wstring m_csvData;
     std::wstring m_inputData;
     std::wstring m_perfOutputPath;
+    std::wstring m_directLocalPath = L"";
     uint32_t m_numIterations = 1;
 };

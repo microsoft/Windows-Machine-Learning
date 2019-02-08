@@ -171,7 +171,7 @@ steps:
       solution: Samples/Emoji8/UWP/cs/Emoji8.sln
       vsVersion: 15.0
       msbuildArgs: '/p:AppxPackageSigningEnabled=false -v:diag /p:OutDir=$(System.DefaultWorkingDirectory)\bin\$$(BuildPlatform)\$(BuildConfiguration)\'
-      platform: '$$(BuildPlatform)'
+      platform: '$(BuildPlatform)'
       configuration: '$(BuildConfiguration)'
       clean: true
       msbuildArchitecture: x64

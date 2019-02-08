@@ -107,7 +107,7 @@ CommandLineArgs::CommandLineArgs(const std::vector<std::wstring>& args)
         }
         else if ((_wcsicmp(args[i].c_str(), L"-Perf") == 0))
         {
-            if (i + 1 < args.size() && args[i + 1][0] != L'-' && (_wcsicmp(args[i+1].c_str(), L"all") == 0))
+            if (i + 1 < args.size() && args[i + 1][0] != L'-' && (_wcsicmp(args[++i].c_str(), L"all") == 0))
             {
                 m_perfConsoleOutputAll = true;
             }

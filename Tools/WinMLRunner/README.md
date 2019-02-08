@@ -22,7 +22,7 @@ Required command-Line arguments:
 -folder <path>           : Fully qualifed path to a folder with .onnx and/or .pb models, will run all of the models in the folder.
 
 #Optional command-line arguments:
--Perf                    : Captures GPU, CPU, and wall-clock time measurements.
+-Perf                    : optional:<all>:  capture performance measurements such as timing and memory usage. Specifying "all" will output all measurements
 -Iterations <int>        : Number of times to evaluate the model when capturing performance measurements.
 -CPU                     : Will create a session on the CPU.
 -GPU                     : Will create a session on the GPU.
@@ -38,7 +38,6 @@ Required command-Line arguments:
 -Tensor                  : Will load the input as a tensor.
 -Input <image/CSV path>  : Will bind image/data from CSV to model.
 -PerfOutput <CSV path>   : Path to the CSV where the perf results will be written.
--IgnoreFirstRun          : Will ignore the first run in the perf results when calculating the average
 -SavePerIterationPerf	 : Save per iteration performance results to csv file.
 -Debug                   : Will start a trace logging session.
 -Terse                   : Will suppress repetitive console output (initial iteration and summary info will be output).

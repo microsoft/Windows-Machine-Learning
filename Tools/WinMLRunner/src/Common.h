@@ -35,17 +35,9 @@ enum WINML_MODEL_TEST_PERF
 	CREATE_SESSION,
 	BIND_VALUE,
 	EVAL_MODEL,
+    BIND_VALUE_FIRST_RUN,
 	EVAL_MODEL_FIRST_RUN,
 	COUNT
-};
-
-static std::vector<std::wstring> WINML_MODEL_TEST_PERF_NAMES =
-{
-	L"ENTIRE TEST          ",
-	L"  LOAD MODEL         ",
-	L"  CREATE SESSION     ",
-	L"  BIND VALUE         ",
-	L"  EVAL MODEL         ",
 };
 
 #define MAX_PROFILING_LOOP 100

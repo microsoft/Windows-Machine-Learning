@@ -11,8 +11,8 @@ public:
     bool IsUsingGPUMinPower() const { return m_useGPUMinPower; }
     bool UseBGR() const { return m_useBGR; }
     bool IsUsingGPUBoundInput() const { return m_useGPUBoundInput; }
-    bool IsIgnoreFirstRun() const { return m_ignoreFirstRun; }
     bool IsPerformanceCapture() const { return m_perfCapture; }
+    bool IsPerformanceConsoleOutputVerbose() const { return m_perfConsoleOutputAll; }
     bool IsDebugOutputEnabled() const { return m_debug; }
     bool TerseOutput() const { return m_terseOutput; }
     bool IsPerIterationCapture() const { return m_perIterCapture; }
@@ -107,6 +107,7 @@ public:
 
 private:
     bool m_perfCapture = false;
+    bool m_perfConsoleOutputAll = false;
     bool m_useCPU = false;
     bool m_useGPU = false;
     bool m_useGPUHighPerformance = false;

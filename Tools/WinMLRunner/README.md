@@ -45,8 +45,7 @@ Required command-Line arguments:
 -AutoScale <mode>        : Will automatically scale an input image to match the required input dimensions of the model.  Pass in the interpolation mode, one of ["Nearest", "Linear", "Cubic", "Fant"].
 -LoadWinMLFromLocal optional:<fully qualified path> Loads Windows.Ai.MachineLearning.dll from optionally defined folder path.
   If path isn't specified then the DLL will be loaded from the same directory as WinMLRunner.exe.
-  WARNING: DirectML.dll needs to be in the same directory as Windows.Ai.MachineLearning.dll
-           or DirectML.dll will be loaded through the system by default.
+  WARNING:  DirectML.dll will be loaded through the system by default if -LoadDirectMLFromLocal isn't specified.
 -LoadDirectMLFromLocal optional:<fully qualified path> Loads DirectML.dll from optionally defined folder path.
    If path isn't specified then the DLL will be loaded from the same directory as WinMLRunner.exe.
  ```

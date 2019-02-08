@@ -37,8 +37,7 @@ void CommandLineArgs::PrintUsage() {
     std::cout << "  -AutoScale <interpolationMode>: Enable image autoscaling and set the interpolation mode [Nearest, Linear, Cubic, Fant]" << std::endl;
     std::cout << "  -LoadWinMLFromLocal optional:<fully qualified path> Loads Windows.Ai.MachineLearning.dll from optionally defined folder path." << std::endl;
     std::cout << "    If path isn't specified then the DLL will be loaded from the same directory as WinMLRunner.exe." << std::endl;
-    std::cout << "    WARNING: DirectML.dll needs to be in the same directory as Windows.Ai.MachineLearning.dll" << std::endl;
-    std::cout << "             or DirectML.dll will be loaded through the system by default."<< std::endl;
+    std::cout << "    WARNING: DirectML.dll will be loaded through the system by default if -LoadDirectMLFromLocal isn't specified."<< std::endl;
     std::cout << "  -LoadDirectMLFromLocal optional:<fully qualified path> Loads DirectML.dll from optionally defined folder path." << std::endl;
     std::cout << "    If path isn't specified then the DLL will be loaded from the same directory as WinMLRunner.exe." << std::endl;
 }

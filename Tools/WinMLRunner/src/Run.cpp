@@ -210,31 +210,41 @@ HRESULT EvaluateModel(
 
         if (deviceCreationLocation == DeviceCreationLocation::ClientCode && deviceType != DeviceType::CPU)
         {
+            // Enumerate Adapters to pick the requested one.
+            com_ptr<IDXGIFactory6> factory;
+            HRESULT hr = CreateDXGIFactory(__uuidof(IDXGIFactory6), factory.put_void());
+            THROW_IF_FAILED(hr);
+
+            com_ptr<IDXGIAdapter> adapter;
+            switch (deviceType)
+            {
+            case DeviceType::DefaultGPU:
+                hr = factory->EnumAdapterByGpuPreference(0, DXGI_GPU_PREFERENCE_UNSPECIFIED, __uuidof(IDXGIAdapter), adapter.put_void());
+                break;
+            case DeviceType::MinPowerGPU:
+                hr = factory->EnumAdapterByGpuPreference(0, DXGI_GPU_PREFERENCE_MINIMUM_POWER, __uuidof(IDXGIAdapter), adapter.put_void());
+                break;
+            case DeviceType::HighPerfGPU:
+                hr = factory->EnumAdapterByGpuPreference(0, DXGI_GPU_PREFERENCE_HIGH_PERFORMANCE, __uuidof(IDXGIAdapter), adapter.put_void());
+                break;
+            default:
+                throw hresult(E_INVALIDARG);
+            }
+            THROW_IF_FAILED(hr);
+
             // Creating the device on the client and using it to create the video frame and initialize the session makes sure that everything is on
             // the same device. This usually avoids an expensive cross-device and cross-videoframe copy via the VideoFrame pipeline.
             com_ptr<ID3D11Device> d3d11Device;
-            HRESULT hr = D3D11CreateDevice(nullptr, D3D_DRIVER_TYPE_HARDWARE, nullptr, D3D11_CREATE_DEVICE_BGRA_SUPPORT, nullptr, 0, D3D11_SDK_VERSION, d3d11Device.put(), nullptr, nullptr);
-
-            if (FAILED(hr))
-            {
-                throw hresult(hr);
-            }
+            hr = D3D11CreateDevice(adapter.get(), D3D_DRIVER_TYPE_UNKNOWN, nullptr, D3D11_CREATE_DEVICE_BGRA_SUPPORT, nullptr, 0, D3D11_SDK_VERSION, d3d11Device.put(), nullptr, nullptr);
+            THROW_IF_FAILED(hr);
 
             com_ptr<IDXGIDevice> dxgiDevice;
-            hr = d3d11Device->QueryInterface(IID_PPV_ARGS(dxgiDevice.put()));
-
-            if (FAILED(hr))
-            {
-                throw hresult(hr);
-            }
+            hr = d3d11Device->QueryInterface(__uuidof(IDXGIDevice), dxgiDevice.put_void());
+            THROW_IF_FAILED(hr);
 
             com_ptr<IInspectable> inspectableDevice;
             hr = CreateDirect3D11DeviceFromDXGIDevice(dxgiDevice.get(), inspectableDevice.put());
-
-            if (FAILED(hr))
-            {
-                throw hresult(hr);
-            }
+            THROW_IF_FAILED(hr);
 
             winrtDevice = inspectableDevice.as<IDirect3DDevice>();
             LearningModelDevice learningModelDevice = LearningModelDevice::CreateFromDirect3D11Device(winrtDevice);

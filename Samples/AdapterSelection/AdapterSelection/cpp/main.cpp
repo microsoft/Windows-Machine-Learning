@@ -51,7 +51,6 @@ int main(int argc, char* argv[])
         // valid GPU adapter
         else {
             printf("Index: %d, Description: %ls\n", static_cast<int>(validAdapters.size()), pDesc.Description);
-            wcout << pDesc.Description << endl;
             validAdapters.push_back(spAdapter);
         }
     }

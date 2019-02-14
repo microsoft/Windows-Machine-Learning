@@ -12,6 +12,7 @@ void CommandLineArgs::PrintUsage() {
     std::cout << "WinmlRunner.exe <-model | -folder> <fully qualified path> [options]" << std::endl;
     std::cout << std::endl;
     std::cout << "options: " << std::endl;
+    std::cout << "  -version: prints the version information for this build of WinMLRunner.exe" << std::endl;
     std::cout << "  -CPU : run model on default CPU" << std::endl;
     std::cout << "  -GPU : run model on default GPU" << std::endl;
     std::cout << "  -GPUHighPerformance : run model on GPU with highest performance" << std::endl;
@@ -182,6 +183,30 @@ CommandLineArgs::CommandLineArgs(const std::vector<std::wstring>& args)
                 PrintUsage();
                 return;
             }
+        }
+        else if (_wcsicmp(args[i].c_str(), L"-version") == 0)
+        {
+            uint32_t versionInfoSize = GetFileVersionInfoSize(args[0].c_str(), 0);
+            wchar_t *pVersionData = new wchar_t[versionInfoSize / sizeof(wchar_t)];
+            GetFileVersionInfo(args[0].c_str(), 0, versionInfoSize, pVersionData);
+
+            wchar_t *pOriginalFilename;
+            uint32_t originalFilenameSize;
+            VerQueryValue(pVersionData, L"\\StringFileInfo\\040904b0\\OriginalFilename", (void**)&pOriginalFilename, &originalFilenameSize);
+
+            wchar_t *pProductVersion;
+            uint32_t productVersionSize;
+            VerQueryValue(pVersionData, L"\\StringFileInfo\\040904b0\\ProductVersion", (void**)&pProductVersion, &productVersionSize);
+
+            wchar_t *pFileVersion;
+            uint32_t fileVersionSize;
+            VerQueryValue(pVersionData, L"\\StringFileInfo\\040904b0\\FileVersion", (void**)&pFileVersion, &fileVersionSize);
+
+            std::wcout << pOriginalFilename << std::endl;
+            std::wcout << L"Version: " << pFileVersion << "." << pProductVersion << std::endl;
+
+            delete[] pVersionData;
+            return;
         }
         else if ((_wcsicmp(args[i].c_str(), L"/?") == 0))
         {

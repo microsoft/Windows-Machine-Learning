@@ -3,12 +3,20 @@
 
 The WinMLRunner is a command-line based tool that can run .onnx or .pb models where the input and output variables are tensors or images. It will attempt to load, bind, and evaluate a model and output error messages if these steps were unsuccessful. It will also capture performance measurements on the GPU and/or CPU. If using the performance flag, the GPU, CPU and wall-clock times for loading, binding, and evaluating and the CPU and GPU memory usage during evaluation will print to the command line and to a CSV file.
 
-## Prerequisites
+## Getting the tool
+
+You can either download the x64 executable or build it yourself.
+
+### Download
+
+[Download x64 Exe](https://github.com/Microsoft/Windows-Machine-Learning/releases/tag/v1.0.0.0)
+
+### Build
+
+#### Prerequisites
 - [Visual Studio 2017 Version 15.7.4 or Newer](https://developer.microsoft.com/en-us/windows/downloads)
 - [Windows 10 - Build 17763 or higher](https://www.microsoft.com/en-us/software-download/windowsinsiderpreviewiso)
 - [Windows SDK - Build 18323 or higher](https://www.microsoft.com/en-us/software-download/windowsinsiderpreviewSDK)
-
-## Build the tool
 
 The easiest way to use these samples without using Git is to download the zip file containing the current version (using the following link or by clicking the "Download ZIP" button on the repo page). You can then unzip the entire archive and use the samples in Visual Studio 2017. Notes: Before you unzip the archive, right-click it, select Properties, and then select Unblock.
 Be sure to unzip the entire archive, and not just individual samples. The samples all depend on the SharedContent folder in the archive. In Visual Studio 2017, the platform target defaults to ARM, so be sure to change that to x64 or x86 if you want to test on a non-ARM device. Reminder: If you unzip individual samples, they will not build due to references to other portions of the ZIP file that were not unzipped. 

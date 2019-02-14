@@ -201,7 +201,7 @@
       <AdditionalIncludeDirectories>$(IntDir)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <PreBuildEvent>
-      <Command>$(ProjectDir)\src\GenerateVersionStrings.h $(ProjectDir) $(IntDir)</Command>
+      <Command>$(ProjectDir)\src\GenerateVersionStrings.cmd $(ProjectDir) $(IntDir)</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">
@@ -229,6 +229,12 @@
       <IgnoreSpecificDefaultLibraries>kernel32.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <GenerateDebugInformation>DebugFull</GenerateDebugInformation>
     </Link>
+    <ResourceCompile>
+      <AdditionalIncludeDirectories>$(IntDir)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <PreBuildEvent>
+      <Command>$(ProjectDir)\src\GenerateVersionStrings.cmd $(ProjectDir) $(IntDir)</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -263,7 +269,7 @@
       <AdditionalIncludeDirectories>$(IntDir)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <PreBuildEvent>
-      <Command>$(ProjectDir)\src\GenerateVersionStrings.h $(ProjectDir) $(IntDir)</Command>
+      <Command>$(ProjectDir)\src\GenerateVersionStrings.cmd $(ProjectDir) $(IntDir)</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">
@@ -295,6 +301,12 @@
       </IgnoreAllDefaultLibraries>
       <IgnoreSpecificDefaultLibraries>kernel32.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
     </Link>
+    <ResourceCompile>
+      <AdditionalIncludeDirectories>$(IntDir)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <PreBuildEvent>
+      <Command>$(ProjectDir)\src\GenerateVersionStrings.cmd $(ProjectDir) $(IntDir)</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>

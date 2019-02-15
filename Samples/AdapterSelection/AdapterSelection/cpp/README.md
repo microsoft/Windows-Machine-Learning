@@ -28,14 +28,13 @@ Note: SqueezeNet was trained to work with image sizes of 224x224, so you must pr
 
 ## Run the sample
 
-1. Make sure **Labels.txt** is copied into the folder with the built executable.
-2. Open a Command Prompt (in the Windows 10 search bar, type **cmd** and press **Enter**).
-3. Change the current folder to the folder containing the built EXE (`cd <path-to-exe>`).
-4. Run the executable as shown below. Make sure to replace the install location with what matches yours:
+1. Open a Command Prompt (in the Windows 10 search bar, type **cmd** and press **Enter**).
+2. Change the current folder to the folder containing the built EXE (`cd <path-to-exe>`).
+3. Run the executable as shown below. Make sure to replace the install location with what matches yours:
   ```
   AdapterSelection.exe C:\Repos\Windows-Machine-Learning\SharedContent\models\SqueezeNet.onnx C:\Repos\Windows-Machine-Learning\SharedContent\media\kitten_224.png
   ```
-5. You should get output similar to the following:
+4. You should get output similar to the following:
   ```
   Index: 0, Description: AMD Radeon Pro WX 3100
   Please enter the index of the adapter you want to use...

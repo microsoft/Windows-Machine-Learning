@@ -21,20 +21,14 @@ The file path for the Windows.winmd file may be: ```C:\Program Files (x86)\Windo
 1. If you download the samples ZIP, be sure to unzip the entire archive, not just the folder with the sample you want to build.
 2. Start Microsoft Visual Studio 2017 and select **File > Open > Project/Solution**.
 3. Starting in the folder where you unzipped the samples, go to the **Samples** subfolder, then the subfolder for this sample (**SqueezeNetObjectDetection). Double-click the Visual Studio solution file (.sln).
-4. Confirm that the project (SqueezeNetObjectDetectionNC) is pointed to the correct SDK that you installed (e.g. 17763). You can do this by right-clicking the project in the **Solution Explorer**, selecting **Properties**, and modifying the **Windows SDK Version**.
-5. Confirm that you are set for the right configuration and platform (for example: Debug, x64).
-6. Build the solution by right clicking the project in **Solution Explorer** and selecting Build (**Ctrl+Shift+B**).
+4. Confirm that you are set for the right configuration and platform (for example: Debug, x64).
+5. Build the solution by right clicking the project in **Solution Explorer** and selecting Build (**Ctrl+Shift+B**).
 
-## Run the sample
+## Running the sample
 
-1. Make sure **Labels.json** is copied into the folder with the built executable.
-2. Open a Command Prompt (in the Windows 10 search bar, type **cmd** and press **Enter**).
-3. Change the current folder to the folder containing the built EXE (`cd <path-to-exe>`).
-4. Run the executable as shown below. Make sure to replace the install location with what matches yours:
-  ```
-  SqueezeNetObjectDetection.exe C:\Repos\Windows-Machine-Learning\SharedContent\models\SqueezeNet.onnx C:\Repos\Windows-Machine-Learning\SharedContent\media\kitten_224.png
-  ```
-5. You should get output similar to the following:
+- To debug the sample and then run it, press F5 or select Debug >  Start Debugging. To run the sample without debugging, press Ctrl+F5 or selectDebug > Start Without Debugging.
+
+- You should get output similar to the following:
   ```
   Loading modelfile 'C:\Repos\Windows-Machine-Learning\SharedContent\models\SqueezeNet.onnx' on the 'default' device
   model file loaded in 421 ticks

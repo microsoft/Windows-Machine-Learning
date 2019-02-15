@@ -31,8 +31,6 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <Text Include="Labels.txt">
-      <Filter>Resource Files</Filter>
-    </Text>
+    <CopyFileToFolders Include="Labels.txt" />
   </ItemGroup>
 </Project>

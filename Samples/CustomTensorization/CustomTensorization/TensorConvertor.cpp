@@ -33,7 +33,6 @@ namespace TensorizationHelper
 
         val = drive;
         val += dir;
-		printf("unmodified string: %ls\n", val.c_str());
 		if (visiblePath) {
 			int32_t i = val.find(filename);
 			// only return the modified path when there is a parent folder which contains a CustomTensorization folder

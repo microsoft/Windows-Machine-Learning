@@ -13,6 +13,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "WinMLRunner", "WinMLRunner.
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "WinMLRunnerStaticLib", "WinMLRunnerStaticLib.vcxproj", "{C3BCBEA1-90E6-426F-88AC-64C274BCEF45}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "WinMLRunnerScenarios", "WinMLRunnerScenarios.vcxproj", "{C174D45D-C189-475B-B1A7-494939EE7491}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|ARM64 = Debug|ARM64
@@ -57,6 +59,16 @@ Global
 		{C3BCBEA1-90E6-426F-88AC-64C274BCEF45}.Release|x64.Build.0 = Release|x64
 		{C3BCBEA1-90E6-426F-88AC-64C274BCEF45}.Release|x86.ActiveCfg = Release|Win32
 		{C3BCBEA1-90E6-426F-88AC-64C274BCEF45}.Release|x86.Build.0 = Release|Win32
+		{C174D45D-C189-475B-B1A7-494939EE7491}.Debug|ARM64.ActiveCfg = Debug|Win32
+		{C174D45D-C189-475B-B1A7-494939EE7491}.Debug|x64.ActiveCfg = Debug|x64
+		{C174D45D-C189-475B-B1A7-494939EE7491}.Debug|x64.Build.0 = Debug|x64
+		{C174D45D-C189-475B-B1A7-494939EE7491}.Debug|x86.ActiveCfg = Debug|Win32
+		{C174D45D-C189-475B-B1A7-494939EE7491}.Debug|x86.Build.0 = Debug|Win32
+		{C174D45D-C189-475B-B1A7-494939EE7491}.Release|ARM64.ActiveCfg = Release|Win32
+		{C174D45D-C189-475B-B1A7-494939EE7491}.Release|x64.ActiveCfg = Release|x64
+		{C174D45D-C189-475B-B1A7-494939EE7491}.Release|x64.Build.0 = Release|x64
+		{C174D45D-C189-475B-B1A7-494939EE7491}.Release|x86.ActiveCfg = Release|Win32
+		{C174D45D-C189-475B-B1A7-494939EE7491}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

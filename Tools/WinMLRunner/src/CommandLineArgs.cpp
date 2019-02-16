@@ -31,6 +31,11 @@ void CommandLineArgs::PrintUsage() {
     std::cout << "  -Debug: print trace logs" << std::endl;
     std::cout << "  -Terse: Terse Mode (suppresses repetitive console output)" << std::endl;
     std::cout << "  -AutoScale <interpolationMode>: Enable image autoscaling and set the interpolation mode [Nearest, Linear, Cubic, Fant]" << std::endl;
+    std::cout << std::endl;
+    std::cout << "Concurrency Options:" << std::endl;
+    std::cout << "  -ConcurrentLoad: load models concurrently" << std::endl;
+    std::cout << "  -NumThreads <number>: number of threads to load a model" << std::endl;
+    std::cout << "  -ThreadInterval <milliseconds>: number in milliseconds" << std::endl;
 }
 
 CommandLineArgs::CommandLineArgs(const std::vector<std::wstring>& args)
@@ -156,7 +161,21 @@ CommandLineArgs::CommandLineArgs(const std::vector<std::wstring>& args)
             PrintUsage();
             return;
         }
-    }
+        else if ((_wcsicmp(args[i].c_str(), L"-ConcurrentLoad") == 0))
+        {
+            ToggleConcurrentLoad(true);
+        }
+        else if ((_wcsicmp(args[i].c_str(), L"-NumThreads") == 0))
+        {
+            unsigned num_threads = std::stoi(args[++i].c_str());
+            SetNumThreads(num_threads);
+        }
+        else if ((_wcsicmp(args[i].c_str(), L"-ThreadInterval") == 0))
+        {
+            unsigned thread_interval = std::stoi(args[++i].c_str());
+            SetThreadInterval(thread_interval);
+        }
+      }
 
     if (m_modelPath.empty() && m_modelFolderPath.empty())
     {

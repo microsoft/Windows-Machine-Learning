@@ -20,7 +20,7 @@ EXTERN_C IMAGE_DOS_HEADER __ImageBase;
 
 namespace TensorizationHelper
 {
-    std::wstring GetModulePath()
+    std::wstring GetModulePath(bool visiblePath)
     {
         std::wstring val;
         wchar_t modulePath[MAX_PATH] = { 0 };
@@ -33,8 +33,15 @@ namespace TensorizationHelper
 
         val = drive;
         val += dir;
-        int32_t i = val.find(filename);
-        val = val.substr(0, i + wcslen(filename)) + L"\\" + filename + L"\\";
+		printf("unmodified string: %ls\n", val.c_str());
+		if (visiblePath) {
+			int32_t i = val.find(filename);
+			// only return the modified path when there is a parent folder which contains a CustomTensorization folder
+			// This will match when a user is running this sample in the repository's directory structure
+			if (i != std::wstring::npos) {
+				val = val.substr(0, i + wcslen(filename)) + L"\\" + filename + L"\\";
+			}
+		}
         return val;
     }
 

@@ -6,7 +6,7 @@
 
 namespace TensorizationHelper
 {
-    std::wstring GetModulePath();
+    std::wstring GetModulePath(bool grandparentPath);
 
     winrt::Windows::AI::MachineLearning::TensorFloat SoftwareBitmapToSoftwareTensor(
         winrt::Windows::Graphics::Imaging::SoftwareBitmap softwareBitmap);

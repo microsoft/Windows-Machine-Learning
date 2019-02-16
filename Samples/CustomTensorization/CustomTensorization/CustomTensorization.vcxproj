@@ -113,11 +113,15 @@
     <ClCompile Include="TensorConvertor.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="fns-candy.onnx" />
+    <CopyFileToFolders Include="fns-candy.onnx">
+      <DeploymentContent>true</DeploymentContent>
+    </CopyFileToFolders>
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <Image Include="fish_720.png" />
+    <CopyFileToFolders Include="fish_720.png">
+      <DeploymentContent>true</DeploymentContent>
+    </CopyFileToFolders>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

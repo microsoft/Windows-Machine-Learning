@@ -18,7 +18,8 @@ LearningModel model = nullptr;
 LearningModelSession session = nullptr;
 LearningModelBinding binding = nullptr;
 
-const hstring modulePath{ TensorizationHelper::GetModulePath().c_str()};
+const hstring modulePath{ TensorizationHelper::GetModulePath(false).c_str() };
+const hstring visibleModulePath{ TensorizationHelper::GetModulePath(true).c_str() };
 
 
 // Forward declarations
@@ -158,7 +159,7 @@ void SaveOutputToDisk(
     hstring outputDataImageFileName)
 {
     // save the output to disk
-    StorageFolder currentfolder = StorageFolder::GetFolderFromPathAsync(modulePath).get();
+    StorageFolder currentfolder = StorageFolder::GetFolderFromPathAsync(visibleModulePath).get();
     StorageFile outimagefile = currentfolder.CreateFileAsync(outputDataImageFileName, CreationCollisionOption::ReplaceExisting).get();
     IRandomAccessStream writestream = outimagefile.OpenAsync(FileAccessMode::ReadWrite).get();
     BitmapEncoder encoder = BitmapEncoder::CreateAsync(BitmapEncoder::JpegEncoderId(), writestream).get();

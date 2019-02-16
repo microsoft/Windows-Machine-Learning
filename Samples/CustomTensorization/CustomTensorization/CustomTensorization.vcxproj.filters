@@ -38,13 +38,13 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
-    <None Include="fns-candy.onnx">
-      <Filter>Resource Files</Filter>
-    </None>
   </ItemGroup>
   <ItemGroup>
-    <Image Include="fish_720.png">
+    <CopyFileToFolders Include="fish_720.png">
       <Filter>Resource Files</Filter>
-    </Image>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="fns-candy.onnx">
+      <Filter>Resource Files</Filter>
+    </CopyFileToFolders>
   </ItemGroup>
 </Project>

@@ -20,7 +20,7 @@ EXTERN_C IMAGE_DOS_HEADER __ImageBase;
 
 namespace TensorizationHelper
 {
-    std::wstring GetModulePath(bool visiblePath)
+    std::wstring GetModulePath()
     {
         std::wstring val;
         wchar_t modulePath[MAX_PATH] = { 0 };
@@ -33,16 +33,20 @@ namespace TensorizationHelper
 
         val = drive;
         val += dir;
-		if (visiblePath) {
-			int32_t i = val.find(filename);
-			// only return the modified path when there is a parent folder which contains a CustomTensorization folder
-			// This will match when a user is running this sample in the repository's directory structure
-			if (i != std::wstring::npos) {
-				val = val.substr(0, i + wcslen(filename)) + L"\\" + filename + L"\\";
-			}
-		}
         return val;
     }
+
+	std::wstring GetFileName()
+	{
+		wchar_t modulePath[MAX_PATH] = { 0 };
+		GetModuleFileNameW((HINSTANCE)&__ImageBase, modulePath, _countof(modulePath));
+		wchar_t drive[_MAX_DRIVE];
+		wchar_t dir[_MAX_DIR];
+		wchar_t filename[_MAX_FNAME];
+		wchar_t ext[_MAX_EXT];
+		errno_t err = _wsplitpath_s(modulePath, drive, _MAX_DRIVE, dir, _MAX_DIR, filename, _MAX_FNAME, ext, _MAX_EXT);
+		return std::wstring(filename);
+	}
 
     TensorFloat SoftwareBitmapToSoftwareTensor(SoftwareBitmap softwareBitmap)
     {

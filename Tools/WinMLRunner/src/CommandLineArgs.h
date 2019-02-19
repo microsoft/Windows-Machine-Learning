@@ -145,5 +145,5 @@ private:
     std::wstring m_perfOutputPath;
     uint32_t m_numIterations = 1;
     uint32_t m_numThreads = 1;
-    uint32_t m_threadInterval;
+    uint32_t m_threadInterval = 0;
 };

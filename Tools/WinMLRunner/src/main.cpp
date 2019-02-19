@@ -10,14 +10,14 @@ int main(int argc, char *argv[])
     std::wstring_convert<std::codecvt_utf8<wchar_t>, wchar_t> converter;
     vector<wstring> argsList;
     CommandLineArgs* commandLineArgs = NULL;
-    for (int i = 0; i < argc; i++)
+    for (int i = 1; i < argc; i++)
     {
         string str(argv[i]);
         argsList.push_back(converter.from_bytes(argv[i]));
     }
     try
     {
-        commandLineArgs =  new CommandLineArgs (argsList);
+        commandLineArgs =  new CommandLineArgs(argsList);
     }
     catch (hresult_error hr)
     {

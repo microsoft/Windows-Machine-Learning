@@ -146,4 +146,6 @@ private:
     uint32_t m_numIterations = 1;
     uint32_t m_numThreads = 1;
     uint32_t m_threadInterval = 0;
+
+    void CheckNextArgument(const std::vector<std::wstring> &args, UINT i);
 };

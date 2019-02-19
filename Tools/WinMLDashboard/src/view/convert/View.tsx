@@ -185,12 +185,12 @@ class ConvertView extends React.Component<IComponentProperties, IComponentState>
                 await pip(['install', packagedFile('libsvm-3.22-cp36-cp36m-win_amd64.whl')], this.outputListener);
                 await pip(['install', packagedFile('winmltools-1.3.0-py2.py3-none-any.whl')], this.outputListener);
                 await pip(['install', '-r', packagedFile('requirements.txt'), '--no-warn-script-location'], this.outputListener);
-                this.setState({ currentStep: Step.Idle });
                 log.info("python environment is installed successfully");
                 fs.writeFile(path.join(winmlDataFolder, '/python/PIResult.txt'), 'Python is installed successfully!', (err) => {
                     if (err) { throw err; }
                     log.info('PIResult.txt Saved!');
                   });
+                this.setState({ currentStep: Step.Idle });
                 pythonDialogOptions.message = 'python environment is installed successfully!'
                 require('electron').remote.dialog.showMessageBox(require('electron').remote.getCurrentWindow(), pythonDialogOptions)
             } catch (error) {

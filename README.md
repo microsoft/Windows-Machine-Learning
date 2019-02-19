@@ -15,7 +15,7 @@ For additional information on Windows ML, including step-by-step tutorials and h
 
 ## Developer Tools
 - **[WinML Dashboard (Preview)](https://github.com/Microsoft/Windows-Machine-Learning/tree/master/Tools/WinMLDashboard)**: a GUI-based tool for viewing, editing, converting, and validating machine learning models for Windows ML inference engine. 
-[Download Preview Version](https://github.com/Microsoft/Windows-Machine-Learning/releases)
+[Download Preview Version](https://github.com/Microsoft/Windows-Machine-Learning/releases/tag/0.5.1)
 
   <img src='./Tools/WinMLDashboard/public/EditorView2.PNG' width=800/>
 
@@ -23,7 +23,9 @@ For additional information on Windows ML, including step-by-step tutorials and h
 
   Download for [VS 2017](https://marketplace.visualstudio.com/items?itemName=WinML.mlgen), [VS 2019](https://marketplace.visualstudio.com/items?itemName=WinML.MLGenV2)
 
-- **[WinMLRunner](https://github.com/Microsoft/Windows-Machine-Learning/tree/master/Tools/WinMLRunner)**: a command-line tool that can run .onnx or .pb models where the input and output variables are tensors or images. It is a very handy tool to quickly validate an ONNX model. It will attempt to load, bind, and evaluate a model and print out helpful messages. It also captures performance measurements. 
+- **[WinMLRunner](https://github.com/Microsoft/Windows-Machine-Learning/tree/master/Tools/WinMLRunner)**: a command-line tool that can run .onnx or .pb models where the input and output variables are tensors or images. It is a very handy tool to quickly validate an ONNX model. It will attempt to load, bind, and evaluate a model and print out helpful messages. It also captures performance measurements.
+
+  [Download x64 Exe](https://github.com/Microsoft/Windows-Machine-Learning/releases/tag/v1.0.0.0)
 
 ## Sample apps
 
@@ -33,6 +35,7 @@ These generic examples show how to use various models and input feeds with Windo
 - **[SqueezeNetObjectDetection\UWP\cs](https://github.com/Microsoft/Windows-Machine-Learning/tree/master/Samples/SqueezeNetObjectDetection/UWP/cs)**: a UWP C# app that uses the SqueezeNet model to detect the predominant object in an image.
 - **[SqueezeNetObjectDetection\UWP\js](https://github.com/Microsoft/Windows-Machine-Learning/tree/master/Samples/SqueezeNetObjectDetection/UWP/js)**: a UWP Javascript app that uses SqueezeNet model to detect the predominant object in an image. 
 - **[SqueezeNetObjectDetection\Desktop\cpp](https://github.com/Microsoft/Windows-Machine-Learning/tree/master/Samples/SqueezeNetObjectDetection/Desktop/cpp)**: a classic desktop C++/WinRT app that uses the SqueezeNet model to detect the predominant object in an image.
+- **[SqueezeNetObjectDetection\NETCore\cs](https://github.com/Microsoft/Windows-Machine-Learning/tree/master/Samples/SqueezeNetObjectDetection/Desktop/cpp)**: a .NET Core 2 application that uses the SqueezeNet model to detect the predominant object in an image.
 - **[MNIST\UWP\cs](https://github.com/Microsoft/Windows-Machine-Learning/tree/master/Samples/MNIST/Tutorial/cs)**: a UWP C# app that uses the MNIST model to detect numberic characters.
 - **[MNIST\UWP\cppcx](https://github.com/Microsoft/Windows-Machine-Learning/tree/master/Samples/MNIST/UWP)**: a UWP C++/CX app that uses the MNIST model to detect numberic characters.
 - **[CustomTensorization](https://github.com/Microsoft/Windows-Machine-Learning/tree/master/Samples/CustomTensorization)**: a Windows Console Application (C++/WinRT) that shows how to do custom tensorization.

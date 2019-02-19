@@ -12,34 +12,181 @@ variables:
   system.teamProject: WindowsAI
   WINDOWS_WINMD: C:\Program Files (x86)\Windows Kits\10\UnionMetadata\10.0.17763.0\Windows.winmd
 
-jobs:
-- template: templates/build.yml
-  parameters:
-    BuildConfiguration: Release
-    BuildPlatform: x64
+strategy:
+  maxParallel: 8
+  matrix:
+    Release_x64:
+      BuildPlatform: x64
+      BuildConfiguration: Release
+    Debug_x64:
+      BuildPlatform: x64
+      BuildConfiguration: Debug
+    Release_x86:
+      BuildPlatform: x86
+      BuildConfiguration: Release
+    Debug_x86:
+      BuildPlatform: x86
+      BuildConfiguration: Debug
 
-- template: templates/build.yml
-  parameters:
-    BuildConfiguration: Debug
-    BuildPlatform: x64
+# specific branch build
+trigger:
+  branches:
+    include:
+    - master
+  paths:
+    include:
+    - Samples
 
-# ARM builds are disabled in the build configuration for desktop app projects
-- template: templates/build.yml
-  parameters:
-    BuildConfiguration: Release
-    BuildPlatform: ARM
+steps: 
+  - task: PowerShell@2
+    displayName: 'Check SDK Version 17763 is present'
+    inputs:
+      targetType: inline
+      script: dir "${ENV:programfiles(x86)}\windows Kits\10\include\10.0.17763.0\"
+    
+  - task: DotNetCoreInstaller@0
+    displayName: 'Use .NET Core sdk 2.1.300'
+    inputs:
+      version: 2.1.300
+    condition: succeededOrFailed()
 
-- template: templates/build.yml
-  parameters:
-    BuildConfiguration: Debug
-    BuildPlatform: ARM
+  - task: NuGetToolInstaller@0
+    displayName: 'Use NuGet 4.9.2'
+    inputs:
+      versionSpec: 4.9.2
+    condition: succeededOrFailed()
 
-- template: templates/build.yml
-  parameters:
-    BuildConfiguration: Release
-    BuildPlatform: x86
+  - task: NuGetCommand@2
+    displayName: 'NuGet restore'
+    condition: succeededOrFailed()
 
-- template: templates/build.yml
-  parameters:
-    BuildConfiguration: Debug
-    BuildPlatform: x86
+  - task: VSBuild@1
+    displayName: 'Build AdapterSelection Sample '
+    inputs:
+      solution: Samples/AdapterSelection/AdapterSelection.sln
+      vsVersion: 15.0
+      msbuildArgs: '/p:AppxPackageSigningEnabled=false -v:diag /p:OutDir=$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\'
+      platform: '$(BuildPlatform)'
+      configuration: '$(BuildConfiguration)'
+      clean: true
+      msbuildArchitecture: x64
+      createLogFile: true
+    condition: succeededOrFailed()
+
+  - task: VSBuild@1
+    displayName: 'Build CustomOperatorCPU Sample '
+    inputs:
+      solution: Samples/CustomOperatorCPU/desktop/cpp/custom-operator-cpu-sample.sln
+      vsVersion: 15.0
+      msbuildArgs: '/p:AppxPackageSigningEnabled=false -v:diag /p:OutDir=$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\'
+      platform: '$(BuildPlatform)'
+      configuration: '$(BuildConfiguration)'
+      clean: true
+      msbuildArchitecture: x64
+      createLogFile: true
+    condition: succeededOrFailed()
+
+
+  - task: VSBuild@1
+    displayName: 'Build MNIST-Tutorial-cs'
+    inputs:
+      solution: 'Samples/MNIST/Tutorial/cs/mnist_demo.sln'
+      vsVersion: 15.0
+      msbuildArgs: '/p:AppxPackageSigningEnabled=false -v:diag /p:OutDir=$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\'
+      platform: '$(BuildPlatform)'
+      configuration: '$(BuildConfiguration)'
+      clean: true
+      msbuildArchitecture: x64
+      createLogFile: true
+    condition: succeededOrFailed()
+
+  - task: VSBuild@1
+    displayName: 'Build MNIST-UWP-cs'
+    inputs:
+      solution: 'Samples/MNIST/UWP/cs/mnist_demo.sln'
+      vsVersion: 15.0
+      msbuildArgs: '/p:AppxPackageSigningEnabled=false -v:diag'
+      platform: '$(BuildPlatform)'
+      configuration: '$(BuildConfiguration)'
+      clean: true
+      msbuildArchitecture: x64
+      createLogFile: true
+    condition: succeededOrFailed()
+
+  - task: VSBuild@1
+    displayName: 'Build SqueezenetObjectDetection'
+    inputs:
+      solution: Samples/SqueezeNetObjectDetection/squeezenetobjectdetection.sln
+      vsVersion: 15.0
+      msbuildArgs: '/p:AppxPackageSigningEnabled=false -v:diag /p:OutDir=$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\'
+      platform: '$(BuildPlatform)'
+      configuration: '$(BuildConfiguration)'
+      clean: true
+      msbuildArchitecture: x64
+      createLogFile: true
+    condition: succeededOrFailed()
+
+  - task: VSBuild@1
+    displayName: 'Build FNSCandyStyleTransfer-UWP-CS'
+    inputs:
+      solution: Samples/FNSCandyStyleTransfer/UWP/CS/snapcandy.sln
+      vsVersion: 15.0
+      msbuildArgs: '/p:AppxPackageSigningEnabled=false -v:diag  /p:OutDir=$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\'
+      platform: '$(BuildPlatform)'
+      configuration: '$(BuildConfiguration)'
+      clean: true
+      msbuildArchitecture: x64
+      createLogFile: true
+    condition: succeededOrFailed()
+
+  - task: VSBuild@1
+    displayName: 'Build MNIST-UWP-cppcx '
+    inputs:
+      solution: 'Samples/MNIST/UWP/cppcx/mnist_cppcx.sln'
+      vsVersion: 15.0
+      msbuildArgs: '/p:AppxPackageSigningEnabled=false -v:diag /p:OutDir=$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\'
+      platform: '$(BuildPlatform)'
+      configuration: '$(BuildConfiguration)'
+      clean: true
+      msbuildArchitecture: x64
+      createLogFile: true
+    condition: succeededOrFailed()
+
+  - task: VSBuild@1
+    displayName: 'Build CustomTensorization Sample'
+    inputs:
+      solution: Samples/CustomTensorization/CustomTensorization.sln
+      vsVersion: 15.0
+      msbuildArgs: '/p:AppxPackageSigningEnabled=false -v:diag /p:OutDir=$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\'
+      platform: '$(BuildPlatform)'
+      configuration: '$(BuildConfiguration)'
+      clean: true
+      msbuildArchitecture: x64
+      createLogFile: true
+    condition: succeededOrFailed()
+
+  - task: VSBuild@1
+    displayName: 'Build Emoji Sample'
+    inputs:
+      solution: Samples/Emoji8/UWP/cs/Emoji8.sln
+      vsVersion: 15.0
+      msbuildArgs: '/p:AppxPackageSigningEnabled=false -v:diag /p:OutDir=$(System.DefaultWorkingDirectory)\bin\$$(BuildPlatform)\$(BuildConfiguration)\'
+      platform: '$(BuildPlatform)'
+      configuration: '$(BuildConfiguration)'
+      clean: true
+      msbuildArchitecture: x64
+      createLogFile: true
+    condition: succeededOrFailed()
+
+  - task: CopyFiles@2
+    inputs:
+      targetFolder: '$(Build.ArtifactStagingDirectory)\$(BuildPlatform)\$(BuildConfiguration)\'
+      sourceFolder: '$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\'
+    condition: succeededOrFailed()
+
+  - task: PublishBuildArtifacts@1
+    displayName: 'Publish Artifact: Samples'
+    inputs:
+      pathtoPublish: '$(Build.ArtifactStagingDirectory)'
+      artifactName: WinMLPublicSamples
+    condition: succeededOrFailed()

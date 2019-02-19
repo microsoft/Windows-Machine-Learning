@@ -18,8 +18,7 @@ LearningModel model = nullptr;
 LearningModelSession session = nullptr;
 LearningModelBinding binding = nullptr;
 
-const hstring modulePath{ TensorizationHelper::GetModulePath().c_str()};
-
+const wstring modulePath{ TensorizationHelper::GetModulePath() };
 
 // Forward declarations
 void LoadModel(hstring modelPath);
@@ -35,8 +34,8 @@ void SaveOutputToDisk(
 int main()
 {
     init_apartment();
-    const hstring modelPath = modulePath + L"fns-candy.onnx";
-    const hstring imagePath = modulePath + L"fish_720.png";
+    const hstring modelPath = static_cast<hstring>(modulePath.c_str()) + L"fns-candy.onnx";
+    const hstring imagePath = static_cast<hstring>(modulePath.c_str()) + L"fish_720.png";
 
     // The second parameter of BindModel specifies manually tensorization on which device.
     // Mannually-tensorization from CPU
@@ -158,7 +157,17 @@ void SaveOutputToDisk(
     hstring outputDataImageFileName)
 {
     // save the output to disk
-    StorageFolder currentfolder = StorageFolder::GetFolderFromPathAsync(modulePath).get();
+
+	// try and see if we can output the pngs to the more visible folder where the vcxproj file is located
+	// otherwise output next to the executable
+	std::wstring outputPath = modulePath;
+	std::wstring filename{ TensorizationHelper::GetFileName() };
+	int32_t i = modulePath.find(filename);
+	if (i != std::wstring::npos) {
+		outputPath = outputPath.substr(0, i + wcslen(filename.c_str())) + L"\\" + filename + L"\\";
+	}
+
+    StorageFolder currentfolder = StorageFolder::GetFolderFromPathAsync(outputPath).get();
     StorageFile outimagefile = currentfolder.CreateFileAsync(outputDataImageFileName, CreationCollisionOption::ReplaceExisting).get();
     IRandomAccessStream writestream = outimagefile.OpenAsync(FileAccessMode::ReadWrite).get();
     BitmapEncoder encoder = BitmapEncoder::CreateAsync(BitmapEncoder::JpegEncoderId(), writestream).get();

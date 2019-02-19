@@ -12,15 +12,15 @@ public:
     bool IsUsingGPUMinPower() const { return m_useGPUMinPower; }
     bool UseBGR() const { return m_useBGR; }
     bool IsUsingGPUBoundInput() const { return m_useGPUBoundInput; }
-    bool IsIgnoreFirstRun() const { return m_ignoreFirstRun; }
     bool IsPerformanceCapture() const { return m_perfCapture; }
+    bool IsPerformanceConsoleOutputVerbose() const { return m_perfConsoleOutputAll; }
     bool IsDebugOutputEnabled() const { return m_debug; }
     bool TerseOutput() const { return m_terseOutput; }
     bool IsPerIterationCapture() const { return m_perIterCapture; }
     bool IsCreateDeviceOnClient() const { return m_createDeviceOnClient; }
     bool IsAutoScale() const { return m_autoScale; }
     bool IsOutputPerf() const { return m_perfOutput; }
-
+    bool IsSaveTensor() const { return m_saveTensor; }
 
     BitmapInterpolationMode AutoScaleInterpMode() const { return m_autoScaleInterpMode; }
    
@@ -29,6 +29,7 @@ public:
     const std::wstring& OutputPath() const { return m_perfOutputPath; }
     const std::wstring& FolderPath() const { return m_modelFolderPath; }
     const std::wstring& ModelPath() const { return m_modelPath; }
+    UINT GetGPUAdapterIndex() const { return m_adapterIndex; }
 
     bool UseRGB() const
     {
@@ -105,8 +106,14 @@ public:
     }
     void SetRunIterations(const uint32_t iterations) { m_numIterations = iterations; }
 
+    std::string SaveTensorMode() const
+    {
+        return m_saveTensorMode;
+    }
+
 private:
     bool m_perfCapture = false;
+    bool m_perfConsoleOutputAll = false;
     bool m_useCPU = false;
     bool m_useGPU = false;
     bool m_useGPUHighPerformance = false;
@@ -126,6 +133,9 @@ private:
     bool m_autoScale = false;
     bool m_perfOutput = false;
     BitmapInterpolationMode m_autoScaleInterpMode = BitmapInterpolationMode::Cubic;
+    UINT m_adapterIndex = -1;
+    bool m_saveTensor = false;
+    std::string m_saveTensorMode = "First";
 
     std::wstring m_modelFolderPath;
     std::wstring m_modelPath;

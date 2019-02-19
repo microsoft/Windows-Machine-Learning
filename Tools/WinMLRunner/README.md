@@ -3,12 +3,20 @@
 
 The WinMLRunner is a command-line based tool that can run .onnx or .pb models where the input and output variables are tensors or images. It will attempt to load, bind, and evaluate a model and output error messages if these steps were unsuccessful. It will also capture performance measurements on the GPU and/or CPU. If using the performance flag, the GPU, CPU and wall-clock times for loading, binding, and evaluating and the CPU and GPU memory usage during evaluation will print to the command line and to a CSV file.
 
-## Prerequisites
+## Getting the tool
+
+You can either download the x64 executable or build it yourself.
+
+### Download
+
+[Download x64 Exe](https://github.com/Microsoft/Windows-Machine-Learning/releases/tag/v1.0.0.0)
+
+### Build
+
+#### Prerequisites
 - [Visual Studio 2017 Version 15.7.4 or Newer](https://developer.microsoft.com/en-us/windows/downloads)
 - [Windows 10 - Build 17763 or higher](https://www.microsoft.com/en-us/software-download/windowsinsiderpreviewiso)
-- [Windows SDK - Build 17763 or higher](https://www.microsoft.com/en-us/software-download/windowsinsiderpreviewSDK)
-
-## Build the tool
+- [Windows SDK - Build 18323 or higher](https://www.microsoft.com/en-us/software-download/windowsinsiderpreviewSDK)
 
 The easiest way to use these samples without using Git is to download the zip file containing the current version (using the following link or by clicking the "Download ZIP" button on the repo page). You can then unzip the entire archive and use the samples in Visual Studio 2017. Notes: Before you unzip the archive, right-click it, select Properties, and then select Unblock.
 Be sure to unzip the entire archive, and not just individual samples. The samples all depend on the SharedContent folder in the archive. In Visual Studio 2017, the platform target defaults to ARM, so be sure to change that to x64 or x86 if you want to test on a non-ARM device. Reminder: If you unzip individual samples, they will not build due to references to other portions of the ZIP file that were not unzipped. 
@@ -22,12 +30,14 @@ Required command-Line arguments:
 -folder <path>           : Fully qualifed path to a folder with .onnx and/or .pb models, will run all of the models in the folder.
 
 #Optional command-line arguments:
--Perf                    : Captures GPU, CPU, and wall-clock time measurements.
+-version:                : prints the version information for this build of WinMLRunner.exe
+-Perf                    : optional:<all>:  capture performance measurements such as timing and memory usage. Specifying "all" will output all measurements
 -Iterations <int>        : Number of times to evaluate the model when capturing performance measurements.
 -CPU                     : Will create a session on the CPU.
 -GPU                     : Will create a session on the GPU.
 -GPUHighPerformance      : Will create a session with the most powerful GPU device available.
 -GPUMinPower             : Will create a session with GPU with the least power.
+-GPUAdapterIndex : run model on GPU specified by its index in DXGI enumeration. NOTE: Please only use this flag on DXCore supported machines.
 -CreateDeviceOnClient    : Will create the device on the client and explicitly pass it to WinML via the API. GPU runs using this flag will usually be faster than -CreateDeviceInWinML since we avoid a cross-device copy by creating the video frame on the same device that DML uses to bind inputs.
 -CreateDeviceInWinML     : Will create the device inside WinML. GPU runs using this flag will usually be slower than -CreateDeviceOnClient since we have to copy the video frame to a different device.
 -CPUBoundInput           : Will bind the input to the CPU.
@@ -37,7 +47,6 @@ Required command-Line arguments:
 -Tensor                  : Will load the input as a tensor.
 -Input <image/CSV path>  : Will bind image/data from CSV to model.
 -PerfOutput <CSV path>   : Path to the CSV where the perf results will be written.
--IgnoreFirstRun          : Will ignore the first run in the perf results when calculating the average
 -SavePerIterationPerf	 : Save per iteration performance results to csv file.
 -Debug                   : Will start a trace logging session.
 -Terse                   : Will suppress repetitive console output (initial iteration and summary info will be output).

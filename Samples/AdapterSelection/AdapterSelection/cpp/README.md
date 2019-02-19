@@ -1,7 +1,6 @@
-# SqueezeNet Object Detection sample
+# Adapter Selection sample
 
-This is a desktop application that uses SqueezeNet, a pre-trained machine learning model, to detect the predominant object in an image selected by the user from a file.
-This application also allows the user to select a specific device adapter to run the model on.
+This is a desktop application that demonstrates how to enumerate and select device adapters to run onnx models on using Windows Machine Learning. This sample is set up to run a SqueezeNet image detection model on the selected device.
 
 Note: SqueezeNet was trained to work with image sizes of 224x224, so you must provide an image of size 224X224.
 
@@ -22,29 +21,27 @@ Note: SqueezeNet was trained to work with image sizes of 224x224, so you must pr
 
 1. If you download the samples ZIP, be sure to unzip the entire archive, not just the folder with the sample you want to build.
 2. Start Microsoft Visual Studio 2017 and select **File > Open > Project/Solution**.
-3. Starting in the folder where you unzipped the samples, go to the **Samples** subfolder, then the subfolder for this specific sample (**SqueezeNetObjectDetection\Desktop\cpp**). Double-click the Visual Studio solution file (.sln).
+3. Starting in the folder where you unzipped the samples, go to the **Samples** subfolder, then the subfolder for this specific sample (**AdapterSelection**). Double-click the Visual Studio solution file (.sln).
 4. Confirm that the project is pointed to the correct SDK that you installed (e.g. 17763). You can do this by right-clicking the project in the **Solution Explorer**, selecting **Properties**, and modifying the **Windows SDK Version**.
 5. Confirm that you are set for the right configuration and platform (for example: Debug, x64).
 6. Build the solution (**Ctrl+Shift+B**).
 
 ## Run the sample
 
-1. Make sure **Labels.txt** is copied into the folder with the built executable.
-2. Open a Command Prompt (in the Windows 10 search bar, type **cmd** and press **Enter**).
-3. Change the current folder to the folder containing the built EXE (`cd <path-to-exe>`).
-4. Run the executable as shown below. Make sure to replace the install location with what matches yours:
+1. Open a Command Prompt (in the Windows 10 search bar, type **cmd** and press **Enter**).
+2. Change the current folder to the folder containing the built EXE (`cd <path-to-exe>`).
+3. Run the executable as shown below. Make sure to replace the install location with what matches yours:
   ```
-  SqueezeNetObjectDetection.exe C:\Repos\Windows-Machine-Learning\SharedContent\models\SqueezeNet.onnx C:\Repos\Windows-Machine-Learning\SharedContent\media\kitten_224.png
+  AdapterSelection.exe C:\Repos\Windows-Machine-Learning\SharedContent\models\SqueezeNet.onnx C:\Repos\Windows-Machine-Learning\SharedContent\media\kitten_224.png
   ```
-5. You should get output similar to the following:
+4. You should get output similar to the following:
   ```
   Index: 0, Description: AMD Radeon Pro WX 3100
-  Index: 1, Description: Microsoft Basic Render Driver
   Please enter the index of the adapter you want to use...
   ```
   Then type the index to select and press enter. Then you should get output similar to the following:
   ```
-  Selected adapter at index 1
+  Selected adapter at index 0
   Loading modelfile 'C:\Repos\Windows-Machine-Learning\SharedContent\models\SqueezeNet.onnx' on the 'default' device
   model file loaded in 421 ticks
   Loading the image...

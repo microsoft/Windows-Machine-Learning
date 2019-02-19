@@ -7,6 +7,10 @@
 #include <Windows.Graphics.DirectX.Direct3D11.interop.h>
 #include "Run.h"
 #include "Scenarios.h"
+#include <initguid.h>
+#include <dxcore.h>
+
+#define THROW_IF_FAILED(hr) { if (FAILED(hr)) throw hresult_error(hr); }
 
 using namespace winrt::Windows::Graphics::DirectX::Direct3D11;
 
@@ -106,7 +110,7 @@ HRESULT BindInputFeatures(const LearningModel& model, const LearningModelBinding
 
         if (capturePerf)
         {
-            WINML_PROFILING_START(profiler, WINML_MODEL_TEST_PERF::BIND_VALUE);
+            WINML_PROFILING_START(profiler, iterationNum == 0 ? WINML_MODEL_TEST_PERF::BIND_VALUE_FIRST_RUN : WINML_MODEL_TEST_PERF::BIND_VALUE);
         }
 
         for (uint32_t i = 0; i < model.InputFeatures().Size(); i++)
@@ -117,7 +121,7 @@ HRESULT BindInputFeatures(const LearningModel& model, const LearningModelBinding
 
         if (capturePerf)
         {
-            WINML_PROFILING_STOP(profiler, WINML_MODEL_TEST_PERF::BIND_VALUE);
+            WINML_PROFILING_STOP(profiler, iterationNum == 0 ? WINML_MODEL_TEST_PERF::BIND_VALUE_FIRST_RUN : WINML_MODEL_TEST_PERF::BIND_VALUE);
             if (args.IsPerIterationCapture())
             {
                 output.SaveBindTimes(profiler, iterationNum);
@@ -150,14 +154,14 @@ HRESULT EvaluateModel(
     {
         if (capturePerf)
         {
-            WINML_PROFILING_START(profiler, WINML_MODEL_TEST_PERF::EVAL_MODEL);
+            WINML_PROFILING_START(profiler, iterationNum == 0 ? WINML_MODEL_TEST_PERF::EVAL_MODEL_FIRST_RUN : WINML_MODEL_TEST_PERF::EVAL_MODEL);
         }
 
         result = session.Evaluate(context, L"");
 
         if (capturePerf)
         {
-            WINML_PROFILING_STOP(profiler, WINML_MODEL_TEST_PERF::EVAL_MODEL);
+            WINML_PROFILING_STOP(profiler, iterationNum == 0 ? WINML_MODEL_TEST_PERF::EVAL_MODEL_FIRST_RUN : WINML_MODEL_TEST_PERF::EVAL_MODEL);
             if (args.IsPerIterationCapture())
             {
                 output.SaveEvalPerformance(profiler, iterationNum);
@@ -169,6 +173,11 @@ HRESULT EvaluateModel(
         std::cout << "[FAILED]" << std::endl;
         std::wcout << hr.message().c_str() << std::endl;
         return hr.code();
+    }
+
+    if (args.IsSaveTensor())
+    {
+        BindingUtilities::SaveEvaluationResults(model, args, result.Outputs(), output, iterationNum + 1);
     }
     return S_OK;
 }
@@ -194,48 +203,155 @@ HRESULT EvaluateModel(
 
     LearningModelSession session = nullptr;
     IDirect3DDevice winrtDevice = nullptr;
+    com_ptr<::IUnknown> spUnkLearningModelDevice;
 
     try
     {
-        if (deviceCreationLocation == DeviceCreationLocation::ClientCode
-            && deviceType != DeviceType::CPU)
+        UINT adapterIndex = args.GetGPUAdapterIndex();
+
+        if (deviceCreationLocation == DeviceCreationLocation::ClientCode && deviceType != DeviceType::CPU)
         {
+            // Enumerate Adapters to pick the requested one.
+            com_ptr<IDXGIFactory6> factory;
+            HRESULT hr = CreateDXGIFactory(__uuidof(IDXGIFactory6), factory.put_void());
+            THROW_IF_FAILED(hr);
+
+            com_ptr<IDXGIAdapter> adapter;
+            switch (deviceType)
+            {
+            case DeviceType::DefaultGPU:
+                hr = factory->EnumAdapterByGpuPreference(0, DXGI_GPU_PREFERENCE_UNSPECIFIED, __uuidof(IDXGIAdapter), adapter.put_void());
+                break;
+            case DeviceType::MinPowerGPU:
+                hr = factory->EnumAdapterByGpuPreference(0, DXGI_GPU_PREFERENCE_MINIMUM_POWER, __uuidof(IDXGIAdapter), adapter.put_void());
+                break;
+            case DeviceType::HighPerfGPU:
+                hr = factory->EnumAdapterByGpuPreference(0, DXGI_GPU_PREFERENCE_HIGH_PERFORMANCE, __uuidof(IDXGIAdapter), adapter.put_void());
+                break;
+            default:
+                throw hresult(E_INVALIDARG);
+            }
+            THROW_IF_FAILED(hr);
+
             // Creating the device on the client and using it to create the video frame and initialize the session makes sure that everything is on
             // the same device. This usually avoids an expensive cross-device and cross-videoframe copy via the VideoFrame pipeline.
             com_ptr<ID3D11Device> d3d11Device;
-            HRESULT hr = D3D11CreateDevice(nullptr, D3D_DRIVER_TYPE_HARDWARE, nullptr, D3D11_CREATE_DEVICE_BGRA_SUPPORT, nullptr, 0, D3D11_SDK_VERSION, d3d11Device.put(), nullptr, nullptr);
-
-            if (FAILED(hr))
-            {
-                throw hresult(hr);
-            }
+            hr = D3D11CreateDevice(adapter.get(), D3D_DRIVER_TYPE_UNKNOWN, nullptr, D3D11_CREATE_DEVICE_BGRA_SUPPORT, nullptr, 0, D3D11_SDK_VERSION, d3d11Device.put(), nullptr, nullptr);
+            THROW_IF_FAILED(hr);
 
             com_ptr<IDXGIDevice> dxgiDevice;
-            hr = d3d11Device->QueryInterface(IID_PPV_ARGS(dxgiDevice.put()));
-
-            if (FAILED(hr))
-            {
-                throw hresult(hr);
-            }
+            hr = d3d11Device->QueryInterface(__uuidof(IDXGIDevice), dxgiDevice.put_void());
+            THROW_IF_FAILED(hr);
 
             com_ptr<IInspectable> inspectableDevice;
             hr = CreateDirect3D11DeviceFromDXGIDevice(dxgiDevice.get(), inspectableDevice.put());
-
-            if (FAILED(hr))
-            {
-                throw hresult(hr);
-            }
+            THROW_IF_FAILED(hr);
 
             winrtDevice = inspectableDevice.as<IDirect3DDevice>();
             LearningModelDevice learningModelDevice = LearningModelDevice::CreateFromDirect3D11Device(winrtDevice);
             output.PrintLearningModelDevice(deviceType, learningModelDevice);
+            if (args.IsPerformanceCapture())
+            {
+                WINML_PROFILING_START(profiler, WINML_MODEL_TEST_PERF::CREATE_SESSION);
+            }
             session = LearningModelSession(model, learningModelDevice);
+            if (args.IsPerformanceCapture())
+            {
+                WINML_PROFILING_STOP(profiler, WINML_MODEL_TEST_PERF::CREATE_SESSION);
+            }
+        }
+        else if ((TypeHelper::GetWinmlDeviceKind(deviceType) != LearningModelDeviceKind::Cpu) && (adapterIndex != -1))
+        {
+            HRESULT hr = S_OK;
+            IUnknown* pAdapter = NULL;
+            D3D_FEATURE_LEVEL d3dFeatureLevel = D3D_FEATURE_LEVEL::D3D_FEATURE_LEVEL_1_0_CORE;
+            D3D12_COMMAND_LIST_TYPE commandQueueType = D3D12_COMMAND_LIST_TYPE_COMPUTE;
+
+            com_ptr<IDXCoreAdapterFactory> spFactory;
+
+            hr = DXCoreCreateAdapterFactory(__uuidof(IDXCoreAdapterFactory), spFactory.put_void());
+            THROW_IF_FAILED(hr);
+
+            com_ptr<IDXCoreAdapterList> spAdapterList;
+
+            const GUID dxGUIDs[] = { DXCORE_ADAPTER_ATTRIBUTE_D3D12_CORE_COMPUTE };
+
+            hr = spFactory->GetAdapterList(dxGUIDs, ARRAYSIZE(dxGUIDs), spAdapterList.put());
+            THROW_IF_FAILED(hr);
+
+            com_ptr<IDXCoreAdapter> spAdapter;
+            hr = spAdapterList->GetItem(adapterIndex, spAdapter.put());
+            THROW_IF_FAILED(hr);
+
+            CHAR driverDescription[128];
+
+            spAdapter->QueryProperty(DXCoreProperty::DriverDescription, sizeof(driverDescription), driverDescription);
+            printf("Use adapter : %s\n", driverDescription);
+
+            pAdapter = spAdapter.get();
+
+            com_ptr<IDXGIAdapter> spDxgiAdapter;
+
+            if (spAdapter->IsDXAttributeSupported(DXCORE_ADAPTER_ATTRIBUTE_D3D12_GRFX))
+            {
+                d3dFeatureLevel = D3D_FEATURE_LEVEL::D3D_FEATURE_LEVEL_11_0;
+                commandQueueType = D3D12_COMMAND_LIST_TYPE_DIRECT;
+
+                com_ptr<IDXGIFactory4> dxgiFactory4;
+
+                try
+                {
+                    hr = CreateDXGIFactory2SEH(dxgiFactory4.put_void());
+                }
+                catch (...)
+                {
+                    hr = E_FAIL;
+                }
+
+                if (hr == S_OK)
+                {
+                    LUID adapterLuid;
+                    spAdapter->GetLUID(&adapterLuid);
+
+                    hr = dxgiFactory4->EnumAdapterByLuid(adapterLuid, __uuidof(IDXGIAdapter), spDxgiAdapter.put_void());
+                    if (hr == S_OK)
+                    {
+                        pAdapter = spDxgiAdapter.get();
+                    }
+                }
+            }
+
+            com_ptr<ID3D12Device> d3d12Device;
+            hr = D3D12CreateDevice(pAdapter, d3dFeatureLevel, __uuidof(ID3D12Device), d3d12Device.put_void());
+            THROW_IF_FAILED(hr);
+
+            com_ptr<ID3D12CommandQueue> d3d12CommandQueue;
+            D3D12_COMMAND_QUEUE_DESC commandQueueDesc = {};
+            commandQueueDesc.Type = commandQueueType;
+
+            hr = d3d12Device->CreateCommandQueue(&commandQueueDesc, __uuidof(ID3D12CommandQueue), d3d12CommandQueue.put_void());
+            THROW_IF_FAILED(hr);
+
+            auto factory = get_activation_factory<LearningModelDevice, ILearningModelDeviceFactoryNative>();
+
+            hr = factory->CreateFromD3D12CommandQueue(d3d12CommandQueue.get(), spUnkLearningModelDevice.put());
+            THROW_IF_FAILED(hr);
+
+            session = LearningModelSession(model, spUnkLearningModelDevice.as<LearningModelDevice>());
         }
         else
         {
             LearningModelDevice learningModelDevice(TypeHelper::GetWinmlDeviceKind(deviceType));
             output.PrintLearningModelDevice(deviceType, learningModelDevice);
+            if (args.IsPerformanceCapture())
+            {
+                WINML_PROFILING_START(profiler, WINML_MODEL_TEST_PERF::CREATE_SESSION);
+            }
             session = LearningModelSession(model, learningModelDevice);
+            if (args.IsPerformanceCapture())
+            {
+                WINML_PROFILING_STOP(profiler, WINML_MODEL_TEST_PERF::CREATE_SESSION);
+            }
         }
     }
     catch (hresult_error hr)
@@ -254,17 +370,14 @@ HRESULT EvaluateModel(
     LearningModelBinding context(session);
 
     bool useInputData = false;
-    
-    // Add one more iteration if we ignore the first run
-    uint32_t numIterations = args.NumIterations() + args.IsIgnoreFirstRun();
 
     bool isGarbageData = args.IsGarbageInput();
     std::string completionString = "\n";
 
     // Run the binding + evaluate multiple times and average the results
-    for (uint32_t i = 0; i < numIterations; i++)
+    for (uint32_t i = 0; i < args.NumIterations(); i++)
     {
-        bool captureIterationPerf = (args.IsPerformanceCapture() && (!args.IsIgnoreFirstRun() || i > 0)) || (args.IsPerIterationCapture());
+        bool captureIterationPerf = args.IsPerformanceCapture() || args.IsPerIterationCapture();
 
         std::vector<ILearningModelFeatureValue> inputFeatures;
         try
@@ -308,14 +421,19 @@ HRESULT EvaluateModel(
                 BindingUtilities::PrintEvaluationResults(model, args, result.Outputs());
             }
 
-            if (args.TerseOutput() && numIterations > 1)
+            if (args.TerseOutput() && args.NumIterations() > 1)
             {
-                printf("Binding and Evaluating %d more time%s...", numIterations-1, (numIterations == 2 ? "" : "s"));
+                printf("Binding and Evaluating %d more time%s...", args.NumIterations()-1, (args.NumIterations() == 2 ? "" : "s"));
                 completionString = "[SUCCESS]\n";
             }
         }
     }
     printf("%s", completionString.c_str());
+
+    if (args.IsSaveTensor() || args.IsPerIterationCapture())
+    {
+        output.WritePerIterationPerformance(args, args.ModelPath(), args.ImagePath());
+    }
 
     // Clean up session resources
     session.Close();
@@ -393,7 +511,7 @@ HRESULT EvaluateModels(
 
                         if (args.IsPerformanceCapture())
                         {
-                            output.PrintResults(profiler, args.NumIterations(), deviceType, inputBindingType, inputDataType, deviceCreationLocation);
+                            output.PrintResults(profiler, args.NumIterations(), deviceType, inputBindingType, inputDataType, deviceCreationLocation, args.IsPerformanceConsoleOutputVerbose());
                             if (args.IsOutputPerf())
                             {
                                 std::string deviceTypeStringified = TypeHelper::Stringify(deviceType);
@@ -407,15 +525,9 @@ HRESULT EvaluateModels(
                                     deviceTypeStringified,
                                     inputDataTypeStringified,
                                     inputBindingTypeStringified,
-                                    deviceCreationLocationStringified,
-                                    args.IsIgnoreFirstRun()
+                                    deviceCreationLocationStringified
                                 );
                             }
-                        }
-
-                        if (args.IsPerIterationCapture())
-                        {
-                            output.WritePerformanceDataToCSVPerIteration(profiler, args, args.ModelPath(), args.ImagePath());
                         }
                     }
                 }
@@ -511,6 +623,23 @@ std::vector<DeviceCreationLocation> FetchDeviceCreationLocations(const CommandLi
     return deviceCreationLocations;
 }
 
+HRESULT CreateDXGIFactory2SEH(void **pIDXGIFactory)
+{
+    HRESULT hr;
+
+    __try
+    {
+        hr = CreateDXGIFactory2(0, __uuidof(IDXGIFactory4), pIDXGIFactory);
+    }
+    __except (GetExceptionCode() == VcppException(ERROR_SEVERITY_ERROR, ERROR_MOD_NOT_FOUND) ?
+        EXCEPTION_EXECUTE_HANDLER : EXCEPTION_CONTINUE_SEARCH)
+    {
+        hr = HRESULT_FROM_WIN32(ERROR_MOD_NOT_FOUND);
+    }
+
+    return hr;
+}
+
 int run(CommandLineArgs& args, Profiler<WINML_MODEL_TEST_PERF>& profiler)
 {
     // Initialize COM in a multi-threaded environment.
@@ -530,9 +659,13 @@ int run(CommandLineArgs& args, Profiler<WINML_MODEL_TEST_PERF>& profiler)
         output.SetDefaultCSVFileName();
     }
 
-    if (args.IsPerIterationCapture()) {
+    if (args.IsSaveTensor() || args.IsPerIterationCapture())
+    {
+        output.SetDefaultPerIterationFolder();
         output.SetDefaultCSVFileNamePerIteration();
     }
+
+    D3D12EnableExperimentalFeatures(1, &D3D12ComputeOnlyDevices, NULL, 0);
 
     if (!args.ModelPath().empty() || !args.FolderPath().empty())
     {

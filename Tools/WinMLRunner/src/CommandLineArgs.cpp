@@ -2,6 +2,7 @@
 #include <string>
 #include <iostream>
 #include "CommandLineArgs.h"
+#include <apiquery2.h>
 
 using namespace Windows::AI::MachineLearning;
 
@@ -11,10 +12,12 @@ void CommandLineArgs::PrintUsage() {
     std::cout << "WinmlRunner.exe <-model | -folder> <fully qualified path> [options]" << std::endl;
     std::cout << std::endl;
     std::cout << "options: " << std::endl;
+    std::cout << "  -version: prints the version information for this build of WinMLRunner.exe" << std::endl;
     std::cout << "  -CPU : run model on default CPU" << std::endl;
     std::cout << "  -GPU : run model on default GPU" << std::endl;
     std::cout << "  -GPUHighPerformance : run model on GPU with highest performance" << std::endl;
     std::cout << "  -GPUMinPower : run model on GPU with the least power" << std::endl;
+    std::cout << "  -GPUAdapterIndex : run model on GPU specified by its index in DXGI enumeration. NOTE: Please only use this flag on DXCore supported machines." << std::endl;
     std::cout << "  -CreateDeviceOnClient : create the device on the client and pass it to WinML" << std::endl;
     std::cout << "  -CreateDeviceInWinML : create the device inside WinML" << std::endl;
     std::cout << "  -CPUBoundInput : bind the input to the CPU" << std::endl;
@@ -22,12 +25,12 @@ void CommandLineArgs::PrintUsage() {
     std::cout << "  -RGB : load the input as an RGB image" << std::endl;
     std::cout << "  -BGR : load the input as a BGR image" << std::endl;
     std::cout << "  -Tensor : load the input as a tensor" << std::endl;
-    std::cout << "  -Perf : capture timing measurements" << std::endl;
+    std::cout << "  -Perf optional:<all>: capture performance measurements such as timing and memory usage. Specifying \"all\" will output all measurements" << std::endl;
     std::cout << "  -Iterations : # times perf measurements will be run/averaged" << std::endl;
     std::cout << "  -Input <fully qualified path>: binds image or CSV to model" << std::endl;
     std::cout << "  -PerfOutput optional:<fully qualified path>: csv file to write the perf results to" << std::endl;
-    std::cout << "  -IgnoreFirstRun : ignore the first run in the perf results when calculating the average" << std::endl;
     std::cout << "  -SavePerIterationPerf : save per iteration performance results to csv file" << std::endl;
+    std::cout << "  -SaveTensorData <saveMode>: save first iteration or all iteration output tensor results to csv file [First, All]" << std::endl;
     std::cout << "  -Debug: print trace logs" << std::endl;
     std::cout << "  -Terse: Terse Mode (suppresses repetitive console output)" << std::endl;
     std::cout << "  -AutoScale <interpolationMode>: Enable image autoscaling and set the interpolation mode [Nearest, Linear, Cubic, Fant]" << std::endl;
@@ -57,6 +60,17 @@ CommandLineArgs::CommandLineArgs(const std::vector<std::wstring>& args)
         else if ((_wcsicmp(args[i].c_str(), L"-GPUMinPower") == 0))
         {
             m_useGPUMinPower = true;
+        }
+        else if ((_wcsicmp(args[i].c_str(), L"-GPUAdapterIndex") == 0) && i + 1 < args.size() && args[i + 1][0] != L'-')
+        {
+            HMODULE library{ nullptr };
+            library = LoadLibrary(L"ext-ms-win-dxcore-l1-1-0");
+            if (!library)
+            {
+                throw hresult_invalid_argument(L"ERROR: DXCORE isn't supported on this machine. GpuAdapterIndex flag should only be used with DXCore supported machines.");
+            }
+            m_useGPU = true;
+            m_adapterIndex = static_cast<UINT>(_wtoi(args[++i].c_str()));
         }
         else if ((_wcsicmp(args[i].c_str(), L"-CreateDeviceOnClient") == 0))
         {
@@ -110,12 +124,13 @@ CommandLineArgs::CommandLineArgs(const std::vector<std::wstring>& args)
         {
             m_useGPUBoundInput = true;
         }
-        else if ((_wcsicmp(args[i].c_str(), L"-IgnoreFirstRun") == 0))
-        {
-            m_ignoreFirstRun = true;
-        }
         else if ((_wcsicmp(args[i].c_str(), L"-Perf") == 0))
         {
+            if (i + 1 < args.size() && args[i + 1][0] != L'-' && (_wcsicmp(args[i+1].c_str(), L"all") == 0))
+            {
+                m_perfConsoleOutputAll = true;
+                i++;
+            }
             m_perfCapture = true;
         }
         else if ((_wcsicmp(args[i].c_str(), L"-Debug") == 0))
@@ -155,6 +170,48 @@ CommandLineArgs::CommandLineArgs(const std::vector<std::wstring>& args)
                 PrintUsage();
                 return;
             }
+        }
+        else if ((_wcsicmp(args[i].c_str(), L"-SaveTensorData") == 0) && (i + 1 < args.size()))
+        {
+            m_saveTensor = true;
+            if (_wcsicmp(args[++i].c_str(), L"First") == 0)
+            {
+                m_saveTensorMode = "First";
+            }
+            else if (_wcsicmp(args[i].c_str(), L"All") == 0)
+            {
+                m_saveTensorMode = "All";
+            }
+            else
+            {
+                std::cout << "Unknown Mode!" << std::endl;
+                PrintUsage();
+                return;
+            }
+        }
+        else if (_wcsicmp(args[i].c_str(), L"-version") == 0)
+        {
+            uint32_t versionInfoSize = GetFileVersionInfoSize(args[0].c_str(), 0);
+            wchar_t *pVersionData = new wchar_t[versionInfoSize / sizeof(wchar_t)];
+            GetFileVersionInfo(args[0].c_str(), 0, versionInfoSize, pVersionData);
+
+            wchar_t *pOriginalFilename;
+            uint32_t originalFilenameSize;
+            VerQueryValue(pVersionData, L"\\StringFileInfo\\040904b0\\OriginalFilename", (void**)&pOriginalFilename, &originalFilenameSize);
+
+            wchar_t *pProductVersion;
+            uint32_t productVersionSize;
+            VerQueryValue(pVersionData, L"\\StringFileInfo\\040904b0\\ProductVersion", (void**)&pProductVersion, &productVersionSize);
+
+            wchar_t *pFileVersion;
+            uint32_t fileVersionSize;
+            VerQueryValue(pVersionData, L"\\StringFileInfo\\040904b0\\FileVersion", (void**)&pFileVersion, &fileVersionSize);
+
+            std::wcout << pOriginalFilename << std::endl;
+            std::wcout << L"Version: " << pFileVersion << "." << pProductVersion << std::endl;
+
+            delete[] pVersionData;
+            return;
         }
         else if ((_wcsicmp(args[i].c_str(), L"/?") == 0))
         {

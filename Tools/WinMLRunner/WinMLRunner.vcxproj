@@ -30,6 +30,9 @@
     <ClCompile Include="src/main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="WinMLRunnerScenarios.vcxproj">
+      <Project>{c174d45d-c189-475b-b1a7-494939ee7491}</Project>
+    </ProjectReference>
     <ProjectReference Include="WinMLRunnerStaticLib.vcxproj">
       <Project>{c3bcbea1-90e6-426f-88ac-64c274bcef45}</Project>
     </ProjectReference>

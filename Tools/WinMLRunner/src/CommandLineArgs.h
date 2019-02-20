@@ -7,6 +7,7 @@ public:
     CommandLineArgs() {};
     CommandLineArgs(const std::vector<std::wstring>& args);
     void PrintUsage();
+    bool IsConcurrentLoad() const { return m_concurrentLoad; }
     bool IsUsingGPUHighPerformance() const { return m_useGPUHighPerformance; }
     bool IsUsingGPUMinPower() const { return m_useGPUMinPower; }
     bool UseBGR() const { return m_useBGR; }
@@ -72,11 +73,14 @@ public:
     }
 
     uint32_t NumIterations() const { return m_numIterations; }
+    uint32_t NumThreads() const { return m_numThreads; }
+    uint32_t ThreadInterval() const { return m_threadInterval; } // Thread interval in milliseconds
 
     void ToggleCPU(bool useCPU) { m_useCPU = useCPU; }
     void ToggleGPU(bool useGPU) { m_useGPU = useGPU; }
     void ToggleGPUHighPerformance(bool useGPUHighPerformance) { m_useGPUHighPerformance = useGPUHighPerformance; }
     void ToggleUseGPUMinPower(bool useGPUMinPower) { m_useGPUMinPower = useGPUMinPower; }
+    void ToggleConcurrentLoad(bool concurrentLoad) { m_concurrentLoad = concurrentLoad; }
     void ToggleCreateDeviceOnClient(bool createDeviceOnClient) { m_createDeviceOnClient = createDeviceOnClient; }
     void ToggleCreateDeviceInWinML(bool createDeviceInWinML) { m_createDeviceInWinML = createDeviceInWinML; }
     void ToggleCPUBoundInput(bool useCPUBoundInput) { m_useCPUBoundInput = useCPUBoundInput; }
@@ -93,6 +97,8 @@ public:
 
     void SetModelPath(const std::wstring& modelPath) { m_modelPath = modelPath; }
     void SetInputDataPath(const std::wstring& inputDataPath) { m_inputData = inputDataPath; }
+    void SetNumThreads(unsigned numThreads) { m_numThreads = numThreads; }
+    void SetThreadInterval(unsigned threadInterval) { m_threadInterval = threadInterval; }
     void SetPerformanceCSVPath(const std::wstring& performanceCSVPath)
     {
         m_perfOutputPath = performanceCSVPath;
@@ -112,6 +118,7 @@ private:
     bool m_useGPU = false;
     bool m_useGPUHighPerformance = false;
     bool m_useGPUMinPower = false;
+    bool m_concurrentLoad = false;
     bool m_createDeviceOnClient = false;
     bool m_createDeviceInWinML = false;
     bool m_useRGB = false;
@@ -137,4 +144,8 @@ private:
     std::wstring m_inputData;
     std::wstring m_perfOutputPath;
     uint32_t m_numIterations = 1;
+    uint32_t m_numThreads = 1;
+    uint32_t m_threadInterval = 0;
+
+    void CheckNextArgument(const std::vector<std::wstring> &args, UINT i);
 };

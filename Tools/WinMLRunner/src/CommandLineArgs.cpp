@@ -34,9 +34,14 @@ void CommandLineArgs::PrintUsage() {
     std::cout << "  -Debug: print trace logs" << std::endl;
     std::cout << "  -Terse: Terse Mode (suppresses repetitive console output)" << std::endl;
     std::cout << "  -AutoScale <interpolationMode>: Enable image autoscaling and set the interpolation mode [Nearest, Linear, Cubic, Fant]" << std::endl;
+    std::cout << std::endl;
+    std::cout << "Concurrency Options:" << std::endl;
+    std::cout << "  -ConcurrentLoad: load models concurrently" << std::endl;
+    std::cout << "  -NumThreads <number>: number of threads to load a model. By default this will be the number of model files to be executed." << std::endl;
+    std::cout << "  -ThreadInterval <milliseconds>: interval time between two thread creations in milliseconds" << std::endl;
 }
 
-CommandLineArgs::CommandLineArgs(const std::vector<std::wstring>& args)
+CommandLineArgs::CommandLineArgs(const std::vector<std::wstring> &args)
 {
     for (UINT i = 0; i < args.size(); i++)
     {
@@ -58,6 +63,7 @@ CommandLineArgs::CommandLineArgs(const std::vector<std::wstring>& args)
         }
         else if ((_wcsicmp(args[i].c_str(), L"-GPUAdapterIndex") == 0) && i + 1 < args.size() && args[i + 1][0] != L'-')
         {
+            CheckNextArgument(args, i);
             HMODULE library{ nullptr };
             library = LoadLibrary(L"ext-ms-win-dxcore-l1-1-0");
             if (!library)
@@ -79,12 +85,14 @@ CommandLineArgs::CommandLineArgs(const std::vector<std::wstring>& args)
         {
             m_numIterations = static_cast<UINT>(_wtoi(args[++i].c_str()));
         }
-        else if ((_wcsicmp(args[i].c_str(), L"-Model") == 0) && (i + 1 < args.size()))
+        else if ((_wcsicmp(args[i].c_str(), L"-Model") == 0))
         {
+            CheckNextArgument(args, i);
             m_modelPath = args[++i];
         }
-        else if ((_wcsicmp(args[i].c_str(), L"-Folder") == 0) && (i + 1 < args.size()))
+        else if ((_wcsicmp(args[i].c_str(), L"-Folder") == 0))
         {
+            CheckNextArgument(args, i);
             m_modelFolderPath = args[++i];
         }
         else if ((_wcsicmp(args[i].c_str(), L"-Input") == 0))
@@ -93,7 +101,7 @@ CommandLineArgs::CommandLineArgs(const std::vector<std::wstring>& args)
         }
         else if ((_wcsicmp(args[i].c_str(), L"-PerfOutput") == 0))
         {
-            if (i + 1 < args.size() && args[i+1][0] != L'-')
+            if (i + 1 < args.size() && args[i + 1][0] != L'-')
             {
                 m_perfOutputPath = args[++i];
             }
@@ -121,7 +129,7 @@ CommandLineArgs::CommandLineArgs(const std::vector<std::wstring>& args)
         }
         else if ((_wcsicmp(args[i].c_str(), L"-Perf") == 0))
         {
-            if (i + 1 < args.size() && args[i + 1][0] != L'-' && (_wcsicmp(args[i+1].c_str(), L"all") == 0))
+            if (i + 1 < args.size() && args[i + 1][0] != L'-' && (_wcsicmp(args[i + 1].c_str(), L"all") == 0))
             {
                 m_perfConsoleOutputAll = true;
                 i++;
@@ -140,8 +148,9 @@ CommandLineArgs::CommandLineArgs(const std::vector<std::wstring>& args)
         {
             m_terseOutput = true;
         }
-        else if ((_wcsicmp(args[i].c_str(), L"-AutoScale") == 0) && (i + 1 < args.size()))
+        else if ((_wcsicmp(args[i].c_str(), L"-AutoScale") == 0))
         {
+            CheckNextArgument(args, i);
             m_autoScale = true;
             if (_wcsicmp(args[++i].c_str(), L"Nearest") == 0)
             {
@@ -161,13 +170,13 @@ CommandLineArgs::CommandLineArgs(const std::vector<std::wstring>& args)
             }
             else
             {
-                std::cout << "Unknown AutoScale Interpolation Mode!" << std::endl;
                 PrintUsage();
-                return;
+                throw hresult_invalid_argument(L"Unknown AutoScale Interpolation Mode!");
             }
         }
         else if ((_wcsicmp(args[i].c_str(), L"-SaveTensorData") == 0) && (i + 1 < args.size()))
         {
+            CheckNextArgument(args, i);
             m_saveTensor = true;
             if (_wcsicmp(args[++i].c_str(), L"First") == 0)
             {
@@ -179,9 +188,8 @@ CommandLineArgs::CommandLineArgs(const std::vector<std::wstring>& args)
             }
             else
             {
-                std::cout << "Unknown Mode!" << std::endl;
                 PrintUsage();
-                return;
+                throw hresult_invalid_argument(L"Unknown Mode!");
             }
         }
         else if (_wcsicmp(args[i].c_str(), L"-version") == 0)
@@ -213,6 +221,29 @@ CommandLineArgs::CommandLineArgs(const std::vector<std::wstring>& args)
             PrintUsage();
             return;
         }
+        // concurrency options
+        else if ((_wcsicmp(args[i].c_str(), L"-ConcurrentLoad") == 0))
+        {
+            ToggleConcurrentLoad(true);
+        }
+        else if ((_wcsicmp(args[i].c_str(), L"-NumThreads") == 0))
+        {
+            CheckNextArgument(args, i);
+            unsigned num_threads = std::stoi(args[++i].c_str());
+            SetNumThreads(num_threads);
+        }
+        else if ((_wcsicmp(args[i].c_str(), L"-ThreadInterval") == 0))
+        {
+            CheckNextArgument(args, i);
+            unsigned thread_interval = std::stoi(args[++i].c_str());
+            SetThreadInterval(thread_interval);
+        }
+        else
+        {
+            std::wstring msg = L"Unknown option ";
+            msg += args[i].c_str();
+            throw hresult_invalid_argument(msg.c_str());
+        }
     }
 
     if (m_modelPath.empty() && m_modelFolderPath.empty())
@@ -235,3 +266,10 @@ CommandLineArgs::CommandLineArgs(const std::vector<std::wstring>& args)
     }
 }
 
+void CommandLineArgs::CheckNextArgument(const std::vector<std::wstring> &args, UINT i) {
+    if (i + 1 >= args.size() || args[i + 1][0] == L'-') {
+        std::wstring msg = L"Invalid parameter for ";
+        msg += args[i].c_str();
+        throw hresult_invalid_argument(msg.c_str());
+    }
+}

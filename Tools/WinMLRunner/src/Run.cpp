@@ -6,6 +6,7 @@
 #include <d3d11.h>
 #include <Windows.Graphics.DirectX.Direct3D11.interop.h>
 #include "Run.h"
+#include "Scenarios.h"
 #include <initguid.h>
 #include <dxcore.h>
 
@@ -13,7 +14,7 @@
 
 using namespace winrt::Windows::Graphics::DirectX::Direct3D11;
 
-LearningModel LoadModel(const std::wstring path, bool capturePerf, OutputHelper& output, const CommandLineArgs& args, uint32_t iterationNum, Profiler<WINML_MODEL_TEST_PERF>& profiler)
+LearningModel LoadModel(const std::wstring &path, bool capturePerf, OutputHelper& output, const CommandLineArgs& args, uint32_t iterationNum, Profiler<WINML_MODEL_TEST_PERF>& profiler)
 {
     LearningModel model = nullptr;
     output.PrintLoadingInfo(path);
@@ -442,7 +443,7 @@ HRESULT EvaluateModel(
 }
 
 HRESULT EvaluateModels(
-    std::vector<std::wstring>& modelPaths,
+    const std::vector<std::wstring>& modelPaths,
     const std::vector<DeviceType>& deviceTypes,
     const std::vector<InputBindingType>& inputBindingTypes,
     const std::vector<InputDataType>& inputDataTypes,
@@ -454,7 +455,7 @@ HRESULT EvaluateModels(
 {
     output.PrintHardwareInfo();
 
-    for (std::wstring& path : modelPaths)
+    for (const auto& path : modelPaths)
     {
         LearningModel model = nullptr;
 
@@ -478,13 +479,13 @@ HRESULT EvaluateModels(
             continue;
         }
 
-        for (auto deviceType : deviceTypes)
+        for (const auto &deviceType : deviceTypes)
         {
-            for (auto inputBindingType : inputBindingTypes)
+            for (const auto &inputBindingType : inputBindingTypes)
             {
-                for (auto inputDataType : inputDataTypes)
+                for (const auto &inputDataType : inputDataTypes)
                 {
-                    for (auto deviceCreationLocation : deviceCreationLocations)
+                    for (const auto &deviceCreationLocation : deviceCreationLocations)
                     {
                         if (args.IsPerformanceCapture() || args.IsPerIterationCapture())
                         {
@@ -674,6 +675,10 @@ int run(CommandLineArgs& args, Profiler<WINML_MODEL_TEST_PERF>& profiler)
         std::vector<DeviceCreationLocation> deviceCreationLocations = FetchDeviceCreationLocations(args);
         std::vector<std::wstring> modelPaths = args.ModelPath().empty() ? GetModelsInDirectory(args, &output) : std::vector<std::wstring>(1, args.ModelPath());
 
+        if (args.IsConcurrentLoad()) {
+            ConcurrentLoadModel(modelPaths, args.NumThreads(), args.ThreadInterval(), true);
+            return 0;
+        }
         return EvaluateModels(modelPaths, deviceTypes, inputBindingTypes, inputDataTypes, deviceCreationLocations, args, output, profiler);
     }
 

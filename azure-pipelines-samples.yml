@@ -68,17 +68,17 @@ steps:
       restoreSolution: winml/samples/public/WinMLGithub/Testing/**/SamplesTest.sln
     condition: succeededOrFailed()
 
-- task: VSBuild@1
-  displayName: 'Build UI test solution winml/samples/public/WinMLGithub/Testing/**/SamplesTest.sln'
-  inputs:
-    solution: 'winml/samples/public/WinMLGithub/Testing/**/SamplesTest.sln'
-    vsVersion: 15.0
-    msbuildArgs: '/p:AppxPackageSigningEnabled=false -v:diag /p:OutDir=$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\'
-    platform: '$(BuildPlatform)'
-    configuration: '$(BuildConfiguration)'
-    clean: true
-    msbuildArchitecture: x64
-    createLogFile: true
+  - task: VSBuild@1
+    displayName: 'Build UI test solution winml/samples/public/WinMLGithub/Testing/**/SamplesTest.sln'
+    inputs:
+      solution: 'winml/samples/public/WinMLGithub/Testing/**/SamplesTest.sln'
+      vsVersion: 15.0
+      msbuildArgs: '/p:AppxPackageSigningEnabled=false -v:diag /p:OutDir=$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\'
+      platform: '$(BuildPlatform)'
+      configuration: '$(BuildConfiguration)'
+      clean: true
+      msbuildArchitecture: x64
+      createLogFile: true
     condition: succeededOrFailed()
 
   - task: VSBuild@1

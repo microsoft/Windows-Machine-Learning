@@ -37,7 +37,7 @@ void CommandLineArgs::PrintUsage() {
     std::cout << std::endl;
     std::cout << "Concurrency Options:" << std::endl;
     std::cout << "  -ConcurrentLoad: load models concurrently" << std::endl;
-    std::cout << "  -NumThreads <number>: number of threads to load a model. By default it will be the number of models specified." << std::endl;
+    std::cout << "  -NumThreads <number>: number of threads to load a model. By default this will be the number of model files to be executed." << std::endl;
     std::cout << "  -ThreadInterval <milliseconds>: interval time between two thread creations in milliseconds" << std::endl;
 }
 

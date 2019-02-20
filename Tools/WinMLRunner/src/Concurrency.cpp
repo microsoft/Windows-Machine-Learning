@@ -28,7 +28,8 @@ void ConcurrentLoadModel(const std::vector<std::wstring> &paths, unsigned num_th
                          unsigned interval_milliseconds, bool print_info)
 {
   std::vector<std::thread> threads;
-  for (unsigned i = 0; i < num_threads; i++)
+  unsigned threads_size = paths.size() > num_threads ? paths.size() : num_threads;
+  for (unsigned i = 0; i < threads_size; i++)
   {
       threads.emplace_back(std::thread(load_model, std::ref(paths[i % paths.size()]), print_info));
       Sleep(interval_milliseconds);

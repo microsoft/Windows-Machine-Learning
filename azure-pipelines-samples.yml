@@ -71,7 +71,7 @@ steps:
   - task: VSBuild@1
     displayName: 'Build UI test solution winml/samples/public/WinMLGithub/Testing/**/SamplesTest.sln'
     inputs:
-      solution: 'winml/samples/public/WinMLGithub/Testing/**/SamplesTest.sln'
+      solution: 'Testing/**/SamplesTest.sln'
       vsVersion: 15.0
       msbuildArgs: '/p:AppxPackageSigningEnabled=false -v:diag /p:OutDir=$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\'
       platform: '$(BuildPlatform)'

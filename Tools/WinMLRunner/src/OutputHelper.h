@@ -15,6 +15,28 @@ using namespace winrt::Windows::AI::MachineLearning;
 using namespace winrt::Windows::Storage::Streams;
 using namespace ::Windows::Graphics::DirectX::Direct3D11;
 using namespace winrt::Windows::Graphics::DirectX::Direct3D11;
+using namespace DirectX::PackedVector;
+
+inline size_t hash_data(void const* ptr, size_t const bytes) noexcept
+{
+#ifdef _WIN64
+    constexpr size_t fnv_offset_basis = 14695981039346656037ULL;
+    constexpr size_t fnv_prime = 1099511628211ULL;
+#else
+    constexpr size_t fnv_offset_basis = 2166136261U;
+    constexpr size_t fnv_prime = 16777619U;
+#endif
+    size_t result = fnv_offset_basis;
+    uint8_t const* const buffer = static_cast<uint8_t const*>(ptr);
+
+    for (size_t next = 0; next < bytes; ++next)
+    {
+        result ^= buffer[next];
+        result *= fnv_prime;
+    }
+
+    return result;
+}
 
 // Stores performance information and handles output to the command line and CSV files.
 class OutputHelper
@@ -513,7 +535,7 @@ public:
             if (!m_flagGpuDevice)
             {
                 m_fileNameResultDevice = m_folderNamePerIteration + "\\" + featureName + "CpuIteration";
-                if (iterationNum == args.NumIterations() || args.SaveTensorMode() == "First")
+                if (iterationNum == args.NumIterations() - 1 || args.SaveTensorMode() == "First")
                 {
                     m_flagGpuDevice = true;
                 }
@@ -654,26 +676,109 @@ public:
             fout.close();
         }
     }
-
-    template<typename T>
-    void WriteTensorResultToCSV(T* m_Res, uint32_t iterationNum, const CommandLineArgs &args, uint32_t &capacity, std::string &featureName)
+    
+    void ProcessFP16TensorResult(com_ptr<ITensorNative> itn,
+                                 uint32_t iterationNum,
+                                 const CommandLineArgs& args,
+                                 std::string& featureName)
     {
-        if (args.SaveTensorMode() == "First" && iterationNum > 1)
+        if (args.IsSaveTensor() && args.SaveTensorMode() == "First" && iterationNum > 0)
         {
             return;
         }
-        SetDefaultCSVIterationResult(iterationNum, args, featureName);
-        if (m_csvFileNamePerIterationResult.length() > 0)
+        if (args.IsSaveTensor())
         {
-            std::ofstream fout;
+            SetDefaultCSVIterationResult(iterationNum, args, featureName);
+        }
+        HALF* tensor;
+        uint32_t uCapacity;
+        HRESULT(itn->GetBuffer(reinterpret_cast<BYTE**>(&tensor), &uCapacity));
+        int size = uCapacity / sizeof(HALF);
+        float maxValue = XMConvertHalfToFloat(*tensor);
+        UINT maxIndex = 0;
+        std::ofstream fout;
+        if (args.IsSaveTensor())
+        {
             fout.open(m_csvFileNamePerIterationResult, std::ios_base::app);
             fout << "Index" << "," << "Value" << std::endl;
-            int size = capacity / sizeof(T);
-            for (int i = 0; i < size; i++)
+        }
+        for (int i = 1; i < size; i++)
+        {
+            float val = XMConvertHalfToFloat(*(tensor + i));
+            if (args.IsSaveTensor())
             {
-                fout << i << "," << *(m_Res+i) << std::endl;
+                fout << i << "," << val << std::endl;
             }
+            if (maxValue < val)
+            {
+                maxValue = val;
+                maxIndex = i;
+            }
+        }
+        if (args.IsSaveTensor())
+        {
             fout.close();
+            std::string iterationResult = "Index: " + std::to_string(maxIndex) + "; Value: " + std::to_string(maxValue);
+            SaveResult(iterationNum, iterationResult, static_cast<int>(hash_data(tensor, uCapacity)));
+        }
+        if (!args.IsGarbageInput() && iterationNum == 0)
+        {
+            std::cout << "Outputting results.. " << std::endl;
+            std::cout << "Feature Name: " << featureName << std::endl;
+            std::wcout << " resultVector[" << maxIndex << "] has the maximal value of " << maxValue << std::endl;
+        }
+    }
+
+    template<typename T>
+    void ProcessTensorResult(com_ptr<ITensorNative> itn,
+                             uint32_t iterationNum,
+                             const CommandLineArgs& args,
+                             std::string& featureName)
+    {
+        if (args.IsSaveTensor() && args.SaveTensorMode() == "First" && iterationNum > 0)
+        {
+            return;
+        }
+        if (args.IsSaveTensor())
+        {
+            SetDefaultCSVIterationResult(iterationNum, args, featureName);
+        }
+        T* tensor;
+        uint32_t uCapacity;
+        HRESULT(itn->GetBuffer(reinterpret_cast<BYTE**>(&tensor), &uCapacity));
+        int size = uCapacity / sizeof(T);
+        auto maxValue = *tensor;
+        auto maxIndex = 0;
+        std::ofstream fout;
+        if (args.IsSaveTensor())
+        {
+            fout.open(m_csvFileNamePerIterationResult, std::ios_base::app);
+            fout << "Index" << "," << "Value" << std::endl;
+        }
+        for (int i = 1; i < size; i++)
+        {
+            auto val = *(tensor + i);
+            if (args.IsSaveTensor())
+            {
+                fout << i << "," << val << std::endl;
+            }
+            if (maxValue < val)
+            {
+                maxValue = val;
+                maxIndex = i;
+            }
+        }
+        if (args.IsSaveTensor())
+        {
+            fout.close();
+            std::string iterationResult = "Index: " + std::to_string(maxIndex) + "; Value: " + std::to_string(maxValue);
+            SaveResult(iterationNum, iterationResult, static_cast<int>(hash_data(tensor, uCapacity)));
+        }
+        if (!args.IsGarbageInput() && iterationNum == 0)
+        {
+            std::cout << "Outputting results.. " << std::endl;
+            std::cout << "Feature Name: " << featureName << std::endl;
+            std::wcout << " resultVector[" << maxIndex << "] has the maximal value of " << maxValue << std::endl;
         }
     }
 

@@ -174,9 +174,10 @@ HRESULT EvaluateModel(
         return hr.code();
     }
 
-    if (args.IsSaveTensor())
+    // Only print eval results on the first iteration, iff it's not garbage data
+    if (!args.IsGarbageInput() || args.IsSaveTensor())
     {
-        BindingUtilities::SaveEvaluationResults(model, args, result.Outputs(), output, iterationNum + 1);
+        BindingUtilities::PrintOrSaveEvaluationResults(model, args, result.Outputs(), output, iterationNum);
     }
     return S_OK;
 }
@@ -413,13 +414,6 @@ HRESULT EvaluateModel(
         else if (!args.TerseOutput() || i == 0)
         {
             output.PrintEvaluatingInfo(i + 1, deviceType, inputBindingType, inputDataType, deviceCreationLocation, "[SUCCESS]");
-
-            // Only print eval results on the first iteration, iff it's not garbage data
-            if (!isGarbageData)
-            {
-                BindingUtilities::PrintEvaluationResults(model, args, result.Outputs());
-            }
-
             if (args.TerseOutput() && args.NumIterations() > 1)
             {
                 printf("Binding and Evaluating %d more time%s...", args.NumIterations()-1, (args.NumIterations() == 2 ? "" : "s"));

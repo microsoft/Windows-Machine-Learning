@@ -3,6 +3,8 @@
 #include <iostream>
 #include "CommandLineArgs.h"
 #include <apiquery2.h>
+#include <ctime>
+#include <iomanip>
 
 using namespace Windows::AI::MachineLearning;
 
@@ -190,6 +192,21 @@ CommandLineArgs::CommandLineArgs(const std::vector<std::wstring> &args)
             {
                 PrintUsage();
                 throw hresult_invalid_argument(L"Unknown Mode!");
+            }
+            try
+            {
+                // This is to check for second optional value for -SaveTensorData to specify path
+                CheckNextArgument(args, i);
+                SetTensorOutputPath(args[++i].c_str());
+            }
+            catch (...) {
+                // set to default path
+                auto time = std::time(nullptr);
+                struct tm localTime;
+                localtime_s(&localTime, &time);
+                std::wostringstream oss;
+                oss << std::put_time(&localTime, L"%Y-%m-%d_%H.%M.%S");
+                SetTensorOutputPath(L"\\PerIterationRun[" + oss.str() + L"]");
             }
         }
         else if (_wcsicmp(args[i].c_str(), L"-version") == 0)

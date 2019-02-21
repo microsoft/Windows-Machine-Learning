@@ -661,7 +661,7 @@ int run(CommandLineArgs& args, Profiler<WINML_MODEL_TEST_PERF>& profiler)
 
     if (args.IsSaveTensor() || args.IsPerIterationCapture())
     {
-        output.SetDefaultPerIterationFolder();
+        output.SetDefaultPerIterationFolder(args.TensorOutputPath());
         output.SetDefaultCSVFileNamePerIteration();
     }
 

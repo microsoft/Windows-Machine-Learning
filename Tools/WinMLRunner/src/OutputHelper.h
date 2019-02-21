@@ -288,6 +288,7 @@ public:
 
         if (isPerformanceConsoleOutputVerbose)
         {
+            std::cout << std::endl;
             std::cout << "  Peak Working Set Memory Difference (from start to load): " << firstLoadPeakWorkingSetUsage << " MB" << std::endl;
             std::cout << "  Peak Working Set Memory Difference (from model load to session creation): " << firstSessionPeakWorkingSetUsage << " MB" << std::endl;
             std::cout << "  Peak Working Set Memory Difference (from session to bind): " << firstBindPeakMemoryUsage << " MB" << std::endl;

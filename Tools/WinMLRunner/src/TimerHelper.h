@@ -129,7 +129,8 @@ public:
 
 private:
 
-    bool GetProcessMemoryCounters(DWORD pid, ULONG& pageFaultCount, SIZE_T& pageFileUsage, SIZE_T& peakPageFileUsage, SIZE_T& workingSetSize, SIZE_T& peakWorkingSetSize)
+    bool GetProcessMemoryCounters(DWORD pid, ULONG& pageFaultCount, SIZE_T& pageFileUsage, SIZE_T& peakPageFileUsage,
+        SIZE_T& workingSetSize, SIZE_T& peakWorkingSetSize)
     {
         HANDLE hProcess = NULL;
 

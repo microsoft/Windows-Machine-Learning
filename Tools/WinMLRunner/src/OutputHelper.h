@@ -284,6 +284,7 @@ public:
             std::cout << std::endl;
         }
         std::cout << "  Working Set Memory usage (evaluate): " << firstEvalMemoryUsage << " MB" << std::endl;
+        std::cout << "  Working Set Memory usage (load, bind, session creation, and evaluate): " << firstIterationWorkingSetMemoryUsage << " MB" << std::endl;
 
         if (isPerformanceConsoleOutputVerbose)
         {
@@ -293,7 +294,6 @@ public:
             std::cout << "  Peak Working Set Memory Difference (from bind to evaluate): " << firstEvalPeakMemoryUsage << " MB" << std::endl;
         }
 
-        std::cout << "  Working Set Memory usage (load, bind, session creation, and evaluate): " << firstIterationWorkingSetMemoryUsage << " MB" << std::endl;
         std::cout << "  Peak Working Set Memory Difference (load, bind, session creation, and evaluate): " << firstIterationPeakWorkingSet << " MB" << std::endl;
 
         if (isPerformanceConsoleOutputVerbose)

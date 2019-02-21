@@ -29,6 +29,7 @@ public:
     const std::wstring& OutputPath() const { return m_perfOutputPath; }
     const std::wstring& FolderPath() const { return m_modelFolderPath; }
     const std::wstring& ModelPath() const { return m_modelPath; }
+    const std::wstring& TensorOutputPath() const { return m_tensorOutputPath; }
     UINT GetGPUAdapterIndex() const { return m_adapterIndex; }
 
     bool UseRGB() const
@@ -96,6 +97,7 @@ public:
 
 
     void SetModelPath(const std::wstring& modelPath) { m_modelPath = modelPath; }
+    void SetTensorOutputPath(const std::wstring& tensorOutputPath) { m_tensorOutputPath = tensorOutputPath; }
     void SetInputDataPath(const std::wstring& inputDataPath) { m_inputData = inputDataPath; }
     void SetNumThreads(unsigned numThreads) { m_numThreads = numThreads; }
     void SetThreadInterval(unsigned threadInterval) { m_threadInterval = threadInterval; }
@@ -143,6 +145,7 @@ private:
     std::wstring m_csvData;
     std::wstring m_inputData;
     std::wstring m_perfOutputPath;
+    std::wstring m_tensorOutputPath;
     uint32_t m_numIterations = 1;
     uint32_t m_numThreads = 1;
     uint32_t m_threadInterval = 0;

@@ -3,6 +3,8 @@
 #include <iostream>
 #include "CommandLineArgs.h"
 #include <apiquery2.h>
+#include <ctime>
+#include <iomanip>
 
 using namespace Windows::AI::MachineLearning;
 
@@ -30,14 +32,15 @@ void CommandLineArgs::PrintUsage() {
     std::cout << "  -Input <fully qualified path>: binds image or CSV to model" << std::endl;
     std::cout << "  -PerfOutput optional:<fully qualified path>: csv file to write the perf results to" << std::endl;
     std::cout << "  -SavePerIterationPerf : save per iteration performance results to csv file" << std::endl;
-    std::cout << "  -SaveTensorData <saveMode>: save first iteration or all iteration output tensor results to csv file [First, All]" << std::endl;
+    std::cout << "  -SaveTensorData <saveMode folderPath>: saveMode: save first iteration or all iteration output tensor results to csv file [First, All]" << std::endl;
+    std::cout << "                                         folderPath: Optional folder path can be specified to hold tensor data. It will be created if folder doesn't exist." << std::endl;
     std::cout << "  -Debug: print trace logs" << std::endl;
     std::cout << "  -Terse: Terse Mode (suppresses repetitive console output)" << std::endl;
     std::cout << "  -AutoScale <interpolationMode>: Enable image autoscaling and set the interpolation mode [Nearest, Linear, Cubic, Fant]" << std::endl;
     std::cout << std::endl;
     std::cout << "Concurrency Options:" << std::endl;
     std::cout << "  -ConcurrentLoad: load models concurrently" << std::endl;
-    std::cout << "  -NumThreads <number>: number of threads to load a model. By default this will be the number of model files to be executed." << std::endl;
+    std::cout << "  -NumThreads <number>: number of threads to load a model. By default this will be the number of model files to be executed" << std::endl;
     std::cout << "  -ThreadInterval <milliseconds>: interval time between two thread creations in milliseconds" << std::endl;
 }
 
@@ -190,6 +193,21 @@ CommandLineArgs::CommandLineArgs(const std::vector<std::wstring> &args)
             {
                 PrintUsage();
                 throw hresult_invalid_argument(L"Unknown Mode!");
+            }
+            try
+            {
+                // This is to check for second optional value for -SaveTensorData to specify path
+                CheckNextArgument(args, i);
+                SetTensorOutputPath(args[++i].c_str());
+            }
+            catch (...) {
+                // set to default path
+                auto time = std::time(nullptr);
+                struct tm localTime;
+                localtime_s(&localTime, &time);
+                std::wostringstream oss;
+                oss << std::put_time(&localTime, L"%Y-%m-%d_%H.%M.%S");
+                SetTensorOutputPath(L"\\PerIterationRun[" + oss.str() + L"]");
             }
         }
         else if (_wcsicmp(args[i].c_str(), L"-version") == 0)

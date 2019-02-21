@@ -485,16 +485,10 @@ public:
         m_outputTensorHash[iterationNum] = hashcode;
     }
     
-    void SetDefaultPerIterationFolder()
+    void SetDefaultPerIterationFolder(const std::wstring &folderName)
     {
-        auto time = std::time(nullptr);
-        struct tm localTime;
-        localtime_s(&localTime, &time);
-        std::string cur_dir = _getcwd(NULL, 0);
-        std::ostringstream oss;
-        oss << std::put_time(&localTime, "%Y-%m-%d_%H.%M.%S");
-        std::string folderName = "\\PerIterationRun[" + oss.str() + "]";
-        m_folderNamePerIteration = cur_dir + folderName;
+        std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
+        m_folderNamePerIteration = converter.to_bytes(folderName);
         if (_mkdir(m_folderNamePerIteration.c_str()) != 0)
             std::cout << "Folder cannot be created";
     }

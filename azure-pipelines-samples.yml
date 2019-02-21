@@ -68,6 +68,15 @@ steps:
               $CertPassword = ConvertTo-SecureString -String "MyPassword" -Force -AsPlainText;
               $cert = New-SelfSignedCertificate -Type Custom -Subject "orlevari" -KeyUsage DigitalSignature -FriendlyName "uitest-sign" -CertStoreLocation "Cert:\LocalMachine\My";
               Export-PfxCertificate -cert "Cert:\localmachine\my\$($cert.Thumbprint)" -FilePath $CertPath -Password $CertPassword;
+              $pfx = new-object System.Security.Cryptography.X509Certificates.X509Certificate2;
+              $pfx.import($CertPath,$CertPassword,"Exportable,PersistKeySet");
+              $store = new-object System.Security.Cryptography.X509Certificates.X509Store(
+                [System.Security.Cryptography.X509Certificates.StoreName]::Root,
+                "localmachine"
+              );
+              $store.open("MaxAllowed");
+              $store.add($pfx);
+              $store.close();
     condition: succeededOrFailed()
 
   - task: VSBuild@1

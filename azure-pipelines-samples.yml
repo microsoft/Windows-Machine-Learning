@@ -64,7 +64,7 @@ steps:
     displayName: 'Create PFX key for signing APPX/MSIX bundles'
     inputs:
       targetType: inline
-      script: > $CertPath = 'SharedContent/shared_key.pfx'; 
+      script: $CertPath = 'SharedContent/shared_key.pfx';
               $CertPassword = ConvertTo-SecureString -String "MyPassword" -Force -AsPlainText;
               $cert = New-SelfSignedCertificate -Type Custom -Subject "orlevari" -KeyUsage DigitalSignature -FriendlyName "uitest-sign" -CertStoreLocation "Cert:\LocalMachine\My";
               Export-PfxCertificate -cert "Cert:\localmachine\my\$($cert.Thumbprint)" -FilePath $CertPath -Password $CertPassword;

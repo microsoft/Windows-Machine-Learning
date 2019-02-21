@@ -75,7 +75,7 @@ steps:
     inputs:
       solution: Samples/FNSCandyStyleTransfer/UWP/CS/snapcandy.sln
       vsVersion: 15.0
-      msbuildArgs: '/p:PackageCertificateKeyFile=$(Build.Repository.LocalPath)\SharedContent\shared-key.pfx -v:diag  /p:OutDir=$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\'
+      msbuildArgs: '/p:PackageCertificateKeyFile=$(Build.Repository.LocalPath)\SharedContent\shared_key.pfx -v:diag  /p:OutDir=$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\'
       platform: '$(BuildPlatform)'
       configuration: '$(BuildConfiguration)'
       clean: true

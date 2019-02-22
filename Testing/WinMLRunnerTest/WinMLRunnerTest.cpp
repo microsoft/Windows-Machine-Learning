@@ -11,11 +11,8 @@
 #include <direct.h>
 #include <iomanip>
 #include <codecvt>
-#include <filesystem>
 
-using namespace std::filesystem;
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
-
 static HRESULT RunProc(LPWSTR commandLine)
 {
     STARTUPINFO SI = { 0 };
@@ -136,21 +133,12 @@ namespace WinMLRunnerTest
             }
         }
 
-        TEST_CLASS_CLEANUP(GarbageInputTestCleanupClass)
+        TEST_CLASS_CLEANUP(CleanupClass)
         {
             // Delete test_folder_input folder after all tests have been run
             std::string copyCommand = "rd /s /q ";
             copyCommand += std::string(INPUT_FOLDER_PATH.begin(), INPUT_FOLDER_PATH.end());
             system(copyCommand.c_str());
-
-            //remove folders that contain PerIterationRun
-            for (auto& file : directory_iterator(FileHelper::GetModulePath()))
-            {
-                if (std::wstring(file.path().c_str()).find(L"PerIterationRun[") != std::string::npos)
-                {
-                    remove_all(file.path());
-                }
-            }
         }
 
         TEST_METHOD_CLEANUP(CleanupMethod)
@@ -505,17 +493,7 @@ namespace WinMLRunnerTest
     TEST_CLASS(ImageInputTest)
     {
     public:
-        TEST_CLASS_CLEANUP(ImageInputTestsCleanup)
-        {
-            //remove folders that contain PerIterationRun
-            for (auto& file : directory_iterator(FileHelper::GetModulePath()))
-            {
-                if (std::wstring(file.path().c_str()).find(L"PerIterationRun[") != std::string::npos)
-                {
-                    remove_all(file.path());
-                }
-            }
-        }
+
         TEST_METHOD(ProvidedImageInputCpuAndGpu)
         {
             const std::wstring modelPath = CURRENT_PATH + L"SqueezeNet.onnx";

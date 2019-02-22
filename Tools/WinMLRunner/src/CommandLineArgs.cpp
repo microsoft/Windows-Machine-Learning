@@ -212,9 +212,11 @@ CommandLineArgs::CommandLineArgs(const std::vector<std::wstring> &args)
         }
         else if (_wcsicmp(args[i].c_str(), L"-version") == 0)
         {
-            uint32_t versionInfoSize = GetFileVersionInfoSize(args[0].c_str(), 0);
+            TCHAR szExeFileName[MAX_PATH];
+            GetModuleFileName(NULL, szExeFileName, MAX_PATH);
+            uint32_t versionInfoSize = GetFileVersionInfoSize(szExeFileName, 0);
             wchar_t *pVersionData = new wchar_t[versionInfoSize / sizeof(wchar_t)];
-            GetFileVersionInfo(args[0].c_str(), 0, versionInfoSize, pVersionData);
+            GetFileVersionInfo(szExeFileName, 0, versionInfoSize, pVersionData);
 
             wchar_t *pOriginalFilename;
             uint32_t originalFilenameSize;

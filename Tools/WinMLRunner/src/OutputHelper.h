@@ -222,20 +222,24 @@ public:
         double firstLoadWorkingSetMemoryUsage = profiler[LOAD_MODEL].GetAverage(CounterType::WORKING_SET_USAGE);
         double firstLoadSharedMemoryUsage = profiler[LOAD_MODEL].GetAverage(CounterType::GPU_SHARED_MEM_USAGE);
         double firstLoadDedicatedMemoryUsage = profiler[LOAD_MODEL].GetAverage(CounterType::GPU_DEDICATED_MEM_USAGE);
+        double firstLoadPeakWorkingSetUsage = profiler[LOAD_MODEL].GetAverage(CounterType::PEAK_WORKING_SET_USAGE);
 
         double firstSessionCreationWorkingSetMemoryUsage = profiler[CREATE_SESSION].GetAverage(CounterType::WORKING_SET_USAGE);
         double firstSessionCreationSharedMemoryUsage = profiler[CREATE_SESSION].GetAverage(CounterType::GPU_SHARED_MEM_USAGE);
         double firstSessionCreationDedicatedMemoryUsage = profiler[CREATE_SESSION].GetAverage(CounterType::GPU_DEDICATED_MEM_USAGE);
+        double firstSessionPeakWorkingSetUsage = profiler[CREATE_SESSION].GetAverage(CounterType::PEAK_WORKING_SET_USAGE);
 
         double averageBindMemoryUsage = profiler[BIND_VALUE].GetAverage(CounterType::WORKING_SET_USAGE);
         double minBindMemoryUsage = profiler[BIND_VALUE].GetMin(CounterType::WORKING_SET_USAGE);
         double maxBindMemoryUsage = profiler[BIND_VALUE].GetMax(CounterType::WORKING_SET_USAGE);
         double firstBindMemoryUsage = profiler[BIND_VALUE_FIRST_RUN].GetAverage(CounterType::WORKING_SET_USAGE);
+        double firstBindPeakMemoryUsage = profiler[BIND_VALUE_FIRST_RUN].GetAverage(CounterType::PEAK_WORKING_SET_USAGE);
 
         double averageEvalMemoryUsage = profiler[EVAL_MODEL].GetAverage(CounterType::WORKING_SET_USAGE);
         double minEvalMemoryUsage = profiler[EVAL_MODEL].GetMin(CounterType::WORKING_SET_USAGE);
         double maxEvalMemoryUsage = profiler[EVAL_MODEL].GetMax(CounterType::WORKING_SET_USAGE);
         double firstEvalMemoryUsage = profiler[EVAL_MODEL_FIRST_RUN].GetAverage(CounterType::WORKING_SET_USAGE);
+        double firstEvalPeakMemoryUsage = profiler[EVAL_MODEL_FIRST_RUN].GetAverage(CounterType::PEAK_WORKING_SET_USAGE);
 
         double averageBindDedicatedMemoryUsage = profiler[BIND_VALUE].GetAverage(CounterType::GPU_DEDICATED_MEM_USAGE);
         double minBindDedicatedMemoryUsage = profiler[BIND_VALUE].GetMin(CounterType::GPU_DEDICATED_MEM_USAGE);
@@ -275,6 +279,8 @@ public:
             profiler[BIND_VALUE_FIRST_RUN].GetAverage(CounterType::GPU_DEDICATED_MEM_USAGE) +
             profiler[EVAL_MODEL_FIRST_RUN].GetAverage(CounterType::GPU_DEDICATED_MEM_USAGE);
 
+        double firstIterationPeakWorkingSet = firstLoadPeakWorkingSetUsage + firstSessionPeakWorkingSetUsage + firstBindPeakMemoryUsage + firstEvalPeakMemoryUsage;
+
         printf("\nResults (device = %s, numIterations = %d, inputBinding = %s, inputDataType = %s, deviceCreationLocation = %s):\n",
             TypeHelper::Stringify(deviceType).c_str(),
             numIterations,
@@ -301,6 +307,17 @@ public:
         }
         std::cout << "  Working Set Memory usage (evaluate): " << firstEvalMemoryUsage << " MB" << std::endl;
         std::cout << "  Working Set Memory usage (load, bind, session creation, and evaluate): " << firstIterationWorkingSetMemoryUsage << " MB" << std::endl;
+
+        if (isPerformanceConsoleOutputVerbose)
+        {
+            std::cout << std::endl;
+            std::cout << "  Peak Working Set Memory Difference (from start to load): " << firstLoadPeakWorkingSetUsage << " MB" << std::endl;
+            std::cout << "  Peak Working Set Memory Difference (from model load to session creation): " << firstSessionPeakWorkingSetUsage << " MB" << std::endl;
+            std::cout << "  Peak Working Set Memory Difference (from session to bind): " << firstBindPeakMemoryUsage << " MB" << std::endl;
+            std::cout << "  Peak Working Set Memory Difference (from bind to evaluate): " << firstEvalPeakMemoryUsage << " MB" << std::endl;
+        }
+
+        std::cout << "  Peak Working Set Memory Difference (load, bind, session creation, and evaluate): " << firstIterationPeakWorkingSet << " MB" << std::endl;
 
         if (isPerformanceConsoleOutputVerbose)
         {
@@ -507,16 +524,10 @@ public:
         m_outputTensorHash[iterationNum] = hashcode;
     }
     
-    void SetDefaultPerIterationFolder()
+    void SetDefaultPerIterationFolder(const std::wstring &folderName)
     {
-        auto time = std::time(nullptr);
-        struct tm localTime;
-        localtime_s(&localTime, &time);
-        std::string cur_dir = _getcwd(NULL, 0);
-        std::ostringstream oss;
-        oss << std::put_time(&localTime, "%Y-%m-%d_%H.%M.%S");
-        std::string folderName = "\\PerIterationRun[" + oss.str() + "]";
-        m_folderNamePerIteration = cur_dir + folderName;
+        std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
+        m_folderNamePerIteration = converter.to_bytes(folderName);
         if (_mkdir(m_folderNamePerIteration.c_str()) != 0)
             std::cout << "Folder cannot be created";
     }

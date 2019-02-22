@@ -7,10 +7,11 @@
 namespace TensorizationHelper
 {
     std::wstring GetModulePath();
+    std::wstring GetFileName();
 
     winrt::Windows::AI::MachineLearning::TensorFloat SoftwareBitmapToSoftwareTensor(
-        winrt::Windows::Graphics::Imaging::SoftwareBitmap softwareBitmap);
+    winrt::Windows::Graphics::Imaging::SoftwareBitmap softwareBitmap);
 
     winrt::Windows::AI::MachineLearning::TensorFloat SoftwareBitmapToDX12Tensor(
-        winrt::Windows::Graphics::Imaging::SoftwareBitmap softwareBitmap);
+    winrt::Windows::Graphics::Imaging::SoftwareBitmap softwareBitmap);
 }

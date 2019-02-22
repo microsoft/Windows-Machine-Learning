@@ -20,7 +20,7 @@ namespace SqueezeNetObjectDetectionNC
         private static string _deviceName = "default";
         private static string _modelPath;
         private static string _imagePath;
-        private static string _labelsFileName = "Labels.json";
+        private static string _labelsFileName = "Assets/Labels.json";
         private static LearningModel _model = null;
         private static LearningModelSession _session;
         private static List<string> _labels = new List<string>();

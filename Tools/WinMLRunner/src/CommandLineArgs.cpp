@@ -213,7 +213,13 @@ CommandLineArgs::CommandLineArgs(const std::vector<std::wstring> &args)
         else if (_wcsicmp(args[i].c_str(), L"-version") == 0)
         {
             TCHAR szExeFileName[MAX_PATH];
-            GetModuleFileName(NULL, szExeFileName, MAX_PATH);
+            auto ret = GetModuleFileName(NULL, szExeFileName, MAX_PATH);
+            if (ret == 0) {
+                auto code = GetLastError();
+                std::wstring msg = L"failed to get the version of this file";
+                msg += std::to_wstring(code);
+                throw hresult_invalid_argument(msg.c_str());
+            }
             uint32_t versionInfoSize = GetFileVersionInfoSize(szExeFileName, 0);
             wchar_t *pVersionData = new wchar_t[versionInfoSize / sizeof(wchar_t)];
             GetFileVersionInfo(szExeFileName, 0, versionInfoSize, pVersionData);

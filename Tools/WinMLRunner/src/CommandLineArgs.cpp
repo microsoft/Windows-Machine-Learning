@@ -44,6 +44,15 @@ void CommandLineArgs::PrintUsage() {
     std::cout << "  -ThreadInterval <milliseconds>: interval time between two thread creations in milliseconds" << std::endl;
 }
 
+void CheckAPICall(int return_value) {
+    if (return_value == 0) {
+        auto code = GetLastError();
+        std::wstring msg = L"failed to get the version of this file with error code: ";
+        msg += std::to_wstring(code);
+        throw hresult_invalid_argument(msg.c_str());
+    }
+}
+
 CommandLineArgs::CommandLineArgs(const std::vector<std::wstring> &args)
 {
     for (UINT i = 0; i < args.size(); i++)
@@ -213,22 +222,26 @@ CommandLineArgs::CommandLineArgs(const std::vector<std::wstring> &args)
         else if (_wcsicmp(args[i].c_str(), L"-version") == 0)
         {
             TCHAR szExeFileName[MAX_PATH];
-            GetModuleFileName(NULL, szExeFileName, MAX_PATH);
+            auto ret = GetModuleFileName(NULL, szExeFileName, MAX_PATH);
+            CheckAPICall(ret);
             uint32_t versionInfoSize = GetFileVersionInfoSize(szExeFileName, 0);
             wchar_t *pVersionData = new wchar_t[versionInfoSize / sizeof(wchar_t)];
-            GetFileVersionInfo(szExeFileName, 0, versionInfoSize, pVersionData);
+            CheckAPICall(GetFileVersionInfo(szExeFileName, 0, versionInfoSize, pVersionData));
 
             wchar_t *pOriginalFilename;
             uint32_t originalFilenameSize;
-            VerQueryValue(pVersionData, L"\\StringFileInfo\\040904b0\\OriginalFilename", (void**)&pOriginalFilename, &originalFilenameSize);
+            CheckAPICall(VerQueryValue(pVersionData, L"\\StringFileInfo\\040904b0\\OriginalFilename",
+                (void**)&pOriginalFilename, &originalFilenameSize));
 
             wchar_t *pProductVersion;
             uint32_t productVersionSize;
-            VerQueryValue(pVersionData, L"\\StringFileInfo\\040904b0\\ProductVersion", (void**)&pProductVersion, &productVersionSize);
+            CheckAPICall(VerQueryValue(pVersionData, L"\\StringFileInfo\\040904b0\\ProductVersion",
+                (void**)&pProductVersion, &productVersionSize));
 
             wchar_t *pFileVersion;
             uint32_t fileVersionSize;
-            VerQueryValue(pVersionData, L"\\StringFileInfo\\040904b0\\FileVersion", (void**)&pFileVersion, &fileVersionSize);
+            CheckAPICall(VerQueryValue(pVersionData, L"\\StringFileInfo\\040904b0\\FileVersion",
+                (void**)&pFileVersion, &fileVersionSize));
 
             std::wcout << pOriginalFilename << std::endl;
             std::wcout << L"Version: " << pFileVersion << "." << pProductVersion << std::endl;

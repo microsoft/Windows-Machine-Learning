@@ -27,6 +27,8 @@ For additional information on Windows ML, including step-by-step tutorials and h
 
   [Download x64 Exe](https://github.com/Microsoft/Windows-Machine-Learning/releases/tag/v1.0.0.0)
 
+- **[WinMLTools](https://pypi.org/project/winmltools/)**: a Python tool for converting models from different machine learning toolkits into ONNX for use with Windows ML.
+
 ## Sample apps
 
 These generic examples show how to use various models and input feeds with Windows ML. We have both C++ native desktop apps and C# and Javascript UWP samples
@@ -69,7 +71,6 @@ Reminder: If you unzip individual samples, they will not build due to references
 
 ## Related Projects
  - [ONNX: Open Neural Network Exchange Project](https://onnx.ai/).
- - [WinMLTools](https://pypi.org/project/winmltools/).
 
 ## Contributing
 

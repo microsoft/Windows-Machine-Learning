@@ -613,32 +613,32 @@ public:
                 if (args.IsPerIterationCapture())
                 {
                     fout << "Model Name" << ","
-                        << "Image Name" << ","
-                        << "Iterations" << ","
-                        << "Iteration Number " << ","
-                        << "CPU Working Set Diff (MB)" << ","
-                        << "CPU Working Set Start (MB)" << ","
-                        << "GPU Shared Memory Diff (MB)" << ","
-                        << "GPU Shared Memory Start (MB)" << ","
-                        << "GPU Dedicated Memory Diff (MB)" << ","
-                        << "Load (ms)" << ","
-                        << "Bind (ms)" << ","
-                        << "Evaluate (ms)" << ",";
+                         << "Image Name" << ","
+                         << "Iterations" << ","
+                         << "Iteration Number " << ","
+                         << "CPU Working Set Diff (MB)" << ","
+                         << "CPU Working Set Start (MB)" << ","
+                         << "GPU Shared Memory Diff (MB)" << ","
+                         << "GPU Shared Memory Start (MB)" << ","
+                         << "GPU Dedicated Memory Diff (MB)" << ","
+                         << "Load (ms)" << ","
+                         << "Bind (ms)" << ","
+                         << "Evaluate (ms)" << ",";
 
                     if (args.IsSaveTensor())
                     {
                         fout << "Result" << ","
-                            << "OutputTensorHash" << ","
-                            << "FileName";
+                             << "OutputTensorHash" << ","
+                             << "FileName";
                     }
                 }
 
                 else if (args.IsSaveTensor())
                 {
                     fout << "Iteration Number" << ","
-                        << "Result" << ","
-                        << "OutputTensorHash" << ","
-                        << "FileName";
+                         << "Result" << ","
+                         << "OutputTensorHash" << ","
+                         << "FileName";
                 }
                 fout << std::endl;
             }
@@ -648,36 +648,35 @@ public:
                 for (uint32_t i = 0; i < args.NumIterations(); i++)
                 {
                     fout << modelName << ","
-                        << imgName << ","
-                        << args.NumIterations() << ","
-                        << i + 1 << ","
-                        << m_CPUWorkingDiff[i] << ","
-                        << m_CPUWorkingStart[i] << ","
-                        << m_GPUSharedDiff[i] << ","
-                        << m_GPUSharedStart[i] << ","
-                        << m_GPUDedicatedDiff[i] << ","
-                        << m_clockLoadTimes[i] << ","
-                        << m_clockBindTimes[i] << ","
-                        << m_clockEvalTimes[i] << ",";
+                         << imgName << ","
+                         << args.NumIterations() << ","
+                         << i + 1 << ","
+                         << m_CPUWorkingDiff[i] << ","
+                         << m_CPUWorkingStart[i] << ","
+                         << m_GPUSharedDiff[i] << ","
+                         << m_GPUSharedStart[i] << ","
+                         << m_GPUDedicatedDiff[i] << ","
+                         << m_clockLoadTimes[i] << ","
+                         << m_clockBindTimes[i] << ","
+                         << m_clockEvalTimes[i] << ",";
 
                     if (args.IsSaveTensor() && (args.SaveTensorMode() == "All" || (args.SaveTensorMode() == "First" && i == 0)))
                     {
                         fout << m_outputResult[i] << ","
-                            << m_outputTensorHash[i] << ","
-                            << m_fileNameResultDevice + std::to_string(i + 1) + ".csv" << ",";
+                             << m_outputTensorHash[i] << ","
+                             << m_fileNameResultDevice + std::to_string(i + 1) + ".csv" << ",";
                     }
                     fout << std::endl;
                 }
             }
-
             else if (args.IsSaveTensor())
             {
                 for (uint32_t i = 0; i < args.NumIterations(); i++)
                 {
                     fout << i + 1 << ","
-                        << m_outputResult[i] << ","
-                        << m_outputTensorHash[i] << ","
-                        << m_fileNameResultDevice + std::to_string(i + 1) + ".csv" << std::endl;
+                         << m_outputResult[i] << ","
+                         << m_outputTensorHash[i] << ","
+                         << m_fileNameResultDevice + std::to_string(i + 1) + ".csv" << std::endl;
                     if (args.SaveTensorMode() == "First" && i == 0)
                     {
                         break;

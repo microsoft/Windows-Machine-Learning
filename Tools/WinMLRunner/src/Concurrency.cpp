@@ -1,8 +1,10 @@
-#include "Windows.h"
-#include "common.h"
 #include <iostream>
 #include <thread>
 #include <regex>
+
+#include "Windows.h"
+#include "common.h"
+#include "ThreadPool.h"
 
 using namespace winrt;
 using namespace winrt::Windows::AI::MachineLearning;
@@ -27,12 +29,14 @@ void load_model(const std::wstring &path, bool print_info)
 void ConcurrentLoadModel(const std::vector<std::wstring> &paths, unsigned num_threads,
                          unsigned interval_milliseconds, bool print_info)
 {
-  std::vector<std::thread> threads;
-  unsigned threads_size = paths.size() > num_threads ? paths.size() : num_threads;
-  for (unsigned i = 0; i < threads_size; i++)
+
+  ThreadPool pool(num_threads);
+  size_t threads_size = paths.size() > num_threads ? paths.size() : num_threads;
+  std::vector<std::future<void>> output_futures;
+  for (size_t i = 0; i < threads_size; i++)
   {
-      threads.emplace_back(std::thread(load_model, std::ref(paths[i % paths.size()]), print_info));
       Sleep(interval_milliseconds);
+      output_futures.push_back(pool.SubmitWork(load_model, std::ref(paths[i % paths.size()]), true));
   }
-  std::for_each(threads.begin(), threads.end(), [](std::thread &th) { th.join(); });
+  // TODO: read output values from load_model
 }

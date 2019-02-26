@@ -564,7 +564,7 @@ public:
         {
             m_fileNameResultDevice = m_folderNamePerIteration + "\\" + featureName + "CpuIteration";
         }
-        std::string fileNamePerIterationResult = m_fileNameResultDevice + std::to_string(iterationNum) + ".csv";
+        std::string fileNamePerIterationResult = m_fileNameResultDevice + std::to_string(iterationNum + 1) + ".csv";
         std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
         m_csvFileNamePerIterationResult = converter.from_bytes(fileNamePerIterationResult);
     }
@@ -713,7 +713,7 @@ public:
             fout.open(m_csvFileNamePerIterationResult, std::ios_base::app);
             fout << "Index" << "," << "Value" << std::endl;
         }
-        for (int i = 1; i < size; i++)
+        for (int i = 0; i < size; i++)
         {
             float val = XMConvertHalfToFloat(*(tensor + i));
             if (args.IsSaveTensor())

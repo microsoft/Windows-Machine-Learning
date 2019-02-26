@@ -74,16 +74,7 @@ namespace WinMLRunnerTest
             system(copyCommand.c_str());
         }
     }
-
-    //Check if all the characters are digits in the passed in string
-    bool is_number(const std::string& s)
-    {
-        std::locale loc;
-        std::string::const_iterator it = s.begin();
-        while (it != s.end() && std::isdigit(*it, loc)) ++it;
-        return !s.empty() && it == s.end();
-    }
-
+    
     bool CompareTensors(const std::wstring &expectedOutputTensorFile, const std::wstring &actualOutputTensorFile)
     {
         bool check = false;

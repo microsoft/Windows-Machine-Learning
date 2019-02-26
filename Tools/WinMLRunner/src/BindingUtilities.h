@@ -444,7 +444,7 @@ namespace BindingUtilities
                 case TensorKind::Float16:
                 {
                     com_ptr<ITensorNative> itn = results.Lookup(desc.Name()).as<ITensorNative>();
-                    output.ProcessFP16TensorResult(itn, iterationNum, args, name);
+                    output.ProcessTensorResult<HALF>(itn, iterationNum, args, name);
                 }
                 break;
                 case TensorKind::Float:

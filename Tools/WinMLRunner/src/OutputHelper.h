@@ -613,32 +613,32 @@ public:
                 if (args.IsPerIterationCapture())
                 {
                     fout << "Model Name" << ","
-                         << "Image Name" << ","
-                         << "Iterations" << ","
-                         << "Iteration Number " << ","
-                         << "CPU Working Set Diff (MB)" << ","
-                         << "CPU Working Set Start (MB)" << ","
-                         << "GPU Shared Memory Diff (MB)" << ","
-                         << "GPU Shared Memory Start (MB)" << ","
-                         << "GPU Dedicated Memory Diff (MB)" << ","
-                         << "Load (ms)" << ","
-                         << "Bind (ms)" << ","
-                         << "Evaluate (ms)" << "," ;
+                        << "Image Name" << ","
+                        << "Iterations" << ","
+                        << "Iteration Number " << ","
+                        << "CPU Working Set Diff (MB)" << ","
+                        << "CPU Working Set Start (MB)" << ","
+                        << "GPU Shared Memory Diff (MB)" << ","
+                        << "GPU Shared Memory Start (MB)" << ","
+                        << "GPU Dedicated Memory Diff (MB)" << ","
+                        << "Load (ms)" << ","
+                        << "Bind (ms)" << ","
+                        << "Evaluate (ms)" << ",";
 
                     if (args.IsSaveTensor())
                     {
-                        fout << "Result" << "," 
-                             << "OutputTensorHash" << "," 
-                             << "FileName";
+                        fout << "Result" << ","
+                            << "OutputTensorHash" << ","
+                            << "FileName";
                     }
                 }
 
                 else if (args.IsSaveTensor())
                 {
                     fout << "Iteration Number" << ","
-                         << "Result" << ","
-                         << "OutputTensorHash" << ","
-                         << "FileName"; 
+                        << "Result" << ","
+                        << "OutputTensorHash" << ","
+                        << "FileName";
                 }
                 fout << std::endl;
             }
@@ -660,24 +660,24 @@ public:
                         << m_clockBindTimes[i] << ","
                         << m_clockEvalTimes[i] << ",";
 
-                    if (args.IsSaveTensor() && (args.SaveTensorMode() == "All" || (args.SaveTensorMode()=="First" && i==0)))
+                    if (args.IsSaveTensor() && (args.SaveTensorMode() == "All" || (args.SaveTensorMode() == "First" && i == 0)))
                     {
-                        fout << m_outputResult[i] << "," 
-                             << m_outputTensorHash[i] << "," 
-                             << m_fileNameResultDevice + std::to_string(i + 1) + ".csv" << ",";
+                        fout << m_outputResult[i] << ","
+                            << m_outputTensorHash[i] << ","
+                            << m_fileNameResultDevice + std::to_string(i + 1) + ".csv" << ",";
                     }
                     fout << std::endl;
                 }
             }
-           
+
             else if (args.IsSaveTensor())
             {
                 for (uint32_t i = 0; i < args.NumIterations(); i++)
                 {
-                    fout << i+1 << "," 
-                         << m_outputResult[i] << ","
-                         << m_outputTensorHash[i] << ","
-                         << m_fileNameResultDevice + std::to_string(i + 1) + ".csv" << std::endl;
+                    fout << i + 1 << ","
+                        << m_outputResult[i] << ","
+                        << m_outputTensorHash[i] << ","
+                        << m_fileNameResultDevice + std::to_string(i + 1) + ".csv" << std::endl;
                     if (args.SaveTensorMode() == "First" && i == 0)
                     {
                         break;
@@ -685,58 +685,6 @@ public:
                 }
             }
             fout.close();
-        }
-    }
-    
-    void ProcessFP16TensorResult(com_ptr<ITensorNative> itn,
-                                 uint32_t iterationNum,
-                                 const CommandLineArgs& args,
-                                 std::string& featureName)
-    {
-        if (args.IsSaveTensor() && args.SaveTensorMode() == "First" && iterationNum > 0)
-        {
-            return;
-        }
-        if (args.IsSaveTensor())
-        {
-            SetDefaultCSVIterationResult(iterationNum, args, featureName);
-        }
-        HALF* tensor;
-        uint32_t uCapacity;
-        HRESULT(itn->GetBuffer(reinterpret_cast<BYTE**>(&tensor), &uCapacity));
-        int size = uCapacity / sizeof(HALF);
-        float maxValue = XMConvertHalfToFloat(*tensor);
-        UINT maxIndex = 0;
-        std::ofstream fout;
-        if (args.IsSaveTensor())
-        {
-            fout.open(m_csvFileNamePerIterationResult, std::ios_base::app);
-            fout << "Index" << "," << "Value" << std::endl;
-        }
-        for (int i = 0; i < size; i++)
-        {
-            float val = XMConvertHalfToFloat(*(tensor + i));
-            if (args.IsSaveTensor())
-            {
-                fout << i << "," << val << std::endl;
-            }
-            if (maxValue < val)
-            {
-                maxValue = val;
-                maxIndex = i;
-            }
-        }
-        if (args.IsSaveTensor())
-        {
-            fout.close();
-            std::string iterationResult = "Index: " + std::to_string(maxIndex) + "; Value: " + std::to_string(maxValue);
-            SaveResult(iterationNum, iterationResult, static_cast<int>(hash_data(tensor, uCapacity)));
-        }
-        if (!args.IsGarbageInput() && iterationNum == 0)
-        {
-            std::cout << "Outputting results.. " << std::endl;
-            std::cout << "Feature Name: " << featureName << std::endl;
-            std::wcout << " resultVector[" << maxIndex << "] has the maximal value of " << maxValue << std::endl;
         }
     }
 
@@ -769,6 +717,59 @@ public:
         for (int i = 0; i < size; i++)
         {
             auto val = *(tensor + i);
+            if (args.IsSaveTensor())
+            {
+                fout << i << "," << val << std::endl;
+            }
+            if (maxValue < val)
+            {
+                maxValue = val;
+                maxIndex = i;
+            }
+        }
+        if (args.IsSaveTensor())
+        {
+            fout.close();
+            std::string iterationResult = "Index: " + std::to_string(maxIndex) + "; Value: " + std::to_string(maxValue);
+            SaveResult(iterationNum, iterationResult, static_cast<int>(hash_data(tensor, uCapacity)));
+        }
+        if (!args.IsGarbageInput() && iterationNum == 0)
+        {
+            std::cout << "Outputting results.. " << std::endl;
+            std::cout << "Feature Name: " << featureName << std::endl;
+            std::wcout << " resultVector[" << maxIndex << "] has the maximal value of " << maxValue << std::endl;
+        }
+    }
+
+    template<>
+    void ProcessTensorResult<HALF>(com_ptr<ITensorNative> itn,
+                                   uint32_t iterationNum,
+                                   const CommandLineArgs& args,
+                                   std::string& featureName)
+    {
+        if (args.IsSaveTensor() && args.SaveTensorMode() == "First" && iterationNum > 0)
+        {
+            return;
+        }
+        if (args.IsSaveTensor())
+        {
+            SetDefaultCSVIterationResult(iterationNum, args, featureName);
+        }
+        HALF* tensor;
+        uint32_t uCapacity;
+        HRESULT(itn->GetBuffer(reinterpret_cast<BYTE**>(&tensor), &uCapacity));
+        int size = uCapacity / sizeof(HALF);
+        float maxValue = XMConvertHalfToFloat(*tensor);
+        UINT maxIndex = 0;
+        std::ofstream fout;
+        if (args.IsSaveTensor())
+        {
+            fout.open(m_csvFileNamePerIterationResult, std::ios_base::app);
+            fout << "Index" << "," << "Value" << std::endl;
+        }
+        for (int i = 0; i < size; i++)
+        {
+            float val = XMConvertHalfToFloat(*(tensor + i));
             if (args.IsSaveTensor())
             {
                 fout << i << "," << val << std::endl;

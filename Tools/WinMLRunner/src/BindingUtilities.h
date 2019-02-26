@@ -427,6 +427,27 @@ namespace BindingUtilities
             if (desc.Kind() == LearningModelFeatureKind::Tensor)
             {
                 std::string name = to_string(desc.Name());
+                if (args.IsSaveTensor() && args.SaveTensorMode() == "First" && iterationNum > 0)
+                {
+                    return;
+                }
+                if (args.IsSaveTensor())
+                {
+                    output.SetDefaultCSVIterationResult(iterationNum, args, name);
+                }
+                void* tensor;
+                uint32_t uCapacity;
+                com_ptr<ITensorNative> itn = results.Lookup(desc.Name()).as<ITensorNative>();
+                HRESULT(itn->GetBuffer(reinterpret_cast<BYTE**>(&tensor), &uCapacity));
+                int size = 0;
+                float maxValue = 0;
+                int maxIndex = 0;
+                std::ofstream fout;
+                if (args.IsSaveTensor())
+                {
+                    fout.open(output.getCsvFileNamePerIterationResult(), std::ios_base::app);
+                    fout << "Index" << "," << "Value" << std::endl;
+                }
                 TensorFeatureDescriptor tensorDescriptor = desc.as<TensorFeatureDescriptor>();
                 TensorKind tensorKind = tensorDescriptor.TensorKind();
                 switch (tensorKind)
@@ -443,14 +464,12 @@ namespace BindingUtilities
                 break;
                 case TensorKind::Float16:
                 {
-                    com_ptr<ITensorNative> itn = results.Lookup(desc.Name()).as<ITensorNative>();
-                    output.ProcessTensorResult<HALF>(itn, iterationNum, args, name);
+                    output.ProcessTensorResult<HALF>(args, tensor, uCapacity, maxValue, maxIndex, fout);
                 }
                 break;
                 case TensorKind::Float:
                 {
-                    com_ptr<ITensorNative> itn = results.Lookup(desc.Name()).as<ITensorNative>();
-                    output.ProcessTensorResult<float>(itn, iterationNum, args, name);
+                    output.ProcessTensorResult<float>(args, tensor, uCapacity, maxValue, maxIndex, fout);
                 }
                 break;
                 case TensorKind::Int64:
@@ -469,7 +488,18 @@ namespace BindingUtilities
                 }
                 break;
                 }
-                std::cout << std::endl;
+                if (args.IsSaveTensor())
+                {
+                    fout.close();
+                    std::string iterationResult = "Index: " + std::to_string(maxIndex) + "; Value: " + std::to_string(maxValue);
+                    output.SaveResult(iterationNum, iterationResult, static_cast<int>(hash_data(tensor, uCapacity)));
+                }
+                if (!args.IsGarbageInput() && iterationNum == 0)
+                {
+                    std::cout << "Outputting results.. " << std::endl;
+                    std::cout << "Feature Name: " << name << std::endl;
+                    std::wcout << " resultVector[" << maxIndex << "] has the maximal value of " << maxValue << std::endl;
+                }
             }
             else if (desc.Kind() == LearningModelFeatureKind::Sequence)
             {

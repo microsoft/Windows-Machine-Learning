@@ -89,25 +89,22 @@ namespace WinMLRunnerTest
             return false;
         }
         // hard coded, might need to be modified later.
-        float epsilon = 0.003f;
+        float relativeTolerance = 0.003f;
+        bool isFirstRow = true;
         while (!(expectedFileStream.eof() || actualFileStream.eof()))
         {
             std::getline(expectedFileStream, expectedValue, ',');
             std::getline(expectedFileStream, expectedValue, '\n');
             std::getline(actualFileStream, actualValue, ',');
             std::getline(actualFileStream, actualValue, '\n');
-            float actualValueNum = 0;
-            float expectedValueNum = 0;
-            try
+            if (isFirstRow)
             {
-                actualValueNum = std::stof(actualValue);
-                expectedValueNum = std::stof(expectedValue);
+                isFirstRow = false;
+                continue;
             }
-            catch (...)
-            {
-                //If the string values aren't floats then ignore
-            }
-            if (std::abs(actualValueNum - expectedValueNum) > epsilon * std::abs(expectedValueNum) + epsilon) //Check if the values are too different.
+            float actualValueNum = (actualValue == "") ? 0 : std::stof(actualValue);
+            float expectedValueNum = (expectedValue == "") ? 0 : std::stof(expectedValue);
+            if (std::abs(actualValueNum - expectedValueNum) > relativeTolerance * std::abs(expectedValueNum) + relativeTolerance) //Check if the values are too different.
             {
                 return false;
             }

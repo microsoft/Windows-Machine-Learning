@@ -688,34 +688,28 @@ public:
     }
 
     template<typename T>
-    void ProcessTensorResult(com_ptr<ITensorNative> itn,
-                             uint32_t iterationNum,
-                             const CommandLineArgs& args,
-                             std::string& featureName)
+    void ProcessTensorResult(const CommandLineArgs& args,
+                             const void* buffer,
+                             const uint32_t uCapacity,
+                             float& maxValue,
+                             int& maxIndex,
+                             std::ofstream& fout)
     {
-        if (args.IsSaveTensor() && args.SaveTensorMode() == "First" && iterationNum > 0)
-        {
-            return;
-        }
-        if (args.IsSaveTensor())
-        {
-            SetDefaultCSVIterationResult(iterationNum, args, featureName);
-        }
-        T* tensor;
-        uint32_t uCapacity;
-        HRESULT(itn->GetBuffer(reinterpret_cast<BYTE**>(&tensor), &uCapacity));
+        T* tensor = (T*)buffer;
         int size = uCapacity / sizeof(T);
-        auto maxValue = *tensor;
-        auto maxIndex = 0;
-        std::ofstream fout;
-        if (args.IsSaveTensor())
-        {
-            fout.open(m_csvFileNamePerIterationResult, std::ios_base::app);
-            fout << "Index" << "," << "Value" << std::endl;
-        }
+        maxValue = *tensor;
+        maxIndex = 0;
         for (int i = 0; i < size; i++)
         {
-            auto val = *(tensor + i);
+            float val = 0;
+            if (!std::is_same<T, HALF>::value)
+            {
+                val = *(tensor + i);
+            }
+            else
+            {
+                val = XMConvertHalfToFloat(static_cast<HALF>(*(tensor + i)));
+            }
             if (args.IsSaveTensor())
             {
                 fout << i << "," << val << std::endl;
@@ -726,73 +720,8 @@ public:
                 maxIndex = i;
             }
         }
-        if (args.IsSaveTensor())
-        {
-            fout.close();
-            std::string iterationResult = "Index: " + std::to_string(maxIndex) + "; Value: " + std::to_string(maxValue);
-            SaveResult(iterationNum, iterationResult, static_cast<int>(hash_data(tensor, uCapacity)));
-        }
-        if (!args.IsGarbageInput() && iterationNum == 0)
-        {
-            std::cout << "Outputting results.. " << std::endl;
-            std::cout << "Feature Name: " << featureName << std::endl;
-            std::wcout << " resultVector[" << maxIndex << "] has the maximal value of " << maxValue << std::endl;
-        }
     }
-
-    template<>
-    void ProcessTensorResult<HALF>(com_ptr<ITensorNative> itn,
-                                   uint32_t iterationNum,
-                                   const CommandLineArgs& args,
-                                   std::string& featureName)
-    {
-        if (args.IsSaveTensor() && args.SaveTensorMode() == "First" && iterationNum > 0)
-        {
-            return;
-        }
-        if (args.IsSaveTensor())
-        {
-            SetDefaultCSVIterationResult(iterationNum, args, featureName);
-        }
-        HALF* tensor;
-        uint32_t uCapacity;
-        HRESULT(itn->GetBuffer(reinterpret_cast<BYTE**>(&tensor), &uCapacity));
-        int size = uCapacity / sizeof(HALF);
-        float maxValue = XMConvertHalfToFloat(*tensor);
-        UINT maxIndex = 0;
-        std::ofstream fout;
-        if (args.IsSaveTensor())
-        {
-            fout.open(m_csvFileNamePerIterationResult, std::ios_base::app);
-            fout << "Index" << "," << "Value" << std::endl;
-        }
-        for (int i = 0; i < size; i++)
-        {
-            float val = XMConvertHalfToFloat(*(tensor + i));
-            if (args.IsSaveTensor())
-            {
-                fout << i << "," << val << std::endl;
-            }
-            if (maxValue < val)
-            {
-                maxValue = val;
-                maxIndex = i;
-            }
-        }
-        if (args.IsSaveTensor())
-        {
-            fout.close();
-            std::string iterationResult = "Index: " + std::to_string(maxIndex) + "; Value: " + std::to_string(maxValue);
-            SaveResult(iterationNum, iterationResult, static_cast<int>(hash_data(tensor, uCapacity)));
-        }
-        if (!args.IsGarbageInput() && iterationNum == 0)
-        {
-            std::cout << "Outputting results.. " << std::endl;
-            std::cout << "Feature Name: " << featureName << std::endl;
-            std::wcout << " resultVector[" << maxIndex << "] has the maximal value of " << maxValue << std::endl;
-        }
-    }
-
+    
     void WritePerformanceDataToCSV(
         const Profiler<WINML_MODEL_TEST_PERF> &profiler,
         int numIterations, std::wstring model,
@@ -975,6 +904,10 @@ public:
     std::vector<double> m_clockBindTimes;
     std::vector<double> m_clockEvalTimes;
 
+    std::wstring getCsvFileNamePerIterationResult()
+    {
+        return m_csvFileNamePerIterationResult;
+    }
 private:
     std::wstring m_csvFileName;
     std::wstring m_csvFileNamePerIterationSummary;

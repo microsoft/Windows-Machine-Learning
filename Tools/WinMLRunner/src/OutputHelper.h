@@ -15,6 +15,28 @@ using namespace winrt::Windows::AI::MachineLearning;
 using namespace winrt::Windows::Storage::Streams;
 using namespace ::Windows::Graphics::DirectX::Direct3D11;
 using namespace winrt::Windows::Graphics::DirectX::Direct3D11;
+using namespace DirectX::PackedVector;
+
+inline size_t hash_data(void const* ptr, size_t const bytes) noexcept
+{
+#ifdef _WIN64
+    constexpr size_t fnv_offset_basis = 14695981039346656037ULL;
+    constexpr size_t fnv_prime = 1099511628211ULL;
+#else
+    constexpr size_t fnv_offset_basis = 2166136261U;
+    constexpr size_t fnv_prime = 16777619U;
+#endif
+    size_t result = fnv_offset_basis;
+    uint8_t const* const buffer = static_cast<uint8_t const*>(ptr);
+
+    for (size_t next = 0; next < bytes; ++next)
+    {
+        result ^= buffer[next];
+        result *= fnv_prime;
+    }
+
+    return result;
+}
 
 // Stores performance information and handles output to the command line and CSV files.
 class OutputHelper
@@ -524,7 +546,7 @@ public:
             if (!m_flagGpuDevice)
             {
                 m_fileNameResultDevice = m_folderNamePerIteration + "\\" + featureName + "CpuIteration";
-                if (iterationNum == args.NumIterations() || args.SaveTensorMode() == "First")
+                if (iterationNum == args.NumIterations() - 1 || args.SaveTensorMode() == "First")
                 {
                     m_flagGpuDevice = true;
                 }
@@ -542,7 +564,7 @@ public:
         {
             m_fileNameResultDevice = m_folderNamePerIteration + "\\" + featureName + "CpuIteration";
         }
-        std::string fileNamePerIterationResult = m_fileNameResultDevice + std::to_string(iterationNum) + ".csv";
+        std::string fileNamePerIterationResult = m_fileNameResultDevice + std::to_string(iterationNum + 1) + ".csv";
         std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
         m_csvFileNamePerIterationResult = converter.from_bytes(fileNamePerIterationResult);
     }
@@ -601,12 +623,12 @@ public:
                          << "GPU Dedicated Memory Diff (MB)" << ","
                          << "Load (ms)" << ","
                          << "Bind (ms)" << ","
-                         << "Evaluate (ms)" << "," ;
+                         << "Evaluate (ms)" << ",";
 
                     if (args.IsSaveTensor())
                     {
-                        fout << "Result" << "," 
-                             << "OutputTensorHash" << "," 
+                        fout << "Result" << ","
+                             << "OutputTensorHash" << ","
                              << "FileName";
                     }
                 }
@@ -616,7 +638,7 @@ public:
                     fout << "Iteration Number" << ","
                          << "Result" << ","
                          << "OutputTensorHash" << ","
-                         << "FileName"; 
+                         << "FileName";
                 }
                 fout << std::endl;
             }
@@ -626,33 +648,32 @@ public:
                 for (uint32_t i = 0; i < args.NumIterations(); i++)
                 {
                     fout << modelName << ","
-                        << imgName << ","
-                        << args.NumIterations() << ","
-                        << i + 1 << ","
-                        << m_CPUWorkingDiff[i] << ","
-                        << m_CPUWorkingStart[i] << ","
-                        << m_GPUSharedDiff[i] << ","
-                        << m_GPUSharedStart[i] << ","
-                        << m_GPUDedicatedDiff[i] << ","
-                        << m_clockLoadTimes[i] << ","
-                        << m_clockBindTimes[i] << ","
-                        << m_clockEvalTimes[i] << ",";
+                         << imgName << ","
+                         << args.NumIterations() << ","
+                         << i + 1 << ","
+                         << m_CPUWorkingDiff[i] << ","
+                         << m_CPUWorkingStart[i] << ","
+                         << m_GPUSharedDiff[i] << ","
+                         << m_GPUSharedStart[i] << ","
+                         << m_GPUDedicatedDiff[i] << ","
+                         << m_clockLoadTimes[i] << ","
+                         << m_clockBindTimes[i] << ","
+                         << m_clockEvalTimes[i] << ",";
 
-                    if (args.IsSaveTensor() && (args.SaveTensorMode() == "All" || (args.SaveTensorMode()=="First" && i==0)))
+                    if (args.IsSaveTensor() && (args.SaveTensorMode() == "All" || (args.SaveTensorMode() == "First" && i == 0)))
                     {
-                        fout << m_outputResult[i] << "," 
-                             << m_outputTensorHash[i] << "," 
+                        fout << m_outputResult[i] << ","
+                             << m_outputTensorHash[i] << ","
                              << m_fileNameResultDevice + std::to_string(i + 1) + ".csv" << ",";
                     }
                     fout << std::endl;
                 }
             }
-           
             else if (args.IsSaveTensor())
             {
                 for (uint32_t i = 0; i < args.NumIterations(); i++)
                 {
-                    fout << i+1 << "," 
+                    fout << i + 1 << ","
                          << m_outputResult[i] << ","
                          << m_outputTensorHash[i] << ","
                          << m_fileNameResultDevice + std::to_string(i + 1) + ".csv" << std::endl;
@@ -667,27 +688,40 @@ public:
     }
 
     template<typename T>
-    void WriteTensorResultToCSV(T* m_Res, uint32_t iterationNum, const CommandLineArgs &args, uint32_t &capacity, std::string &featureName)
+    void ProcessTensorResult(const CommandLineArgs& args,
+                             const void* buffer,
+                             const uint32_t uCapacity,
+                             float& maxValue,
+                             int& maxIndex,
+                             std::ofstream& fout)
     {
-        if (args.SaveTensorMode() == "First" && iterationNum > 1)
+        T* tensor = (T*)buffer;
+        int size = uCapacity / sizeof(T);
+        maxValue = *tensor;
+        maxIndex = 0;
+        for (int i = 0; i < size; i++)
         {
-            return;
-        }
-        SetDefaultCSVIterationResult(iterationNum, args, featureName);
-        if (m_csvFileNamePerIterationResult.length() > 0)
-        {
-            std::ofstream fout;
-            fout.open(m_csvFileNamePerIterationResult, std::ios_base::app);
-            fout << "Index" << "," << "Value" << std::endl;
-            int size = capacity / sizeof(T);
-            for (int i = 0; i < size; i++)
+            float val = 0;
+            if (!std::is_same<T, HALF>::value)
             {
-                fout << i << "," << *(m_Res+i) << std::endl;
+                val = *(tensor + i);
             }
-            fout.close();
+            else
+            {
+                val = XMConvertHalfToFloat(static_cast<HALF>(*(tensor + i)));
+            }
+            if (args.IsSaveTensor())
+            {
+                fout << i << "," << val << std::endl;
+            }
+            if (maxValue < val)
+            {
+                maxValue = val;
+                maxIndex = i;
+            }
         }
     }
-
+    
     void WritePerformanceDataToCSV(
         const Profiler<WINML_MODEL_TEST_PERF> &profiler,
         int numIterations, std::wstring model,
@@ -870,6 +904,10 @@ public:
     std::vector<double> m_clockBindTimes;
     std::vector<double> m_clockEvalTimes;
 
+    std::wstring getCsvFileNamePerIterationResult()
+    {
+        return m_csvFileNamePerIterationResult;
+    }
 private:
     std::wstring m_csvFileName;
     std::wstring m_csvFileNamePerIterationSummary;

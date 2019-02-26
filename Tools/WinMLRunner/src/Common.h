@@ -27,6 +27,7 @@
 #include <d3d12.h>
 #include "TypeHelper.h"
 #include "TimerHelper.h"
+#include "DirectXPackedVector.h"
 
 enum WINML_MODEL_TEST_PERF
 {

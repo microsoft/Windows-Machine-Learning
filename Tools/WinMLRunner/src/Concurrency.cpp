@@ -31,6 +31,8 @@ void ConcurrentLoadModel(const std::vector<std::wstring> &paths, unsigned num_th
 {
 
   ThreadPool pool(num_threads);
+  // Creating enough threads to load all the models specified
+  // If there is more than enough threads, some threads will concurrently load same models
   size_t threads_size = paths.size() > num_threads ? paths.size() : num_threads;
   std::vector<std::future<void>> output_futures;
   for (size_t i = 0; i < threads_size; i++)

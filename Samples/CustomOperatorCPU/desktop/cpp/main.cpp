@@ -41,7 +41,10 @@ struct CommandLineInterpreter
         {
             if (0 == _wcsicmp(L"debug", m_commandLineArgs[1].c_str()))
             {
-                return GetModelPath(L"squeezenet_debug_one_output.onnx");
+                // return GetModelPath(L"squeezenet_debug_one_output.onnx");
+                // return GetModelPath(L"squeezenet_debug_all_outputs.onnx");
+                // return GetModelPath(L"squeezenet_fp16.onnx");
+                return GetModelPath(L"squeezenet_dao_fp16.onnx");
             }
             else if (0 == _wcsicmp(L"relu", m_commandLineArgs[1].c_str()))
             {
@@ -162,7 +165,8 @@ void RunSqueezeNet(Session session, Model model, hstring imagePath) {
     bindings.Bind(model.InputFeatures().GetAt(0).Name(), i);
     // temp: bind the output (we don't support unbound outputs yet)
     vector<int64_t> shape({ 1, 1000, 1, 1 });
-    bindings.Bind(model.OutputFeatures().GetAt(0).Name(), TensorFloat::Create(shape));
+    // bindings.Bind(model.OutputFeatures().GetAt(0).Name(), TensorFloat::Create(shape));
+    bindings.Bind(model.OutputFeatures().GetAt(0).Name(), TensorFloat16Bit::Create(shape));
 
     // now run the model
     printf("Running the model...intermediate debug operators will be output to specified file paths\n");
@@ -173,7 +177,7 @@ void RunSqueezeNet(Session session, Model model, hstring imagePath) {
     printf("model run took %d ticks\n", ticks);
 
     // get the output
-    auto resultTensor = results.Outputs().Lookup(L"softmaxout_1").as<TensorFloat>();
+    auto resultTensor = results.Outputs().Lookup(L"softmaxout_1").as<TensorFloat16Bit>();
     auto resultVector = resultTensor.GetAsVectorView();
     PrintResults(resultVector);
 }

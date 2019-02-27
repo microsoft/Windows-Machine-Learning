@@ -60,6 +60,14 @@ steps:
     displayName: 'NuGet restore'
     condition: succeededOrFailed()
 
+    
+  - task: DotNetCoreCLI@2
+    inputs:
+      command: publish
+      publishWebProjects: True
+      arguments: 'Samples\SqueezeNetObjectDetection\NETCore\cs\SqueezeNetObjectDetectionNC.csproj --configuration $(BuildConfiguration) --output $(Build.ArtifactStagingDirectory)'
+      zipAfterPublish: True
+
   - task: VSBuild@1
     displayName: 'Build AdapterSelection Sample '
     inputs:

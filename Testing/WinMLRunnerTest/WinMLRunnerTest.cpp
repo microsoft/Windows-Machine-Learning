@@ -658,6 +658,36 @@ namespace WinMLRunnerTest
         }
     };
 
+    TEST_CLASS(ConcurrencyTest)
+    {
+    public:
+        TEST_CLASS_INITIALIZE(SetupClass)
+        {
+            // Make test_folder_input folder before starting the tests
+            std::string mkFolderCommand = "mkdir " + std::string(INPUT_FOLDER_PATH.begin(), INPUT_FOLDER_PATH.end());
+            system(mkFolderCommand.c_str());
+
+            std::vector<std::string> models = { "SqueezeNet.onnx", "keras_Add_ImageNet_small.onnx" };
+
+            // Copy models from list to test_folder_input
+            for (auto model : models)
+            {
+                std::string copyCommand = "Copy ";
+                copyCommand += model;
+                copyCommand += ' ' + std::string(INPUT_FOLDER_PATH.begin(), INPUT_FOLDER_PATH.end());
+                system(copyCommand.c_str());
+            }
+        }
+
+        TEST_METHOD(RunFolder)
+        {
+            const std::wstring command = BuildCommand({
+                EXE_PATH, L"-folder", INPUT_FOLDER_PATH, L"-ConcurrentLoad", L"-NumThreads", L"5"
+            });
+            Assert::AreEqual(S_OK, RunProc((wchar_t *)command.c_str()));
+        }
+    };
+
     TEST_CLASS(OtherTests)
     {
     public:

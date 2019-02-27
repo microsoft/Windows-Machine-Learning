@@ -20,9 +20,11 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src/Scenarios.h" />
+    <ClInclude Include="src\ThreadPool.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src/Concurrency.cpp" />
+    <ClCompile Include="src\ThreadPool.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>

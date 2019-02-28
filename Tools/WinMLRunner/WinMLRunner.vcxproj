@@ -48,7 +48,7 @@
     <ProjectGuid>{31653A2F-02CC-4A95-9880-BF86965FB262}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>WinMLRunner</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.18323.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.17763.0</WindowsTargetPlatformVersion>
     <WindowsSDKDesktopARM64Support>true</WindowsSDKDesktopARM64Support>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -77,7 +77,6 @@
     <PlatformToolset>v141</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
-    <WindowsAppContainer>false</WindowsAppContainer>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
@@ -148,7 +147,6 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
-      <ShowIncludes>true</ShowIncludes>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeaderFile>
@@ -159,14 +157,8 @@
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
-      <AdditionalDependencies>mincore.lib;windowsapp.lib;d3d12.lib;dxgi.lib;d3d11.lib;onecore.lib</AdditionalDependencies>
-      <AdditionalOptions>
-      </AdditionalOptions>
-      <DelayLoadDLLs>dxgi.dll;d3d11.dll; ext-ms-win-dxcore-l1-1-0.dll</DelayLoadDLLs>
-      <IgnoreAllDefaultLibraries>
-      </IgnoreAllDefaultLibraries>
-      <IgnoreSpecificDefaultLibraries>kernel32.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
-      <GenerateDebugInformation>DebugFull</GenerateDebugInformation>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>WindowsApp.lib; mincore.lib; DXGI.lib</AdditionalDependencies>
     </Link>
     <PreBuildEvent>
       <Command>$(ProjectDir)src\GenerateVersionStrings.cmd $(ProjectDir) $(IntDir)</Command>
@@ -187,18 +179,11 @@
       </PrecompiledHeaderFile>
       <PrecompiledHeaderOutputFile />
       <LanguageStandard>stdcpp17</LanguageStandard>
-      <ConformanceMode>true</ConformanceMode>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
-      <AdditionalDependencies>mincore.lib;windowsapp.lib;d3d12.lib;dxgi.lib;d3d11.lib;onecore.lib</AdditionalDependencies>
-      <AdditionalOptions>
-      </AdditionalOptions>
-      <DelayLoadDLLs>dxgi.dll;d3d11.dll; ext-ms-win-dxcore-l1-1-0.dll</DelayLoadDLLs>
-      <IgnoreAllDefaultLibraries>
-      </IgnoreAllDefaultLibraries>
-      <IgnoreSpecificDefaultLibraries>kernel32.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
-      <GenerateDebugInformation>DebugFull</GenerateDebugInformation>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>WindowsApp.lib; mincore.lib; DXGI.lib</AdditionalDependencies>
     </Link>
     <ResourceCompile>
       <AdditionalIncludeDirectories>$(IntDir)</AdditionalIncludeDirectories>
@@ -223,14 +208,8 @@
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
-      <AdditionalDependencies>mincore.lib;windowsapp.lib;d3d12.lib;dxgi.lib;d3d11.lib;onecore.lib</AdditionalDependencies>
-      <AdditionalOptions>
-      </AdditionalOptions>
-      <DelayLoadDLLs>dxgi.dll;d3d11.dll; ext-ms-win-dxcore-l1-1-0.dll</DelayLoadDLLs>
-      <IgnoreAllDefaultLibraries>
-      </IgnoreAllDefaultLibraries>
-      <IgnoreSpecificDefaultLibraries>kernel32.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
-      <GenerateDebugInformation>DebugFull</GenerateDebugInformation>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>WindowsApp.lib; mincore.lib; DXGI.lib</AdditionalDependencies>
     </Link>
     <ResourceCompile>
       <AdditionalIncludeDirectories>$(IntDir)</AdditionalIncludeDirectories>
@@ -247,7 +226,6 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <ShowIncludes>true</ShowIncludes>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeaderFile>
@@ -257,16 +235,11 @@
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
     </ClCompile>
     <Link>
+      <SubSystem>Console</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <SubSystem>Console</SubSystem>
-      <AdditionalDependencies>mincore.lib;windowsapp.lib;d3d12.lib;dxgi.lib;d3d11.lib;onecore.lib</AdditionalDependencies>
-      <AdditionalOptions>
-      </AdditionalOptions>
-      <DelayLoadDLLs>dxgi.dll;d3d11.dll; ext-ms-win-dxcore-l1-1-0.dll</DelayLoadDLLs>
-      <IgnoreAllDefaultLibraries>
-      </IgnoreAllDefaultLibraries>
-      <IgnoreSpecificDefaultLibraries>kernel32.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>WindowsApp.lib; mincore.lib; DXGI.lib</AdditionalDependencies>
     </Link>
     <ResourceCompile>
       <AdditionalIncludeDirectories>$(IntDir)</AdditionalIncludeDirectories>
@@ -293,16 +266,11 @@
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
     </ClCompile>
     <Link>
+      <SubSystem>Console</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <SubSystem>Console</SubSystem>
-      <AdditionalDependencies>mincore.lib;windowsapp.lib;d3d12.lib;dxgi.lib;d3d11.lib;onecore.lib</AdditionalDependencies>
-      <AdditionalOptions>
-      </AdditionalOptions>
-      <DelayLoadDLLs>dxgi.dll;d3d11.dll; ext-ms-win-dxcore-l1-1-0.dll</DelayLoadDLLs>
-      <IgnoreAllDefaultLibraries>
-      </IgnoreAllDefaultLibraries>
-      <IgnoreSpecificDefaultLibraries>kernel32.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>WindowsApp.lib; mincore.lib; DXGI.lib</AdditionalDependencies>
     </Link>
     <ResourceCompile>
       <AdditionalIncludeDirectories>$(IntDir)</AdditionalIncludeDirectories>
@@ -329,16 +297,11 @@
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
     </ClCompile>
     <Link>
+      <SubSystem>Console</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <SubSystem>Console</SubSystem>
-      <AdditionalDependencies>mincore.lib;windowsapp.lib;d3d12.lib;dxgi.lib;d3d11.lib;onecore.lib</AdditionalDependencies>
-      <AdditionalOptions>
-      </AdditionalOptions>
-      <DelayLoadDLLs>dxgi.dll;d3d11.dll; ext-ms-win-dxcore-l1-1-0.dll</DelayLoadDLLs>
-      <IgnoreAllDefaultLibraries>
-      </IgnoreAllDefaultLibraries>
-      <IgnoreSpecificDefaultLibraries>kernel32.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>WindowsApp.lib; mincore.lib; DXGI.lib</AdditionalDependencies>
     </Link>
     <PreBuildEvent>
       <Command>$(ProjectDir)src\GenerateVersionStrings.cmd $(ProjectDir) $(IntDir)</Command>

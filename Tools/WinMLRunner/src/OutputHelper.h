@@ -135,36 +135,29 @@ public:
     void PrintHardwareInfo() const
     {
         std::cout << "WinML Runner" << std::endl;
-
-        com_ptr<IDXGIFactory4> factory;
-        HRESULT hr;
-
-        try
-        {
-            hr = CreateDXGIFactory2SEH(factory.put_void());
-        }
-        catch (...)
-        {
-            hr = E_FAIL;
-        }
-        if (hr != S_OK)
-        {
-            return;
-        }
-
-        //Print All Adapters
-        com_ptr<IDXGIAdapter> adapter;
-        for (UINT i = 0; ; ++i)
-        {
+        std::cout << "Printing available GPUs with DXGI.." << std::endl;
+        com_ptr<IDXGIFactory6> factory;
+        CreateDXGIFactory1(__uuidof(IDXGIFactory6), factory.put_void());
+        std::vector <com_ptr<IDXGIAdapter1>> validAdapters;
+        for (UINT i = 0; ; ++i) {
             com_ptr<IDXGIAdapter1> spAdapter;
-            if (factory->EnumAdapters1(i, spAdapter.put()) != S_OK)
-            {
+            if (factory->EnumAdapters1(i, spAdapter.put()) != S_OK) {
                 break;
             }
             DXGI_ADAPTER_DESC1 pDesc;
             spAdapter->GetDesc1(&pDesc);
-            printf("Index: %d, Description: %ls\n", i, pDesc.Description);
+
+            // is a software adapter
+            if (pDesc.Flags == DXGI_ADAPTER_FLAG_SOFTWARE || (pDesc.VendorId == 0x1414 && pDesc.DeviceId == 0x8c)) {
+                continue;
+            }
+            // valid GPU adapter
+            else {
+                printf("Index: %d, Description: %ls\n", static_cast<int>(validAdapters.size()), pDesc.Description);
+                validAdapters.push_back(spAdapter);
+            }
         }
+        std::cout << std::endl;
     }
 
     void PrintLearningModelDevice(DeviceType deviceType, const LearningModelDevice& device)

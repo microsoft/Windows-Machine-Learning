@@ -17,7 +17,7 @@ int main(int argc, char *argv[])
     }
     try
     {
-        commandLineArgs =  new CommandLineArgs(argsList);
+        commandLineArgs = new CommandLineArgs(argsList);
     }
     catch (hresult_error hr)
     {

@@ -49,7 +49,7 @@ Required command-Line arguments:
 -SavePerIterationPerf : save per iteration performance results to csv file
 -SaveTensorData <saveMode folderPath>: saveMode: save first iteration or all iteration output tensor results to csv file [First, All]
                                         folderPath: Optional folder path can be specified to hold tensor data. It will be created if folder doesn't exist.
--DebugEvaluateOutput: Print evaluation debug output to debug console if debugger is present.
+-DebugEvaluate: Print evaluation debug output to debug console if debugger is present.
 -Terse: Terse Mode (suppresses repetitive console output)
 -AutoScale <interpolationMode>: Enable image autoscaling and set the interpolation mode [Nearest, Linear, Cubic, Fant]
 

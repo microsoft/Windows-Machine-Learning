@@ -32,7 +32,7 @@ void CommandLineArgs::PrintUsage() {
     std::cout << "  -SavePerIterationPerf : save per iteration performance results to csv file" << std::endl;
     std::cout << "  -SaveTensorData <saveMode folderPath>: saveMode: save first iteration or all iteration output tensor results to csv file [First, All]" << std::endl;
     std::cout << "                                         folderPath: Optional folder path can be specified to hold tensor data. It will be created if folder doesn't exist." << std::endl;
-    std::cout << "  -DebugEvaluateOutput: Print evaluation debug output to debug console if debugger is present." << std::endl;
+    std::cout << "  -DebugEvaluate: Print evaluation debug output to debug console if debugger is present." << std::endl;
     std::cout << "  -Terse: Terse Mode (suppresses repetitive console output)" << std::endl;
     std::cout << "  -AutoScale <interpolationMode>: Enable image autoscaling and set the interpolation mode [Nearest, Linear, Cubic, Fant]" << std::endl;
     std::cout << std::endl;
@@ -134,11 +134,11 @@ CommandLineArgs::CommandLineArgs(const std::vector<std::wstring> &args)
             }
             m_perfCapture = true;
         }
-        else if ((_wcsicmp(args[i].c_str(), L"-DebugEvaluateOutput") == 0))
+        else if ((_wcsicmp(args[i].c_str(), L"-DebugEvaluate") == 0))
         {
             if (!IsDebuggerPresent())
             {
-                throw hresult_invalid_argument(L"-DebugEvaluateOutput flag should only be used when WinMLRunner is under a user-mode debugger!");
+                throw hresult_invalid_argument(L"-DebugEvaluate flag should only be used when WinMLRunner is under a user-mode debugger!");
             }
             ToggleEvaluationDebugOutput(true);
         }

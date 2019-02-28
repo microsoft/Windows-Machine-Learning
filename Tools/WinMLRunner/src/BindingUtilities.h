@@ -200,7 +200,7 @@ namespace BindingUtilities
                 ModelBinding<float> binding(description);
                 if (args.IsGarbageInput())
                 {
-                    memset(binding.GetData(), 0, sizeof(float) * binding.GetDataBufferSize());
+                    memset(binding.GetData(), 2, sizeof(float) * binding.GetDataBufferSize());
                 }
                 else
                 {
@@ -215,7 +215,7 @@ namespace BindingUtilities
                 ModelBinding<float> binding(description);
                 if (args.IsGarbageInput())
                 {
-                    memset(binding.GetData(), 0, sizeof(float) * binding.GetDataBufferSize());
+                    memset(binding.GetData(), 2, sizeof(float) * binding.GetDataBufferSize());
                 }
                 else
                 {
@@ -230,7 +230,7 @@ namespace BindingUtilities
                 ModelBinding<double> binding(description);
                 if (args.IsGarbageInput())
                 {
-                    memset(binding.GetData(), 0, sizeof(double) * binding.GetDataBufferSize());
+                    memset(binding.GetData(), 2, sizeof(double) * binding.GetDataBufferSize());
                 }
                 else
                 {
@@ -245,7 +245,7 @@ namespace BindingUtilities
                 ModelBinding<uint8_t> binding(description);
                 if (args.IsGarbageInput())
                 {
-                    memset(binding.GetData(), 0, sizeof(uint8_t) * binding.GetDataBufferSize());
+                    memset(binding.GetData(), 2, sizeof(uint8_t) * binding.GetDataBufferSize());
                 }
                 else
                 {
@@ -260,7 +260,7 @@ namespace BindingUtilities
                 ModelBinding<uint8_t> binding(description);
                 if (args.IsGarbageInput())
                 {
-                    memset(binding.GetData(), 0, sizeof(uint8_t) * binding.GetDataBufferSize());
+                    memset(binding.GetData(), 2, sizeof(uint8_t) * binding.GetDataBufferSize());
                 }
                 else
                 {
@@ -275,7 +275,7 @@ namespace BindingUtilities
                 ModelBinding<int16_t> binding(description);
                 if (args.IsGarbageInput())
                 {
-                    memset(binding.GetData(), 0, sizeof(int16_t) * binding.GetDataBufferSize());
+                    memset(binding.GetData(), 2, sizeof(int16_t) * binding.GetDataBufferSize());
                 }
                 else
                 {
@@ -290,7 +290,7 @@ namespace BindingUtilities
                 ModelBinding<uint16_t> binding(description);
                 if (args.IsGarbageInput())
                 {
-                    memset(binding.GetData(), 0, sizeof(uint16_t) * binding.GetDataBufferSize());
+                    memset(binding.GetData(), 2, sizeof(uint16_t) * binding.GetDataBufferSize());
                 }
                 else
                 {
@@ -305,7 +305,7 @@ namespace BindingUtilities
                 ModelBinding<int32_t> binding(description);
                 if (args.IsGarbageInput())
                 {
-                    memset(binding.GetData(), 0, sizeof(int32_t) * binding.GetDataBufferSize());
+                    memset(binding.GetData(), 2, sizeof(int32_t) * binding.GetDataBufferSize());
                 }
                 else
                 {
@@ -320,7 +320,7 @@ namespace BindingUtilities
                 ModelBinding<uint32_t> binding(description);
                 if (args.IsGarbageInput())
                 {
-                    memset(binding.GetData(), 0, sizeof(uint32_t) * binding.GetDataBufferSize());
+                    memset(binding.GetData(), 2, sizeof(uint32_t) * binding.GetDataBufferSize());
                 }
                 else
                 {
@@ -335,7 +335,7 @@ namespace BindingUtilities
                 ModelBinding<int64_t> binding(description);
                 if (args.IsGarbageInput())
                 {
-                    memset(binding.GetData(), 0, sizeof(int64_t) * binding.GetDataBufferSize());
+                    memset(binding.GetData(), 2, sizeof(int64_t) * binding.GetDataBufferSize());
                 }
                 else
                 {
@@ -350,7 +350,7 @@ namespace BindingUtilities
                 ModelBinding<uint64_t> binding(description);
                 if (args.IsGarbageInput())
                 {
-                    memset(binding.GetData(), 0, sizeof(uint64_t) * binding.GetDataBufferSize());
+                    memset(binding.GetData(), 2, sizeof(uint64_t) * binding.GetDataBufferSize());
                 }
                 else
                 {

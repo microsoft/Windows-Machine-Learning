@@ -697,7 +697,14 @@ public:
     {
         T* tensor = (T*)buffer;
         int size = uCapacity / sizeof(T);
-        maxValue = *tensor;
+        if (!std::is_same<T, HALF>::value)
+        {
+            maxValue = *tensor;
+        }
+        else
+        {
+            maxValue = XMConvertHalfToFloat(static_cast<HALF>(*tensor));
+        }
         maxIndex = 0;
         for (int i = 0; i < size; i++)
         {

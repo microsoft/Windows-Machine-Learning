@@ -278,7 +278,7 @@ HRESULT EvaluateModel(
         return hr.code();
     }
 
-    if (args.IsDebugOutputEnabled())
+    if (args.IsEvaluationDebugOutputEnabled())
     {
         // Enables trace log output. 
         session.EvaluationProperties().Insert(L"EnableDebugOutput", nullptr);

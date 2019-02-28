@@ -14,7 +14,7 @@ public:
     bool IsUsingGPUBoundInput() const { return m_useGPUBoundInput; }
     bool IsPerformanceCapture() const { return m_perfCapture; }
     bool IsPerformanceConsoleOutputVerbose() const { return m_perfConsoleOutputAll; }
-    bool IsDebugOutputEnabled() const { return m_debug; }
+    bool IsEvaluationDebugOutputEnabled() const { return m_evaluation_debug_output; }
     bool TerseOutput() const { return m_terseOutput; }
     bool IsPerIterationCapture() const { return m_perIterCapture; }
     bool IsCreateDeviceOnClient() const { return m_createDeviceOnClient; }
@@ -91,7 +91,7 @@ public:
     void TogglePerformanceCapture(bool perfCapture) { m_perfCapture = perfCapture; }
     void ToggleIgnoreFirstRun(bool ignoreFirstRun) { m_ignoreFirstRun=ignoreFirstRun;}
     void TogglePerIterationPerformanceCapture(bool perIterCapture) { m_perIterCapture = perIterCapture; }
-    void ToggleDebugOutput(bool debug) { m_debug = debug; }
+    void ToggleEvaluationDebugOutput(bool debug) { m_evaluation_debug_output = debug; }
     void ToggleTerseOutput(bool terseOutput) { m_terseOutput = terseOutput; }
 
 
@@ -128,7 +128,7 @@ private:
     bool m_useCPUBoundInput = false;
     bool m_useGPUBoundInput = false;
     bool m_ignoreFirstRun = false;
-    bool m_debug = false;
+    bool m_evaluation_debug_output = false;
     bool m_perIterCapture = false;
     bool m_terseOutput = false;
     bool m_autoScale = false;

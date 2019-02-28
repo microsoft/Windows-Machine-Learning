@@ -16,7 +16,7 @@ You can either download the x64 executable or build it yourself.
 #### Prerequisites
 - [Visual Studio 2017 Version 15.7.4 or Newer](https://developer.microsoft.com/en-us/windows/downloads)
 - [Windows 10 - Build 17763 or higher](https://www.microsoft.com/en-us/software-download/windowsinsiderpreviewiso)
-- [Windows SDK - Build 18323 or higher](https://www.microsoft.com/en-us/software-download/windowsinsiderpreviewSDK)
+- [Windows SDK - Build 17763 or higher](https://www.microsoft.com/en-us/software-download/windowsinsiderpreviewSDK)
 
 The easiest way to use these samples without using Git is to download the zip file containing the current version (using the following link or by clicking the "Download ZIP" button on the repo page). You can then unzip the entire archive and use the samples in Visual Studio 2017. Notes: Before you unzip the archive, right-click it, select Properties, and then select Unblock.
 Be sure to unzip the entire archive, and not just individual samples. The samples all depend on the SharedContent folder in the archive. In Visual Studio 2017, the platform target defaults to ARM, so be sure to change that to x64 or x86 if you want to test on a non-ARM device. Reminder: If you unzip individual samples, they will not build due to references to other portions of the ZIP file that were not unzipped. 
@@ -37,7 +37,6 @@ Required command-Line arguments:
 -GPU                     : Will create a session on the GPU.
 -GPUHighPerformance      : Will create a session with the most powerful GPU device available.
 -GPUMinPower             : Will create a session with GPU with the least power.
--GPUAdapterIndex : run model on GPU specified by its index in DXGI enumeration. NOTE: Please only use this flag on DXCore supported machines.
 -CreateDeviceOnClient    : Will create the device on the client and explicitly pass it to WinML via the API. GPU runs using this flag will usually be faster than -CreateDeviceInWinML since we avoid a cross-device copy by creating the video frame on the same device that DML uses to bind inputs.
 -CreateDeviceInWinML     : Will create the device inside WinML. GPU runs using this flag will usually be slower than -CreateDeviceOnClient since we have to copy the video frame to a different device.
 -CPUBoundInput           : Will bind the input to the CPU.

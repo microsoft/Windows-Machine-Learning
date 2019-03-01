@@ -283,12 +283,22 @@ CommandLineArgs::CommandLineArgs(const std::vector<std::wstring> &args)
             m_csvData = m_inputData;
         }
     }
+    CheckForInvalidArguments();
 }
 
-void CommandLineArgs::CheckNextArgument(const std::vector<std::wstring> &args, UINT i) {
+void CommandLineArgs::CheckNextArgument(const std::vector<std::wstring> &args, UINT i)
+{
     if (i + 1 >= args.size() || args[i + 1][0] == L'-') {
         std::wstring msg = L"Invalid parameter for ";
         msg += args[i].c_str();
         throw hresult_invalid_argument(msg.c_str());
+    }
+}
+
+void CommandLineArgs::CheckForInvalidArguments()
+{
+    if (IsGarbageInput() && IsSaveTensor())
+    {
+        throw hresult_invalid_argument(L"Cannot save tensor output if no input data is provided!");
     }
 }

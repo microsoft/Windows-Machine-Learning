@@ -149,4 +149,5 @@ private:
     uint32_t m_threadInterval = 0;
 
     void CheckNextArgument(const std::vector<std::wstring> &args, UINT i);
+    void CheckForInvalidArguments();
 };

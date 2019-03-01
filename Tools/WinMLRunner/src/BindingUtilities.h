@@ -13,6 +13,36 @@ using namespace winrt::Windows::Graphics::DirectX;
 using namespace winrt::Windows::Graphics::Imaging;
 using namespace winrt::Windows::Graphics::DirectX::Direct3D11;
 
+template <TensorKind T> struct TensorKindToType { static_assert(true, "No TensorKind mapped for given type!"); };
+template <> struct TensorKindToType<TensorKind::UInt8> { typedef uint8_t Type; };
+template <> struct TensorKindToType<TensorKind::Int8> { typedef uint8_t Type; };
+template <> struct TensorKindToType<TensorKind::UInt16> { typedef uint16_t Type; };
+template <> struct TensorKindToType<TensorKind::Int16> { typedef int16_t Type; };
+template <> struct TensorKindToType<TensorKind::UInt32> { typedef uint32_t Type; };
+template <> struct TensorKindToType<TensorKind::Int32> { typedef int32_t Type; };
+template <> struct TensorKindToType<TensorKind::UInt64> { typedef uint64_t Type; };
+template <> struct TensorKindToType<TensorKind::Int64> { typedef int64_t Type; };
+template <> struct TensorKindToType<TensorKind::Boolean> { typedef boolean Type; };
+template <> struct TensorKindToType<TensorKind::Double> { typedef double Type; };
+template <> struct TensorKindToType<TensorKind::Float> { typedef float Type; };
+template <> struct TensorKindToType<TensorKind::Float16> { typedef float Type; };
+template <> struct TensorKindToType<TensorKind::String> { typedef winrt::hstring Type; };
+
+template <TensorKind T> struct TensorKindToValue { static_assert(true, "No TensorKind mapped for given type!"); };
+template <> struct TensorKindToValue<TensorKind::UInt8> { typedef TensorUInt8Bit Type; };
+template <> struct TensorKindToValue<TensorKind::Int8> { typedef TensorInt8Bit Type; };
+template <> struct TensorKindToValue<TensorKind::UInt16> { typedef TensorUInt16Bit Type; };
+template <> struct TensorKindToValue<TensorKind::Int16> { typedef TensorInt16Bit Type; };
+template <> struct TensorKindToValue<TensorKind::UInt32> { typedef TensorUInt32Bit Type; };
+template <> struct TensorKindToValue<TensorKind::Int32> { typedef TensorInt32Bit Type; };
+template <> struct TensorKindToValue<TensorKind::UInt64> { typedef TensorUInt64Bit Type; };
+template <> struct TensorKindToValue<TensorKind::Int64> { typedef TensorInt64Bit Type; };
+template <> struct TensorKindToValue<TensorKind::Boolean> { typedef TensorBoolean Type; };
+template <> struct TensorKindToValue<TensorKind::Double> { typedef TensorDouble Type; };
+template <> struct TensorKindToValue<TensorKind::Float> { typedef TensorFloat Type; };
+template <> struct TensorKindToValue<TensorKind::Float16> { typedef TensorFloat16Bit Type; };
+template <> struct TensorKindToValue<TensorKind::String> { typedef TensorString Type; };
+
 namespace BindingUtilities
 {
     static unsigned int seed = 0;
@@ -175,6 +205,41 @@ namespace BindingUtilities
         return elementStrings;
     }
 
+    template <TensorKind T>
+    static ITensor CreateTensor(
+        const CommandLineArgs& args,
+        std::vector<std::string>& tensorStringInput,
+        TensorFeatureDescriptor& tensorDescriptor)
+    {
+        using TensorValue = typename TensorKindToValue<T>::Type;
+        using DataType = typename TensorKindToType<T>::Type;
+
+        if (!args.CsvPath().empty())
+        {
+            ModelBinding<DataType> binding(tensorDescriptor);
+            WriteDataToBinding<DataType>(tensorStringInput, binding);
+            return TensorValue::CreateFromArray(binding.GetShapeBuffer(), binding.GetDataBuffer());
+        }
+        else if(args.IsGarbageInput())
+        {
+            auto tensorValue = TensorValue::Create(tensorDescriptor.Shape());
+
+            com_ptr<ITensorNative> spTensorValueNative;
+            tensorValue.as(spTensorValueNative);
+
+            BYTE* actualData;
+            uint32_t actualSizeInBytes;
+            spTensorValueNative->GetBuffer(&actualData, &actualSizeInBytes);
+
+            return tensorValue;
+        }
+        else
+        {
+            //Creating Tensors for Input Images haven't been added yet.
+            throw hresult_not_implemented(L"Creating Tensors for Input Images haven't been implemented yet!");
+        }
+    }
+
     // Binds tensor floats, ints, doubles from CSV data.
     ITensor CreateBindableTensor(const ILearningModelFeatureDescriptor& description, const CommandLineArgs& args)
     {
@@ -188,6 +253,10 @@ namespace BindingUtilities
         }
 
         std::vector<std::string> elementStrings;
+        if (!args.CsvPath().empty())
+        {
+            elementStrings = ParseCSVElementStrings(args.CsvPath());
+        }
         switch (tensorDescriptor.TensorKind())
         {
             case TensorKind::Undefined:
@@ -197,167 +266,57 @@ namespace BindingUtilities
             }
             case TensorKind::Float:
             {
-                ModelBinding<float> binding(description);
-                if (args.IsGarbageInput())
-                {
-                    memset(binding.GetData(), 0, sizeof(float) * binding.GetDataBufferSize());
-                }
-                else
-                {
-                    elementStrings = ParseCSVElementStrings(args.CsvPath());
-                    WriteDataToBinding<float>(elementStrings, binding);
-                }
-                return TensorFloat::CreateFromArray(binding.GetShapeBuffer(), binding.GetDataBuffer());
+                return CreateTensor<TensorKind::Float>(args, elementStrings, tensorDescriptor);
             }
             break;
             case TensorKind::Float16:
             {
-                ModelBinding<float> binding(description);
-                if (args.IsGarbageInput())
-                {
-                    memset(binding.GetData(), 0, sizeof(float) * binding.GetDataBufferSize());
-                }
-                else
-                {
-                    elementStrings = ParseCSVElementStrings(args.CsvPath());
-                    WriteDataToBinding<float>(elementStrings, binding);
-                }
-                return TensorFloat16Bit::CreateFromArray(binding.GetShapeBuffer(), binding.GetDataBuffer());
+                return CreateTensor<TensorKind::Float16>(args, elementStrings, tensorDescriptor);
             }
             break;
             case TensorKind::Double:
             {
-                ModelBinding<double> binding(description);
-                if (args.IsGarbageInput())
-                {
-                    memset(binding.GetData(), 0, sizeof(double) * binding.GetDataBufferSize());
-                }
-                else
-                {
-                    elementStrings = ParseCSVElementStrings(args.CsvPath());
-                    WriteDataToBinding<double>(elementStrings, binding);
-                }
-                return TensorDouble::CreateFromArray(binding.GetShapeBuffer(), binding.GetDataBuffer());
+                return CreateTensor<TensorKind::Double>(args, elementStrings, tensorDescriptor);
             }
             break;
             case TensorKind::Int8:
             {
-                ModelBinding<uint8_t> binding(description);
-                if (args.IsGarbageInput())
-                {
-                    memset(binding.GetData(), 0, sizeof(uint8_t) * binding.GetDataBufferSize());
-                }
-                else
-                {
-                    elementStrings = ParseCSVElementStrings(args.CsvPath());
-                    WriteDataToBinding<uint8_t>(elementStrings, binding);
-                }
-                return TensorInt8Bit::CreateFromArray(binding.GetShapeBuffer(), binding.GetDataBuffer());
+                return CreateTensor<TensorKind::Int8>(args, elementStrings, tensorDescriptor);
             }
             break;
             case TensorKind::UInt8:
             {
-                ModelBinding<uint8_t> binding(description);
-                if (args.IsGarbageInput())
-                {
-                    memset(binding.GetData(), 0, sizeof(uint8_t) * binding.GetDataBufferSize());
-                }
-                else
-                {
-                    elementStrings = ParseCSVElementStrings(args.CsvPath());
-                    WriteDataToBinding<uint8_t>(elementStrings, binding);
-                }
-                return TensorUInt8Bit::CreateFromArray(binding.GetShapeBuffer(), binding.GetDataBuffer());
+                return CreateTensor<TensorKind::UInt8>(args, elementStrings, tensorDescriptor);
             }
             break;
             case TensorKind::Int16:
             {
-                ModelBinding<int16_t> binding(description);
-                if (args.IsGarbageInput())
-                {
-                    memset(binding.GetData(), 0, sizeof(int16_t) * binding.GetDataBufferSize());
-                }
-                else
-                {
-                    elementStrings = ParseCSVElementStrings(args.CsvPath());
-                    WriteDataToBinding<int16_t>(elementStrings, binding);
-                }
-                return TensorInt16Bit::CreateFromArray(binding.GetShapeBuffer(), binding.GetDataBuffer());
+                return CreateTensor<TensorKind::Int16>(args, elementStrings, tensorDescriptor);
             }
             break;
             case TensorKind::UInt16:
             {
-                ModelBinding<uint16_t> binding(description);
-                if (args.IsGarbageInput())
-                {
-                    memset(binding.GetData(), 0, sizeof(uint16_t) * binding.GetDataBufferSize());
-                }
-                else
-                {
-                    elementStrings = ParseCSVElementStrings(args.CsvPath());
-                    WriteDataToBinding<uint16_t>(elementStrings, binding);
-                }
-                return TensorUInt16Bit::CreateFromArray(binding.GetShapeBuffer(), binding.GetDataBuffer());
+                return CreateTensor<TensorKind::UInt16>(args, elementStrings, tensorDescriptor);
             }
             break;
             case TensorKind::Int32:
             {
-                ModelBinding<int32_t> binding(description);
-                if (args.IsGarbageInput())
-                {
-                    memset(binding.GetData(), 0, sizeof(int32_t) * binding.GetDataBufferSize());
-                }
-                else
-                {
-                    elementStrings = ParseCSVElementStrings(args.CsvPath());
-                    WriteDataToBinding<int32_t>(elementStrings, binding);
-                }
-                return TensorInt32Bit::CreateFromArray(binding.GetShapeBuffer(), binding.GetDataBuffer());
+                return CreateTensor<TensorKind::Int32>(args, elementStrings, tensorDescriptor);
             }
             break;
             case TensorKind::UInt32:
             {
-                ModelBinding<uint32_t> binding(description);
-                if (args.IsGarbageInput())
-                {
-                    memset(binding.GetData(), 0, sizeof(uint32_t) * binding.GetDataBufferSize());
-                }
-                else
-                {
-                    elementStrings = ParseCSVElementStrings(args.CsvPath());
-                    WriteDataToBinding<uint32_t>(elementStrings, binding);
-                }
-                return TensorUInt32Bit::CreateFromArray(binding.GetShapeBuffer(), binding.GetDataBuffer());
+                return CreateTensor<TensorKind::UInt32>(args, elementStrings, tensorDescriptor);
             }
             break;
             case TensorKind::Int64:
             {
-                ModelBinding<int64_t> binding(description);
-                if (args.IsGarbageInput())
-                {
-                    memset(binding.GetData(), 0, sizeof(int64_t) * binding.GetDataBufferSize());
-                }
-                else
-                {
-                    elementStrings = ParseCSVElementStrings(args.CsvPath());
-                    WriteDataToBinding<int64_t>(elementStrings, binding);
-                }
-                return TensorInt64Bit::CreateFromArray(binding.GetShapeBuffer(), binding.GetDataBuffer());
+                return CreateTensor<TensorKind::Int64>(args, elementStrings, tensorDescriptor);
             }
             break;
             case TensorKind::UInt64:
             {
-                ModelBinding<uint64_t> binding(description);
-                if (args.IsGarbageInput())
-                {
-                    memset(binding.GetData(), 0, sizeof(uint64_t) * binding.GetDataBufferSize());
-                }
-                else
-                {
-                    elementStrings = ParseCSVElementStrings(args.CsvPath());
-                    WriteDataToBinding<uint64_t>(elementStrings, binding);
-                }
-                return TensorUInt64Bit::CreateFromArray(binding.GetShapeBuffer(), binding.GetDataBuffer());
+                return CreateTensor<TensorKind::UInt64>(args, elementStrings, tensorDescriptor);
             }
             break;
         }

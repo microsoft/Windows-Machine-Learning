@@ -30,26 +30,33 @@ Required command-Line arguments:
 -folder <path>           : Fully qualifed path to a folder with .onnx and/or .pb models, will run all of the models in the folder.
 
 #Optional command-line arguments:
--version:                : prints the version information for this build of WinMLRunner.exe
--Perf                    : optional:<all>:  capture performance measurements such as timing and memory usage. Specifying "all" will output all measurements
--Iterations <int>        : Number of times to evaluate the model when capturing performance measurements.
--CPU                     : Will create a session on the CPU.
--GPU                     : Will create a session on the GPU.
--GPUHighPerformance      : Will create a session with the most powerful GPU device available.
--GPUMinPower             : Will create a session with GPU with the least power.
--CreateDeviceOnClient    : Will create the device on the client and explicitly pass it to WinML via the API. GPU runs using this flag will usually be faster than -CreateDeviceInWinML since we avoid a cross-device copy by creating the video frame on the same device that DML uses to bind inputs.
--CreateDeviceInWinML     : Will create the device inside WinML. GPU runs using this flag will usually be slower than -CreateDeviceOnClient since we have to copy the video frame to a different device.
--CPUBoundInput           : Will bind the input to the CPU.
--GPUBoundInput           : Will bind the input to the GPU.
--BGR                     : Will load the input as a BGR image.
--RGB                     : Will load the input as an RGB image.
--Tensor                  : Will load the input as a tensor.
--Input <image/CSV path>  : Will bind image/data from CSV to model.
--PerfOutput <CSV path>   : Path to the CSV where the perf results will be written.
--SavePerIterationPerf	 : Save per iteration performance results to csv file.
--Debug                   : Will start a trace logging session.
--Terse                   : Will suppress repetitive console output (initial iteration and summary info will be output).
--AutoScale <mode>        : Will automatically scale an input image to match the required input dimensions of the model.  Pass in the interpolation mode, one of ["Nearest", "Linear", "Cubic", "Fant"].
+-version: prints the version information for this build of WinMLRunner.exe
+-CPU : run model on default CPU
+-GPU : run model on default GPU
+-GPUHighPerformance : run model on GPU with highest performance
+-GPUMinPower : run model on GPU with the least power
+-CreateDeviceOnClient : create the device on the client and pass it to WinML
+-CreateDeviceInWinML : create the device inside WinML
+-CPUBoundInput : bind the input to the CPU
+-GPUBoundInput : bind the input to the GPU
+-RGB : load the input as an RGB image
+-BGR : load the input as a BGR image
+-Tensor : load the input as a tensor
+-Perf [all]: capture performance measurements such as timing and memory usage. Specifying "all" will output all measurements
+-Iterations : # times perf measurements will be run/averaged
+-Input <fully qualified path>: binds image or CSV to model
+-PerfOutput [<fully qualified path>]: csv file to write the perf results to
+-SavePerIterationPerf : save per iteration performance results to csv file
+-SaveTensorData <saveMode folderPath>: saveMode: save first iteration or all iteration output tensor results to csv file [First, All]
+                                        folderPath: Optional folder path can be specified to hold tensor data. It will be created if folder doesn't exist.
+-DebugEvaluate: Print evaluation debug output to debug console if debugger is present.
+-Terse: Terse Mode (suppresses repetitive console output)
+-AutoScale <interpolationMode>: Enable image autoscaling and set the interpolation mode [Nearest, Linear, Cubic, Fant]
+
+Concurrency Options:
+-ConcurrentLoad: load models concurrently
+-NumThreads <number>: number of threads to load a model. By default this will be the number of model files to be executed
+-ThreadInterval <milliseconds>: interval time between two thread creations in milliseconds
 
  ```
 
@@ -177,16 +184,17 @@ Shared Memory (MB) -  The amount of memory that was used on the DRAM by the GPU.
  ```
 .\WinMLRunner.exe -model SqueezeNet.onnx -perf
 WinML Runner
-GPU: AMD Radeon Pro WX 3100
+Printing available GPUs with DXGI..
+Index: 0, Description: AMD Radeon Pro WX 3100
 
-Loading model (path = SqueezeNet.onnx)...
+Loading model (path = .\SqueezeNet.onnx)...
 =================================================================
 Name: squeezenet_old
 Author: onnx-caffe2
 Version: 9223372036854775807
 Domain:
 Description:
-Path: SqueezeNet.onnx
+Path: .\SqueezeNet.onnx
 Support FP16: false
 
 Input Feature Info:
@@ -199,47 +207,55 @@ Feature Kind: Float
 
 =================================================================
 
-Binding (device = CPU, iteration = 1, inputBinding = CPU, inputDataType = Tensor)...[SUCCESS]
-Evaluating (device = CPU, iteration = 1, inputBinding = CPU, inputDataType = Tensor)...[SUCCESS]
-Outputting results..
-Feature Name: softmaxout_1
- resultVector[818] has the maximal value of 1
+
+Creating Session with CPU device
+Binding (device = CPU, iteration = 1, inputBinding = CPU, inputDataType = Tensor, deviceCreationLocation = WinML)...[SUCCESS]
+Evaluating (device = CPU, iteration = 1, inputBinding = CPU, inputDataType = Tensor, deviceCreationLocation = WinML)...[SUCCESS]
 
 
-Results (device = CPU, numIterations = 1, inputBinding = CPU, inputDataType = Tensor):
-  Load: 408.386300 ms
-  Bind: 0.9184 ms
-  Evaluate: 739.173 ms
-  Total Time: 1148.48 ms
-  Wall-Clock Load: 408.064 ms
-  Wall-Clock Bind: 1.1311 ms
-  Wall-Clock Evaluate: 739.337 ms
-  Total Wall-Clock Time: 1148.53 ms
-  Working Set Memory usage (evaluate): 0 MB
-  Dedicated Memory Usage (evaluate): 0 MB
-  Shared Memory Usage (evaluate): 0 MB
+Results (device = CPU, numIterations = 1, inputBinding = CPU, inputDataType = Tensor, deviceCreationLocation = WinML):
+
+First Iteration Performance (load, bind, session creation, and evaluate):
+  Load: 436.598 ms
+  Bind: 0.8575 ms
+  Session Creation: 120.181 ms
+  Evaluate: 177.233 ms
+
+  Working Set Memory usage (evaluate): 9.95313 MB
+  Working Set Memory usage (load, bind, session creation, and evaluate): 45.6289 MB
+  Peak Working Set Memory Difference (load, bind, session creation, and evaluate): 46.5625 MB
+
+  Dedicated Memory usage (evaluate): 0 MB
+  Dedicated Memory usage (load, bind, session creation, and evaluate): 0 MB
+
+  Shared Memory usage (evaluate): 0 MB
+  Shared Memory usage (load, bind, session creation, and evaluate): 0 MB
 
 
 
-Binding (device = GPU, iteration = 1, inputBinding = CPU, inputDataType = Tensor)...[SUCCESS]
-Evaluating (device = GPU, iteration = 1, inputBinding = CPU, inputDataType = Tensor)...[SUCCESS]
-Outputting results..
-Feature Name: softmaxout_1
- resultVector[818] has the maximal value of 1
+
+Creating Session with GPU: AMD Radeon Pro WX 3100
+Binding (device = GPU, iteration = 1, inputBinding = CPU, inputDataType = Tensor, deviceCreationLocation = WinML)...[SUCCESS]
+Evaluating (device = GPU, iteration = 1, inputBinding = CPU, inputDataType = Tensor, deviceCreationLocation = WinML)...[SUCCESS]
 
 
-Results (device = GPU, numIterations = 1, inputBinding = CPU, inputDataType = Tensor):
-  Load: N/A
-  Bind: 3.6711 ms
-  Evaluate: 66.5285 ms
-  Total Time: 70.1996 ms
-  Wall-Clock Load: 0 ms
-  Wall-Clock Bind: 3.9697 ms
-  Wall-Clock Evaluate: 67.2518 ms
-  Total Wall-Clock Time: 71.2215 ms
-  Working Set Memory usage (evaluate): 13.668 MB
-  Dedicated Memory Usage (evaluate): 13.668 MB
-  Shared Memory Usage (evaluate): 1 MB
+Results (device = GPU, numIterations = 1, inputBinding = CPU, inputDataType = Tensor, deviceCreationLocation = WinML):
+
+First Iteration Performance (load, bind, session creation, and evaluate):
+  Load: 436.598 ms
+  Bind: 5.1858 ms
+  Session Creation: 285.041 ms
+  Evaluate: 25.7202 ms
+
+  Working Set Memory usage (evaluate): 1.21484 MB
+  Working Set Memory usage (load, bind, session creation, and evaluate): 42.8047 MB
+  Peak Working Set Memory Difference (load, bind, session creation, and evaluate): 44.1152 MB
+
+  Dedicated Memory usage (evaluate): 10.082 MB
+  Dedicated Memory usage (load, bind, session creation, and evaluate): 15.418 MB
+
+  Shared Memory usage (evaluate): 1 MB
+  Shared Memory usage (load, bind, session creation, and evaluate): 6.04688 MB
  ```
  
  ## Capturing Trace Logs

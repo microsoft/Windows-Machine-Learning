@@ -492,35 +492,6 @@ namespace WinMLRunnerTest
             // We need to expect one more line because of the header
             Assert::AreEqual(static_cast<size_t>(49), GetOutputCSVLineCount());
         }
-        TEST_METHOD(GarbageInputOnlyGpuSaveTensor)
-        {
-            const std::wstring modelPath = CURRENT_PATH + L"SqueezeNet.onnx";
-            const std::wstring command = BuildCommand({ EXE_PATH, L"-model", modelPath, L"-PerfOutput", OUTPUT_PATH, L"-SaveTensorData", L"First", TENSOR_DATA_PATH, L"-GPU"});
-            Assert::AreEqual(S_OK, RunProc((wchar_t *)command.c_str()));
-            Assert::AreEqual(true, CompareTensors(L"OutputTensorData\\Squeezenet_garbage_input_GPU.csv", TENSOR_DATA_PATH + L"\\softmaxout_1GpuIteration1.csv"));
-        }
-        TEST_METHOD(GarbageInputOnlyCpuSaveTensor)
-        {
-            const std::wstring modelPath = CURRENT_PATH + L"SqueezeNet.onnx";
-            const std::wstring command = BuildCommand({ EXE_PATH, L"-model", modelPath, L"-PerfOutput", OUTPUT_PATH, L"-SaveTensorData", L"First", TENSOR_DATA_PATH, L"-CPU" });
-            Assert::AreEqual(S_OK, RunProc((wchar_t *)command.c_str()));
-            Assert::AreEqual(true, CompareTensors(L"OutputTensorData\\Squeezenet_garbage_input_CPU.csv", TENSOR_DATA_PATH + L"\\softmaxout_1CpuIteration1.csv"));
-        }
-
-        TEST_METHOD(GarbageInputOnlyGpuSaveTensorFp16)
-        {
-            const std::wstring modelPath = CURRENT_PATH + L"SqueezeNet_fp16.onnx";
-            const std::wstring command = BuildCommand({ EXE_PATH, L"-model", modelPath, L"-PerfOutput", OUTPUT_PATH, L"-SaveTensorData", L"First", TENSOR_DATA_PATH, L"-GPU" });
-            Assert::AreEqual(S_OK, RunProc((wchar_t *)command.c_str()));
-            Assert::AreEqual(true, CompareTensorsFP16(L"OutputTensorData\\Squeezenet_fp16_garbage_input_GPU.csv", TENSOR_DATA_PATH + L"\\softmaxout_1GpuIteration1.csv"));
-        }
-        TEST_METHOD(GarbageInputOnlyCpuSaveTensorFp16)
-        {
-            const std::wstring modelPath = CURRENT_PATH + L"SqueezeNet_fp16.onnx";
-            const std::wstring command = BuildCommand({ EXE_PATH, L"-model", modelPath, L"-PerfOutput", OUTPUT_PATH, L"-SaveTensorData", L"First", TENSOR_DATA_PATH, L"-CPU" });
-            Assert::AreEqual(S_OK, RunProc((wchar_t *)command.c_str()));
-            Assert::AreEqual(true, CompareTensorsFP16(L"OutputTensorData\\Squeezenet_fp16_garbage_input_CPU.csv", TENSOR_DATA_PATH + L"\\softmaxout_1CpuIteration1.csv"));
-        }
     };
 
     TEST_CLASS(ImageInputTest)

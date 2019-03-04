@@ -222,15 +222,35 @@ namespace BindingUtilities
         }
         else if(args.IsGarbageInput())
         {
-            auto tensorValue = TensorValue::Create(tensorDescriptor.Shape());
+            std::vector<int64_t> vecShape = {};
+            auto tensorDescriptorShape = tensorDescriptor.Shape();
+            for (UINT dim = 0; dim < tensorDescriptorShape.Size(); dim++)
+            {
+                INT64 dimSize = tensorDescriptorShape.GetAt(dim);
+                if (dimSize > 0) //If the dimension is greater than 0, then it is known.
+                {
+                    vecShape.push_back(dimSize);
+                }
+                else //otherwise, make sure that the dimension is -1, representing free dimension. If not, then it's an invalid model.
+                {
+                    if (dimSize == -1)
+                    {
+                        vecShape.push_back(1);
+                    }
+                    else
+                    {
+                        throw hresult_invalid_argument(L"Failed to create a tensor with an unknown dimension of: " + dimSize);
+                    }
+                }
+            }
+            auto tensorValue = TensorValue::Create(vecShape);
 
             com_ptr<ITensorNative> spTensorValueNative;
             tensorValue.as(spTensorValueNative);
 
             BYTE* actualData;
             uint32_t actualSizeInBytes;
-            spTensorValueNative->GetBuffer(&actualData, &actualSizeInBytes);
-
+            spTensorValueNative->GetBuffer(&actualData, &actualSizeInBytes); //Need to GetBuffer to have CPU memory backing tensorValue
             return tensorValue;
         }
         else

@@ -704,6 +704,8 @@ public:
                              std::vector<std::pair<float,int>>& maxValues, std::ofstream& fout,
                              unsigned int k)
     {
+        // Create a priority queue of size k that pops the lowest value first
+        // We will remove lowest values as we iterate over all the values
         auto cmp = [](std::pair<float, int> x, std::pair<float, int> y) { return x.first > y.first; };
         std::priority_queue<std::pair<float, int>, std::vector<std::pair<float, int>>, decltype(cmp)> topKvalues(cmp);
 
@@ -745,6 +747,7 @@ public:
             maxValues.push_back(pair);
             topKvalues.pop();
         }
+        // Put vector in order of highest value to lowest
         std::reverse(maxValues.begin(), maxValues.end());
     }
 

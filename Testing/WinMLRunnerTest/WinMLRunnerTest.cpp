@@ -76,55 +76,144 @@ namespace WinMLRunnerTest
     }
 
     bool CompareTensorsProvidedEpsilonAndRelativeTolerance(
-        const std::wstring &expectedOutputTensorFile,
-        const std::wstring &actualOutputTensorFile,
+        const std::vector<std::pair<int, float>>& expectedOutputTensors,
+        const std::vector<std::pair<int, float>>& actualOutputTensors,
         float relativeTolerance,
         float epsilon)
     {
-        bool check = false;
+        if (expectedOutputTensors.size() !=0 &&
+            actualOutputTensors.size() != 0 &&
+            expectedOutputTensors.size() != actualOutputTensors.size())
+        {
+            Assert::Fail(L"One of the output tensors is empty or expected and Actual Output tensors are different sizes\n");
+        }
+        bool doesActualMatchExpected = true;
+        for(int i = 0; i < expectedOutputTensors.size(); i++)
+        {
+            float actualValueNum = actualOutputTensors[i].second;
+            float expectedValueNum = expectedOutputTensors[i].second;
+            if (std::abs(actualValueNum - expectedValueNum) > 0.001 &&
+                std::abs(actualValueNum - expectedValueNum) >
+                relativeTolerance * std::abs(expectedValueNum) + epsilon) // Check if the values are too different.
+            {
+                printf("Expected and Actual tensor value is too different at Index: %d. Expected: %f, Actual: %f\n",
+                    i, expectedValueNum, actualValueNum);
+                doesActualMatchExpected = false;
+            }
+        }
+        return doesActualMatchExpected;
+    }
+
+    void PopulateTensorLists(const std::wstring& expectedOutputTensorFile,
+                             const std::wstring& actualOutputTensorFile,
+                             std::vector<std::pair<int, float>>& expectedOutputTensors,
+                             std::vector<std::pair<int, float>>& actualOutputTensors)
+    {
         std::ifstream expectedFileStream;
         std::ifstream actualFileStream;
         expectedFileStream.open(expectedOutputTensorFile);
         actualFileStream.open(actualOutputTensorFile);
+        std::string actualIndex;
         std::string actualValue;
+        std::string expectedIndex;
         std::string expectedValue;
         if (expectedFileStream.fail() || actualFileStream.fail())
         {
-            return false;
+            Assert::Fail(L"Failed to open tensor files\n");
         }
         bool isFirstRow = true;
-        while (!(expectedFileStream.eof() || actualFileStream.eof()))
+        while (!expectedFileStream.eof())
         {
-            std::getline(expectedFileStream, expectedValue, ',');
+            std::getline(expectedFileStream, expectedIndex, ',');
             std::getline(expectedFileStream, expectedValue, '\n');
-            std::getline(actualFileStream, actualValue, ',');
+            std::getline(actualFileStream, actualIndex, ',');
             std::getline(actualFileStream, actualValue, '\n');
             if (isFirstRow)
             {
                 isFirstRow = false;
                 continue;
             }
-            float actualValueNum = (actualValue == "") ? 0 : std::stof(actualValue);
-            float expectedValueNum = (expectedValue == "") ? 0 : std::stof(expectedValue);
-            if (std::abs(actualValueNum - expectedValueNum) >
-                relativeTolerance * std::abs(expectedValueNum) + epsilon) // Check if the values are too different.
+            if (actualValue != "" && actualIndex != "" && expectedValue != "" && expectedIndex != "")
             {
-                return false;
+                actualOutputTensors.push_back(std::make_pair(std::stoi(actualIndex), std::stof(actualValue)));
+                expectedOutputTensors.push_back(std::make_pair(std::stoi(expectedIndex), std::stof(expectedValue)));
             }
         }
-        return true;
+    }
+
+    bool CompareTopHighestTensorValues(std::vector<std::pair<int, float>> expectedOutputTensors,
+                                       std::vector<std::pair<int, float>> actualOutputTensors,
+                                       const float relativeTolerance,
+                                       const float epsilon)
+    {
+        if (expectedOutputTensors.size() != 0 && actualOutputTensors.size() != 0 &&
+            expectedOutputTensors.size() != actualOutputTensors.size())
+        {
+            Assert::Fail(
+                L"One of the output tensors is empty or expected and Actual Output tensors are different sizes\n");
+        }
+        //Sort expected and actual output tensors from highest to lowest. This is the reason why the tensors are 
+        //pass by value to avoid altering the original tensors.
+        std::sort(expectedOutputTensors.begin(), expectedOutputTensors.end(),
+                  [](auto& left, auto& right) { return left.second > right.second; });
+        std::sort(actualOutputTensors.begin(), actualOutputTensors.end(),
+                  [](auto& left, auto& right) { return left.second > right.second; });
+
+        bool currentValueIsLargeEnough = true; // Only care about values that are larger than 1e-3
+        float smallestValueToCompare = 0.001f;
+        bool doesActualMatchExpected = true;
+        int currentIndex = 0;
+        while (currentValueIsLargeEnough && currentIndex < expectedOutputTensors.size())
+        {
+            //Compare expected vs actual prediction index
+            if (expectedOutputTensors[currentIndex].first != actualOutputTensors[currentIndex].first)
+            {
+                printf("Top Expected Index:%d and Actual Index:%d don't match!",
+                       expectedOutputTensors[currentIndex].first, actualOutputTensors[currentIndex].first);
+                doesActualMatchExpected = false;
+            }
+            else if (currentIndex > 0)
+            {
+                float expectedTensorRatio =
+                    (expectedOutputTensors[currentIndex].second - expectedOutputTensors[currentIndex - 1].second) /
+                    expectedOutputTensors[currentIndex - 1].second;
+                float actualTensorRatio =
+                    (actualOutputTensors[currentIndex].second - actualOutputTensors[currentIndex - 1].second) /
+                    actualOutputTensors[currentIndex - 1].second;
+                //Compare the percentage difference between top values
+                if (std::abs(expectedTensorRatio - actualTensorRatio) >
+                    relativeTolerance * std::abs(expectedTensorRatio) + epsilon)
+                {
+                    printf("Actual ratio difference of top values between index %d and index %d don't match expected ratio difference", currentIndex-1, currentIndex);
+                    doesActualMatchExpected = false;
+                }
+            }
+            currentValueIsLargeEnough = expectedOutputTensors[++currentIndex].second > smallestValueToCompare;
+        }
+        return doesActualMatchExpected;
     }
 
     bool CompareTensors(const std::wstring& expectedOutputTensorFile, const std::wstring& actualOutputTensorFile)
     {
-        return CompareTensorsProvidedEpsilonAndRelativeTolerance(expectedOutputTensorFile, actualOutputTensorFile,
+        std::vector<std::pair<int, float>>expectedOutputTensors;
+        std::vector<std::pair<int, float>>actualOutputTensors;
+        PopulateTensorLists(expectedOutputTensorFile, actualOutputTensorFile, expectedOutputTensors, actualOutputTensors);
+        return CompareTensorsProvidedEpsilonAndRelativeTolerance(expectedOutputTensors, actualOutputTensors,
                                                                  0.003f, 0);
     }
 
     bool CompareTensorsFP16(const std::wstring& expectedOutputTensorFile, const std::wstring& actualOutputTensorFile)
     {
-        return CompareTensorsProvidedEpsilonAndRelativeTolerance(expectedOutputTensorFile, actualOutputTensorFile,
-                                                                 0.06f, 0);
+        std::vector<std::pair<int, float>>expectedOutputTensors;
+        std::vector<std::pair<int, float>>actualOutputTensors;
+        PopulateTensorLists(expectedOutputTensorFile, actualFile, expectedOutputTensors, actualOutputTensors);
+        bool compareAllTensorsResult = CompareTensorsProvidedEpsilonAndRelativeTolerance(expectedOutputTensors, actualOutputTensors,
+            0.06f, 0);
+        if (!compareAllTensorsResult) //fall back to more forgiving comparison that compares order of top indexes
+        {
+            return CompareTopHighestTensorValues(expectedOutputTensors, actualOutputTensors, 0.1f, 0.04f);
+        }
+        return true;
     }
 
     TEST_CLASS(GarbageInputTest){ public : TEST_CLASS_INITIALIZE(SetupClass){

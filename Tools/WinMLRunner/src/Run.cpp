@@ -431,11 +431,10 @@ HRESULT EvaluateModels(
 )
 {
     output.PrintHardwareInfo();
-
+    HRESULT lastEvaluateModelResult = S_OK;
     for (const auto& path : modelPaths)
     {
         LearningModel model = nullptr;
-
         try
         {
             model = LoadModel(path, args.IsPerformanceCapture() || args.IsPerIterationCapture(), output, args, 0, profiler);
@@ -445,7 +444,6 @@ HRESULT EvaluateModels(
             std::cout << hr.message().c_str() << std::endl;
             return hr.code();
         }
-
         auto firstFeature = model.InputFeatures().First().Current();
         auto tensorDescriptor = firstFeature.try_as<TensorFeatureDescriptor>();
 
@@ -455,22 +453,21 @@ HRESULT EvaluateModels(
             std::wcout << L"Model: " + path + L" has an input type that isn't supported by WinMLRunner yet." << std::endl;
             continue;
         }
-
         for (const auto &deviceType : deviceTypes)
         {
-            HRESULT evaluateModelGivenDeviceTypeResult = EvaluateModelGivenDeviceType (
-                                                    model, deviceType, inputBindingTypes,
-                                                    inputDataTypes, deviceCreationLocations,
-                                                    args, path, output, profiler, tensorDescriptor);
+            HRESULT evaluateModelGivenDeviceTypeResult = EvaluateModelGivenDeviceType(
+                model, deviceType, inputBindingTypes,
+                inputDataTypes, deviceCreationLocations,
+                args, path, output, profiler, tensorDescriptor);
             if (FAILED(evaluateModelGivenDeviceTypeResult))
             {
+                lastEvaluateModelResult = evaluateModelGivenDeviceTypeResult;
                 std::cout << "Run failed for DeviceType: " << TypeHelper::Stringify(deviceType) << std::endl;;
             }
         }
         model.Close();
     }
-
-    return S_OK;
+    return lastEvaluateModelResult; //Return the last HRESULT that failed. Will return S_OK otherwise.
 }
 
 std::vector<InputDataType> FetchInputDataTypes(const CommandLineArgs& args)

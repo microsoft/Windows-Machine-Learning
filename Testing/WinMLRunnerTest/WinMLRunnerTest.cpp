@@ -206,7 +206,7 @@ namespace WinMLRunnerTest
     {
         std::vector<std::pair<int, float>>expectedOutputTensors;
         std::vector<std::pair<int, float>>actualOutputTensors;
-        PopulateTensorLists(expectedOutputTensorFile, actualFile, expectedOutputTensors, actualOutputTensors);
+        PopulateTensorLists(expectedOutputTensorFile, actualOutputTensorFile, expectedOutputTensors, actualOutputTensors);
         bool compareAllTensorsResult = CompareTensorsProvidedEpsilonAndRelativeTolerance(expectedOutputTensors, actualOutputTensors,
             0.06f, 0);
         if (!compareAllTensorsResult) //fall back to more forgiving comparison that compares order of top indexes

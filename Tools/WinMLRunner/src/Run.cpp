@@ -359,6 +359,64 @@ HRESULT EvaluateModel(const LearningModel& model, const CommandLineArgs& args, O
     return S_OK;
 }
 
+HRESULT EvaluateModelWithDeviceType(const LearningModel& model, const DeviceType deviceType,
+                                     const std::vector<InputBindingType>& inputBindingTypes,
+                                     const std::vector<InputDataType>& inputDataTypes,
+                                     const std::vector<DeviceCreationLocation> deviceCreationLocations,
+                                     const CommandLineArgs& args, const std::wstring& modelPath, OutputHelper& output,
+                                     Profiler<WINML_MODEL_TEST_PERF>& profiler,
+                                     TensorFeatureDescriptor& tensorDescriptor)
+{
+    for (const auto& inputBindingType : inputBindingTypes)
+    {
+        for (const auto& inputDataType : inputDataTypes)
+        {
+            for (const auto& deviceCreationLocation : deviceCreationLocations)
+            {
+                if (args.IsPerformanceCapture() || args.IsPerIterationCapture())
+                {
+                    // Resets all values from profiler for bind and evaluate.
+                    profiler.Reset(WINML_MODEL_TEST_PERF::BIND_VALUE, WINML_MODEL_TEST_PERF::COUNT);
+                }
+
+                if (inputDataType != InputDataType::Tensor)
+                {
+                    // Currently GPU binding only work with 4D tensors and RGBA/BGRA images
+                    if (tensorDescriptor.Shape().Size() != 4 || tensorDescriptor.Shape().GetAt(1) != 3)
+                    {
+                        continue;
+                    }
+                }
+
+                HRESULT evalHResult = EvaluateModel(model, args, output, deviceType, inputBindingType, inputDataType,
+                                                    deviceCreationLocation, profiler);
+
+                if (FAILED(evalHResult))
+                {
+                    return evalHResult;
+                }
+
+                if (args.IsPerformanceCapture())
+                {
+                    output.PrintResults(profiler, args.NumIterations(), deviceType, inputBindingType, inputDataType,
+                                        deviceCreationLocation, args.IsPerformanceConsoleOutputVerbose());
+                    if (args.IsOutputPerf())
+                    {
+                        std::string deviceTypeStringified = TypeHelper::Stringify(deviceType);
+                        std::string inputDataTypeStringified = TypeHelper::Stringify(inputDataType);
+                        std::string inputBindingTypeStringified = TypeHelper::Stringify(inputBindingType);
+                        std::string deviceCreationLocationStringified = TypeHelper::Stringify(deviceCreationLocation);
+                        output.WritePerformanceDataToCSV(
+                            profiler, args.NumIterations(), modelPath, deviceTypeStringified, inputDataTypeStringified,
+                            inputBindingTypeStringified, deviceCreationLocationStringified);
+                    }
+                }
+            }
+        }
+    }
+    return S_OK;
+}
+
 HRESULT EvaluateModels(const std::vector<std::wstring>& modelPaths, const std::vector<DeviceType>& deviceTypes,
                        const std::vector<InputBindingType>& inputBindingTypes,
                        const std::vector<InputDataType>& inputDataTypes,
@@ -366,11 +424,10 @@ HRESULT EvaluateModels(const std::vector<std::wstring>& modelPaths, const std::v
                        OutputHelper& output, Profiler<WINML_MODEL_TEST_PERF>& profiler)
 {
     output.PrintHardwareInfo();
-
+    HRESULT lastEvaluateModelResult = S_OK;
     for (const auto& path : modelPaths)
     {
         LearningModel model = nullptr;
-
         try
         {
             model =
@@ -381,7 +438,6 @@ HRESULT EvaluateModels(const std::vector<std::wstring>& modelPaths, const std::v
             std::cout << hr.message().c_str() << std::endl;
             return hr.code();
         }
-
         auto firstFeature = model.InputFeatures().First().Current();
         auto tensorDescriptor = firstFeature.try_as<TensorFeatureDescriptor>();
 
@@ -392,65 +448,20 @@ HRESULT EvaluateModels(const std::vector<std::wstring>& modelPaths, const std::v
                        << std::endl;
             continue;
         }
-
         for (const auto& deviceType : deviceTypes)
         {
-            for (const auto& inputBindingType : inputBindingTypes)
+            HRESULT evaluateModelWithDeviceTypeResult =
+                EvaluateModelWithDeviceType(model, deviceType, inputBindingTypes, inputDataTypes,
+                                             deviceCreationLocations, args, path, output, profiler, tensorDescriptor);
+            if (FAILED(evaluateModelWithDeviceTypeResult))
             {
-                for (const auto& inputDataType : inputDataTypes)
-                {
-                    for (const auto& deviceCreationLocation : deviceCreationLocations)
-                    {
-                        if (args.IsPerformanceCapture() || args.IsPerIterationCapture())
-                        {
-                            // Resets all values from profiler for bind and evaluate.
-                            profiler.Reset(WINML_MODEL_TEST_PERF::BIND_VALUE, WINML_MODEL_TEST_PERF::COUNT);
-                        }
-
-                        if (inputDataType != InputDataType::Tensor)
-                        {
-                            // Currently GPU binding only work with 4D tensors and RGBA/BGRA images
-                            if (tensorDescriptor.Shape().Size() != 4 || tensorDescriptor.Shape().GetAt(1) != 3)
-                            {
-                                continue;
-                            }
-                        }
-
-                        HRESULT evalHResult = EvaluateModel(model, args, output, deviceType, inputBindingType,
-                                                            inputDataType, deviceCreationLocation, profiler);
-
-                        if (FAILED(evalHResult))
-                        {
-                            return evalHResult;
-                        }
-
-                        if (args.IsPerformanceCapture())
-                        {
-                            output.PrintResults(profiler, args.NumIterations(), deviceType, inputBindingType,
-                                                inputDataType, deviceCreationLocation,
-                                                args.IsPerformanceConsoleOutputVerbose());
-                            if (args.IsOutputPerf())
-                            {
-                                std::string deviceTypeStringified = TypeHelper::Stringify(deviceType);
-                                std::string inputDataTypeStringified = TypeHelper::Stringify(inputDataType);
-                                std::string inputBindingTypeStringified = TypeHelper::Stringify(inputBindingType);
-                                std::string deviceCreationLocationStringified =
-                                    TypeHelper::Stringify(deviceCreationLocation);
-                                output.WritePerformanceDataToCSV(profiler, args.NumIterations(), path,
-                                                                 deviceTypeStringified, inputDataTypeStringified,
-                                                                 inputBindingTypeStringified,
-                                                                 deviceCreationLocationStringified);
-                            }
-                        }
-                    }
-                }
+                lastEvaluateModelResult = evaluateModelWithDeviceTypeResult;
+                std::cout << "Run failed for DeviceType: " << TypeHelper::Stringify(deviceType) << std::endl;
             }
         }
-
         model.Close();
     }
-
-    return S_OK;
+    return lastEvaluateModelResult; // Return the last HRESULT that failed. Will return S_OK otherwise.
 }
 
 std::vector<InputDataType> FetchInputDataTypes(const CommandLineArgs& args)

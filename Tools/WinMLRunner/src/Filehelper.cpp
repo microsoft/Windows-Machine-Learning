@@ -22,4 +22,4 @@ namespace FileHelper
 
         return val;
     }
-}
+} // namespace FileHelper

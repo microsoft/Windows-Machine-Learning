@@ -359,7 +359,7 @@ HRESULT EvaluateModel(const LearningModel& model, const CommandLineArgs& args, O
     return S_OK;
 }
 
-HRESULT EvaluateModelGivenDeviceType(const LearningModel& model, const DeviceType deviceType,
+HRESULT EvaluateModelWithDeviceType(const LearningModel& model, const DeviceType deviceType,
                                      const std::vector<InputBindingType>& inputBindingTypes,
                                      const std::vector<InputDataType>& inputDataTypes,
                                      const std::vector<DeviceCreationLocation> deviceCreationLocations,
@@ -450,14 +450,13 @@ HRESULT EvaluateModels(const std::vector<std::wstring>& modelPaths, const std::v
         }
         for (const auto& deviceType : deviceTypes)
         {
-            HRESULT evaluateModelGivenDeviceTypeResult =
-                EvaluateModelGivenDeviceType(model, deviceType, inputBindingTypes, inputDataTypes,
+            HRESULT evaluateModelWithDeviceTypeResult =
+                EvaluateModelWithDeviceType(model, deviceType, inputBindingTypes, inputDataTypes,
                                              deviceCreationLocations, args, path, output, profiler, tensorDescriptor);
-            if (FAILED(evaluateModelGivenDeviceTypeResult))
+            if (FAILED(evaluateModelWithDeviceTypeResult))
             {
-                lastEvaluateModelResult = evaluateModelGivenDeviceTypeResult;
+                lastEvaluateModelResult = evaluateModelWithDeviceTypeResult;
                 std::cout << "Run failed for DeviceType: " << TypeHelper::Stringify(deviceType) << std::endl;
-                ;
             }
         }
         model.Close();

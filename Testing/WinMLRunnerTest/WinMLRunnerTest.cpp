@@ -211,7 +211,7 @@ namespace WinMLRunnerTest
             0.06f, 0);
         if (!compareAllTensorsResult) //fall back to more forgiving comparison that compares order of top indexes
         {
-            return CompareTopHighestTensorValues(expectedOutputTensors, actualOutputTensors, 0.1f, 0.04f);
+            return CompareTopHighestTensorValues(expectedOutputTensors, actualOutputTensors, 0.1f, 0.05f);
         }
         return true;
     }

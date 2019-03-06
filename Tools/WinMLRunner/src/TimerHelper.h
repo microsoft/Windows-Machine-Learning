@@ -9,12 +9,12 @@
 #endif
 #include <psapi.h>
 
-
 #define TIMER_SLOT_SIZE (128)
-#define CONVERT_100NS_TO_SECOND(x) ((x) * 0.0000001)
-#define BYTE_TO_MB(x) ((x)/(1024.0*1024.0))
+#define CONVERT_100NS_TO_SECOND(x) ((x)*0.0000001)
+#define BYTE_TO_MB(x) ((x) / (1024.0 * 1024.0))
 
-// A stopwatch to measure the time passed (in milliseconds ) between current Stop call and the closest Start call that has been called before.
+// A stopwatch to measure the time passed (in milliseconds ) between current Stop call and the closest Start call that
+// has been called before.
 class Timer
 {
 public:
@@ -42,10 +42,7 @@ private:
 class CpuPerfCounter
 {
 public:
-    CpuPerfCounter()
-    {
-        Reset();
-    }
+    CpuPerfCounter() { Reset(); }
 
     ~CpuPerfCounter() {}
 
@@ -57,8 +54,10 @@ public:
         m_startKernelTime = { 0 };
         m_startUserTime = { 0 };
         m_numProcessors = sysInfo.dwNumberOfProcessors;
-        m_procHandle = GetCurrentProcess();;
-        m_pid = GetCurrentProcessId();;
+        m_procHandle = GetCurrentProcess();
+        ;
+        m_pid = GetCurrentProcessId();
+        ;
         m_previousStartCallFailed = true;
         m_processTime = 0;
         m_startPageFaultCount = 0;
@@ -78,7 +77,8 @@ public:
         FILETIME ftIgnore, ftKernel, ftUser;
 
         if (!GetProcessTimes(m_procHandle, &ftIgnore, &ftIgnore, &ftKernel, &ftUser) ||
-            !GetProcessMemoryCounters(m_pid, m_startPageFaultCount, m_startPagefileUsage, m_startPeakPagefileUsage, m_startWorkingSetSize, m_startPeakWorkingSetSize))
+            !GetProcessMemoryCounters(m_pid, m_startPageFaultCount, m_startPagefileUsage, m_startPeakPagefileUsage,
+                                      m_startWorkingSetSize, m_startPeakWorkingSetSize))
         {
             m_previousStartCallFailed = true;
         }
@@ -94,29 +94,32 @@ public:
     {
         FILETIME ftIgnore, ftKernel, ftUser;
         ULARGE_INTEGER stopKernelTime, stopUserTime;
-        ULONG  stopPageFaultCount = 0;
+        ULONG stopPageFaultCount = 0;
         SIZE_T stopPagefileUsage = 0;
         SIZE_T stopPeakPagefileUsage = 0;
         SIZE_T stopWorkingSetSize = 0;
         SIZE_T stopPeakWorkingSetSize = 0;
 
-        if (m_previousStartCallFailed ||
-            m_numProcessors == 0 ||
+        if (m_previousStartCallFailed || m_numProcessors == 0 ||
             !GetProcessTimes(m_procHandle, &ftIgnore, &ftIgnore, &ftKernel, &ftUser) ||
-            !GetProcessMemoryCounters(m_pid, stopPageFaultCount, stopPagefileUsage, stopPeakPagefileUsage, stopWorkingSetSize, stopPeakWorkingSetSize))
+            !GetProcessMemoryCounters(m_pid, stopPageFaultCount, stopPagefileUsage, stopPeakPagefileUsage,
+                                      stopWorkingSetSize, stopPeakWorkingSetSize))
         {
             return;
         }
 
         memcpy(&stopKernelTime, &ftKernel, sizeof(FILETIME));
         memcpy(&stopUserTime, &ftUser, sizeof(FILETIME));
-        m_processTime = CONVERT_100NS_TO_SECOND((stopKernelTime.QuadPart - m_startKernelTime.QuadPart) + (stopUserTime.QuadPart - m_startUserTime.QuadPart)) / m_numProcessors;
+        m_processTime = CONVERT_100NS_TO_SECOND((stopKernelTime.QuadPart - m_startKernelTime.QuadPart) +
+                                                (stopUserTime.QuadPart - m_startUserTime.QuadPart)) /
+                        m_numProcessors;
 
         m_deltaPageFaultCount = stopPageFaultCount - m_startPageFaultCount;
         m_deltaPagefileUsage = (double)BYTE_TO_MB((double)stopPagefileUsage - (double)m_startPagefileUsage);
         m_deltaPeakPagefileUsage = (double)BYTE_TO_MB((double)stopPeakPagefileUsage - (double)m_startPeakPagefileUsage);
         m_deltaWorkingSetSize = (double)BYTE_TO_MB((double)stopWorkingSetSize - (double)m_startWorkingSetSize);
-        m_deltaPeakWorkingSetSize = (double)BYTE_TO_MB((double)stopPeakWorkingSetSize - (double)m_startPeakWorkingSetSize);
+        m_deltaPeakWorkingSetSize =
+            (double)BYTE_TO_MB((double)stopPeakWorkingSetSize - (double)m_startPeakWorkingSetSize);
     }
 
     double GetProcessTime() { return m_processTime; }
@@ -128,9 +131,8 @@ public:
     double GetStartWorkingSet() { return (double)BYTE_TO_MB((double)m_startWorkingSetSize); }
 
 private:
-
     bool GetProcessMemoryCounters(DWORD pid, ULONG& pageFaultCount, SIZE_T& pageFileUsage, SIZE_T& peakPageFileUsage,
-        SIZE_T& workingSetSize, SIZE_T& peakWorkingSetSize)
+                                  SIZE_T& workingSetSize, SIZE_T& peakWorkingSetSize)
     {
         HANDLE hProcess = NULL;
 
@@ -161,32 +163,27 @@ private:
     HANDLE m_procHandle;
     DWORD m_pid;
     bool m_previousStartCallFailed;
-    double m_processTime;         // in second
+    double m_processTime; // in second
     ULONG m_startPageFaultCount;
-    SIZE_T m_startPagefileUsage;       // in byte
-    SIZE_T m_startPeakPagefileUsage;   // in byte
-    SIZE_T m_startWorkingSetSize;      // in byte
-    SIZE_T m_startPeakWorkingSetSize;  // in byte
+    SIZE_T m_startPagefileUsage;      // in byte
+    SIZE_T m_startPeakPagefileUsage;  // in byte
+    SIZE_T m_startWorkingSetSize;     // in byte
+    SIZE_T m_startPeakWorkingSetSize; // in byte
     ULONG m_deltaPageFaultCount;
-    double m_deltaPagefileUsage;       // in MByte
-    double m_deltaPeakPagefileUsage;   // in MByte
-    double m_deltaWorkingSetSize;      // in MByte
-    double m_deltaPeakWorkingSetSize;  // in MByte
+    double m_deltaPagefileUsage;      // in MByte
+    double m_deltaPeakPagefileUsage;  // in MByte
+    double m_deltaWorkingSetSize;     // in MByte
+    double m_deltaPeakWorkingSetSize; // in MByte
 };
 #ifndef DISABLE_GPU_COUNTERS
 
 class GpuPerfCounter
 {
 public:
-    GpuPerfCounter() :
-        m_hPDH(NULL),
-        m_pfnPdhOpenQuery(NULL),
-        m_pfnPdhAddCounter(NULL),
-        m_pfnPdhCollectQueryData(NULL),
-        m_pfnPdhGetFormattedCounterArray(NULL),
-        m_pfnPdhGetFormattedCounterValue(NULL),
-        m_pfnPdhCloseQuery(NULL),
-        m_query(NULL)
+    GpuPerfCounter()
+        : m_hPDH(NULL), m_pfnPdhOpenQuery(NULL), m_pfnPdhAddCounter(NULL), m_pfnPdhCollectQueryData(NULL),
+          m_pfnPdhGetFormattedCounterArray(NULL), m_pfnPdhGetFormattedCounterValue(NULL), m_pfnPdhCloseQuery(NULL),
+          m_query(NULL)
     {
         //#ifdef DISABLE_LOADLIBRARY
         m_hPDH = LoadLibraryEx(L"pdh.dll", NULL, 0);
@@ -196,8 +193,10 @@ public:
             m_pfnPdhOpenQuery = (PFNPdhOpenQuery)GetProcAddress(m_hPDH, "PdhOpenQueryW");
             m_pfnPdhAddCounter = (PFNPdhAddCounter)GetProcAddress(m_hPDH, "PdhAddCounterW");
             m_pfnPdhCollectQueryData = (PFNPdhCollectQueryData)GetProcAddress(m_hPDH, "PdhCollectQueryData");
-            m_pfnPdhGetFormattedCounterArray = (PFNPdhGetFormattedCounterArray)GetProcAddress(m_hPDH, "PdhGetFormattedCounterArrayW");
-            m_pfnPdhGetFormattedCounterValue = (PFNPdhGetFormattedCounterValue)GetProcAddress(m_hPDH, "PdhGetFormattedCounterValue");
+            m_pfnPdhGetFormattedCounterArray =
+                (PFNPdhGetFormattedCounterArray)GetProcAddress(m_hPDH, "PdhGetFormattedCounterArrayW");
+            m_pfnPdhGetFormattedCounterValue =
+                (PFNPdhGetFormattedCounterValue)GetProcAddress(m_hPDH, "PdhGetFormattedCounterValue");
             m_pfnPdhCloseQuery = (PFNPdhCloseQuery)GetProcAddress(m_hPDH, "PdhCloseQuery");
         }
 
@@ -234,7 +233,8 @@ public:
         gpuSharedMemQueryStr.replace(gpuSharedMemQueryStr.find('*'), 1, pidStr);
 
         // Open query
-        if (m_query) CloseQuery(m_query);
+        if (m_query)
+            CloseQuery(m_query);
         m_query = NULL;
         OpenQuery(NULL, NULL, &m_query);
         AddCounter(m_query, gpuUsageQueryStr.c_str(), NULL, &m_gpuUsageCounter);
@@ -252,12 +252,18 @@ public:
         CollectQueryData(m_query);
 
         // Gpu dedicated ememory
-        status = GetFormattedCounterValue(m_gpuDedicatedMemUsageCounter, PDH_FMT_LARGE, NULL, &gpuDedicatedMemUsageCounterValue);
-        m_startGpuDedicatedMemory = (ERROR_SUCCESS == status) ? (double)BYTE_TO_MB(gpuDedicatedMemUsageCounterValue.largeValue) : m_startGpuDedicatedMemory;
+        status = GetFormattedCounterValue(m_gpuDedicatedMemUsageCounter, PDH_FMT_LARGE, NULL,
+                                          &gpuDedicatedMemUsageCounterValue);
+        m_startGpuDedicatedMemory = (ERROR_SUCCESS == status)
+                                        ? (double)BYTE_TO_MB(gpuDedicatedMemUsageCounterValue.largeValue)
+                                        : m_startGpuDedicatedMemory;
 
         // Gpu shared ememory
-        status = GetFormattedCounterValue(m_gpuSharedMemUsageCounter, PDH_FMT_LARGE, NULL, &gpuSharedMemUsageCounterValue);
-        m_startGpuSharedMemory = (ERROR_SUCCESS == status) ? (double)BYTE_TO_MB(gpuSharedMemUsageCounterValue.largeValue) : m_startGpuSharedMemory;
+        status =
+            GetFormattedCounterValue(m_gpuSharedMemUsageCounter, PDH_FMT_LARGE, NULL, &gpuSharedMemUsageCounterValue);
+        m_startGpuSharedMemory = (ERROR_SUCCESS == status)
+                                     ? (double)BYTE_TO_MB(gpuSharedMemUsageCounterValue.largeValue)
+                                     : m_startGpuSharedMemory;
     }
 
     void Stop()
@@ -277,20 +283,24 @@ public:
         if (S_OK != status && PDH_NO_DATA != status)
             return;
 
-        status = GetFormattedCounterArray(m_gpuUsageCounter, PDH_FMT_DOUBLE, &bufferSize, &itemCount, gpuUsageCounterValue);
+        status =
+            GetFormattedCounterArray(m_gpuUsageCounter, PDH_FMT_DOUBLE, &bufferSize, &itemCount, gpuUsageCounterValue);
         if (PDH_MORE_DATA != status)
             return;
 
-        gpuUsageCounterValue = (PDH_FMT_COUNTERVALUE_ITEM *)malloc(bufferSize);
+        gpuUsageCounterValue = (PDH_FMT_COUNTERVALUE_ITEM*)malloc(bufferSize);
         if (gpuUsageCounterValue != nullptr)
         {
-            status = GetFormattedCounterArray(m_gpuUsageCounter, PDH_FMT_DOUBLE, &bufferSize, &itemCount, gpuUsageCounterValue);
+            status = GetFormattedCounterArray(m_gpuUsageCounter, PDH_FMT_DOUBLE, &bufferSize, &itemCount,
+                                              gpuUsageCounterValue);
             if (ERROR_SUCCESS == status)
             {
                 double maxValue = 0;
                 for (size_t i = 0; i < itemCount; ++i)
                 {
-                    maxValue = (gpuUsageCounterValue[i].FmtValue.doubleValue > maxValue) ? gpuUsageCounterValue[i].FmtValue.doubleValue : maxValue;
+                    maxValue = (gpuUsageCounterValue[i].FmtValue.doubleValue > maxValue)
+                                   ? gpuUsageCounterValue[i].FmtValue.doubleValue
+                                   : maxValue;
                 }
                 m_gpuUsage = maxValue;
             }
@@ -301,17 +311,19 @@ public:
         bufferSize = 0;
         itemCount = 0;
 
-        double stopGpuDedicatedMemory;  // in MB
-        double stopGpuSharedMemory;     // in MB
+        double stopGpuDedicatedMemory; // in MB
+        double stopGpuSharedMemory;    // in MB
 
-        status = GetFormattedCounterValue(m_gpuDedicatedMemUsageCounter, PDH_FMT_LARGE, NULL, &gpuDedicatedMemUsageCounterValue);
+        status = GetFormattedCounterValue(m_gpuDedicatedMemUsageCounter, PDH_FMT_LARGE, NULL,
+                                          &gpuDedicatedMemUsageCounterValue);
         if (ERROR_SUCCESS == status)
         {
             stopGpuDedicatedMemory = (double)BYTE_TO_MB(gpuDedicatedMemUsageCounterValue.largeValue);
             m_deltaGpuDedicatedMemory = stopGpuDedicatedMemory - m_startGpuDedicatedMemory;
         }
 
-        status = GetFormattedCounterValue(m_gpuSharedMemUsageCounter, PDH_FMT_LARGE, NULL, &gpuSharedMemUsageCounterValue);
+        status =
+            GetFormattedCounterValue(m_gpuSharedMemUsageCounter, PDH_FMT_LARGE, NULL, &gpuSharedMemUsageCounterValue);
         if (ERROR_SUCCESS == status)
         {
             stopGpuSharedMemory = (double)BYTE_TO_MB(gpuSharedMemUsageCounterValue.largeValue);
@@ -326,32 +338,47 @@ public:
 
 private:
     // Pdh function prototypes
-    typedef PDH_STATUS(WINAPI *PFNPdhOpenQuery)(_In_opt_ LPCWSTR szDataSource, _In_ DWORD_PTR dwUserData, _Out_ PDH_HQUERY * phQuery);
-    typedef PDH_STATUS(WINAPI *PFNPdhAddCounter)(_In_ PDH_HQUERY hQuery, _In_ LPCWSTR szFullCounterPath, _In_ DWORD_PTR dwUserData, _Out_ PDH_HCOUNTER * phCounter);
-    typedef PDH_STATUS(WINAPI *PFNPdhCollectQueryData)(_Inout_ PDH_HQUERY hQuery);
-    typedef PDH_STATUS(WINAPI *PFNPdhGetFormattedCounterArray)(_In_ PDH_HCOUNTER hCounter, _In_ DWORD dwFormat, _Inout_ LPDWORD lpdwBufferSize, _Out_ LPDWORD lpdwItemCount, _Out_writes_bytes_opt_(*lpdwBufferSize) PPDH_FMT_COUNTERVALUE_ITEM_W ItemBuffer);
-    typedef PDH_STATUS(WINAPI *PFNPdhGetFormattedCounterValue)(_In_ PDH_HCOUNTER hCounter, _In_ DWORD dwFormat, _Out_opt_ LPDWORD lpdwType, _Out_ PPDH_FMT_COUNTERVALUE pValue);
-    typedef PDH_STATUS(WINAPI *PFNPdhCloseQuery)(_Inout_ PDH_HQUERY hQuery);
+    typedef PDH_STATUS(WINAPI* PFNPdhOpenQuery)(_In_opt_ LPCWSTR szDataSource, _In_ DWORD_PTR dwUserData,
+                                                _Out_ PDH_HQUERY* phQuery);
+    typedef PDH_STATUS(WINAPI* PFNPdhAddCounter)(_In_ PDH_HQUERY hQuery, _In_ LPCWSTR szFullCounterPath,
+                                                 _In_ DWORD_PTR dwUserData, _Out_ PDH_HCOUNTER* phCounter);
+    typedef PDH_STATUS(WINAPI* PFNPdhCollectQueryData)(_Inout_ PDH_HQUERY hQuery);
+    typedef PDH_STATUS(WINAPI* PFNPdhGetFormattedCounterArray)(_In_ PDH_HCOUNTER hCounter, _In_ DWORD dwFormat,
+                                                               _Inout_ LPDWORD lpdwBufferSize,
+                                                               _Out_ LPDWORD lpdwItemCount,
+                                                               _Out_writes_bytes_opt_(*lpdwBufferSize)
+                                                                   PPDH_FMT_COUNTERVALUE_ITEM_W ItemBuffer);
+    typedef PDH_STATUS(WINAPI* PFNPdhGetFormattedCounterValue)(_In_ PDH_HCOUNTER hCounter, _In_ DWORD dwFormat,
+                                                               _Out_opt_ LPDWORD lpdwType,
+                                                               _Out_ PPDH_FMT_COUNTERVALUE pValue);
+    typedef PDH_STATUS(WINAPI* PFNPdhCloseQuery)(_Inout_ PDH_HQUERY hQuery);
 
-    PDH_STATUS OpenQuery(LPCWSTR szDataSource, DWORD_PTR dwUserData, PDH_HQUERY * phQuery)
+    PDH_STATUS OpenQuery(LPCWSTR szDataSource, DWORD_PTR dwUserData, PDH_HQUERY* phQuery)
     {
         return (m_pfnPdhOpenQuery) ? m_pfnPdhOpenQuery(szDataSource, dwUserData, phQuery) : ERROR_MOD_NOT_FOUND;
     }
-    PDH_STATUS AddCounter(PDH_HQUERY hQuery, LPCWSTR szFullCounterPath, DWORD_PTR dwUserData, PDH_HCOUNTER * phCounter)
+    PDH_STATUS AddCounter(PDH_HQUERY hQuery, LPCWSTR szFullCounterPath, DWORD_PTR dwUserData, PDH_HCOUNTER* phCounter)
     {
-        return (m_pfnPdhAddCounter) ? m_pfnPdhAddCounter(hQuery, szFullCounterPath, dwUserData, phCounter) : ERROR_MOD_NOT_FOUND;
+        return (m_pfnPdhAddCounter) ? m_pfnPdhAddCounter(hQuery, szFullCounterPath, dwUserData, phCounter)
+                                    : ERROR_MOD_NOT_FOUND;
     }
     PDH_STATUS CollectQueryData(PDH_HQUERY hQuery)
     {
         return (m_pfnPdhCollectQueryData) ? m_pfnPdhCollectQueryData(hQuery) : ERROR_MOD_NOT_FOUND;
     }
-    PDH_STATUS GetFormattedCounterArray(PDH_HCOUNTER hCounter, DWORD dwFormat, LPDWORD lpdwBufferSize, LPDWORD lpdwItemCount, PPDH_FMT_COUNTERVALUE_ITEM_W ItemBuffer)
+    PDH_STATUS GetFormattedCounterArray(PDH_HCOUNTER hCounter, DWORD dwFormat, LPDWORD lpdwBufferSize,
+                                        LPDWORD lpdwItemCount, PPDH_FMT_COUNTERVALUE_ITEM_W ItemBuffer)
     {
-        return (m_pfnPdhGetFormattedCounterArray) ? m_pfnPdhGetFormattedCounterArray(hCounter, dwFormat, lpdwBufferSize, lpdwItemCount, ItemBuffer) : ERROR_MOD_NOT_FOUND;
+        return (m_pfnPdhGetFormattedCounterArray)
+                   ? m_pfnPdhGetFormattedCounterArray(hCounter, dwFormat, lpdwBufferSize, lpdwItemCount, ItemBuffer)
+                   : ERROR_MOD_NOT_FOUND;
     }
-    PDH_STATUS GetFormattedCounterValue(PDH_HCOUNTER hCounter, DWORD dwFormat, LPDWORD lpdwType, PPDH_FMT_COUNTERVALUE pValue)
+    PDH_STATUS GetFormattedCounterValue(PDH_HCOUNTER hCounter, DWORD dwFormat, LPDWORD lpdwType,
+                                        PPDH_FMT_COUNTERVALUE pValue)
     {
-        return (m_pfnPdhGetFormattedCounterValue) ? m_pfnPdhGetFormattedCounterValue(hCounter, dwFormat, lpdwType, pValue) : ERROR_MOD_NOT_FOUND;
+        return (m_pfnPdhGetFormattedCounterValue)
+                   ? m_pfnPdhGetFormattedCounterValue(hCounter, dwFormat, lpdwType, pValue)
+                   : ERROR_MOD_NOT_FOUND;
     }
     PDH_STATUS CloseQuery(PDH_HQUERY hQuery)
     {
@@ -374,10 +401,10 @@ private:
     DWORD m_pid;
     // Data
     double m_gpuUsage;
-    double m_startGpuDedicatedMemory;  // in MB
-    double m_startGpuSharedMemory;     // in MB
-    double m_deltaGpuDedicatedMemory;  // in MB
-    double m_deltaGpuSharedMemory;     // in MB
+    double m_startGpuDedicatedMemory; // in MB
+    double m_startGpuSharedMemory;    // in MB
+    double m_deltaGpuDedicatedMemory; // in MB
+    double m_deltaGpuSharedMemory;    // in MB
 };
 
 #endif
@@ -398,21 +425,18 @@ typedef enum CounterType
     TYPE_COUNT
 } CounterType;
 
-const static std::vector<std::wstring> CounterTypeName =
-{
-    L"TIMER",
-    L"CPU USAGE",
-    L"PAGE FAULT COUNT",
-    L"PAGE FILE USAGE",
-    L"PEAK PAGE FILE USAGE",
-    L"WORKING SET USAGE",
-    L"PEAK WORK SET USAGE",
-    L"GPU USAGE",
-    L"GPU_DEDICATED_MEM_USAGE",
-    L"GPU_SHARED_MEM_USAGE",
-    L"STARTING_WORKING_SET",
-    L"STARTING_SHARED_MEM"
-};
+const static std::vector<std::wstring> CounterTypeName = { L"TIMER",
+                                                           L"CPU USAGE",
+                                                           L"PAGE FAULT COUNT",
+                                                           L"PAGE FILE USAGE",
+                                                           L"PEAK PAGE FILE USAGE",
+                                                           L"WORKING SET USAGE",
+                                                           L"PEAK WORK SET USAGE",
+                                                           L"GPU USAGE",
+                                                           L"GPU_DEDICATED_MEM_USAGE",
+                                                           L"GPU_SHARED_MEM_USAGE",
+                                                           L"STARTING_WORKING_SET",
+                                                           L"STARTING_SHARED_MEM" };
 
 class PerfCounterStatistics
 {
@@ -424,15 +448,9 @@ public:
         m_bDisabled = true;
     }
 
-    void Enable()
-    {
-        m_bDisabled = false;
-    }
+    void Enable() { m_bDisabled = false; }
 
-    void Disable()
-    {
-        m_bDisabled = true;
-    }
+    void Disable() { m_bDisabled = true; }
 
     void Reset()
     {
@@ -555,7 +573,7 @@ private:
             max = 0;
             min = DBL_MAX;
             total = 0;
-            memset(measured, 0, sizeof(double)*TIMER_SLOT_SIZE);
+            memset(measured, 0, sizeof(double) * TIMER_SLOT_SIZE);
         }
 
         double max;
@@ -583,11 +601,9 @@ private:
     double GpuDedicatedDiff;
 };
 
-
 // A class to wrap up multiple PerfCounterStatistics objects.
 // To create a profiler, define intervals in an enum and use it to create the profiler object.
-template<typename T>
-class Profiler
+template <typename T> class Profiler
 {
 public:
     void Reset(int begin, int end)
@@ -598,25 +614,13 @@ public:
         }
     }
 
-    void Reset()
-    {
-        Reset(0, T::COUNT);
-    }
+    void Reset() { Reset(0, T::COUNT); }
 
-    PerfCounterStatistics& GetCounter(int t) const
-    {
-        return m_perfCounterStat[t];
-    }
+    PerfCounterStatistics& GetCounter(int t) const { return m_perfCounterStat[t]; }
 
-    PerfCounterStatistics& operator [] (int t)
-    {
-        return m_perfCounterStat[t];
-    }
+    PerfCounterStatistics& operator[](int t) { return m_perfCounterStat[t]; }
 
-    const PerfCounterStatistics& operator [] (int t) const
-    {
-        return m_perfCounterStat[t];
-    }
+    const PerfCounterStatistics& operator[](int t) const { return m_perfCounterStat[t]; }
 
     void Enable()
     {
@@ -644,6 +648,12 @@ private:
 #define WINML_PROFILING_START(profiler, interval) profiler[interval].Start()
 #define WINML_PROFILING_STOP(profiler, interval) profiler[interval].Stop()
 #else
-#define WINML_PROFILING_START(profiler, interval) do {} while(0)
-#define WINML_PROFILING_STOP(profiler, interval) do {} while(0)
+#define WINML_PROFILING_START(profiler, interval)                                                                      \
+    do                                                                                                                 \
+    {                                                                                                                  \
+    } while (0)
+#define WINML_PROFILING_STOP(profiler, interval)                                                                       \
+    do                                                                                                                 \
+    {                                                                                                                  \
+    } while (0)
 #endif

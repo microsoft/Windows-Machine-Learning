@@ -4,7 +4,7 @@
 class CommandLineArgs
 {
 public:
-    CommandLineArgs() {};
+    CommandLineArgs(){};
     CommandLineArgs(const std::vector<std::wstring>& args);
     void PrintUsage();
     bool IsConcurrentLoad() const { return m_concurrentLoad; }
@@ -23,7 +23,7 @@ public:
     bool IsSaveTensor() const { return m_saveTensor; }
 
     BitmapInterpolationMode AutoScaleInterpMode() const { return m_autoScaleInterpMode; }
-   
+
     const std::wstring& ImagePath() const { return m_imagePath; }
     const std::wstring& CsvPath() const { return m_csvData; }
     const std::wstring& OutputPath() const { return m_perfOutputPath; }
@@ -43,10 +43,7 @@ public:
         return m_useTensor || (!m_useBGR && !UseRGB());
     }
 
-    bool UseGPU() const
-    {
-        return m_useGPU || (!m_useCPU && !m_useGPUHighPerformance && !m_useGPUMinPower);
-    }
+    bool UseGPU() const { return m_useGPU || (!m_useCPU && !m_useGPUHighPerformance && !m_useGPUMinPower); }
 
     bool UseCPU() const
     {
@@ -85,15 +82,14 @@ public:
     void ToggleCreateDeviceInWinML(bool createDeviceInWinML) { m_createDeviceInWinML = createDeviceInWinML; }
     void ToggleCPUBoundInput(bool useCPUBoundInput) { m_useCPUBoundInput = useCPUBoundInput; }
     void ToggleGPUBoundInput(bool useGPUBoundInput) { m_useGPUBoundInput = useGPUBoundInput; }
-    void ToggleUseRGB(bool useRGBImage) {m_useRGB = useRGBImage;}
-    void ToggleUseBGR(bool useBGRImage) {m_useBGR = useBGRImage;}
+    void ToggleUseRGB(bool useRGBImage) { m_useRGB = useRGBImage; }
+    void ToggleUseBGR(bool useBGRImage) { m_useBGR = useBGRImage; }
     void ToggleUseTensor(bool useTensor) { m_useTensor = useTensor; }
     void TogglePerformanceCapture(bool perfCapture) { m_perfCapture = perfCapture; }
-    void ToggleIgnoreFirstRun(bool ignoreFirstRun) { m_ignoreFirstRun=ignoreFirstRun;}
+    void ToggleIgnoreFirstRun(bool ignoreFirstRun) { m_ignoreFirstRun = ignoreFirstRun; }
     void TogglePerIterationPerformanceCapture(bool perIterCapture) { m_perIterCapture = perIterCapture; }
     void ToggleEvaluationDebugOutput(bool debug) { m_evaluation_debug_output = debug; }
     void ToggleTerseOutput(bool terseOutput) { m_terseOutput = terseOutput; }
-
 
     void SetModelPath(const std::wstring& modelPath) { m_modelPath = modelPath; }
     void SetTensorOutputPath(const std::wstring& tensorOutputPath) { m_tensorOutputPath = tensorOutputPath; }
@@ -107,10 +103,7 @@ public:
     }
     void SetRunIterations(const uint32_t iterations) { m_numIterations = iterations; }
 
-    std::string SaveTensorMode() const
-    {
-        return m_saveTensorMode;
-    }
+    std::string SaveTensorMode() const { return m_saveTensorMode; }
 
 private:
     bool m_perfCapture = false;
@@ -148,6 +141,6 @@ private:
     uint32_t m_numThreads = 1;
     uint32_t m_threadInterval = 0;
 
-    void CheckNextArgument(const std::vector<std::wstring> &args, UINT i);
+    void CheckNextArgument(const std::vector<std::wstring>& args, UINT i);
     void CheckForInvalidArguments();
 };

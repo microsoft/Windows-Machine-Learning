@@ -1,0 +1,11 @@
+Language:        Cpp
+BasedOnStyle:  LLVM
+
+AccessModifierOffset: -4
+BreakBeforeBraces: Allman # break before braces
+ColumnLimit: 120
+IndentWidth: 4
+PointerAlignment: Left # Type* A as opposed to Type *A
+Cpp11BracedListStyle: false # space before/after braces
+NamespaceIndentation: All
+IndentCaseLabels: true

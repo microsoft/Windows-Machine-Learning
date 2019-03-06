@@ -4,8 +4,8 @@
 class CommandLineArgs
 {
 public:
-    CommandLineArgs() {};
-    CommandLineArgs(const std::vector<std::wstring>& args);
+    CommandLineArgs(){};
+    CommandLineArgs(const std::vector<std::wstring> &args);
     void PrintUsage();
     bool IsConcurrentLoad() const { return m_concurrentLoad; }
     bool IsUsingGPUHighPerformance() const { return m_useGPUHighPerformance; }
@@ -23,17 +23,18 @@ public:
     bool IsSaveTensor() const { return m_saveTensor; }
 
     BitmapInterpolationMode AutoScaleInterpMode() const { return m_autoScaleInterpMode; }
-   
-    const std::wstring& ImagePath() const { return m_imagePath; }
-    const std::wstring& CsvPath() const { return m_csvData; }
-    const std::wstring& OutputPath() const { return m_perfOutputPath; }
-    const std::wstring& FolderPath() const { return m_modelFolderPath; }
-    const std::wstring& ModelPath() const { return m_modelPath; }
-    const std::wstring& TensorOutputPath() const { return m_tensorOutputPath; }
+
+    const std::wstring &ImagePath() const { return m_imagePath; }
+    const std::wstring &CsvPath() const { return m_csvData; }
+    const std::wstring &OutputPath() const { return m_perfOutputPath; }
+    const std::wstring &FolderPath() const { return m_modelFolderPath; }
+    const std::wstring &ModelPath() const { return m_modelPath; }
+    const std::wstring &TensorOutputPath() const { return m_tensorOutputPath; }
 
     bool UseRGB() const
     {
-        // If an image is specified without flags, we load it as a BGR image by default
+        // If an image is specified without flags, we load it as a BGR image by
+        // default
         return m_useRGB || (!m_imagePath.empty() && !m_useBGR && !m_useTensor);
     }
 
@@ -43,10 +44,7 @@ public:
         return m_useTensor || (!m_useBGR && !UseRGB());
     }
 
-    bool UseGPU() const
-    {
-        return m_useGPU || (!m_useCPU && !m_useGPUHighPerformance && !m_useGPUMinPower);
-    }
+    bool UseGPU() const { return m_useGPU || (!m_useCPU && !m_useGPUHighPerformance && !m_useGPUMinPower); }
 
     bool UseCPU() const
     {
@@ -68,7 +66,8 @@ public:
 
     bool IsGarbageInput() const
     {
-        // When there is no image or csv input provided, then garbage input binding is used.
+        // When there is no image or csv input provided, then garbage input
+        // binding is used.
         return m_imagePath.empty() && m_csvData.empty();
     }
 
@@ -85,32 +84,28 @@ public:
     void ToggleCreateDeviceInWinML(bool createDeviceInWinML) { m_createDeviceInWinML = createDeviceInWinML; }
     void ToggleCPUBoundInput(bool useCPUBoundInput) { m_useCPUBoundInput = useCPUBoundInput; }
     void ToggleGPUBoundInput(bool useGPUBoundInput) { m_useGPUBoundInput = useGPUBoundInput; }
-    void ToggleUseRGB(bool useRGBImage) {m_useRGB = useRGBImage;}
-    void ToggleUseBGR(bool useBGRImage) {m_useBGR = useBGRImage;}
+    void ToggleUseRGB(bool useRGBImage) { m_useRGB = useRGBImage; }
+    void ToggleUseBGR(bool useBGRImage) { m_useBGR = useBGRImage; }
     void ToggleUseTensor(bool useTensor) { m_useTensor = useTensor; }
     void TogglePerformanceCapture(bool perfCapture) { m_perfCapture = perfCapture; }
-    void ToggleIgnoreFirstRun(bool ignoreFirstRun) { m_ignoreFirstRun=ignoreFirstRun;}
+    void ToggleIgnoreFirstRun(bool ignoreFirstRun) { m_ignoreFirstRun = ignoreFirstRun; }
     void TogglePerIterationPerformanceCapture(bool perIterCapture) { m_perIterCapture = perIterCapture; }
     void ToggleEvaluationDebugOutput(bool debug) { m_evaluation_debug_output = debug; }
     void ToggleTerseOutput(bool terseOutput) { m_terseOutput = terseOutput; }
 
-
-    void SetModelPath(const std::wstring& modelPath) { m_modelPath = modelPath; }
-    void SetTensorOutputPath(const std::wstring& tensorOutputPath) { m_tensorOutputPath = tensorOutputPath; }
-    void SetInputDataPath(const std::wstring& inputDataPath) { m_inputData = inputDataPath; }
+    void SetModelPath(const std::wstring &modelPath) { m_modelPath = modelPath; }
+    void SetTensorOutputPath(const std::wstring &tensorOutputPath) { m_tensorOutputPath = tensorOutputPath; }
+    void SetInputDataPath(const std::wstring &inputDataPath) { m_inputData = inputDataPath; }
     void SetNumThreads(unsigned numThreads) { m_numThreads = numThreads; }
     void SetThreadInterval(unsigned threadInterval) { m_threadInterval = threadInterval; }
-    void SetPerformanceCSVPath(const std::wstring& performanceCSVPath)
+    void SetPerformanceCSVPath(const std::wstring &performanceCSVPath)
     {
         m_perfOutputPath = performanceCSVPath;
         m_perfOutput = true;
     }
     void SetRunIterations(const uint32_t iterations) { m_numIterations = iterations; }
 
-    std::string SaveTensorMode() const
-    {
-        return m_saveTensorMode;
-    }
+    std::string SaveTensorMode() const { return m_saveTensorMode; }
 
 private:
     bool m_perfCapture = false;

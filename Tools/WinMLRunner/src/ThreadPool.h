@@ -1,12 +1,13 @@
 #pragma once
 
-#include <vector>
-#include <thread>
-#include <queue>
-#include <mutex>
 #include <future>
+#include <mutex>
+#include <queue>
+#include <thread>
+#include <vector>
 
-class ThreadPool {
+class ThreadPool
+{
 private:
     std::condition_variable m_cond_var;
     bool m_destruct_pool;
@@ -17,8 +18,9 @@ private:
 public:
     ThreadPool(unsigned int initial_pool_size);
     ~ThreadPool();
-    template <typename F, typename...Args>
-    inline auto SubmitWork(F &&f, Args&&... args) -> std::future<decltype(f(args...))> {
+    template <typename F, typename... Args>
+    inline auto SubmitWork(F&& f, Args&&... args) -> std::future<decltype(f(args...))>
+    {
         auto func = std::bind(std::forward<F>(f), std::forward<Args>(args)...);
         auto task = std::make_shared<std::packaged_task<decltype(f(args...))()>>(func);
         {

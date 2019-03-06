@@ -13,8 +13,6 @@ extern "C"
 #pragma comment(linker, "/alternatename:OS_RoGetActivationFactory=RoGetActivationFactory")
 #endif
 
-
-
 bool starts_with(std::wstring_view value, std::wstring_view match) noexcept
 {
     return 0 == value.compare(0, match.size(), match);
@@ -23,7 +21,8 @@ bool starts_with(std::wstring_view value, std::wstring_view match) noexcept
 int32_t __stdcall WINRT_RoGetActivationFactory(void* classId, winrt::guid const& iid, void** factory) noexcept
 {
     *factory = nullptr;
-    std::wstring_view name{ WindowsGetStringRawBuffer(static_cast<HSTRING>(classId), nullptr), WindowsGetStringLen(static_cast<HSTRING>(classId)) };
+    std::wstring_view name{ WindowsGetStringRawBuffer(static_cast<HSTRING>(classId), nullptr),
+                            WindowsGetStringLen(static_cast<HSTRING>(classId)) };
     HMODULE library{ nullptr };
 
     std::wstring winmlDllPath = FileHelper::GetModulePath() + L"Windows.AI.MachineLearning.dll";

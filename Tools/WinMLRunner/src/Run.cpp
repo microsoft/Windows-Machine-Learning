@@ -8,10 +8,15 @@
 #include "Run.h"
 #include "Scenarios.h"
 
-#define THROW_IF_FAILED(hr) { if (FAILED(hr)) throw hresult_error(hr); }
+#define THROW_IF_FAILED(hr)                                                                                            \
+    {                                                                                                                  \
+        if (FAILED(hr))                                                                                                \
+            throw hresult_error(hr);                                                                                   \
+    }
 using namespace winrt::Windows::Graphics::DirectX::Direct3D11;
 
-LearningModel LoadModel(const std::wstring &path, bool capturePerf, OutputHelper& output, const CommandLineArgs& args, uint32_t iterationNum, Profiler<WINML_MODEL_TEST_PERF>& profiler)
+LearningModel LoadModel(const std::wstring& path, bool capturePerf, OutputHelper& output, const CommandLineArgs& args,
+                        uint32_t iterationNum, Profiler<WINML_MODEL_TEST_PERF>& profiler)
 {
     LearningModel model = nullptr;
     output.PrintLoadingInfo(path);
@@ -50,7 +55,7 @@ std::vector<std::wstring> GetModelsInDirectory(CommandLineArgs& args, OutputHelp
     std::vector<std::wstring> modelPaths;
 
     std::wstring folderPath = args.FolderPath();
-    for (auto & it : std::filesystem::directory_iterator(args.FolderPath()))
+    for (auto& it : std::filesystem::directory_iterator(args.FolderPath()))
     {
         std::string path = it.path().string();
 
@@ -67,13 +72,10 @@ std::vector<std::wstring> GetModelsInDirectory(CommandLineArgs& args, OutputHelp
     return modelPaths;
 }
 
-std::vector<ILearningModelFeatureValue> GenerateInputFeatures(
-    const LearningModel& model,
-    const CommandLineArgs& args,
-    InputBindingType inputBindingType,
-    InputDataType inputDataType,
-    const IDirect3DDevice winrtDevice,
-    uint32_t iterationNum)
+std::vector<ILearningModelFeatureValue> GenerateInputFeatures(const LearningModel& model, const CommandLineArgs& args,
+                                                              InputBindingType inputBindingType,
+                                                              InputDataType inputDataType,
+                                                              const IDirect3DDevice winrtDevice, uint32_t iterationNum)
 {
     std::vector<ILearningModelFeatureValue> inputFeatures;
 
@@ -89,7 +91,8 @@ std::vector<ILearningModelFeatureValue> GenerateInputFeatures(
         }
         else
         {
-            auto imageFeature = BindingUtilities::CreateBindableImage(description, args.ImagePath(), inputBindingType, inputDataType, winrtDevice, args, iterationNum);
+            auto imageFeature = BindingUtilities::CreateBindableImage(description, args.ImagePath(), inputBindingType,
+                                                                      inputDataType, winrtDevice, args, iterationNum);
             inputFeatures.push_back(imageFeature);
         }
     }
@@ -97,7 +100,10 @@ std::vector<ILearningModelFeatureValue> GenerateInputFeatures(
     return inputFeatures;
 }
 
-HRESULT BindInputFeatures(const LearningModel& model, const LearningModelBinding& context, const std::vector<ILearningModelFeatureValue>& inputFeatures, const CommandLineArgs& args, OutputHelper& output, bool capturePerf, uint32_t iterationNum, Profiler<WINML_MODEL_TEST_PERF>& profiler)
+HRESULT BindInputFeatures(const LearningModel& model, const LearningModelBinding& context,
+                          const std::vector<ILearningModelFeatureValue>& inputFeatures, const CommandLineArgs& args,
+                          OutputHelper& output, bool capturePerf, uint32_t iterationNum,
+                          Profiler<WINML_MODEL_TEST_PERF>& profiler)
 {
     assert(model.InputFeatures().Size() == inputFeatures.size());
 
@@ -107,7 +113,8 @@ HRESULT BindInputFeatures(const LearningModel& model, const LearningModelBinding
 
         if (capturePerf)
         {
-            WINML_PROFILING_START(profiler, iterationNum == 0 ? WINML_MODEL_TEST_PERF::BIND_VALUE_FIRST_RUN : WINML_MODEL_TEST_PERF::BIND_VALUE);
+            WINML_PROFILING_START(profiler, iterationNum == 0 ? WINML_MODEL_TEST_PERF::BIND_VALUE_FIRST_RUN
+                                                              : WINML_MODEL_TEST_PERF::BIND_VALUE);
         }
 
         for (uint32_t i = 0; i < model.InputFeatures().Size(); i++)
@@ -118,7 +125,8 @@ HRESULT BindInputFeatures(const LearningModel& model, const LearningModelBinding
 
         if (capturePerf)
         {
-            WINML_PROFILING_STOP(profiler, iterationNum == 0 ? WINML_MODEL_TEST_PERF::BIND_VALUE_FIRST_RUN : WINML_MODEL_TEST_PERF::BIND_VALUE);
+            WINML_PROFILING_STOP(profiler, iterationNum == 0 ? WINML_MODEL_TEST_PERF::BIND_VALUE_FIRST_RUN
+                                                             : WINML_MODEL_TEST_PERF::BIND_VALUE);
             if (args.IsPerIterationCapture())
             {
                 output.SaveBindTimes(profiler, iterationNum);
@@ -135,30 +143,25 @@ HRESULT BindInputFeatures(const LearningModel& model, const LearningModelBinding
     return S_OK;
 }
 
-HRESULT EvaluateModel(
-    LearningModelEvaluationResult& result,
-    const LearningModel& model,
-    const LearningModelBinding& context,
-    LearningModelSession& session,
-    const CommandLineArgs& args,
-    OutputHelper& output,
-    bool capturePerf,
-    uint32_t iterationNum,
-    Profiler<WINML_MODEL_TEST_PERF>& profiler
-)
+HRESULT EvaluateModel(LearningModelEvaluationResult& result, const LearningModel& model,
+                      const LearningModelBinding& context, LearningModelSession& session, const CommandLineArgs& args,
+                      OutputHelper& output, bool capturePerf, uint32_t iterationNum,
+                      Profiler<WINML_MODEL_TEST_PERF>& profiler)
 {
     try
     {
         if (capturePerf)
         {
-            WINML_PROFILING_START(profiler, iterationNum == 0 ? WINML_MODEL_TEST_PERF::EVAL_MODEL_FIRST_RUN : WINML_MODEL_TEST_PERF::EVAL_MODEL);
+            WINML_PROFILING_START(profiler, iterationNum == 0 ? WINML_MODEL_TEST_PERF::EVAL_MODEL_FIRST_RUN
+                                                              : WINML_MODEL_TEST_PERF::EVAL_MODEL);
         }
 
         result = session.Evaluate(context, L"");
 
         if (capturePerf)
         {
-            WINML_PROFILING_STOP(profiler, iterationNum == 0 ? WINML_MODEL_TEST_PERF::EVAL_MODEL_FIRST_RUN : WINML_MODEL_TEST_PERF::EVAL_MODEL);
+            WINML_PROFILING_STOP(profiler, iterationNum == 0 ? WINML_MODEL_TEST_PERF::EVAL_MODEL_FIRST_RUN
+                                                             : WINML_MODEL_TEST_PERF::EVAL_MODEL);
             if (args.IsPerIterationCapture())
             {
                 output.SaveEvalPerformance(profiler, iterationNum);
@@ -183,16 +186,9 @@ HRESULT EvaluateModel(
 // Binds and evaluates the user-specified model and outputs success/failure for each step. If the
 // perf flag is used, it will output the CPU, GPU, and wall-clock time for each step to the
 // command-line and to a CSV file.
-HRESULT EvaluateModel(
-    const LearningModel& model,
-    const CommandLineArgs& args,
-    OutputHelper& output,
-    DeviceType deviceType,
-    InputBindingType inputBindingType,
-    InputDataType inputDataType,
-    DeviceCreationLocation deviceCreationLocation,
-    Profiler<WINML_MODEL_TEST_PERF>& profiler
-)
+HRESULT EvaluateModel(const LearningModel& model, const CommandLineArgs& args, OutputHelper& output,
+                      DeviceType deviceType, InputBindingType inputBindingType, InputDataType inputDataType,
+                      DeviceCreationLocation deviceCreationLocation, Profiler<WINML_MODEL_TEST_PERF>& profiler)
 {
     if (model == nullptr)
     {
@@ -204,8 +200,7 @@ HRESULT EvaluateModel(
 
     try
     {
-        if (deviceCreationLocation == DeviceCreationLocation::ClientCode
-            && deviceType != DeviceType::CPU)
+        if (deviceCreationLocation == DeviceCreationLocation::ClientCode && deviceType != DeviceType::CPU)
         {
             // Enumerate Adapters to pick the requested one.
             com_ptr<IDXGIFactory6> factory;
@@ -215,24 +210,29 @@ HRESULT EvaluateModel(
             com_ptr<IDXGIAdapter> adapter;
             switch (deviceType)
             {
-            case DeviceType::DefaultGPU:
-                hr = factory->EnumAdapterByGpuPreference(0, DXGI_GPU_PREFERENCE_UNSPECIFIED, __uuidof(IDXGIAdapter), adapter.put_void());
-                break;
-            case DeviceType::MinPowerGPU:
-                hr = factory->EnumAdapterByGpuPreference(0, DXGI_GPU_PREFERENCE_MINIMUM_POWER, __uuidof(IDXGIAdapter), adapter.put_void());
-                break;
-            case DeviceType::HighPerfGPU:
-                hr = factory->EnumAdapterByGpuPreference(0, DXGI_GPU_PREFERENCE_HIGH_PERFORMANCE, __uuidof(IDXGIAdapter), adapter.put_void());
-                break;
-            default:
-                throw hresult(E_INVALIDARG);
+                case DeviceType::DefaultGPU:
+                    hr = factory->EnumAdapterByGpuPreference(0, DXGI_GPU_PREFERENCE_UNSPECIFIED, __uuidof(IDXGIAdapter),
+                                                             adapter.put_void());
+                    break;
+                case DeviceType::MinPowerGPU:
+                    hr = factory->EnumAdapterByGpuPreference(0, DXGI_GPU_PREFERENCE_MINIMUM_POWER,
+                                                             __uuidof(IDXGIAdapter), adapter.put_void());
+                    break;
+                case DeviceType::HighPerfGPU:
+                    hr = factory->EnumAdapterByGpuPreference(0, DXGI_GPU_PREFERENCE_HIGH_PERFORMANCE,
+                                                             __uuidof(IDXGIAdapter), adapter.put_void());
+                    break;
+                default:
+                    throw hresult(E_INVALIDARG);
             }
             THROW_IF_FAILED(hr);
 
-            // Creating the device on the client and using it to create the video frame and initialize the session makes sure that everything is on
-            // the same device. This usually avoids an expensive cross-device and cross-videoframe copy via the VideoFrame pipeline.
+            // Creating the device on the client and using it to create the video frame and initialize the session makes
+            // sure that everything is on the same device. This usually avoids an expensive cross-device and
+            // cross-videoframe copy via the VideoFrame pipeline.
             com_ptr<ID3D11Device> d3d11Device;
-            hr = D3D11CreateDevice(adapter.get(), D3D_DRIVER_TYPE_UNKNOWN, nullptr, D3D11_CREATE_DEVICE_BGRA_SUPPORT, nullptr, 0, D3D11_SDK_VERSION, d3d11Device.put(), nullptr, nullptr);
+            hr = D3D11CreateDevice(adapter.get(), D3D_DRIVER_TYPE_UNKNOWN, nullptr, D3D11_CREATE_DEVICE_BGRA_SUPPORT,
+                                   nullptr, 0, D3D11_SDK_VERSION, d3d11Device.put(), nullptr, nullptr);
             THROW_IF_FAILED(hr);
 
             com_ptr<IDXGIDevice> dxgiDevice;
@@ -280,7 +280,7 @@ HRESULT EvaluateModel(
 
     if (args.IsEvaluationDebugOutputEnabled())
     {
-        // Enables trace log output. 
+        // Enables trace log output.
         session.EvaluationProperties().Insert(L"EnableDebugOutput", nullptr);
     }
 
@@ -308,32 +308,39 @@ HRESULT EvaluateModel(
             return hr.code();
         }
 
-        HRESULT bindInputResult = BindInputFeatures(model, context, inputFeatures, args, output, captureIterationPerf, i, profiler);
+        HRESULT bindInputResult =
+            BindInputFeatures(model, context, inputFeatures, args, output, captureIterationPerf, i, profiler);
 
         if (FAILED(bindInputResult))
         {
-            output.PrintBindingInfo(i + 1, deviceType, inputBindingType, inputDataType, deviceCreationLocation, "[FAILED]");
+            output.PrintBindingInfo(i + 1, deviceType, inputBindingType, inputDataType, deviceCreationLocation,
+                                    "[FAILED]");
             return bindInputResult;
         }
         else if (!args.TerseOutput() || i == 0)
         {
-            output.PrintBindingInfo(i + 1, deviceType, inputBindingType, inputDataType, deviceCreationLocation, "[SUCCESS]");
+            output.PrintBindingInfo(i + 1, deviceType, inputBindingType, inputDataType, deviceCreationLocation,
+                                    "[SUCCESS]");
         }
 
         LearningModelEvaluationResult result = nullptr;
-        HRESULT evalResult = EvaluateModel(result, model, context, session, args, output, captureIterationPerf, i, profiler);
+        HRESULT evalResult =
+            EvaluateModel(result, model, context, session, args, output, captureIterationPerf, i, profiler);
 
         if (FAILED(evalResult))
         {
-            output.PrintEvaluatingInfo(i + 1, deviceType, inputBindingType, inputDataType, deviceCreationLocation, "[FAILED]");
+            output.PrintEvaluatingInfo(i + 1, deviceType, inputBindingType, inputDataType, deviceCreationLocation,
+                                       "[FAILED]");
             return evalResult;
         }
         else if (!args.TerseOutput() || i == 0)
         {
-            output.PrintEvaluatingInfo(i + 1, deviceType, inputBindingType, inputDataType, deviceCreationLocation, "[SUCCESS]");
+            output.PrintEvaluatingInfo(i + 1, deviceType, inputBindingType, inputDataType, deviceCreationLocation,
+                                       "[SUCCESS]");
             if (args.TerseOutput() && args.NumIterations() > 1)
             {
-                printf("Binding and Evaluating %d more time%s...", args.NumIterations()-1, (args.NumIterations() == 2 ? "" : "s"));
+                printf("Binding and Evaluating %d more time%s...", args.NumIterations() - 1,
+                       (args.NumIterations() == 2 ? "" : "s"));
                 completionString = "[SUCCESS]\n";
             }
         }
@@ -352,24 +359,19 @@ HRESULT EvaluateModel(
     return S_OK;
 }
 
-HRESULT EvaluateModelGivenDeviceType(
-    const LearningModel& model,
-    const DeviceType deviceType,
-    const std::vector<InputBindingType>& inputBindingTypes,
-    const std::vector<InputDataType>& inputDataTypes,
-    const std::vector<DeviceCreationLocation> deviceCreationLocations,
-    const CommandLineArgs& args,
-    const std::wstring& modelPath,
-    OutputHelper& output,
-    Profiler<WINML_MODEL_TEST_PERF>& profiler,
-    TensorFeatureDescriptor& tensorDescriptor
-)
+HRESULT EvaluateModelGivenDeviceType(const LearningModel& model, const DeviceType deviceType,
+                                     const std::vector<InputBindingType>& inputBindingTypes,
+                                     const std::vector<InputDataType>& inputDataTypes,
+                                     const std::vector<DeviceCreationLocation> deviceCreationLocations,
+                                     const CommandLineArgs& args, const std::wstring& modelPath, OutputHelper& output,
+                                     Profiler<WINML_MODEL_TEST_PERF>& profiler,
+                                     TensorFeatureDescriptor& tensorDescriptor)
 {
-    for (const auto &inputBindingType : inputBindingTypes)
+    for (const auto& inputBindingType : inputBindingTypes)
     {
-        for (const auto &inputDataType : inputDataTypes)
+        for (const auto& inputDataType : inputDataTypes)
         {
-            for (const auto &deviceCreationLocation : deviceCreationLocations)
+            for (const auto& deviceCreationLocation : deviceCreationLocations)
             {
                 if (args.IsPerformanceCapture() || args.IsPerIterationCapture())
                 {
@@ -386,7 +388,8 @@ HRESULT EvaluateModelGivenDeviceType(
                     }
                 }
 
-                HRESULT evalHResult = EvaluateModel(model, args, output, deviceType, inputBindingType, inputDataType, deviceCreationLocation, profiler);
+                HRESULT evalHResult = EvaluateModel(model, args, output, deviceType, inputBindingType, inputDataType,
+                                                    deviceCreationLocation, profiler);
 
                 if (FAILED(evalHResult))
                 {
@@ -395,7 +398,8 @@ HRESULT EvaluateModelGivenDeviceType(
 
                 if (args.IsPerformanceCapture())
                 {
-                    output.PrintResults(profiler, args.NumIterations(), deviceType, inputBindingType, inputDataType, deviceCreationLocation, args.IsPerformanceConsoleOutputVerbose());
+                    output.PrintResults(profiler, args.NumIterations(), deviceType, inputBindingType, inputDataType,
+                                        deviceCreationLocation, args.IsPerformanceConsoleOutputVerbose());
                     if (args.IsOutputPerf())
                     {
                         std::string deviceTypeStringified = TypeHelper::Stringify(deviceType);
@@ -403,14 +407,8 @@ HRESULT EvaluateModelGivenDeviceType(
                         std::string inputBindingTypeStringified = TypeHelper::Stringify(inputBindingType);
                         std::string deviceCreationLocationStringified = TypeHelper::Stringify(deviceCreationLocation);
                         output.WritePerformanceDataToCSV(
-                            profiler,
-                            args.NumIterations(),
-                            modelPath,
-                            deviceTypeStringified,
-                            inputDataTypeStringified,
-                            inputBindingTypeStringified,
-                            deviceCreationLocationStringified
-                        );
+                            profiler, args.NumIterations(), modelPath, deviceTypeStringified, inputDataTypeStringified,
+                            inputBindingTypeStringified, deviceCreationLocationStringified);
                     }
                 }
             }
@@ -419,16 +417,11 @@ HRESULT EvaluateModelGivenDeviceType(
     return S_OK;
 }
 
-HRESULT EvaluateModels(
-    const std::vector<std::wstring>& modelPaths,
-    const std::vector<DeviceType>& deviceTypes,
-    const std::vector<InputBindingType>& inputBindingTypes,
-    const std::vector<InputDataType>& inputDataTypes,
-    const std::vector<DeviceCreationLocation> deviceCreationLocations,
-    const CommandLineArgs& args,
-    OutputHelper& output,
-    Profiler<WINML_MODEL_TEST_PERF>& profiler
-)
+HRESULT EvaluateModels(const std::vector<std::wstring>& modelPaths, const std::vector<DeviceType>& deviceTypes,
+                       const std::vector<InputBindingType>& inputBindingTypes,
+                       const std::vector<InputDataType>& inputDataTypes,
+                       const std::vector<DeviceCreationLocation> deviceCreationLocations, const CommandLineArgs& args,
+                       OutputHelper& output, Profiler<WINML_MODEL_TEST_PERF>& profiler)
 {
     output.PrintHardwareInfo();
     HRESULT lastEvaluateModelResult = S_OK;
@@ -437,7 +430,8 @@ HRESULT EvaluateModels(
         LearningModel model = nullptr;
         try
         {
-            model = LoadModel(path, args.IsPerformanceCapture() || args.IsPerIterationCapture(), output, args, 0, profiler);
+            model =
+                LoadModel(path, args.IsPerformanceCapture() || args.IsPerIterationCapture(), output, args, 0, profiler);
         }
         catch (hresult_error hr)
         {
@@ -450,24 +444,25 @@ HRESULT EvaluateModels(
         // Map and Sequence bindings are not supported yet
         if (!tensorDescriptor)
         {
-            std::wcout << L"Model: " + path + L" has an input type that isn't supported by WinMLRunner yet." << std::endl;
+            std::wcout << L"Model: " + path + L" has an input type that isn't supported by WinMLRunner yet."
+                       << std::endl;
             continue;
         }
-        for (const auto &deviceType : deviceTypes)
+        for (const auto& deviceType : deviceTypes)
         {
-            HRESULT evaluateModelGivenDeviceTypeResult = EvaluateModelGivenDeviceType(
-                model, deviceType, inputBindingTypes,
-                inputDataTypes, deviceCreationLocations,
-                args, path, output, profiler, tensorDescriptor);
+            HRESULT evaluateModelGivenDeviceTypeResult =
+                EvaluateModelGivenDeviceType(model, deviceType, inputBindingTypes, inputDataTypes,
+                                             deviceCreationLocations, args, path, output, profiler, tensorDescriptor);
             if (FAILED(evaluateModelGivenDeviceTypeResult))
             {
                 lastEvaluateModelResult = evaluateModelGivenDeviceTypeResult;
-                std::cout << "Run failed for DeviceType: " << TypeHelper::Stringify(deviceType) << std::endl;;
+                std::cout << "Run failed for DeviceType: " << TypeHelper::Stringify(deviceType) << std::endl;
+                ;
             }
         }
         model.Close();
     }
-    return lastEvaluateModelResult; //Return the last HRESULT that failed. Will return S_OK otherwise.
+    return lastEvaluateModelResult; // Return the last HRESULT that failed. Will return S_OK otherwise.
 }
 
 std::vector<InputDataType> FetchInputDataTypes(const CommandLineArgs& args)
@@ -584,13 +579,17 @@ int run(CommandLineArgs& args, Profiler<WINML_MODEL_TEST_PERF>& profiler)
         std::vector<InputBindingType> inputBindingTypes = FetchInputBindingTypes(args);
         std::vector<InputDataType> inputDataTypes = FetchInputDataTypes(args);
         std::vector<DeviceCreationLocation> deviceCreationLocations = FetchDeviceCreationLocations(args);
-        std::vector<std::wstring> modelPaths = args.ModelPath().empty() ? GetModelsInDirectory(args, &output) : std::vector<std::wstring>(1, args.ModelPath());
+        std::vector<std::wstring> modelPaths = args.ModelPath().empty()
+                                                   ? GetModelsInDirectory(args, &output)
+                                                   : std::vector<std::wstring>(1, args.ModelPath());
 
-        if (args.IsConcurrentLoad()) {
+        if (args.IsConcurrentLoad())
+        {
             ConcurrentLoadModel(modelPaths, args.NumThreads(), args.ThreadInterval(), true);
             return 0;
         }
-        return EvaluateModels(modelPaths, deviceTypes, inputBindingTypes, inputDataTypes, deviceCreationLocations, args, output, profiler);
+        return EvaluateModels(modelPaths, deviceTypes, inputBindingTypes, inputDataTypes, deviceCreationLocations, args,
+                              output, profiler);
     }
 
     return 0;

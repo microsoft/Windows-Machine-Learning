@@ -2,11 +2,11 @@
 #include "Common.h"
 
 // Stores data and size of input and output bindings.
-template< typename T>
-class ModelBinding
+template <typename T> class ModelBinding
 {
 public:
-    ModelBinding(winrt::Windows::AI::MachineLearning::ILearningModelFeatureDescriptor variableDesc) : m_bindingDesc(variableDesc)
+    ModelBinding(winrt::Windows::AI::MachineLearning::ILearningModelFeatureDescriptor variableDesc)
+        : m_bindingDesc(variableDesc)
     {
         UINT numElements = 0;
         if (variableDesc.Kind() == LearningModelFeatureKind::Tensor)
@@ -19,44 +19,23 @@ public:
         }
     }
 
-    winrt::Windows::AI::MachineLearning::ILearningModelFeatureDescriptor GetDesc()
-    {
-        return m_bindingDesc;
-    }
+    winrt::Windows::AI::MachineLearning::ILearningModelFeatureDescriptor GetDesc() { return m_bindingDesc; }
 
-    UINT GetNumElements() const
-    {
-        return m_numElements;
-    }
+    UINT GetNumElements() const { return m_numElements; }
 
-    UINT GetElementSize() const
-    {
-        return m_elementSize;
-    }
+    UINT GetElementSize() const { return m_elementSize; }
 
-    std::vector<int64_t> GetShapeBuffer()
-    {
-        return m_shapeBuffer;
-    }
+    std::vector<int64_t> GetShapeBuffer() { return m_shapeBuffer; }
 
-    T* GetData()
-    {
-        return m_dataBuffer.data();
-    }
+    T* GetData() { return m_dataBuffer.data(); }
 
-    std::vector<T> GetDataBuffer()
-    {
-        return m_dataBuffer;
-    }
+    std::vector<T> GetDataBuffer() { return m_dataBuffer; }
 
-    size_t GetDataBufferSize()
-    {
-        return m_dataBuffer.size();
-    }
-
+    size_t GetDataBufferSize() { return m_dataBuffer.size(); }
 
 private:
-    void InitNumElementsAndShape(winrt::Windows::Foundation::Collections::IVectorView<int64_t> * shape, UINT numDimensions, UINT numElements)
+    void InitNumElementsAndShape(winrt::Windows::Foundation::Collections::IVectorView<int64_t>* shape,
+                                 UINT numDimensions, UINT numElements)
     {
         int unknownDim = -1;
         UINT numKnownElements = 1;
@@ -81,7 +60,8 @@ private:
         m_numElements = numKnownElements;
     }
 
-    void InitTensorBinding(winrt::Windows::AI::MachineLearning::ILearningModelFeatureDescriptor descriptor, UINT numElements)
+    void InitTensorBinding(winrt::Windows::AI::MachineLearning::ILearningModelFeatureDescriptor descriptor,
+                           UINT numElements)
     {
         auto tensorDescriptor = descriptor.as<winrt::Windows::AI::MachineLearning::TensorFeatureDescriptor>();
         InitNumElementsAndShape(&tensorDescriptor.Shape(), tensorDescriptor.Shape().Size(), 1);

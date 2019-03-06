@@ -7,7 +7,8 @@
 
 using namespace Windows::AI::MachineLearning;
 
-void CommandLineArgs::PrintUsage() {
+void CommandLineArgs::PrintUsage()
+{
     std::cout << "WinML Runner" << std::endl;
     std::cout << " ---------------------------------------------------------------" << std::endl;
     std::cout << "WinmlRunner.exe <-model | -folder> <fully qualified path> [options]" << std::endl;
@@ -25,25 +26,39 @@ void CommandLineArgs::PrintUsage() {
     std::cout << "  -RGB : load the input as an RGB image" << std::endl;
     std::cout << "  -BGR : load the input as a BGR image" << std::endl;
     std::cout << "  -Tensor : load the input as a tensor" << std::endl;
-    std::cout << "  -Perf [all]: capture performance measurements such as timing and memory usage. Specifying \"all\" will output all measurements" << std::endl;
+    std::cout << "  -Perf [all]: capture performance measurements such as timing and memory usage. Specifying \"all\" "
+                 "will output all measurements"
+              << std::endl;
     std::cout << "  -Iterations : # times perf measurements will be run/averaged" << std::endl;
     std::cout << "  -Input <fully qualified path>: binds image or CSV to model" << std::endl;
     std::cout << "  -PerfOutput [<fully qualified path>]: csv file to write the perf results to" << std::endl;
     std::cout << "  -SavePerIterationPerf : save per iteration performance results to csv file" << std::endl;
-    std::cout << "  -SaveTensorData <saveMode folderPath>: saveMode: save first iteration or all iteration output tensor results to csv file [First, All]" << std::endl;
-    std::cout << "                                         folderPath: Optional folder path can be specified to hold tensor data. It will be created if folder doesn't exist." << std::endl;
-    std::cout << "  -DebugEvaluate: Print evaluation debug output to debug console if debugger is present." << std::endl;
+    std::cout << "  -SaveTensorData <saveMode folderPath>: saveMode: save first iteration or all iteration output "
+                 "tensor results to csv file [First, All]"
+              << std::endl;
+    std::cout << "                                         folderPath: Optional folder path can be specified to hold "
+                 "tensor data. It will be created if folder doesn't exist."
+              << std::endl;
+    std::cout << "  -DebugEvaluate: Print evaluation debug output to debug console if debugger is present."
+              << std::endl;
     std::cout << "  -Terse: Terse Mode (suppresses repetitive console output)" << std::endl;
-    std::cout << "  -AutoScale <interpolationMode>: Enable image autoscaling and set the interpolation mode [Nearest, Linear, Cubic, Fant]" << std::endl;
+    std::cout << "  -AutoScale <interpolationMode>: Enable image autoscaling and set the interpolation mode [Nearest, "
+                 "Linear, Cubic, Fant]"
+              << std::endl;
     std::cout << std::endl;
     std::cout << "Concurrency Options:" << std::endl;
     std::cout << "  -ConcurrentLoad: load models concurrently" << std::endl;
-    std::cout << "  -NumThreads <number>: number of threads to load a model. By default this will be the number of model files to be executed" << std::endl;
-    std::cout << "  -ThreadInterval <milliseconds>: interval time between two thread creations in milliseconds" << std::endl;
+    std::cout << "  -NumThreads <number>: number of threads to load a model. By default this will be the number of "
+                 "model files to be executed"
+              << std::endl;
+    std::cout << "  -ThreadInterval <milliseconds>: interval time between two thread creations in milliseconds"
+              << std::endl;
 }
 
-void CheckAPICall(int return_value) {
-    if (return_value == 0) {
+void CheckAPICall(int return_value)
+{
+    if (return_value == 0)
+    {
         auto code = GetLastError();
         std::wstring msg = L"failed to get the version of this file with error code: ";
         msg += std::to_wstring(code);
@@ -51,7 +66,7 @@ void CheckAPICall(int return_value) {
     }
 }
 
-CommandLineArgs::CommandLineArgs(const std::vector<std::wstring> &args)
+CommandLineArgs::CommandLineArgs(const std::vector<std::wstring>& args)
 {
     for (UINT i = 0; i < args.size(); i++)
     {
@@ -138,7 +153,8 @@ CommandLineArgs::CommandLineArgs(const std::vector<std::wstring> &args)
         {
             if (!IsDebuggerPresent())
             {
-                throw hresult_invalid_argument(L"-DebugEvaluate flag should only be used when WinMLRunner is under a user-mode debugger!");
+                throw hresult_invalid_argument(
+                    L"-DebugEvaluate flag should only be used when WinMLRunner is under a user-mode debugger!");
             }
             ToggleEvaluationDebugOutput(true);
         }
@@ -199,7 +215,8 @@ CommandLineArgs::CommandLineArgs(const std::vector<std::wstring> &args)
                 CheckNextArgument(args, i);
                 SetTensorOutputPath(args[++i].c_str());
             }
-            catch (...) {
+            catch (...)
+            {
                 // set to default path
                 auto time = std::time(nullptr);
                 struct tm localTime;
@@ -215,23 +232,23 @@ CommandLineArgs::CommandLineArgs(const std::vector<std::wstring> &args)
             auto ret = GetModuleFileName(NULL, szExeFileName, MAX_PATH);
             CheckAPICall(ret);
             uint32_t versionInfoSize = GetFileVersionInfoSize(szExeFileName, 0);
-            wchar_t *pVersionData = new wchar_t[versionInfoSize / sizeof(wchar_t)];
+            wchar_t* pVersionData = new wchar_t[versionInfoSize / sizeof(wchar_t)];
             CheckAPICall(GetFileVersionInfo(szExeFileName, 0, versionInfoSize, pVersionData));
 
-            wchar_t *pOriginalFilename;
+            wchar_t* pOriginalFilename;
             uint32_t originalFilenameSize;
             CheckAPICall(VerQueryValue(pVersionData, L"\\StringFileInfo\\040904b0\\OriginalFilename",
-                (void**)&pOriginalFilename, &originalFilenameSize));
+                                       (void**)&pOriginalFilename, &originalFilenameSize));
 
-            wchar_t *pProductVersion;
+            wchar_t* pProductVersion;
             uint32_t productVersionSize;
             CheckAPICall(VerQueryValue(pVersionData, L"\\StringFileInfo\\040904b0\\ProductVersion",
-                (void**)&pProductVersion, &productVersionSize));
+                                       (void**)&pProductVersion, &productVersionSize));
 
-            wchar_t *pFileVersion;
+            wchar_t* pFileVersion;
             uint32_t fileVersionSize;
-            CheckAPICall(VerQueryValue(pVersionData, L"\\StringFileInfo\\040904b0\\FileVersion",
-                (void**)&pFileVersion, &fileVersionSize));
+            CheckAPICall(VerQueryValue(pVersionData, L"\\StringFileInfo\\040904b0\\FileVersion", (void**)&pFileVersion,
+                                       &fileVersionSize));
 
             std::wcout << pOriginalFilename << std::endl;
             std::wcout << L"Version: " << pFileVersion << "." << pProductVersion << std::endl;
@@ -290,9 +307,10 @@ CommandLineArgs::CommandLineArgs(const std::vector<std::wstring> &args)
     CheckForInvalidArguments();
 }
 
-void CommandLineArgs::CheckNextArgument(const std::vector<std::wstring> &args, UINT i)
+void CommandLineArgs::CheckNextArgument(const std::vector<std::wstring>& args, UINT i)
 {
-    if (i + 1 >= args.size() || args[i + 1][0] == L'-') {
+    if (i + 1 >= args.size() || args[i + 1][0] == L'-')
+    {
         std::wstring msg = L"Invalid parameter for ";
         msg += args[i].c_str();
         throw hresult_invalid_argument(msg.c_str());

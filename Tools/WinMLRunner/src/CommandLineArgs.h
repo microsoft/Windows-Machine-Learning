@@ -72,6 +72,7 @@ public:
     uint32_t NumIterations() const { return m_numIterations; }
     uint32_t NumThreads() const { return m_numThreads; }
     uint32_t ThreadInterval() const { return m_threadInterval; } // Thread interval in milliseconds
+    uint32_t TopK() const { return m_topK; }
 
     void ToggleCPU(bool useCPU) { m_useCPU = useCPU; }
     void ToggleGPU(bool useGPU) { m_useGPU = useGPU; }
@@ -96,6 +97,7 @@ public:
     void SetInputDataPath(const std::wstring& inputDataPath) { m_inputData = inputDataPath; }
     void SetNumThreads(unsigned numThreads) { m_numThreads = numThreads; }
     void SetThreadInterval(unsigned threadInterval) { m_threadInterval = threadInterval; }
+    void SetTopK(unsigned k) { m_topK = k; }
     void SetPerformanceCSVPath(const std::wstring& performanceCSVPath)
     {
         m_perfOutputPath = performanceCSVPath;
@@ -140,6 +142,7 @@ private:
     uint32_t m_numIterations = 1;
     uint32_t m_numThreads = 1;
     uint32_t m_threadInterval = 0;
+    uint32_t m_topK = 1;
 
     void CheckNextArgument(const std::vector<std::wstring>& args, UINT i);
     void CheckForInvalidArguments();

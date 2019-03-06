@@ -31,6 +31,7 @@ void CommandLineArgs::PrintUsage()
               << std::endl;
     std::cout << "  -Iterations : # times perf measurements will be run/averaged" << std::endl;
     std::cout << "  -Input <fully qualified path>: binds image or CSV to model" << std::endl;
+    std::cout << "  -TopK <number>: print top <number> values in the result. Default to 1" << std::endl;
     std::cout << "  -PerfOutput [<fully qualified path>]: csv file to write the perf results to" << std::endl;
     std::cout << "  -SavePerIterationPerf : save per iteration performance results to csv file" << std::endl;
     std::cout << "  -SaveTensorData <saveMode folderPath>: saveMode: save first iteration or all iteration output "
@@ -277,6 +278,11 @@ CommandLineArgs::CommandLineArgs(const std::vector<std::wstring>& args)
             CheckNextArgument(args, i);
             unsigned thread_interval = std::stoi(args[++i].c_str());
             SetThreadInterval(thread_interval);
+        }
+        else if ((_wcsicmp(args[i].c_str(), L"-TopK") == 0))
+        {
+            CheckNextArgument(args, i);
+            SetTopK(std::stoi(args[++i].c_str()));
         }
         else
         {

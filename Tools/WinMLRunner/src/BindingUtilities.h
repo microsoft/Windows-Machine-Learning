@@ -13,35 +13,119 @@ using namespace winrt::Windows::Graphics::DirectX;
 using namespace winrt::Windows::Graphics::Imaging;
 using namespace winrt::Windows::Graphics::DirectX::Direct3D11;
 
-template <TensorKind T> struct TensorKindToType { static_assert(true, "No TensorKind mapped for given type!"); };
-template <> struct TensorKindToType<TensorKind::UInt8> { typedef uint8_t Type; };
-template <> struct TensorKindToType<TensorKind::Int8> { typedef uint8_t Type; };
-template <> struct TensorKindToType<TensorKind::UInt16> { typedef uint16_t Type; };
-template <> struct TensorKindToType<TensorKind::Int16> { typedef int16_t Type; };
-template <> struct TensorKindToType<TensorKind::UInt32> { typedef uint32_t Type; };
-template <> struct TensorKindToType<TensorKind::Int32> { typedef int32_t Type; };
-template <> struct TensorKindToType<TensorKind::UInt64> { typedef uint64_t Type; };
-template <> struct TensorKindToType<TensorKind::Int64> { typedef int64_t Type; };
-template <> struct TensorKindToType<TensorKind::Boolean> { typedef boolean Type; };
-template <> struct TensorKindToType<TensorKind::Double> { typedef double Type; };
-template <> struct TensorKindToType<TensorKind::Float> { typedef float Type; };
-template <> struct TensorKindToType<TensorKind::Float16> { typedef float Type; };
-template <> struct TensorKindToType<TensorKind::String> { typedef winrt::hstring Type; };
+template <TensorKind T> struct TensorKindToType
+{
+    static_assert(true, "No TensorKind mapped for given type!");
+};
+template <> struct TensorKindToType<TensorKind::UInt8>
+{
+    typedef uint8_t Type;
+};
+template <> struct TensorKindToType<TensorKind::Int8>
+{
+    typedef uint8_t Type;
+};
+template <> struct TensorKindToType<TensorKind::UInt16>
+{
+    typedef uint16_t Type;
+};
+template <> struct TensorKindToType<TensorKind::Int16>
+{
+    typedef int16_t Type;
+};
+template <> struct TensorKindToType<TensorKind::UInt32>
+{
+    typedef uint32_t Type;
+};
+template <> struct TensorKindToType<TensorKind::Int32>
+{
+    typedef int32_t Type;
+};
+template <> struct TensorKindToType<TensorKind::UInt64>
+{
+    typedef uint64_t Type;
+};
+template <> struct TensorKindToType<TensorKind::Int64>
+{
+    typedef int64_t Type;
+};
+template <> struct TensorKindToType<TensorKind::Boolean>
+{
+    typedef boolean Type;
+};
+template <> struct TensorKindToType<TensorKind::Double>
+{
+    typedef double Type;
+};
+template <> struct TensorKindToType<TensorKind::Float>
+{
+    typedef float Type;
+};
+template <> struct TensorKindToType<TensorKind::Float16>
+{
+    typedef float Type;
+};
+template <> struct TensorKindToType<TensorKind::String>
+{
+    typedef winrt::hstring Type;
+};
 
-template <TensorKind T> struct TensorKindToValue { static_assert(true, "No TensorKind mapped for given type!"); };
-template <> struct TensorKindToValue<TensorKind::UInt8> { typedef TensorUInt8Bit Type; };
-template <> struct TensorKindToValue<TensorKind::Int8> { typedef TensorInt8Bit Type; };
-template <> struct TensorKindToValue<TensorKind::UInt16> { typedef TensorUInt16Bit Type; };
-template <> struct TensorKindToValue<TensorKind::Int16> { typedef TensorInt16Bit Type; };
-template <> struct TensorKindToValue<TensorKind::UInt32> { typedef TensorUInt32Bit Type; };
-template <> struct TensorKindToValue<TensorKind::Int32> { typedef TensorInt32Bit Type; };
-template <> struct TensorKindToValue<TensorKind::UInt64> { typedef TensorUInt64Bit Type; };
-template <> struct TensorKindToValue<TensorKind::Int64> { typedef TensorInt64Bit Type; };
-template <> struct TensorKindToValue<TensorKind::Boolean> { typedef TensorBoolean Type; };
-template <> struct TensorKindToValue<TensorKind::Double> { typedef TensorDouble Type; };
-template <> struct TensorKindToValue<TensorKind::Float> { typedef TensorFloat Type; };
-template <> struct TensorKindToValue<TensorKind::Float16> { typedef TensorFloat16Bit Type; };
-template <> struct TensorKindToValue<TensorKind::String> { typedef TensorString Type; };
+template <TensorKind T> struct TensorKindToValue
+{
+    static_assert(true, "No TensorKind mapped for given type!");
+};
+template <> struct TensorKindToValue<TensorKind::UInt8>
+{
+    typedef TensorUInt8Bit Type;
+};
+template <> struct TensorKindToValue<TensorKind::Int8>
+{
+    typedef TensorInt8Bit Type;
+};
+template <> struct TensorKindToValue<TensorKind::UInt16>
+{
+    typedef TensorUInt16Bit Type;
+};
+template <> struct TensorKindToValue<TensorKind::Int16>
+{
+    typedef TensorInt16Bit Type;
+};
+template <> struct TensorKindToValue<TensorKind::UInt32>
+{
+    typedef TensorUInt32Bit Type;
+};
+template <> struct TensorKindToValue<TensorKind::Int32>
+{
+    typedef TensorInt32Bit Type;
+};
+template <> struct TensorKindToValue<TensorKind::UInt64>
+{
+    typedef TensorUInt64Bit Type;
+};
+template <> struct TensorKindToValue<TensorKind::Int64>
+{
+    typedef TensorInt64Bit Type;
+};
+template <> struct TensorKindToValue<TensorKind::Boolean>
+{
+    typedef TensorBoolean Type;
+};
+template <> struct TensorKindToValue<TensorKind::Double>
+{
+    typedef TensorDouble Type;
+};
+template <> struct TensorKindToValue<TensorKind::Float>
+{
+    typedef TensorFloat Type;
+};
+template <> struct TensorKindToValue<TensorKind::Float16>
+{
+    typedef TensorFloat16Bit Type;
+};
+template <> struct TensorKindToValue<TensorKind::String>
+{
+    typedef TensorString Type;
+};
 
 namespace BindingUtilities
 {
@@ -235,11 +319,12 @@ namespace BindingUtilities
             for (UINT dim = 0; dim < tensorDescriptorShape.Size(); dim++)
             {
                 INT64 dimSize = tensorDescriptorShape.GetAt(dim);
-                if (dimSize > 0) //If the dimension is greater than 0, then it is known.
+                if (dimSize > 0) // If the dimension is greater than 0, then it is known.
                 {
                     vecShape.push_back(dimSize);
                 }
-                else //otherwise, make sure that the dimension is -1, representing free dimension. If not, then it's an invalid model.
+                else // otherwise, make sure that the dimension is -1, representing free dimension. If not, then it's an
+                     // invalid model.
                 {
                     if (dimSize == -1)
                     {
@@ -247,7 +332,8 @@ namespace BindingUtilities
                     }
                     else
                     {
-                        throw hresult_invalid_argument(L"Failed to create a tensor with an unknown dimension of: " + dimSize);
+                        throw hresult_invalid_argument(L"Failed to create a tensor with an unknown dimension of: " +
+                                                       dimSize);
                     }
                 }
             }
@@ -258,7 +344,8 @@ namespace BindingUtilities
 
             BYTE* actualData;
             uint32_t actualSizeInBytes;
-            spTensorValueNative->GetBuffer(&actualData, &actualSizeInBytes); //Need to GetBuffer to have CPU memory backing tensorValue
+            spTensorValueNative->GetBuffer(
+                &actualData, &actualSizeInBytes); // Need to GetBuffer to have CPU memory backing tensorValue
             return tensorValue;
         }
         else
@@ -419,8 +506,8 @@ namespace BindingUtilities
                 com_ptr<ITensorNative> itn = results.Lookup(desc.Name()).as<ITensorNative>();
                 HRESULT(itn->GetBuffer(reinterpret_cast<BYTE**>(&tensor), &uCapacity));
                 int size = 0;
-                float maxValue = 0;
-                int maxIndex = 0;
+                unsigned int topK = args.TopK();
+                std::vector<std::pair<float, int>> maxKValues;
                 std::ofstream fout;
                 if (args.IsSaveTensor())
                 {
@@ -445,12 +532,12 @@ namespace BindingUtilities
                     break;
                     case TensorKind::Float16:
                     {
-                        output.ProcessTensorResult<HALF>(args, tensor, uCapacity, maxValue, maxIndex, fout);
+                        output.ProcessTensorResult<HALF>(args, tensor, uCapacity, maxKValues, fout, topK);
                     }
                     break;
                     case TensorKind::Float:
                     {
-                        output.ProcessTensorResult<float>(args, tensor, uCapacity, maxValue, maxIndex, fout);
+                        output.ProcessTensorResult<float>(args, tensor, uCapacity, maxKValues, fout, topK);
                     }
                     break;
                     case TensorKind::Int64:
@@ -472,16 +559,27 @@ namespace BindingUtilities
                 if (args.IsSaveTensor())
                 {
                     fout.close();
-                    std::string iterationResult =
-                        "Index: " + std::to_string(maxIndex) + "; Value: " + std::to_string(maxValue);
-                    output.SaveResult(iterationNum, iterationResult, static_cast<int>(hash_data(tensor, uCapacity)));
+                    for (auto& pair : maxKValues)
+                    {
+                        auto maxValue = pair.first;
+                        auto maxIndex = pair.second;
+                        std::string iterationResult =
+                            "Index: " + std::to_string(maxIndex) + "; Value: " + std::to_string(maxValue);
+                        output.SaveResult(iterationNum, iterationResult,
+                                          static_cast<int>(hash_data(tensor, uCapacity)));
+                    }
                 }
                 if (!args.IsGarbageInput() && iterationNum == 0)
                 {
-                    std::cout << "Outputting results.. " << std::endl;
+                    std::cout << "Outputting top " << args.TopK() << " values" << std::endl;
                     std::cout << "Feature Name: " << name << std::endl;
-                    std::wcout << " resultVector[" << maxIndex << "] has the maximal value of " << maxValue
-                               << std::endl;
+                    for (auto& pair : maxKValues)
+                    {
+                        auto maxValue = pair.first;
+                        auto maxIndex = pair.second;
+                        std::wcout << " index: " << maxIndex << ", value: " << maxValue
+                                   << std::endl;
+                    }
                 }
             }
             else if (desc.Kind() == LearningModelFeatureKind::Sequence)

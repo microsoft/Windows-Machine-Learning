@@ -749,6 +749,12 @@ namespace WinMLRunnerTest
             Assert::AreEqual(S_OK, RunProc((wchar_t*)command.c_str()));
         }
         
+        TEST_METHOD(TestTopK)
+        {
+            const std::wstring command = BuildCommand({ EXE_PATH, L"-model", L"SqueezeNet.onnx", L"-TopK", L"5" });
+            Assert::AreEqual(S_OK, RunProc((wchar_t*)command.c_str()));
+        }
+
         /* Commenting out test until WinMLRunnerDLL.dll is properly written and ABI friendly
         TEST_METHOD(TestWinMLRunnerDllLinking)
         {

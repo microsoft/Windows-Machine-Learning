@@ -10,6 +10,7 @@
 #include <dxgi.h>
 #include <Windows.Graphics.DirectX.Direct3D11.interop.h>
 #include <direct.h>
+#include <queue>
 
 using namespace winrt::Windows::AI::MachineLearning;
 using namespace winrt::Windows::Storage::Streams;
@@ -699,20 +700,17 @@ public:
     }
 
     template <typename T>
-    void ProcessTensorResult(const CommandLineArgs& args, const void* buffer, const uint32_t uCapacity, float& maxValue,
-                             int& maxIndex, std::ofstream& fout)
+    void ProcessTensorResult(const CommandLineArgs& args, const void* buffer, const uint32_t uCapacity,
+                             std::vector<std::pair<float,int>>& maxValues, std::ofstream& fout,
+                             unsigned int k)
     {
+        // Create a priority queue of size k that pops the lowest value first
+        // We will remove lowest values as we iterate over all the values
+        auto cmp = [](std::pair<float, int> x, std::pair<float, int> y) { return x.first > y.first; };
+        std::priority_queue<std::pair<float, int>, std::vector<std::pair<float, int>>, decltype(cmp)> topKvalues(cmp);
+
         T* tensor = (T*)buffer;
         int size = uCapacity / sizeof(T);
-        if (!std::is_same<T, HALF>::value)
-        {
-            maxValue = *tensor;
-        }
-        else
-        {
-            maxValue = XMConvertHalfToFloat(static_cast<HALF>(*tensor));
-        }
-        maxIndex = 0;
         for (int i = 0; i < size; i++)
         {
             float val = 0;
@@ -728,12 +726,29 @@ public:
             {
                 fout << i << "," << val << std::endl;
             }
-            if (maxValue < val)
+
+            if (topKvalues.size() < k)
             {
-                maxValue = val;
-                maxIndex = i;
+                topKvalues.push({ val, i });
+            }
+            else if (k > 0)
+            {
+                auto maxValue = topKvalues.top().first;
+                if (maxValue < val)
+                {
+                    topKvalues.pop();
+                    topKvalues.push({ val, i });
+                }
             }
         }
+        while (!topKvalues.empty())
+        {
+            auto pair = topKvalues.top();
+            maxValues.push_back(pair);
+            topKvalues.pop();
+        }
+        // Put vector in order of highest value to lowest
+        std::reverse(maxValues.begin(), maxValues.end());
     }
 
     void WritePerformanceDataToCSV(const Profiler<WINML_MODEL_TEST_PERF>& profiler, int numIterations,

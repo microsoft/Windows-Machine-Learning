@@ -45,6 +45,7 @@ Required command-Line arguments:
 -Perf [all]: capture performance measurements such as timing and memory usage. Specifying "all" will output all measurements
 -Iterations : # times perf measurements will be run/averaged
 -Input <fully qualified path>: binds image or CSV to model
+-TopK <number>: print top <number> values in the result. Default to 1
 -PerfOutput [<fully qualified path>]: csv file to write the perf results to
 -SavePerIterationPerf : save per iteration performance results to csv file
 -SaveTensorData <saveMode folderPath>: saveMode: save first iteration or all iteration output tensor results to csv file [First, All]

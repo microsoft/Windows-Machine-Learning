@@ -104,45 +104,36 @@ namespace WinMLRunnerTest
         return doesActualMatchExpected;
     }
 
-    void PopulateTensorLists(const std::wstring& expectedOutputTensorFile,
-                             const std::wstring& actualOutputTensorFile,
-                             std::vector<std::pair<int, float>>& expectedOutputTensors,
-                             std::vector<std::pair<int, float>>& actualOutputTensors)
+    void PopulateTensorLists(const std::wstring& tensorFile,
+                             std::vector<std::pair<int, float>>& tensorList)
     {
-        std::ifstream expectedFileStream;
-        std::ifstream actualFileStream;
-        expectedFileStream.open(expectedOutputTensorFile);
-        actualFileStream.open(actualOutputTensorFile);
-        std::string actualIndex;
-        std::string actualValue;
-        std::string expectedIndex;
-        std::string expectedValue;
-        if (expectedFileStream.fail() || actualFileStream.fail())
+        std::ifstream tensorFileStream;
+        tensorFileStream.open(tensorFile);
+        std::string index;
+        std::string value;
+        if (tensorFileStream.fail())
         {
             Assert::Fail(L"Failed to open tensor files\n");
         }
         bool isFirstRow = true;
-        while (!expectedFileStream.eof())
+        while (!tensorFileStream.eof())
         {
-            std::getline(expectedFileStream, expectedIndex, ',');
-            std::getline(expectedFileStream, expectedValue, '\n');
-            std::getline(actualFileStream, actualIndex, ',');
-            std::getline(actualFileStream, actualValue, '\n');
+            std::getline(tensorFileStream, index, ',');
+            std::getline(tensorFileStream, value, '\n');
             if (isFirstRow)
             {
                 isFirstRow = false;
                 continue;
             }
-            if (actualValue != "" && actualIndex != "" && expectedValue != "" && expectedIndex != "")
+            if (value != "" && index != "")
             {
-                actualOutputTensors.push_back(std::make_pair(std::stoi(actualIndex), std::stof(actualValue)));
-                expectedOutputTensors.push_back(std::make_pair(std::stoi(expectedIndex), std::stof(expectedValue)));
+                tensorList.push_back(std::make_pair(std::stoi(index), std::stof(value)));
             }
         }
     }
 
-    bool CompareTopHighestTensorValues(std::vector<std::pair<int, float>> expectedOutputTensors,
-                                       std::vector<std::pair<int, float>> actualOutputTensors,
+    bool CompareTopHighestTensorValues(std::vector<std::pair<int, float>>& expectedOutputTensors,
+                                       std::vector<std::pair<int, float>>& actualOutputTensors,
                                        const float relativeTolerance,
                                        const float epsilon)
     {
@@ -152,8 +143,7 @@ namespace WinMLRunnerTest
             Assert::Fail(
                 L"One of the output tensors is empty or expected and Actual Output tensors are different sizes\n");
         }
-        //Sort expected and actual output tensors from highest to lowest. This is the reason why the tensors are 
-        //pass by value to avoid altering the original tensors.
+        //Sort expected and actual output tensors from highest to lowest. NOTE: This will modify the original parameters.
         std::sort(expectedOutputTensors.begin(), expectedOutputTensors.end(),
                   [](auto& left, auto& right) { return left.second > right.second; });
         std::sort(actualOutputTensors.begin(), actualOutputTensors.end(),
@@ -197,7 +187,8 @@ namespace WinMLRunnerTest
     {
         std::vector<std::pair<int, float>>expectedOutputTensors;
         std::vector<std::pair<int, float>>actualOutputTensors;
-        PopulateTensorLists(expectedOutputTensorFile, actualOutputTensorFile, expectedOutputTensors, actualOutputTensors);
+        PopulateTensorLists(expectedOutputTensorFile, expectedOutputTensors);
+        PopulateTensorLists(actualOutputTensorFile, actualOutputTensors);
         return CompareTensorsProvidedEpsilonAndRelativeTolerance(expectedOutputTensors, actualOutputTensors,
                                                                  0.003f, 0);
     }
@@ -206,11 +197,13 @@ namespace WinMLRunnerTest
     {
         std::vector<std::pair<int, float>>expectedOutputTensors;
         std::vector<std::pair<int, float>>actualOutputTensors;
-        PopulateTensorLists(expectedOutputTensorFile, actualOutputTensorFile, expectedOutputTensors, actualOutputTensors);
+        PopulateTensorLists(expectedOutputTensorFile, expectedOutputTensors);
+        PopulateTensorLists(actualOutputTensorFile, actualOutputTensors);
         bool compareAllTensorsResult = CompareTensorsProvidedEpsilonAndRelativeTolerance(expectedOutputTensors, actualOutputTensors,
             0.06f, 0);
         if (!compareAllTensorsResult) //fall back to more forgiving comparison that compares order of top indexes
         {
+            //After calling CompareTopHighestTensorValues, the tensor lists will be sorted from largest to smallest
             return CompareTopHighestTensorValues(expectedOutputTensors, actualOutputTensors, 0.1f, 0.05f);
         }
         return true;

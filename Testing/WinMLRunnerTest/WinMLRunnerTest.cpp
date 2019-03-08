@@ -130,6 +130,10 @@ namespace WinMLRunnerTest
         }
     }
 
+    // This method sorts the expected output tensors and actual output tensors from largest tensor value to smallest
+    // tensor value. It takes the percentage decrease between the highest tensor value to the next highest tensor value
+    // for both sorted tensor lists and so on. Using relative tolerance and epsilon, we can compare between expected
+    // percentage decrease with actual percentage decrease.
     bool CompareTensorValuesRelative(std::vector<std::pair<int, float>>& expectedOutputTensors,
                                      std::vector<std::pair<int, float>>& actualOutputTensors,
                                      const float relativeTolerance, const float epsilon,

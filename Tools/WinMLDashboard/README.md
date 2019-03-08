@@ -1,6 +1,6 @@
 # WinML Dashboard (preview)
 
-WinML Dashboard is a tool for **viewing**, **editing**, **converting**, and **validating** machine learning models for [Windows ML](https://docs.microsoft.com/en-us/windows/ai/) inference engine. The engine is built into Windows 10 and evaluates trained models locally on Windows devices using hardware optimizations for CPU and GPU to enable high performance inferences.   
+WinML Dashboard is a tool for **viewing**, **editing**, **converting**, and **validating** machine learning models for [Windows ML](https://docs.microsoft.com/en-us/windows/ai/) inference engine. The engine is built into Windows 10 and evaluates trained models locally on Windows devices using hardware optimizations for CPU and GPU to enable high performance inferences. [(Download Preview Version of the tool)](https://github.com/Microsoft/Windows-Machine-Learning/releases/tag/v0.5.1)   
 
 Today there are several different frameworks available for training and evaluating machine learning models, which makes it difficult for app developers to integate models into their product. Windows ML uses [ONNX](http://onnx.ai/) machine learning model format that allows conversion from one framework format to another, and this Dashboard makes it easy to convert models from different frameworks to ONNX. 
  
@@ -64,7 +64,7 @@ Note that model validation feature is only available on [Windows 10 October 2018
 
 You can install an early preview version of WinML Dashboard from here.
 
-[Download Preview Version](https://github.com/Microsoft/Windows-Machine-Learning/releases)
+[Download Preview Version](https://github.com/Microsoft/Windows-Machine-Learning/releases/tag/v0.5.1)
 
 Note that the prerelease version is not currently signed so you may see a warning about the binary being untrusted when you try to download and run the installer. 
 

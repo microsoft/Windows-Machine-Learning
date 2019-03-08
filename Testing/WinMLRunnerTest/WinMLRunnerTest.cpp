@@ -130,9 +130,10 @@ namespace WinMLRunnerTest
         }
     }
 
-    bool CompareTopHighestTensorValues(std::vector<std::pair<int, float>>& expectedOutputTensors,
-                                       std::vector<std::pair<int, float>>& actualOutputTensors,
-                                       const float relativeTolerance, const float epsilon)
+    bool CompareTensorValuesRelative(std::vector<std::pair<int, float>>& expectedOutputTensors,
+                                     std::vector<std::pair<int, float>>& actualOutputTensors,
+                                     const float relativeTolerance, const float epsilon,
+                                     const float smallestValueToCompare)
     {
         if (expectedOutputTensors.size() != 0 && actualOutputTensors.size() != 0 &&
             expectedOutputTensors.size() != actualOutputTensors.size())
@@ -147,8 +148,7 @@ namespace WinMLRunnerTest
         std::sort(actualOutputTensors.begin(), actualOutputTensors.end(),
                   [](auto& left, auto& right) { return left.second > right.second; });
 
-        bool currentValueIsLargeEnough = true; // Only care about values that are larger than 1e-3
-        float smallestValueToCompare = 0.001f;
+        bool currentValueIsLargeEnough = true;
         bool doesActualMatchExpected = true;
         int currentIndex = 0;
         while (currentValueIsLargeEnough && currentIndex < expectedOutputTensors.size())
@@ -202,8 +202,8 @@ namespace WinMLRunnerTest
             CompareTensorsProvidedEpsilonAndRelativeTolerance(expectedOutputTensors, actualOutputTensors, 0.06f, 0);
         if (!compareAllTensorsResult) // fall back to more forgiving comparison that compares order of top indexes
         {
-            // After calling CompareTopHighestTensorValues, the tensor lists will be sorted from largest to smallest
-            return CompareTopHighestTensorValues(expectedOutputTensors, actualOutputTensors, 0.1f, 0.05f);
+            // After calling CompareTensorValuesRelative, the tensor lists will be sorted from largest to smallest
+            return CompareTensorValuesRelative(expectedOutputTensors, actualOutputTensors, 0.1f, 0.05f, 0.001f);
         }
         return true;
     }

@@ -298,7 +298,7 @@ void DebugOperatorFactory::RegisterDebugSchema(winrt::com_ptr<IMLOperatorRegistr
 {
     MLOperatorSetId operatorSetId;
     operatorSetId.domain = "";
-    operatorSetId.version = 8;
+    operatorSetId.version = 7;
 
     MLOperatorSchemaDescription debugSchema;
     debugSchema.name = "Debug";
@@ -384,7 +384,7 @@ void DebugOperatorFactory::RegisterDebugSchema(winrt::com_ptr<IMLOperatorRegistr
     std::vector<const MLOperatorSchemaDescription*> schemas{ &debugSchema };
     registry->RegisterOperatorSetSchema(
         &operatorSetId,
-        8 /* baseline version */,
+        7 /* baseline version */,
         schemas.data(),
         static_cast<uint32_t>(schemas.size()),
         nullptr,

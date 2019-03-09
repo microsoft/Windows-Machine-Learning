@@ -301,13 +301,21 @@ CommandLineArgs::CommandLineArgs(const std::vector<std::wstring>& args)
 
     if (!m_inputData.empty())
     {
-        if (m_inputData.find(L".png") != std::string::npos || m_inputData.find(L".jpg") != std::string::npos)
+        std::transform(m_inputData.begin(), m_inputData.end(), m_inputData.begin(), ::towlower);
+        if (m_inputData.find(L".png") != std::string::npos || m_inputData.find(L".jpg") != std::string::npos ||
+            m_inputData.find(L".jpeg") != std::string::npos)
         {
             m_imagePath = m_inputData;
         }
-        if (m_inputData.find(L".csv") != std::string::npos)
+        else if (m_inputData.find(L".csv") != std::string::npos)
         {
-            m_csvData = m_inputData;
+            m_csvData = m_inputData; 
+        }
+        else
+        {
+            std::wstring msg = L"unknown input type ";
+            msg += m_inputData;
+            throw hresult_invalid_argument(msg.c_str());
         }
     }
     CheckForInvalidArguments();

@@ -37,6 +37,28 @@ HRESULT DebugShapeInferrer::InferOutputShapes (IMLOperatorShapeInferenceContext*
     }
 }
 
+// returns deepest subdirectory created
+void CreateOutputSubDirectories(hstring hpath) {
+	static const std::wstring separators(L"\\/");
+	std::wstring path{ hpath };
+
+	wchar_t buf[MAX_PATH];
+	_wgetcwd(buf, 256);
+	StorageFolder currFolder = StorageFolder::GetFolderFromPathAsync(buf).get();
+
+	std::size_t separatorIdx = path.find_first_of(separators);
+	while (separatorIdx < path.size() - 1) {
+		std::wstring nextDir = path.substr(0, separatorIdx);
+		path = path.substr(separatorIdx + 1);
+		// creates folder if it doesn't already exists and returns said folder
+		if (nextDir.size() > 0) {
+			currFolder = currFolder.CreateFolderAsync(nextDir, CreationCollisionOption::OpenIfExists).get();
+		}
+		// find the next subdirectory to make
+		separatorIdx = path.find_first_of(separators);
+	}
+}
+
 template <typename T>
 void WriteToPng(vector<uint32_t> inputDims, T* inputData, uint32_t size, hstring m_filePath)
 {    
@@ -57,6 +79,7 @@ void WriteToPng(vector<uint32_t> inputDims, T* inputData, uint32_t size, hstring
     wchar_t buf[MAX_PATH];
     _wgetcwd(buf, 256);
     StorageFolder parentFolder = StorageFolder::GetFolderFromPathAsync(buf).get();
+	CreateOutputSubDirectories(m_filePath);
     int pixelsPerImage = inputDims.at(HEIGHT) * inputDims.at(WIDTH);
 
     // for each output channel at this point in the network
@@ -95,6 +118,7 @@ void WriteToPng(vector<uint32_t> inputDims, T* inputData, uint32_t size, hstring
 
 template <typename T>
 void WriteToText(vector<uint32_t> inputDims, T* inputData, uint32_t size, hstring m_filePath, MLOperatorTensorDataType dataType) {
+	CreateOutputSubDirectories(m_filePath);
     ofstream outputFile;
     outputFile.open(winrt::to_string(m_filePath));
     outputFile << "dimensions: ";
@@ -270,7 +294,7 @@ void DebugOperatorFactory::RegisterDebugSchema(winrt::com_ptr<IMLOperatorRegistr
 {
     MLOperatorSetId operatorSetId;
     operatorSetId.domain = "";
-    operatorSetId.version = 7;
+    operatorSetId.version = 8;
 
     MLOperatorSchemaDescription debugSchema;
     debugSchema.name = "Debug";
@@ -356,7 +380,7 @@ void DebugOperatorFactory::RegisterDebugSchema(winrt::com_ptr<IMLOperatorRegistr
     std::vector<const MLOperatorSchemaDescription*> schemas{ &debugSchema };
     registry->RegisterOperatorSetSchema(
         &operatorSetId,
-        7 /* baseline version */,
+        8 /* baseline version */,
         schemas.data(),
         static_cast<uint32_t>(schemas.size()),
         nullptr,

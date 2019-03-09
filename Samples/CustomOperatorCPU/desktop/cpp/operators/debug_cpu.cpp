@@ -363,7 +363,7 @@ void DebugOperatorFactory::RegisterDebugSchema(winrt::com_ptr<IMLOperatorRegistr
     std::vector<const MLOperatorSchemaDescription*> schemas{ &debugSchema };
     registry->RegisterOperatorSetSchema(
         &operatorSetId,
-		TARGET_OPSET /* baseline version */,
+        TARGET_OPSET /* baseline version */,
         schemas.data(),
         static_cast<uint32_t>(schemas.size()),
         nullptr,

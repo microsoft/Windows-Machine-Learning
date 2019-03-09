@@ -17,6 +17,7 @@ static const int CHANNELS = 1;
 static const int HEIGHT = 2;
 static const int WIDTH = 3;
 static const int NUM_DIMENSIONS = 4;
+static const int TARGET_OPSET = 7;
 
 HRESULT DebugShapeInferrer::InferOutputShapes (IMLOperatorShapeInferenceContext* context) noexcept
 {
@@ -298,7 +299,7 @@ void DebugOperatorFactory::RegisterDebugSchema(winrt::com_ptr<IMLOperatorRegistr
 {
     MLOperatorSetId operatorSetId;
     operatorSetId.domain = "";
-    operatorSetId.version = 7;
+    operatorSetId.version = TARGET_OPSET;
 
     MLOperatorSchemaDescription debugSchema;
     debugSchema.name = "Debug";
@@ -384,7 +385,7 @@ void DebugOperatorFactory::RegisterDebugSchema(winrt::com_ptr<IMLOperatorRegistr
     std::vector<const MLOperatorSchemaDescription*> schemas{ &debugSchema };
     registry->RegisterOperatorSetSchema(
         &operatorSetId,
-        7 /* baseline version */,
+		TARGET_OPSET /* baseline version */,
         schemas.data(),
         static_cast<uint32_t>(schemas.size()),
         nullptr,

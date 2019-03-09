@@ -79,7 +79,6 @@ void WriteToPng(vector<uint32_t> inputDims, T* inputData, uint32_t size, hstring
     wchar_t buf[MAX_PATH];
     _wgetcwd(buf, 256);
     StorageFolder parentFolder = StorageFolder::GetFolderFromPathAsync(buf).get();
-	CreateOutputSubDirectories(m_filePath);
     int pixelsPerImage = inputDims.at(HEIGHT) * inputDims.at(WIDTH);
 
     // for each output channel at this point in the network
@@ -118,7 +117,12 @@ void WriteToPng(vector<uint32_t> inputDims, T* inputData, uint32_t size, hstring
 
 template <typename T>
 void WriteToText(vector<uint32_t> inputDims, T* inputData, uint32_t size, hstring m_filePath, MLOperatorTensorDataType dataType) {
-	CreateOutputSubDirectories(m_filePath);
+    // Get current directory
+    wchar_t buf[MAX_PATH];
+    _wgetcwd(buf, 256);
+    StorageFolder parentFolder = StorageFolder::GetFolderFromPathAsync(buf).get();
+    parentFolder.CreateFileAsync(m_filePath, CreationCollisionOption::ReplaceExisting).get();
+
     ofstream outputFile;
     outputFile.open(winrt::to_string(m_filePath));
     outputFile << "dimensions: ";

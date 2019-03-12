@@ -8,14 +8,14 @@
 
   <Identity
     Name="f330385a-7468-4688-859d-7d11a61d1b29"
-    Publisher="CN=ngeisler"
+    Publisher="CN=winml"
     Version="1.0.0.0" />
 
   <mp:PhoneIdentity PhoneProductId="f330385a-7468-4688-859d-7d11a61d1b29" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
 
   <Properties>
     <DisplayName>WinML_Demo</DisplayName>
-    <PublisherDisplayName>ngeisler</PublisherDisplayName>
+    <PublisherDisplayName>winml</PublisherDisplayName>
     <Logo>Assets\StoreLogo.png</Logo>
   </Properties>
 

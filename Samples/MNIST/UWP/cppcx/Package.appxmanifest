@@ -8,14 +8,14 @@
 
   <Identity
     Name="7c575962-f37f-4240-a2ba-33fbf54c19f6"
-    Publisher="CN=kiyoung"
+    Publisher="CN=winml"
     Version="1.0.0.0" />
 
   <mp:PhoneIdentity PhoneProductId="7c575962-f37f-4240-a2ba-33fbf54c19f6" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
 
   <Properties>
     <DisplayName>mnist_cppcx</DisplayName>
-    <PublisherDisplayName>kiyoung</PublisherDisplayName>
+    <PublisherDisplayName>winml</PublisherDisplayName>
     <Logo>Assets\StoreLogo.png</Logo>
   </Properties>
 

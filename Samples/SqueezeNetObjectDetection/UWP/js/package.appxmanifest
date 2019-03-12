@@ -4,7 +4,7 @@
   <mp:PhoneIdentity PhoneProductId="2cf5f1aa-bf69-498c-8b74-04137b2f67f3" PhonePublisherId="00000000-0000-0000-0000-000000000000" />
   <Properties>
     <DisplayName>App7</DisplayName>
-    <PublisherDisplayName>paulm</PublisherDisplayName>
+    <PublisherDisplayName>winml</PublisherDisplayName>
     <Logo>images\storelogo.png</Logo>
   </Properties>
   <Dependencies>

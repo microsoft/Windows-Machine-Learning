@@ -4,7 +4,7 @@
   <mp:PhoneIdentity PhoneProductId="f8b38171-639a-4bbc-8ada-d45651bba59e" PhonePublisherId="00000000-0000-0000-0000-000000000000" />
   <Properties>
     <DisplayName>SqueezeNetObjectDetection</DisplayName>
-    <PublisherDisplayName>Louis-Philippe Bourret</PublisherDisplayName>
+    <PublisherDisplayName>winml</PublisherDisplayName>
     <Logo>Assets\StoreLogo.png</Logo>
   </Properties>
   <Dependencies>

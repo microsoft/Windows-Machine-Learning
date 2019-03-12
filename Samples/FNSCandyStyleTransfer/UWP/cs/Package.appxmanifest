@@ -4,7 +4,7 @@
   <mp:PhoneIdentity PhoneProductId="3bd922b5-d779-4208-8c35-aec4dea61330" PhonePublisherId="00000000-0000-0000-0000-000000000000" />
   <Properties>
     <DisplayName>Shortcut</DisplayName>
-    <PublisherDisplayName>lobourre</PublisherDisplayName>
+    <PublisherDisplayName>winml</PublisherDisplayName>
     <Logo>Assets\frame_camera_50.png</Logo>
   </Properties>
   <Dependencies>

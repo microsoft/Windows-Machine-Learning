@@ -6,10 +6,7 @@
 variables:
 
   SamplesBin: SamplesBin
-  system.collectionId: ee8504d9-65a6-4f6c-85ed-0ad4265128ee
   system.debug: false
-  system.definitionId: 612
-  system.teamProject: WindowsAI
   WINDOWS_WINMD: C:\Program Files (x86)\Windows Kits\10\UnionMetadata\10.0.17763.0\Windows.winmd
 
 strategy:
@@ -28,14 +25,23 @@ strategy:
       BuildPlatform: x86
       BuildConfiguration: Debug
 
-# specific branch build
+# CI trigger
 trigger:
   branches:
     include:
     - master
   paths:
+    exclude:
+    - Tools
+
+# PR validation trigger
+pr:
+  branches:
     include:
-    - Samples
+    - master
+  paths:
+    exclude:
+    - Tools
 
 steps: 
   - task: PowerShell@2

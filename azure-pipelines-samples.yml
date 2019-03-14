@@ -145,7 +145,7 @@ steps:
     inputs:
       solution: Samples/SqueezeNetObjectDetection/squeezenetobjectdetection.sln
       vsVersion: 15.0
-      msbuildArgs: '/p:AppxPackageSigningEnabled=false -v:diag /p:OutDir=$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\SqueezeNetObjectDetection\'
+      msbuildArgs: '-v:diag /p:OutDir=$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\SqueezeNetObjectDetection\'
       platform: '$(BuildPlatform)'
       configuration: '$(BuildConfiguration)'
       clean: true

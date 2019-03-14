@@ -126,31 +126,22 @@ namespace SnapCandy
             // how many seconds has it been?
             int fpsTick = System.Environment.TickCount;
             float numberOfSeconds = ((float)(fpsTick - _LastFPSTick)) / (float)1000;
-            _LastFPSTick = fpsTick;
 
             // how many frames did we capture?
-            long intervalFPS = (long)(((float)_CaptureFPS) / numberOfSeconds);
-            _CaptureFPS = 0;
-            NotifyUser(CaptureFPS, $"{intervalFPS}", NotifyType.StatusMessage);
+            float intervalFPS = ((float)_CaptureFPS) / numberOfSeconds;
+            if (intervalFPS == 0.0)
+                return;
+            NotifyUser(CaptureFPS, $"{intervalFPS:F1}", NotifyType.StatusMessage);
 
             // how many frames did we render
-            intervalFPS = (long)(((float)_RenderFPS) / numberOfSeconds);
+            intervalFPS = ((float)_RenderFPS) / numberOfSeconds;
+            if (intervalFPS == 0.0)
+                return;
+            NotifyUser(RenderFPS, $"{intervalFPS:F1}", NotifyType.StatusMessage);
+
+            _CaptureFPS = 0;
             _RenderFPS = 0;
-            NotifyUser(RenderFPS, $"{intervalFPS}", NotifyType.StatusMessage);
-
-            //// what was the last present count ?
-            //if (_resultframeRenderer != null)
-            //{
-            //    UInt32 presentCount = _resultframeRenderer.GetPresentCount();
-            //    intervalFPS = (long)(((float)(presentCount - _LastPresentCount)) / numberOfSeconds);
-            //    _LastPresentCount = presentCount;
-            //}
-            //else
-            //{
-            //    intervalFPS = 0;
-            //}
-
-            //NotifyUser(RenderFPS, $"{intervalFPS}", NotifyType.StatusMessage);
+            _LastFPSTick = fpsTick;
         }
 
         public void NotifyUser(string strMessage, NotifyType type)

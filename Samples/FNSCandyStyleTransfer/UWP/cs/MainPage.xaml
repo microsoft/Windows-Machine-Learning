@@ -180,14 +180,30 @@ Copyright (C) Microsoft Corporation. All rights reserved.
                 </StackPanel>
 
             <Border x:Name="UIStatusBorder" Grid.Row="2">
-                <ScrollViewer VerticalScrollMode="Auto"  VerticalScrollBarVisibility="Auto" MaxHeight="200">
+                <StackPanel Orientation="Horizontal">
                     <TextBlock x:Name="StatusBlock" 
-                               Text="Select a style to begin"
-                               FontWeight="Bold" 
-                               MaxWidth="{Binding ElementName=Splitter, Path=ActualWidth}" 
-                               Margin="10,10,10,20" 
-                               TextWrapping="Wrap"  />
-                </ScrollViewer>
+                        Text="Select a style to begin"
+                        FontWeight="Bold" 
+                        Width="700" 
+                        Margin="10,2,0,0"
+                        TextWrapping="Wrap" />
+                    <TextBlock 
+                        Text="Capture FPS"
+                        Margin="10,2,0,0"
+                        FontWeight="Bold" />
+                    <TextBlock x:Name="CaptureFPS" 
+                        Text="0 fps"
+                        Margin="10,2,0,0"
+                        TextWrapping="Wrap" />
+                    <TextBlock 
+                        Text="Render FPS" 
+                        Margin="10,2,0,0"
+                        FontWeight="Bold"/>
+                    <TextBlock x:Name="RenderFPS"
+                        Text="0 fps"
+                        Margin="10,2,0,0"
+                        TextWrapping="Wrap" />
+                </StackPanel>
             </Border>
 
         </Grid>

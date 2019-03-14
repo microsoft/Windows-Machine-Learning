@@ -80,6 +80,10 @@ namespace SnapCandy
 
         // Debug
         private Stopwatch _perfStopwatch = new Stopwatch(); // performance Stopwatch used throughout
+        private DispatcherTimer _FramesPerSecondTimer = new DispatcherTimer();
+        private long _CaptureFPS = 0;
+        public static long _RenderFPS = 0;
+        private int _LastFPSTick = 0;
 
         public MainPage()
         {
@@ -110,6 +114,48 @@ namespace SnapCandy
 
             // Select first style
             UIStyleList.SelectedIndex = 0;
+
+            // Create a 1 second timer
+            _FramesPerSecondTimer.Tick += _FramesPerSecond_Tick;
+            _FramesPerSecondTimer.Interval = new TimeSpan(0, 0, 1);
+            _FramesPerSecondTimer.Start();
+        }
+
+        private void _FramesPerSecond_Tick(object sender, object e)
+        {
+            // how many seconds has it been?
+            int fpsTick = System.Environment.TickCount;
+            float numberOfSeconds = ((float)(fpsTick - _LastFPSTick)) / (float)1000;
+            _LastFPSTick = fpsTick;
+
+            // how many frames did we capture?
+            long intervalFPS = (long)(((float)_CaptureFPS) / numberOfSeconds);
+            _CaptureFPS = 0;
+            NotifyUser(CaptureFPS, $"{intervalFPS}", NotifyType.StatusMessage);
+
+            // how many frames did we render
+            intervalFPS = (long)(((float)_RenderFPS) / numberOfSeconds);
+            _RenderFPS = 0;
+            NotifyUser(RenderFPS, $"{intervalFPS}", NotifyType.StatusMessage);
+
+            //// what was the last present count ?
+            //if (_resultframeRenderer != null)
+            //{
+            //    UInt32 presentCount = _resultframeRenderer.GetPresentCount();
+            //    intervalFPS = (long)(((float)(presentCount - _LastPresentCount)) / numberOfSeconds);
+            //    _LastPresentCount = presentCount;
+            //}
+            //else
+            //{
+            //    intervalFPS = 0;
+            //}
+
+            //NotifyUser(RenderFPS, $"{intervalFPS}", NotifyType.StatusMessage);
+        }
+
+        public void NotifyUser(string strMessage, NotifyType type)
+        {
+            NotifyUser(StatusBlock, strMessage, type);
         }
 
         /// <summary>
@@ -118,17 +164,17 @@ namespace SnapCandy
         /// </summary>
         /// <param name="strMessage"></param>
         /// <param name="type"></param>
-        public void NotifyUser(string strMessage, NotifyType type)
+        public void NotifyUser(TextBlock block, string strMessage, NotifyType type)
         {
             // If called from the UI thread, then update immediately.
             // Otherwise, schedule a task on the UI thread to perform the update.
             if (Dispatcher.HasThreadAccess)
             {
-                UpdateStatus(strMessage, type);
+                UpdateStatus(block, strMessage, type);
             }
             else
             {
-                var task = Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () => UpdateStatus(strMessage, type));
+                var task = Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () => UpdateStatus(block, strMessage, type));
                 task.AsTask().Wait();
             }
         }
@@ -138,7 +184,7 @@ namespace SnapCandy
         /// </summary>
         /// <param name="strMessage"></param>
         /// <param name="type"></param>
-        private void UpdateStatus(string strMessage, NotifyType type)
+        private void UpdateStatus(TextBlock block, string strMessage, NotifyType type)
         {
             switch (type)
             {
@@ -150,11 +196,11 @@ namespace SnapCandy
                     break;
             }
 
-            StatusBlock.Text = strMessage;
+            block.Text = strMessage;
 
-            // Collapse the StatusBlock if it has no text to conserve real estate.
-            UIStatusBorder.Visibility = (StatusBlock.Text != String.Empty) ? Visibility.Visible : Visibility.Collapsed;
-            if (StatusBlock.Text != String.Empty)
+            // Collapse the TextBlock if it has no text to conserve real estate.
+            UIStatusBorder.Visibility = (block.Text != String.Empty) ? Visibility.Visible : Visibility.Collapsed;
+            if (block.Text != String.Empty)
             {
                 UIStatusBorder.Visibility = Visibility.Visible;
                 UIStatusPanel.Visibility = Visibility.Visible;
@@ -816,6 +862,8 @@ namespace SnapCandy
             // Do not attempt processing of more than 1 frame at a time
             _frameAquisitionLock.Wait();
             {
+                _CaptureFPS += 1;
+
                 if (_isProcessingFrames)
                 {
                     _frameAquisitionLock.Release();
@@ -1059,6 +1107,8 @@ namespace SnapCandy
                         {
                             var imageSource = (SoftwareBitmapSource)_imageElement.Source;
                             await imageSource.SetBitmapAsync(_backBuffer);
+
+                            MainPage._RenderFPS += 1;
                         }
                         catch (Exception ex)
                         {

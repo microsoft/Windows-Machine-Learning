@@ -66,71 +66,71 @@ steps:
     displayName: 'NuGet restore'
     condition: succeededOrFailed()
 
-  - task: VSBuild@1
-    displayName: 'Build UI test solution winml/samples/public/WinMLGithub/Testing/**/SamplesTest.sln'
-    inputs:
-      solution: 'Testing/**/SamplesTest.sln'
-      vsVersion: 15.0
-      msbuildArgs: '/p:AppxPackageSigningEnabled=false -v:diag /p:OutDir=$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\SamplesTest\'
-      platform: '$(BuildPlatform)'
-      configuration: '$(BuildConfiguration)'
-      clean: true
-      msbuildArchitecture: x64
-      createLogFile: true
-    condition: succeededOrFailed()
+  # - task: VSBuild@1
+  #   displayName: 'Build UI test solution winml/samples/public/WinMLGithub/Testing/**/SamplesTest.sln'
+  #   inputs:
+  #     solution: 'Testing/**/SamplesTest.sln'
+  #     vsVersion: 15.0
+  #     msbuildArgs: '/p:AppxPackageSigningEnabled=false -v:diag /p:OutDir=$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\SamplesTest\'
+  #     platform: '$(BuildPlatform)'
+  #     configuration: '$(BuildConfiguration)'
+  #     clean: true
+  #     msbuildArchitecture: x64
+  #     createLogFile: true
+  #   condition: succeededOrFailed()
 
-  - task: VSBuild@1
-    displayName: 'Build AdapterSelection Sample '
-    inputs:
-      solution: Samples/AdapterSelection/AdapterSelection.sln
-      vsVersion: 15.0
-      msbuildArgs: '/p:AppxPackageSigningEnabled=false -v:diag /p:OutDir=$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\AdapterSelection\'
-      platform: '$(BuildPlatform)'
-      configuration: '$(BuildConfiguration)'
-      clean: true
-      msbuildArchitecture: x64
-      createLogFile: true
-    condition: succeededOrFailed()
+  # - task: VSBuild@1
+  #   displayName: 'Build AdapterSelection Sample '
+  #   inputs:
+  #     solution: Samples/AdapterSelection/AdapterSelection.sln
+  #     vsVersion: 15.0
+  #     msbuildArgs: '/p:AppxPackageSigningEnabled=false -v:diag /p:OutDir=$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\AdapterSelection\'
+  #     platform: '$(BuildPlatform)'
+  #     configuration: '$(BuildConfiguration)'
+  #     clean: true
+  #     msbuildArchitecture: x64
+  #     createLogFile: true
+  #   condition: succeededOrFailed()
 
-  - task: VSBuild@1
-    displayName: 'Build CustomOperatorCPU Sample '
-    inputs:
-      solution: Samples/CustomOperatorCPU/desktop/cpp/custom-operator-cpu-sample.sln
-      vsVersion: 15.0
-      msbuildArgs: '/p:AppxPackageSigningEnabled=false -v:diag /p:OutDir=$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\CustomOperatorCPU\'
-      platform: '$(BuildPlatform)'
-      configuration: '$(BuildConfiguration)'
-      clean: true
-      msbuildArchitecture: x64
-      createLogFile: true
-    condition: succeededOrFailed()
+  # - task: VSBuild@1
+  #   displayName: 'Build CustomOperatorCPU Sample '
+  #   inputs:
+  #     solution: Samples/CustomOperatorCPU/desktop/cpp/custom-operator-cpu-sample.sln
+  #     vsVersion: 15.0
+  #     msbuildArgs: '/p:AppxPackageSigningEnabled=false -v:diag /p:OutDir=$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\CustomOperatorCPU\'
+  #     platform: '$(BuildPlatform)'
+  #     configuration: '$(BuildConfiguration)'
+  #     clean: true
+  #     msbuildArchitecture: x64
+  #     createLogFile: true
+  #   condition: succeededOrFailed()
 
 
-  - task: VSBuild@1
-    displayName: 'Build MNIST-Tutorial-cs'
-    inputs:
-      solution: 'Samples/MNIST/Tutorial/cs/mnist_demo.sln'
-      vsVersion: 15.0
-      msbuildArgs: '/p:AppxPackageSigningEnabled=false -v:diag /p:OutDir=$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\MNIST-Tutorial\'
-      platform: '$(BuildPlatform)'
-      configuration: '$(BuildConfiguration)'
-      clean: true
-      msbuildArchitecture: x64
-      createLogFile: true
-    condition: succeededOrFailed()
+  # - task: VSBuild@1
+  #   displayName: 'Build MNIST-Tutorial-cs'
+  #   inputs:
+  #     solution: 'Samples/MNIST/Tutorial/cs/mnist_demo.sln'
+  #     vsVersion: 15.0
+  #     msbuildArgs: '/p:AppxPackageSigningEnabled=false -v:diag /p:OutDir=$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\MNIST-Tutorial\'
+  #     platform: '$(BuildPlatform)'
+  #     configuration: '$(BuildConfiguration)'
+  #     clean: true
+  #     msbuildArchitecture: x64
+  #     createLogFile: true
+  #   condition: succeededOrFailed()
 
-  - task: VSBuild@1
-    displayName: 'Build MNIST-UWP-cs'
-    inputs:
-      solution: 'Samples/MNIST/UWP/cs/mnist_demo.sln'
-      vsVersion: 15.0
-      msbuildArgs: '/p:AppxPackageSigningEnabled=false -v:diag /p:OutDir=$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\MNIST-cs\'
-      platform: '$(BuildPlatform)'
-      configuration: '$(BuildConfiguration)'
-      clean: true
-      msbuildArchitecture: x64
-      createLogFile: true
-    condition: succeededOrFailed()
+  # - task: VSBuild@1
+  #   displayName: 'Build MNIST-UWP-cs'
+  #   inputs:
+  #     solution: 'Samples/MNIST/UWP/cs/mnist_demo.sln'
+  #     vsVersion: 15.0
+  #     msbuildArgs: '/p:AppxPackageSigningEnabled=false -v:diag /p:OutDir=$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\MNIST-cs\'
+  #     platform: '$(BuildPlatform)'
+  #     configuration: '$(BuildConfiguration)'
+  #     clean: true
+  #     msbuildArchitecture: x64
+  #     createLogFile: true
+  #   condition: succeededOrFailed()
 
   - task: VSBuild@1
     displayName: 'Build SqueezenetObjectDetection'
@@ -145,57 +145,57 @@ steps:
       createLogFile: true
     condition: succeededOrFailed()
 
-  - task: VSBuild@1
-    displayName: 'Build FNSCandyStyleTransfer-UWP-CS'
-    inputs:
-      solution: Samples/FNSCandyStyleTransfer/UWP/CS/snapcandy.sln
-      vsVersion: 15.0
-      msbuildArgs: '/p:AppxPackageSigningEnabled=false -v:diag  /p:OutDir=$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\FNSCandyStyleTransfer\'
-      platform: '$(BuildPlatform)'
-      configuration: '$(BuildConfiguration)'
-      clean: true
-      msbuildArchitecture: x64
-      createLogFile: true
-    condition: succeededOrFailed()
+  # - task: VSBuild@1
+  #   displayName: 'Build FNSCandyStyleTransfer-UWP-CS'
+  #   inputs:
+  #     solution: Samples/FNSCandyStyleTransfer/UWP/CS/snapcandy.sln
+  #     vsVersion: 15.0
+  #     msbuildArgs: '/p:AppxPackageSigningEnabled=false -v:diag  /p:OutDir=$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\FNSCandyStyleTransfer\'
+  #     platform: '$(BuildPlatform)'
+  #     configuration: '$(BuildConfiguration)'
+  #     clean: true
+  #     msbuildArchitecture: x64
+  #     createLogFile: true
+  #   condition: succeededOrFailed()
 
-  - task: VSBuild@1
-    displayName: 'Build MNIST-UWP-cppcx '
-    inputs:
-      solution: 'Samples/MNIST/UWP/cppcx/mnist_cppcx.sln'
-      vsVersion: 15.0
-      msbuildArgs: '/p:AppxPackageSigningEnabled=false -v:diag /p:OutDir=$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\MNIST-cppcx\'
-      platform: '$(BuildPlatform)'
-      configuration: '$(BuildConfiguration)'
-      clean: true
-      msbuildArchitecture: x64
-      createLogFile: true
-    condition: succeededOrFailed()
+  # - task: VSBuild@1
+  #   displayName: 'Build MNIST-UWP-cppcx '
+  #   inputs:
+  #     solution: 'Samples/MNIST/UWP/cppcx/mnist_cppcx.sln'
+  #     vsVersion: 15.0
+  #     msbuildArgs: '/p:AppxPackageSigningEnabled=false -v:diag /p:OutDir=$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\MNIST-cppcx\'
+  #     platform: '$(BuildPlatform)'
+  #     configuration: '$(BuildConfiguration)'
+  #     clean: true
+  #     msbuildArchitecture: x64
+  #     createLogFile: true
+  #   condition: succeededOrFailed()
 
-  - task: VSBuild@1
-    displayName: 'Build CustomTensorization Sample'
-    inputs:
-      solution: Samples/CustomTensorization/CustomTensorization.sln
-      vsVersion: 15.0
-      msbuildArgs: '/p:AppxPackageSigningEnabled=false -v:diag /p:OutDir=$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\CustomTensorization\'
-      platform: '$(BuildPlatform)'
-      configuration: '$(BuildConfiguration)'
-      clean: true
-      msbuildArchitecture: x64
-      createLogFile: true
-    condition: succeededOrFailed()
+  # - task: VSBuild@1
+  #   displayName: 'Build CustomTensorization Sample'
+  #   inputs:
+  #     solution: Samples/CustomTensorization/CustomTensorization.sln
+  #     vsVersion: 15.0
+  #     msbuildArgs: '/p:AppxPackageSigningEnabled=false -v:diag /p:OutDir=$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\CustomTensorization\'
+  #     platform: '$(BuildPlatform)'
+  #     configuration: '$(BuildConfiguration)'
+  #     clean: true
+  #     msbuildArchitecture: x64
+  #     createLogFile: true
+  #   condition: succeededOrFailed()
 
-  - task: VSBuild@1
-    displayName: 'Build Emoji Sample'
-    inputs:
-      solution: Samples/Emoji8/UWP/cs/Emoji8.sln
-      vsVersion: 15.0
-      msbuildArgs: '/p:AppxPackageSigningEnabled=false -v:diag /p:OutDir=$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\Emoji8\'
-      platform: '$(BuildPlatform)'
-      configuration: '$(BuildConfiguration)'
-      clean: true
-      msbuildArchitecture: x64
-      createLogFile: true
-    condition: succeededOrFailed()
+  # - task: VSBuild@1
+  #   displayName: 'Build Emoji Sample'
+  #   inputs:
+  #     solution: Samples/Emoji8/UWP/cs/Emoji8.sln
+  #     vsVersion: 15.0
+  #     msbuildArgs: '/p:AppxPackageSigningEnabled=false -v:diag /p:OutDir=$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\Emoji8\'
+  #     platform: '$(BuildPlatform)'
+  #     configuration: '$(BuildConfiguration)'
+  #     clean: true
+  #     msbuildArchitecture: x64
+  #     createLogFile: true
+  #   condition: succeededOrFailed()
 
   - task: CopyFiles@2
     inputs:

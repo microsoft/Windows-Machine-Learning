@@ -153,20 +153,14 @@ steps:
   #     createLogFile: true
   #   condition: succeededOrFailed()
 
-- task: VSBuild@1
-
-  displayName: 'Build solution squeezenet'
-  inputs:
-
-    solution: Samples/SqueezeNetObjectDetection/squeezenetobjectdetection.sln
-
-    vsVersion: 15.0
-
-    msbuildArgs: '/p:AppxBundlePlatforms="$(BuildPlatform)" /p:AppxPackageDir="$(Build.ArtifactStagingDirectory)\AppxPackages\\" /p:AppxBundle=Always /p:UapAppxPackageBuildMode=StoreUpload'
-
-    platform: x86
-
-    configuration: '$(BuildConfiguration)'
+  - task: VSBuild@1
+    displayName: 'Build solution squeezenet'
+    inputs:
+      solution: Samples/SqueezeNetObjectDetection/squeezenetobjectdetection.sln
+      vsVersion: 15.0
+      msbuildArgs: '/p:AppxBundlePlatforms="$(BuildPlatform)" /p:AppxPackageDir="$(Build.ArtifactStagingDirectory)\AppxPackages\\" /p:AppxBundle=Always /p:UapAppxPackageBuildMode=StoreUpload'
+      platform: $(BuildPlatform)
+      configuration: '$(BuildConfiguration)'
 
   # - task: VSBuild@1
   #   displayName: 'Build FNSCandyStyleTransfer-UWP-CS'

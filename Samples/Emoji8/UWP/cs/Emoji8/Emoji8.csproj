@@ -17,11 +17,11 @@
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{A5A43C5B-DE2A-4C0C-9213-0A381AF9435A};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <WindowsXamlEnableOverview>true</WindowsXamlEnableOverview>
-    <PackageCertificateKeyFile>Emoji_TemporaryKey.pfx</PackageCertificateKeyFile>
+    <PackageCertificateKeyFile>Emoji8_TemporaryKey.pfx</PackageCertificateKeyFile>
     <AppxAutoIncrementPackageRevision>True</AppxAutoIncrementPackageRevision>
     <AppxBundle>Always</AppxBundle>
     <AppxBundlePlatforms>x86|x64|arm</AppxBundlePlatforms>
-    <PackageCertificateThumbprint>319D19788E0D363D117116248BEB1C90C9C6B4F1</PackageCertificateThumbprint>
+    <PackageCertificateThumbprint>AEF8CDB5C6F65B590EC236F9692BB1BB89BEDA51</PackageCertificateThumbprint>
     <GenerateAppInstallerFile>False</GenerateAppInstallerFile>
     <AppInstallerUpdateFrequency>1</AppInstallerUpdateFrequency>
     <AppInstallerCheckForUpdateFrequency>OnApplicationRun</AppInstallerCheckForUpdateFrequency>
@@ -129,8 +129,7 @@
     <AppxManifest Include="Package.appxmanifest">
       <SubType>Designer</SubType>
     </AppxManifest>
-    <None Include="cert.pfx" />
-    <None Include="Emoji_TemporaryKey.pfx" />
+    <None Include="Emoji8_TemporaryKey.pfx" />
     <Content Include="Assets\emoji8.png" />
     <Content Include="Assets\emoji8Small.png" />
     <Content Include="Assets\LargeTile.scale-100.png" />

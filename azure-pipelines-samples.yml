@@ -210,6 +210,9 @@ steps:
     inputs:
       targetFolder: '$(Build.ArtifactStagingDirectory)\$(BuildPlatform)\$(BuildConfiguration)\'
       sourceFolder: '$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\'
+      Contents: |
+        ?(AdapterSelection\|CustomOperatorCPU\|CustomTensorization\|SqueezeNetObjectDetection\)!(*SqueezeNetObjectDetectionCS|*SqueezeNetObjectionDetectionJS)*
+        **\AppPackages\**
     condition: succeededOrFailed()
 
   - task: PublishBuildArtifacts@1
@@ -218,3 +221,12 @@ steps:
       pathtoPublish: '$(Build.ArtifactStagingDirectory)'
       artifactName: WinMLPublicSamples
     condition: succeededOrFailed()
+
+    steps:
+- task: CopyFiles@2
+  displayName: 'Copy Files to: $(Build.ArtifactStagingDirectory)'
+  inputs:
+    Contents: |
+      ConsoleApplication1\**\bin\**\!(*.pdb|*.config)
+      ConsoleApplication1\readme.txt
+    TargetFolder: '$(Build.ArtifactStagingDirectory)'

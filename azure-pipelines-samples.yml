@@ -202,7 +202,8 @@ steps:
       targetFolder: '$(Build.ArtifactStagingDirectory)\$(BuildPlatform)\$(BuildConfiguration)\'
       sourceFolder: '$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\'
       Contents: |
-        ?(AdapterSelection\|CustomOperatorCPU\|CustomTensorization\|SqueezeNetObjectDetection\)!(*SqueezeNetObjectDetectionCS|*SqueezeNetObjectionDetectionJS)*
+        ?(AdapterSelection\|CustomOperatorCPU\|CustomTensorization\|SqueezeNetObjectDetection\)*
+        !*(SqueezeNetObjectDetectionCS|SqueezeNetObjectionDetectionJS)*
         **\AppPackages\**
     condition: succeededOrFailed()
 

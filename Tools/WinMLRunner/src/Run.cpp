@@ -7,12 +7,39 @@
 #include <Windows.Graphics.DirectX.Direct3D11.interop.h>
 #include "Run.h"
 #include "Scenarios.h"
+#include <DXProgrammableCapture.h>
 
 #define THROW_IF_FAILED(hr)                                                                                            \
     {                                                                                                                  \
         if (FAILED(hr))                                                                                                \
             throw hresult_error(hr);                                                                                   \
     }
+
+class PixController
+{
+public:
+    PixController()
+    {
+        DXGIGetDebugInterface1(0, IID_PPV_ARGS(m_graphicsAnalysis.put()));
+
+        if (m_graphicsAnalysis)
+        {
+            m_graphicsAnalysis->BeginCapture();
+        }
+    }
+
+    ~PixController()
+    {
+        if (m_graphicsAnalysis)
+        {
+            m_graphicsAnalysis->EndCapture();
+        }
+    }
+
+private:
+    com_ptr<IDXGraphicsAnalysis> m_graphicsAnalysis;
+};
+
 using namespace winrt::Windows::Graphics::DirectX::Direct3D11;
 
 LearningModel LoadModel(const std::wstring& path, bool capturePerf, OutputHelper& output, const CommandLineArgs& args,
@@ -290,6 +317,9 @@ HRESULT EvaluateModel(const LearningModel& model, const CommandLineArgs& args, O
 
     bool isGarbageData = args.IsGarbageInput();
     std::string completionString = "\n";
+
+    // Request PIX to start capture
+    PixController pixController;
 
     // Run the binding + evaluate multiple times and average the results
     for (uint32_t i = 0; i < args.NumIterations(); i++)

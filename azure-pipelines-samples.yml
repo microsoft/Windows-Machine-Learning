@@ -66,18 +66,18 @@ steps:
     displayName: 'NuGet restore'
     condition: succeededOrFailed()
 
-  - task: VSBuild@1
-    displayName: 'Build UI test solution winml/samples/public/WinMLGithub/Testing/**/SamplesTest.sln'
-    inputs:
-      solution: 'Testing/**/SamplesTest.sln'
-      vsVersion: 15.0
-      msbuildArgs: '-v:diag /p:OutDir=$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\SamplesTest\'
-      platform: '$(BuildPlatform)'
-      configuration: '$(BuildConfiguration)'
-      clean: true
-      msbuildArchitecture: x64
-      createLogFile: true
-    condition: succeededOrFailed()
+  # - task: VSBuild@1
+  #   displayName: 'Build UI test solution winml/samples/public/WinMLGithub/Testing/**/SamplesTest.sln'
+  #   inputs:
+  #     solution: 'Testing/**/SamplesTest.sln'
+  #     vsVersion: 15.0
+  #     msbuildArgs: '-v:diag /p:OutDir=$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\SamplesTest\'
+  #     platform: '$(BuildPlatform)'
+  #     configuration: '$(BuildConfiguration)'
+  #     clean: true
+  #     msbuildArchitecture: x64
+  #     createLogFile: true
+  #   condition: succeededOrFailed()
 
   # - task: VSBuild@1
   #   displayName: 'Build AdapterSelection Sample '

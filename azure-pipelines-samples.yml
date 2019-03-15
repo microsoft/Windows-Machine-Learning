@@ -63,15 +63,7 @@ steps:
     condition: succeededOrFailed()
 
   - task: NuGetCommand@2
-    displayName: 'NuGet restore samples dependencies'
-    inputs:
-      restoreSolution: winml/samples/public/WinMLGithub/Samples/**/*.sln
-    condition: succeededOrFailed()
-
-  - task: NuGetCommand@2
-    displayName: 'NuGet restore test dependencies'
-    inputs:
-      restoreSolution: winml/samples/public/WinMLGithub/Testing/**/SamplesTest.sln
+    displayName: 'NuGet restore'
     condition: succeededOrFailed()
 
   - task: VSBuild@1

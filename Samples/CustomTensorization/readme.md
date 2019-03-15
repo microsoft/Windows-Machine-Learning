@@ -30,7 +30,7 @@ So this sample gives a way of how to manually tensorize input image data with Wi
 
 ## Steps to run the sample
 
-1. Load the `manual-tensorization.sln` into Visual Studio
+1. Load the `CustomTensorization.sln` into Visual Studio
 2. Build and run the solution
 3. Check the output images, named as `output_cpu.png` and `output_gpu.png`, in the same folder.
 

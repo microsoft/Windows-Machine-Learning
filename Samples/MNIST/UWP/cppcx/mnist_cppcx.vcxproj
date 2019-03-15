@@ -98,6 +98,7 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
     <PackageCertificateKeyFile>mnist_cppcx_TemporaryKey.pfx</PackageCertificateKeyFile>
+    <PackageCertificateThumbprint>B23CBDBC47A77064D6E6EF69178D43BD014FC24D</PackageCertificateThumbprint>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">
     <ClCompile>

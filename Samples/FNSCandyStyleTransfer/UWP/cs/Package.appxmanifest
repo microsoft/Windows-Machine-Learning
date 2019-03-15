@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Package xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10" xmlns:mp="http://schemas.microsoft.com/appx/2014/phone/manifest" xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10" IgnorableNamespaces="uap mp">
-  <Identity Name="257918C9-ABE3-483E-A202-C5C69AEBD825" Publisher="CN=winml" Version="1.1.36.0" />
+  <Identity Name="257918C9-ABE3-483E-A202-C5C69AEBD825" Publisher="CN=winml" Version="1.0.0.0" />
   <mp:PhoneIdentity PhoneProductId="3bd922b5-d779-4208-8c35-aec4dea61330" PhonePublisherId="00000000-0000-0000-0000-000000000000" />
   <Properties>
     <DisplayName>Shortcut</DisplayName>

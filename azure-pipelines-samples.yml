@@ -79,7 +79,7 @@ steps:
     inputs:
       solution: 'Testing/**/SamplesTest.sln'
       vsVersion: 15.0
-      msbuildArgs: '/p:AppxPackageSigningEnabled=false -v:diag /p:OutDir=$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\SamplesTest\'
+      msbuildArgs: '-v:diag /p:OutDir=$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\SamplesTest\'
       platform: '$(BuildPlatform)'
       configuration: '$(BuildConfiguration)'
       clean: true
@@ -92,7 +92,7 @@ steps:
     inputs:
       solution: Samples/AdapterSelection/AdapterSelection.sln
       vsVersion: 15.0
-      msbuildArgs: '/p:AppxPackageSigningEnabled=false -v:diag /p:OutDir=$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\AdapterSelection\'
+      msbuildArgs: '-v:diag /p:OutDir=$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\AdapterSelection\'
       platform: '$(BuildPlatform)'
       configuration: '$(BuildConfiguration)'
       clean: true
@@ -105,7 +105,7 @@ steps:
     inputs:
       solution: Samples/CustomOperatorCPU/desktop/cpp/custom-operator-cpu-sample.sln
       vsVersion: 15.0
-      msbuildArgs: '/p:AppxPackageSigningEnabled=false -v:diag /p:OutDir=$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\CustomOperatorCPU\'
+      msbuildArgs: '-v:diag /p:OutDir=$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\CustomOperatorCPU\'
       platform: '$(BuildPlatform)'
       configuration: '$(BuildConfiguration)'
       clean: true
@@ -119,7 +119,7 @@ steps:
     inputs:
       solution: 'Samples/MNIST/Tutorial/cs/mnist_demo.sln'
       vsVersion: 15.0
-      msbuildArgs: '/p:AppxPackageSigningEnabled=false -v:diag /p:OutDir=$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\MNIST-Tutorial\'
+      msbuildArgs: '-v:diag /p:OutDir=$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\MNIST-Tutorial\'
       platform: '$(BuildPlatform)'
       configuration: '$(BuildConfiguration)'
       clean: true
@@ -132,7 +132,7 @@ steps:
     inputs:
       solution: 'Samples/MNIST/UWP/cs/mnist_demo.sln'
       vsVersion: 15.0
-      msbuildArgs: '/p:AppxPackageSigningEnabled=false -v:diag /p:OutDir=$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\MNIST-cs\'
+      msbuildArgs: '-v:diag /p:OutDir=$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\MNIST-cs\'
       platform: '$(BuildPlatform)'
       configuration: '$(BuildConfiguration)'
       clean: true
@@ -167,7 +167,7 @@ steps:
     inputs:
       solution: Samples/FNSCandyStyleTransfer/UWP/CS/snapcandy.sln
       vsVersion: 15.0
-      msbuildArgs: '/p:AppxPackageSigningEnabled=false -v:diag  /p:OutDir=$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\FNSCandyStyleTransfer\'
+      msbuildArgs: '-v:diag  /p:OutDir=$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\FNSCandyStyleTransfer\'
       platform: '$(BuildPlatform)'
       configuration: '$(BuildConfiguration)'
       clean: true
@@ -180,7 +180,7 @@ steps:
     inputs:
       solution: 'Samples/MNIST/UWP/cppcx/mnist_cppcx.sln'
       vsVersion: 15.0
-      msbuildArgs: '/p:AppxPackageSigningEnabled=false -v:diag /p:OutDir=$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\MNIST-cppcx\'
+      msbuildArgs: '-v:diag /p:OutDir=$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\MNIST-cppcx\'
       platform: '$(BuildPlatform)'
       configuration: '$(BuildConfiguration)'
       clean: true
@@ -193,7 +193,7 @@ steps:
     inputs:
       solution: Samples/CustomTensorization/CustomTensorization.sln
       vsVersion: 15.0
-      msbuildArgs: '/p:AppxPackageSigningEnabled=false -v:diag /p:OutDir=$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\CustomTensorization\'
+      msbuildArgs: '-v:diag /p:OutDir=$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\CustomTensorization\'
       platform: '$(BuildPlatform)'
       configuration: '$(BuildConfiguration)'
       clean: true
@@ -206,7 +206,7 @@ steps:
     inputs:
       solution: Samples/Emoji8/UWP/cs/Emoji8.sln
       vsVersion: 15.0
-      msbuildArgs: '/p:AppxPackageSigningEnabled=false -v:diag /p:OutDir=$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\Emoji8\'
+      msbuildArgs: '-v:diag /p:OutDir=$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\Emoji8\'
       platform: '$(BuildPlatform)'
       configuration: '$(BuildConfiguration)'
       clean: true

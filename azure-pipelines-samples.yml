@@ -212,8 +212,8 @@ steps:
       Contents: |
         #?(AdapterSelection\|CustomOperatorCPU\|CustomTensorization\|SqueezeNetObjectDetection\SamplesTest\)**
         #!*(SqueezeNetObjectDetectionCS|SqueezeNetObjectionDetectionJS)*
+        **SamplesTest\**
         **\AppPackages\**
-        **\SamplesTest\**
     condition: succeededOrFailed()
 
   - task: PublishBuildArtifacts@1

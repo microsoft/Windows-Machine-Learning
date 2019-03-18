@@ -8,11 +8,6 @@
 #include "Run.h"
 #include "Scenarios.h"
 
-#define THROW_IF_FAILED(hr)                                                                                            \
-    {                                                                                                                  \
-        if (FAILED(hr))                                                                                                \
-            throw hresult_error(hr);                                                                                   \
-    }
 using namespace winrt::Windows::Graphics::DirectX::Direct3D11;
 
 LearningModel LoadModel(const std::wstring& path, bool capturePerf, OutputHelper& output, const CommandLineArgs& args,
@@ -20,7 +15,6 @@ LearningModel LoadModel(const std::wstring& path, bool capturePerf, OutputHelper
 {
     LearningModel model = nullptr;
     output.PrintLoadingInfo(path);
-
     try
     {
         if (capturePerf)
@@ -197,7 +191,12 @@ HRESULT EvaluateModel(const LearningModel& model, const CommandLineArgs& args, O
 
     LearningModelSession session = nullptr;
     IDirect3DDevice winrtDevice = nullptr;
-
+    if (output.GetGraphicsAnalysis().get())
+    {
+        // If PIX tool is attached to WinMLRunner then begin capture for Session Creation, and 
+        // the first iteration of bind and evaluate
+        output.GetGraphicsAnalysis()->BeginCapture();
+    }
     try
     {
         if (deviceCreationLocation == DeviceCreationLocation::ClientCode && deviceType != DeviceType::CPU)
@@ -307,7 +306,12 @@ HRESULT EvaluateModel(const LearningModel& model, const CommandLineArgs& args, O
             std::wcout << hr.message().c_str() << std::endl;
             return hr.code();
         }
-
+        // If PIX tool was attached then capture already began for the first iteration before session creation.
+        // This is to begin capture for iterations after the first one. 
+        if (i > 0 && output.GetGraphicsAnalysis())
+        {
+            output.GetGraphicsAnalysis()->BeginCapture();
+        }
         HRESULT bindInputResult =
             BindInputFeatures(model, context, inputFeatures, args, output, captureIterationPerf, i, profiler);
 
@@ -344,6 +348,11 @@ HRESULT EvaluateModel(const LearningModel& model, const CommandLineArgs& args, O
                 completionString = "[SUCCESS]\n";
             }
         }
+        if (output.GetGraphicsAnalysis())
+        {
+            // If PIX tool is attached, then end the capture
+            output.GetGraphicsAnalysis()->EndCapture();
+        }
     }
     printf("%s", completionString.c_str());
 
@@ -360,12 +369,12 @@ HRESULT EvaluateModel(const LearningModel& model, const CommandLineArgs& args, O
 }
 
 HRESULT EvaluateModelWithDeviceType(const LearningModel& model, const DeviceType deviceType,
-                                     const std::vector<InputBindingType>& inputBindingTypes,
-                                     const std::vector<InputDataType>& inputDataTypes,
-                                     const std::vector<DeviceCreationLocation> deviceCreationLocations,
-                                     const CommandLineArgs& args, const std::wstring& modelPath, OutputHelper& output,
-                                     Profiler<WINML_MODEL_TEST_PERF>& profiler,
-                                     TensorFeatureDescriptor& tensorDescriptor)
+                                    const std::vector<InputBindingType>& inputBindingTypes,
+                                    const std::vector<InputDataType>& inputDataTypes,
+                                    const std::vector<DeviceCreationLocation> deviceCreationLocations,
+                                    const CommandLineArgs& args, const std::wstring& modelPath, OutputHelper& output,
+                                    Profiler<WINML_MODEL_TEST_PERF>& profiler,
+                                    TensorFeatureDescriptor& tensorDescriptor)
 {
     for (const auto& inputBindingType : inputBindingTypes)
     {
@@ -452,7 +461,7 @@ HRESULT EvaluateModels(const std::vector<std::wstring>& modelPaths, const std::v
         {
             HRESULT evaluateModelWithDeviceTypeResult =
                 EvaluateModelWithDeviceType(model, deviceType, inputBindingTypes, inputDataTypes,
-                                             deviceCreationLocations, args, path, output, profiler, tensorDescriptor);
+                                            deviceCreationLocations, args, path, output, profiler, tensorDescriptor);
             if (FAILED(evaluateModelWithDeviceTypeResult))
             {
                 lastEvaluateModelResult = evaluateModelWithDeviceTypeResult;
@@ -553,6 +562,13 @@ int run(CommandLineArgs& args, Profiler<WINML_MODEL_TEST_PERF>& profiler)
     winrt::init_apartment();
     OutputHelper output(args.NumIterations());
 
+    // Check if PIX tool is attached to WinMLRunner
+    // Try to acquire IDXGraphicsAnalysis - this only succeeds if PIX is attached
+    if (SUCCEEDED(DXGIGetDebugInterface1(0, IID_PPV_ARGS(output.GetGraphicsAnalysis().put()))))
+    {
+        std::cout << "Detected PIX tool is attached to WinMLRunner" << std::endl;
+    }
+
     // Profiler is a wrapper class that captures and stores timing and memory usage data on the
     // CPU and GPU.
     profiler.Enable();
@@ -590,6 +606,5 @@ int run(CommandLineArgs& args, Profiler<WINML_MODEL_TEST_PERF>& profiler)
         return EvaluateModels(modelPaths, deviceTypes, inputBindingTypes, inputDataTypes, deviceCreationLocations, args,
                               output, profiler);
     }
-
     return 0;
 }

@@ -41,6 +41,12 @@ enum WINML_MODEL_TEST_PERF
 
 using namespace winrt;
 
+#define THROW_IF_FAILED(hr)                                                                                            \
+    {                                                                                                                  \
+        if (FAILED(hr))                                                                                                \
+            throw hresult_error(hr);                                                                                   \
+    }
+
 inline std::wstring MakeErrorMsg(HRESULT hr)
 {
     std::wostringstream ss;

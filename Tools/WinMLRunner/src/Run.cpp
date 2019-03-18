@@ -193,8 +193,8 @@ HRESULT EvaluateModel(const LearningModel& model, const CommandLineArgs& args, O
     IDirect3DDevice winrtDevice = nullptr;
     if (output.GetGraphicsAnalysis().get())
     {
-        // If PIX tool is attached to WinMLRunner then begin capture for Session Creation, and 
-        // the first iteration of bind and evaluate
+        // If PIX tool is attached to WinMLRunner then begin capture. First capture will include
+        // session creation, first iteration bind and first iteration evaluate.
         output.GetGraphicsAnalysis()->BeginCapture();
     }
     try
@@ -307,7 +307,7 @@ HRESULT EvaluateModel(const LearningModel& model, const CommandLineArgs& args, O
             return hr.code();
         }
         // If PIX tool was attached then capture already began for the first iteration before session creation.
-        // This is to begin capture for iterations after the first one. 
+        // This is to begin PIX capture for each iteration after the first iteration.
         if (i > 0 && output.GetGraphicsAnalysis())
         {
             output.GetGraphicsAnalysis()->BeginCapture();

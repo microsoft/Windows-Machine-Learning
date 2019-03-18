@@ -158,18 +158,18 @@ steps:
       createLogFile: true
     condition: succeededOrFailed()
 
-  # - task: VSBuild@1
-  #   displayName: 'Build MNIST-UWP-cppcx '
-  #   inputs:
-  #     solution: 'Samples/MNIST/UWP/cppcx/mnist_cppcx.sln'
-  #     vsVersion: 15.0
-  #     msbuildArgs: '-v:diag /p:OutDir=$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\MNIST-cppcx\'
-  #     platform: '$(BuildPlatform)'
-  #     configuration: '$(BuildConfiguration)'
-  #     clean: true
-  #     msbuildArchitecture: x64
-  #     createLogFile: true
-  #   condition: succeededOrFailed()
+  - task: VSBuild@1
+    displayName: 'Build MNIST-UWP-cppcx '
+    inputs:
+      solution: 'Samples/MNIST/UWP/cppcx/mnist_cppcx.sln'
+      vsVersion: 15.0
+      msbuildArgs: '-v:diag /p:OutDir=$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\MNIST-cppcx\'
+      platform: '$(BuildPlatform)'
+      configuration: '$(BuildConfiguration)'
+      clean: true
+      msbuildArchitecture: x64
+      createLogFile: true
+    condition: succeededOrFailed()
 
   # - task: VSBuild@1
   #   displayName: 'Build CustomTensorization Sample'

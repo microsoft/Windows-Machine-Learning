@@ -67,7 +67,7 @@ steps:
     condition: succeededOrFailed()
 
   - task: VSBuild@1
-    displayName: 'Build UI test solution winml/samples/public/WinMLGithub/Testing/**/SamplesTest.sln'
+    displayName: 'Build UI test solution Testing/**/SamplesTest.sln'
     inputs:
       solution: 'Testing/**/SamplesTest.sln'
       vsVersion: 15.0
@@ -202,9 +202,9 @@ steps:
       targetFolder: '$(Build.ArtifactStagingDirectory)\$(BuildPlatform)\$(BuildConfiguration)\'
       sourceFolder: '$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\'
       Contents: |
-        #?(AdapterSelection\|CustomOperatorCPU\|CustomTensorization\|SqueezeNetObjectDetection\SamplesTest\)**
-        #!*(SqueezeNetObjectDetectionCS|SqueezeNetObjectionDetectionJS)*
-        **SamplesTest\**
+        ?(AdapterSelection\|CustomOperatorCPU\|CustomTensorization\|SqueezeNetObjectDetection\SamplesTest\)**
+        !*(SqueezeNetObjectDetectionCS|SqueezeNetObjectionDetectionJS)*
+        **\SamplesTest\**
         **\AppPackages\**
     condition: succeededOrFailed()
 

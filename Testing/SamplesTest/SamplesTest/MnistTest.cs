@@ -243,7 +243,7 @@ namespace MnistTest
     [TestClass]
     public class MnistTestCSharp : MnistSession
     {
-        private const string MNISTAppId_CS = "f330385a-7468-4688-859d-7d11a61d1b29_atz7ne7vp47fr!App";
+        private const string MNISTAppId_CS = "f330385a-7468-4688-859d-7d11a61d1b29_7td7jx2gva3r8!App";
 
         [TestInitialize]
         public void TestInitialize()
@@ -268,7 +268,7 @@ namespace MnistTest
     [TestClass]
     public class MnistTestCPPCX : MnistSession
     {
-        private const string MNISTAppId_CPPCX = "7c575962-f37f-4240-a2ba-33fbf54c19f6_ms3keja78xfsy!App";
+        private const string MNISTAppId_CPPCX = "7c575962-f37f-4240-a2ba-33fbf54c19f6_7td7jx2gva3r8!App";
 
         [TestInitialize]
         public void TestInitialize()

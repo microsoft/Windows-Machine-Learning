@@ -32,7 +32,7 @@ namespace SamplesTest
         // This string key is present in RegisteredUserModeAppID under AppX/vs.appxrecipe
         // TODO: this string value has to be retrieved from local test machine
         // More information on https://github.com/Microsoft/WinAppDriver
-        private const string StyleTransferAppId = "257918C9-ABE3-483E-A202-C5C69AEBD825_adth261zac3sy!App";
+        private const string StyleTransferAppId = "257918C9-ABE3-483E-A202-C5C69AEBD825_7td7jx2gva3r8!App";
 
         protected static WindowsDriver<WindowsElement> session;
         protected static WindowsElement resultImage;

@@ -12,6 +12,11 @@
 #include <direct.h>
 #include <queue>
 
+#if defined(_AMD64_)
+// PIX markers only work on amd64
+#include <DXProgrammableCapture.h>
+#endif
+
 using namespace winrt::Windows::AI::MachineLearning;
 using namespace winrt::Windows::Storage::Streams;
 using namespace ::Windows::Graphics::DirectX::Direct3D11;
@@ -962,7 +967,10 @@ public:
     std::vector<double> m_clockEvalTimes;
 
     std::wstring getCsvFileNamePerIterationResult() { return m_csvFileNamePerIterationResult; }
-
+#if defined(_AMD64_)
+    // PIX markers only work on amd64
+    com_ptr<IDXGraphicsAnalysis>& GetGraphicsAnalysis() { return m_graphicsAnalysis; }
+#endif
 private:
     std::wstring m_csvFileName;
     std::wstring m_csvFileNamePerIterationSummary;
@@ -981,4 +989,9 @@ private:
     std::vector<double> m_GPUDedicatedDiff;
     std::vector<std::string> m_outputResult;
     std::vector<int> m_outputTensorHash;
+
+#if defined(_AMD64_)
+    // PIX markers only work on amd64
+    com_ptr<IDXGraphicsAnalysis> m_graphicsAnalysis = nullptr;
+#endif
 };

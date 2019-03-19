@@ -191,12 +191,15 @@ HRESULT EvaluateModel(const LearningModel& model, const CommandLineArgs& args, O
 
     LearningModelSession session = nullptr;
     IDirect3DDevice winrtDevice = nullptr;
+#if defined(_AMD64_)
+    // PIX markers only work on AMD64
     if (output.GetGraphicsAnalysis().get())
     {
         // If PIX tool is attached to WinMLRunner then begin capture. First capture will include
         // session creation, first iteration bind and first iteration evaluate.
         output.GetGraphicsAnalysis()->BeginCapture();
     }
+#endif
     try
     {
         if (deviceCreationLocation == DeviceCreationLocation::ClientCode && deviceType != DeviceType::CPU)
@@ -306,12 +309,16 @@ HRESULT EvaluateModel(const LearningModel& model, const CommandLineArgs& args, O
             std::wcout << hr.message().c_str() << std::endl;
             return hr.code();
         }
+
+#if defined(_AMD64_)
+        // PIX markers only work on AMD64
         // If PIX tool was attached then capture already began for the first iteration before session creation.
         // This is to begin PIX capture for each iteration after the first iteration.
         if (i > 0 && output.GetGraphicsAnalysis())
         {
             output.GetGraphicsAnalysis()->BeginCapture();
         }
+#endif
         HRESULT bindInputResult =
             BindInputFeatures(model, context, inputFeatures, args, output, captureIterationPerf, i, profiler);
 
@@ -348,11 +355,14 @@ HRESULT EvaluateModel(const LearningModel& model, const CommandLineArgs& args, O
                 completionString = "[SUCCESS]\n";
             }
         }
+#if defined(_AMD64_)
+        // PIX markers only work on AMD64
         if (output.GetGraphicsAnalysis())
         {
             // If PIX tool is attached, then end the capture
             output.GetGraphicsAnalysis()->EndCapture();
         }
+#endif
     }
     printf("%s", completionString.c_str());
 
@@ -562,12 +572,15 @@ int run(CommandLineArgs& args, Profiler<WINML_MODEL_TEST_PERF>& profiler)
     winrt::init_apartment();
     OutputHelper output(args.NumIterations());
 
+#if defined(_AMD64_)
+    // PIX markers only work on AMD64
     // Check if PIX tool is attached to WinMLRunner
     // Try to acquire IDXGraphicsAnalysis - this only succeeds if PIX is attached
     if (SUCCEEDED(DXGIGetDebugInterface1(0, IID_PPV_ARGS(output.GetGraphicsAnalysis().put()))))
     {
         std::cout << "Detected PIX tool is attached to WinMLRunner" << std::endl;
     }
+#endif
 
     // Profiler is a wrapper class that captures and stores timing and memory usage data on the
     // CPU and GPU.

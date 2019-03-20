@@ -202,11 +202,27 @@ steps:
       targetFolder: '$(Build.ArtifactStagingDirectory)\$(BuildPlatform)\$(BuildConfiguration)\'
       sourceFolder: '$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\'
       Contents: |
-        ?(AdapterSelection\|CustomOperatorCPU\|CustomTensorization\|SqueezeNetObjectDetection)**
-        !*(SqueezeNetObjectDetectionCS|SqueezeNetObjectionDetectionJS)*
         **\SamplesTest\**
         **\AppPackages\**
     condition: succeededOrFailed()
+
+    - task: CopyFiles@2
+    inputs:
+      targetFolder: '$(Build.ArtifactStagingDirectory)\$(BuildPlatform)\$(BuildConfiguration)\'
+      sourceFolder: '$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\'
+      Contents: |
+        ?(AdapterSelection|CustomOperatorCPU|CustomTensorization|SqueezeNetObjectDetection)**\*
+        !**\?(SqueezeNetObjectDetectionCS|SqueezeNetObjectionDetectionJS)**\*
+    condition: succeededOrFailed()
+
+   - task: CopyFiles@2
+    inputs:
+      targetFolder: '$(Build.ArtifactStagingDirectory)\$(BuildPlatform)\$(BuildConfiguration)\SharedContent'
+      sourceFolder: 'SharedContent'
+      Contents:
+        **\*kitten_224.png
+    condition: succeededOrFailed()
+   
 
   - task: PublishBuildArtifacts@1
     displayName: 'Publish Artifact: Samples'

@@ -28,7 +28,6 @@ namespace SamplesTest
 
     public class StyleTransferSession
     {
-        private const string WindowsApplicationDriverUrl = "http://127.0.0.1:4723";
         // This string key is present in RegisteredUserModeAppID under AppX/vs.appxrecipe
         // TODO: this string value has to be retrieved from local test machine
         // More information on https://github.com/Microsoft/WinAppDriver
@@ -46,11 +45,7 @@ namespace SamplesTest
         {
             if (session == null)
             {
-                DesiredCapabilities appCapabilities = new DesiredCapabilities();
-                appCapabilities.SetCapability("app", StyleTransferAppId);
-                appCapabilities.SetCapability("deviceName", "WindowsPC");
-                session = new WindowsDriver<WindowsElement>(new Uri(WindowsApplicationDriverUrl), appCapabilities);
-                Assert.IsNotNull(session);
+                session = TestHelper.GetSession(StyleTransferAppId, "SnapCandy");
             }
             // wait for first style transfer to be done
             Thread.Sleep(styleTransferTimeout);

@@ -82,6 +82,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="StyleTransferTest.cs" />
     <Compile Include="SqueezenetTest.cs" />
+    <Compile Include="TestHelper.cs" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Appium.WebDriver">

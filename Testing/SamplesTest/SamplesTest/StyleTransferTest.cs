@@ -112,12 +112,15 @@ namespace SamplesTest
             styleElements[style].Click();
             var cts = new CancellationTokenSource();
 
+
+
             var stopwatch = new Stopwatch();
             stopwatch.Start();
-            while (statusBlock.Text != "Done!" && stopwatch.ElapsedMilliseconds < styleTransferTimeout)
+            do
             {
+                // ensures that the test waits a bit for the processing status block to show up
                 Thread.Sleep(500);
-            }
+            } while (statusBlock.Text != "Done!" && stopwatch.ElapsedMilliseconds < styleTransferTimeout);
             stopwatch.Stop();
             Assert.IsTrue(statusBlock.Text == "Done!", String.Format("{0} style timed out", style.ToString()));
 

@@ -206,7 +206,7 @@ steps:
         **\AppPackages\**
     condition: succeededOrFailed()
 
-    - task: CopyFiles@2
+  - task: CopyFiles@2
     inputs:
       targetFolder: '$(Build.ArtifactStagingDirectory)\$(BuildPlatform)\$(BuildConfiguration)\'
       sourceFolder: '$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\'
@@ -215,7 +215,7 @@ steps:
         !**\?(SqueezeNetObjectDetectionCS|SqueezeNetObjectionDetectionJS)**\*
     condition: succeededOrFailed()
 
-   - task: CopyFiles@2
+  - task: CopyFiles@2
     inputs:
       targetFolder: '$(Build.ArtifactStagingDirectory)\$(BuildPlatform)\$(BuildConfiguration)\SharedContent'
       sourceFolder: 'SharedContent'

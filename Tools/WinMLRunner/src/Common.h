@@ -40,13 +40,13 @@ enum WINML_MODEL_TEST_PERF
 #define MAX_PROFILING_LOOP 100
 
 using namespace winrt;
-
+#ifndef THROW_IF_FAILED
 #define THROW_IF_FAILED(hr)                                                                                            \
     {                                                                                                                  \
         if (FAILED(hr))                                                                                                \
             throw hresult_error(hr);                                                                                   \
     }
-
+#endif
 inline std::wstring MakeErrorMsg(HRESULT hr)
 {
     std::wostringstream ss;

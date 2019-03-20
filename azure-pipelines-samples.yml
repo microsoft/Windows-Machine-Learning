@@ -79,45 +79,45 @@ steps:
       createLogFile: true
     condition: succeededOrFailed()
 
-  # - task: VSBuild@1
-  #   displayName: 'Build AdapterSelection Sample '
-  #   inputs:
-  #     solution: Samples/AdapterSelection/AdapterSelection.sln
-  #     vsVersion: 15.0
-  #     msbuildArgs: '-v:diag /p:OutDir=$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\AdapterSelection\'
-  #     platform: '$(BuildPlatform)'
-  #     configuration: '$(BuildConfiguration)'
-  #     clean: true
-  #     msbuildArchitecture: x64
-  #     createLogFile: true
-  #   condition: succeededOrFailed()
+  - task: VSBuild@1
+    displayName: 'Build AdapterSelection Sample '
+    inputs:
+      solution: Samples/AdapterSelection/AdapterSelection.sln
+      vsVersion: 15.0
+      msbuildArgs: '-v:diag /p:OutDir=$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\AdapterSelection\'
+      platform: '$(BuildPlatform)'
+      configuration: '$(BuildConfiguration)'
+      clean: true
+      msbuildArchitecture: x64
+      createLogFile: true
+    condition: succeededOrFailed()
 
-  # - task: VSBuild@1
-  #   displayName: 'Build CustomOperatorCPU Sample '
-  #   inputs:
-  #     solution: Samples/CustomOperatorCPU/desktop/cpp/custom-operator-cpu-sample.sln
-  #     vsVersion: 15.0
-  #     msbuildArgs: '-v:diag /p:OutDir=$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\CustomOperatorCPU\'
-  #     platform: '$(BuildPlatform)'
-  #     configuration: '$(BuildConfiguration)'
-  #     clean: true
-  #     msbuildArchitecture: x64
-  #     createLogFile: true
-  #   condition: succeededOrFailed()
+  - task: VSBuild@1
+    displayName: 'Build CustomOperatorCPU Sample '
+    inputs:
+      solution: Samples/CustomOperatorCPU/desktop/cpp/custom-operator-cpu-sample.sln
+      vsVersion: 15.0
+      msbuildArgs: '-v:diag /p:OutDir=$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\CustomOperatorCPU\'
+      platform: '$(BuildPlatform)'
+      configuration: '$(BuildConfiguration)'
+      clean: true
+      msbuildArchitecture: x64
+      createLogFile: true
+    condition: succeededOrFailed()
 
 
-  # - task: VSBuild@1
-  #   displayName: 'Build MNIST-Tutorial-cs'
-  #   inputs:
-  #     solution: 'Samples/MNIST/Tutorial/cs/mnist_demo.sln'
-  #     vsVersion: 15.0
-  #     msbuildArgs: '-v:diag /p:OutDir=$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\MNIST-Tutorial\'
-  #     platform: '$(BuildPlatform)'
-  #     configuration: '$(BuildConfiguration)'
-  #     clean: true
-  #     msbuildArchitecture: x64
-  #     createLogFile: true
-  #   condition: succeededOrFailed()
+  - task: VSBuild@1
+    displayName: 'Build MNIST-Tutorial-cs'
+    inputs:
+      solution: 'Samples/MNIST/Tutorial/cs/mnist_demo.sln'
+      vsVersion: 15.0
+      msbuildArgs: '-v:diag /p:OutDir=$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\MNIST-Tutorial\'
+      platform: '$(BuildPlatform)'
+      configuration: '$(BuildConfiguration)'
+      clean: true
+      msbuildArchitecture: x64
+      createLogFile: true
+    condition: succeededOrFailed()
 
   - task: VSBuild@1
     displayName: 'Build MNIST-UWP-cs'
@@ -171,18 +171,18 @@ steps:
       createLogFile: true
     condition: succeededOrFailed()
 
-  # - task: VSBuild@1
-  #   displayName: 'Build CustomTensorization Sample'
-  #   inputs:
-  #     solution: Samples/CustomTensorization/CustomTensorization.sln
-  #     vsVersion: 15.0
-  #     msbuildArgs: '-v:diag /p:OutDir=$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\CustomTensorization\'
-  #     platform: '$(BuildPlatform)'
-  #     configuration: '$(BuildConfiguration)'
-  #     clean: true
-  #     msbuildArchitecture: x64
-  #     createLogFile: true
-  #   condition: succeededOrFailed()
+  - task: VSBuild@1
+    displayName: 'Build CustomTensorization Sample'
+    inputs:
+      solution: Samples/CustomTensorization/CustomTensorization.sln
+      vsVersion: 15.0
+      msbuildArgs: '-v:diag /p:OutDir=$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\CustomTensorization\'
+      platform: '$(BuildPlatform)'
+      configuration: '$(BuildConfiguration)'
+      clean: true
+      msbuildArchitecture: x64
+      createLogFile: true
+    condition: succeededOrFailed()
 
   # - task: VSBuild@1
   #   displayName: 'Build Emoji Sample'
@@ -202,7 +202,7 @@ steps:
       targetFolder: '$(Build.ArtifactStagingDirectory)\$(BuildPlatform)\$(BuildConfiguration)\'
       sourceFolder: '$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\'
       Contents: |
-        ?(AdapterSelection\|CustomOperatorCPU\|CustomTensorization\|SqueezeNetObjectDetection\SamplesTest\)**
+        ?(AdapterSelection\|CustomOperatorCPU\|CustomTensorization\|SqueezeNetObjectDetection)**
         !*(SqueezeNetObjectDetectionCS|SqueezeNetObjectionDetectionJS)*
         **\SamplesTest\**
         **\AppPackages\**

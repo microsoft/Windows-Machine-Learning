@@ -13,8 +13,8 @@ if not defined OUTPUT_PATH (
 )
 
 set VERSION_STRINGS_PATH=%OUTPUT_PATH%\GeneratedVersionStrings.h
-set VERSION_INT=1,0,2,0
-set VERSION_STRING=1.0.2.0
+set VERSION_INT=1,0,1,0
+set VERSION_STRING=1.0.1.0
 
 for %%P in (%%) do (
     for /F "usebackq tokens=* delims=" %%A in (`git log -1 --pretty^=format:%%Pcd^.%%Ph --date^=format:%%Py%%Pm%%Pd -- %BASE_TOOL_SRC_PATH%`) do (

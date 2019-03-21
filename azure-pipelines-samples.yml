@@ -66,18 +66,18 @@ steps:
     displayName: 'NuGet restore'
     condition: succeededOrFailed()
 
-  - task: VSBuild@1
-    displayName: 'Build UI test solution Testing/**/SamplesTest.sln'
-    inputs:
-      solution: 'Testing/**/SamplesTest.sln'
-      vsVersion: 15.0
-      msbuildArgs: '-v:diag /p:OutDir=$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\SamplesTest\'
-      platform: '$(BuildPlatform)'
-      configuration: '$(BuildConfiguration)'
-      clean: true
-      msbuildArchitecture: x64
-      createLogFile: true
-    condition: succeededOrFailed()
+  # - task: VSBuild@1
+  #   displayName: 'Build UI test solution Testing/**/SamplesTest.sln'
+  #   inputs:
+  #     solution: 'Testing/**/SamplesTest.sln'
+  #     vsVersion: 15.0
+  #     msbuildArgs: '-v:diag /p:OutDir=$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\SamplesTest\'
+  #     platform: '$(BuildPlatform)'
+  #     configuration: '$(BuildConfiguration)'
+  #     clean: true
+  #     msbuildArchitecture: x64
+  #     createLogFile: true
+  #   condition: succeededOrFailed()
 
   - task: VSBuild@1
     displayName: 'Build AdapterSelection Sample '
@@ -106,70 +106,70 @@ steps:
     condition: succeededOrFailed()
 
 
-  - task: VSBuild@1
-    displayName: 'Build MNIST-Tutorial-cs'
-    inputs:
-      solution: 'Samples/MNIST/Tutorial/cs/mnist_demo.sln'
-      vsVersion: 15.0
-      msbuildArgs: '-v:diag /p:OutDir=$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\MNIST-Tutorial\'
-      platform: '$(BuildPlatform)'
-      configuration: '$(BuildConfiguration)'
-      clean: true
-      msbuildArchitecture: x64
-      createLogFile: true
-    condition: succeededOrFailed()
+  # - task: VSBuild@1
+  #   displayName: 'Build MNIST-Tutorial-cs'
+  #   inputs:
+  #     solution: 'Samples/MNIST/Tutorial/cs/mnist_demo.sln'
+  #     vsVersion: 15.0
+  #     msbuildArgs: '-v:diag /p:OutDir=$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\MNIST-Tutorial\'
+  #     platform: '$(BuildPlatform)'
+  #     configuration: '$(BuildConfiguration)'
+  #     clean: true
+  #     msbuildArchitecture: x64
+  #     createLogFile: true
+  #   condition: succeededOrFailed()
 
-  - task: VSBuild@1
-    displayName: 'Build MNIST-UWP-cs'
-    inputs:
-      solution: 'Samples/MNIST/UWP/cs/mnist_demo.sln'
-      vsVersion: 15.0
-      msbuildArgs: '-v:diag /p:OutDir=$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\MNIST-cs\'
-      platform: '$(BuildPlatform)'
-      configuration: '$(BuildConfiguration)'
-      clean: true
-      msbuildArchitecture: x64
-      createLogFile: true
-    condition: succeededOrFailed()
+  # - task: VSBuild@1
+  #   displayName: 'Build MNIST-UWP-cs'
+  #   inputs:
+  #     solution: 'Samples/MNIST/UWP/cs/mnist_demo.sln'
+  #     vsVersion: 15.0
+  #     msbuildArgs: '-v:diag /p:OutDir=$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\MNIST-cs\'
+  #     platform: '$(BuildPlatform)'
+  #     configuration: '$(BuildConfiguration)'
+  #     clean: true
+  #     msbuildArchitecture: x64
+  #     createLogFile: true
+  #   condition: succeededOrFailed()
 
-  - task: VSBuild@1
-    displayName: 'Build SqueezenetObjectDetection'
-    inputs:
-      solution: Samples/SqueezeNetObjectDetection/squeezenetobjectdetection.sln
-      vsVersion: 15.0
-      msbuildArgs: '-v:diag /p:OutDir=$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\SqueezeNetObjectDetection\'
-      platform: '$(BuildPlatform)'
-      configuration: '$(BuildConfiguration)'
-      clean: true
-      msbuildArchitecture: x64
-      createLogFile: true
-    condition: succeededOrFailed()
+  # - task: VSBuild@1
+  #   displayName: 'Build SqueezenetObjectDetection'
+  #   inputs:
+  #     solution: Samples/SqueezeNetObjectDetection/squeezenetobjectdetection.sln
+  #     vsVersion: 15.0
+  #     msbuildArgs: '-v:diag /p:OutDir=$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\SqueezeNetObjectDetection\'
+  #     platform: '$(BuildPlatform)'
+  #     configuration: '$(BuildConfiguration)'
+  #     clean: true
+  #     msbuildArchitecture: x64
+  #     createLogFile: true
+  #   condition: succeededOrFailed()
 
-  - task: VSBuild@1
-    displayName: 'Build FNSCandyStyleTransfer-UWP-CS'
-    inputs:
-      solution: Samples/FNSCandyStyleTransfer/UWP/CS/snapcandy.sln
-      vsVersion: 15.0
-      msbuildArgs: '-v:diag  /p:OutDir=$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\FNSCandyStyleTransfer\'
-      platform: '$(BuildPlatform)'
-      configuration: '$(BuildConfiguration)'
-      clean: true
-      msbuildArchitecture: x64
-      createLogFile: true
-    condition: succeededOrFailed()
+  # - task: VSBuild@1
+  #   displayName: 'Build FNSCandyStyleTransfer-UWP-CS'
+  #   inputs:
+  #     solution: Samples/FNSCandyStyleTransfer/UWP/CS/snapcandy.sln
+  #     vsVersion: 15.0
+  #     msbuildArgs: '-v:diag  /p:OutDir=$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\FNSCandyStyleTransfer\'
+  #     platform: '$(BuildPlatform)'
+  #     configuration: '$(BuildConfiguration)'
+  #     clean: true
+  #     msbuildArchitecture: x64
+  #     createLogFile: true
+  #   condition: succeededOrFailed()
 
-  - task: VSBuild@1
-    displayName: 'Build MNIST-UWP-cppcx '
-    inputs:
-      solution: 'Samples/MNIST/UWP/cppcx/mnist_cppcx.sln'
-      vsVersion: 15.0
-      msbuildArgs: '-v:diag /p:OutDir=$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\MNIST-cppcx\'
-      platform: '$(BuildPlatform)'
-      configuration: '$(BuildConfiguration)'
-      clean: true
-      msbuildArchitecture: x64
-      createLogFile: true
-    condition: succeededOrFailed()
+  # - task: VSBuild@1
+  #   displayName: 'Build MNIST-UWP-cppcx '
+  #   inputs:
+  #     solution: 'Samples/MNIST/UWP/cppcx/mnist_cppcx.sln'
+  #     vsVersion: 15.0
+  #     msbuildArgs: '-v:diag /p:OutDir=$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\MNIST-cppcx\'
+  #     platform: '$(BuildPlatform)'
+  #     configuration: '$(BuildConfiguration)'
+  #     clean: true
+  #     msbuildArchitecture: x64
+  #     createLogFile: true
+  #   condition: succeededOrFailed()
 
   - task: VSBuild@1
     displayName: 'Build CustomTensorization Sample'

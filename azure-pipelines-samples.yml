@@ -219,7 +219,7 @@ steps:
     inputs:
       targetFolder: '$(Build.ArtifactStagingDirectory)\$(BuildPlatform)\$(BuildConfiguration)\SharedContent'
       sourceFolder: 'SharedContent'
-      contents: '**\*kitten_224.png'
+      contents: '**\*'
     condition: succeededOrFailed()
    
 

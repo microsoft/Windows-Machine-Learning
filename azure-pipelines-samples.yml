@@ -6,7 +6,6 @@
 variables:
 
   SamplesBin: SamplesBin
-  system.debug: false
   WINDOWS_WINMD: C:\Program Files (x86)\Windows Kits\10\UnionMetadata\10.0.17763.0\Windows.winmd
 
 strategy:
@@ -24,6 +23,10 @@ strategy:
     Debug_x86:
       BuildPlatform: x86
       BuildConfiguration: Debug
+
+pool:
+  name: WinML Team 
+  demands: agent.osversion -equals 10.0.17763
 
 # CI trigger
 trigger:

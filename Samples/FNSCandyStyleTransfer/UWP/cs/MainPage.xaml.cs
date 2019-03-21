@@ -124,20 +124,28 @@ namespace SnapCandy
         private void _FramesPerSecond_Tick(object sender, object e)
         {
             // how many seconds has it been?
+            // Note: we do this math since even though we asked for the event to be 
+            // dispatched every 1s , due to timing and delays, it might not come
+            // exactly every second.   and on a busy system it could even be a couple of
+            // seconds until it is delivered.
             int fpsTick = System.Environment.TickCount;
-            float numberOfSeconds = ((float)(fpsTick - _LastFPSTick)) / (float)1000;
 
-            // how many frames did we capture?
-            float intervalFPS = ((float)_CaptureFPS) / numberOfSeconds;
-            if (intervalFPS == 0.0)
-                return;
-            NotifyUser(CaptureFPS, $"{intervalFPS:F1}", NotifyType.StatusMessage);
+            if (_LastFPSTick > 0)
+            {
+                float numberOfSeconds = ((float)(fpsTick - _LastFPSTick)) / (float)1000;
 
-            // how many frames did we render
-            intervalFPS = ((float)_RenderFPS) / numberOfSeconds;
-            if (intervalFPS == 0.0)
-                return;
-            NotifyUser(RenderFPS, $"{intervalFPS:F1}", NotifyType.StatusMessage);
+                // how many frames did we capture?
+                float intervalFPS = ((float)_CaptureFPS) / numberOfSeconds;
+                if (intervalFPS == 0.0)
+                    return;
+                NotifyUser(CaptureFPS, $"{intervalFPS:F1}", NotifyType.StatusMessage);
+
+                // how many frames did we render
+                intervalFPS = ((float)_RenderFPS) / numberOfSeconds;
+                if (intervalFPS == 0.0)
+                    return;
+                NotifyUser(RenderFPS, $"{intervalFPS:F1}", NotifyType.StatusMessage);
+            }
 
             _CaptureFPS = 0;
             _RenderFPS = 0;

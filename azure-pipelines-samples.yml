@@ -4,7 +4,6 @@
   clean: true
 
 variables:
-
   SamplesBin: SamplesBin
   WINDOWS_WINMD: C:\Program Files (x86)\Windows Kits\10\UnionMetadata\10.0.17763.0\Windows.winmd
 
@@ -83,7 +82,7 @@ steps:
     condition: succeededOrFailed()
 
   - task: VSBuild@1
-    displayName: 'Build AdapterSelection Sample '
+    displayName: 'Build AdapterSelection Sample'
     inputs:
       solution: Samples/AdapterSelection/AdapterSelection.sln
       vsVersion: 15.0
@@ -96,7 +95,7 @@ steps:
     condition: succeededOrFailed()
 
   - task: VSBuild@1
-    displayName: 'Build CustomOperatorCPU Sample '
+    displayName: 'Build CustomOperatorCPU Sample'
     inputs:
       solution: Samples/CustomOperatorCPU/desktop/cpp/custom-operator-cpu-sample.sln
       vsVersion: 15.0
@@ -110,7 +109,7 @@ steps:
 
 
   - task: VSBuild@1
-    displayName: 'Build MNIST-Tutorial-cs'
+    displayName: 'Build MNIST-Tutorial-cs Sample'
     inputs:
       solution: 'Samples/MNIST/Tutorial/cs/mnist_demo.sln'
       vsVersion: 15.0
@@ -123,7 +122,7 @@ steps:
     condition: succeededOrFailed()
 
   - task: VSBuild@1
-    displayName: 'Build MNIST-UWP-cs'
+    displayName: 'Build MNIST-UWP-cs Sample'
     inputs:
       solution: 'Samples/MNIST/UWP/cs/mnist_demo.sln'
       vsVersion: 15.0
@@ -136,7 +135,7 @@ steps:
     condition: succeededOrFailed()
 
   - task: VSBuild@1
-    displayName: 'Build SqueezenetObjectDetection'
+    displayName: 'Build SqueezenetObjectDetection Sample'
     inputs:
       solution: Samples/SqueezeNetObjectDetection/squeezenetobjectdetection.sln
       vsVersion: 15.0
@@ -149,7 +148,7 @@ steps:
     condition: succeededOrFailed()
 
   - task: VSBuild@1
-    displayName: 'Build FNSCandyStyleTransfer-UWP-CS'
+    displayName: 'Build FNSCandyStyleTransfer-UWP-CS Sample'
     inputs:
       solution: Samples/FNSCandyStyleTransfer/UWP/CS/snapcandy.sln
       vsVersion: 15.0
@@ -162,7 +161,7 @@ steps:
     condition: succeededOrFailed()
 
   - task: VSBuild@1
-    displayName: 'Build MNIST-UWP-cppcx '
+    displayName: 'Build MNIST-UWP-cppcx Sample'
     inputs:
       solution: 'Samples/MNIST/UWP/cppcx/mnist_cppcx.sln'
       vsVersion: 15.0
@@ -187,18 +186,18 @@ steps:
       createLogFile: true
     condition: succeededOrFailed()
 
-  # - task: VSBuild@1
-  #   displayName: 'Build Emoji Sample'
-  #   inputs:
-  #     solution: Samples/Emoji8/UWP/cs/Emoji8.sln
-  #     vsVersion: 15.0
-  #     msbuildArgs: '-v:diag /p:OutDir=$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\Emoji8\'
-  #     platform: '$(BuildPlatform)'
-  #     configuration: '$(BuildConfiguration)'
-  #     clean: true
-  #     msbuildArchitecture: x64
-  #     createLogFile: true
-  #   condition: succeededOrFailed()
+  - task: VSBuild@1
+    displayName: 'Build Emoji Sample'
+    inputs:
+      solution: Samples/Emoji8/UWP/cs/Emoji8.sln
+      vsVersion: 15.0
+      msbuildArgs: '-v:diag /p:OutDir=$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\Emoji8\'
+      platform: '$(BuildPlatform)'
+      configuration: '$(BuildConfiguration)'
+      clean: true
+      msbuildArchitecture: x64
+      createLogFile: true
+    condition: succeededOrFailed()
 
   - task: CopyFiles@2
     inputs:

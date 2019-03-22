@@ -28,7 +28,8 @@ import Collapsible from '../../components/Collapsible';
 
 import log from 'electron-log';
 
-const modelRunnerPath = packagedFile('WinMLRunner.exe');
+const winmlRunnerPath = packagedFile('WinMLRunner.exe');
+const debugRunnerPath = packagedFile('DebugRunner.exe');
 
 export interface IProperties {
     [key: string]: string
@@ -308,12 +309,15 @@ class RunView extends React.Component<IComponentProperties, IComponentState> {
 
     private execModelRunner = async() => {
         log.info("start to run " + this.state.model);
-
+        let runPath = winmlRunnerPath;
+        let procParameters = this.state.parameters;
         // serialize debug onnx model
         if (this.state.capture === Capture.Debug) {
             clearLocalDebugDir();
             save(ModelProtoSingleton.serialize(true), this.getDebugModelPath());
-        }
+            runPath = debugRunnerPath;
+            procParameters = [this.state.model, this.state.inputPath];
+        } 
 
         this.setState({
             console: '',
@@ -324,7 +328,7 @@ class RunView extends React.Component<IComponentProperties, IComponentState> {
             title: 'run result',
         }
         try {
-            await execFilePromise(modelRunnerPath, this.state.parameters, {}, this.outputListener);
+            await execFilePromise(runPath, procParameters, {}, this.outputListener);
         } catch (e) {
             this.logError(e);
             this.printMessage("\n---------------------------\nRun Failed!\n")

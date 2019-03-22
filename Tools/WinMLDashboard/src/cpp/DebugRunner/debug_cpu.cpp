@@ -1,4 +1,5 @@
 #pragma once
+
 #include "debug_cpu.h"
 #include <winrt/Windows.Media.h>
 #include <winrt/Windows.Storage.h>
@@ -9,8 +10,9 @@
 #include <numeric>
 #include <vector>
 
-
 using namespace winrt;
+using namespace Windows::Foundation;
+using namespace Windows::Foundation::Collections;
 using namespace Windows::AI::MachineLearning;
 using namespace Windows::Media;
 using namespace Windows::Graphics::Imaging;
@@ -22,6 +24,7 @@ static const int CHANNELS = 1;
 static const int HEIGHT = 2;
 static const int WIDTH = 3;
 static const int NUM_DIMENSIONS = 4;
+static const int TARGET_OPSET = 8;
 
 HRESULT DebugShapeInferrer::InferOutputShapes(IMLOperatorShapeInferenceContext* context) noexcept
 {
@@ -100,6 +103,12 @@ void WriteToPng(vector<uint32_t> inputDims, T* inputData, uint32_t size, hstring
 
 template <typename T>
 void WriteToText(vector<uint32_t> inputDims, T* inputData, uint32_t size, hstring m_filePath, MLOperatorTensorDataType dataType) {
+	// Get current directory
+	wchar_t buf[MAX_PATH];
+	_wgetcwd(buf, 256);
+	StorageFolder parentFolder = StorageFolder::GetFolderFromPathAsync(buf).get();
+	parentFolder.CreateFileAsync(m_filePath, CreationCollisionOption::ReplaceExisting).get();
+
 	ofstream outputFile;
 	outputFile.open(winrt::to_string(m_filePath));
 	outputFile << "dimensions: ";
@@ -185,40 +194,40 @@ HRESULT DebugOperator::Compute(IMLOperatorKernelContext* context)
 		if (outputTensor->IsCpuData() && inputTensor->IsCpuData()) {
 
 			switch (type) {
-				case MLOperatorTensorDataType::Float:
-				case MLOperatorTensorDataType::Float16:
-					ComputeInternal<float>(inputTensor.get(), outputTensor.get(), inputDataSize, inputDims, m_filePath, m_fileType);
-					break;
-				case MLOperatorTensorDataType::Bool:
-					ComputeInternal<bool>(inputTensor.get(), outputTensor.get(), inputDataSize, inputDims, m_filePath, m_fileType);
-					break;
-				case MLOperatorTensorDataType::Double:
-					ComputeInternal<double>(inputTensor.get(), outputTensor.get(), inputDataSize, inputDims, m_filePath, m_fileType);
-					break;
-				case MLOperatorTensorDataType::UInt8:
-					ComputeInternal<unsigned char>(inputTensor.get(), outputTensor.get(), inputDataSize, inputDims, m_filePath, m_fileType);
-					break;
-				case MLOperatorTensorDataType::Int8:
-					ComputeInternal<char>(inputTensor.get(), outputTensor.get(), inputDataSize, inputDims, m_filePath, m_fileType);
-					break;
-				case MLOperatorTensorDataType::UInt16:
-					ComputeInternal<unsigned short int>(inputTensor.get(), outputTensor.get(), inputDataSize, inputDims, m_filePath, m_fileType);
-					break;
-				case MLOperatorTensorDataType::Int16:
-					ComputeInternal<short int>(inputTensor.get(), outputTensor.get(), inputDataSize, inputDims, m_filePath, m_fileType);
-					break;
-				case MLOperatorTensorDataType::Int32:
-					ComputeInternal<int>(inputTensor.get(), outputTensor.get(), inputDataSize, inputDims, m_filePath, m_fileType);
-					break;
-				case MLOperatorTensorDataType::UInt32:
-					ComputeInternal<unsigned int>(inputTensor.get(), outputTensor.get(), inputDataSize, inputDims, m_filePath, m_fileType);
-					break;
-				case MLOperatorTensorDataType::Int64:
-					ComputeInternal<long long int>(inputTensor.get(), outputTensor.get(), inputDataSize, inputDims, m_filePath, m_fileType);
-					break;
-				case MLOperatorTensorDataType::UInt64:
-					ComputeInternal<unsigned long long int>(inputTensor.get(), outputTensor.get(), inputDataSize, inputDims, m_filePath, m_fileType);
-					break;
+			case MLOperatorTensorDataType::Float:
+			case MLOperatorTensorDataType::Float16:
+				ComputeInternal<float>(inputTensor.get(), outputTensor.get(), inputDataSize, inputDims, m_filePath, m_fileType);
+				break;
+			case MLOperatorTensorDataType::Bool:
+				ComputeInternal<bool>(inputTensor.get(), outputTensor.get(), inputDataSize, inputDims, m_filePath, m_fileType);
+				break;
+			case MLOperatorTensorDataType::Double:
+				ComputeInternal<double>(inputTensor.get(), outputTensor.get(), inputDataSize, inputDims, m_filePath, m_fileType);
+				break;
+			case MLOperatorTensorDataType::UInt8:
+				ComputeInternal<unsigned char>(inputTensor.get(), outputTensor.get(), inputDataSize, inputDims, m_filePath, m_fileType);
+				break;
+			case MLOperatorTensorDataType::Int8:
+				ComputeInternal<char>(inputTensor.get(), outputTensor.get(), inputDataSize, inputDims, m_filePath, m_fileType);
+				break;
+			case MLOperatorTensorDataType::UInt16:
+				ComputeInternal<unsigned short int>(inputTensor.get(), outputTensor.get(), inputDataSize, inputDims, m_filePath, m_fileType);
+				break;
+			case MLOperatorTensorDataType::Int16:
+				ComputeInternal<short int>(inputTensor.get(), outputTensor.get(), inputDataSize, inputDims, m_filePath, m_fileType);
+				break;
+			case MLOperatorTensorDataType::Int32:
+				ComputeInternal<int>(inputTensor.get(), outputTensor.get(), inputDataSize, inputDims, m_filePath, m_fileType);
+				break;
+			case MLOperatorTensorDataType::UInt32:
+				ComputeInternal<unsigned int>(inputTensor.get(), outputTensor.get(), inputDataSize, inputDims, m_filePath, m_fileType);
+				break;
+			case MLOperatorTensorDataType::Int64:
+				ComputeInternal<long long int>(inputTensor.get(), outputTensor.get(), inputDataSize, inputDims, m_filePath, m_fileType);
+				break;
+			case MLOperatorTensorDataType::UInt64:
+				ComputeInternal<unsigned long long int>(inputTensor.get(), outputTensor.get(), inputDataSize, inputDims, m_filePath, m_fileType);
+				break;
 			}
 		}
 		return S_OK;
@@ -275,7 +284,7 @@ void DebugOperatorFactory::RegisterDebugSchema(winrt::com_ptr<IMLOperatorRegistr
 {
 	MLOperatorSetId operatorSetId;
 	operatorSetId.domain = "";
-	operatorSetId.version = 7;
+	operatorSetId.version = TARGET_OPSET;
 
 	MLOperatorSchemaDescription debugSchema;
 	debugSchema.name = "Debug";
@@ -361,7 +370,7 @@ void DebugOperatorFactory::RegisterDebugSchema(winrt::com_ptr<IMLOperatorRegistr
 	std::vector<const MLOperatorSchemaDescription*> schemas{ &debugSchema };
 	registry->RegisterOperatorSetSchema(
 		&operatorSetId,
-		7 /* baseline version */,
+		TARGET_OPSET /* baseline version */,
 		schemas.data(),
 		static_cast<uint32_t>(schemas.size()),
 		nullptr,

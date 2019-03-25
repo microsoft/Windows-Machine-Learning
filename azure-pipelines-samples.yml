@@ -24,7 +24,7 @@ strategy:
       BuildConfiguration: Debug
 
 pool:
-  name: WinML Team 
+  name: Package ES CodeHub Lab E
   demands: agent.osversion -equals 10.0.17763
 
 # CI trigger
@@ -66,6 +66,7 @@ steps:
 
   - task: NuGetCommand@2
     displayName: 'NuGet restore'
+    arguments: '-MSBuildVersion 15'
     condition: succeededOrFailed()
 
   - task: VSBuild@1

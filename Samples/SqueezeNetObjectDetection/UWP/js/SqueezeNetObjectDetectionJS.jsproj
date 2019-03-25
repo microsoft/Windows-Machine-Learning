@@ -55,7 +55,7 @@
     <PackageCertificateKeyFile>SqueezeNetObjectDetectionJS_TemporaryKey.pfx</PackageCertificateKeyFile>
     <PackageCertificateThumbprint>C3CF24DA639657EFA9A19E2696BD94C12C1E03C3</PackageCertificateThumbprint>
     <GenerateAppInstallerFile>False</GenerateAppInstallerFile>
-    <AppxAutoIncrementPackageRevision>True</AppxAutoIncrementPackageRevision>
+    <AppxAutoIncrementPackageRevision>False</AppxAutoIncrementPackageRevision>
     <AppxBundle>Never</AppxBundle>
     <AppxBundlePlatforms>x86|x64</AppxBundlePlatforms>
     <AppInstallerUpdateFrequency>1</AppInstallerUpdateFrequency>

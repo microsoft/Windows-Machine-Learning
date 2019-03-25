@@ -163,8 +163,12 @@ void SaveOutputToDisk(
 	std::wstring outputPath = modulePath;
 	std::wstring filename{ TensorizationHelper::GetFileName() };
 	int32_t i = modulePath.find(filename);
+
 	if (i != std::wstring::npos) {
-		outputPath = outputPath.substr(0, i + wcslen(filename.c_str())) + L"\\" + filename + L"\\";
+		StorageFolder parentFolder = StorageFolder::GetFolderFromPathAsync(outputPath.substr(0, i + wcslen(filename.c_str()))).get();
+		if (parentFolder.TryGetItemAsync(filename).get() != nullptr) {
+			outputPath = outputPath.substr(0, i + wcslen(filename.c_str())) + L"\\" + filename + L"\\";
+		}
 	}
 
     StorageFolder currentfolder = StorageFolder::GetFolderFromPathAsync(outputPath).get();

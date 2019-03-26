@@ -18,6 +18,10 @@ def create_modified_model(args):
         for output in node.output:
             intermediate_outputs.add(output)
 
+    # remove final graph outputs
+    for output in model.graph.output:
+        intermediate_outputs.remove(output.name)
+
     # create a debug operator that consumes each intermediate output
     # debug operator file path attribute is constructed by the name of the intermediate output
     for output in intermediate_outputs:

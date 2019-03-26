@@ -28,11 +28,10 @@ namespace SamplesTest
 
     public class StyleTransferSession
     {
-        private const string WindowsApplicationDriverUrl = "http://127.0.0.1:4723";
         // This string key is present in RegisteredUserModeAppID under AppX/vs.appxrecipe
         // TODO: this string value has to be retrieved from local test machine
         // More information on https://github.com/Microsoft/WinAppDriver
-        private const string StyleTransferAppId = "257918C9-ABE3-483E-A202-C5C69AEBD825_adth261zac3sy!App";
+        private const string StyleTransferAppId = "257918C9-ABE3-483E-A202-C5C69AEBD825_7td7jx2gva3r8!App";
 
         protected static WindowsDriver<WindowsElement> session;
         protected static WindowsElement resultImage;
@@ -46,11 +45,7 @@ namespace SamplesTest
         {
             if (session == null)
             {
-                DesiredCapabilities appCapabilities = new DesiredCapabilities();
-                appCapabilities.SetCapability("app", StyleTransferAppId);
-                appCapabilities.SetCapability("deviceName", "WindowsPC");
-                session = new WindowsDriver<WindowsElement>(new Uri(WindowsApplicationDriverUrl), appCapabilities);
-                Assert.IsNotNull(session);
+                session = TestHelper.GetSession(StyleTransferAppId, "SnapCandy");
             }
             // wait for first style transfer to be done
             Thread.Sleep(styleTransferTimeout);
@@ -117,12 +112,15 @@ namespace SamplesTest
             styleElements[style].Click();
             var cts = new CancellationTokenSource();
 
+
+
             var stopwatch = new Stopwatch();
             stopwatch.Start();
-            while (statusBlock.Text != "Done!" && stopwatch.ElapsedMilliseconds < styleTransferTimeout)
+            do
             {
+                // ensures that the test waits a bit for the processing status block to show up
                 Thread.Sleep(500);
-            }
+            } while (statusBlock.Text != "Done!" && stopwatch.ElapsedMilliseconds < styleTransferTimeout);
             stopwatch.Stop();
             Assert.IsTrue(statusBlock.Text == "Done!", String.Format("{0} style timed out", style.ToString()));
 
@@ -138,20 +136,36 @@ namespace SamplesTest
 
         public void CompareImages(string resultPath, string baselinePath)
         {
-            byte[] result = ImageToByteArray(resultPath);
-            byte[] expected = ImageToByteArray(baselinePath);
-
             var maxPixelErrorsAllowed = 0.01; // maximum percentage of pixels allowed to be different
             int pixelTolerance = 20; // minimum pixel value difference to mark two pixel as "different"
             int numPixelErrors = 0;
-            for (int i = 0; i < result.Length; i++)
+
+            Image resultImage = Image.FromFile(resultPath);
+            Image expectedImage = Image.FromFile(baselinePath);
+            Assert.AreEqual(resultImage.PixelFormat, expectedImage.PixelFormat);
+
+            Bitmap result = new Bitmap(resultPath, false); ;
+            Bitmap expected = new Bitmap(baselinePath, false);
+            Assert.AreEqual(result.Width, expected.Width);
+            Assert.AreEqual(result.Height, expected.Height);
+
+            for (int x = 0; x < result.Width; x++)
             {
-                if (Math.Abs(result[i] - expected[i]) > pixelTolerance)
+                for (int y = 0; y < result.Height; y++)
                 {
-                    numPixelErrors++;
-                    if ((numPixelErrors / (float)result.Length) > maxPixelErrorsAllowed)
+                    Color resultPixel = result.GetPixel(x, y);
+                    Color expectedPixel = expected.GetPixel(x, y);
+
+                    int redDifference = Math.Abs(resultPixel.R - expectedPixel.R);
+                    int greenDifference = Math.Abs(resultPixel.G - expectedPixel.G);
+                    int blueDifference = Math.Abs(resultPixel.B - expectedPixel.B);
+                    if (redDifference + greenDifference + blueDifference > pixelTolerance)
                     {
-                        Assert.Fail("the result is different from what's expected");
+                        numPixelErrors++;
+                        if (((float)numPixelErrors / ((float)result.Width * result.Height)) > maxPixelErrorsAllowed)
+                        {
+                            Assert.Fail("the result is different from what's expected");
+                        }
                     }
                 }
             }
@@ -164,5 +178,7 @@ namespace SamplesTest
             img.Save(ms, img.RawFormat);
             return ms.ToArray();
         }
+
+        
     }
 }

@@ -63,10 +63,12 @@ int main(int argc, char* argv[])
         // user selects adapter
         printf("Please enter the index of the adapter you want to use...\n");
         int selectedIndex;
-        while (!(cin >> selectedIndex) || selectedIndex < 0 || selectedIndex >= static_cast<int>(validAdapters.size())) {
+        cin >> selectedIndex;
+        while (selectedIndex < 0 || selectedIndex >= static_cast<int>(validAdapters.size())) {
             cin.clear();
             cin.ignore(numeric_limits<streamsize>::max(), '\n');
             printf("Invalid index, please try again.\n");
+            cin >> selectedIndex;
         }
         printf("Selected adapter at index %d\n", selectedIndex);
 

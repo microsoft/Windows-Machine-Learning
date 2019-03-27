@@ -18,7 +18,8 @@ def create_modified_model(args):
         for output in node.output:
             intermediate_outputs.add(output)
 
-    # remove final graph outputs
+    # remove final graph outputs (see the definition of graph outputs in the onnx standard: https://github.com/onnx/onnx/blob/master/docs/IR.md#user-content-graphs)
+    # it would be invalid to add debug operators after the final graph outputs since execution must be finished once all outputs are written to
     for output in model.graph.output:
         intermediate_outputs.remove(output.name)
 

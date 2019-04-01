@@ -310,8 +310,7 @@ class Netron extends React.Component<IComponentProperties, IComponentState> {
             this.props.setModelOutputs(outputs);
             this.props.setInputs(this.valueListToObject(proto.graph.input));
             this.props.setOutputs(this.valueListToObject(proto.graph.output));
-            const nodes = proto.graph.node.filter((x: any) => x.opType !== 'Constant');
-            this.props.setNodes(nodes);
+            this.props.setNodes(proto.graph.node.filter((x: any) => x.opType !== 'Constant'));
             this.props.setMetadataProps(this.propsToObject(proto.metadataProps));
             this.props.setProperties(this.getModelProperties(proto));
             this.props.setShowLeft(true);

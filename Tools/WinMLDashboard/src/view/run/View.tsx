@@ -1,6 +1,8 @@
 import * as React from 'react';
 import { connect } from 'react-redux';
 
+import * as ncp from 'ncp';
+
 
 import { setFile } from '../../datastore/actionCreators';
 import { ModelProtoSingleton } from "../../datastore/proto/modelProto";
@@ -311,12 +313,13 @@ class RunView extends React.Component<IComponentProperties, IComponentState> {
         log.info("start to run " + this.state.model);
         let runPath = winmlRunnerPath;
         let procParameters = this.state.parameters;
+        const debug = this.state.capture === Capture.Debug
         // serialize debug onnx model
-        if (this.state.capture === Capture.Debug) {
+        if (debug) {
             clearLocalDebugDir();
             save(ModelProtoSingleton.serialize(true), this.getDebugModelPath());
             runPath = debugRunnerPath;
-            procParameters = [this.state.model, this.state.inputPath];
+            procParameters = [this.getDebugModelPath(), this.state.inputPath];
         } 
 
         this.setState({
@@ -339,14 +342,36 @@ class RunView extends React.Component<IComponentProperties, IComponentState> {
             });
             runDialogOptions.message = 'Run failed! See console log for details.'
             require('electron').remote.dialog.showMessageBox(require('electron').remote.getCurrentWindow(), runDialogOptions)
-            return;
+            // for now the custom operator api has a memory leak which doesn't allow a successful error code
+            if (!debug) {
+                return;
+            }
         }
         this.setState({
             currentStep: Step.Success,
         });
-        runDialogOptions.message = 'Run successful';
-        require('electron').remote.dialog.showMessageBox(require('electron').remote.getCurrentWindow(), runDialogOptions)
+        if (debug) {
+            runDialogOptions.title = 'Debug Successful: Choose a location to export captured intermediate data';
+            require('electron').remote.dialog.showSaveDialog(require('electron').remote.getCurrentWindow(), runDialogOptions, this.exportDebug);
+        } else {
+            runDialogOptions.message = 'Run successful';
+            require('electron').remote.dialog.showMessageBox(require('electron').remote.getCurrentWindow(), runDialogOptions)
+        }
+        
         log.info(this.state.model + " run successful");
+    }
+
+    private exportDebug = (filename: string, bookmark: string) => {
+        ModelProtoSingleton.getCurrentModelDebugDir();
+        ncp.ncp(ModelProtoSingleton.getCurrentModelDebugDir(), filename, this.copyCallbackFunction);
+
+    }
+
+    private copyCallbackFunction = (err: Error) => {
+        if (err) {
+            this.logError(err);
+        }
+        this.printMessage('\nExport complete!');
     }
 }
 

@@ -9,6 +9,8 @@
 #include <fstream>
 #include <numeric>
 #include <vector>
+#include <shlwapi.h>
+
 
 using namespace winrt;
 using namespace Windows::Foundation;
@@ -32,16 +34,41 @@ HRESULT DebugShapeInferrer::InferOutputShapes(IMLOperatorShapeInferenceContext* 
 	{
 		uint32_t inputDimsSize;
 		context->GetInputTensorDimensionCount(0, &inputDimsSize);
-
 		uint32_t *inputDims = new uint32_t[inputDimsSize];
 		context->GetInputTensorShape(0, inputDimsSize, inputDims);
-
 		context->SetOutputTensorShape(0, inputDimsSize, inputDims);
 		return S_OK;
 	}
 	catch (...)
 	{
 		return winrt::to_hresult();
+	}
+}
+
+StorageFile CreateOutputFile(hstring filePath) {
+	wchar_t buf[MAX_PATH];
+	if (PathIsRelativeW(filePath.c_str())) {
+		_wgetcwd(buf, MAX_PATH);
+		StorageFolder parentFolder = StorageFolder::GetFolderFromPathAsync(buf).get();
+		return parentFolder.CreateFileAsync(filePath, CreationCollisionOption::ReplaceExisting).get();
+	}
+	else {
+		wchar_t drive[_MAX_DRIVE];
+		wchar_t dir[_MAX_DIR];
+		wchar_t filename[_MAX_FNAME];
+		wchar_t ext[_MAX_EXT];
+		errno_t err = _wsplitpath_s(filePath.c_str(), drive, _MAX_DRIVE, dir, _MAX_DIR, filename, _MAX_FNAME, ext, _MAX_EXT);
+		if (err != 0) {
+			return nullptr;
+		}
+		std::wstring concatPath = drive; // remove leading slash
+		concatPath += dir;
+		hstring hStringFolder(concatPath);
+		StorageFolder folder = StorageFolder::GetFolderFromPathAsync(hStringFolder).get();
+		std::wstring file = filename;
+		file += ext;
+		hstring hStringFile(file);
+		return folder.CreateFileAsync(hStringFile, CreationCollisionOption::ReplaceExisting).get();
 	}
 }
 
@@ -60,11 +87,6 @@ void WriteToPng(vector<uint32_t> inputDims, T* inputData, uint32_t size, hstring
 	for (int i = 0; i < size; i++) {
 		byteCopy.push_back(static_cast<uint8_t>(inputData[i]));
 	}
-
-	// Get current directory
-	wchar_t buf[MAX_PATH];
-	_wgetcwd(buf, 256);
-	StorageFolder parentFolder = StorageFolder::GetFolderFromPathAsync(buf).get();
 	int pixelsPerImage = inputDims.at(HEIGHT) * inputDims.at(WIDTH);
 
 	// for each output channel at this point in the network
@@ -82,8 +104,12 @@ void WriteToPng(vector<uint32_t> inputDims, T* inputData, uint32_t size, hstring
 		else {
 			finalPath = finalPath.substr(0, finalPath.size() - ext.size()) + suffix + ext;
 		}
+		hstring finalHStringPath(finalPath);
 
-		StorageFile outputFile = parentFolder.CreateFileAsync(finalPath, CreationCollisionOption::ReplaceExisting).get();
+		StorageFile outputFile = CreateOutputFile(finalHStringPath);
+		if (outputFile == nullptr) {
+			return;
+		}
 		IRandomAccessStream stream = outputFile.OpenAsync(FileAccessMode::ReadWrite).get();
 		BitmapEncoder encoder = BitmapEncoder::CreateAsync(BitmapEncoder::PngEncoderId(), stream).get();
 
@@ -104,10 +130,7 @@ void WriteToPng(vector<uint32_t> inputDims, T* inputData, uint32_t size, hstring
 template <typename T>
 void WriteToText(vector<uint32_t> inputDims, T* inputData, uint32_t size, hstring m_filePath, MLOperatorTensorDataType dataType) {
 	// Get current directory
-	wchar_t buf[MAX_PATH];
-	_wgetcwd(buf, 256);
-	StorageFolder parentFolder = StorageFolder::GetFolderFromPathAsync(buf).get();
-	parentFolder.CreateFileAsync(m_filePath, CreationCollisionOption::ReplaceExisting).get();
+	CreateOutputFile(m_filePath);
 
 	ofstream outputFile;
 	outputFile.open(winrt::to_string(m_filePath));
@@ -141,7 +164,7 @@ void ComputeInternal(IMLOperatorTensor* pInputTensor, IMLOperatorTensor* pOutput
 	}
 	// only useful if the debug output is used for some reason 
 	// (not necessary since debug output can be consumed by no nodes without changing model execution
-	memcpy(outputData, inputData, size);
+	//memcpy(outputData, inputData, size);
 
 }
 
@@ -156,43 +179,36 @@ HRESULT DebugOperator::Compute(IMLOperatorKernelContext* context)
 		// Get the input tensor
 		winrt::com_ptr<IMLOperatorTensor> inputTensor;
 		context->GetInputTensor(0, inputTensor.put());
-
 		// Get the output tensor
 		winrt::com_ptr<IMLOperatorTensor> outputTensor;
 		context->GetOutputTensor(0, outputTensor.put());
-
 		// Get the input and output shape sizes
 		uint32_t inputDimsSize = inputTensor->GetDimensionCount();
-		uint32_t outputDimsSize = outputTensor->GetDimensionCount();
+		/*uint32_t outputDimsSize = outputTensor->GetDimensionCount();
 		if (inputDimsSize != outputDimsSize)
 		{
 			return E_UNEXPECTED;
-		}
-
+		}*/
 		// Get the input shape
 		std::vector<uint32_t> inputDims(inputDimsSize);
 		inputTensor->GetShape(inputDimsSize, inputDims.data());
-
 		// Get the output shape
-		std::vector<uint32_t> outputDims(outputDimsSize);
+		/*std::vector<uint32_t> outputDims(outputDimsSize);
 		outputTensor->GetShape(outputDimsSize, outputDims.data());
-
 		// For the number of total elements in the input and output shapes
-		auto outputDataSize = std::accumulate(outputDims.begin(), outputDims.end(), 1, std::multiplies<uint32_t>());
+		auto outputDataSize = std::accumulate(outputDims.begin(), outputDims.end(), 1, std::multiplies<uint32_t>());*/
 		auto inputDataSize = std::accumulate(inputDims.begin(), inputDims.end(), 1, std::multiplies<uint32_t>());
-		if (outputDataSize != inputDataSize)
+		/*if (outputDataSize != inputDataSize)
 		{
 			return E_UNEXPECTED;
-		}
-
+		}*/
 		MLOperatorTensorDataType type = inputTensor->GetTensorDataType();
 
-		if (outputTensor->GetTensorDataType() != type) {
+		/*if (outputTensor->GetTensorDataType() != type) {
 			return E_UNEXPECTED;
-		}
+		}*/
 
 		if (outputTensor->IsCpuData() && inputTensor->IsCpuData()) {
-
 			switch (type) {
 			case MLOperatorTensorDataType::Float:
 			case MLOperatorTensorDataType::Float16:

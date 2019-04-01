@@ -273,6 +273,7 @@ class LeftPanel extends React.Component<IComponentProperties, {}> {
                 if (debugFormats.length === 0) {
                     if (debugNodesCopy.hasOwnProperty(target.output)) {
                         delete debugNodesCopy[target.output];
+                        this.props.setDebugNodes(debugNodesCopy);
                     }
                 } else {
                     debugNodesCopy[target.output] = debugFormats;

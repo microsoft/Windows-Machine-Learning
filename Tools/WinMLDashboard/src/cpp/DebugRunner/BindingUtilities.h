@@ -79,10 +79,10 @@ namespace BindingUtilities
     template <typename T>
     void WriteDataToBinding(const std::vector<std::string>& elementStrings, ModelBinding<T>& binding)
     {
-        if (binding.GetDataBufferSize() != elementStrings.size())
+        /*if (binding.GetDataBufferSize() != elementStrings.size())
         {
             throw hresult_invalid_argument(L"CSV Input is size/shape is different from what model expects");
-        }
+        }*/
         T* data = binding.GetData();
         for (const auto &elementString : elementStrings)
         {

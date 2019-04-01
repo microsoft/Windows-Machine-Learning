@@ -1,6 +1,6 @@
 import * as md5 from 'md5';
 import * as path from 'path';
-import { mkdir } from '../../native/appData';
+import { getLocalDebugDir, mkdir } from '../../native/appData';
 import { IDebugNodeMap, IMetadataProps } from '../state';
 import { Proto } from './proto';
 
@@ -58,6 +58,10 @@ class ModelProto extends Proto {
         }
     }
 
+    public getCurrentModelDebugDir() {
+        return path.join(getLocalDebugDir(), md5(this.proto.domain + this.proto.model_version + this.proto.graph.name));
+    }
+
     private createDebugProtoNodes() {
         const onnx = Proto.getOnnx();
         if (!onnx) {
@@ -69,9 +73,11 @@ class ModelProto extends Proto {
                 // the detached head of Netron we are using expects a base64 encoded string
                 const fileTypeProps = {name: 'file_type', type: 'STRING', s: window.btoa(fileType) };
                 const fileTypeAttrProto = onnx.AttributeProto.fromObject(fileTypeProps);
-                const parentDebugDir = mkdir(md5(output));
-                const debugDir = mkdir(path.join(parentDebugDir, fileType));
-                const filePathProps = {name: 'file_path', type: 'STRING', s: window.btoa(debugDir)};
+                const modelDir = mkdir(this.getCurrentModelDebugDir())
+                const separatorRegex = /\\|\//g 
+                const nodeDir = mkdir(modelDir, output.replace(separatorRegex, "-"))
+                const typeDir = mkdir(nodeDir, fileType);
+                const filePathProps = {name: 'file_path', type: 'STRING', s: window.btoa(path.join(typeDir, 'debug'))};
                 const filePathAttrProto = onnx.AttributeProto.fromObject(filePathProps);
                 
                 const nodeProps = {attribute: [fileTypeAttrProto, filePathAttrProto],

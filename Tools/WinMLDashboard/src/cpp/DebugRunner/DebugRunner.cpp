@@ -8,13 +8,12 @@
 
 using namespace winrt::Windows::AI::MachineLearning;
 
-
-
 class DebugRunner {
 public:
 
 	static bool Run(std::wstring modelPath, std::wstring inputPath, LearningModelDeviceKind kind)
 	{
+		std::wcout << modelPath;
 		auto customOperatorProvider = winrt::make<DebugOperatorProvider>();
 		auto provider = customOperatorProvider.as<ILearningModelOperatorProvider>();
 		auto model = LearningModel::LoadFromFilePath(modelPath, provider);
@@ -35,7 +34,12 @@ public:
 		}
 
 		LearningModelEvaluationResult result = session.Evaluate(binding, L"");
-		return result.Succeeded();
+		if (result.Succeeded()) {
+			return 0;
+		}
+		else {
+			return 1;
+		}
 	}
 
 	static bool Run(std::wstring modelPath, std::wstring inputPath) 
@@ -53,6 +57,7 @@ int wmain(int argc, wchar_t *argv[])
 		printf("Usage: DebugRunner.exe [model_path] [data_path]");
 		return 1;
 	}
-	return DebugRunner::Run(std::wstring(argv[1]), std::wstring(argv[2]));
+	int i = DebugRunner::Run(std::wstring(argv[1]), std::wstring(argv[2]));
+	return i;
 }
 

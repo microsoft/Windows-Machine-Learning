@@ -108,11 +108,8 @@ class LeftPanel extends React.Component<IComponentProperties, {}> {
             name = `Node: ${name ? `${name} (${node.opType})` : node.opType}`;
             
         }
-
         const inputsForm = this.buildConnectionList(input);
         const outputsForm = this.buildConnectionList(output);
-
-
         return (
             <div>
                 <Label className='PanelName'>{name}</Label>
@@ -137,6 +134,7 @@ class LeftPanel extends React.Component<IComponentProperties, {}> {
             </div>
         );
     }
+    
     private buildConnectionList = (connections: any[]) => {
         return connections.map((x: any) => {
             const valueInfoProto = this.props.inputs[x] || this.props.outputs[x];

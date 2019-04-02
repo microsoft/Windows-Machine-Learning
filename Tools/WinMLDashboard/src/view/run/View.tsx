@@ -68,12 +68,18 @@ enum Device {
     GPUMinPower = 'GPUMinPower',
 }
 
+enum inputPathPlaceholder {
+    optional = '(Optional) image/csv Path',
+    required = '(Required) image/csv Path',
+}
+
 interface IComponentState {
     capture: Capture,
     console: string,
     currentStep: Step,
     device: Device,
     inputPath: string,
+    inputPathPlaceholder: inputPathPlaceholder
     inputType: string,
     model: string,
     parameters: string[],
@@ -88,6 +94,7 @@ class RunView extends React.Component<IComponentProperties, IComponentState> {
             currentStep: Step.Idle,
             device: Device.CPU,
             inputPath: '',
+            inputPathPlaceholder: inputPathPlaceholder.optional,
             inputType: '',
             model: '',
             parameters: [],
@@ -163,7 +170,9 @@ class RunView extends React.Component<IComponentProperties, IComponentState> {
                     {this.getArgumentsView()}
                 </div>
                 <TextField id='paramters' readOnly={true} placeholder='paramters' value={this.state.parameters.join(' ')} label='Parameters to WinMLRunner' onChanged={this.updateParameters} />
-                <DefaultButton id='RunButton' text='Run' disabled={!this.state.model} onClick={this.execModelRunner}/>
+                <DefaultButton id='RunButton' text='Run' 
+                    disabled={!this.state.model || (this.state.capture === Capture.Debug && !this.state.inputPath)} 
+                    onClick={this.execModelRunner}/>
             </div>
         )
     }
@@ -197,7 +206,7 @@ class RunView extends React.Component<IComponentProperties, IComponentState> {
                 <br />
                 <div className='DisplayFlex Input'>
                     <label className="label">Input Path: </label>
-                    <TextField id='InputPath' placeholder='(Optional) image/csv Path' value={this.state.inputPath} onChanged={this.setInputPath} />
+                    <TextField id='InputPath' placeholder={this.state.inputPathPlaceholder} value={this.state.inputPath} onChanged={this.setInputPath} />
                     <DefaultButton id='InputPathBrowse' text='Browse' onClick={this.browseInput}/>
                 </div>
             </div>
@@ -219,7 +228,11 @@ class RunView extends React.Component<IComponentProperties, IComponentState> {
     }
 
     private setCapture = (capture: ISelectOption<Capture>) => {
-        this.setState({capture: capture.value}, () => {this.setParameters()})
+        let placeholder = inputPathPlaceholder.optional;
+        if (capture.value === Capture.Debug) {
+            placeholder = inputPathPlaceholder.required
+        }
+        this.setState({capture: capture.value, inputPathPlaceholder: placeholder}, () => {this.setParameters()})
     }
 
     private setInputPath = (inputPath: string) => {
@@ -342,10 +355,7 @@ class RunView extends React.Component<IComponentProperties, IComponentState> {
             });
             runDialogOptions.message = 'Run failed! See console log for details.'
             require('electron').remote.dialog.showMessageBox(require('electron').remote.getCurrentWindow(), runDialogOptions)
-            // for now the custom operator api has a memory leak which doesn't allow a successful error code
-            if (!debug) {
-                return;
-            }
+            return
         }
         this.setState({
             currentStep: Step.Success,

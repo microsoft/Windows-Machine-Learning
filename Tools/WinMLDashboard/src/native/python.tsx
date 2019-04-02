@@ -130,6 +130,9 @@ interface IOutputListener {
 
 export async function execFilePromise(file: string, args: string[], options?: ExecFileOptions, listener?: IOutputListener) {
     const run = async () => new Promise((resolve, reject) => {
+        if (!fs.existsSync(file)) {
+            return reject(Error(`Executable ${file} does not exist`));
+        }
         const childProcess = execFile(file, args, {...options});
         if (listener) {
             childProcess.stdout.on('data', listener.stdout);

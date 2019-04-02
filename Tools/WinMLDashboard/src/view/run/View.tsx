@@ -348,6 +348,7 @@ class RunView extends React.Component<IComponentProperties, IComponentState> {
         } catch (e) {
             this.logError(e);
             this.printMessage("\n---------------------------\nRun Failed!\n")
+            this.printMessage(`\n${(e as Error).message}`)
             
             log.info(this.state.model + " is failed to run");
             this.setState({

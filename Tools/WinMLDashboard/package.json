@@ -17,7 +17,7 @@
     "build-electron": "react-app-rewired build --scripts-version react-scripts-ts",
     "build-cpp": "msbuild src/cpp/DebugRunner.sln", 
     "electron-dev": "electron . http://localhost:3000",
-    "electron-prod": "yarn build-cpp && build-electron && electron ."
+    "electron-prod": "yarn build-cpp && yarn build-electron && electron ."
   },
   "build": {
     "appId": "com.microsoft.dashboard.winml",

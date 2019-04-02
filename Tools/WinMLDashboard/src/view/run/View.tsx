@@ -182,7 +182,7 @@ class RunView extends React.Component<IComponentProperties, IComponentState> {
             <div className="Arguments">
                 <div className='DisplayFlex ModelPath'>
                     <label className="label">Model Path: </label>
-                    <TextField id='modelToRun' placeholder='Model Path' value={this.state.model} onChanged={this.setModel} />
+                    <TextField id='modelToRun' readOnly={true} placeholder='Model Path' value={this.state.model} onChanged={this.setModel} />
                     <DefaultButton id='ModelPathBrowse' text='Browse' onClick={this.browseModel}/>
                 </div>
                 <br />
@@ -206,7 +206,7 @@ class RunView extends React.Component<IComponentProperties, IComponentState> {
                 <br />
                 <div className='DisplayFlex Input'>
                     <label className="label">Input Path: </label>
-                    <TextField id='InputPath' placeholder={this.state.inputPathPlaceholder} value={this.state.inputPath} onChanged={this.setInputPath} />
+                    <TextField id='InputPath' readOnly={true} placeholder={this.state.inputPathPlaceholder} value={this.state.inputPath} onChanged={this.setInputPath} />
                     <DefaultButton id='InputPathBrowse' text='Browse' onClick={this.browseInput}/>
                 </div>
             </div>

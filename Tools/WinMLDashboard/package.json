@@ -14,9 +14,10 @@
     "eject": "react-scripts-ts eject",
     "postinstall": "node scripts/postinstall.js && yarn copy-netron",
     "copy-netron": "yarn --cwd deps/Netron && python deps/copy_netron.py",
-    "build-electron": "msbuild src/cpp/DebugRunner.sln && react-app-rewired build --scripts-version react-scripts-ts",
+    "build-electron": "react-app-rewired build --scripts-version react-scripts-ts",
+    "build-cpp": "msbuild src/cpp/DebugRunner.sln", 
     "electron-dev": "electron . http://localhost:3000",
-    "electron-prod": "yarn build-electron && electron ."
+    "electron-prod": "yarn build-cpp && build-electron && electron ."
   },
   "build": {
     "appId": "com.microsoft.dashboard.winml",

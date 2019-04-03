@@ -29,7 +29,7 @@ void CommandLineArgs::PrintUsage()
     std::cout << "  -Perf [all]: capture performance measurements such as timing and memory usage. Specifying \"all\" "
                  "will output all measurements"
               << std::endl;
-    std::cout << "  -Iterations : # times perf measurements will be run/averaged" << std::endl;
+    std::cout << "  -Iterations : # times perf measurements will be run/averaged. (maximum: 1024 times)" << std::endl;
     std::cout << "  -Input <fully qualified path>: binds image or CSV to model" << std::endl;
     std::cout << "  -TopK <number>: print top <number> values in the result. Default to 1" << std::endl;
     std::cout << "  -PerfOutput [<fully qualified path>]: csv file to write the perf results to" << std::endl;

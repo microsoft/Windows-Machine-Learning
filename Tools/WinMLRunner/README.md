@@ -9,7 +9,7 @@ You can either download the x64 executable or build it yourself.
 
 ### Download
 
-[Download x64 Exe](https://github.com/Microsoft/Windows-Machine-Learning/releases/tag/v1.0.0.0)
+[Download x64 and x86 Exe](https://github.com/Microsoft/Windows-Machine-Learning/releases/tag/v1.0.1.0)
 
 ### Build
 
@@ -43,7 +43,7 @@ Required command-Line arguments:
 -BGR : load the input as a BGR image
 -Tensor : load the input as a tensor
 -Perf [all]: capture performance measurements such as timing and memory usage. Specifying "all" will output all measurements
--Iterations : # times perf measurements will be run/averaged
+-Iterations : # times perf measurements will be run/averaged. (maximum: 1024 times)
 -Input <fully qualified path>: binds image or CSV to model
 -TopK <number>: print top <number> values in the result. Default to 1
 -PerfOutput [<fully qualified path>]: csv file to write the perf results to

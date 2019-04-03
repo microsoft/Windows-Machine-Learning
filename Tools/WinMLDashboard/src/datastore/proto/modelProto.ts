@@ -67,13 +67,13 @@ class ModelProto extends Proto {
         if (!onnx) {
             return [];
         }
+        const modelDir = mkdir(this.getCurrentModelDebugDir())
         const nodeProtos = [];
         for (const output of Object.keys(this.debugNodes)) {
             for (const fileType of this.debugNodes[output]) {
                 // the detached head of Netron we are using expects a base64 encoded string
                 const fileTypeProps = {name: 'file_type', type: 'STRING', s: window.btoa(fileType) };
                 const fileTypeAttrProto = onnx.AttributeProto.fromObject(fileTypeProps);
-                const modelDir = mkdir(this.getCurrentModelDebugDir())
                 const separatorRegex = /\\|\//g 
                 const nodeDir = mkdir(modelDir, output.replace(separatorRegex, "-"))
                 const typeDir = mkdir(nodeDir, fileType);

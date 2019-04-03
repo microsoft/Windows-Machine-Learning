@@ -82,6 +82,7 @@ interface IComponentState {
     inputPathPlaceholder: inputPathPlaceholder
     inputType: string,
     model: string,
+    outputPath: string,
     parameters: string[],
 }
 
@@ -97,6 +98,7 @@ class RunView extends React.Component<IComponentProperties, IComponentState> {
             inputPathPlaceholder: inputPathPlaceholder.optional,
             inputType: '',
             model: '',
+            outputPath: '',
             parameters: [],
         }
         log.info("Run view is created.");
@@ -171,7 +173,7 @@ class RunView extends React.Component<IComponentProperties, IComponentState> {
                 </div>
                 <TextField id='paramters' readOnly={true} placeholder='paramters' value={this.state.parameters.join(' ')} label='Parameters to WinMLRunner' onChanged={this.updateParameters} />
                 <DefaultButton id='RunButton' text='Run' 
-                    disabled={!this.state.model || (this.state.capture === Capture.Debug && !this.state.inputPath)} 
+                    disabled={!this.state.model || (this.state.capture === Capture.Debug && !(this.state.inputPath && this.state.outputPath))} 
                     onClick={this.execModelRunner}/>
             </div>
         )
@@ -209,6 +211,12 @@ class RunView extends React.Component<IComponentProperties, IComponentState> {
                     <TextField id='InputPath' readOnly={true} placeholder={this.state.inputPathPlaceholder} value={this.state.inputPath} onChanged={this.setInputPath} />
                     <DefaultButton id='InputPathBrowse' text='Browse' onClick={this.browseInput}/>
                 </div>
+                <br />
+                <div className='DisplayFlex Input'>
+                    <label className="label">Output Path: </label>
+                    <TextField id='OutputPath' readOnly={true} placeholder='(Only for debug capture)' value={this.state.outputPath} onChanged={this.setOutputPath} />
+                    <DefaultButton id='OutputPathBrowse' text='Browse' disabled={this.state.capture !== Capture.Debug} onClick={this.browseOutput}/>
+                </div>
             </div>
         )
     }
@@ -237,6 +245,10 @@ class RunView extends React.Component<IComponentProperties, IComponentState> {
 
     private setInputPath = (inputPath: string) => {
         this.setState({inputPath}, () => {this.setParameters()})
+    }
+
+    private setOutputPath = (outputPath: string) => {
+        this.setState({outputPath}, () => {this.setParameters()})
     }
 
     private getDebugModelPath() {
@@ -304,6 +316,18 @@ class RunView extends React.Component<IComponentProperties, IComponentState> {
             });
     }
 
+    private browseOutput = () => {
+        const openDialogOptions = {
+            properties: Array<'openDirectory'>('openDirectory'),
+        };
+        showNativeOpenDialog(openDialogOptions)
+            .then((filePaths) => {
+                if (filePaths) {
+                    this.setOutputPath(filePaths[0]);
+                }
+            });
+    }
+
     private logError = (error: string | Error) => {
         const message = typeof error === 'string' ? error : (`${error.stack ? `${error.stack}: ` : ''}${error.message}`);
         log.error(message)
@@ -362,27 +386,35 @@ class RunView extends React.Component<IComponentProperties, IComponentState> {
             currentStep: Step.Success,
         });
         if (debug) {
-            runDialogOptions.title = 'Debug Successful: Choose a location to export captured intermediate data';
-            require('electron').remote.dialog.showSaveDialog(require('electron').remote.getCurrentWindow(), runDialogOptions, this.exportDebug);
+            this.exportDebug(this.state.outputPath)
         } else {
             runDialogOptions.message = 'Run successful';
             require('electron').remote.dialog.showMessageBox(require('electron').remote.getCurrentWindow(), runDialogOptions)
+            log.info(this.state.model + " run successful");
         }
-        
-        log.info(this.state.model + " run successful");
     }
 
-    private exportDebug = (filename: string, bookmark: string) => {
+    private exportDebug = (filename: string) => {
         ModelProtoSingleton.getCurrentModelDebugDir();
         ncp.ncp(ModelProtoSingleton.getCurrentModelDebugDir(), filename, this.copyCallbackFunction);
-
     }
 
     private copyCallbackFunction = (err: Error) => {
+        const runDialogOptions = {
+            message: '',
+            title: 'run result',
+        }
         if (err) {
             this.logError(err);
+            runDialogOptions.message = 'Run failed! See console log for details.'
+            require('electron').remote.dialog.showMessageBox(require('electron').remote.getCurrentWindow(), runDialogOptions)
+
+        } else {
+            runDialogOptions.message = 'Run Successful: Debug capture saved to output path'
+            require('electron').remote.dialog.showMessageBox(require('electron').remote.getCurrentWindow(), runDialogOptions)
+            log.info(this.state.model + " run successful");
         }
-        this.printMessage('\nExport complete!');
+
     }
 }
 

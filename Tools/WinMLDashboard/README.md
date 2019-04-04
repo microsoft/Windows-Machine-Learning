@@ -97,7 +97,7 @@ Alternatively, you can build the app from source following the instructions belo
 |Yarn        |latest |[here](https://yarnpkg.com/en/docs/install)|`yarn --version`|
 |Node.js     |latest |[here](https://nodejs.org/en/)|`node --version`|
 |Git         |latest |[here](https://git-scm.com/download/win)|`git --version`|
-|MSBuild     |latest |[here](https://visualstudio.microsoft.com/downloads/))|`msbuild -version`|
+|MSBuild     |latest |[here](https://visualstudio.microsoft.com/downloads/)|`msbuild -version`|
 |Nuget       |latest |[here](https://www.nuget.org/downloads)|`nuget help`|
 
 

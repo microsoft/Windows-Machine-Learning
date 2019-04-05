@@ -1,7 +1,7 @@
 import * as md5 from 'md5';
 import * as path from 'path';
 import { getLocalDebugDir, mkdir } from '../../native/appData';
-import { IDebugNodeMap, IMetadataProps } from '../state';
+import { IDebugNodeMap, IInsertNode, IInsertNodeChild, IMetadataProps, INodeProtoEssential, INodeProtoIO } from '../state';
 import { Proto } from './proto';
 
 
@@ -60,6 +60,60 @@ class ModelProto extends Proto {
 
     public getCurrentModelDebugDir() {
         return path.join(getLocalDebugDir(), md5(this.proto.domain + this.proto.model_version + this.proto.graph.name));
+    }
+
+    public insertNode(insertNode: IInsertNode, children: IInsertNodeChild[]) {
+        const onnx = Proto.getOnnx();
+        if (!onnx || !this.validateInsertAction(insertNode, children)){
+            return;
+        }
+
+        // construct insert node
+        const nodeProps = {
+            attribute: [], input: insertNode.inputs, output: insertNode.outputs
+        }
+
+        const insertProto = onnx.NodeProto.fromObject(nodeProps);
+        const nodeList = this.proto.graph.node as INodeProtoEssential[];
+
+        // get list of children proto
+        let insertIdx = 0;
+        for (let i = nodeList.length - 1; i >= 0; i--) {
+            const currNode = nodeList[i] as INodeProtoIO;
+            // find last parent output
+            if (insertIdx === 0 && (currNode).output
+                                    .filter((value: string) => insertNode.inputs.includes(value))
+                                    .length > 0) {
+                // topological sort insert location
+                insertIdx = i + 1;
+                break;
+            }
+            // see if current node matches and child nodes
+            for (const child of children) {
+                if (this.nodeIdsEqual(currNode, (child as IInsertNodeChild).nodeDefinition)) {
+                    const inputIdx = currNode.input.indexOf((child as IInsertNodeChild).oldInputName)
+                    if (inputIdx !== -1) {
+                        currNode.input[inputIdx] = child.newInputName
+                    }
+                }
+            }
+        }
+        // insert node
+        nodeList.splice(insertIdx, 0, insertProto)
+    }
+
+    private nodeIdsEqual(a: INodeProtoEssential, b: INodeProtoEssential) : boolean {
+        return a.name === b.name && a.op_type === b.op_type && a.domain === b.domain
+    }
+
+    private validateInsertAction(insertNode: IInsertNode, children: IInsertNodeChild[]) : boolean {
+        for (const child of children) {
+            if (!insertNode.inputs.includes((child as IInsertNodeChild).oldInputName) &&
+                insertNode.outputs.includes((child as IInsertNodeChild).newInputName)) {
+                return false;
+            }
+        }
+        return true;
     }
 
     private createDebugProtoNodes() {

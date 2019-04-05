@@ -10,6 +10,32 @@ export interface IDebugNodeMap {
     [output: string]: DebugFormat[];
 }
 
+// Each IInsertNodeChild.oldInputName matches an input in IInsertNode.inputs
+// Each IInsertNodeChild.newInputName matches and input an output in IInsertNode.outputs
+export interface IInsertNode {
+    opName: string,
+    inputs: string[],
+    outputs: string[],
+    children: [IInsertNodeChild],
+}
+
+export interface IInsertNodeChild {
+    nodeDefinition: INodeProtoEssential,
+    oldInputName: string,
+    newInputName: string,
+}
+
+export interface INodeProtoEssential {
+    name: string,
+    op_type: string,
+    domain: string,
+}
+
+export interface INodeProtoIO extends INodeProtoEssential {
+    input: string[]
+    output: string[]
+}
+
 export enum DebugFormat {
     text = "txt",
     png = "png",

@@ -126,26 +126,45 @@ template <> struct TensorKindToValue<TensorKind::String>
     typedef TensorString Type;
 };
 
+void GetHeightAndWidthFromLearningModelFeatureDescriptor(const ILearningModelFeatureDescriptor& modelFeatureDescriptor,
+    uint64_t& width, uint64_t& height)
+{
+    if (modelFeatureDescriptor.Kind() == LearningModelFeatureKind::Tensor)
+    {
+        // We assume NCHW
+        auto tensorDescriptor = modelFeatureDescriptor.try_as<TensorFeatureDescriptor>();
+        if (tensorDescriptor.Shape().Size() != 4)
+        {
+            throw hresult_invalid_argument(L"Cannot generate arbitrary image for tensor input of dimensions: " +
+                                           tensorDescriptor.Shape().Size());
+        }
+        height = tensorDescriptor.Shape().GetAt(2);
+        width = tensorDescriptor.Shape().GetAt(3);
+    }
+    else if (modelFeatureDescriptor.Kind() == LearningModelFeatureKind::Image)
+    {
+        auto imageDescriptor = modelFeatureDescriptor.try_as<IImageFeatureDescriptor>();
+        height = imageDescriptor.Height();
+        width = imageDescriptor.Width();
+    }
+    else
+    {
+        throw hresult_not_implemented(
+            L"Generating arbitrary image not supported for input types that aren't tensor or image.");
+    }
+}
+
 namespace BindingUtilities
 {
     static unsigned int seed = 0;
     static std::independent_bits_engine<std::default_random_engine, CHAR_BIT, unsigned int> randomBitsEngine;
 
-    SoftwareBitmap GenerateGarbageImage(const TensorFeatureDescriptor& imageDescriptor, InputDataType inputDataType)
+    SoftwareBitmap GenerateGarbageImage(const ILearningModelFeatureDescriptor& modelFeatureDescriptor, InputDataType inputDataType)
     {
         assert(inputDataType != InputDataType::Tensor);
-
-        // We assume NCHW and NCDHW
-        uint64_t width = imageDescriptor.Shape().GetAt(imageDescriptor.Shape().Size() - 1);
-        uint64_t height = imageDescriptor.Shape().GetAt(imageDescriptor.Shape().Size() - 2);
-        uint64_t channelCount = imageDescriptor.Shape().GetAt(1);
-        uint64_t batchCount = imageDescriptor.Shape().GetAt(0);
-
-        // If the batchCount is infinite, we can put as many images as we want
-        if (batchCount >= ULLONG_MAX)
-        {
-            batchCount = 3;
-        }
+        uint64_t width = 0;
+        uint64_t height = 0;
+        GetHeightAndWidthFromLearningModelFeatureDescriptor(modelFeatureDescriptor, width, height);
 
         // We have to create RGBA8 or BGRA8 images, so we need 4 channels
         uint32_t totalByteSize = static_cast<uint32_t>(width) * static_cast<uint32_t>(height) * 4;
@@ -167,17 +186,16 @@ namespace BindingUtilities
                                                     static_cast<int32_t>(width), static_cast<int32_t>(height));
     }
 
-    SoftwareBitmap LoadImageFile(const TensorFeatureDescriptor& imageDescriptor, InputDataType inputDataType,
+    SoftwareBitmap LoadImageFile(const ILearningModelFeatureDescriptor& modelFeatureDescriptor,
+                                 InputDataType inputDataType,
                                  const hstring& filePath, const CommandLineArgs& args, uint32_t iterationNum)
     {
         assert(inputDataType != InputDataType::Tensor);
 
         // We assume NCHW and NCDHW
-        uint64_t width = imageDescriptor.Shape().GetAt(imageDescriptor.Shape().Size() - 1);
-        uint64_t height = imageDescriptor.Shape().GetAt(imageDescriptor.Shape().Size() - 2);
-        uint64_t channelCount = imageDescriptor.Shape().GetAt(1);
-        uint64_t batchCount = imageDescriptor.Shape().GetAt(0);
-
+        uint64_t width = 0;
+        uint64_t height = 0;
+        GetHeightAndWidthFromLearningModelFeatureDescriptor(modelFeatureDescriptor, width, height);
         try
         {
             // open the file
@@ -286,7 +304,7 @@ namespace BindingUtilities
             }
             else
             {
-                *data = XMConvertFloatToHalf(value);
+                *reinterpret_cast<HALF*>(data) = XMConvertFloatToHalf(value);
             }
             data++;
         }
@@ -479,20 +497,10 @@ namespace BindingUtilities
                                           InputDataType inputDataType, const IDirect3DDevice winrtDevice,
                                           const CommandLineArgs& args, uint32_t iterationNum)
     {
-        auto imageDescriptor = featureDescriptor.try_as<TensorFeatureDescriptor>();
-
-        if (!imageDescriptor)
-        {
-            std::cout << "BindingUtilities: Input Descriptor type isn't tensor." << std::endl;
-            throw;
-        }
-
         auto softwareBitmap =
-            imagePath.empty() ? GenerateGarbageImage(imageDescriptor, inputDataType)
-                              : LoadImageFile(imageDescriptor, inputDataType, imagePath.c_str(), args, iterationNum);
-
+            imagePath.empty() ? GenerateGarbageImage(featureDescriptor, inputDataType)
+                              : LoadImageFile(featureDescriptor, inputDataType, imagePath.c_str(), args, iterationNum);
         auto videoFrame = CreateVideoFrame(softwareBitmap, inputBindingType, inputDataType, winrtDevice);
-
         return ImageFeatureValue::CreateFromVideoFrame(videoFrame);
     }
 

@@ -463,9 +463,9 @@ HRESULT CheckIfModelAndConfigurationsAreSupported(LearningModel& model, const st
                 return E_INVALIDARG;
             }
 
-            // If image as input binding, then the inputs should have channel 3
+            // If image as input binding, then the model's tensor inputs should have channel 3 or 1
             if (isInputBindingImage && tensorFeatureDescriptor.Shape().Size() == 4 &&
-                tensorFeatureDescriptor.Shape().GetAt(1) != 3)
+                tensorFeatureDescriptor.Shape().GetAt(1) != 3 && tensorFeatureDescriptor.Shape().GetAt(1) != 1)
             {
 
                 std::cout << "Attempting to bind image but input feature " << to_string(inputFeature.Name())

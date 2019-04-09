@@ -1,6 +1,5 @@
 #include "Common.h"
 #include "OutputHelper.h"
-#include "ModelBinding.h"
 #include "BindingUtilities.h"
 #include <filesystem>
 #include <d3d11.h>

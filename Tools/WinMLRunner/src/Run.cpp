@@ -79,7 +79,7 @@ std::vector<ILearningModelFeatureValue> GenerateInputFeatures(const LearningMode
 
         if (inputDataType == InputDataType::Tensor || i > 0)
         {
-            // For now, only the first input can be bound with real data
+            // If CSV data is provided, then every input will contain the same CSV data
             auto tensorFeature = BindingUtilities::CreateBindableTensor(description, args);
             inputFeatures.push_back(tensorFeature);
         }

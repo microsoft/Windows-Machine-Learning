@@ -33,4 +33,15 @@
       <Filter>SharedContent</Filter>
     </Content>
   </ItemGroup>
+  <ItemGroup>
+    <CopyFileToFolders Include="..\..\SharedContent\media\mnist_28.png">
+      <Filter>SharedContent</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\..\SharedContent\media\mnist_28.csv">
+      <Filter>SharedContent</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\..\SharedContent\models\mnist.onnx">
+      <Filter>SharedContent</Filter>
+    </CopyFileToFolders>
+  </ItemGroup>
 </Project>

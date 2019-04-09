@@ -127,7 +127,7 @@ template <> struct TensorKindToValue<TensorKind::String>
 };
 
 void GetHeightAndWidthFromLearningModelFeatureDescriptor(const ILearningModelFeatureDescriptor& modelFeatureDescriptor,
-    uint64_t& width, uint64_t& height)
+                                                         uint64_t& width, uint64_t& height)
 {
     if (modelFeatureDescriptor.Kind() == LearningModelFeatureKind::Tensor)
     {
@@ -159,7 +159,8 @@ namespace BindingUtilities
     static unsigned int seed = 0;
     static std::independent_bits_engine<std::default_random_engine, CHAR_BIT, unsigned int> randomBitsEngine;
 
-    SoftwareBitmap GenerateGarbageImage(const ILearningModelFeatureDescriptor& modelFeatureDescriptor, InputDataType inputDataType)
+    SoftwareBitmap GenerateGarbageImage(const ILearningModelFeatureDescriptor& modelFeatureDescriptor,
+                                        InputDataType inputDataType)
     {
         assert(inputDataType != InputDataType::Tensor);
         uint64_t width = 0;
@@ -187,8 +188,8 @@ namespace BindingUtilities
     }
 
     SoftwareBitmap LoadImageFile(const ILearningModelFeatureDescriptor& modelFeatureDescriptor,
-                                 InputDataType inputDataType,
-                                 const hstring& filePath, const CommandLineArgs& args, uint32_t iterationNum)
+                                 const InputDataType inputDataType, const hstring& filePath,
+                                 const CommandLineArgs& args, uint32_t iterationNum)
     {
         assert(inputDataType != InputDataType::Tensor);
 
@@ -325,8 +326,8 @@ namespace BindingUtilities
     }
 
     template <TensorKind T>
-    static ITensor CreateTensor(const CommandLineArgs& args, std::vector<std::string>& tensorStringInput,
-                                IVectorView<int64_t> tensorShape)
+    static ITensor CreateTensor(const CommandLineArgs& args, const std::vector<std::string>& tensorStringInput,
+                                const IVectorView<int64_t>& tensorShape)
     {
         using TensorValue = typename TensorKindToValue<T>::Type;
         using DataType = typename TensorKindToType<T>::Type;
@@ -398,8 +399,8 @@ namespace BindingUtilities
                 channels = 1;
             }
             else if (imageFeatureDescriptor.BitmapPixelFormat() == BitmapPixelFormat::Bgra8 ||
-                imageFeatureDescriptor.BitmapPixelFormat() == BitmapPixelFormat::Rgba16 ||
-                imageFeatureDescriptor.BitmapPixelFormat() == BitmapPixelFormat::Rgba8)
+                     imageFeatureDescriptor.BitmapPixelFormat() == BitmapPixelFormat::Rgba16 ||
+                     imageFeatureDescriptor.BitmapPixelFormat() == BitmapPixelFormat::Rgba8)
             {
                 channels = 3;
             }
@@ -407,87 +408,79 @@ namespace BindingUtilities
             {
                 throw hresult_not_implemented(L"BitmapPixel format not yet handled by WinMLRunner.");
             }
-            std::vector<int64_t> shape = { 1, channels, imageFeatureDescriptor.Height(), imageFeatureDescriptor.Width() };
+            std::vector<int64_t> shape = { 1, channels, imageFeatureDescriptor.Height(),
+                                           imageFeatureDescriptor.Width() };
             IVectorView<int64_t> shapeVectorView = single_threaded_vector(std::move(shape)).GetView();
             return CreateTensor<TensorKind::Float>(args, elementStrings, shapeVectorView);
         }
-        else
-        {
-            std::cout << "BindingUtilities: Input Descriptor type haisn't image feature descriptor. Attempting to "
-                         "interpret as tensor feature descriptor.."
-                      << std::endl;
-        }
 
         auto tensorDescriptor = description.try_as<TensorFeatureDescriptor>();
-        if (!tensorDescriptor)
+        if (tensorDescriptor)
         {
-            std::cout << "BindingUtilities: Input Descriptor type isn't tensor." << std::endl;
-            throw;
+            switch (tensorDescriptor.TensorKind())
+            {
+                case TensorKind::Undefined:
+                {
+                    std::cout << "BindingUtilities: TensorKind is undefined." << std::endl;
+                    throw hresult_invalid_argument();
+                }
+                case TensorKind::Float:
+                {
+                    return CreateTensor<TensorKind::Float>(args, elementStrings, tensorDescriptor.Shape());
+                }
+                break;
+                case TensorKind::Float16:
+                {
+                    return CreateTensor<TensorKind::Float16>(args, elementStrings, tensorDescriptor.Shape());
+                }
+                break;
+                case TensorKind::Double:
+                {
+                    return CreateTensor<TensorKind::Double>(args, elementStrings, tensorDescriptor.Shape());
+                }
+                break;
+                case TensorKind::Int8:
+                {
+                    return CreateTensor<TensorKind::Int8>(args, elementStrings, tensorDescriptor.Shape());
+                }
+                break;
+                case TensorKind::UInt8:
+                {
+                    return CreateTensor<TensorKind::UInt8>(args, elementStrings, tensorDescriptor.Shape());
+                }
+                break;
+                case TensorKind::Int16:
+                {
+                    return CreateTensor<TensorKind::Int16>(args, elementStrings, tensorDescriptor.Shape());
+                }
+                break;
+                case TensorKind::UInt16:
+                {
+                    return CreateTensor<TensorKind::UInt16>(args, elementStrings, tensorDescriptor.Shape());
+                }
+                break;
+                case TensorKind::Int32:
+                {
+                    return CreateTensor<TensorKind::Int32>(args, elementStrings, tensorDescriptor.Shape());
+                }
+                break;
+                case TensorKind::UInt32:
+                {
+                    return CreateTensor<TensorKind::UInt32>(args, elementStrings, tensorDescriptor.Shape());
+                }
+                break;
+                case TensorKind::Int64:
+                {
+                    return CreateTensor<TensorKind::Int64>(args, elementStrings, tensorDescriptor.Shape());
+                }
+                break;
+                case TensorKind::UInt64:
+                {
+                    return CreateTensor<TensorKind::UInt64>(args, elementStrings, tensorDescriptor.Shape());
+                }
+                break;
+            }
         }
-        switch (tensorDescriptor.TensorKind())
-        {
-            case TensorKind::Undefined:
-            {
-                std::cout << "BindingUtilities: TensorKind is undefined." << std::endl;
-                throw hresult_invalid_argument();
-            }
-            case TensorKind::Float:
-            {
-                return CreateTensor<TensorKind::Float>(args, elementStrings, tensorDescriptor.Shape());
-            }
-            break;
-            case TensorKind::Float16:
-            {
-                return CreateTensor<TensorKind::Float16>(args, elementStrings, tensorDescriptor.Shape());
-            }
-            break;
-            case TensorKind::Double:
-            {
-                return CreateTensor<TensorKind::Double>(args, elementStrings, tensorDescriptor.Shape());
-            }
-            break;
-            case TensorKind::Int8:
-            {
-                return CreateTensor<TensorKind::Int8>(args, elementStrings, tensorDescriptor.Shape());
-            }
-            break;
-            case TensorKind::UInt8:
-            {
-                return CreateTensor<TensorKind::UInt8>(args, elementStrings, tensorDescriptor.Shape());
-            }
-            break;
-            case TensorKind::Int16:
-            {
-                return CreateTensor<TensorKind::Int16>(args, elementStrings, tensorDescriptor.Shape());
-            }
-            break;
-            case TensorKind::UInt16:
-            {
-                return CreateTensor<TensorKind::UInt16>(args, elementStrings, tensorDescriptor.Shape());
-            }
-            break;
-            case TensorKind::Int32:
-            {
-                return CreateTensor<TensorKind::Int32>(args, elementStrings, tensorDescriptor.Shape());
-            }
-            break;
-            case TensorKind::UInt32:
-            {
-                return CreateTensor<TensorKind::UInt32>(args, elementStrings, tensorDescriptor.Shape());
-            }
-            break;
-            case TensorKind::Int64:
-            {
-                return CreateTensor<TensorKind::Int64>(args, elementStrings, tensorDescriptor.Shape());
-            }
-            break;
-            case TensorKind::UInt64:
-            {
-                return CreateTensor<TensorKind::UInt64>(args, elementStrings, tensorDescriptor.Shape());
-            }
-            break;
-        }
-
         std::cout << "BindingUtilities: TensorKind has not been implemented." << std::endl;
         throw hresult_not_implemented();
     }

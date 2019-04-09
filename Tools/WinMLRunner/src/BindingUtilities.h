@@ -2,7 +2,6 @@
 #include <random>
 #include <time.h>
 #include "Common.h"
-#include "ModelBinding.h"
 #include "Windows.AI.Machinelearning.Native.h"
 
 using namespace winrt::Windows::Media;
@@ -63,7 +62,7 @@ template <> struct TensorKindToType<TensorKind::Float>
 };
 template <> struct TensorKindToType<TensorKind::Float16>
 {
-    typedef float Type;
+    typedef HALF Type;
 };
 template <> struct TensorKindToType<TensorKind::String>
 {
@@ -269,18 +268,26 @@ namespace BindingUtilities
     }
 
     template <typename T>
-    void WriteDataToBinding(const std::vector<std::string>& elementStrings, ModelBinding<T>& binding)
+    void WriteDataToBinding(const std::vector<std::string>& elementStrings, T* bindingMemory,
+                            uint32_t bindingMemorySize)
     {
-        if (binding.GetDataBufferSize() != elementStrings.size())
+        if (bindingMemorySize / sizeof(T) != elementStrings.size())
         {
             throw hresult_invalid_argument(L"CSV Input is size/shape is different from what model expects");
         }
-        T* data = binding.GetData();
+        T* data = bindingMemory;
         for (const auto& elementString : elementStrings)
         {
-            T value;
+            float value;
             std::stringstream(elementString) >> value;
-            *data = value;
+            if (!std::is_same<T, HALF>::value)
+            {
+                *data = static_cast<T>(value);
+            }
+            else
+            {
+                *data = XMConvertFloatToHalf(value);
+            }
             data++;
         }
     }
@@ -301,51 +308,48 @@ namespace BindingUtilities
 
     template <TensorKind T>
     static ITensor CreateTensor(const CommandLineArgs& args, std::vector<std::string>& tensorStringInput,
-                                TensorFeatureDescriptor& tensorDescriptor)
+                                IVectorView<int64_t> tensorShape)
     {
         using TensorValue = typename TensorKindToValue<T>::Type;
         using DataType = typename TensorKindToType<T>::Type;
+        std::vector<int64_t> vecShape = {};
+        for (UINT dim = 0; dim < tensorShape.Size(); dim++)
+        {
+            INT64 dimSize = tensorShape.GetAt(dim);
+            if (dimSize > 0) // If the dimension is greater than 0, then it is known.
+            {
+                vecShape.push_back(dimSize);
+            }
+            else // otherwise, make sure that the dimension is -1, representing free dimension. If not, then it's an
+                 // invalid model.
+            {
+                if (dimSize == -1)
+                {
+                    vecShape.push_back(1);
+                }
+                else
+                {
+                    throw hresult_invalid_argument(L"Failed to create a tensor with an unknown dimension of: " +
+                                                   dimSize);
+                }
+            }
+        }
+        auto tensorValue = TensorValue::Create(vecShape);
+
+        com_ptr<ITensorNative> spTensorValueNative;
+        tensorValue.as(spTensorValueNative);
+
+        BYTE* actualData;
+        uint32_t actualSizeInBytes;
+        spTensorValueNative->GetBuffer(&actualData,
+                                       &actualSizeInBytes); // Need to GetBuffer to have CPU memory backing tensorValue
 
         if (!args.CsvPath().empty())
         {
-            ModelBinding<DataType> binding(tensorDescriptor);
-            WriteDataToBinding<DataType>(tensorStringInput, binding);
-            return TensorValue::CreateFromArray(binding.GetShapeBuffer(), binding.GetDataBuffer());
+            WriteDataToBinding<DataType>(tensorStringInput, reinterpret_cast<DataType*>(actualData), actualSizeInBytes);
         }
         else if (args.IsGarbageInput())
         {
-            std::vector<int64_t> vecShape = {};
-            auto tensorDescriptorShape = tensorDescriptor.Shape();
-            for (UINT dim = 0; dim < tensorDescriptorShape.Size(); dim++)
-            {
-                INT64 dimSize = tensorDescriptorShape.GetAt(dim);
-                if (dimSize > 0) // If the dimension is greater than 0, then it is known.
-                {
-                    vecShape.push_back(dimSize);
-                }
-                else // otherwise, make sure that the dimension is -1, representing free dimension. If not, then it's an
-                     // invalid model.
-                {
-                    if (dimSize == -1)
-                    {
-                        vecShape.push_back(1);
-                    }
-                    else
-                    {
-                        throw hresult_invalid_argument(L"Failed to create a tensor with an unknown dimension of: " +
-                                                       dimSize);
-                    }
-                }
-            }
-            auto tensorValue = TensorValue::Create(vecShape);
-
-            com_ptr<ITensorNative> spTensorValueNative;
-            tensorValue.as(spTensorValueNative);
-
-            BYTE* actualData;
-            uint32_t actualSizeInBytes;
-            spTensorValueNative->GetBuffer(
-                &actualData, &actualSizeInBytes); // Need to GetBuffer to have CPU memory backing tensorValue
             return tensorValue;
         }
         else
@@ -353,24 +357,54 @@ namespace BindingUtilities
             // Creating Tensors for Input Images haven't been added yet.
             throw hresult_not_implemented(L"Creating Tensors for Input Images haven't been implemented yet!");
         }
+        return tensorValue;
     }
 
     // Binds tensor floats, ints, doubles from CSV data.
     ITensor CreateBindableTensor(const ILearningModelFeatureDescriptor& description, const CommandLineArgs& args)
     {
-        auto name = description.Name();
-        auto tensorDescriptor = description.try_as<TensorFeatureDescriptor>();
-
-        if (!tensorDescriptor)
-        {
-            std::cout << "BindingUtilities: Input Descriptor type isn't tensor." << std::endl;
-            throw;
-        }
-
         std::vector<std::string> elementStrings;
         if (!args.CsvPath().empty())
         {
             elementStrings = ParseCSVElementStrings(args.CsvPath());
+        }
+
+        // Try Image Feature Descriptor
+        auto imageFeatureDescriptor = description.try_as<ImageFeatureDescriptor>();
+        if (imageFeatureDescriptor)
+        {
+            int64_t channels;
+            if (imageFeatureDescriptor.BitmapPixelFormat() == BitmapPixelFormat::Gray16 ||
+                imageFeatureDescriptor.BitmapPixelFormat() == BitmapPixelFormat::Gray8)
+            {
+                channels = 1;
+            }
+            else if (imageFeatureDescriptor.BitmapPixelFormat() == BitmapPixelFormat::Bgra8 ||
+                imageFeatureDescriptor.BitmapPixelFormat() == BitmapPixelFormat::Rgba16 ||
+                imageFeatureDescriptor.BitmapPixelFormat() == BitmapPixelFormat::Rgba8)
+            {
+                channels = 3;
+            }
+            else
+            {
+                throw hresult_not_implemented(L"BitmapPixel format not yet handled by WinMLRunner.");
+            }
+            std::vector<int64_t> shape = { 1, channels, imageFeatureDescriptor.Height(), imageFeatureDescriptor.Width() };
+            IVectorView<int64_t> shapeVectorView = single_threaded_vector(std::move(shape)).GetView();
+            return CreateTensor<TensorKind::Float>(args, elementStrings, shapeVectorView);
+        }
+        else
+        {
+            std::cout << "BindingUtilities: Input Descriptor type haisn't image feature descriptor. Attempting to "
+                         "interpret as tensor feature descriptor.."
+                      << std::endl;
+        }
+
+        auto tensorDescriptor = description.try_as<TensorFeatureDescriptor>();
+        if (!tensorDescriptor)
+        {
+            std::cout << "BindingUtilities: Input Descriptor type isn't tensor." << std::endl;
+            throw;
         }
         switch (tensorDescriptor.TensorKind())
         {
@@ -381,57 +415,57 @@ namespace BindingUtilities
             }
             case TensorKind::Float:
             {
-                return CreateTensor<TensorKind::Float>(args, elementStrings, tensorDescriptor);
+                return CreateTensor<TensorKind::Float>(args, elementStrings, tensorDescriptor.Shape());
             }
             break;
             case TensorKind::Float16:
             {
-                return CreateTensor<TensorKind::Float16>(args, elementStrings, tensorDescriptor);
+                return CreateTensor<TensorKind::Float16>(args, elementStrings, tensorDescriptor.Shape());
             }
             break;
             case TensorKind::Double:
             {
-                return CreateTensor<TensorKind::Double>(args, elementStrings, tensorDescriptor);
+                return CreateTensor<TensorKind::Double>(args, elementStrings, tensorDescriptor.Shape());
             }
             break;
             case TensorKind::Int8:
             {
-                return CreateTensor<TensorKind::Int8>(args, elementStrings, tensorDescriptor);
+                return CreateTensor<TensorKind::Int8>(args, elementStrings, tensorDescriptor.Shape());
             }
             break;
             case TensorKind::UInt8:
             {
-                return CreateTensor<TensorKind::UInt8>(args, elementStrings, tensorDescriptor);
+                return CreateTensor<TensorKind::UInt8>(args, elementStrings, tensorDescriptor.Shape());
             }
             break;
             case TensorKind::Int16:
             {
-                return CreateTensor<TensorKind::Int16>(args, elementStrings, tensorDescriptor);
+                return CreateTensor<TensorKind::Int16>(args, elementStrings, tensorDescriptor.Shape());
             }
             break;
             case TensorKind::UInt16:
             {
-                return CreateTensor<TensorKind::UInt16>(args, elementStrings, tensorDescriptor);
+                return CreateTensor<TensorKind::UInt16>(args, elementStrings, tensorDescriptor.Shape());
             }
             break;
             case TensorKind::Int32:
             {
-                return CreateTensor<TensorKind::Int32>(args, elementStrings, tensorDescriptor);
+                return CreateTensor<TensorKind::Int32>(args, elementStrings, tensorDescriptor.Shape());
             }
             break;
             case TensorKind::UInt32:
             {
-                return CreateTensor<TensorKind::UInt32>(args, elementStrings, tensorDescriptor);
+                return CreateTensor<TensorKind::UInt32>(args, elementStrings, tensorDescriptor.Shape());
             }
             break;
             case TensorKind::Int64:
             {
-                return CreateTensor<TensorKind::Int64>(args, elementStrings, tensorDescriptor);
+                return CreateTensor<TensorKind::Int64>(args, elementStrings, tensorDescriptor.Shape());
             }
             break;
             case TensorKind::UInt64:
             {
-                return CreateTensor<TensorKind::UInt64>(args, elementStrings, tensorDescriptor);
+                return CreateTensor<TensorKind::UInt64>(args, elementStrings, tensorDescriptor.Shape());
             }
             break;
         }
@@ -577,8 +611,7 @@ namespace BindingUtilities
                     {
                         auto maxValue = pair.first;
                         auto maxIndex = pair.second;
-                        std::wcout << " index: " << maxIndex << ", value: " << maxValue
-                                   << std::endl;
+                        std::wcout << " index: " << maxIndex << ", value: " << maxValue << std::endl;
                     }
                 }
             }

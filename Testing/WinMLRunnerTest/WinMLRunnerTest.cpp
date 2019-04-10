@@ -212,9 +212,10 @@ namespace WinMLRunnerTest
         return true;
     }
 
-    TEST_CLASS(GarbageInputTest){ public : TEST_CLASS_INITIALIZE(SetupClass){
-        // Make test_folder_input folder before starting the tests
-        std::string mkFolderCommand = "mkdir " + std::string(INPUT_FOLDER_PATH.begin(), INPUT_FOLDER_PATH.end());
+    TEST_CLASS(GarbageInputTest) {
+public: TEST_CLASS_INITIALIZE(SetupClass) {
+    // Make test_folder_input folder before starting the tests
+    std::string mkFolderCommand = "mkdir " + std::string(INPUT_FOLDER_PATH.begin(), INPUT_FOLDER_PATH.end());
     system(mkFolderCommand.c_str());
 
     std::vector<std::string> models = { "SqueezeNet.onnx", "keras_Add_ImageNet_small.onnx" };
@@ -226,7 +227,7 @@ namespace WinMLRunnerTest
         copyCommand += model;
         copyCommand += ' ' + std::string(INPUT_FOLDER_PATH.begin(), INPUT_FOLDER_PATH.end());
         system(copyCommand.c_str());
-            }
+    }
 } // namespace WinMLRunnerTest
 
         TEST_CLASS_CLEANUP(CleanupClass)
@@ -284,36 +285,12 @@ namespace WinMLRunnerTest
             Assert::AreEqual(static_cast<size_t>(2), GetOutputCSVLineCount());
         }
 
-        TEST_METHOD(GarbageInputCpuClientDeviceCpuBoundRGBImage)
-        {
-            const std::wstring modelPath = CURRENT_PATH + L"SqueezeNet.onnx";
-            const std::wstring command =
-                BuildCommand({ EXE_PATH, L"-model", modelPath, L"-PerfOutput", OUTPUT_PATH, L"-perf", L"-CPU",
-                               L"-CPUBoundInput", L"-RGB", L"-CreateDeviceOnClient" });
-            Assert::AreEqual(S_OK, RunProc((wchar_t*)command.c_str()));
-
-            // We need to expect one more line because of the header
-            Assert::AreEqual(static_cast<size_t>(2), GetOutputCSVLineCount());
-        }
-
         TEST_METHOD(GarbageInputCpuWinMLDeviceCpuBoundRGBImage)
         {
             const std::wstring modelPath = CURRENT_PATH + L"SqueezeNet.onnx";
             const std::wstring command =
                 BuildCommand({ EXE_PATH, L"-model", modelPath, L"-PerfOutput", OUTPUT_PATH, L"-perf", L"-CPU",
                                L"-CPUBoundInput", L"-RGB", L"-CreateDeviceInWinML" });
-            Assert::AreEqual(S_OK, RunProc((wchar_t*)command.c_str()));
-
-            // We need to expect one more line because of the header
-            Assert::AreEqual(static_cast<size_t>(2), GetOutputCSVLineCount());
-        }
-
-        TEST_METHOD(GarbageInputCpuClientDeviceCpuBoundBGRImage)
-        {
-            const std::wstring modelPath = CURRENT_PATH + L"SqueezeNet.onnx";
-            const std::wstring command =
-                BuildCommand({ EXE_PATH, L"-model", modelPath, L"-PerfOutput", OUTPUT_PATH, L"-perf", L"-CPU",
-                               L"-CPUBoundInput", L"-BGR", L"-CreateDeviceOnClient" });
             Assert::AreEqual(S_OK, RunProc((wchar_t*)command.c_str()));
 
             // We need to expect one more line because of the header
@@ -332,36 +309,12 @@ namespace WinMLRunnerTest
             Assert::AreEqual(static_cast<size_t>(2), GetOutputCSVLineCount());
         }
 
-        TEST_METHOD(GarbageInputCpuClientDeviceCpuBoundTensor)
-        {
-            const std::wstring modelPath = CURRENT_PATH + L"SqueezeNet.onnx";
-            const std::wstring command =
-                BuildCommand({ EXE_PATH, L"-model", modelPath, L"-PerfOutput", OUTPUT_PATH, L"-perf", L"-CPU",
-                               L"-CPUBoundInput", L"-tensor", L"-CreateDeviceOnClient" });
-            Assert::AreEqual(S_OK, RunProc((wchar_t*)command.c_str()));
-
-            // We need to expect one more line because of the header
-            Assert::AreEqual(static_cast<size_t>(2), GetOutputCSVLineCount());
-        }
-
         TEST_METHOD(GarbageInputCpuWinMLDeviceCpuBoundTensor)
         {
             const std::wstring modelPath = CURRENT_PATH + L"SqueezeNet.onnx";
             const std::wstring command =
                 BuildCommand({ EXE_PATH, L"-model", modelPath, L"-PerfOutput", OUTPUT_PATH, L"-perf", L"-CPU",
                                L"-CPUBoundInput", L"-tensor", L"-CreateDeviceInWinML" });
-            Assert::AreEqual(S_OK, RunProc((wchar_t*)command.c_str()));
-
-            // We need to expect one more line because of the header
-            Assert::AreEqual(static_cast<size_t>(2), GetOutputCSVLineCount());
-        }
-
-        TEST_METHOD(GarbageInputCpuClientDeviceGpuBoundRGBImage)
-        {
-            const std::wstring modelPath = CURRENT_PATH + L"SqueezeNet.onnx";
-            const std::wstring command =
-                BuildCommand({ EXE_PATH, L"-model", modelPath, L"-PerfOutput", OUTPUT_PATH, L"-perf", L"-CPU",
-                               L"-GPUBoundInput", L"-RGB", L"-CreateDeviceOnClient" });
             Assert::AreEqual(S_OK, RunProc((wchar_t*)command.c_str()));
 
             // We need to expect one more line because of the header
@@ -380,36 +333,12 @@ namespace WinMLRunnerTest
             Assert::AreEqual(static_cast<size_t>(2), GetOutputCSVLineCount());
         }
 
-        TEST_METHOD(GarbageInputCpuClientDeviceGpuBoundBGRImage)
-        {
-            const std::wstring modelPath = CURRENT_PATH + L"SqueezeNet.onnx";
-            const std::wstring command =
-                BuildCommand({ EXE_PATH, L"-model", modelPath, L"-PerfOutput", OUTPUT_PATH, L"-perf", L"-CPU",
-                               L"-GPUBoundInput", L"-BGR", L"-CreateDeviceOnClient" });
-            Assert::AreEqual(S_OK, RunProc((wchar_t*)command.c_str()));
-
-            // We need to expect one more line because of the header
-            Assert::AreEqual(static_cast<size_t>(2), GetOutputCSVLineCount());
-        }
-
         TEST_METHOD(GarbageInputCpuWinMLDeviceGpuBoundBGRImage)
         {
             const std::wstring modelPath = CURRENT_PATH + L"SqueezeNet.onnx";
             const std::wstring command =
                 BuildCommand({ EXE_PATH, L"-model", modelPath, L"-PerfOutput", OUTPUT_PATH, L"-perf", L"-CPU",
                                L"-GPUBoundInput", L"-BGR", L"-CreateDeviceInWinML" });
-            Assert::AreEqual(S_OK, RunProc((wchar_t*)command.c_str()));
-
-            // We need to expect one more line because of the header
-            Assert::AreEqual(static_cast<size_t>(2), GetOutputCSVLineCount());
-        }
-
-        TEST_METHOD(GarbageInputCpuClientDeviceGpuBoundTensor)
-        {
-            const std::wstring modelPath = CURRENT_PATH + L"SqueezeNet.onnx";
-            const std::wstring command =
-                BuildCommand({ EXE_PATH, L"-model", modelPath, L"-PerfOutput", OUTPUT_PATH, L"-perf", L"-CPU",
-                               L"-GPUBoundInput", L"-tensor", L"-CreateDeviceOnClient" });
             Assert::AreEqual(S_OK, RunProc((wchar_t*)command.c_str()));
 
             // We need to expect one more line because of the header
@@ -572,32 +501,6 @@ namespace WinMLRunnerTest
             Assert::AreEqual(static_cast<size_t>(2), GetOutputCSVLineCount());
         }
 
-        TEST_METHOD(GarbageInputAllPermutations)
-        {
-            const std::wstring modelPath = CURRENT_PATH + L"SqueezeNet.onnx";
-            const std::wstring command = BuildCommand({
-                EXE_PATH,
-                L"-model",
-                modelPath,
-                L"-PerfOutput",
-                OUTPUT_PATH,
-                L"-perf",
-                L"-CPU",
-                L"-GPU",
-                L"-CreateDeviceOnClient",
-                L"-CreateDeviceInWinML",
-                L"-CPUBoundInput",
-                L"-GPUBoundInput",
-                L"-RGB",
-                L"-BGR",
-                L"-tensor"
-            });
-            Assert::AreEqual(S_OK, RunProc((wchar_t *)command.c_str()));
-
-            // We need to expect one more line because of the header
-            Assert::AreEqual(static_cast<size_t>(25), GetOutputCSVLineCount());
-        }
-
         TEST_METHOD(RunAllModelsInFolderGarbageInput)
         {
             const std::wstring command = BuildCommand({ EXE_PATH, L"-folder", INPUT_FOLDER_PATH, L"-PerfOutput", OUTPUT_PATH, L"-perf" });
@@ -605,31 +508,6 @@ namespace WinMLRunnerTest
 
             // We need to expect one more line because of the header
             Assert::AreEqual(static_cast<size_t>(5), GetOutputCSVLineCount());
-        }
-
-        TEST_METHOD(RunAllModelsInFolderGarbageInputWithAllPermutations)
-        {
-            const std::wstring command = BuildCommand({
-                EXE_PATH,
-                L"-folder",
-                INPUT_FOLDER_PATH,
-                L"-PerfOutput",
-                OUTPUT_PATH,
-                L"-perf",
-                L"-CPU",
-                L"-GPU",
-                L"-CreateDeviceOnClient",
-                L"-CreateDeviceInWinML",
-                L"-CPUBoundInput",
-                L"-GPUBoundInput",
-                L"-RGB",
-                L"-BGR",
-                L"-tensor"
-                });
-            Assert::AreEqual(S_OK, RunProc((wchar_t *)command.c_str()));
-
-            // We need to expect one more line because of the header
-            Assert::AreEqual(static_cast<size_t>(49), GetOutputCSVLineCount());
         }
     };
 
@@ -696,6 +574,27 @@ namespace WinMLRunnerTest
             Assert::AreEqual(S_OK, RunProc((wchar_t*)command.c_str()));
             Assert::AreEqual(true, CompareTensors(L"OutputTensorData\\Squeezenet_fish_input_CPU.csv",
                                                   TENSOR_DATA_PATH + L"\\softmaxout_1CpuIteration1.csv"));
+        }
+
+        TEST_METHOD(ProvidedImageInputOnlyGpuSaveTensorImageDenotation)
+        {
+            const std::wstring modelPath = CURRENT_PATH + L"mnist.onnx";
+            const std::wstring inputPath = CURRENT_PATH + L"mnist_28.png";
+            const std::wstring command = BuildCommand({ EXE_PATH, L"-model ", modelPath, L"-input", inputPath,
+                                                        L"-SaveTensorData", L"First", TENSOR_DATA_PATH, L"-GPU" });
+            Assert::AreEqual(S_OK, RunProc((wchar_t*)command.c_str()));
+            Assert::AreEqual(true, CompareTensors(L"OutputTensorData\\Mnist_8_input_GPU.csv",
+                TENSOR_DATA_PATH + L"\\Plus214_Output_0GpuIteration1.csv"));
+        }
+        TEST_METHOD(ProvidedImageInputOnlyCpuSaveTensorImageDenotation)
+        {
+            const std::wstring modelPath = CURRENT_PATH + L"mnist.onnx";
+            const std::wstring inputPath = CURRENT_PATH + L"mnist_28.png";
+            const std::wstring command = BuildCommand({ EXE_PATH, L"-model ", modelPath, L"-input", inputPath,
+                                                        L"-SaveTensorData", L"First", TENSOR_DATA_PATH, L"-CPU" });
+            Assert::AreEqual(S_OK, RunProc((wchar_t*)command.c_str()));
+            Assert::AreEqual(true, CompareTensors(L"OutputTensorData\\Mnist_8_input_CPU.csv",
+                TENSOR_DATA_PATH + L"\\Plus214_Output_0CpuIteration1.csv"));
         }
         TEST_METHOD(ProvidedImageInputOnlyGpuSaveTensorFp16)
         {
@@ -786,6 +685,27 @@ namespace WinMLRunnerTest
             Assert::AreEqual(S_OK, RunProc((wchar_t*)command.c_str()));
             Assert::AreEqual(true, CompareTensorsFP16(L"OutputTensorData\\Squeezenet_fp16_fish_input_CPU.csv",
                                                       TENSOR_DATA_PATH + L"\\softmaxout_1CpuIteration1.csv"));
+        }
+
+        TEST_METHOD(ProvidedCSVInputOnlyGpuSaveTensorImageDenotation)
+        {
+            const std::wstring modelPath = CURRENT_PATH + L"mnist.onnx";
+            const std::wstring inputPath = CURRENT_PATH + L"mnist_28.csv";
+            const std::wstring command = BuildCommand({ EXE_PATH, L"-model ", modelPath, L"-input", inputPath,
+                                                        L"-SaveTensorData", L"First", TENSOR_DATA_PATH, L"-GPU" });
+            Assert::AreEqual(S_OK, RunProc((wchar_t*)command.c_str()));
+            Assert::AreEqual(true, CompareTensors(L"OutputTensorData\\Mnist_8_input_GPU.csv",
+                TENSOR_DATA_PATH + L"\\Plus214_Output_0GpuIteration1.csv"));
+        }
+        TEST_METHOD(ProvidedCSVInputOnlyCpuSaveTensorImageDenotation)
+        {
+            const std::wstring modelPath = CURRENT_PATH + L"mnist.onnx";
+            const std::wstring inputPath = CURRENT_PATH + L"mnist_28.csv";
+            const std::wstring command = BuildCommand({ EXE_PATH, L"-model ", modelPath, L"-input", inputPath,
+                                                        L"-SaveTensorData", L"First", TENSOR_DATA_PATH, L"-CPU" });
+            Assert::AreEqual(S_OK, RunProc((wchar_t*)command.c_str()));
+            Assert::AreEqual(true, CompareTensors(L"OutputTensorData\\Mnist_8_input_CPU.csv",
+                TENSOR_DATA_PATH + L"\\Plus214_Output_0CpuIteration1.csv"));
         }
     };
 

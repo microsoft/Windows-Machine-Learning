@@ -111,7 +111,7 @@ HRESULT LoadModel(LearningModel &model, const std::wstring& path, bool capturePe
     return S_OK;
 }
 
-HRESULT CreateSession(LearningModelSession& session, IDirect3DDevice &winrtDevice, LearningModel& model, CommandLineArgs& args, OutputHelper& output,
+HRESULT CreateSession(LearningModelSession& session, IDirect3DDevice& winrtDevice, LearningModel& model, CommandLineArgs& args, OutputHelper& output,
                       DeviceType deviceType, DeviceCreationLocation deviceCreationLocation,
                       Profiler<WINML_MODEL_TEST_PERF>& profiler)
 {
@@ -211,7 +211,7 @@ HRESULT CreateSession(LearningModelSession& session, IDirect3DDevice &winrtDevic
 
 HRESULT BindInputs(LearningModelBinding &context, const LearningModel& model, const LearningModelSession& session, OutputHelper& output,
                    DeviceType deviceType, const CommandLineArgs& args, InputBindingType inputBindingType, InputDataType inputDataType,
-                   const IDirect3DDevice winrtDevice, DeviceCreationLocation deviceCreationLocation, uint32_t iteration,
+                   const IDirect3DDevice& winrtDevice, DeviceCreationLocation deviceCreationLocation, uint32_t iteration,
                    Profiler<WINML_MODEL_TEST_PERF>& profiler)
 {
     bool useInputData = false;

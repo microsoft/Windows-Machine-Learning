@@ -10,62 +10,6 @@
 
 using namespace winrt::Windows::Graphics::DirectX::Direct3D11;
 
-LearningModel LoadModel(const std::wstring& path, bool capturePerf, OutputHelper& output, const CommandLineArgs& args,
-                        uint32_t iterationNum, Profiler<WINML_MODEL_TEST_PERF>& profiler)
-{
-    LearningModel model = nullptr;
-    output.PrintLoadingInfo(path);
-    try
-    {
-        if (capturePerf)
-        {
-            WINML_PROFILING_START(profiler, WINML_MODEL_TEST_PERF::LOAD_MODEL);
-        }
-        model = LearningModel::LoadFromFilePath(path);
-
-        if (capturePerf)
-        {
-            WINML_PROFILING_STOP(profiler, WINML_MODEL_TEST_PERF::LOAD_MODEL);
-            if (args.IsPerIterationCapture())
-            {
-                output.SaveLoadTimes(profiler, iterationNum);
-            }
-        }
-    }
-    catch (hresult_error hr)
-    {
-        std::wcout << "Load Model: " << path << " [FAILED]" << std::endl;
-        std::wcout << hr.message().c_str() << std::endl;
-        throw;
-    }
-
-    output.PrintModelInfo(path, model);
-
-    return model;
-}
-
-std::vector<std::wstring> GetModelsInDirectory(CommandLineArgs& args, OutputHelper* output)
-{
-    std::vector<std::wstring> modelPaths;
-
-    std::wstring folderPath = args.FolderPath();
-    for (auto& it : std::filesystem::directory_iterator(args.FolderPath()))
-    {
-        std::string path = it.path().string();
-
-        if (it.path().string().find(".onnx") != std::string::npos ||
-            it.path().string().find(".pb") != std::string::npos)
-        {
-            std::wstring fileName;
-            fileName.assign(path.begin(), path.end());
-            args.SetModelPath(fileName);
-            modelPaths.push_back(fileName);
-        }
-    }
-
-    return modelPaths;
-}
-
 std::vector<ILearningModelFeatureValue> GenerateInputFeatures(const LearningModel& model, const CommandLineArgs& args,
                                                               InputBindingType inputBindingType,
                                                               InputDataType inputDataType,
@@ -137,69 +81,40 @@ HRESULT BindInputFeatures(const LearningModel& model, const LearningModelBinding
     return S_OK;
 }
 
-HRESULT EvaluateModel(LearningModelEvaluationResult& result, const LearningModel& model,
-                      const LearningModelBinding& context, LearningModelSession& session, const CommandLineArgs& args,
-                      OutputHelper& output, bool capturePerf, uint32_t iterationNum,
-                      Profiler<WINML_MODEL_TEST_PERF>& profiler)
+LearningModel LoadModel(const std::wstring& path, bool capturePerf, OutputHelper& output, const CommandLineArgs& args,
+                        uint32_t iterationNum, Profiler<WINML_MODEL_TEST_PERF>& profiler)
 {
-    try
+    LearningModel model = nullptr;
+    output.PrintLoadingInfo(path);
+    if (capturePerf)
     {
-        if (capturePerf)
-        {
-            WINML_PROFILING_START(profiler, iterationNum == 0 ? WINML_MODEL_TEST_PERF::EVAL_MODEL_FIRST_RUN
-                                                              : WINML_MODEL_TEST_PERF::EVAL_MODEL);
-        }
+        WINML_PROFILING_START(profiler, WINML_MODEL_TEST_PERF::LOAD_MODEL);
+    }
+    model = LearningModel::LoadFromFilePath(path);
 
-        result = session.Evaluate(context, L"");
-
-        if (capturePerf)
+    if (capturePerf)
+    {
+        WINML_PROFILING_STOP(profiler, WINML_MODEL_TEST_PERF::LOAD_MODEL);
+        if (args.IsPerIterationCapture())
         {
-            WINML_PROFILING_STOP(profiler, iterationNum == 0 ? WINML_MODEL_TEST_PERF::EVAL_MODEL_FIRST_RUN
-                                                             : WINML_MODEL_TEST_PERF::EVAL_MODEL);
-            if (args.IsPerIterationCapture())
-            {
-                output.SaveEvalPerformance(profiler, iterationNum);
-            }
+            output.SaveLoadTimes(profiler, iterationNum);
         }
     }
-    catch (winrt::hresult_error hr)
-    {
-        std::cout << "[FAILED]" << std::endl;
-        std::wcout << hr.message().c_str() << std::endl;
-        return hr.code();
-    }
+    output.PrintModelInfo(path, model);
 
-    // Only print eval results on the first iteration, iff it's not garbage data
-    if (!args.IsGarbageInput() || args.IsSaveTensor())
-    {
-        BindingUtilities::PrintOrSaveEvaluationResults(model, args, result.Outputs(), output, iterationNum);
-    }
-    return S_OK;
+    return model;
 }
 
-// Binds and evaluates the user-specified model and outputs success/failure for each step. If the
-// perf flag is used, it will output the CPU, GPU, and wall-clock time for each step to the
-// command-line and to a CSV file.
-HRESULT EvaluateModel(const LearningModel& model, const CommandLineArgs& args, OutputHelper& output,
-                      DeviceType deviceType, InputBindingType inputBindingType, InputDataType inputDataType,
-                      DeviceCreationLocation deviceCreationLocation, Profiler<WINML_MODEL_TEST_PERF>& profiler)
+HRESULT CreateSession(LearningModelSession& session, IDirect3DDevice &winrtDevice, LearningModel& model, CommandLineArgs& args, OutputHelper& output,
+                      DeviceType deviceType, DeviceCreationLocation deviceCreationLocation,
+                      Profiler<WINML_MODEL_TEST_PERF>& profiler)
 {
+    typedef std::pair<HRESULT, LearningModelSession> pair;
     if (model == nullptr)
     {
         return hresult_invalid_argument().code();
     }
 
-    LearningModelSession session = nullptr;
-    IDirect3DDevice winrtDevice = nullptr;
-#if defined(_AMD64_)
-    // PIX markers only work on AMD64
-    if (output.GetGraphicsAnalysis().get())
-    {
-        // If PIX tool is attached to WinMLRunner then begin capture. First capture will include
-        // session creation, first iteration bind and first iteration evaluate.
-        output.GetGraphicsAnalysis()->BeginCapture();
-    }
-#endif
     try
     {
         if (deviceCreationLocation == DeviceCreationLocation::ClientCode && deviceType != DeviceType::CPU)
@@ -286,201 +201,111 @@ HRESULT EvaluateModel(const LearningModel& model, const CommandLineArgs& args, O
         session.EvaluationProperties().Insert(L"EnableDebugOutput", nullptr);
     }
 
-    LearningModelBinding context(session);
+    return S_OK;
+}
 
+HRESULT BindInputs(LearningModelBinding &context, const LearningModel& model, const LearningModelSession& session, OutputHelper& output,
+                   DeviceType deviceType, const CommandLineArgs& args, InputBindingType inputBindingType, InputDataType inputDataType,
+                   const IDirect3DDevice winrtDevice, DeviceCreationLocation deviceCreationLocation, uint32_t iteration,
+                   Profiler<WINML_MODEL_TEST_PERF>& profiler)
+{
     bool useInputData = false;
-
     bool isGarbageData = args.IsGarbageInput();
     std::string completionString = "\n";
 
     // Run the binding + evaluate multiple times and average the results
-    for (uint32_t i = 0; i < args.NumIterations(); i++)
+    bool captureIterationPerf = args.IsPerformanceCapture() || args.IsPerIterationCapture();
+
+    std::vector<ILearningModelFeatureValue> inputFeatures;
+    try
     {
-        bool captureIterationPerf = args.IsPerformanceCapture() || args.IsPerIterationCapture();
-
-        std::vector<ILearningModelFeatureValue> inputFeatures;
-        try
-        {
-            inputFeatures = GenerateInputFeatures(model, args, inputBindingType, inputDataType, winrtDevice, i);
-        }
-        catch (hresult_error hr)
-        {
-            std::wcout << "\nGenerating Input Features [FAILED]" << std::endl;
-            std::wcout << hr.message().c_str() << std::endl;
-            return hr.code();
-        }
-
-#if defined(_AMD64_)
-        // PIX markers only work on AMD64
-        // If PIX tool was attached then capture already began for the first iteration before session creation.
-        // This is to begin PIX capture for each iteration after the first iteration.
-        if (i > 0 && output.GetGraphicsAnalysis())
-        {
-            output.GetGraphicsAnalysis()->BeginCapture();
-        }
-#endif
-        HRESULT bindInputResult =
-            BindInputFeatures(model, context, inputFeatures, args, output, captureIterationPerf, i, profiler);
-
-        if (FAILED(bindInputResult))
-        {
-            output.PrintBindingInfo(i + 1, deviceType, inputBindingType, inputDataType, deviceCreationLocation,
-                                    "[FAILED]");
-            return bindInputResult;
-        }
-        else if (!args.TerseOutput() || i == 0)
-        {
-            output.PrintBindingInfo(i + 1, deviceType, inputBindingType, inputDataType, deviceCreationLocation,
-                                    "[SUCCESS]");
-        }
-
-        LearningModelEvaluationResult result = nullptr;
-        HRESULT evalResult =
-            EvaluateModel(result, model, context, session, args, output, captureIterationPerf, i, profiler);
-
-        if (FAILED(evalResult))
-        {
-            output.PrintEvaluatingInfo(i + 1, deviceType, inputBindingType, inputDataType, deviceCreationLocation,
-                                       "[FAILED]");
-            return evalResult;
-        }
-        else if (!args.TerseOutput() || i == 0)
-        {
-            output.PrintEvaluatingInfo(i + 1, deviceType, inputBindingType, inputDataType, deviceCreationLocation,
-                                       "[SUCCESS]");
-            if (args.TerseOutput() && args.NumIterations() > 1)
-            {
-                printf("Binding and Evaluating %d more time%s...", args.NumIterations() - 1,
-                       (args.NumIterations() == 2 ? "" : "s"));
-                completionString = "[SUCCESS]\n";
-            }
-        }
-#if defined(_AMD64_)
-        // PIX markers only work on AMD64
-        if (output.GetGraphicsAnalysis())
-        {
-            // If PIX tool is attached, then end the capture
-            output.GetGraphicsAnalysis()->EndCapture();
-        }
-#endif
+        inputFeatures = GenerateInputFeatures(model, args, inputBindingType, inputDataType, winrtDevice, iteration);
     }
-    printf("%s", completionString.c_str());
-
-    if (args.IsSaveTensor() || args.IsPerIterationCapture())
+    catch (hresult_error hr)
     {
-        output.WritePerIterationPerformance(args, args.ModelPath(), args.ImagePath());
+        std::wcout << "\nGenerating Input Features [FAILED]" << std::endl;
+        std::wcout << hr.message().c_str() << std::endl;
+        return hr.code();
     }
 
-    // Clean up session resources
-    session.Close();
-    session.~LearningModelSession();
 
-    return S_OK;
-}
+    HRESULT bindInputResult =
+        BindInputFeatures(model, context, inputFeatures, args, output, captureIterationPerf, iteration, profiler);
 
-HRESULT EvaluateModelWithDeviceType(const LearningModel& model, const DeviceType deviceType,
-                                    const std::vector<InputBindingType>& inputBindingTypes,
-                                    const std::vector<InputDataType>& inputDataTypes,
-                                    const std::vector<DeviceCreationLocation> deviceCreationLocations,
-                                    const CommandLineArgs& args, const std::wstring& modelPath, OutputHelper& output,
-                                    Profiler<WINML_MODEL_TEST_PERF>& profiler,
-                                    TensorFeatureDescriptor& tensorDescriptor)
-{
-    for (const auto& inputBindingType : inputBindingTypes)
+    if (FAILED(bindInputResult))
     {
-        for (const auto& inputDataType : inputDataTypes)
-        {
-            for (const auto& deviceCreationLocation : deviceCreationLocations)
-            {
-                if (args.IsPerformanceCapture() || args.IsPerIterationCapture())
-                {
-                    // Resets all values from profiler for bind and evaluate.
-                    profiler.Reset(WINML_MODEL_TEST_PERF::BIND_VALUE, WINML_MODEL_TEST_PERF::COUNT);
-                }
-
-                if (inputDataType != InputDataType::Tensor)
-                {
-                    // Currently GPU binding only work with 4D tensors and RGBA/BGRA images
-                    if (tensorDescriptor.Shape().Size() != 4 || tensorDescriptor.Shape().GetAt(1) != 3)
-                    {
-                        continue;
-                    }
-                }
-
-                HRESULT evalHResult = EvaluateModel(model, args, output, deviceType, inputBindingType, inputDataType,
-                                                    deviceCreationLocation, profiler);
-
-                if (FAILED(evalHResult))
-                {
-                    return evalHResult;
-                }
-
-                if (args.IsPerformanceCapture())
-                {
-                    output.PrintResults(profiler, args.NumIterations(), deviceType, inputBindingType, inputDataType,
-                                        deviceCreationLocation, args.IsPerformanceConsoleOutputVerbose());
-                    if (args.IsOutputPerf())
-                    {
-                        std::string deviceTypeStringified = TypeHelper::Stringify(deviceType);
-                        std::string inputDataTypeStringified = TypeHelper::Stringify(inputDataType);
-                        std::string inputBindingTypeStringified = TypeHelper::Stringify(inputBindingType);
-                        std::string deviceCreationLocationStringified = TypeHelper::Stringify(deviceCreationLocation);
-                        output.WritePerformanceDataToCSV(
-                            profiler, args.NumIterations(), modelPath, deviceTypeStringified, inputDataTypeStringified,
-                            inputBindingTypeStringified, deviceCreationLocationStringified);
-                    }
-                }
-            }
-        }
+        output.PrintBindingInfo(iteration + 1, deviceType, inputBindingType, inputDataType, deviceCreationLocation,
+                                "[FAILED]");
+        return bindInputResult;
+    }
+    else if (!args.TerseOutput() || iteration == 0)
+    {
+        output.PrintBindingInfo(iteration + 1, deviceType, inputBindingType, inputDataType, deviceCreationLocation,
+                                "[SUCCESS]");
     }
     return S_OK;
 }
 
-HRESULT EvaluateModels(const std::vector<std::wstring>& modelPaths, const std::vector<DeviceType>& deviceTypes,
-                       const std::vector<InputBindingType>& inputBindingTypes,
-                       const std::vector<InputDataType>& inputDataTypes,
-                       const std::vector<DeviceCreationLocation> deviceCreationLocations, const CommandLineArgs& args,
-                       OutputHelper& output, Profiler<WINML_MODEL_TEST_PERF>& profiler)
+std::vector<std::wstring> GetModelsInDirectory(CommandLineArgs& args, OutputHelper* output)
 {
-    output.PrintHardwareInfo();
-    HRESULT lastEvaluateModelResult = S_OK;
-    for (const auto& path : modelPaths)
-    {
-        LearningModel model = nullptr;
-        try
-        {
-            model =
-                LoadModel(path, args.IsPerformanceCapture() || args.IsPerIterationCapture(), output, args, 0, profiler);
-        }
-        catch (hresult_error hr)
-        {
-            std::cout << hr.message().c_str() << std::endl;
-            return hr.code();
-        }
-        auto firstFeature = model.InputFeatures().First().Current();
-        auto tensorDescriptor = firstFeature.try_as<TensorFeatureDescriptor>();
+    std::vector<std::wstring> modelPaths;
 
-        // Map and Sequence bindings are not supported yet
-        if (!tensorDescriptor)
+    std::wstring folderPath = args.FolderPath();
+    for (auto& it : std::filesystem::directory_iterator(args.FolderPath()))
+    {
+        std::string path = it.path().string();
+
+        if (it.path().string().find(".onnx") != std::string::npos ||
+            it.path().string().find(".pb") != std::string::npos)
         {
-            std::wcout << L"Model: " + path + L" has an input type that isn't supported by WinMLRunner yet."
-                       << std::endl;
-            continue;
+            std::wstring fileName;
+            fileName.assign(path.begin(), path.end());
+            args.SetModelPath(fileName);
+            modelPaths.push_back(fileName);
         }
-        for (const auto& deviceType : deviceTypes)
+    }
+
+    return modelPaths;
+}
+
+HRESULT EvaluateModel(LearningModelEvaluationResult& result, const LearningModel& model,
+                      const LearningModelBinding& context, LearningModelSession& session, const CommandLineArgs& args,
+                      OutputHelper& output, bool capturePerf, uint32_t iterationNum,
+                      Profiler<WINML_MODEL_TEST_PERF>& profiler)
+{
+    try
+    {
+        if (capturePerf)
         {
-            HRESULT evaluateModelWithDeviceTypeResult =
-                EvaluateModelWithDeviceType(model, deviceType, inputBindingTypes, inputDataTypes,
-                                            deviceCreationLocations, args, path, output, profiler, tensorDescriptor);
-            if (FAILED(evaluateModelWithDeviceTypeResult))
+            WINML_PROFILING_START(profiler, iterationNum == 0 ? WINML_MODEL_TEST_PERF::EVAL_MODEL_FIRST_RUN
+                                                              : WINML_MODEL_TEST_PERF::EVAL_MODEL);
+        }
+
+        result = session.Evaluate(context, L"");
+
+        if (capturePerf)
+        {
+            WINML_PROFILING_STOP(profiler, iterationNum == 0 ? WINML_MODEL_TEST_PERF::EVAL_MODEL_FIRST_RUN
+                                                             : WINML_MODEL_TEST_PERF::EVAL_MODEL);
+            if (args.IsPerIterationCapture())
             {
-                lastEvaluateModelResult = evaluateModelWithDeviceTypeResult;
-                std::cout << "Run failed for DeviceType: " << TypeHelper::Stringify(deviceType) << std::endl;
+                output.SaveEvalPerformance(profiler, iterationNum);
             }
         }
-        model.Close();
     }
-    return lastEvaluateModelResult; // Return the last HRESULT that failed. Will return S_OK otherwise.
+    catch (winrt::hresult_error hr)
+    {
+        std::cout << "[FAILED]" << std::endl;
+        std::wcout << hr.message().c_str() << std::endl;
+        return hr.code();
+    }
+
+    // Only print eval results on the first iteration, iff it's not garbage data
+    if (!args.IsGarbageInput() || args.IsSaveTensor())
+    {
+        BindingUtilities::PrintOrSaveEvaluationResults(model, args, result.Outputs(), output, iterationNum);
+    }
+    return S_OK;
 }
 
 std::vector<InputDataType> FetchInputDataTypes(const CommandLineArgs& args)
@@ -616,8 +441,125 @@ int run(CommandLineArgs& args, Profiler<WINML_MODEL_TEST_PERF>& profiler)
             ConcurrentLoadModel(modelPaths, args.NumThreads(), args.ThreadInterval(), true);
             return 0;
         }
-        return EvaluateModels(modelPaths, deviceTypes, inputBindingTypes, inputDataTypes, deviceCreationLocations, args,
-                              output, profiler);
+
+        for (const auto& path: modelPaths)
+        {
+            LearningModel model = nullptr;
+            try
+            {
+                model = LoadModel(path, args.IsPerformanceCapture() || args.IsPerIterationCapture(), output, args, 0, profiler);
+            }
+            catch (hresult_error hr)
+            {
+                std::wcout << "Load Model: " << path << " [FAILED]" << std::endl;
+                std::wcout << hr.message().c_str() << std::endl;
+                return hr.code();
+            }
+
+            auto firstFeature = model.InputFeatures().First().Current();
+            auto tensorDescriptor = firstFeature.try_as<TensorFeatureDescriptor>();
+
+            for (auto deviceType : deviceTypes)
+            {
+                for (auto deviceCreationLocation : deviceCreationLocations)
+                {
+#if defined(_AMD64_)
+                    // PIX markers only work on AMD64
+                    if (output.GetGraphicsAnalysis().get())
+                    {
+                        // If PIX tool is attached to WinMLRunner then begin capture. First capture will include
+                        // session creation, first iteration bind and first iteration evaluate.
+                        output.GetGraphicsAnalysis()->BeginCapture();
+                    }
+#endif
+                    LearningModelSession session = nullptr;
+                    IDirect3DDevice winrtDevice = nullptr;
+                    HRESULT hr = CreateSession(session, winrtDevice, model, args, output, deviceType,
+                                               deviceCreationLocation, profiler);
+                    for (auto inputDataType : inputDataTypes)
+                    {
+                       for (auto inputBindingType : inputBindingTypes)
+                       {
+                            for (uint32_t i = 0; i < args.NumIterations(); i++)
+                            {
+                                if (args.IsPerformanceCapture() || args.IsPerIterationCapture())
+                                {
+                                    // Resets all values from profiler for bind and evaluate.
+                                    profiler.Reset(WINML_MODEL_TEST_PERF::BIND_VALUE, WINML_MODEL_TEST_PERF::COUNT);
+                                }
+
+                                if (inputDataType != InputDataType::Tensor)
+                                {
+                                    // Currently GPU binding only work with 4D tensors and RGBA/BGRA images
+                                    if (tensorDescriptor.Shape().Size() != 4 || tensorDescriptor.Shape().GetAt(1) != 3)
+                                    {
+                                        continue;
+                                    }
+                                }
+
+#if defined(_AMD64_)
+                                // PIX markers only work on AMD64
+                                // If PIX tool was attached then capture already began for the first iteration before session creation.
+                                // This is to begin PIX capture for each iteration after the first iteration.
+                                if (i > 0 && output.GetGraphicsAnalysis())
+                                {
+                                    output.GetGraphicsAnalysis()->BeginCapture();
+                                }
+#endif
+                                LearningModelBinding context(session);
+                                hr = BindInputs(context, model, session, output, deviceType, args, inputBindingType,
+                                                inputDataType, winrtDevice, deviceCreationLocation, i, profiler);
+
+                                LearningModelEvaluationResult result = nullptr;
+                                bool capture_perf = args.IsPerformanceCapture() || args.IsPerIterationCapture();
+                                hr = EvaluateModel(result, model, context, session, args, output,
+                                                   capture_perf, i, profiler);
+
+                                if (FAILED(hr))
+                                {
+                                    output.PrintEvaluatingInfo(i + 1, deviceType, inputBindingType, inputDataType,
+                                                               deviceCreationLocation, "[FAILED]");
+                                    return hr;
+                                }
+                                else if (!args.TerseOutput() || i == 0)
+                                {
+                                    output.PrintEvaluatingInfo(i + 1, deviceType, inputBindingType, inputDataType,
+                                                               deviceCreationLocation, "[SUCCESS]");
+                                    if (args.TerseOutput() && args.NumIterations() > 1)
+                                    {
+                                        printf("Binding and Evaluating %d more time%s...", args.NumIterations() - 1,
+                                               (args.NumIterations() == 2 ? "" : "s"));
+                                    }
+                                }
+#if defined(_AMD64_)
+                                // PIX markers only work on AMD64
+                                if (output.GetGraphicsAnalysis())
+                                {
+                                    // If PIX tool is attached, then end the capture
+                                    output.GetGraphicsAnalysis()->EndCapture();
+                                }
+#endif
+                                if (args.IsPerformanceCapture())
+                                {
+                                    output.PrintResults(profiler, args.NumIterations(), deviceType, inputBindingType, inputDataType,
+                                                        deviceCreationLocation, args.IsPerformanceConsoleOutputVerbose());
+                                    if (args.IsOutputPerf())
+                                    {
+                                        std::string deviceTypeStringified = TypeHelper::Stringify(deviceType);
+                                        std::string inputDataTypeStringified = TypeHelper::Stringify(inputDataType);
+                                        std::string inputBindingTypeStringified = TypeHelper::Stringify(inputBindingType);
+                                        std::string deviceCreationLocationStringified = TypeHelper::Stringify(deviceCreationLocation);
+                                        output.WritePerformanceDataToCSV(
+                                            profiler, args.NumIterations(), path, deviceTypeStringified, inputDataTypeStringified,
+                                            inputBindingTypeStringified, deviceCreationLocationStringified);
+                                    }
+                                }
+                            }
+                       }
+                    }
+                }
+            }
+        }
     }
     return 0;
 }

@@ -68,8 +68,8 @@ public:
         // When there is no image or csv input provided, then garbage input binding is used.
         return m_imagePath.empty() && m_csvData.empty();
     }
-    bool IsCSVInput() const { return !m_imagePath.empty() && m_csvData.empty(); }
-    bool IsImageInput() const { return m_imagePath.empty() && !m_csvData.empty(); }
+    bool IsCSVInput() const { return m_imagePath.empty() && !m_csvData.empty(); }
+    bool IsImageInput() const { return !m_imagePath.empty() && m_csvData.empty(); }
 
     uint32_t NumIterations() const { return m_numIterations; }
     uint32_t NumThreads() const { return m_numThreads; }

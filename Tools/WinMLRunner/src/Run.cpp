@@ -1,6 +1,5 @@
 #include "Common.h"
 #include "OutputHelper.h"
-#include "ModelBinding.h"
 #include "BindingUtilities.h"
 #include <filesystem>
 #include <d3d11.h>
@@ -79,7 +78,7 @@ std::vector<ILearningModelFeatureValue> GenerateInputFeatures(const LearningMode
 
         if (inputDataType == InputDataType::Tensor || i > 0)
         {
-            // For now, only the first input can be bound with real data
+            // If CSV data is provided, then every input will contain the same CSV data
             auto tensorFeature = BindingUtilities::CreateBindableTensor(description, args);
             inputFeatures.push_back(tensorFeature);
         }
@@ -202,7 +201,7 @@ HRESULT EvaluateModel(const LearningModel& model, const CommandLineArgs& args, O
 #endif
     try
     {
-        if (deviceCreationLocation == DeviceCreationLocation::ClientCode && deviceType != DeviceType::CPU)
+        if (deviceCreationLocation == DeviceCreationLocation::UserD3DDevice && deviceType != DeviceType::CPU)
         {
             // Enumerate Adapters to pick the requested one.
             com_ptr<IDXGIFactory6> factory;
@@ -383,9 +382,9 @@ HRESULT EvaluateModelWithDeviceType(const LearningModel& model, const DeviceType
                                     const std::vector<InputDataType>& inputDataTypes,
                                     const std::vector<DeviceCreationLocation> deviceCreationLocations,
                                     const CommandLineArgs& args, const std::wstring& modelPath, OutputHelper& output,
-                                    Profiler<WINML_MODEL_TEST_PERF>& profiler,
-                                    TensorFeatureDescriptor& tensorDescriptor)
+                                    Profiler<WINML_MODEL_TEST_PERF>& profiler)
 {
+    HRESULT lastEvaluateModelResult = S_OK;
     for (const auto& inputBindingType : inputBindingTypes)
     {
         for (const auto& inputDataType : inputDataTypes)
@@ -396,15 +395,6 @@ HRESULT EvaluateModelWithDeviceType(const LearningModel& model, const DeviceType
                 {
                     // Resets all values from profiler for bind and evaluate.
                     profiler.Reset(WINML_MODEL_TEST_PERF::BIND_VALUE, WINML_MODEL_TEST_PERF::COUNT);
-                }
-
-                if (inputDataType != InputDataType::Tensor)
-                {
-                    // Currently GPU binding only work with 4D tensors and RGBA/BGRA images
-                    if (tensorDescriptor.Shape().Size() != 4 || tensorDescriptor.Shape().GetAt(1) != 3)
-                    {
-                        continue;
-                    }
                 }
 
                 HRESULT evalHResult = EvaluateModel(model, args, output, deviceType, inputBindingType, inputDataType,
@@ -436,6 +426,60 @@ HRESULT EvaluateModelWithDeviceType(const LearningModel& model, const DeviceType
     return S_OK;
 }
 
+HRESULT CheckIfModelAndConfigurationsAreSupported(LearningModel& model, const std::wstring& modelPath,
+                                                  const DeviceType deviceType,
+                                                  const std::vector<InputDataType>& inputDataTypes,
+                                                  const std::vector<DeviceCreationLocation>& deviceCreationLocations)
+{
+    // Does user want image as input binding
+    bool hasInputBindingImage = std::any_of(inputDataTypes.begin(), inputDataTypes.end(), [](const InputDataType inputDataType){
+            return inputDataType == InputDataType::ImageBGR || inputDataType == InputDataType::ImageRGB;
+    });
+
+    for (auto inputFeature : model.InputFeatures())
+    {
+        if (inputFeature.Kind() != LearningModelFeatureKind::Tensor &&
+            inputFeature.Kind() != LearningModelFeatureKind::Image)
+        {
+            std::wcout << L"Model: " + modelPath + L" has an input type that isn't supported by WinMLRunner yet."
+                       << std::endl;
+            return E_NOTIMPL;
+        }
+        else if (inputFeature.Kind() == LearningModelFeatureKind::Tensor)
+        {
+            auto tensorFeatureDescriptor = inputFeature.try_as<TensorFeatureDescriptor>();
+            if (tensorFeatureDescriptor.Shape().Size() > 4 && deviceType != DeviceType::CPU)
+            {
+                std::cout << "Input feature " << to_string(inputFeature.Name())
+                          << " shape is too large. GPU path only accepts tensor dimensions <= 4 : "
+                          << tensorFeatureDescriptor.Shape().Size() << std::endl;
+                return E_INVALIDARG;
+            }
+
+            // If image as input binding, then the model's tensor inputs should have channel 3 or 1
+            if (hasInputBindingImage &&
+                (tensorFeatureDescriptor.Shape().Size() != 4 ||
+                 (tensorFeatureDescriptor.Shape().GetAt(1) != 1 && tensorFeatureDescriptor.Shape().GetAt(1) != 3)))
+            {
+
+                std::cout << "Attempting to bind image but input feature " << to_string(inputFeature.Name())
+                          << " shape is invalid. Shape should be 4 dimensions (NCHW) with C = 3." << std::endl;
+                return E_INVALIDARG;
+            }
+        }
+    }
+
+    // Creating D3D12 device on client doesn't make sense for CPU deviceType
+    if (deviceType == DeviceType::CPU && std::any_of(deviceCreationLocations.begin(), deviceCreationLocations.end(),
+                                                     [](const DeviceCreationLocation deviceCreationLocation) {
+                                                         return deviceCreationLocation == DeviceCreationLocation::UserD3DDevice; }))
+    {
+        std::cout << "Cannot create D3D12 device on client if CPU device type is selected." << std::endl;
+        return E_INVALIDARG;
+    }
+    return S_OK;
+}
+
 HRESULT EvaluateModels(const std::vector<std::wstring>& modelPaths, const std::vector<DeviceType>& deviceTypes,
                        const std::vector<InputBindingType>& inputBindingTypes,
                        const std::vector<InputDataType>& inputDataTypes,
@@ -457,24 +501,19 @@ HRESULT EvaluateModels(const std::vector<std::wstring>& modelPaths, const std::v
             std::cout << hr.message().c_str() << std::endl;
             return hr.code();
         }
-        auto firstFeature = model.InputFeatures().First().Current();
-        auto tensorDescriptor = firstFeature.try_as<TensorFeatureDescriptor>();
-
-        // Map and Sequence bindings are not supported yet
-        if (!tensorDescriptor)
-        {
-            std::wcout << L"Model: " + path + L" has an input type that isn't supported by WinMLRunner yet."
-                       << std::endl;
-            continue;
-        }
         for (const auto& deviceType : deviceTypes)
         {
-            HRESULT evaluateModelWithDeviceTypeResult =
-                EvaluateModelWithDeviceType(model, deviceType, inputBindingTypes, inputDataTypes,
-                                            deviceCreationLocations, args, path, output, profiler, tensorDescriptor);
-            if (FAILED(evaluateModelWithDeviceTypeResult))
+            lastEvaluateModelResult = CheckIfModelAndConfigurationsAreSupported(model, path, deviceType, inputDataTypes,
+                                                                                deviceCreationLocations);
+            if (FAILED(lastEvaluateModelResult))
             {
-                lastEvaluateModelResult = evaluateModelWithDeviceTypeResult;
+                continue;
+            }
+            lastEvaluateModelResult =
+                EvaluateModelWithDeviceType(model, deviceType, inputBindingTypes, inputDataTypes,
+                                            deviceCreationLocations, args, path, output, profiler);
+            if (FAILED(lastEvaluateModelResult))
+            {
                 std::cout << "Run failed for DeviceType: " << TypeHelper::Stringify(deviceType) << std::endl;
             }
         }
@@ -560,13 +599,13 @@ std::vector<DeviceCreationLocation> FetchDeviceCreationLocations(const CommandLi
 
     if (args.IsCreateDeviceOnClient())
     {
-        deviceCreationLocations.push_back(DeviceCreationLocation::ClientCode);
+        deviceCreationLocations.push_back(DeviceCreationLocation::UserD3DDevice);
     }
 
     return deviceCreationLocations;
 }
 
-int run(CommandLineArgs& args, Profiler<WINML_MODEL_TEST_PERF>& profiler)
+int run(CommandLineArgs& args, Profiler<WINML_MODEL_TEST_PERF>& profiler) try
 {
     // Initialize COM in a multi-threaded environment.
     winrt::init_apartment();
@@ -594,7 +633,6 @@ int run(CommandLineArgs& args, Profiler<WINML_MODEL_TEST_PERF>& profiler)
     {
         output.SetDefaultCSVFileName();
     }
-
     if (args.IsSaveTensor() || args.IsPerIterationCapture())
     {
         output.SetDefaultPerIterationFolder(args.TensorOutputPath());
@@ -620,4 +658,19 @@ int run(CommandLineArgs& args, Profiler<WINML_MODEL_TEST_PERF>& profiler)
                               output, profiler);
     }
     return 0;
+}
+catch (const hresult_error& error)
+{
+    wprintf(error.message().c_str());
+    return error.code();
+}
+catch (const std::exception& error)
+{
+    printf(error.what());
+    return EXIT_FAILURE;
+}
+catch (...)
+{
+    printf("Unknown exception occurred.");
+    return EXIT_FAILURE;
 }

@@ -35,7 +35,7 @@ Required command-Line arguments:
 -GPU : run model on default GPU
 -GPUHighPerformance : run model on GPU with highest performance
 -GPUMinPower : run model on GPU with the least power
--CreateDeviceOnClient : create the device on the client and pass it to WinML
+-CreateDeviceOnClient : create the D3D device on the client and pass it to WinML to create session
 -CreateDeviceInWinML : create the device inside WinML
 -CPUBoundInput : bind the input to the CPU
 -GPUBoundInput : bind the input to the GPU

@@ -32,7 +32,7 @@ enum class DeviceType
 enum class DeviceCreationLocation
 {
     WinML,
-    ClientCode
+    UserD3DDevice
 };
 
 class TypeHelper
@@ -102,7 +102,7 @@ public:
     {
         switch (deviceCreationLocation)
         {
-            case DeviceCreationLocation::ClientCode:
+            case DeviceCreationLocation::UserD3DDevice:
                 return "Client";
             case DeviceCreationLocation::WinML:
                 return "WinML";

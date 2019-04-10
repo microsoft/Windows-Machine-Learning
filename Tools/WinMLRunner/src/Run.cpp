@@ -538,11 +538,6 @@ int run(CommandLineArgs& args, Profiler<WINML_MODEL_TEST_PERF>& profiler) try
                                     continue;
                                 }
 
-                                if (args.IsPerformanceCapture() || args.IsPerIterationCapture())
-                                {
-                                    // Resets all values from profiler for bind and evaluate.
-                                    profiler.Reset(WINML_MODEL_TEST_PERF::BIND_VALUE, WINML_MODEL_TEST_PERF::COUNT);
-                                }
 
 #if defined(_AMD64_)
                                 // PIX markers only work on AMD64
@@ -586,21 +581,33 @@ int run(CommandLineArgs& args, Profiler<WINML_MODEL_TEST_PERF>& profiler) try
                                     output.GetGraphicsAnalysis()->EndCapture();
                                 }
 #endif
-                                if (args.IsPerformanceCapture())
+                            }
+
+                            // print metrics after iterations
+                            if (args.IsPerformanceCapture())
+                            {
+                                output.PrintResults(profiler, args.NumIterations(), deviceType, inputBindingType,
+                                                    inputDataType, deviceCreationLocation,
+                                                    args.IsPerformanceConsoleOutputVerbose());
+                                if (args.IsOutputPerf())
                                 {
-                                    output.PrintResults(profiler, args.NumIterations(), deviceType, inputBindingType, inputDataType,
-                                                        deviceCreationLocation, args.IsPerformanceConsoleOutputVerbose());
-                                    if (args.IsOutputPerf())
-                                    {
-                                        std::string deviceTypeStringified = TypeHelper::Stringify(deviceType);
-                                        std::string inputDataTypeStringified = TypeHelper::Stringify(inputDataType);
-                                        std::string inputBindingTypeStringified = TypeHelper::Stringify(inputBindingType);
-                                        std::string deviceCreationLocationStringified = TypeHelper::Stringify(deviceCreationLocation);
-                                        output.WritePerformanceDataToCSV(
-                                            profiler, args.NumIterations(), path, deviceTypeStringified, inputDataTypeStringified,
-                                            inputBindingTypeStringified, deviceCreationLocationStringified);
-                                    }
+                                    std::string deviceTypeStringified = TypeHelper::Stringify(deviceType);
+                                    std::string inputDataTypeStringified = TypeHelper::Stringify(inputDataType);
+                                    std::string inputBindingTypeStringified = TypeHelper::Stringify(inputBindingType);
+                                    std::string deviceCreationLocationStringified =
+                                        TypeHelper::Stringify(deviceCreationLocation);
+                                    output.WritePerformanceDataToCSV(profiler, args.NumIterations(), path,
+                                                                     deviceTypeStringified, inputDataTypeStringified,
+                                                                     inputBindingTypeStringified,
+                                                                     deviceCreationLocationStringified);
                                 }
+                            }
+
+                            // Clear up bind, eval performance metrics after iteration
+                            if (args.IsPerformanceCapture() || args.IsPerIterationCapture())
+                            {
+                                // Resets all values from profiler for bind and evaluate.
+                                profiler.Reset(WINML_MODEL_TEST_PERF::BIND_VALUE, WINML_MODEL_TEST_PERF::COUNT);
                             }
                        }
                     }

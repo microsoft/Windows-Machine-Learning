@@ -80,35 +80,41 @@ HRESULT BindInputFeatures(const LearningModel& model, const LearningModelBinding
     return S_OK;
 }
 
-LearningModel LoadModel(const std::wstring& path, bool capturePerf, OutputHelper& output, const CommandLineArgs& args,
+HRESULT LoadModel(LearningModel &model, const std::wstring& path, bool capturePerf, OutputHelper& output, const CommandLineArgs& args,
                         uint32_t iterationNum, Profiler<WINML_MODEL_TEST_PERF>& profiler)
 {
-    LearningModel model = nullptr;
-    output.PrintLoadingInfo(path);
-    if (capturePerf)
+    try
     {
-        WINML_PROFILING_START(profiler, WINML_MODEL_TEST_PERF::LOAD_MODEL);
-    }
-    model = LearningModel::LoadFromFilePath(path);
-
-    if (capturePerf)
-    {
-        WINML_PROFILING_STOP(profiler, WINML_MODEL_TEST_PERF::LOAD_MODEL);
-        if (args.IsPerIterationCapture())
+         output.PrintLoadingInfo(path);
+        if (capturePerf)
         {
-            output.SaveLoadTimes(profiler, iterationNum);
+            WINML_PROFILING_START(profiler, WINML_MODEL_TEST_PERF::LOAD_MODEL);
         }
-    }
-    output.PrintModelInfo(path, model);
+        model = LearningModel::LoadFromFilePath(path);
 
-    return model;
+        if (capturePerf)
+        {
+            WINML_PROFILING_STOP(profiler, WINML_MODEL_TEST_PERF::LOAD_MODEL);
+            if (args.IsPerIterationCapture())
+            {
+                output.SaveLoadTimes(profiler, iterationNum);
+            }
+        }
+        output.PrintModelInfo(path, model);
+    }
+    catch (hresult_error hr)
+    {
+        std::wcout << "Load Model: " << path << " [FAILED]" << std::endl;
+        std::wcout << hr.message().c_str() << std::endl;
+        throw;
+    }
+    return S_OK;
 }
 
 HRESULT CreateSession(LearningModelSession& session, IDirect3DDevice &winrtDevice, LearningModel& model, CommandLineArgs& args, OutputHelper& output,
                       DeviceType deviceType, DeviceCreationLocation deviceCreationLocation,
                       Profiler<WINML_MODEL_TEST_PERF>& profiler)
 {
-    typedef std::pair<HRESULT, LearningModelSession> pair;
     if (model == nullptr)
     {
         return hresult_invalid_argument().code();
@@ -498,17 +504,8 @@ int run(CommandLineArgs& args, Profiler<WINML_MODEL_TEST_PERF>& profiler) try
         for (const auto& path: modelPaths)
         {
             LearningModel model = nullptr;
-            try
-            {
-                model = LoadModel(path, args.IsPerformanceCapture() || args.IsPerIterationCapture(), output, args, 0, profiler);
-            }
-            catch (hresult_error hr)
-            {
-                std::wcout << "Load Model: " << path << " [FAILED]" << std::endl;
-                std::wcout << hr.message().c_str() << std::endl;
-                return hr.code();
-            }
-
+    
+            LoadModel(model, path, args.IsPerformanceCapture() || args.IsPerIterationCapture(), output, args, 0, profiler);
 
             for (auto deviceType : deviceTypes)
             {

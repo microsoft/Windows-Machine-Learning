@@ -509,8 +509,6 @@ int run(CommandLineArgs& args, Profiler<WINML_MODEL_TEST_PERF>& profiler) try
                 return hr.code();
             }
 
-            auto firstFeature = model.InputFeatures().First().Current();
-            auto tensorDescriptor = firstFeature.try_as<TensorFeatureDescriptor>();
 
             for (auto deviceType : deviceTypes)
             {
@@ -547,15 +545,6 @@ int run(CommandLineArgs& args, Profiler<WINML_MODEL_TEST_PERF>& profiler) try
                                 {
                                     // Resets all values from profiler for bind and evaluate.
                                     profiler.Reset(WINML_MODEL_TEST_PERF::BIND_VALUE, WINML_MODEL_TEST_PERF::COUNT);
-                                }
-
-                                if (inputDataType != InputDataType::Tensor)
-                                {
-                                    // Currently GPU binding only work with 4D tensors and RGBA/BGRA images
-                                    if (tensorDescriptor.Shape().Size() != 4 || tensorDescriptor.Shape().GetAt(1) != 3)
-                                    {
-                                        continue;
-                                    }
                                 }
 
 #if defined(_AMD64_)

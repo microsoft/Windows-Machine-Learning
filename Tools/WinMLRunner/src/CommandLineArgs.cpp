@@ -19,7 +19,7 @@ void CommandLineArgs::PrintUsage()
     std::cout << "  -GPU : run model on default GPU" << std::endl;
     std::cout << "  -GPUHighPerformance : run model on GPU with highest performance" << std::endl;
     std::cout << "  -GPUMinPower : run model on GPU with the least power" << std::endl;
-    std::cout << "  -CreateDeviceOnClient : create the device on the client and pass it to WinML" << std::endl;
+    std::cout << "  -CreateDeviceOnClient : create the D3D device on the client and pass it to WinML to create session" << std::endl;
     std::cout << "  -CreateDeviceInWinML : create the device inside WinML" << std::endl;
     std::cout << "  -CPUBoundInput : bind the input to the CPU" << std::endl;
     std::cout << "  -GPUBoundInput : bind the input to the GPU" << std::endl;

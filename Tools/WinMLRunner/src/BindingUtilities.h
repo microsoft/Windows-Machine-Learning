@@ -363,20 +363,16 @@ namespace BindingUtilities
         spTensorValueNative->GetBuffer(&actualData,
                                        &actualSizeInBytes); // Need to GetBuffer to have CPU memory backing tensorValue
 
-        if (!args.CsvPath().empty())
+        if (args.IsCSVInput())
         {
             WriteDataToBinding<DataType>(tensorStringInput, reinterpret_cast<DataType*>(actualData), actualSizeInBytes);
         }
-        else if (args.IsGarbageInput())
-        {
-            return tensorValue;
-        }
-        else
+        else if (args.IsImageInput())
         {
             // Creating Tensors for Input Images haven't been added yet.
             throw hresult_not_implemented(L"Creating Tensors for Input Images haven't been implemented yet!");
         }
-        return tensorValue;
+        return tensorValue;  
     }
 
     // Binds tensor floats, ints, doubles from CSV data.

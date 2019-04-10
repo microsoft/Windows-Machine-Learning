@@ -201,7 +201,7 @@ HRESULT EvaluateModel(const LearningModel& model, const CommandLineArgs& args, O
 #endif
     try
     {
-        if (deviceCreationLocation == DeviceCreationLocation::ClientCode && deviceType != DeviceType::CPU)
+        if (deviceCreationLocation == DeviceCreationLocation::UserD3DDevice && deviceType != DeviceType::CPU)
         {
             // Enumerate Adapters to pick the requested one.
             com_ptr<IDXGIFactory6> factory;
@@ -427,20 +427,14 @@ HRESULT EvaluateModelWithDeviceType(const LearningModel& model, const DeviceType
 }
 
 HRESULT CheckIfModelAndConfigurationsAreSupported(LearningModel& model, const std::wstring& modelPath,
-                                                  const DeviceType& deviceType,
+                                                  const DeviceType deviceType,
                                                   const std::vector<InputDataType>& inputDataTypes,
-                                                  const std::vector<DeviceCreationLocation> deviceCreationLocations)
+                                                  const std::vector<DeviceCreationLocation>& deviceCreationLocations)
 {
     // Does user want image as input binding
-    bool isInputBindingImage = false;
-    for (const InputDataType& inputDataType : inputDataTypes)
-    {
-        if (inputDataType == InputDataType::ImageBGR || inputDataType == InputDataType::ImageRGB)
-        {
-            isInputBindingImage = true;
-            break;
-        }
-    }
+    bool hasInputBindingImage = std::any_of(inputDataTypes.begin(), inputDataTypes.end(), [](const InputDataType inputDataType){
+            return inputDataType == InputDataType::ImageBGR || inputDataType == InputDataType::ImageRGB;
+    });
 
     for (auto inputFeature : model.InputFeatures())
     {
@@ -463,8 +457,9 @@ HRESULT CheckIfModelAndConfigurationsAreSupported(LearningModel& model, const st
             }
 
             // If image as input binding, then the model's tensor inputs should have channel 3 or 1
-            if (isInputBindingImage && tensorFeatureDescriptor.Shape().Size() == 4 &&
-                tensorFeatureDescriptor.Shape().GetAt(1) != 3 && tensorFeatureDescriptor.Shape().GetAt(1) != 1)
+            if (hasInputBindingImage &&
+                (tensorFeatureDescriptor.Shape().Size() != 4 ||
+                 (tensorFeatureDescriptor.Shape().GetAt(1) != 1 && tensorFeatureDescriptor.Shape().GetAt(1) != 3)))
             {
 
                 std::cout << "Attempting to bind image but input feature " << to_string(inputFeature.Name())
@@ -475,8 +470,9 @@ HRESULT CheckIfModelAndConfigurationsAreSupported(LearningModel& model, const st
     }
 
     // Creating D3D12 device on client doesn't make sense for CPU deviceType
-    if (deviceType == DeviceType::CPU && std::find(deviceCreationLocations.begin(), deviceCreationLocations.end(),
-                                                   DeviceCreationLocation::ClientCode) != deviceCreationLocations.end())
+    if (deviceType == DeviceType::CPU && std::any_of(deviceCreationLocations.begin(), deviceCreationLocations.end(),
+                                                     [](const DeviceCreationLocation deviceCreationLocation) {
+                                                         return deviceCreationLocation == DeviceCreationLocation::UserD3DDevice; }))
     {
         std::cout << "Cannot create D3D12 device on client if CPU device type is selected." << std::endl;
         return E_INVALIDARG;
@@ -507,8 +503,8 @@ HRESULT EvaluateModels(const std::vector<std::wstring>& modelPaths, const std::v
         }
         for (const auto& deviceType : deviceTypes)
         {
-            lastEvaluateModelResult = CheckIfModelAndConfigurationsAreSupported(
-                model, path, deviceType, inputDataTypes, deviceCreationLocations);
+            lastEvaluateModelResult = CheckIfModelAndConfigurationsAreSupported(model, path, deviceType, inputDataTypes,
+                                                                                deviceCreationLocations);
             if (FAILED(lastEvaluateModelResult))
             {
                 continue;
@@ -603,7 +599,7 @@ std::vector<DeviceCreationLocation> FetchDeviceCreationLocations(const CommandLi
 
     if (args.IsCreateDeviceOnClient())
     {
-        deviceCreationLocations.push_back(DeviceCreationLocation::ClientCode);
+        deviceCreationLocations.push_back(DeviceCreationLocation::UserD3DDevice);
     }
 
     return deviceCreationLocations;

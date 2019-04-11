@@ -582,7 +582,7 @@ int run(CommandLineArgs& args, Profiler<WINML_MODEL_TEST_PERF>& profiler) try
                             }
 
                             // print metrics after iterations
-                            if (args.IsPerformanceCapture())
+                            if (SUCCEEDED(lastHr) && args.IsPerformanceCapture())
                             {
                                 output.PrintResults(profiler, args.NumIterations(), deviceType, inputBindingType,
                                                     inputDataType, deviceCreationLocation,

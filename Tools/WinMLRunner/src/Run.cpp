@@ -494,21 +494,25 @@ int run(CommandLineArgs& args, Profiler<WINML_MODEL_TEST_PERF>& profiler) try
         std::vector<std::wstring> modelPaths = args.ModelPath().empty()
                                                    ? GetModelsInDirectory(args, &output)
                                                    : std::vector<std::wstring>(1, args.ModelPath());
-
+        HRESULT lastHr = S_OK;
         if (args.IsConcurrentLoad())
         {
             ConcurrentLoadModel(modelPaths, args.NumThreads(), args.ThreadInterval(), true);
             return 0;
         }
-
         for (const auto& path: modelPaths)
         {
             LearningModel model = nullptr;
     
             LoadModel(model, path, args.IsPerformanceCapture() || args.IsPerIterationCapture(), output, args, 0, profiler);
-
             for (auto deviceType : deviceTypes)
             {
+                lastHr = CheckIfModelAndConfigurationsAreSupported(model, path, deviceType, inputDataTypes,
+                                                               deviceCreationLocations);
+                if (FAILED(lastHr))
+                {
+                    continue;
+                }
                 for (auto deviceCreationLocation : deviceCreationLocations)
                 {
 #if defined(_AMD64_)
@@ -522,23 +526,18 @@ int run(CommandLineArgs& args, Profiler<WINML_MODEL_TEST_PERF>& profiler) try
 #endif
                     LearningModelSession session = nullptr;
                     IDirect3DDevice winrtDevice = nullptr;
-                    HRESULT hr = CreateSession(session, winrtDevice, model, args, output, deviceType,
+                    lastHr = CreateSession(session, winrtDevice, model, args, output, deviceType,
                                                deviceCreationLocation, profiler);
+                    if (FAILED(lastHr))
+                    {
+                        continue;
+                    }
                     for (auto inputDataType : inputDataTypes)
                     {
                        for (auto inputBindingType : inputBindingTypes)
                        {
                             for (uint32_t i = 0; i < args.NumIterations(); i++)
                             {
-
-                                hr = CheckIfModelAndConfigurationsAreSupported(model, path, deviceType, inputDataTypes,
-                                                                                deviceCreationLocations);
-                                if (FAILED(hr))
-                                {
-                                    continue;
-                                }
-
-
 #if defined(_AMD64_)
                                 // PIX markers only work on AMD64
                                 // If PIX tool was attached then capture already began for the first iteration before session creation.
@@ -549,19 +548,18 @@ int run(CommandLineArgs& args, Profiler<WINML_MODEL_TEST_PERF>& profiler) try
                                 }
 #endif
                                 LearningModelBinding context(session);
-                                hr = BindInputs(context, model, session, output, deviceType, args, inputBindingType,
+                                lastHr = BindInputs(context, model, session, output, deviceType, args, inputBindingType,
                                                 inputDataType, winrtDevice, deviceCreationLocation, i, profiler);
 
                                 LearningModelEvaluationResult result = nullptr;
                                 bool capture_perf = args.IsPerformanceCapture() || args.IsPerIterationCapture();
-                                hr = EvaluateModel(result, model, context, session, args, output,
+                                lastHr = EvaluateModel(result, model, context, session, args, output,
                                                    capture_perf, i, profiler);
-
-                                if (FAILED(hr))
+                                if (FAILED(lastHr))
                                 {
                                     output.PrintEvaluatingInfo(i + 1, deviceType, inputBindingType, inputDataType,
                                                                deviceCreationLocation, "[FAILED]");
-                                    return hr;
+                                    break;
                                 }
                                 else if (!args.TerseOutput() || i == 0)
                                 {
@@ -584,7 +582,7 @@ int run(CommandLineArgs& args, Profiler<WINML_MODEL_TEST_PERF>& profiler) try
                             }
 
                             // print metrics after iterations
-                            if (args.IsPerformanceCapture())
+                            if (SUCCEEDED(lastHr) && args.IsPerformanceCapture())
                             {
                                 output.PrintResults(profiler, args.NumIterations(), deviceType, inputBindingType,
                                                     inputDataType, deviceCreationLocation,
@@ -614,6 +612,7 @@ int run(CommandLineArgs& args, Profiler<WINML_MODEL_TEST_PERF>& profiler) try
                 }
             }
         }
+        return lastHr;
     }
     return 0;
 }

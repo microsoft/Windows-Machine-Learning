@@ -162,10 +162,6 @@ void ComputeInternal(IMLOperatorTensor* pInputTensor, IMLOperatorTensor* pOutput
 	else if (winrt::to_string(m_fileType) == "text") {
 		WriteToText(inputDims, inputData, size, m_filePath, dataType);
 	}
-	// only useful if the debug output is used for some reason 
-	// (not necessary since debug output can be consumed by no nodes without changing model execution
-	//memcpy(outputData, inputData, size);
-
 }
 
 
@@ -184,29 +180,29 @@ HRESULT DebugOperator::Compute(IMLOperatorKernelContext* context)
 		context->GetOutputTensor(0, outputTensor.put());
 		// Get the input and output shape sizes
 		uint32_t inputDimsSize = inputTensor->GetDimensionCount();
-		/*uint32_t outputDimsSize = outputTensor->GetDimensionCount();
+		uint32_t outputDimsSize = outputTensor->GetDimensionCount();
 		if (inputDimsSize != outputDimsSize)
 		{
 			return E_UNEXPECTED;
-		}*/
+		}
 		// Get the input shape
 		std::vector<uint32_t> inputDims(inputDimsSize);
 		inputTensor->GetShape(inputDimsSize, inputDims.data());
 		// Get the output shape
-		/*std::vector<uint32_t> outputDims(outputDimsSize);
+		std::vector<uint32_t> outputDims(outputDimsSize);
 		outputTensor->GetShape(outputDimsSize, outputDims.data());
 		// For the number of total elements in the input and output shapes
-		auto outputDataSize = std::accumulate(outputDims.begin(), outputDims.end(), 1, std::multiplies<uint32_t>());*/
+		auto outputDataSize = std::accumulate(outputDims.begin(), outputDims.end(), 1, std::multiplies<uint32_t>());
 		auto inputDataSize = std::accumulate(inputDims.begin(), inputDims.end(), 1, std::multiplies<uint32_t>());
-		/*if (outputDataSize != inputDataSize)
+		if (outputDataSize != inputDataSize)
 		{
 			return E_UNEXPECTED;
-		}*/
+		}
 		MLOperatorTensorDataType type = inputTensor->GetTensorDataType();
 
-		/*if (outputTensor->GetTensorDataType() != type) {
+		if (outputTensor->GetTensorDataType() != type) {
 			return E_UNEXPECTED;
-		}*/
+		}
 
 		if (outputTensor->IsCpuData() && inputTensor->IsCpuData()) {
 			switch (type) {

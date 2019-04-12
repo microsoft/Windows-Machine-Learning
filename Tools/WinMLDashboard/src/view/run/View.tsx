@@ -171,7 +171,6 @@ class RunView extends React.Component<IComponentProperties, IComponentState> {
                 <div className='ArgumentsControl'>
                     {this.getArgumentsView()}
                 </div>
-                <TextField id='paramters' readOnly={true} placeholder='paramters' value={this.state.parameters.join(' ')} label='Parameters to WinMLRunner' onChanged={this.updateParameters} />
                 <DefaultButton id='RunButton' text='Run' 
                     disabled={!this.state.model || (this.state.capture === Capture.Debug && !(this.state.inputPath && this.state.outputPath))} 
                     onClick={this.execModelRunner}/>
@@ -188,21 +187,21 @@ class RunView extends React.Component<IComponentProperties, IComponentState> {
                     <DefaultButton id='ModelPathBrowse' text='Browse' onClick={this.browseModel}/>
                 </div>
                 <br />
-                <div className='DisplayFlex Device'>
-                    <label className="label">Devices: </label>
-                    <Select className="DropdownOption"
-                        value={this.newOption(this.state.device)}
-                        onChange={this.setDevice}
-                        options={this.newOptions(Object.keys(Device))}
-                    />
-                </div>
-                <br />
                 <div className='DisplayFlex Capture'>
                     <label className="label">Capture: </label>
                     <Select className="DropdownOption"
                         value={this.newOption(this.state.capture)}
                         onChange={this.setCapture}
                         options={this.newOptions(Object.keys(Capture))}
+                    />
+                </div>
+                <br />
+                <div className='DisplayFlex Device'>
+                    <label className="label">Devices: </label>
+                    <Select className="DropdownOption"
+                        value={this.newOption(this.state.device)}
+                        onChange={this.setDevice}
+                        options={this.state.capture === Capture.Debug ? this.newOptions([Device.CPU]) : this.newOptions(Object.keys(Device))}
                     />
                 </div>
                 <br />
@@ -221,11 +220,6 @@ class RunView extends React.Component<IComponentProperties, IComponentState> {
         )
     }
 
-    private updateParameters = (parameters: string) => {
-        parameters = parameters.replace(/\s+/g,' ').trim();
-        this.setState({parameters: parameters.split(' ')})
-    }
-
     private setModel = (model: string) => {
         this.setState({ model }, () => {this.setParameters()} );
         this.props.setFile(fileFromPath(this.state.model));
@@ -236,11 +230,11 @@ class RunView extends React.Component<IComponentProperties, IComponentState> {
     }
 
     private setCapture = (capture: ISelectOption<Capture>) => {
-        let placeholder = inputPathPlaceholder.optional;
         if (capture.value === Capture.Debug) {
-            placeholder = inputPathPlaceholder.required
+            this.setState({capture: capture.value, inputPathPlaceholder: inputPathPlaceholder.required, device: Device.CPU}, () => {this.setParameters()})
+        } else {
+            this.setState({capture: capture.value, inputPathPlaceholder: inputPathPlaceholder.optional}, () => {this.setParameters()})
         }
-        this.setState({capture: capture.value, inputPathPlaceholder: placeholder}, () => {this.setParameters()})
     }
 
     private setInputPath = (inputPath: string) => {

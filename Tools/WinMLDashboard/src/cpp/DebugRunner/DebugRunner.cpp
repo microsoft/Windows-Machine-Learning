@@ -13,7 +13,6 @@ public:
 
 	static bool Run(std::wstring modelPath, std::wstring inputPath, LearningModelDeviceKind kind)
 	{
-		std::wcout << modelPath;
 		auto customOperatorProvider = winrt::make<DebugOperatorProvider>();
 		auto provider = customOperatorProvider.as<ILearningModelOperatorProvider>();
 		auto model = LearningModel::LoadFromFilePath(modelPath, provider);

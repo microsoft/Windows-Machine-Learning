@@ -84,13 +84,13 @@ void WriteToPng(vector<uint32_t> inputDims, T* inputData, uint32_t size, hstring
 	// TODO: add option to normalize data
 	// currently if data values increase beyond the capacity of a byte then information will be lost
 	vector<uint8_t> byteCopy;
-	for (int i = 0; i < size; i++) {
+	for (uint32_t i = 0; i < size; i++) {
 		byteCopy.push_back(static_cast<uint8_t>(inputData[i]));
 	}
 	int pixelsPerImage = inputDims.at(HEIGHT) * inputDims.at(WIDTH);
 
 	// for each output channel at this point in the network
-	for (int i = 0; i < inputDims.at(CHANNELS); i++) {
+	for (uint32_t i = 0; i < inputDims.at(CHANNELS); i++) {
 		// create png file
 		size_t outSize = 0;
 		wstring suffix = L"_" + to_wstring(i);
@@ -139,7 +139,7 @@ void WriteToText(vector<uint32_t> inputDims, T* inputData, uint32_t size, hstrin
 	outputFile << "\ndata type: ";
 	outputFile << (int)dataType;
 	outputFile << "\ndata: ";
-	for (int i = 0; i < size; i++) {
+	for (uint32_t i = 0; i < size; i++) {
 		outputFile << inputData[i];
 		outputFile << ", ";
 	}

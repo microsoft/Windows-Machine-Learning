@@ -7,8 +7,8 @@ class ModelBinding
 {
 public:
     ModelBinding(winrt::Windows::AI::MachineLearning::ILearningModelFeatureDescriptor variableDesc) : m_bindingDesc(variableDesc)
-    {
-        UINT numElements = 0;
+    { 
+        uint32_t numElements = 0;
         if (variableDesc.Kind() == LearningModelFeatureKind::Tensor)
         {
             InitTensorBinding(variableDesc, numElements);
@@ -24,12 +24,12 @@ public:
         return m_bindingDesc;
     }
 
-    UINT GetNumElements() const
+    uint32_t GetNumElements() const
     {
         return m_numElements;
     }
 
-    UINT GetElementSize() const
+    uint32_t GetElementSize() const
     {
         return m_elementSize;
     }
@@ -56,13 +56,13 @@ public:
 
 
 private:
-    void InitNumElementsAndShape(winrt::Windows::Foundation::Collections::IVectorView<int64_t> * shape, UINT numDimensions, UINT numElements)
+    void InitNumElementsAndShape(winrt::Windows::Foundation::Collections::IVectorView<int64_t> * shape, uint32_t numDimensions, uint32_t numElements)
     {
         int unknownDim = -1;
-        UINT numKnownElements = 1;
-        for (UINT dim = 0; dim < numDimensions; dim++)
+        uint32_t numKnownElements = 1;
+        for (uint32_t dim = 0; dim < numDimensions; dim++)
         {
-            INT64 dimSize = shape->GetAt(dim);
+            int64_t dimSize = shape->GetAt(dim);
 
             if (dimSize <= 0)
             {
@@ -73,7 +73,7 @@ private:
             }
             else
             {
-                numKnownElements *= static_cast<UINT>(dimSize);
+                numKnownElements *= static_cast<uint32_t>(dimSize);
             }
 
             m_shapeBuffer.push_back(dimSize);
@@ -81,7 +81,7 @@ private:
         m_numElements = numKnownElements;
     }
 
-    void InitTensorBinding(winrt::Windows::AI::MachineLearning::ILearningModelFeatureDescriptor descriptor, UINT numElements)
+    void InitTensorBinding(winrt::Windows::AI::MachineLearning::ILearningModelFeatureDescriptor descriptor, uint32_t numElements)
     {
         auto tensorDescriptor = descriptor.as<winrt::Windows::AI::MachineLearning::TensorFeatureDescriptor>();
         InitNumElementsAndShape(&tensorDescriptor.Shape(), tensorDescriptor.Shape().Size(), 1);
@@ -89,8 +89,8 @@ private:
     }
 
     winrt::Windows::AI::MachineLearning::ILearningModelFeatureDescriptor m_bindingDesc;
-    std::vector<INT64> m_shapeBuffer;
-    UINT m_numElements = 0;
-    UINT m_elementSize = 0;
+    std::vector<int64_t> m_shapeBuffer;
+    uint32_t m_numElements = 0;
+    uint32_t m_elementSize = 0;
     std::vector<T> m_dataBuffer;
 };

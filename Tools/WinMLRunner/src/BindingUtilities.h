@@ -386,26 +386,7 @@ namespace BindingUtilities
                 com_ptr<ID3D12Device> pD3D12Device = nullptr;
                 D3D12CreateDevice(nullptr, D3D_FEATURE_LEVEL::D3D_FEATURE_LEVEL_11_0, __uuidof(ID3D12Device),
                                   reinterpret_cast<void**>(&pD3D12Device));
-                // create the command queue.
-                com_ptr<ID3D12CommandQueue> dxQueue = nullptr;
-                D3D12_COMMAND_QUEUE_DESC commandQueueDesc = {};
-                commandQueueDesc.Type = D3D12_COMMAND_LIST_TYPE_DIRECT;
-                pD3D12Device->CreateCommandQueue(&commandQueueDesc, __uuidof(ID3D12CommandQueue),
-                                                 reinterpret_cast<void**>(&dxQueue));
-                com_ptr<ILearningModelDeviceFactoryNative> devicefactory =
-                    get_activation_factory<LearningModelDevice, ILearningModelDeviceFactoryNative>();
-                com_ptr<::IUnknown> spUnk;
-                devicefactory->CreateFromD3D12CommandQueue(dxQueue.get(), spUnk.put());
-
-                // Create ID3D12GraphicsCommandList and Allocator
-                D3D12_COMMAND_LIST_TYPE queuetype = dxQueue->GetDesc().Type;
-                com_ptr<ID3D12CommandAllocator> alloctor;
-                com_ptr<ID3D12GraphicsCommandList> cmdList;
-                pD3D12Device->CreateCommandAllocator(queuetype, winrt::guid_of<ID3D12CommandAllocator>(),
-                                                     alloctor.put_void());
-                pD3D12Device->CreateCommandList(0, queuetype, alloctor.get(), nullptr,
-                                                winrt::guid_of<ID3D12CommandList>(), cmdList.put_void());
-
+                
                 pD3D12Device->CreateCommittedResource(
                     &CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
                     D3D12_HEAP_FLAG_NONE,
@@ -422,6 +403,26 @@ namespace BindingUtilities
                         &CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD), D3D12_HEAP_FLAG_NONE,
                         &CD3DX12_RESOURCE_DESC::Buffer(actualSizeInBytes), D3D12_RESOURCE_STATE_GENERIC_READ, nullptr,
                         __uuidof(ID3D12Resource), imageUploadHeap.put_void());
+
+                    // create the command queue.
+                    com_ptr<ID3D12CommandQueue> dxQueue = nullptr;
+                    D3D12_COMMAND_QUEUE_DESC commandQueueDesc = {};
+                    commandQueueDesc.Type = D3D12_COMMAND_LIST_TYPE_DIRECT;
+                    pD3D12Device->CreateCommandQueue(&commandQueueDesc, __uuidof(ID3D12CommandQueue),
+                                                     reinterpret_cast<void**>(&dxQueue));
+                    com_ptr<ILearningModelDeviceFactoryNative> devicefactory =
+                        get_activation_factory<LearningModelDevice, ILearningModelDeviceFactoryNative>();
+                    com_ptr<::IUnknown> spUnk;
+                    devicefactory->CreateFromD3D12CommandQueue(dxQueue.get(), spUnk.put());
+
+                    // Create ID3D12GraphicsCommandList and Allocator
+                    D3D12_COMMAND_LIST_TYPE queuetype = dxQueue->GetDesc().Type;
+                    com_ptr<ID3D12CommandAllocator> alloctor;
+                    com_ptr<ID3D12GraphicsCommandList> cmdList;
+                    pD3D12Device->CreateCommandAllocator(queuetype, winrt::guid_of<ID3D12CommandAllocator>(),
+                                                         alloctor.put_void());
+                    pD3D12Device->CreateCommandList(0, queuetype, alloctor.get(), nullptr,
+                                                    winrt::guid_of<ID3D12CommandList>(), cmdList.put_void());
 
                     // Copy from Cpu to GPU
                     D3D12_SUBRESOURCE_DATA CPUData = {};

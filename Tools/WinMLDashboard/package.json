@@ -15,8 +15,10 @@
     "postinstall": "node scripts/postinstall.js && yarn copy-netron",
     "copy-netron": "yarn --cwd deps/Netron && python deps/copy_netron.py",
     "build-electron": "react-app-rewired build --scripts-version react-scripts-ts",
+    "build-cpp": "msbuild src/cpp/DebugRunner.sln",
+    "nuget-restore-cpp": "nuget restore src/cpp/DebugRunner.sln",
     "electron-dev": "electron . http://localhost:3000",
-    "electron-prod": "yarn build-electron && electron ."
+    "electron-prod": "yarn nuget-restore-cpp && yarn build-cpp && yarn build-electron && electron ."
   },
   "build": {
     "appId": "com.microsoft.dashboard.winml",
@@ -30,11 +32,14 @@
     }
   },
   "dependencies": {
+    "@types/ncp": "^2.0.1",
     "electron-log": "^2.2.17",
     "electron-squirrel-startup": "^1.0.0"
   },
   "devDependencies": {
+    "@types/fs-extra": "^5.0.4",
     "@types/jest": "^23.3.0",
+    "@types/md5": "^2.1.33",
     "@types/node": "^10.5.3",
     "@types/prop-types": "^15.5.4",
     "@types/react": "^16.4.7",
@@ -47,9 +52,12 @@
     "babel-minify": "^0.4.3",
     "chai": "^4.2.0",
     "chai-as-promised": "^7.1.1",
-    "electron": "^3.0.4",
+    "electron": "^3.0.11",
     "electron-winstaller": "^2.7.0",
+    "fs-extra": "^7.0.1",
+    "md5": "^2.2.1",
     "mocha": "^5.2.0",
+    "ncp": "^2.0.0",
     "npm-font-open-sans": "^1.1.0",
     "office-ui-fabric-react": "^6.40.0",
     "react": "^16.5.2",

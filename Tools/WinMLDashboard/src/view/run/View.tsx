@@ -1,26 +1,37 @@
 import * as React from 'react';
 import { connect } from 'react-redux';
 
-import Select from 'react-select';
+import * as ncp from 'ncp';
+
+
+import { setFile } from '../../datastore/actionCreators';
+import { ModelProtoSingleton } from "../../datastore/proto/modelProto";
 import IState from '../../datastore/state';
+
+import Select from 'react-select';
 
 import { DefaultButton } from 'office-ui-fabric-react/lib/Button';
 import { MessageBar, MessageBarType } from 'office-ui-fabric-react/lib/MessageBar'
 import { Spinner } from 'office-ui-fabric-react/lib/Spinner';
 import { TextField } from 'office-ui-fabric-react/lib/TextField';
 
-import { setFile } from '../../datastore/actionCreators';
+import { clearLocalDebugDir, getLocalDebugDir } from '../../native/appData';
 import { packagedFile } from '../../native/appData';
 import { fileFromPath } from '../../native/dialog';
+import { save } from "../../native/dialog";
 import { showNativeOpenDialog } from '../../native/dialog';
 import { execFilePromise } from '../../native/python';
+
+import * as path from 'path';
+
 import './View.css';
 
 import Collapsible from '../../components/Collapsible';
 
 import log from 'electron-log';
 
-const modelRunnerPath = packagedFile('WinMLRunner.exe');
+const winmlRunnerPath = packagedFile('WinMLRunner.exe');
+const debugRunnerPath = packagedFile('DebugRunner.exe');
 
 export interface IProperties {
     [key: string]: string
@@ -33,9 +44,9 @@ interface IComponentProperties {
     setFile: typeof setFile,
 }
 
-interface ISelectOpition {
-    label: string;
-    value: string;
+interface ISelectOption<T> {
+    label: T;
+    value: T;
 }
 
 enum Step {
@@ -44,28 +55,51 @@ enum Step {
     Success,
 }
 
+enum Capture {
+    None = "None",
+    Perf = "Perf",
+    Debug = "Debug",
+}
+
+enum Device {
+    CPU = 'CPU',
+    GPU = 'GPU',
+    GPUHighPerformance = 'GPUHighPerformance',
+    GPUMinPower = 'GPUMinPower',
+}
+
+enum inputPathPlaceholder {
+    optional = '(Optional) image/csv Path',
+    required = '(Required) image/csv Path',
+}
+
 interface IComponentState {
+    capture: Capture,
     console: string,
     currentStep: Step,
-    device: string,
+    device: Device,
     inputPath: string,
+    inputPathPlaceholder: inputPathPlaceholder
     inputType: string,
     model: string,
+    outputPath: string,
     parameters: string[],
-    showPerf: boolean,
 }
+
 class RunView extends React.Component<IComponentProperties, IComponentState> {
     constructor(props: IComponentProperties) {
         super(props);
         this.state = {
+            capture: Capture.None,
             console: '',
             currentStep: Step.Idle,
-            device: '',
+            device: Device.CPU,
             inputPath: '',
+            inputPathPlaceholder: inputPathPlaceholder.optional,
             inputType: '',
             model: '',
+            outputPath: '',
             parameters: [],
-            showPerf: false,
         }
         log.info("Run view is created.");
     }
@@ -97,11 +131,19 @@ class RunView extends React.Component<IComponentProperties, IComponentState> {
         )
     }
 
-    private newOption = (item: string):ISelectOpition => {
+    private newOption<T> (item: T):ISelectOption<T> {
         return {
             label: item,
             value: item
         }
+    }
+
+    private newOptions<T> (items: T[]):Array<ISelectOption<T>> {
+        const options = [];
+        for (const item of items) {
+            options.push({ label: item, value: item });
+        }
+        return options;
     }
 
     private getView = () => {
@@ -129,101 +171,106 @@ class RunView extends React.Component<IComponentProperties, IComponentState> {
                 <div className='ArgumentsControl'>
                     {this.getArgumentsView()}
                 </div>
-                <TextField id='paramters' readOnly={true} placeholder='paramters' value={this.state.parameters.join(' ')} label='Parameters to WinMLRunner' onChanged={this.updateParameters} />
-                <DefaultButton id='RunButton' text='Run' disabled={!this.state.model} onClick={this.execModelRunner}/>
+                <DefaultButton id='RunButton' text='Run' 
+                    disabled={!this.state.model || (this.state.capture === Capture.Debug && !(this.state.inputPath && this.state.outputPath))} 
+                    onClick={this.execModelRunner}/>
             </div>
         )
     }
 
-    private handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        const target = event.target;
-        const value = target.checked;
-        const name = target.name;
-        switch (name) {
-            case 'showPerf':
-                this.setState({showPerf: value}, () => {this.setParameters()});
-                break;
-
-        }
-      }
     private getArgumentsView = () => {
-        const deviceOptions = [
-            { value: 'CPU', label: 'CPU' },
-            { value: 'GPU', label: 'GPU' },
-            { value: 'GPUHighPerformance', label: 'GPUHighPerformance' },
-            { value: "GPUMinPower", label: 'GPUMinPower' }
-          ];
         return (
             <div className="Arguments">
                 <div className='DisplayFlex ModelPath'>
                     <label className="label">Model Path: </label>
-                    <TextField id='modelToRun' placeholder='Model Path' value={this.state.model} onChanged={this.setModel} />
+                    <TextField id='modelToRun' readOnly={true} placeholder='Model Path' value={this.state.model} onChanged={this.setModel} />
                     <DefaultButton id='ModelPathBrowse' text='Browse' onClick={this.browseModel}/>
+                </div>
+                <br />
+                <div className='DisplayFlex Capture'>
+                    <label className="label">Capture: </label>
+                    <Select className="DropdownOption"
+                        value={this.newOption(this.state.capture)}
+                        onChange={this.setCapture}
+                        options={this.newOptions(Object.keys(Capture))}
+                    />
                 </div>
                 <br />
                 <div className='DisplayFlex Device'>
                     <label className="label">Devices: </label>
-                    <Select className="DeviceOption"
+                    <Select className="DropdownOption"
                         value={this.newOption(this.state.device)}
                         onChange={this.setDevice}
-                        options={deviceOptions}
+                        options={this.state.capture === Capture.Debug ? this.newOptions([Device.CPU]) : this.newOptions(Object.keys(Device))}
                     />
-                    <form className="perfForm">
-                        <label className="labelPerf">
-                            <input
-                                name="showPerf"
-                                type="checkbox"
-                                checked={this.state.showPerf}
-                                onChange={this.handleInputChange} />
-                            : Perf
-                        </label>
-                    </form>
                 </div>
                 <br />
                 <div className='DisplayFlex Input'>
                     <label className="label">Input Path: </label>
-                    <TextField id='InputPath' placeholder='(Optional) image/csv Path' value={this.state.inputPath} onChanged={this.setInputPath} />
+                    <TextField id='InputPath' readOnly={true} placeholder={this.state.inputPathPlaceholder} value={this.state.inputPath} onChanged={this.setInputPath} />
                     <DefaultButton id='InputPathBrowse' text='Browse' onClick={this.browseInput}/>
+                </div>
+                <br />
+                <div className='DisplayFlex Input'>
+                    <label className="label">Output Path: </label>
+                    <TextField id='OutputPath' readOnly={true} placeholder='(Only for debug capture)' value={this.state.outputPath} onChanged={this.setOutputPath} />
+                    <DefaultButton id='OutputPathBrowse' text='Browse' disabled={this.state.capture !== Capture.Debug} onClick={this.browseOutput}/>
                 </div>
             </div>
         )
     }
 
-    private updateParameters = (parameters: string) => {
-        parameters = parameters.replace(/\s+/g,' ').trim();
-        this.setState({parameters: parameters.split(' ')})
-    }
-
     private setModel = (model: string) => {
-        this.setState({ model }, () => {this.setParameters()} )
+        this.setState({ model }, () => {this.setParameters()} );
+        this.props.setFile(fileFromPath(this.state.model));
     }
 
-    private setDevice = (device: ISelectOpition) => {
+    private setDevice = (device: ISelectOption<Device>) => {
         this.setState({device: device.value}, () => {this.setParameters()})
+    }
+
+    private setCapture = (capture: ISelectOption<Capture>) => {
+        if (capture.value === Capture.Debug) {
+            this.setState({capture: capture.value, inputPathPlaceholder: inputPathPlaceholder.required, device: Device.CPU}, () => {this.setParameters()})
+        } else {
+            this.setState({capture: capture.value, inputPathPlaceholder: inputPathPlaceholder.optional}, () => {this.setParameters()})
+        }
     }
 
     private setInputPath = (inputPath: string) => {
         this.setState({inputPath}, () => {this.setParameters()})
     }
 
+    private setOutputPath = (outputPath: string) => {
+        this.setState({outputPath}, () => {this.setParameters()})
+    }
+
+    private getDebugModelPath() {
+        return path.join(getLocalDebugDir(), path.basename(this.state.model));
+    }
+
     private setParameters = () => {
         const tempParameters = []
         if(this.state.model) {
             tempParameters.push('-model')
-            tempParameters.push(this.state.model)
+            if (this.state.capture === Capture.Debug) {
+                tempParameters.push(this.getDebugModelPath())
+            } else {
+                tempParameters.push(this.state.model)
+            }
         }
         if(this.state.device) {
             switch(this.state.device) {
-                case 'CPU':
+                case Device.CPU:
                     tempParameters.push('-CPU');
                     break;
-                case 'GPU':
+                case Device.GPU:
                     tempParameters.push('-GPU');
                     break;
-                case 'GPUHighPerformance':
+                case Device.GPUHighPerformance:
                     tempParameters.push('-GPUHighPerformance');
                     break;
-                case 'GPUMinPower':
+                case Device.GPUMinPower:
                     tempParameters.push('-GPUMinPower');
                     break;
             }
@@ -233,7 +280,7 @@ class RunView extends React.Component<IComponentProperties, IComponentState> {
             tempParameters.push(this.state.inputPath)
         }
 
-        if(this.state.showPerf) {
+        if(this.state.capture === Capture.Perf) {
             tempParameters.push('-perf')
         }
 
@@ -263,6 +310,18 @@ class RunView extends React.Component<IComponentProperties, IComponentState> {
             });
     }
 
+    private browseOutput = () => {
+        const openDialogOptions = {
+            properties: Array<'openDirectory'>('openDirectory'),
+        };
+        showNativeOpenDialog(openDialogOptions)
+            .then((filePaths) => {
+                if (filePaths) {
+                    this.setOutputPath(filePaths[0]);
+                }
+            });
+    }
+
     private logError = (error: string | Error) => {
         const message = typeof error === 'string' ? error : (`${error.stack ? `${error.stack}: ` : ''}${error.message}`);
         log.error(message)
@@ -282,8 +341,18 @@ class RunView extends React.Component<IComponentProperties, IComponentState> {
     };
 
     private execModelRunner = async() => {
-        this.props.setFile(fileFromPath(this.state.model))
         log.info("start to run " + this.state.model);
+        let runPath = winmlRunnerPath;
+        let procParameters = this.state.parameters;
+        const debug = this.state.capture === Capture.Debug
+        // serialize debug onnx model
+        if (debug) {
+            clearLocalDebugDir();
+            save(ModelProtoSingleton.serialize(true), this.getDebugModelPath());
+            runPath = debugRunnerPath;
+            procParameters = [this.getDebugModelPath(), this.state.inputPath];
+        } 
+
         this.setState({
             console: '',
             currentStep: Step.Running,
@@ -293,10 +362,11 @@ class RunView extends React.Component<IComponentProperties, IComponentState> {
             title: 'run result',
         }
         try {
-            await execFilePromise(modelRunnerPath, this.state.parameters, {}, this.outputListener);
+            await execFilePromise(runPath, procParameters, {}, this.outputListener);
         } catch (e) {
             this.logError(e);
             this.printMessage("\n---------------------------\nRun Failed!\n")
+            this.printMessage(`\n${(e as Error).message}`)
             
             log.info(this.state.model + " is failed to run");
             this.setState({
@@ -304,14 +374,41 @@ class RunView extends React.Component<IComponentProperties, IComponentState> {
             });
             runDialogOptions.message = 'Run failed! See console log for details.'
             require('electron').remote.dialog.showMessageBox(require('electron').remote.getCurrentWindow(), runDialogOptions)
-            return;
+            return
         }
         this.setState({
             currentStep: Step.Success,
         });
-        runDialogOptions.message = 'Run successful';
-        require('electron').remote.dialog.showMessageBox(require('electron').remote.getCurrentWindow(), runDialogOptions)
-        log.info(this.state.model + " run successful");
+        if (debug) {
+            this.exportDebug(this.state.outputPath)
+        } else {
+            runDialogOptions.message = 'Run successful';
+            require('electron').remote.dialog.showMessageBox(require('electron').remote.getCurrentWindow(), runDialogOptions)
+            log.info(this.state.model + " run successful");
+        }
+    }
+
+    private exportDebug = (filename: string) => {
+        ModelProtoSingleton.getCurrentModelDebugDir();
+        ncp.ncp(ModelProtoSingleton.getCurrentModelDebugDir(), filename, this.copyCallbackFunction);
+    }
+
+    private copyCallbackFunction = (err: Error) => {
+        const runDialogOptions = {
+            message: '',
+            title: 'run result',
+        }
+        if (err) {
+            this.logError(err);
+            runDialogOptions.message = 'Run failed! See console log for details.'
+            require('electron').remote.dialog.showMessageBox(require('electron').remote.getCurrentWindow(), runDialogOptions)
+
+        } else {
+            runDialogOptions.message = 'Run Successful: Debug capture saved to output path'
+            require('electron').remote.dialog.showMessageBox(require('electron').remote.getCurrentWindow(), runDialogOptions)
+            log.info(this.state.model + " run successful");
+        }
+
     }
 }
 

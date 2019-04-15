@@ -36,7 +36,9 @@ public/*
 !public/convert.py
 !public/requirements.txt
 !public/ConverterView.png
+!public/ConfigureDebug.png
 !public/EditorView.png
+!public/DebugView.png
 !public/progress_bar.gif
 !public/WinMLRunner.exe
 !public/libsvm-3.22-cp36-cp36m-win_amd64.whl

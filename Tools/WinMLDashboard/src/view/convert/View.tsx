@@ -183,7 +183,6 @@ class ConvertView extends React.Component<IComponentProperties, IComponentState>
                 log.info("start downloading python environment.");
                 this.setState({ currentStep: Step.InstallingRequirements });
                 await pip(['install', packagedFile('libsvm-3.22-cp36-cp36m-win_amd64.whl')], this.outputListener);
-                await pip(['install', packagedFile('winmltools-1.3.0-py2.py3-none-any.whl')], this.outputListener);
                 await pip(['install', '-r', packagedFile('requirements.txt'), '--no-warn-script-location'], this.outputListener);
                 log.info("python environment is installed successfully");
                 fs.writeFile(path.join(winmlDataFolder, '/python/PIResult.txt'), 'Python is installed successfully!', (err) => {

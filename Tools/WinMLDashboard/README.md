@@ -60,6 +60,23 @@ Note that model validation feature is only available on [Windows 10 October 2018
 
 <img src="./public/RunView.png" width=800/>
 
+## Debugging Inference
+
+You can utilize the debug feature of WinML Dashboard to gain insight into how raw data is flowing through operators in your model. You can also choose to visualize this data for computer vision inference.
+
+To debug your model follow these steps:
+
+1) Navigate to the **Edit** tab and click on the operator for which you wish to capture intermediate data. On the left side panel there will be a Debug menu where you can select the formats of intermediate data you wish to capture. The options are currently **text** and **png**. **Text** will output a text file containing the dimensions, data type and raw tensor data produced by this operator. **Png** will format this data into an image file which can be useful for computer vision applications.
+2) Navigate to the **Run** tab and select the model you wish to debug.
+3) For the Capture field, select Debug from the dropdown.
+4) Select an input image or csv to supply to your model at execution. Note that this is required when capturing Debug data.
+5) Select an output folder to export debug data.
+6) Click Run. Once execution is complete you can navigate to this selected folder to view your Debug capture.
+
+<img src="./public/ConfigureDebug.png" width=800/>
+<img src="./public/DebugView.png" width=800/>
+
+
 ## Install
 
 You can install an early preview version of WinML Dashboard from here.
@@ -80,8 +97,11 @@ Alternatively, you can build the app from source following the instructions belo
 |Yarn        |latest |[here](https://yarnpkg.com/en/docs/install)|`yarn --version`|
 |Node.js     |latest |[here](https://nodejs.org/en/)|`node --version`|
 |Git         |latest |[here](https://git-scm.com/download/win)|`git --version`|
+|MSBuild     |latest |[here](https://visualstudio.microsoft.com/downloads/)|`msbuild -version`|
+|Nuget       |latest |[here](https://www.nuget.org/downloads)|`nuget help`|
 
-> All four prerequisites should be **added to Enviroment Path**.
+
+> All six prerequisites should be **added to Environment Path**. Note that MSBuild and Nuget will be included in a Visual Studio 2017 installation.
 
 #### Steps to build and run
 

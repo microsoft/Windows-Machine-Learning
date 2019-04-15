@@ -20,10 +20,10 @@ std::vector<ILearningModelFeatureValue> GenerateInputFeatures(const LearningMode
     {
         auto&& description = model.InputFeatures().GetAt(i);
 
-        if (inputDataType == InputDataType::Tensor || i > 0)
+        if (inputDataType == InputDataType::Tensor)
         {
             // If CSV data is provided, then every input will contain the same CSV data
-            auto tensorFeature = BindingUtilities::CreateBindableTensor(description, args);
+            auto tensorFeature = BindingUtilities::CreateBindableTensor(description, args, inputBindingType);
             inputFeatures.push_back(tensorFeature);
         }
         else
@@ -214,6 +214,11 @@ HRESULT BindInputs(LearningModelBinding &context, const LearningModel& model, co
                    const IDirect3DDevice& winrtDevice, DeviceCreationLocation deviceCreationLocation, uint32_t iteration,
                    Profiler<WINML_MODEL_TEST_PERF>& profiler)
 {
+    if (deviceType == DeviceType::CPU && inputDataType == InputDataType::Tensor && inputBindingType == InputBindingType::GPU)
+    {
+        std::cout << "Cannot create D3D12 device on client if CPU device type is selected." << std::endl;
+        return E_INVALIDARG;
+    }
     bool useInputData = false;
     bool isGarbageData = args.IsGarbageInput();
     std::string completionString = "\n";
@@ -314,15 +319,6 @@ HRESULT CheckIfModelAndConfigurationsAreSupported(LearningModel& model, const st
                 return E_INVALIDARG;
             }
         }
-    }
-
-    // Creating D3D12 device on client doesn't make sense for CPU deviceType
-    if (deviceType == DeviceType::CPU && std::any_of(deviceCreationLocations.begin(), deviceCreationLocations.end(),
-                                                     [](const DeviceCreationLocation deviceCreationLocation) {
-                                                         return deviceCreationLocation == DeviceCreationLocation::UserD3DDevice; }))
-    {
-        std::cout << "Cannot create D3D12 device on client if CPU device type is selected." << std::endl;
-        return E_INVALIDARG;
     }
     return S_OK;
 }
@@ -508,10 +504,10 @@ int run(CommandLineArgs& args, Profiler<WINML_MODEL_TEST_PERF>& profiler) try
             for (auto deviceType : deviceTypes)
             {
                 lastHr = CheckIfModelAndConfigurationsAreSupported(model, path, deviceType, inputDataTypes,
-                                                               deviceCreationLocations);
+                                                                     deviceCreationLocations);
                 if (FAILED(lastHr))
                 {
-                    continue;
+                  continue;
                 }
                 for (auto deviceCreationLocation : deviceCreationLocations)
                 {
@@ -550,7 +546,10 @@ int run(CommandLineArgs& args, Profiler<WINML_MODEL_TEST_PERF>& profiler) try
                                 LearningModelBinding context(session);
                                 lastHr = BindInputs(context, model, session, output, deviceType, args, inputBindingType,
                                                 inputDataType, winrtDevice, deviceCreationLocation, i, profiler);
-
+                                if (FAILED(lastHr))
+                                {
+                                    break;
+                                }
                                 LearningModelEvaluationResult result = nullptr;
                                 bool capture_perf = args.IsPerformanceCapture() || args.IsPerIterationCapture();
                                 lastHr = EvaluateModel(result, model, context, session, args, output,

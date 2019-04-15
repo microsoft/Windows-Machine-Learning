@@ -31,7 +31,6 @@
     <ClInclude Include="src/CommandLineArgs.h" />
     <ClInclude Include="src/Common.h" />
     <ClInclude Include="src/Filehelper.h" />
-    <ClInclude Include="src/ModelBinding.h" />
     <ClInclude Include="src/OutputHelper.h" />
     <ClInclude Include="src/Run.h" />
     <ClInclude Include="src/TimerHelper.h" />
@@ -234,6 +233,7 @@
       <LanguageStandard>stdcpp17</LanguageStandard>
       <PrecompiledHeaderFile />
       <PrecompiledHeaderOutputFile />
+      <AdditionalIncludeDirectories>..\..\Samples\CustomTensorization\CustomTensorization;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -254,6 +254,7 @@
       <PrecompiledHeaderFile />
       <PrecompiledHeaderOutputFile />
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <AdditionalIncludeDirectories>..\..\Samples\CustomTensorization\CustomTensorization;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>

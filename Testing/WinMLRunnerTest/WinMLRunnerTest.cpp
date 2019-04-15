@@ -284,7 +284,6 @@ public: TEST_CLASS_INITIALIZE(SetupClass) {
             // We need to expect one more line because of the header
             Assert::AreEqual(static_cast<size_t>(2), GetOutputCSVLineCount());
         }
-
         TEST_METHOD(GarbageInputCpuWinMLDeviceCpuBoundRGBImage)
         {
             const std::wstring modelPath = CURRENT_PATH + L"SqueezeNet.onnx";
@@ -320,7 +319,6 @@ public: TEST_CLASS_INITIALIZE(SetupClass) {
             // We need to expect one more line because of the header
             Assert::AreEqual(static_cast<size_t>(2), GetOutputCSVLineCount());
         }
-
         TEST_METHOD(GarbageInputCpuWinMLDeviceGpuBoundRGBImage)
         {
             const std::wstring modelPath = CURRENT_PATH + L"SqueezeNet.onnx";
@@ -344,19 +342,15 @@ public: TEST_CLASS_INITIALIZE(SetupClass) {
             // We need to expect one more line because of the header
             Assert::AreEqual(static_cast<size_t>(2), GetOutputCSVLineCount());
         }
-
         TEST_METHOD(GarbageInputCpuWinMLDeviceGpuBoundTensor)
         {
             const std::wstring modelPath = CURRENT_PATH + L"SqueezeNet.onnx";
             const std::wstring command =
                 BuildCommand({ EXE_PATH, L"-model", modelPath, L"-PerfOutput", OUTPUT_PATH, L"-perf", L"-CPU",
                                L"-GPUBoundInput", L"-tensor", L"-CreateDeviceInWinML" });
-            Assert::AreEqual(S_OK, RunProc((wchar_t*)command.c_str()));
-
-            // We need to expect one more line because of the header
-            Assert::AreEqual(static_cast<size_t>(2), GetOutputCSVLineCount());
+            // Binding GPU Tensor with Session created with CPU device isn't supported.
+            Assert::AreEqual(E_INVALIDARG, RunProc((wchar_t*)command.c_str()));
         }
-
         TEST_METHOD(GarbageInputGpuClientDeviceCpuBoundRGBImage)
         {
             const std::wstring modelPath = CURRENT_PATH + L"SqueezeNet.onnx";
@@ -646,7 +640,7 @@ public: TEST_CLASS_INITIALIZE(SetupClass) {
             const std::wstring command = BuildCommand({ EXE_PATH, L"-model", modelPath, L"-input", inputPath });
             Assert::AreEqual(HRESULT_FROM_WIN32(ERROR_INVALID_PARAMETER), RunProc((wchar_t *)command.c_str()));
         }
-        TEST_METHOD(ProvidedCSVInputGPUSaveTensor)
+        TEST_METHOD(ProvidedCSVInputGPUSaveCpuBoundTensor)
         {
             const std::wstring modelPath = CURRENT_PATH + L"SqueezeNet.onnx";
             const std::wstring inputPath = CURRENT_PATH + L"fish.csv";
@@ -656,7 +650,17 @@ public: TEST_CLASS_INITIALIZE(SetupClass) {
             Assert::AreEqual(true, CompareTensors(L"OutputTensorData\\Squeezenet_fish_input_GPU.csv",
                                                   TENSOR_DATA_PATH + L"\\softmaxout_1GpuIteration1.csv"));
         }
-        TEST_METHOD(ProvidedCSVInputCPUSaveTensor)
+        TEST_METHOD(ProvidedCSVInputGPUSaveGpuBoundTensor)
+        {
+            const std::wstring modelPath = CURRENT_PATH + L"SqueezeNet.onnx";
+            const std::wstring inputPath = CURRENT_PATH + L"fish.csv";
+            const std::wstring command = BuildCommand({ EXE_PATH, L"-model", modelPath, L"-input", inputPath,
+                                                        L"-SaveTensorData", L"First", TENSOR_DATA_PATH, L"-GPU", L"-GPUBoundInput" });
+            Assert::AreEqual(S_OK, RunProc((wchar_t*)command.c_str()));
+            Assert::AreEqual(true, CompareTensors(L"OutputTensorData\\Squeezenet_fish_input_GPU.csv",
+                TENSOR_DATA_PATH + L"\\softmaxout_1GpuIteration1.csv"));
+        }
+        TEST_METHOD(ProvidedCSVInputCPUSaveCpuBoundTensor)
         {
             const std::wstring modelPath = CURRENT_PATH + L"SqueezeNet.onnx";
             const std::wstring inputPath = CURRENT_PATH + L"fish.csv";
@@ -666,7 +670,7 @@ public: TEST_CLASS_INITIALIZE(SetupClass) {
             Assert::AreEqual(true, CompareTensors(L"OutputTensorData\\Squeezenet_fish_input_CPU.csv",
                                                   TENSOR_DATA_PATH + L"\\softmaxout_1CpuIteration1.csv"));
         }
-        TEST_METHOD(ProvidedCSVInputGPUSaveTensorFp16)
+        TEST_METHOD(ProvidedCSVInputGPUSaveCpuBoundTensorFp16)
         {
             const std::wstring modelPath = CURRENT_PATH + L"SqueezeNet_fp16.onnx";
             const std::wstring inputPath = CURRENT_PATH + L"fish.csv";
@@ -676,7 +680,7 @@ public: TEST_CLASS_INITIALIZE(SetupClass) {
             Assert::AreEqual(true, CompareTensorsFP16(L"OutputTensorData\\Squeezenet_fp16_fish_input_GPU.csv",
                                                       TENSOR_DATA_PATH + L"\\softmaxout_1GpuIteration1.csv"));
         }
-        TEST_METHOD(ProvidedCSVInputCPUSaveTensorFp16)
+        TEST_METHOD(ProvidedCSVInputCPUSaveCpuBoundTensorFp16)
         {
             const std::wstring modelPath = CURRENT_PATH + L"SqueezeNet_fp16.onnx";
             const std::wstring inputPath = CURRENT_PATH + L"fish.csv";
@@ -687,7 +691,7 @@ public: TEST_CLASS_INITIALIZE(SetupClass) {
                                                       TENSOR_DATA_PATH + L"\\softmaxout_1CpuIteration1.csv"));
         }
 
-        TEST_METHOD(ProvidedCSVInputOnlyGpuSaveTensorImageDenotation)
+        TEST_METHOD(ProvidedCSVInputOnlyGpuSaveCpuBoundTensorImageDenotation)
         {
             const std::wstring modelPath = CURRENT_PATH + L"mnist.onnx";
             const std::wstring inputPath = CURRENT_PATH + L"mnist_28.csv";
@@ -697,7 +701,7 @@ public: TEST_CLASS_INITIALIZE(SetupClass) {
             Assert::AreEqual(true, CompareTensors(L"OutputTensorData\\Mnist_8_input_GPU.csv",
                 TENSOR_DATA_PATH + L"\\Plus214_Output_0GpuIteration1.csv"));
         }
-        TEST_METHOD(ProvidedCSVInputOnlyCpuSaveTensorImageDenotation)
+        TEST_METHOD(ProvidedCSVInputOnlyCpuSaveCpuBoundTensorImageDenotation)
         {
             const std::wstring modelPath = CURRENT_PATH + L"mnist.onnx";
             const std::wstring inputPath = CURRENT_PATH + L"mnist_28.csv";

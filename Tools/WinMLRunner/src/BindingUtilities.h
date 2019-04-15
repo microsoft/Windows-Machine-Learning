@@ -406,22 +406,14 @@ namespace BindingUtilities
                 pD3D12Device->CreateCommandList(0, queuetype, alloctor.get(), nullptr,
                                                 winrt::guid_of<ID3D12CommandList>(), cmdList.put_void());
 
-                // Create Committed Resource
-                D3D12_HEAP_PROPERTIES heapProperties = { D3D12_HEAP_TYPE_DEFAULT, D3D12_CPU_PAGE_PROPERTY_UNKNOWN,
-                                                         D3D12_MEMORY_POOL_UNKNOWN, 0, 0 };
-                D3D12_RESOURCE_DESC resourceDesc = { D3D12_RESOURCE_DIMENSION_BUFFER,
-                                                     0,
-                                                     actualSizeInBytes,
-                                                     1,
-                                                     1,
-                                                     1,
-                                                     DXGI_FORMAT_UNKNOWN,
-                                                     { 1, 0 },
-                                                     D3D12_TEXTURE_LAYOUT_ROW_MAJOR,
-                                                     D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS };
-                pD3D12Device->CreateCommittedResource(&heapProperties, D3D12_HEAP_FLAG_NONE, &resourceDesc,
-                                                      D3D12_RESOURCE_STATE_COMMON, nullptr, __uuidof(ID3D12Resource),
-                                                      pGPUResource.put_void());
+                pD3D12Device->CreateCommittedResource(
+                    &CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
+                    D3D12_HEAP_FLAG_NONE,
+                    &CD3DX12_RESOURCE_DESC::Buffer(
+                        actualSizeInBytes,
+                        D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS),
+                    D3D12_RESOURCE_STATE_COMMON, nullptr,
+                    __uuidof(ID3D12Resource), pGPUResource.put_void());
                 if (!args.IsGarbageInput())
                 {
                     com_ptr<ID3D12Resource> imageUploadHeap;

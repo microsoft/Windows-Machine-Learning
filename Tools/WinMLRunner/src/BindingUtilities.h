@@ -3,7 +3,7 @@
 #include <time.h>
 #include "Common.h"
 #include "Windows.AI.Machinelearning.Native.h"
-
+#include "d3dx12.h"
 using namespace winrt::Windows::Media;
 using namespace winrt::Windows::Storage;
 using namespace winrt::Windows::AI::MachineLearning;
@@ -327,7 +327,7 @@ namespace BindingUtilities
 
     template <TensorKind T>
     static ITensor CreateTensor(const CommandLineArgs& args, const std::vector<std::string>& tensorStringInput,
-                                const IVectorView<int64_t>& tensorShape)
+                                const IVectorView<int64_t>& tensorShape, const InputBindingType inputBindingType)
     {
         using TensorValue = typename TensorKindToValue<T>::Type;
         using DataType = typename TensorKindToType<T>::Type;
@@ -372,11 +372,113 @@ namespace BindingUtilities
             // Creating Tensors for Input Images haven't been added yet.
             throw hresult_not_implemented(L"Creating Tensors for Input Images haven't been implemented yet!");
         }
-        return tensorValue;  
+
+        if (inputBindingType == InputBindingType::CPU)
+        {
+            return tensorValue;
+        }
+        else // GPU Tensor
+        {
+            com_ptr<ID3D12Resource> pGPUResource = nullptr;
+            try
+            {
+                // create the d3d device.
+                com_ptr<ID3D12Device> pD3D12Device = nullptr;
+                D3D12CreateDevice(nullptr, D3D_FEATURE_LEVEL::D3D_FEATURE_LEVEL_11_0, __uuidof(ID3D12Device),
+                                  reinterpret_cast<void**>(&pD3D12Device));
+                // create the command queue.
+                com_ptr<ID3D12CommandQueue> dxQueue = nullptr;
+                D3D12_COMMAND_QUEUE_DESC commandQueueDesc = {};
+                commandQueueDesc.Type = D3D12_COMMAND_LIST_TYPE_DIRECT;
+                pD3D12Device->CreateCommandQueue(&commandQueueDesc, __uuidof(ID3D12CommandQueue),
+                                                 reinterpret_cast<void**>(&dxQueue));
+                com_ptr<ILearningModelDeviceFactoryNative> devicefactory =
+                    get_activation_factory<LearningModelDevice, ILearningModelDeviceFactoryNative>();
+                com_ptr<::IUnknown> spUnk;
+                devicefactory->CreateFromD3D12CommandQueue(dxQueue.get(), spUnk.put());
+
+                // Create ID3D12GraphicsCommandList and Allocator
+                D3D12_COMMAND_LIST_TYPE queuetype = dxQueue->GetDesc().Type;
+                com_ptr<ID3D12CommandAllocator> alloctor;
+                com_ptr<ID3D12GraphicsCommandList> cmdList;
+                pD3D12Device->CreateCommandAllocator(queuetype, winrt::guid_of<ID3D12CommandAllocator>(),
+                                                     alloctor.put_void());
+                pD3D12Device->CreateCommandList(0, queuetype, alloctor.get(), nullptr,
+                                                winrt::guid_of<ID3D12CommandList>(), cmdList.put_void());
+
+                // Create Committed Resource
+                D3D12_HEAP_PROPERTIES heapProperties = { D3D12_HEAP_TYPE_DEFAULT, D3D12_CPU_PAGE_PROPERTY_UNKNOWN,
+                                                         D3D12_MEMORY_POOL_UNKNOWN, 0, 0 };
+                D3D12_RESOURCE_DESC resourceDesc = { D3D12_RESOURCE_DIMENSION_BUFFER,
+                                                     0,
+                                                     actualSizeInBytes,
+                                                     1,
+                                                     1,
+                                                     1,
+                                                     DXGI_FORMAT_UNKNOWN,
+                                                     { 1, 0 },
+                                                     D3D12_TEXTURE_LAYOUT_ROW_MAJOR,
+                                                     D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS };
+                pD3D12Device->CreateCommittedResource(&heapProperties, D3D12_HEAP_FLAG_NONE, &resourceDesc,
+                                                      D3D12_RESOURCE_STATE_COMMON, nullptr, __uuidof(ID3D12Resource),
+                                                      pGPUResource.put_void());
+                if (!args.IsGarbageInput())
+                {
+                    com_ptr<ID3D12Resource> imageUploadHeap;
+                    // Create the GPU upload buffer.
+                    pD3D12Device->CreateCommittedResource(
+                        &CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD), D3D12_HEAP_FLAG_NONE,
+                        &CD3DX12_RESOURCE_DESC::Buffer(actualSizeInBytes), D3D12_RESOURCE_STATE_GENERIC_READ, nullptr,
+                        __uuidof(ID3D12Resource), imageUploadHeap.put_void());
+
+                    // Copy from Cpu to GPU
+                    D3D12_SUBRESOURCE_DATA CPUData = {};
+                    CPUData.pData = actualData;
+                    CPUData.RowPitch = actualSizeInBytes;
+                    CPUData.SlicePitch = actualSizeInBytes;
+                    UpdateSubresources(cmdList.get(), pGPUResource.get(), imageUploadHeap.get(), 0, 0, 1, &CPUData);
+
+                    // Close the command list and execute it to begin the initial GPU setup.
+                    cmdList->Close();
+                    ID3D12CommandList* ppCommandLists[] = { cmdList.get() };
+                    dxQueue->ExecuteCommandLists(_countof(ppCommandLists), ppCommandLists);
+
+                    // Create Event
+                    HANDLE directEvent = CreateEvent(nullptr, FALSE, FALSE, nullptr);
+
+                    // Create Fence
+                    Microsoft::WRL::ComPtr<ID3D12Fence> spDirectFence = nullptr;
+                    THROW_IF_FAILED(pD3D12Device->CreateFence(0, D3D12_FENCE_FLAG_NONE,
+                                                              IID_PPV_ARGS(spDirectFence.ReleaseAndGetAddressOf())));
+                    // Adds fence to queue
+                    THROW_IF_FAILED(dxQueue->Signal(spDirectFence.Get(), 1));
+                    THROW_IF_FAILED(spDirectFence->SetEventOnCompletion(1, directEvent));
+
+                    // Wait for signal
+                    DWORD retVal = WaitForSingleObject(directEvent, INFINITE);
+                    if (retVal != WAIT_OBJECT_0)
+                    {
+                        THROW_IF_FAILED(E_UNEXPECTED);
+                    }
+                }
+            }
+            catch (...)
+            {
+                std::cout << "Couldn't create and copy CPU tensor resource to GPU resource" << std::endl;
+                throw;
+            }
+            com_ptr<ITensorStaticsNative> tensorfactory = get_activation_factory<TensorValue, ITensorStaticsNative>();
+            com_ptr<::IUnknown> spUnkTensor;
+            tensorfactory->CreateFromD3D12Resource(pGPUResource.get(), vecShape.data(), static_cast<int>(vecShape.size()), spUnkTensor.put());
+            TensorValue returnTensor(nullptr);
+            spUnkTensor.try_as(returnTensor);
+            return returnTensor;
+        }
     }
 
     // Binds tensor floats, ints, doubles from CSV data.
-    ITensor CreateBindableTensor(const ILearningModelFeatureDescriptor& description, const CommandLineArgs& args)
+    ITensor CreateBindableTensor(const ILearningModelFeatureDescriptor& description, const CommandLineArgs& args,
+                                 const InputBindingType inputBindingType)
     {
         std::vector<std::string> elementStrings;
         if (!args.CsvPath().empty())
@@ -407,7 +509,7 @@ namespace BindingUtilities
             std::vector<int64_t> shape = { 1, channels, imageFeatureDescriptor.Height(),
                                            imageFeatureDescriptor.Width() };
             IVectorView<int64_t> shapeVectorView = single_threaded_vector(std::move(shape)).GetView();
-            return CreateTensor<TensorKind::Float>(args, elementStrings, shapeVectorView);
+            return CreateTensor<TensorKind::Float>(args, elementStrings, shapeVectorView, inputBindingType);
         }
 
         auto tensorDescriptor = description.try_as<TensorFeatureDescriptor>();
@@ -422,57 +524,68 @@ namespace BindingUtilities
                 }
                 case TensorKind::Float:
                 {
-                    return CreateTensor<TensorKind::Float>(args, elementStrings, tensorDescriptor.Shape());
+                    return CreateTensor<TensorKind::Float>(args, elementStrings, tensorDescriptor.Shape(),
+                                                           inputBindingType);
                 }
                 break;
                 case TensorKind::Float16:
                 {
-                    return CreateTensor<TensorKind::Float16>(args, elementStrings, tensorDescriptor.Shape());
+                    return CreateTensor<TensorKind::Float16>(args, elementStrings, tensorDescriptor.Shape(),
+                                                             inputBindingType);
                 }
                 break;
                 case TensorKind::Double:
                 {
-                    return CreateTensor<TensorKind::Double>(args, elementStrings, tensorDescriptor.Shape());
+                    return CreateTensor<TensorKind::Double>(args, elementStrings, tensorDescriptor.Shape(),
+                                                            inputBindingType);
                 }
                 break;
                 case TensorKind::Int8:
                 {
-                    return CreateTensor<TensorKind::Int8>(args, elementStrings, tensorDescriptor.Shape());
+                    return CreateTensor<TensorKind::Int8>(args, elementStrings, tensorDescriptor.Shape(),
+                                                          inputBindingType);
                 }
                 break;
                 case TensorKind::UInt8:
                 {
-                    return CreateTensor<TensorKind::UInt8>(args, elementStrings, tensorDescriptor.Shape());
+                    return CreateTensor<TensorKind::UInt8>(args, elementStrings, tensorDescriptor.Shape(),
+                                                           inputBindingType);
                 }
                 break;
                 case TensorKind::Int16:
                 {
-                    return CreateTensor<TensorKind::Int16>(args, elementStrings, tensorDescriptor.Shape());
+                    return CreateTensor<TensorKind::Int16>(args, elementStrings, tensorDescriptor.Shape(),
+                                                           inputBindingType);
                 }
                 break;
                 case TensorKind::UInt16:
                 {
-                    return CreateTensor<TensorKind::UInt16>(args, elementStrings, tensorDescriptor.Shape());
+                    return CreateTensor<TensorKind::UInt16>(args, elementStrings, tensorDescriptor.Shape(),
+                                                            inputBindingType);
                 }
                 break;
                 case TensorKind::Int32:
                 {
-                    return CreateTensor<TensorKind::Int32>(args, elementStrings, tensorDescriptor.Shape());
+                    return CreateTensor<TensorKind::Int32>(args, elementStrings, tensorDescriptor.Shape(),
+                                                           inputBindingType);
                 }
                 break;
                 case TensorKind::UInt32:
                 {
-                    return CreateTensor<TensorKind::UInt32>(args, elementStrings, tensorDescriptor.Shape());
+                    return CreateTensor<TensorKind::UInt32>(args, elementStrings, tensorDescriptor.Shape(),
+                                                            inputBindingType);
                 }
                 break;
                 case TensorKind::Int64:
                 {
-                    return CreateTensor<TensorKind::Int64>(args, elementStrings, tensorDescriptor.Shape());
+                    return CreateTensor<TensorKind::Int64>(args, elementStrings, tensorDescriptor.Shape(),
+                                                           inputBindingType);
                 }
                 break;
                 case TensorKind::UInt64:
                 {
-                    return CreateTensor<TensorKind::UInt64>(args, elementStrings, tensorDescriptor.Shape());
+                    return CreateTensor<TensorKind::UInt64>(args, elementStrings, tensorDescriptor.Shape(),
+                                                            inputBindingType);
                 }
                 break;
             }

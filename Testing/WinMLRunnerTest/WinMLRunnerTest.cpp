@@ -319,16 +319,6 @@ public: TEST_CLASS_INITIALIZE(SetupClass) {
             // We need to expect one more line because of the header
             Assert::AreEqual(static_cast<size_t>(2), GetOutputCSVLineCount());
         }
-        TEST_METHOD(GarbageInputCpuWinMLDeviceGpuBoundTensor)
-        {
-            const std::wstring modelPath = CURRENT_PATH + L"SqueezeNet.onnx";
-            const std::wstring command =
-                BuildCommand({ EXE_PATH, L"-model", modelPath, L"-PerfOutput", OUTPUT_PATH, L"-perf", L"-CPU",
-                               L"-GPUBoundInput", L"-tensor", L"-CreateDeviceInWinML" });
-            // Binding GPU Tensor with Session created with CPU device isn't supported.
-            Assert::AreEqual(E_INVALIDARG, RunProc((wchar_t*)command.c_str()));
-        }
-
         TEST_METHOD(GarbageInputCpuWinMLDeviceGpuBoundRGBImage)
         {
             const std::wstring modelPath = CURRENT_PATH + L"SqueezeNet.onnx";
@@ -351,6 +341,15 @@ public: TEST_CLASS_INITIALIZE(SetupClass) {
 
             // We need to expect one more line because of the header
             Assert::AreEqual(static_cast<size_t>(2), GetOutputCSVLineCount());
+        }
+        TEST_METHOD(GarbageInputCpuWinMLDeviceGpuBoundTensor)
+        {
+            const std::wstring modelPath = CURRENT_PATH + L"SqueezeNet.onnx";
+            const std::wstring command =
+                BuildCommand({ EXE_PATH, L"-model", modelPath, L"-PerfOutput", OUTPUT_PATH, L"-perf", L"-CPU",
+                               L"-GPUBoundInput", L"-tensor", L"-CreateDeviceInWinML" });
+            // Binding GPU Tensor with Session created with CPU device isn't supported.
+            Assert::AreEqual(E_INVALIDARG, RunProc((wchar_t*)command.c_str()));
         }
         TEST_METHOD(GarbageInputGpuClientDeviceCpuBoundRGBImage)
         {

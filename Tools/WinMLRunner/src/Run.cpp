@@ -532,6 +532,12 @@ int run(CommandLineArgs& args, Profiler<WINML_MODEL_TEST_PERF>& profiler) try
                     {
                        for (auto inputBindingType : inputBindingTypes)
                        {
+                           // Clear up bind, eval performance metrics after iteration
+                           if (args.IsPerformanceCapture() || args.IsPerIterationCapture())
+                           {
+                               // Resets all values from profiler for bind and evaluate.
+                               profiler.Reset(WINML_MODEL_TEST_PERF::BIND_VALUE, WINML_MODEL_TEST_PERF::COUNT);
+                           }
                             for (uint32_t i = 0; i < args.NumIterations(); i++)
                             {
 #if defined(_AMD64_)
@@ -598,13 +604,6 @@ int run(CommandLineArgs& args, Profiler<WINML_MODEL_TEST_PERF>& profiler) try
                                                                      inputBindingTypeStringified,
                                                                      deviceCreationLocationStringified);
                                 }
-                            }
-
-                            // Clear up bind, eval performance metrics after iteration
-                            if (args.IsPerformanceCapture() || args.IsPerIterationCapture())
-                            {
-                                // Resets all values from profiler for bind and evaluate.
-                                profiler.Reset(WINML_MODEL_TEST_PERF::BIND_VALUE, WINML_MODEL_TEST_PERF::COUNT);
                             }
                        }
                     }

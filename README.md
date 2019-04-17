@@ -50,8 +50,16 @@ These generic examples show how to use various models and input feeds with Windo
 ### Requirements
 
 - [Visual Studio 2017 Version 15.7.4 or Newer](https://developer.microsoft.com/en-us/windows/downloads)
-- [Windows 10 - Build 17738 or higher](https://www.microsoft.com/en-us/software-download/windowsinsiderpreviewiso)
-- [Windows SDK - Build 17738 or higher](https://www.microsoft.com/en-us/software-download/windowsinsiderpreviewSDK)
+- [Windows 10 - Build 17763 (RS5) or Newer](https://www.microsoft.com/en-us/software-download/windowsinsiderpreviewiso)
+- [Windows SDK - Build 17763 (RS5) or Newer](https://www.microsoft.com/en-us/software-download/windowsinsiderpreviewSDK)
+- Visual Studio Extension for C++/WinRT for C++/WinRT apps
+
+  Do the following to add the C++/WinRT extension in Visual Studio.
+  1. Go to **Tools > Extensions and Updates**. 
+  2. Select **Online** in the left pane and search for "WinRT" using the search box.
+  3. Select the **C++/WinRT** extension, click **Download**, and close Visual Studio. The extension should install automatically.
+  4. When the extension has finished installing, re-open Visual Studio.
+
 
 The easiest way to use these samples without using Git is to download the zip file containing the current version (using the following link or by clicking the "Download ZIP" button on the repo page). You can then unzip the entire archive and use the samples in Visual Studio 2017.
 

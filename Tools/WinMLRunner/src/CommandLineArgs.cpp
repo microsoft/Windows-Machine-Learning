@@ -218,13 +218,7 @@ CommandLineArgs::CommandLineArgs(const std::vector<std::wstring>& args)
             }
             catch (...)
             {
-                // set to default path
-                auto time = std::time(nullptr);
-                struct tm localTime;
-                localtime_s(&localTime, &time);
-                std::wostringstream oss;
-                oss << std::put_time(&localTime, L"%Y-%m-%d_%H.%M.%S");
-                SetTensorOutputPath(L"\\PerIterationRun[" + oss.str() + L"]");
+                // Will Set Default Path after argument checks
             }
         }
         else if (_wcsicmp(args[i].c_str(), L"-version") == 0)
@@ -317,6 +311,17 @@ CommandLineArgs::CommandLineArgs(const std::vector<std::wstring>& args)
             msg += m_inputData;
             throw hresult_invalid_argument(msg.c_str());
         }
+    }
+
+    // set default path for per iteration / tensor output
+    if (this->TensorOutputPath().empty())
+    {
+        auto time = std::time(nullptr);
+        struct tm localTime;
+        localtime_s(&localTime, &time);
+        std::wostringstream oss;
+        oss << std::put_time(&localTime, L"%Y-%m-%d_%H.%M.%S");
+        SetTensorOutputPath(L".\\PerIterationRun[" + oss.str() + L"]");
     }
     CheckForInvalidArguments();
 }

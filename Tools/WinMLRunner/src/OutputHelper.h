@@ -596,7 +596,7 @@ public:
 
     void SetCSVFileName(const std::wstring& fileName) { m_csvFileName = fileName; }
 
-    void WritePerIterationPerformance(const CommandLineArgs& args, std::wstring model, std::wstring img)
+    void WritePerIterationPerformance(const CommandLineArgs& args, const std::wstring& model, const std::wstring& img)
     {
         if (m_csvFileNamePerIterationSummary.length() > 0)
         {

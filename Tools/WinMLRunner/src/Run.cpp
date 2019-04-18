@@ -196,36 +196,40 @@ HRESULT CreateSession(LearningModelSession& session, IDirect3DDevice& winrtDevic
              std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
              std::string adapterNameStr = converter.to_bytes(adapterName);
              com_ptr<IDXCoreAdapter> spAdapter = nullptr;
+             com_ptr<IDXCoreAdapter> currAdapter = nullptr;
+             bool chosenAdapterFound = false;
              printf("Printing available adapters..\n");
              for (UINT i = 0; i < spAdapterList->GetAdapterCount(); i++)
              {
-                 THROW_IF_FAILED(spAdapterList->GetItem(i, spAdapter.put()));
+                 THROW_IF_FAILED(spAdapterList->GetItem(i, currAdapter.put()));
 
                  // If the adapter is a software adapter then don't consider it for index selection
                  bool isHardware;
                  size_t driverDescriptionSize;
                  THROW_IF_FAILED(
-                     spAdapter->QueryPropertySize(DXCoreProperty::DriverDescription, &driverDescriptionSize));
+                     currAdapter->QueryPropertySize(DXCoreProperty::DriverDescription, &driverDescriptionSize));
                  CHAR* driverDescription = new CHAR[driverDescriptionSize];
-                 THROW_IF_FAILED(spAdapter->QueryProperty(DXCoreProperty::IsHardware, sizeof(isHardware), &isHardware));
+                 THROW_IF_FAILED(currAdapter->QueryProperty(DXCoreProperty::IsHardware, sizeof(isHardware), &isHardware));
+                 THROW_IF_FAILED(currAdapter->QueryProperty(DXCoreProperty::DriverDescription, driverDescriptionSize,
+                                                          driverDescription));
                  if (isHardware)
                  {
-                     THROW_IF_FAILED(spAdapter->QueryProperty(DXCoreProperty::DriverDescription, driverDescriptionSize,
-                                                              driverDescription));
                      printf("Index: %d, Description: %s\n", i, driverDescription);
-                     validAdapters[i] = spAdapter;
+                     validAdapters[i] = currAdapter;
                  }
-
-                 std::string driverDescriptionStr = std::string(driverDescription);
-                 std::transform(driverDescriptionStr.begin(), driverDescriptionStr.end(), driverDescriptionStr.begin(),
-                                ::tolower);
-                 std::transform(adapterNameStr.begin(), adapterNameStr.end(), adapterNameStr.begin(), ::tolower);
-                 if (strstr(driverDescriptionStr.c_str(), adapterNameStr.c_str()))
+                 if (!adapterName.empty() && !chosenAdapterFound)
                  {
-                     break;
+                     std::string driverDescriptionStr = std::string(driverDescription);
+                     std::transform(driverDescriptionStr.begin(), driverDescriptionStr.end(),
+                                    driverDescriptionStr.begin(), ::tolower);
+                     std::transform(adapterNameStr.begin(), adapterNameStr.end(), adapterNameStr.begin(), ::tolower);
+                     if (strstr(driverDescriptionStr.c_str(), adapterNameStr.c_str()))
+                     {
+                         chosenAdapterFound = true;
+                         spAdapter = currAdapter;
+                     }
                  }
                  free(driverDescription);
-                 spAdapter = nullptr;
              }
              if (adapterIndex != -1) // Use index to retrieve adapter
              {
@@ -239,7 +243,7 @@ HRESULT CreateSession(LearningModelSession& session, IDirect3DDevice& winrtDevic
                                                     std::to_wstring(adapterIndex));
                  }
              }
-             else // Use name to retrieve adapter
+             else // check if using name to retrieve adapter succeeded
              {
                  if (spAdapter == nullptr)
                  {

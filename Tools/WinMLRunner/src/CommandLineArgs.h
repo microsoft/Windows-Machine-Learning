@@ -30,6 +30,9 @@ public:
     const std::wstring& FolderPath() const { return m_modelFolderPath; }
     const std::wstring& ModelPath() const { return m_modelPath; }
     const std::wstring& TensorOutputPath() const { return m_tensorOutputPath; }
+#ifdef DXCORE_SUPPORTED_BUILD
+    const std::wstring& GetGPUAdapterName() const { return m_adapterName; }
+#endif
 
     bool UseRGB() const
     {
@@ -139,6 +142,9 @@ private:
     std::wstring m_imagePath;
     std::wstring m_csvData;
     std::wstring m_inputData;
+#ifdef DXCORE_SUPPORTED_BUILD
+    std::wstring m_adapterName;
+#endif
     std::wstring m_perfOutputPath;
     std::wstring m_tensorOutputPath;
     uint32_t m_numIterations = 1;

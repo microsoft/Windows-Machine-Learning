@@ -28,7 +28,7 @@
 #if __has_include("dxcore.h")
 #include <initguid.h>
 #include <dxcore.h>
-#define MCDM_BUILD
+#define DXCORE_SUPPORTED_BUILD
 #endif
 
 enum WINML_MODEL_TEST_PERF

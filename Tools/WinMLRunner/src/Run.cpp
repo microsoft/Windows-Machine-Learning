@@ -118,7 +118,7 @@ HRESULT CreateSession(LearningModelSession& session, IDirect3DDevice& winrtDevic
     {
         return hresult_invalid_argument().code();
     }
-#ifdef MCDM_BUILD
+#ifdef DXCORE_SUPPORTED_BUILD
     UINT adapterIndex = args.GetGPUAdapterIndex();
     const std::wstring& adapterName = args.GetGPUAdapterName();
 #endif
@@ -180,124 +180,137 @@ HRESULT CreateSession(LearningModelSession& session, IDirect3DDevice& winrtDevic
                 WINML_PROFILING_STOP(profiler, WINML_MODEL_TEST_PERF::CREATE_SESSION);
             }
         }
-#ifdef MCDM_BUILD
+#ifdef DXCORE_SUPPORTED_BUILD
         else if ((TypeHelper::GetWinmlDeviceKind(deviceType) != LearningModelDeviceKind::Cpu) &&
                  (!adapterName.empty() || adapterIndex != -1))
         {
-             com_ptr<IDXCoreAdapterFactory> spFactory;
-             THROW_IF_FAILED(DXCoreCreateAdapterFactory(IID_PPV_ARGS(spFactory.put())));
+            com_ptr<IDXCoreAdapterFactory> spFactory;
+            THROW_IF_FAILED(DXCoreCreateAdapterFactory(IID_PPV_ARGS(spFactory.put())));
 
-             com_ptr<IDXCoreAdapterList> spAdapterList;
-             const GUID dxGUIDs[] = { DXCORE_ADAPTER_ATTRIBUTE_D3D12_CORE_COMPUTE };
+            com_ptr<IDXCoreAdapterList> spAdapterList;
+            const GUID dxGUIDs[] = { DXCORE_ADAPTER_ATTRIBUTE_D3D12_CORE_COMPUTE };
 
-             THROW_IF_FAILED(spFactory->GetAdapterList(dxGUIDs, ARRAYSIZE(dxGUIDs), spAdapterList.put()));
+            THROW_IF_FAILED(spFactory->GetAdapterList(dxGUIDs, ARRAYSIZE(dxGUIDs), spAdapterList.put()));
 
-             CHAR driverDescription[128];
-             std::map<int, com_ptr<IDXCoreAdapter>> validAdapters;
-             printf("Printing available adapters..\n");
-             for (UINT i = 0; i < spAdapterList->GetAdapterCount(); i++)
-             {
-                 com_ptr<IDXCoreAdapter> spAdapter;
-                 THROW_IF_FAILED(spAdapterList->GetItem(i, spAdapter.put()));
-                 // If the adapter is a software adapter then don't consider it
-                 bool isHardware;
-                 THROW_IF_FAILED(spAdapter->QueryProperty(DXCoreProperty::IsHardware, sizeof(isHardware), &isHardware));
-                 if (isHardware)
-                 {
-                     THROW_IF_FAILED(spAdapter->QueryProperty(DXCoreProperty::DriverDescription,
-                                                              sizeof(driverDescription), driverDescription));
-                     printf("Index: %d, Description: %s\n", i, driverDescription);
-                     validAdapters[i] = spAdapter;
-                 }
-             }
+            std::map<int, com_ptr<IDXCoreAdapter>> validAdapters;
+            printf("Printing available adapters..\n");
+            for (UINT i = 0; i < spAdapterList->GetAdapterCount(); i++)
+            {
+                com_ptr<IDXCoreAdapter> spAdapter;
+                THROW_IF_FAILED(spAdapterList->GetItem(i, spAdapter.put()));
+                // If the adapter is a software adapter then don't consider it
+                bool isHardware;
+                size_t driverDescriptionSize;
+                THROW_IF_FAILED(
+                    spAdapter->QueryPropertySize(DXCoreProperty::DriverDescription, &driverDescriptionSize));
+                CHAR* driverDescription = new CHAR[driverDescriptionSize];
+                THROW_IF_FAILED(spAdapter->QueryProperty(DXCoreProperty::IsHardware, sizeof(isHardware), &isHardware));
+                if (isHardware)
+                {
+                    THROW_IF_FAILED(spAdapter->QueryProperty(DXCoreProperty::DriverDescription, driverDescriptionSize,
+                                                             driverDescription));
+                    printf("Index: %d, Description: %s\n", i, driverDescription);
+                    validAdapters[i] = spAdapter;
+                }
+                free(driverDescription);
+            }
 
-             com_ptr<IDXCoreAdapter> spAdapter = nullptr;
-             if (adapterIndex != -1) // Use index to retrieve adapter
-             {
-                 if (validAdapters.find(adapterIndex) != validAdapters.end())
-                 {
-                     spAdapter = validAdapters[adapterIndex];
-                 }
-                 else
-                 {
-                     throw hresult_invalid_argument(L"ERROR: No matching adapter with index provided: " + std::to_wstring(adapterIndex));
-                 }
-             }
-             else // Use name to retrieve adapter
-             {
-                 std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
-                 for (auto it = validAdapters.begin(); it != validAdapters.end(); it++)
-                 {
-                     THROW_IF_FAILED(it->second->QueryProperty( DXCoreProperty::DriverDescription,
-                         sizeof(driverDescription), driverDescription));
-                     std::string driverDescriptionStr = std::string(driverDescription);
-                     std::string adapterNameStr = converter.to_bytes(adapterName);
-                     std::transform(driverDescriptionStr.begin(), driverDescriptionStr.end(),
-                                    driverDescriptionStr.begin(), ::tolower);
-                     std::transform(adapterNameStr.begin(), adapterNameStr.end(), adapterNameStr.begin(), ::tolower);
-                     if (strstr(driverDescriptionStr.c_str(), adapterNameStr.c_str()))
-                     {
-                         spAdapter = it->second;
-                         break;
-                     }
-                 }
-                 if (spAdapter == nullptr)
-                 {
-                     throw hresult_invalid_argument(L"ERROR: No matching adapter with given adapter name: " + adapterName);
-                 }
-             }
-             spAdapter->QueryProperty(DXCoreProperty::DriverDescription, sizeof(driverDescription),
-                                            driverDescription);
-             printf("Using adapter : %s\n", driverDescription);
+            com_ptr<IDXCoreAdapter> spAdapter = nullptr;
+            if (adapterIndex != -1) // Use index to retrieve adapter
+            {
+                if (validAdapters.find(adapterIndex) != validAdapters.end())
+                {
+                    spAdapter = validAdapters[adapterIndex];
+                }
+                else
+                {
+                    throw hresult_invalid_argument(L"ERROR: No matching adapter with index provided: " +
+                                                   std::to_wstring(adapterIndex));
+                }
+            }
+            else // Use name to retrieve adapter
+            {
+                std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
+                std::string adapterNameStr = converter.to_bytes(adapterName);
+                for (auto it = validAdapters.begin(); it != validAdapters.end(); it++)
+                {
+                    size_t driverDescriptionSize;
+                    THROW_IF_FAILED(
+                        spAdapter->QueryPropertySize(DXCoreProperty::DriverDescription, &driverDescriptionSize));
+                    CHAR* driverDescription = new CHAR[driverDescriptionSize];
+                    THROW_IF_FAILED(it->second->QueryProperty(DXCoreProperty::DriverDescription, driverDescriptionSize,
+                                                              driverDescription));
+                    std::string driverDescriptionStr = std::string(driverDescription);
+                    std::transform(driverDescriptionStr.begin(), driverDescriptionStr.end(),
+                                   driverDescriptionStr.begin(), ::tolower);
+                    std::transform(adapterNameStr.begin(), adapterNameStr.end(), adapterNameStr.begin(), ::tolower);
+                    if (strstr(driverDescriptionStr.c_str(), adapterNameStr.c_str()))
+                    {
+                        spAdapter = it->second;
+                        break;
+                    }
+                    free(driverDescription);
+                }
+                if (spAdapter == nullptr)
+                {
+                    throw hresult_invalid_argument(L"ERROR: No matching adapter with given adapter name: " +
+                                                   adapterName);
+                }
+            }
+            size_t driverDescriptionSize;
+            THROW_IF_FAILED(spAdapter->QueryPropertySize(DXCoreProperty::DriverDescription, &driverDescriptionSize));
+            CHAR* driverDescription = new CHAR[driverDescriptionSize];
+            spAdapter->QueryProperty(DXCoreProperty::DriverDescription, sizeof(driverDescription), driverDescription);
+            printf("Using adapter : %s\n", driverDescription);
+            free(driverDescription);
+            IUnknown* pAdapter = spAdapter.get();
+            com_ptr<IDXGIAdapter> spDxgiAdapter;
+            D3D_FEATURE_LEVEL d3dFeatureLevel = D3D_FEATURE_LEVEL_1_0_CORE;
+            D3D12_COMMAND_LIST_TYPE commandQueueType = D3D12_COMMAND_LIST_TYPE_COMPUTE;
 
-             IUnknown* pAdapter = spAdapter.get();
-             com_ptr<IDXGIAdapter> spDxgiAdapter;
-             D3D_FEATURE_LEVEL d3dFeatureLevel = D3D_FEATURE_LEVEL_1_0_CORE;
-             D3D12_COMMAND_LIST_TYPE commandQueueType = D3D12_COMMAND_LIST_TYPE_COMPUTE;
+            // Check if adapter selected has DXCORE_ADAPTER_ATTRIBUTE_D3D12_GRFX attribute selected. If so,
+            // then GPU was selected that has D3D12 and D3D11 capabilities. It would be the most stable to
+            // use DXGI to enumerate GPU and use D3D_FEATURE_LEVEL_11_0 so that image tensorization for
+            // video frames would be able to happen on the GPU.
+            if (spAdapter->IsDXAttributeSupported(DXCORE_ADAPTER_ATTRIBUTE_D3D12_GRFX))
+            {
+                d3dFeatureLevel = D3D_FEATURE_LEVEL::D3D_FEATURE_LEVEL_11_0;
+                com_ptr<IDXGIFactory4> dxgiFactory4;
+                THROW_IF_FAILED(CreateDXGIFactory2(0, __uuidof(IDXGIFactory4), dxgiFactory4.put_void()));
 
-             // Check if adapter selected has DXCORE_ADAPTER_ATTRIBUTE_D3D12_GRFX attribute selected. If so,
-             // then GPU was selected that has D3D12 and D3D11 capabilities. It would be the most stable to
-             // use DXGI to enumerate GPU and use D3D_FEATURE_LEVEL_11_0 so that image tensorization for
-             // video frames would be able to happen on the GPU.
-             if (spAdapter->IsDXAttributeSupported(DXCORE_ADAPTER_ATTRIBUTE_D3D12_GRFX))
-             {
-                 d3dFeatureLevel = D3D_FEATURE_LEVEL::D3D_FEATURE_LEVEL_11_0;
-                 com_ptr<IDXGIFactory4> dxgiFactory4;
-                 THROW_IF_FAILED(CreateDXGIFactory2(0, __uuidof(IDXGIFactory4), dxgiFactory4.put_void()));
+                // If DXGI factory creation was successful then get the IDXGIAdapter from the LUID acquired from the
+                // selectedAdapter
+                LUID adapterLuid;
+                THROW_IF_FAILED(spAdapter->GetLUID(&adapterLuid));
+                THROW_IF_FAILED(
+                    dxgiFactory4->EnumAdapterByLuid(adapterLuid, __uuidof(IDXGIAdapter), spDxgiAdapter.put_void()));
+                pAdapter = spDxgiAdapter.get();
+            }
+            else
+            {
+                // Need to enable experimental features to create D3D12 Device with adapter that has compute only
+                // capabilities.
+                THROW_IF_FAILED(D3D12EnableExperimentalFeatures(1, &D3D12ComputeOnlyDevices, nullptr, 0));
+            }
 
-                 // If DXGI factory creation was successful then get the IDXGIAdapter from the LUID acquired from the
-                 // selectedAdapter
-                 LUID adapterLuid;
-                 THROW_IF_FAILED(spAdapter->GetLUID(&adapterLuid));
-                 THROW_IF_FAILED(
-                     dxgiFactory4->EnumAdapterByLuid(adapterLuid, __uuidof(IDXGIAdapter), spDxgiAdapter.put_void()));
-                 pAdapter = spDxgiAdapter.get();
-             }
-             else
-             {
-                 // Need to enable experimental features to create D3D12 Device with adapter that has compute only
-                 // capabilities.
-                 THROW_IF_FAILED(D3D12EnableExperimentalFeatures(1, &D3D12ComputeOnlyDevices, nullptr, 0));
-             }
+            // create D3D12Device
+            com_ptr<ID3D12Device> d3d12Device;
+            THROW_IF_FAILED(
+                D3D12CreateDevice(pAdapter, d3dFeatureLevel, __uuidof(ID3D12Device), d3d12Device.put_void()));
 
-             // create D3D12Device
-             com_ptr<ID3D12Device> d3d12Device;
-             THROW_IF_FAILED(
-                 D3D12CreateDevice(pAdapter, d3dFeatureLevel, __uuidof(ID3D12Device), d3d12Device.put_void()));
+            // create D3D12 command queue from device
+            com_ptr<ID3D12CommandQueue> d3d12CommandQueue;
+            D3D12_COMMAND_QUEUE_DESC commandQueueDesc = {};
+            commandQueueDesc.Type = commandQueueType;
+            THROW_IF_FAILED(d3d12Device->CreateCommandQueue(&commandQueueDesc, __uuidof(ID3D12CommandQueue),
+                                                            d3d12CommandQueue.put_void()));
 
-             // create D3D12 command queue from device
-             com_ptr<ID3D12CommandQueue> d3d12CommandQueue;
-             D3D12_COMMAND_QUEUE_DESC commandQueueDesc = {};
-             commandQueueDesc.Type = commandQueueType;
-             THROW_IF_FAILED(d3d12Device->CreateCommandQueue(&commandQueueDesc, __uuidof(ID3D12CommandQueue),
-                                                             d3d12CommandQueue.put_void()));
-
-             // create LearningModelDevice from command queue
-             auto factory = get_activation_factory<LearningModelDevice, ILearningModelDeviceFactoryNative>();
-             com_ptr<::IUnknown> spUnkLearningModelDevice;
-             THROW_IF_FAILED(
-                 factory->CreateFromD3D12CommandQueue(d3d12CommandQueue.get(), spUnkLearningModelDevice.put()));
-             session = LearningModelSession(model, spUnkLearningModelDevice.as<LearningModelDevice>());
+            // create LearningModelDevice from command queue
+            auto factory = get_activation_factory<LearningModelDevice, ILearningModelDeviceFactoryNative>();
+            com_ptr<::IUnknown> spUnkLearningModelDevice;
+            THROW_IF_FAILED(
+                factory->CreateFromD3D12CommandQueue(d3d12CommandQueue.get(), spUnkLearningModelDevice.put()));
+            session = LearningModelSession(model, spUnkLearningModelDevice.as<LearningModelDevice>());
         }
 #endif
         else

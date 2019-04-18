@@ -30,7 +30,7 @@ public:
     const std::wstring& FolderPath() const { return m_modelFolderPath; }
     const std::wstring& ModelPath() const { return m_modelPath; }
     const std::wstring& TensorOutputPath() const { return m_tensorOutputPath; }
-#ifdef MCDM_BUILD
+#ifdef DXCORE_SUPPORTED_BUILD
     const std::wstring& GetGPUAdapterName() const { return m_adapterName; }
     UINT GetGPUAdapterIndex() const { return m_adapterIndex; }
 #endif
@@ -143,7 +143,7 @@ private:
     std::wstring m_imagePath;
     std::wstring m_csvData;
     std::wstring m_inputData;
-#ifdef MCDM_BUILD
+#ifdef DXCORE_SUPPORTED_BUILD
     UINT m_adapterIndex = -1;
     std::wstring m_adapterName;
 #endif

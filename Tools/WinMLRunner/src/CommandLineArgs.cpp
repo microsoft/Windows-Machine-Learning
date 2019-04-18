@@ -19,6 +19,12 @@ void CommandLineArgs::PrintUsage()
     std::cout << "  -GPU : run model on default GPU" << std::endl;
     std::cout << "  -GPUHighPerformance : run model on GPU with highest performance" << std::endl;
     std::cout << "  -GPUMinPower : run model on GPU with the least power" << std::endl;
+#ifdef MCDM_BUILD
+    std::cout << "  -GPUAdapterIndex <index number> : run model on GPU specified by its DXCore index. NOTE: Please only use this flag on DXCore supported machines."
+              << std::endl;
+    std::cout << "  -GPUAdapterName <adapter name substring>: run model on GPU specified by its name. NOTE: Please only use this flag on DXCore supported machines." 
+              << std::endl;
+#endif
     std::cout << "  -CreateDeviceOnClient : create the D3D device on the client and pass it to WinML to create session" << std::endl;
     std::cout << "  -CreateDeviceInWinML : create the device inside WinML" << std::endl;
     std::cout << "  -CPUBoundInput : bind the input to the CPU" << std::endl;
@@ -87,6 +93,30 @@ CommandLineArgs::CommandLineArgs(const std::vector<std::wstring>& args)
         {
             m_useGPUMinPower = true;
         }
+#ifdef MCDM_BUILD
+        else if ((_wcsicmp(args[i].c_str(), L"-GPUAdapterName") == 0) || (_wcsicmp(args[i].c_str(), L"-GPUAdapterIndex") == 0))
+        {
+            CheckNextArgument(args, i);
+            HMODULE library = nullptr;
+            library = LoadLibrary(L"dxcore.dll");
+            if (!library)
+            {
+              throw hresult_invalid_argument(
+                  L"ERROR: DXCORE isn't supported on this machine. "
+                  L"GpuAdapterName and GpuAdapterIndex flag "
+                  L"should only be used with DXCore supported machines.");
+            }
+            if (_wcsicmp(args[i].c_str(), L"-GPUAdapterIndex") == 0)
+            {
+                m_adapterIndex = static_cast<UINT>(_wtoi(args[++i].c_str()));
+            }
+            else
+            {
+                m_adapterName = args[++i];
+            }
+            m_useGPU = true;
+        }
+#endif
         else if ((_wcsicmp(args[i].c_str(), L"-CreateDeviceOnClient") == 0))
         {
             m_createDeviceOnClient = true;
@@ -337,4 +367,10 @@ void CommandLineArgs::CheckForInvalidArguments()
     {
         throw hresult_invalid_argument(L"Cannot save tensor output if no input data is provided!");
     }
+#ifdef MCDM_BUILD
+    if (m_adapterIndex != -1 && !m_adapterName.empty())
+    {
+        throw hresult_invalid_argument(L"Cannot use both -GpuAdapterIndex and -GpuAdapterName");
+    }
+#endif
 }

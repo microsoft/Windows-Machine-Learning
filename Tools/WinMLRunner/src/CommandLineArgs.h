@@ -32,7 +32,6 @@ public:
     const std::wstring& TensorOutputPath() const { return m_tensorOutputPath; }
 #ifdef DXCORE_SUPPORTED_BUILD
     const std::wstring& GetGPUAdapterName() const { return m_adapterName; }
-    UINT GetGPUAdapterIndex() const { return m_adapterIndex; }
 #endif
 
     bool UseRGB() const
@@ -144,7 +143,6 @@ private:
     std::wstring m_csvData;
     std::wstring m_inputData;
 #ifdef DXCORE_SUPPORTED_BUILD
-    UINT m_adapterIndex = -1;
     std::wstring m_adapterName;
 #endif
     std::wstring m_perfOutputPath;

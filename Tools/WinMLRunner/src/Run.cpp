@@ -119,7 +119,6 @@ HRESULT CreateSession(LearningModelSession& session, IDirect3DDevice& winrtDevic
         return hresult_invalid_argument().code();
     }
 #ifdef DXCORE_SUPPORTED_BUILD
-    UINT adapterIndex = args.GetGPUAdapterIndex();
     const std::wstring& adapterName = args.GetGPUAdapterName();
 #endif
     try
@@ -181,8 +180,7 @@ HRESULT CreateSession(LearningModelSession& session, IDirect3DDevice& winrtDevic
             }
         }
 #ifdef DXCORE_SUPPORTED_BUILD
-        else if ((TypeHelper::GetWinmlDeviceKind(deviceType) != LearningModelDeviceKind::Cpu) &&
-                 (!adapterName.empty() || adapterIndex != -1))
+        else if ((TypeHelper::GetWinmlDeviceKind(deviceType) != LearningModelDeviceKind::Cpu) && !adapterName.empty())
              {
              com_ptr<IDXCoreAdapterFactory> spFactory;
              THROW_IF_FAILED(DXCoreCreateAdapterFactory(IID_PPV_ARGS(spFactory.put())));
@@ -214,7 +212,7 @@ HRESULT CreateSession(LearningModelSession& session, IDirect3DDevice& winrtDevic
                                                           driverDescription));
                  if (isHardware)
                  {
-                     printf("Index: %d, Description: %s\n", i, driverDescription);
+                     printf("Description: %s\n", driverDescription);
                      validAdapters[i] = currAdapter;
                  }
                  if (!adapterName.empty() && !chosenAdapterFound)
@@ -229,32 +227,19 @@ HRESULT CreateSession(LearningModelSession& session, IDirect3DDevice& winrtDevic
                          spAdapter = currAdapter;
                      }
                  }
+                 currAdapter = nullptr;
                  free(driverDescription);
              }
-             if (adapterIndex != -1) // Use index to retrieve adapter
+             
+             if (spAdapter == nullptr)
              {
-                 if (validAdapters.find(adapterIndex) != validAdapters.end())
-                 {
-                        spAdapter = validAdapters[adapterIndex];
-                 }
-                 else
-                 {
-                     throw hresult_invalid_argument(L"ERROR: No matching adapter with index provided: " +
-                                                    std::to_wstring(adapterIndex));
-                 }
-             }
-             else // check if using name to retrieve adapter succeeded
-             {
-                 if (spAdapter == nullptr)
-                 {
-                     throw hresult_invalid_argument(L"ERROR: No matching adapter with given adapter name: " +
-                                                    adapterName);
-                 }
+                 throw hresult_invalid_argument(L"ERROR: No matching adapter with given adapter name: " +
+                                               adapterName);
              }
              size_t driverDescriptionSize;
              THROW_IF_FAILED(spAdapter->QueryPropertySize(DXCoreProperty::DriverDescription, &driverDescriptionSize));
              CHAR* driverDescription = new CHAR[driverDescriptionSize];
-             spAdapter->QueryProperty(DXCoreProperty::DriverDescription, sizeof(driverDescription), driverDescription);
+             spAdapter->QueryProperty(DXCoreProperty::DriverDescription, driverDescriptionSize, driverDescription);
              printf("Using adapter : %s\n", driverDescription);
              free(driverDescription);
              IUnknown* pAdapter = spAdapter.get();

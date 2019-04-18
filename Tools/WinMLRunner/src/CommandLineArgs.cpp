@@ -20,8 +20,6 @@ void CommandLineArgs::PrintUsage()
     std::cout << "  -GPUHighPerformance : run model on GPU with highest performance" << std::endl;
     std::cout << "  -GPUMinPower : run model on GPU with the least power" << std::endl;
 #ifdef DXCORE_SUPPORTED_BUILD
-    std::cout << "  -GPUAdapterIndex <index number> : run model on GPU specified by its DXCore index. NOTE: Please only use this flag on DXCore supported machines."
-              << std::endl;
     std::cout << "  -GPUAdapterName <adapter name substring>: run model on GPU specified by its name. NOTE: Please only use this flag on DXCore supported machines." 
               << std::endl;
 #endif
@@ -103,17 +101,9 @@ CommandLineArgs::CommandLineArgs(const std::vector<std::wstring>& args)
             {
                 throw hresult_invalid_argument(
                     L"ERROR: DXCORE isn't supported on this machine. "
-                    L"GpuAdapterName and GpuAdapterIndex flag "
-                    L"should only be used with DXCore supported machines.");
+                    L"GpuAdapterName flag should only be used with DXCore supported machines.");
                 }
-            if (_wcsicmp(args[i].c_str(), L"-GPUAdapterIndex") == 0)
-            {
-                m_adapterIndex = static_cast<UINT>(_wtoi(args[++i].c_str()));
-            }
-            else
-            {
-                m_adapterName = args[++i];
-            }
+            m_adapterName = args[++i];
             m_useGPU = true;
         }
 #endif
@@ -367,10 +357,4 @@ void CommandLineArgs::CheckForInvalidArguments()
     {
         throw hresult_invalid_argument(L"Cannot save tensor output if no input data is provided!");
     }
-#ifdef DXCORE_SUPPORTED_BUILD
-    if (m_adapterIndex != -1 && !m_adapterName.empty())
-    {
-        throw hresult_invalid_argument(L"Cannot use both -GpuAdapterIndex and -GpuAdapterName");
-    }
-#endif
 }

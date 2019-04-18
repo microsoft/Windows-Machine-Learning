@@ -579,17 +579,10 @@ int run(CommandLineArgs& args, Profiler<WINML_MODEL_TEST_PERF>& profiler) try
     // CPU and GPU.
     profiler.Enable();
 
-    if (!args.OutputPath().empty())
-    {
-        output.SetCSVFileName(args.OutputPath());
-    }
-    else
-    {
-        output.SetDefaultCSVFileName();
-    }
+    output.SetCSVFileName(args.OutputPath());
     if (args.IsSaveTensor() || args.IsPerIterationCapture())
     {
-        output.SetDefaultPerIterationFolder(args.TensorOutputPath());
+        output.SetDefaultPerIterationFolder(args.PerIterationDataPath());
         output.SetDefaultCSVFileNamePerIteration();
     }
 
@@ -719,7 +712,12 @@ int run(CommandLineArgs& args, Profiler<WINML_MODEL_TEST_PERF>& profiler) try
                                                                      deviceCreationLocationStringified);
                                 }
                             }
-                        }
+
+                            if (SUCCEEDED(lastHr) && args.IsPerIterationCapture())
+                            {
+                                output.WritePerIterationPerformance(args, model.Name().c_str());
+                            }
+                       }
                     }
                 }
             }

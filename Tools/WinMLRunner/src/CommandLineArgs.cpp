@@ -4,6 +4,7 @@
 #include "CommandLineArgs.h"
 #include <ctime>
 #include <iomanip>
+#include <filesystem>
 
 using namespace Windows::AI::MachineLearning;
 
@@ -34,15 +35,18 @@ void CommandLineArgs::PrintUsage()
                  "will output all measurements"
               << std::endl;
     std::cout << "  -Iterations : # times perf measurements will be run/averaged. (maximum: 1024 times)" << std::endl;
-    std::cout << "  -Input <fully qualified path>: binds image or CSV to model" << std::endl;
-    std::cout << "  -TopK <number>: print top <number> values in the result. Default to 1" << std::endl;
-    std::cout << "  -PerfOutput [<fully qualified path>]: csv file to write the perf results to" << std::endl;
-    std::cout << "  -SavePerIterationPerf : save per iteration performance results to csv file" << std::endl;
-    std::cout << "  -SaveTensorData <saveMode folderPath>: saveMode: save first iteration or all iteration output "
-                 "tensor results to csv file [First, All]"
+    std::cout << "  -Input <fully qualified path> : binds image or CSV to model" << std::endl;
+    std::cout << "  -TopK <number> : print top <number> values in the result. Default to 1" << std::endl;
+    std::cout << "  -BaseOutputPath [<fully qualified path>] : base output directory path for results, default to cwd"
               << std::endl;
-    std::cout << "                                         folderPath: Optional folder path can be specified to hold "
-                 "tensor data. It will be created if folder doesn't exist."
+    std::cout << "  -PerfOutput [<path>] : fully qualified or relative path including csv filename for perf results"
+              << std::endl;
+    std::cout << "  -SavePerIterationPerf : save per iteration performance results to csv file" << std::endl;
+    std::cout << "  -PerIterationPath <directory_path> : Relative or fully qualified path for per iteration and save "
+                 "tensor output results.  If not specified a default(timestamped) folder will be created."
+              << std::endl;
+    std::cout << "  -SaveTensorData <saveMode>: saveMode: save first iteration or all iteration output "
+                 "tensor results to csv file [First, All]"
               << std::endl;
     std::cout << "  -DebugEvaluate: Print evaluation debug output to debug console if debugger is present."
               << std::endl;
@@ -73,6 +77,10 @@ void CheckAPICall(int return_value)
 
 CommandLineArgs::CommandLineArgs(const std::vector<std::wstring>& args)
 {
+    std::wstring sPerfOutputPath;
+    std::wstring sBaseOutputPath;
+    std::wstring sPerIterationDataPath;
+
     for (UINT i = 0; i < args.size(); i++)
     {
         if ((_wcsicmp(args[i].c_str(), L"-CPU") == 0))
@@ -137,7 +145,7 @@ CommandLineArgs::CommandLineArgs(const std::vector<std::wstring>& args)
         {
             if (i + 1 < args.size() && args[i + 1][0] != L'-')
             {
-                m_perfOutputPath = args[++i];
+                sPerfOutputPath = args[++i];
             }
             m_perfOutput = true;
         }
@@ -183,6 +191,16 @@ CommandLineArgs::CommandLineArgs(const std::vector<std::wstring>& args)
         {
             m_perIterCapture = true;
         }
+        else if (_wcsicmp(args[i].c_str(), L"-BaseOutputPath") == 0)
+        {
+            CheckNextArgument(args, i);
+            sBaseOutputPath = args[++i].c_str();
+        }
+        else if (_wcsicmp(args[i].c_str(), L"-PerIterationPath") == 0)
+        {
+            CheckNextArgument(args, i);
+            sPerIterationDataPath = args[++i].c_str();
+        }
         else if ((_wcsicmp(args[i].c_str(), L"-Terse") == 0))
         {
             m_terseOutput = true;
@@ -213,38 +231,22 @@ CommandLineArgs::CommandLineArgs(const std::vector<std::wstring>& args)
                 throw hresult_invalid_argument(L"Unknown AutoScale Interpolation Mode!");
             }
         }
-        else if ((_wcsicmp(args[i].c_str(), L"-SaveTensorData") == 0) && (i + 1 < args.size()))
+        else if (_wcsicmp(args[i].c_str(), L"-SaveTensorData") == 0)
         {
             CheckNextArgument(args, i);
             m_saveTensor = true;
             if (_wcsicmp(args[++i].c_str(), L"First") == 0)
             {
-                m_saveTensorMode = "First";
+                m_saveTensorMode = L"First";
             }
             else if (_wcsicmp(args[i].c_str(), L"All") == 0)
             {
-                m_saveTensorMode = "All";
+                m_saveTensorMode = L"All";
             }
             else
             {
                 PrintUsage();
-                throw hresult_invalid_argument(L"Unknown Mode!");
-            }
-            try
-            {
-                // This is to check for second optional value for -SaveTensorData to specify path
-                CheckNextArgument(args, i);
-                SetTensorOutputPath(args[++i].c_str());
-            }
-            catch (...)
-            {
-                // set to default path
-                auto time = std::time(nullptr);
-                struct tm localTime;
-                localtime_s(&localTime, &time);
-                std::wostringstream oss;
-                oss << std::put_time(&localTime, L"%Y-%m-%d_%H.%M.%S");
-                SetTensorOutputPath(L"\\PerIterationRun[" + oss.str() + L"]");
+                throw hresult_invalid_argument(L"Unknown SaveTensorData Mode[" + m_saveTensorMode + L"]!");
             }
         }
         else if (_wcsicmp(args[i].c_str(), L"-version") == 0)
@@ -275,7 +277,6 @@ CommandLineArgs::CommandLineArgs(const std::vector<std::wstring>& args)
             std::wcout << L"Version: " << pFileVersion << "." << pProductVersion << std::endl;
 
             delete[] pVersionData;
-            return;
         }
         else if ((_wcsicmp(args[i].c_str(), L"/?") == 0))
         {
@@ -329,7 +330,7 @@ CommandLineArgs::CommandLineArgs(const std::vector<std::wstring>& args)
         }
         else if (m_inputData.find(L".csv") != std::string::npos)
         {
-            m_csvData = m_inputData; 
+            m_csvData = m_inputData;
         }
         else
         {
@@ -338,7 +339,69 @@ CommandLineArgs::CommandLineArgs(const std::vector<std::wstring>& args)
             throw hresult_invalid_argument(msg.c_str());
         }
     }
+
+    SetupOutputDirectories(sBaseOutputPath, sPerfOutputPath, sPerIterationDataPath);
+
     CheckForInvalidArguments();
+}
+
+void CommandLineArgs::SetupOutputDirectories(const std::wstring &sBaseOutputPath,
+                                             const std::wstring &sPerfOutputPath,
+                                             const std::wstring &sPerIterationDataPath)
+{
+    std::filesystem::path PerfOutputPath(sPerfOutputPath);
+    std::filesystem::path BaseOutputPath(sBaseOutputPath);
+    std::filesystem::path PerIterationDataPath(sPerIterationDataPath);
+
+    if (PerfOutputPath.is_absolute())
+    {
+        m_perfOutputPath = PerfOutputPath.c_str();
+        if (BaseOutputPath.empty())
+        {
+            BaseOutputPath = PerfOutputPath.remove_filename();
+        }
+    }
+
+    if (PerIterationDataPath.is_absolute())
+    {
+        m_perIterationDataPath = PerIterationDataPath.c_str();
+        if (BaseOutputPath.empty())
+        {
+            BaseOutputPath = PerIterationDataPath;
+        }
+    }
+
+    if (m_perfOutputPath.empty() || m_perIterationDataPath.empty())
+    {
+        auto time = std::time(nullptr);
+        struct tm localTime;
+        localtime_s(&localTime, &time);
+        std::wostringstream oss;
+        oss << std::put_time(&localTime, L"%Y-%m-%d_%H.%M.%S");
+
+        if (BaseOutputPath.empty())
+        {
+            BaseOutputPath = std::filesystem::current_path();
+        }
+
+        if (m_perfOutputPath.empty())
+        {
+            if (sPerfOutputPath.empty())
+                PerfOutputPath = L"WinMLRunner[" + oss.str() + L"].csv";
+
+            PerfOutputPath = BaseOutputPath / PerfOutputPath;
+            m_perfOutputPath = PerfOutputPath.c_str();
+        }
+
+        if (m_perIterationDataPath.empty())
+        {
+            if (sPerIterationDataPath.empty())
+                PerIterationDataPath = L"PerIterationRun[" + oss.str() + L"]";
+
+            PerIterationDataPath = BaseOutputPath / PerIterationDataPath;
+            m_perIterationDataPath = PerIterationDataPath.c_str();
+        }
+    }
 }
 
 void CommandLineArgs::CheckNextArgument(const std::vector<std::wstring>& args, UINT i)

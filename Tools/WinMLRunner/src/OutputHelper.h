@@ -9,7 +9,7 @@
 #include <iomanip>
 #include <dxgi.h>
 #include <Windows.Graphics.DirectX.Direct3D11.interop.h>
-#include <direct.h>
+#include <filesystem>
 #include <queue>
 
 #if defined(_AMD64_)
@@ -538,65 +538,47 @@ public:
 
     void SetDefaultPerIterationFolder(const std::wstring& folderName)
     {
-        std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
-        m_folderNamePerIteration = converter.to_bytes(folderName);
-        if (_mkdir(m_folderNamePerIteration.c_str()) != 0)
-            std::cout << "Folder cannot be created";
+        m_folderNamePerIteration = folderName;
+        if (std::filesystem::create_directories(m_folderNamePerIteration.c_str()) != 0)
+            std::wcout << L"Folder [" + m_folderNamePerIteration + L"] cannot be created";
     }
 
     void SetDefaultCSVFileNamePerIteration()
     {
-        std::string fileNamePerIteration = m_folderNamePerIteration + "\\Summary.csv";
-        std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
-        m_csvFileNamePerIterationSummary = converter.from_bytes(fileNamePerIteration);
+        m_csvFileNamePerIterationSummary = m_folderNamePerIteration + L"\\Summary.csv";
     }
 
-    void SetDefaultCSVIterationResult(uint32_t iterationNum, const CommandLineArgs& args, std::string& featureName)
+    void SetDefaultCSVIterationResult(uint32_t iterationNum, const CommandLineArgs& args, std::wstring& featureName)
     {
         if (args.UseCPU() && args.UseGPU())
         {
             if (!m_flagGpuDevice)
             {
-                m_fileNameResultDevice = m_folderNamePerIteration + "\\" + featureName + "CpuIteration";
-                if (iterationNum == args.NumIterations() - 1 || args.SaveTensorMode() == "First")
+                m_fileNameResultDevice = m_folderNamePerIteration + L"\\" + featureName + L"CpuIteration";
+                if (iterationNum == args.NumIterations() - 1 || args.SaveTensorMode() == L"First")
                 {
                     m_flagGpuDevice = true;
                 }
             }
             else
             {
-                m_fileNameResultDevice = m_folderNamePerIteration + "\\" + featureName + "GpuIteration";
+                m_fileNameResultDevice = m_folderNamePerIteration + L"\\" + featureName + L"GpuIteration";
             }
         }
         else if (args.UseGPU())
         {
-            m_fileNameResultDevice = m_folderNamePerIteration + "\\" + featureName + "GpuIteration";
+            m_fileNameResultDevice = m_folderNamePerIteration + L"\\" + featureName + L"GpuIteration";
         }
         else
         {
-            m_fileNameResultDevice = m_folderNamePerIteration + "\\" + featureName + "CpuIteration";
+            m_fileNameResultDevice = m_folderNamePerIteration + L"\\" + featureName + L"CpuIteration";
         }
-        std::string fileNamePerIterationResult = m_fileNameResultDevice + std::to_string(iterationNum + 1) + ".csv";
-        std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
-        m_csvFileNamePerIterationResult = converter.from_bytes(fileNamePerIterationResult);
-    }
-
-    void SetDefaultCSVFileName()
-    {
-        auto time = std::time(nullptr);
-        struct tm localTime;
-        localtime_s(&localTime, &time);
-
-        std::ostringstream oss;
-        oss << std::put_time(&localTime, "%Y-%m-%d %H.%M.%S");
-        std::string fileName = "WinML Runner [" + oss.str() + "].csv";
-        std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
-        m_csvFileName = converter.from_bytes(fileName);
+        m_csvFileNamePerIterationResult = m_fileNameResultDevice + std::to_wstring(iterationNum + 1) + L".csv";
     }
 
     void SetCSVFileName(const std::wstring& fileName) { m_csvFileName = fileName; }
 
-    void WritePerIterationPerformance(const CommandLineArgs& args, std::wstring model, std::wstring img)
+    void WritePerIterationPerformance(const CommandLineArgs& args, std::wstring model)
     {
         if (m_csvFileNamePerIterationSummary.length() > 0)
         {
@@ -615,7 +597,9 @@ public:
 
             std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
             std::string modelName = converter.to_bytes(model);
-            std::string imgName = converter.to_bytes(img);
+            std::string fileNameResultDevice = converter.to_bytes(m_fileNameResultDevice);
+            std::string inputName = args.IsCSVInput() ? converter.to_bytes(args.CsvPath())
+                                                      : args.IsImageInput() ? converter.to_bytes(args.ImagePath()) : "";
 
             if (bNewFile)
             {
@@ -623,7 +607,7 @@ public:
                 {
                     fout << "Model Name"
                          << ","
-                         << "Image Name"
+                         << "Input Name"
                          << ","
                          << "Iterations"
                          << ","
@@ -673,16 +657,16 @@ public:
             {
                 for (uint32_t i = 0; i < args.NumIterations(); i++)
                 {
-                    fout << modelName << "," << imgName << "," << args.NumIterations() << "," << i + 1 << ","
+                    fout << modelName << "," << inputName << "," << args.NumIterations() << "," << i + 1 << ","
                          << m_CPUWorkingDiff[i] << "," << m_CPUWorkingStart[i] << "," << m_GPUSharedDiff[i] << ","
                          << m_GPUSharedStart[i] << "," << m_GPUDedicatedDiff[i] << "," << m_clockLoadTimes[i] << ","
                          << m_clockBindTimes[i] << "," << m_clockEvalTimes[i] << ",";
 
                     if (args.IsSaveTensor() &&
-                        (args.SaveTensorMode() == "All" || (args.SaveTensorMode() == "First" && i == 0)))
+                        (args.SaveTensorMode() == L"All" || (args.SaveTensorMode() == L"First" && i == 0)))
                     {
                         fout << m_outputResult[i] << "," << m_outputTensorHash[i] << ","
-                             << m_fileNameResultDevice + std::to_string(i + 1) + ".csv"
+                             << fileNameResultDevice + std::to_string(i + 1) + ".csv"
                              << ",";
                     }
                     fout << std::endl;
@@ -693,8 +677,8 @@ public:
                 for (uint32_t i = 0; i < args.NumIterations(); i++)
                 {
                     fout << i + 1 << "," << m_outputResult[i] << "," << m_outputTensorHash[i] << ","
-                         << m_fileNameResultDevice + std::to_string(i + 1) + ".csv" << std::endl;
-                    if (args.SaveTensorMode() == "First" && i == 0)
+                         << fileNameResultDevice + std::to_string(i + 1) + ".csv" << std::endl;
+                    if (args.SaveTensorMode() == L"First" && i == 0)
                     {
                         break;
                     }
@@ -975,8 +959,8 @@ private:
     std::wstring m_csvFileName;
     std::wstring m_csvFileNamePerIterationSummary;
     std::wstring m_csvFileNamePerIterationResult;
-    std::string m_folderNamePerIteration;
-    std::string m_fileNameResultDevice;
+    std::wstring m_folderNamePerIteration;
+    std::wstring m_fileNameResultDevice;
 
     bool m_silent = false;
     bool m_flagGpuDevice = false;

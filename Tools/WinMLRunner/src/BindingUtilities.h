@@ -629,8 +629,8 @@ namespace BindingUtilities
         {
             if (desc.Kind() == LearningModelFeatureKind::Tensor)
             {
-                std::string name = to_string(desc.Name());
-                if (args.IsSaveTensor() && args.SaveTensorMode() == "First" && iterationNum > 0)
+                std::wstring name = desc.Name().c_str();
+                if (args.IsSaveTensor() && args.SaveTensorMode() == L"First" && iterationNum > 0)
                 {
                     return;
                 }
@@ -708,13 +708,13 @@ namespace BindingUtilities
                 }
                 if (!args.IsGarbageInput() && iterationNum == 0)
                 {
-                    std::cout << "Outputting top " << args.TopK() << " values" << std::endl;
-                    std::cout << "Feature Name: " << name << std::endl;
+                    std::wcout << L"Outputting top " << args.TopK() << L" values" << std::endl;
+                    std::wcout << L"Feature Name: " << name << std::endl;
                     for (auto& pair : maxKValues)
                     {
                         auto maxValue = pair.first;
                         auto maxIndex = pair.second;
-                        std::wcout << " index: " << maxIndex << ", value: " << maxValue << std::endl;
+                        std::wcout << L" index: " << maxIndex << L", value: " << maxValue << std::endl;
                     }
                 }
             }

@@ -190,7 +190,6 @@ HRESULT CreateSession(LearningModelSession& session, IDirect3DDevice& winrtDevic
 
              THROW_IF_FAILED(spFactory->GetAdapterList(dxGUIDs, ARRAYSIZE(dxGUIDs), spAdapterList.put()));
 
-             std::map<int, com_ptr<IDXCoreAdapter>> validAdapters;
              std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
              std::string adapterNameStr = converter.to_bytes(adapterName);
              com_ptr<IDXCoreAdapter> spAdapter = nullptr;
@@ -213,7 +212,6 @@ HRESULT CreateSession(LearningModelSession& session, IDirect3DDevice& winrtDevic
                  if (isHardware)
                  {
                      printf("Description: %s\n", driverDescription);
-                     validAdapters[i] = currAdapter;
                  }
                  if (!adapterName.empty() && !chosenAdapterFound)
                  {

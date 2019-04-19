@@ -47,10 +47,11 @@ Required command-Line arguments:
 -Iterations : # times perf measurements will be run/averaged. (maximum: 1024 times)
 -Input <fully qualified path>: binds image or CSV to model
 -TopK <number>: print top <number> values in the result. Default to 1
--PerfOutput [<fully qualified path>]: csv file to write the perf results to
+-BaseOutputPath [<fully qualified path>] : base output directory path for results, default to cwd
+-PerfOutput [<path>] : fully qualified or relative path including csv filename for perf results
 -SavePerIterationPerf : save per iteration performance results to csv file
--SaveTensorData <saveMode folderPath>: saveMode: save first iteration or all iteration output tensor results to csv file [First, All]
-                                        folderPath: Optional folder path can be specified to hold tensor data. It will be created if folder doesn't exist.
+-PerIterationPath <directory_path> : Relative or fully qualified path for per iteration and save tensor output results.  If not specified a default(timestamped) folder will be created.
+-SaveTensorData <saveMode>: saveMode: save first iteration or all iteration output tensor results to csv file [First, All]
 -DebugEvaluate: Print evaluation debug output to debug console if debugger is present.
 -Terse: Terse Mode (suppresses repetitive console output)
 -AutoScale <interpolationMode>: Enable image autoscaling and set the interpolation mode [Nearest, Linear, Cubic, Fant]

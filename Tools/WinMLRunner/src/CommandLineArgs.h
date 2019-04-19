@@ -29,7 +29,7 @@ public:
     const std::wstring& OutputPath() const { return m_perfOutputPath; }
     const std::wstring& FolderPath() const { return m_modelFolderPath; }
     const std::wstring& ModelPath() const { return m_modelPath; }
-    const std::wstring& TensorOutputPath() const { return m_tensorOutputPath; }
+    const std::wstring& PerIterationDataPath() const { return m_perIterationDataPath; }
 #ifdef DXCORE_SUPPORTED_BUILD
     const std::wstring& GetGPUAdapterName() const { return m_adapterName; }
 #endif
@@ -96,21 +96,21 @@ public:
     void TogglePerIterationPerformanceCapture(bool perIterCapture) { m_perIterCapture = perIterCapture; }
     void ToggleEvaluationDebugOutput(bool debug) { m_evaluation_debug_output = debug; }
     void ToggleTerseOutput(bool terseOutput) { m_terseOutput = terseOutput; }
+    void TogglePerfOutput(bool perfOutput) { m_perfOutput = perfOutput; }
 
     void SetModelPath(const std::wstring& modelPath) { m_modelPath = modelPath; }
-    void SetTensorOutputPath(const std::wstring& tensorOutputPath) { m_tensorOutputPath = tensorOutputPath; }
+    void SetPerIterationDataPath(const std::wstring& perIterationDataPath)
+    {
+        m_perIterationDataPath = perIterationDataPath;
+    }
     void SetInputDataPath(const std::wstring& inputDataPath) { m_inputData = inputDataPath; }
     void SetNumThreads(unsigned numThreads) { m_numThreads = numThreads; }
     void SetThreadInterval(unsigned threadInterval) { m_threadInterval = threadInterval; }
     void SetTopK(unsigned k) { m_topK = k; }
-    void SetPerformanceCSVPath(const std::wstring& performanceCSVPath)
-    {
-        m_perfOutputPath = performanceCSVPath;
-        m_perfOutput = true;
-    }
+    void SetPerformanceCSVPath(const std::wstring& performanceCSVPath) { m_perfOutputPath = performanceCSVPath; }
     void SetRunIterations(const uint32_t iterations) { m_numIterations = iterations; }
 
-    std::string SaveTensorMode() const { return m_saveTensorMode; }
+    std::wstring SaveTensorMode() const { return m_saveTensorMode; }
 
 private:
     bool m_perfCapture = false;
@@ -135,7 +135,7 @@ private:
     bool m_perfOutput = false;
     BitmapInterpolationMode m_autoScaleInterpMode = BitmapInterpolationMode::Cubic;
     bool m_saveTensor = false;
-    std::string m_saveTensorMode = "First";
+    std::wstring m_saveTensorMode = L"First";
 
     std::wstring m_modelFolderPath;
     std::wstring m_modelPath;
@@ -146,7 +146,7 @@ private:
     std::wstring m_adapterName;
 #endif
     std::wstring m_perfOutputPath;
-    std::wstring m_tensorOutputPath;
+    std::wstring m_perIterationDataPath;
     uint32_t m_numIterations = 1;
     uint32_t m_numThreads = 1;
     uint32_t m_threadInterval = 0;
@@ -154,4 +154,6 @@ private:
 
     void CheckNextArgument(const std::vector<std::wstring>& args, UINT i);
     void CheckForInvalidArguments();
+    void SetupOutputDirectories(const std::wstring& sBaseOutputPath, const std::wstring& sPerfOutputPath,
+                                const std::wstring& sPerIterationDataPath);
 };

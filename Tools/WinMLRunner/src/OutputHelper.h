@@ -742,7 +742,8 @@ public:
 
     void WritePerformanceDataToCSV(const Profiler<WINML_MODEL_TEST_PERF>& profiler, int numIterations,
                                    std::wstring model, const std::string& deviceType, const std::string& inputBinding,
-                                   const std::string& inputType, const std::string& deviceCreationLocation) const
+                                   const std::string& inputType, const std::string& deviceCreationLocation,
+                                   const std::vector<std::pair<std::string,std::string>>& perfFileMetadata) const
     {
         double loadTime = profiler[LOAD_MODEL].GetAverage(CounterType::TIMER);
         double createSessionTime = profiler[CREATE_SESSION].GetAverage(CounterType::TIMER);
@@ -913,7 +914,13 @@ public:
                      << ","
                      << "evaluate max shared memory (MB)"
                      << ","
-                     << "evaluate min shared memory (MB)" << std::endl;
+                     << "evaluate min shared memory (MB)"
+                     << ",";
+                for (auto metaDataPair : perfFileMetadata)
+                {
+                    fout << metaDataPair.first << ",";
+                }
+                    fout << std::endl;
             }
             fout << modelName << "," << deviceType << "," << inputBinding << "," << inputType << ","
                  << deviceCreationLocation << "," << numIterations << "," << loadTime << "," << createSessionTime << ","
@@ -941,7 +948,12 @@ public:
                  << (numIterations <= 1 ? 0 : minBindSharedMemoryUsage) << "," << firstEvalSharedMemoryUsage << ","
                  << (numIterations <= 1 ? 0 : averageEvalSharedMemoryUsage) << ","
                  << (numIterations <= 1 ? 0 : maxEvalSharedMemoryUsage) << ","
-                 << (numIterations <= 1 ? 0 : minEvalSharedMemoryUsage) << "," << std::endl;
+                 << (numIterations <= 1 ? 0 : minEvalSharedMemoryUsage) << ",";
+            for (auto metaDataPair : perfFileMetadata)
+            {
+                fout << metaDataPair.second << ",";
+            }
+            fout << std::endl;
             fout.close();
         }
     }

@@ -345,9 +345,9 @@ CommandLineArgs::CommandLineArgs(const std::vector<std::wstring>& args)
     CheckForInvalidArguments();
 }
 
-void CommandLineArgs::SetupOutputDirectories(const std::wstring &sBaseOutputPath,
-                                             const std::wstring &sPerfOutputPath,
-                                             const std::wstring &sPerIterationDataPath)
+void CommandLineArgs::SetupOutputDirectories(const std::wstring& sBaseOutputPath,
+                                             const std::wstring& sPerfOutputPath,
+                                             const std::wstring& sPerIterationDataPath)
 {
     std::filesystem::path PerfOutputPath(sPerfOutputPath);
     std::filesystem::path BaseOutputPath(sBaseOutputPath);

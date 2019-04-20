@@ -30,6 +30,7 @@ public:
     const std::wstring& FolderPath() const { return m_modelFolderPath; }
     const std::wstring& ModelPath() const { return m_modelPath; }
     const std::wstring& PerIterationDataPath() const { return m_perIterationDataPath; }
+    std::vector<std::pair<std::string, std::string>>& GetPerformanceFileMetadata() { return m_perfFileMetadata; }
 #ifdef DXCORE_SUPPORTED_BUILD
     const std::wstring& GetGPUAdapterName() const { return m_adapterName; }
 #endif
@@ -109,7 +110,10 @@ public:
     void SetTopK(unsigned k) { m_topK = k; }
     void SetPerformanceCSVPath(const std::wstring& performanceCSVPath) { m_perfOutputPath = performanceCSVPath; }
     void SetRunIterations(const uint32_t iterations) { m_numIterations = iterations; }
-
+    void AddPerformanceFileMetadata(const std::pair<std::string, std::string>& metadata)
+    {
+        m_perfFileMetadata.push_back(metadata);
+    }
     std::wstring SaveTensorMode() const { return m_saveTensorMode; }
 
 private:
@@ -151,6 +155,7 @@ private:
     uint32_t m_numThreads = 1;
     uint32_t m_threadInterval = 0;
     uint32_t m_topK = 1;
+    std::vector<std::pair<std::string, std::string>> m_perfFileMetadata;
 
     void CheckNextArgument(const std::vector<std::wstring>& args, UINT i);
     void CheckForInvalidArguments();

@@ -709,7 +709,8 @@ int run(CommandLineArgs& args, Profiler<WINML_MODEL_TEST_PERF>& profiler) try
                                     output.WritePerformanceDataToCSV(profiler, args.NumIterations(), path,
                                                                      deviceTypeStringified, inputDataTypeStringified,
                                                                      inputBindingTypeStringified,
-                                                                     deviceCreationLocationStringified);
+                                                                     deviceCreationLocationStringified,
+                                                                     args.GetPerformanceFileMetadata());
                                 }
                             }
 

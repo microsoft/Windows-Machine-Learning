@@ -4,6 +4,7 @@
 #include "Common.h"
 #include "Windows.AI.Machinelearning.Native.h"
 #include "d3dx12.h"
+#include "MemoryBuffer.h"
 using namespace winrt::Windows::Media;
 using namespace winrt::Windows::Storage;
 using namespace winrt::Windows::Storage::Streams;
@@ -185,7 +186,8 @@ template <> struct TensorKindToValue<TensorKind::String>
     typedef TensorString Type;
 };
 
-template <TensorKind T, typename PointerType, typename ArithmeticType > PointerType ConvertArithmeticTypeToPointerType(ArithmeticType value)
+template <TensorKind T, typename PointerType, typename ArithmeticType>
+PointerType ConvertArithmeticTypeToPointerType(ArithmeticType value)
 {
     static_assert(true, "No TensorKind mapped for given type!");
 };
@@ -307,8 +309,6 @@ namespace BindingUtilities
                                  const InputDataType inputDataType, const hstring& filePath,
                                  const CommandLineArgs& args, uint32_t iterationNum)
     {
-        assert(inputDataType != InputDataType::Tensor);
-
         // We assume NCHW and NCDHW
         uint64_t width = 0;
         uint64_t height = 0;
@@ -321,6 +321,9 @@ namespace BindingUtilities
             auto stream = file.OpenAsync(FileAccessMode::Read).get();
             // Create the decoder from the stream
             BitmapDecoder decoder = BitmapDecoder::CreateAsync(stream).get();
+            BitmapPixelFormat format = inputDataType == InputDataType::Tensor
+                                           ? decoder.BitmapPixelFormat()
+                                           : TypeHelper::GetBitmapPixelFormat(inputDataType);
 
             // If input dimensions are different from tensor input, then scale / crop while reading
             if (args.IsAutoScale() && (decoder.PixelHeight() != height || decoder.PixelWidth() != width))
@@ -337,23 +340,21 @@ namespace BindingUtilities
 
                 // get the bitmap
                 return decoder
-                    .GetSoftwareBitmapAsync(TypeHelper::GetBitmapPixelFormat(inputDataType), BitmapAlphaMode::Ignore,
-                                            transform, ExifOrientationMode::RespectExifOrientation,
+                    .GetSoftwareBitmapAsync(format, BitmapAlphaMode::Ignore, transform,
+                                            ExifOrientationMode::RespectExifOrientation,
                                             ColorManagementMode::DoNotColorManage)
                     .get();
             }
             else
             {
                 // get the bitmap
-                return decoder
-                    .GetSoftwareBitmapAsync(TypeHelper::GetBitmapPixelFormat(inputDataType), BitmapAlphaMode::Ignore)
-                    .get();
+                return decoder.GetSoftwareBitmapAsync(format, BitmapAlphaMode::Ignore).get();
             }
         }
         catch (...)
         {
-            std::cout << "BindingUtilities: could not open image file, make sure you are using fully qualified paths."
-                      << std::endl;
+            std::wcout << L"BindingUtilities: could not open image file (" << std::wstring(filePath) << L"), "
+                       << L"make sure you are using fully qualified paths." << std::endl;
             return nullptr;
         }
     }
@@ -382,27 +383,24 @@ namespace BindingUtilities
         return inputImage;
     }
 
-    std::vector<std::string> ReadCsvLine(std::ifstream& fileStream)
+    struct InputBufferDesc
     {
-        std::vector<std::string> elementStrings;
-        // Read next line.
-        std::string line;
-        if (!std::getline(fileStream, line))
-        {
-            ThrowFailure(L"BindingUtilities: expected more input rows.");
-        }
+        uint8_t* elements;
+        uint32_t totalSizeInBytes;
+        uint32_t numChannelsPerElement;
+        uint32_t elementStrideInBytes;
+        bool isPlanar;
+        TensorKind channelFormat;
+        BitmapPixelFormat elementFormat;
 
-        // Split the line into strings for each value.
-        std::istringstream elementsString(line);
-        std::string elementString;
-        while (std::getline(elementsString, elementString, ','))
+        InputBufferDesc()
+            : elements(nullptr), totalSizeInBytes(0), numChannelsPerElement(0), elementStrideInBytes(0), isPlanar(0),
+              channelFormat(TensorKind::Undefined), elementFormat(BitmapPixelFormat::Unknown)
         {
-            elementStrings.push_back(elementString);
         }
-        return elementStrings;
-    }
+    };
 
-    std::vector<std::string> ParseCSVElementStrings(const std::wstring& csvFilePath)
+    void ReadCSVIntoBuffer(const std::wstring& csvFilePath, InputBufferDesc& inputBufferDesc)
     {
         std::ifstream fileStream;
         fileStream.open(csvFilePath);
@@ -411,74 +409,131 @@ namespace BindingUtilities
             ThrowFailure(L"BindingUtilities: could not open data file.");
         }
 
-        std::vector<std::string> elementStrings = ReadCsvLine(fileStream);
+        uint32_t pos = 0;
+        std::string line;
+        float_t* pData = (float_t*)inputBufferDesc.elements;
+        while (std::getline(fileStream, line, ','))
+        {
+            *pData = std::stof(line);
+            ++pData;
 
-        return elementStrings;
+            ++pos;
+            if (pos >= inputBufferDesc.totalSizeInBytes)
+                break;
+        }
+
+        // Check to see if csv didn't fill in entire buffer and throw or fill with zeros?
+        if (pos != (inputBufferDesc.totalSizeInBytes * inputBufferDesc.numChannelsPerElement) / inputBufferDesc.elementStrideInBytes)
+        {
+            throw hresult_invalid_argument(L"CSV input size/shape is different from what model expects!");
+        }
+
+    }
+
+    // Roll the array correctly for the tensor
+    template <TensorKind TKind, typename InputType>
+    void CopyTensorFromBuffer(void* actualData, uint32_t tensorHeight, uint32_t tensorWidth,
+                              const InputBufferDesc& inputBufferDesc, float scale,
+                              const std::vector<float>& channelFactors)
+    {
+        using ArithmeticType = typename TensorKindToArithmeticType<TKind>::Type;
+        using PointerType = typename TensorKindToPointerType<TKind>::Type;
+
+        PointerType* pDataOut = static_cast<PointerType*>(actualData);
+        InputType* pDataIn = (InputType*)inputBufferDesc.elements;
+        uint32_t elementOffsetMultiplier = inputBufferDesc.isPlanar ? inputBufferDesc.numChannelsPerElement : 1;
+        uint32_t channelOffsetMultiplier = inputBufferDesc.isPlanar ? 1 : tensorHeight * tensorWidth;
+        for (uint32_t element = 0; element < tensorHeight * tensorWidth; ++element)
+        {
+            for (uint32_t channel = 0; channel < inputBufferDesc.numChannelsPerElement; ++channel)
+            {
+                pDataOut[element * elementOffsetMultiplier + channel * channelOffsetMultiplier] = 
+                    ConvertArithmeticTypeToPointerType<TKind, PointerType, ArithmeticType>(
+                        (static_cast<ArithmeticType>(pDataIn[channel]) - channelFactors[channel]) / scale);
+            }
+            pDataIn += inputBufferDesc.elementStrideInBytes / sizeof(InputType);
+        }
     }
 
     template <TensorKind T>
-    static ITensor CreateTensor(const CommandLineArgs& args, const std::vector<std::string>& tensorStringInput,
-                                const IVectorView<int64_t>& tensorShape, const InputBindingType inputBindingType)
+    static ITensor CreateTensor(const CommandLineArgs& args, const std::vector<int64_t>& tensorShape,
+                                const InputBindingType inputBindingType, const InputBufferDesc& inputBufferDesc)
     {
         using TensorValue = typename TensorKindToValue<T>::Type;
         using ArithmeticType = typename TensorKindToArithmeticType<T>::Type;
         using PointerType = typename TensorKindToPointerType<T>::Type;
 
-        std::vector<int64_t> vecShape = {};
-        for (UINT dim = 0; dim < tensorShape.Size(); dim++)
-        {
-            INT64 dimSize = tensorShape.GetAt(dim);
-            if (dimSize > 0) // If the dimension is greater than 0, then it is known.
-            {
-                vecShape.push_back(dimSize);
-            }
-            else // otherwise, make sure that the dimension is -1, representing free dimension. If not, then it's an
-                 // invalid model.
-            {
-                if (dimSize == -1)
-                {
-                    vecShape.push_back(1);
-                }
-                else
-                {
-                    throw hresult_invalid_argument(L"Failed to create a tensor with an unknown dimension of: " +
-                                                   dimSize);
-                }
-            }
-        }
-
         // Map the incoming Tensor as a TensorNative to get the actual data buffer.
-        auto tensorValue = TensorValue::Create(vecShape);
+        auto tensorValue = TensorValue::Create(tensorShape);
 
         com_ptr<ITensorNative> spTensorValueNative;
         tensorValue.as(spTensorValueNative);
 
         PointerType* actualData;
         uint32_t actualSizeInBytes;
-        spTensorValueNative->GetBuffer(reinterpret_cast<BYTE**>(&actualData),
-                                                                &actualSizeInBytes);
+        spTensorValueNative->GetBuffer(reinterpret_cast<BYTE**>(&actualData), &actualSizeInBytes);
 
-        if (args.IsCSVInput())
+        if (args.IsCSVInput() || args.IsImageInput())
         {
-            if (tensorStringInput.size() != actualSizeInBytes / sizeof(PointerType))
+            // Assumes NCHW
+            uint32_t channels = static_cast<uint32_t>(tensorShape[1]);
+            uint32_t tensorHeight = static_cast<uint32_t>(tensorShape[2]);
+            uint32_t tensorWidth = static_cast<uint32_t>(tensorShape[3]);
+
+            // Check to make sure the sizes are right
+            uint32_t inputElementCount = inputBufferDesc.totalSizeInBytes / inputBufferDesc.elementStrideInBytes;
+            uint32_t outputElementCount = actualSizeInBytes / (channels * sizeof(PointerType));
+            if (inputElementCount != outputElementCount)
             {
-                throw hresult_invalid_argument(L"CSV input size/shape is different from what model expects");
+                throw hresult_invalid_argument(L"Input size / shape is different from what the model expects");
             }
 
-            // Write the elementStrings into the iTensorNative
-            PointerType* dataPtr = actualData;
-            for (const auto &tensorString : tensorStringInput)
+            float scale;
+            std::vector<float> channelFactors = {};
+
+            const auto& tensorizeArgs = args.TensorizeArgs();
+            const auto& scaleMeanStdDevFactors = tensorizeArgs.ScaleMeanStdDev;
+            switch (tensorizeArgs.Func)
             {
-                ArithmeticType value;
-                std::stringstream(tensorString) >> value;
-                *dataPtr = ConvertArithmeticTypeToPointerType<T,PointerType,ArithmeticType>(value);
-                dataPtr++;
+                case TensorizeFuncs::Identity:
+                    scale = 1.0f;
+                    channelFactors.resize(channels, 0.0f);
+                    break;
+                case TensorizeFuncs::ScaleMeanStdDev:
+                    switch (inputBufferDesc.elementFormat)
+                    {
+                        case BitmapPixelFormat::Gray8:
+                        case BitmapPixelFormat::Gray16:
+                        case BitmapPixelFormat::Rgba8:
+                        case BitmapPixelFormat::Bgra8:
+                        case BitmapPixelFormat::Rgba16:
+                            scale = scaleMeanStdDevFactors.Scale;
+                            channelFactors.resize(channels);
+                            for (uint32_t i = 0; i < channels; ++i)
+                                channelFactors[i] = scaleMeanStdDevFactors.Factors[i];
+                            break;
+
+                        default:
+                            throw hresult_invalid_argument(L"CreateTensor<T>: Unhandled SoftwareBitmap pixel format");
+                    }
+                    break;
+                default:
+                    throw hresult_invalid_argument(L"CreateTensor<T>: Unknown Tensorize Function");
             }
-        }
-        else if (args.IsImageInput())
-        {
-            // Creating Tensors for Input Images haven't been added.
-            throw hresult_not_implemented(L"Creating Tensors for Input Images haven't been implemented!");
+
+            switch (inputBufferDesc.channelFormat)
+            {
+                case TensorKind::UInt8:
+                    CopyTensorFromBuffer<T, uint8_t>(actualData, tensorHeight, tensorWidth, inputBufferDesc, scale,
+                                                     channelFactors);
+                    break;
+                case TensorKind::Float:
+                    CopyTensorFromBuffer<T, float>(actualData, tensorHeight, tensorWidth, inputBufferDesc, scale,
+                                                   channelFactors);
+                    break;
+                default:
+                    throw hresult_not_implemented(L"Creating Tensors for Input Images with unhandled channel format!");
+            }
         }
 
         if (inputBindingType == InputBindingType::CPU)
@@ -494,15 +549,11 @@ namespace BindingUtilities
                 com_ptr<ID3D12Device> pD3D12Device = nullptr;
                 D3D12CreateDevice(nullptr, D3D_FEATURE_LEVEL::D3D_FEATURE_LEVEL_11_0, __uuidof(ID3D12Device),
                                   reinterpret_cast<void**>(&pD3D12Device));
-                
+
                 pD3D12Device->CreateCommittedResource(
-                    &CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
-                    D3D12_HEAP_FLAG_NONE,
-                    &CD3DX12_RESOURCE_DESC::Buffer(
-                        actualSizeInBytes,
-                        D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS),
-                    D3D12_RESOURCE_STATE_COMMON, nullptr,
-                    __uuidof(ID3D12Resource), pGPUResource.put_void());
+                    &CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT), D3D12_HEAP_FLAG_NONE,
+                    &CD3DX12_RESOURCE_DESC::Buffer(actualSizeInBytes, D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS),
+                    D3D12_RESOURCE_STATE_COMMON, nullptr, __uuidof(ID3D12Resource), pGPUResource.put_void());
                 if (!args.IsGarbageInput())
                 {
                     com_ptr<ID3D12Resource> imageUploadHeap;
@@ -570,126 +621,217 @@ namespace BindingUtilities
             }
             com_ptr<ITensorStaticsNative> tensorfactory = get_activation_factory<TensorValue, ITensorStaticsNative>();
             com_ptr<::IUnknown> spUnkTensor;
-            tensorfactory->CreateFromD3D12Resource(pGPUResource.get(), vecShape.data(), static_cast<int>(vecShape.size()), spUnkTensor.put());
+            tensorfactory->CreateFromD3D12Resource(pGPUResource.get(), const_cast<int64_t*>(tensorShape.data()),
+                                                   static_cast<int>(tensorShape.size()), spUnkTensor.put());
             TensorValue returnTensor(nullptr);
             spUnkTensor.try_as(returnTensor);
             return returnTensor;
         }
     }
 
-    // Binds tensor floats, ints, doubles from CSV data.
-    ITensor CreateBindableTensor(const ILearningModelFeatureDescriptor& description, const CommandLineArgs& args,
-                                 const InputBindingType inputBindingType)
+    // Process the descriptor to gather and normalize the shape
+    void ProcessDescriptor(const ILearningModelFeatureDescriptor& description, std::vector<int64_t>& shape,
+                           TensorKind& tensorKind, InputBufferDesc& inputBufferDesc)
     {
-        std::vector<std::string> elementStrings;
-        if (!args.CsvPath().empty())
-        {
-            elementStrings = ParseCSVElementStrings(args.CsvPath());
-        }
-
         // Try Image Feature Descriptor
         auto imageFeatureDescriptor = description.try_as<ImageFeatureDescriptor>();
         if (imageFeatureDescriptor)
         {
             int64_t channels;
-            if (imageFeatureDescriptor.BitmapPixelFormat() == BitmapPixelFormat::Gray16 ||
-                imageFeatureDescriptor.BitmapPixelFormat() == BitmapPixelFormat::Gray8)
+            inputBufferDesc.elementFormat = imageFeatureDescriptor.BitmapPixelFormat();
+            switch (inputBufferDesc.elementFormat)
             {
-                channels = 1;
+                case BitmapPixelFormat::Gray8:
+                case BitmapPixelFormat::Gray16:
+                    channels = 1;
+                    break;
+                case BitmapPixelFormat::Bgra8:
+                case BitmapPixelFormat::Rgba16:
+                case BitmapPixelFormat::Rgba8:
+                    channels = 3;
+                    break;
+                default:
+                    throw hresult_not_implemented(L"BitmapPixel format not yet handled by WinMLRunner.");
             }
-            else if (imageFeatureDescriptor.BitmapPixelFormat() == BitmapPixelFormat::Bgra8 ||
-                     imageFeatureDescriptor.BitmapPixelFormat() == BitmapPixelFormat::Rgba16 ||
-                     imageFeatureDescriptor.BitmapPixelFormat() == BitmapPixelFormat::Rgba8)
-            {
-                channels = 3;
-            }
-            else
-            {
-                throw hresult_not_implemented(L"BitmapPixel format not handled by WinMLRunner.");
-            }
-            std::vector<int64_t> shape = { 1, channels, imageFeatureDescriptor.Height(),
-                                           imageFeatureDescriptor.Width() };
-            IVectorView<int64_t> shapeVectorView = single_threaded_vector(std::move(shape)).GetView();
-            return CreateTensor<TensorKind::Float>(args, elementStrings, shapeVectorView, inputBindingType);
+
+            tensorKind = TensorKind::Float;
+            shape.push_back(1);
+            shape.push_back(channels);
+            shape.push_back(static_cast<int64_t>(imageFeatureDescriptor.Height()));
+            shape.push_back(static_cast<int64_t>(imageFeatureDescriptor.Width()));
+            return;
         }
 
         auto tensorDescriptor = description.try_as<TensorFeatureDescriptor>();
         if (tensorDescriptor)
         {
-            switch (tensorDescriptor.TensorKind())
+            IVectorView<int64_t> tensorShape = tensorDescriptor.Shape();
+            for (uint32_t dim = 0; dim < tensorShape.Size(); dim++)
             {
-                case TensorKind::Undefined:
+                int64_t dimSize = tensorShape.GetAt(dim);
+                if (dimSize > 0) // If the dimension is greater than 0, then it is known.
                 {
-                    std::cout << "BindingUtilities: TensorKind is undefined." << std::endl;
-                    throw hresult_invalid_argument();
+                    shape.push_back(dimSize);
                 }
-                case TensorKind::Float:
+                else // otherwise, make sure that the dimension is -1, representing free dimension. If not, then it's an
+                     // invalid model.
                 {
-                    return CreateTensor<TensorKind::Float>(args, elementStrings, tensorDescriptor.Shape(),
-                                                           inputBindingType);
+                    if (dimSize == -1)
+                    {
+                        shape.push_back(1);
+                    }
+                    else
+                    {
+                        throw hresult_invalid_argument(L"Failed to create a tensor with an unknown dimension of: " +
+                                                       dimSize);
+                    }
                 }
-                break;
-                case TensorKind::Float16:
-                {
-                    return CreateTensor<TensorKind::Float16>(args, elementStrings, tensorDescriptor.Shape(),
-                                                             inputBindingType);
-                }
-                break;
-                case TensorKind::Double:
-                {
-                    return CreateTensor<TensorKind::Double>(args, elementStrings, tensorDescriptor.Shape(),
-                                                            inputBindingType);
-                }
-                break;
-                case TensorKind::Int8:
-                {
-                    return CreateTensor<TensorKind::Int8>(args, elementStrings, tensorDescriptor.Shape(),
-                                                          inputBindingType);
-                }
-                break;
-                case TensorKind::UInt8:
-                {
-                    return CreateTensor<TensorKind::UInt8>(args, elementStrings, tensorDescriptor.Shape(),
-                                                           inputBindingType);
-                }
-                break;
-                case TensorKind::Int16:
-                {
-                    return CreateTensor<TensorKind::Int16>(args, elementStrings, tensorDescriptor.Shape(),
-                                                           inputBindingType);
-                }
-                break;
-                case TensorKind::UInt16:
-                {
-                    return CreateTensor<TensorKind::UInt16>(args, elementStrings, tensorDescriptor.Shape(),
-                                                            inputBindingType);
-                }
-                break;
-                case TensorKind::Int32:
-                {
-                    return CreateTensor<TensorKind::Int32>(args, elementStrings, tensorDescriptor.Shape(),
-                                                           inputBindingType);
-                }
-                break;
-                case TensorKind::UInt32:
-                {
-                    return CreateTensor<TensorKind::UInt32>(args, elementStrings, tensorDescriptor.Shape(),
-                                                            inputBindingType);
-                }
-                break;
-                case TensorKind::Int64:
-                {
-                    return CreateTensor<TensorKind::Int64>(args, elementStrings, tensorDescriptor.Shape(),
-                                                           inputBindingType);
-                }
-                break;
-                case TensorKind::UInt64:
-                {
-                    return CreateTensor<TensorKind::UInt64>(args, elementStrings, tensorDescriptor.Shape(),
-                                                            inputBindingType);
-                }
-                break;
             }
+
+            tensorKind = tensorDescriptor.TensorKind();
+            return;
+        }
+
+        throw hresult_invalid_argument(L"ProcessDescriptor: Unknown desription type!");
+    } // namespace BindingUtilities
+
+    // Binds tensor floats, ints, doubles from CSV data.
+    ITensor CreateBindableTensor(const ILearningModelFeatureDescriptor& description, const std::wstring &imagePath,
+                                 const InputBindingType inputBindingType, const InputDataType inputDataType,
+                                 const CommandLineArgs& args, uint32_t iterationNum)
+    {
+        InputBufferDesc inputBufferDesc = {};
+
+        std::vector<int64_t> shape = {};
+        TensorKind tensorKind = TensorKind::Undefined;
+        ProcessDescriptor(description, shape, tensorKind, inputBufferDesc);
+
+        SoftwareBitmap softwareBitmap(nullptr);
+        if (args.IsCSVInput())
+        {
+            inputBufferDesc.channelFormat = TensorKind::Float;
+            inputBufferDesc.isPlanar = true;
+
+            // Assumes shape is in the format of 'NCHW'
+            inputBufferDesc.numChannelsPerElement = static_cast<uint32_t>(shape[1]);
+
+            // Assumes no gaps in the input csv file
+            inputBufferDesc.elementStrideInBytes = inputBufferDesc.numChannelsPerElement * sizeof(float_t);
+
+            inputBufferDesc.totalSizeInBytes = sizeof(float_t);
+            for (uint32_t i = 0; i < shape.size(); ++i)
+                inputBufferDesc.totalSizeInBytes *= static_cast<uint32_t>(shape[i]);
+
+            inputBufferDesc.elements = new uint8_t[inputBufferDesc.totalSizeInBytes];
+
+            ReadCSVIntoBuffer(args.CsvPath(), inputBufferDesc);
+        }
+        else if (args.IsImageInput())
+        {
+            softwareBitmap = LoadImageFile(description, inputDataType, imagePath.c_str(), args, iterationNum);
+
+            // Get Pointers to the SoftwareBitmap data buffers
+            const BitmapBuffer sbBitmapBuffer(softwareBitmap.LockBuffer(BitmapBufferAccessMode::Read));
+            winrt::Windows::Foundation::IMemoryBufferReference sbReference = sbBitmapBuffer.CreateReference();
+            auto sbByteAccess = sbReference.as<::Windows::Foundation::IMemoryBufferByteAccess>();
+            winrt::check_hresult(sbByteAccess->GetBuffer(&inputBufferDesc.elements, &inputBufferDesc.totalSizeInBytes));
+
+            inputBufferDesc.isPlanar = false;
+            inputBufferDesc.elementFormat = softwareBitmap.BitmapPixelFormat();
+            switch (inputBufferDesc.elementFormat)
+            {
+                case BitmapPixelFormat::Gray8:
+                    inputBufferDesc.channelFormat = TensorKind::UInt8;
+                    inputBufferDesc.numChannelsPerElement = 1;
+                    inputBufferDesc.elementStrideInBytes = sizeof(uint8_t);
+                    break;
+                case BitmapPixelFormat::Gray16:
+                    inputBufferDesc.channelFormat = TensorKind::UInt16;
+                    inputBufferDesc.numChannelsPerElement = 1;
+                    inputBufferDesc.elementStrideInBytes = sizeof(uint16_t);
+                    break;
+                case BitmapPixelFormat::Bgra8:
+                    inputBufferDesc.channelFormat = TensorKind::UInt8;
+                    inputBufferDesc.numChannelsPerElement = 3;
+                    inputBufferDesc.elementStrideInBytes = 4 * sizeof(uint8_t);
+                    break;
+                case BitmapPixelFormat::Rgba8:
+                    inputBufferDesc.channelFormat = TensorKind::UInt8;
+                    inputBufferDesc.numChannelsPerElement = 3;
+                    inputBufferDesc.elementStrideInBytes = 4 * sizeof(uint8_t);
+                    break;
+                case BitmapPixelFormat::Rgba16:
+                    inputBufferDesc.channelFormat = TensorKind::UInt16;
+                    inputBufferDesc.numChannelsPerElement = 3;
+                    inputBufferDesc.elementStrideInBytes = 4 * sizeof(uint16_t);
+                    break;
+                default:
+                    throw hresult_invalid_argument(L"Unknown BitmapPixelFormat in input image.");
+            }
+        }
+
+        switch (tensorKind)
+        {
+            case TensorKind::Undefined:
+            {
+                std::cout << "BindingUtilities: TensorKind is undefined." << std::endl;
+                throw hresult_invalid_argument();
+            }
+            case TensorKind::Float:
+            {
+                return CreateTensor<TensorKind::Float>(args, shape, inputBindingType, inputBufferDesc);
+            }
+            break;
+            case TensorKind::Float16:
+            {
+                return CreateTensor<TensorKind::Float16>(args, shape, inputBindingType, inputBufferDesc);
+            }
+            break;
+            case TensorKind::Double:
+            {
+                return CreateTensor<TensorKind::Double>(args, shape, inputBindingType, inputBufferDesc);
+            }
+            break;
+            case TensorKind::Int8:
+            {
+                return CreateTensor<TensorKind::Int8>(args, shape, inputBindingType, inputBufferDesc);
+            }
+            break;
+            case TensorKind::UInt8:
+            {
+                return CreateTensor<TensorKind::UInt8>(args, shape, inputBindingType, inputBufferDesc);
+            }
+            break;
+            case TensorKind::Int16:
+            {
+                return CreateTensor<TensorKind::Int16>(args, shape, inputBindingType, inputBufferDesc);
+            }
+            break;
+            case TensorKind::UInt16:
+            {
+                return CreateTensor<TensorKind::UInt16>(args, shape, inputBindingType, inputBufferDesc);
+            }
+            break;
+            case TensorKind::Int32:
+            {
+                return CreateTensor<TensorKind::Int32>(args, shape, inputBindingType, inputBufferDesc);
+            }
+            break;
+            case TensorKind::UInt32:
+            {
+                return CreateTensor<TensorKind::UInt32>(args, shape, inputBindingType, inputBufferDesc);
+            }
+            break;
+            case TensorKind::Int64:
+            {
+                return CreateTensor<TensorKind::Int64>(args, shape, inputBindingType, inputBufferDesc);
+            }
+            break;
+            case TensorKind::UInt64:
+            {
+                return CreateTensor<TensorKind::UInt64>(args, shape, inputBindingType, inputBufferDesc);
+            }
+            break;
         }
         std::cout << "BindingUtilities: TensorKind has not been implemented." << std::endl;
         throw hresult_not_implemented();

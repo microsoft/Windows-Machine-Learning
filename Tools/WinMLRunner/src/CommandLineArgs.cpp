@@ -31,7 +31,11 @@ void CommandLineArgs::PrintUsage()
     std::cout << "  -GPUBoundInput : bind the input to the GPU" << std::endl;
     std::cout << "  -RGB : load the input as an RGB image" << std::endl;
     std::cout << "  -BGR : load the input as a BGR image" << std::endl;
-    std::cout << "  -Tensor : load the input as a tensor" << std::endl;
+    std::cout << "  -Tensor [function] : load the input as a tensor, with optional function for input preprocessing" << std::endl;
+    std::cout << "      Optional function arguments:" << std::endl;
+    std::cout << "          Identity(default) : No input transformations will be performed." << std::endl;
+    std::cout << "          ScaleMeanStdDev <scale> <msdR> <msdG> <msdB> : float scale factor and per channel meanStdDev "
+                 "factors to preprocess input images before being passed to the model" << std::endl;
     std::cout << "  -Perf [all]: capture performance measurements such as timing and memory usage. Specifying \"all\" "
                  "will output all measurements"
               << std::endl;
@@ -53,7 +57,7 @@ void CommandLineArgs::PrintUsage()
     std::cout << "  -DebugEvaluate: Print evaluation debug output to debug console if debugger is present."
               << std::endl;
     std::cout << "  -Terse: Terse Mode (suppresses repetitive console output)" << std::endl;
-    std::cout << "  -AutoScale <interpolationMode>: Enable image autoscaling and set the interpolation mode [Nearest, "
+    std::cout << "  -AutoScale <interpolationMode> : Enable image autoscaling and set the interpolation mode [Nearest, "
                  "Linear, Cubic, Fant]"
               << std::endl;
     std::cout << std::endl;
@@ -132,7 +136,7 @@ CommandLineArgs::CommandLineArgs(const std::vector<std::wstring>& args)
         else if ((_wcsicmp(args[i].c_str(), L"-Model") == 0))
         {
             CheckNextArgument(args, i);
-            m_modelPath = args[++i];
+            m_modelPath = FileHelper::GetAbsolutePath(args[++i]);
         }
         else if ((_wcsicmp(args[i].c_str(), L"-Folder") == 0))
         {
@@ -165,9 +169,26 @@ CommandLineArgs::CommandLineArgs(const std::vector<std::wstring>& args)
         {
             m_useBGR = true;
         }
-        else if ((_wcsicmp(args[i].c_str(), L"-Tensor") == 0))
+        else if (_wcsicmp(args[i].c_str(), L"-Tensor") == 0)
         {
             m_useTensor = true;
+            m_tensorizeArgs.Func = TensorizeFuncs::Identity;
+            if (i + 1 < args.size() && args[i + 1][0] != L'-')
+            {
+                if (_wcsicmp(args[++i].c_str(), L"Identity") == 0)
+                {
+                }
+                else if (_wcsicmp(args[i].c_str(), L"ScaleMeanStdDev") == 0)
+                {
+                    CheckNextArgument(args, i);
+
+                    m_tensorizeArgs.Func = TensorizeFuncs::ScaleMeanStdDev;
+                    m_tensorizeArgs.ScaleMeanStdDev.Scale = (float)_wtof(args[++i].c_str());
+
+                    while (((i + 1) < args.size()) && (args[i + 1].c_str()[0] != '-'))
+                        m_tensorizeArgs.ScaleMeanStdDev.Factors.push_back((float)_wtof(args[++i].c_str()));
+                }
+            }
         }
         else if ((_wcsicmp(args[i].c_str(), L"-CPUBoundInput") == 0))
         {
@@ -257,7 +278,7 @@ CommandLineArgs::CommandLineArgs(const std::vector<std::wstring>& args)
                 throw hresult_invalid_argument(L"Unknown SaveTensorData Mode[" + m_saveTensorMode + L"]!");
             }
         }
-        else if (_wcsicmp(args[i].c_str(), L"-version") == 0)
+        else if (_wcsicmp(args[i].c_str(), L"-Version") == 0)
         {
             TCHAR szExeFileName[MAX_PATH];
             auto ret = GetModuleFileName(NULL, szExeFileName, MAX_PATH);

@@ -1,6 +1,28 @@
 #pragma once
 #include "Common.h"
 
+enum TensorizeFuncs
+{
+    Identity = 0,
+    ScaleMeanStdDev
+};
+
+class TensorizeArgs
+{
+public:
+    TensorizeFuncs Func;
+    struct _ScaleMeanStdDev
+    {
+        float Scale;
+        std::vector<float> Factors;
+    } ScaleMeanStdDev;
+
+    TensorizeArgs() : Func(TensorizeFuncs::Identity)
+    {
+        ScaleMeanStdDev.Scale = 1.0f;
+    };
+};
+
 class CommandLineArgs
 {
 public:
@@ -34,6 +56,8 @@ public:
 #ifdef DXCORE_SUPPORTED_BUILD
     const std::wstring& GetGPUAdapterName() const { return m_adapterName; }
 #endif
+
+    const TensorizeArgs& TensorizeArgs() const { return m_tensorizeArgs; }
 
     bool UseRGB() const
     {
@@ -148,6 +172,7 @@ private:
     bool m_saveTensor = false;
     bool m_timeLimitIterations = false;
     std::wstring m_saveTensorMode = L"First";
+    ::TensorizeArgs m_tensorizeArgs;
 
     std::wstring m_modelFolderPath;
     std::wstring m_modelPath;

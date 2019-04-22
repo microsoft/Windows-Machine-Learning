@@ -19,14 +19,15 @@ std::vector<ILearningModelFeatureValue> GenerateInputFeatures(const LearningMode
     {
         std::wcout << L"Generating input feature(s) with image: " << imagePath << std::endl;
     }
-    for (uint32_t i = 0; i < model.InputFeatures().Size(); i++)
+    for (uint32_t inputNum = 0; inputNum < model.InputFeatures().Size(); inputNum++)
     {
-        auto&& description = model.InputFeatures().GetAt(i);
+        auto&& description = model.InputFeatures().GetAt(inputNum);
 
         if (inputDataType == InputDataType::Tensor)
         {
             // If CSV data is provided, then every input will contain the same CSV data
-            auto tensorFeature = BindingUtilities::CreateBindableTensor(description, args, inputBindingType);
+            auto tensorFeature = BindingUtilities::CreateBindableTensor(description, imagePath, inputBindingType, inputDataType,
+                                                                        args, iterationNum);
             inputFeatures.push_back(tensorFeature);
         }
         else

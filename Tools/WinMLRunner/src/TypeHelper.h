@@ -111,18 +111,61 @@ public:
         throw "No name found for this DeviceCreationLocation.";
     }
 
+    static std::wstring Stringify(TensorKind tensorKind)
+    {
+        // IMPORTANT: This tensorKinds array needs to match the "enum class TensorKind" idl in
+        // Windows.AI.MachineLearning.0.h
+        switch (tensorKind)
+        {
+            case TensorKind::Undefined:
+                return L"Undefined";
+            case TensorKind::Float:
+                return L"Float";
+            case TensorKind::UInt8:
+                return L"UInt8";
+            case TensorKind::Int8:
+                return L"Int8";
+            case TensorKind::UInt16:
+                return L"UInt16";
+            case TensorKind::Int16:
+                return L"Int16";
+            case TensorKind::Int32:
+                return L"Int32";
+            case TensorKind::Int64:
+                return L"Int64";
+            case TensorKind::String:
+                return L"String";
+            case TensorKind::Boolean:
+                return L"Boolean";
+            case TensorKind::Float16:
+                return L"Float16";
+            case TensorKind::Double:
+                return L"Double";
+            case TensorKind::UInt32:
+                return L"UInt32";
+            case TensorKind::UInt64:
+                return L"UInt64";
+            case TensorKind::Complex64:
+                return L"Complex64";
+            case TensorKind::Complex128:
+                return L"Complex128";
+        };
+
+        throw "No name found for this TensorKind.";
+    }
+
     static LearningModelDeviceKind GetWinmlDeviceKind(DeviceType deviceType)
     {
         switch (deviceType)
         {
             case DeviceType::CPU:
-                return LearningModelDeviceKind::Cpu;
-            case DeviceType::DefaultGPU:
-                return LearningModelDeviceKind::DirectX;
-            case DeviceType::MinPowerGPU:
-                return LearningModelDeviceKind::DirectXMinPower;
-            case DeviceType::HighPerfGPU:
-                return LearningModelDeviceKind::DirectXHighPerformance;
+                    return LearningModelDeviceKind::Cpu;
+                case DeviceType::DefaultGPU:
+                    return LearningModelDeviceKind::DirectX;
+                case DeviceType::MinPowerGPU:
+                    return LearningModelDeviceKind::DirectXMinPower;
+                case DeviceType::HighPerfGPU:
+                    return LearningModelDeviceKind::DirectXHighPerformance;
         }
 
         throw "No LearningModelDeviceKind found for this DeviceType.";

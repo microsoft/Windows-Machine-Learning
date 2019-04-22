@@ -6,65 +6,124 @@
 #include "d3dx12.h"
 using namespace winrt::Windows::Media;
 using namespace winrt::Windows::Storage;
+using namespace winrt::Windows::Storage::Streams;
 using namespace winrt::Windows::AI::MachineLearning;
 using namespace winrt::Windows::Foundation::Collections;
 using namespace winrt::Windows::Graphics::DirectX;
 using namespace winrt::Windows::Graphics::Imaging;
 using namespace winrt::Windows::Graphics::DirectX::Direct3D11;
+using namespace DirectX::PackedVector;
 
-template <TensorKind T> struct TensorKindToType
+template <TensorKind T> struct TensorKindToArithmeticType
 {
     static_assert(true, "No TensorKind mapped for given type!");
 };
-template <> struct TensorKindToType<TensorKind::UInt8>
+template <> struct TensorKindToArithmeticType<TensorKind::UInt8>
 {
     typedef uint8_t Type;
 };
-template <> struct TensorKindToType<TensorKind::Int8>
+template <> struct TensorKindToArithmeticType<TensorKind::Int8>
 {
     typedef uint8_t Type;
 };
-template <> struct TensorKindToType<TensorKind::UInt16>
+template <> struct TensorKindToArithmeticType<TensorKind::UInt16>
 {
     typedef uint16_t Type;
 };
-template <> struct TensorKindToType<TensorKind::Int16>
+template <> struct TensorKindToArithmeticType<TensorKind::Int16>
 {
     typedef int16_t Type;
 };
-template <> struct TensorKindToType<TensorKind::UInt32>
+template <> struct TensorKindToArithmeticType<TensorKind::UInt32>
 {
     typedef uint32_t Type;
 };
-template <> struct TensorKindToType<TensorKind::Int32>
+template <> struct TensorKindToArithmeticType<TensorKind::Int32>
 {
     typedef int32_t Type;
 };
-template <> struct TensorKindToType<TensorKind::UInt64>
+template <> struct TensorKindToArithmeticType<TensorKind::UInt64>
 {
     typedef uint64_t Type;
 };
-template <> struct TensorKindToType<TensorKind::Int64>
+template <> struct TensorKindToArithmeticType<TensorKind::Int64>
 {
     typedef int64_t Type;
 };
-template <> struct TensorKindToType<TensorKind::Boolean>
+template <> struct TensorKindToArithmeticType<TensorKind::Boolean>
 {
     typedef boolean Type;
 };
-template <> struct TensorKindToType<TensorKind::Double>
+template <> struct TensorKindToArithmeticType<TensorKind::Double>
 {
     typedef double Type;
 };
-template <> struct TensorKindToType<TensorKind::Float>
+template <> struct TensorKindToArithmeticType<TensorKind::Float>
 {
     typedef float Type;
 };
-template <> struct TensorKindToType<TensorKind::Float16>
+template <> struct TensorKindToArithmeticType<TensorKind::Float16>
+{
+    typedef float Type;
+};
+template <> struct TensorKindToArithmeticType<TensorKind::String>
+{
+    typedef winrt::hstring Type;
+};
+
+template <TensorKind T> struct TensorKindToPointerType
+{
+    static_assert(true, "No TensorKind mapped for given type!");
+};
+template <> struct TensorKindToPointerType<TensorKind::UInt8>
+{
+    typedef uint8_t Type;
+};
+template <> struct TensorKindToPointerType<TensorKind::Int8>
+{
+    typedef uint8_t Type;
+};
+template <> struct TensorKindToPointerType<TensorKind::UInt16>
+{
+    typedef uint16_t Type;
+};
+template <> struct TensorKindToPointerType<TensorKind::Int16>
+{
+    typedef int16_t Type;
+};
+template <> struct TensorKindToPointerType<TensorKind::UInt32>
+{
+    typedef uint32_t Type;
+};
+template <> struct TensorKindToPointerType<TensorKind::Int32>
+{
+    typedef int32_t Type;
+};
+template <> struct TensorKindToPointerType<TensorKind::UInt64>
+{
+    typedef uint64_t Type;
+};
+template <> struct TensorKindToPointerType<TensorKind::Int64>
+{
+    typedef int64_t Type;
+};
+template <> struct TensorKindToPointerType<TensorKind::Boolean>
+{
+    typedef boolean Type;
+};
+template <> struct TensorKindToPointerType<TensorKind::Double>
+{
+    typedef double Type;
+};
+template <> struct TensorKindToPointerType<TensorKind::Float>
+{
+    typedef float Type;
+};
+template <> struct TensorKindToPointerType<TensorKind::Float16>
 {
     typedef HALF Type;
 };
-template <> struct TensorKindToType<TensorKind::String>
+template <> struct TensorKindToPointerType<TensorKind::String>
 {
     typedef winrt::hstring Type;
 };
@@ -124,6 +183,63 @@ template <> struct TensorKindToValue<TensorKind::Float16>
 template <> struct TensorKindToValue<TensorKind::String>
 {
     typedef TensorString Type;
+};
+
+template <TensorKind T, typename PointerType, typename ArithmeticType > PointerType ConvertArithmeticTypeToPointerType(ArithmeticType value)
+{
+    static_assert(true, "No TensorKind mapped for given type!");
+};
+template <> uint8_t ConvertArithmeticTypeToPointerType<TensorKind::UInt8>(uint8_t value)
+{
+    return static_cast<uint8_t>(value);
+};
+template <> uint8_t ConvertArithmeticTypeToPointerType<TensorKind::Int8>(uint8_t value)
+{
+    return static_cast<uint8_t>(value);
+};
+template <> uint16_t ConvertArithmeticTypeToPointerType<TensorKind::UInt16>(uint16_t value)
+{
+    return static_cast<uint16_t>(value);
+};
+template <> int16_t ConvertArithmeticTypeToPointerType<TensorKind::Int16>(int16_t value)
+{
+    return static_cast<int16_t>(value);
+};
+template <> uint32_t ConvertArithmeticTypeToPointerType<TensorKind::UInt32>(uint32_t value)
+{
+    return static_cast<uint32_t>(value);
+};
+template <> int32_t ConvertArithmeticTypeToPointerType<TensorKind::Int32>(int32_t value)
+{
+    return static_cast<int32_t>(value);
+};
+template <> uint64_t ConvertArithmeticTypeToPointerType<TensorKind::UInt64>(uint64_t value)
+{
+    return static_cast<uint64_t>(value);
+};
+template <> int64_t ConvertArithmeticTypeToPointerType<TensorKind::Int64>(int64_t value)
+{
+    return static_cast<int64_t>(value);
+};
+template <> boolean ConvertArithmeticTypeToPointerType<TensorKind::Boolean>(boolean value)
+{
+    return static_cast<boolean>(value);
+};
+template <> double ConvertArithmeticTypeToPointerType<TensorKind::Double>(double value)
+{
+    return static_cast<double>(value);
+};
+template <> float ConvertArithmeticTypeToPointerType<TensorKind::Float>(float value)
+{
+    return static_cast<float>(value);
+};
+template <> HALF ConvertArithmeticTypeToPointerType<TensorKind::Float16>(float value)
+{
+    return XMConvertFloatToHalf(value);
+};
+template <> winrt::hstring ConvertArithmeticTypeToPointerType<TensorKind::String>(winrt::hstring value)
+{
+    return static_cast<winrt::hstring>(value);
 };
 
 void GetHeightAndWidthFromLearningModelFeatureDescriptor(const ILearningModelFeatureDescriptor& modelFeatureDescriptor,
@@ -286,31 +402,6 @@ namespace BindingUtilities
         return elementStrings;
     }
 
-    template <typename T>
-    void WriteDataToBinding(const std::vector<std::string>& elementStrings, T* bindingMemory,
-                            uint32_t bindingMemorySize)
-    {
-        if (bindingMemorySize / sizeof(T) != elementStrings.size())
-        {
-            throw hresult_invalid_argument(L"CSV Input is size/shape is different from what model expects");
-        }
-        T* data = bindingMemory;
-        for (const auto& elementString : elementStrings)
-        {
-            float value;
-            std::stringstream(elementString) >> value;
-            if (!std::is_same<T, HALF>::value)
-            {
-                *data = static_cast<T>(value);
-            }
-            else
-            {
-                *reinterpret_cast<HALF*>(data) = XMConvertFloatToHalf(value);
-            }
-            data++;
-        }
-    }
-
     std::vector<std::string> ParseCSVElementStrings(const std::wstring& csvFilePath)
     {
         std::ifstream fileStream;
@@ -330,7 +421,9 @@ namespace BindingUtilities
                                 const IVectorView<int64_t>& tensorShape, const InputBindingType inputBindingType)
     {
         using TensorValue = typename TensorKindToValue<T>::Type;
-        using DataType = typename TensorKindToType<T>::Type;
+        using ArithmeticType = typename TensorKindToArithmeticType<T>::Type;
+        using PointerType = typename TensorKindToPointerType<T>::Type;
+
         std::vector<int64_t> vecShape = {};
         for (UINT dim = 0; dim < tensorShape.Size(); dim++)
         {
@@ -353,19 +446,34 @@ namespace BindingUtilities
                 }
             }
         }
+
+        // Map the incoming Tensor as a TensorNative to get the actual data buffer.
         auto tensorValue = TensorValue::Create(vecShape);
 
         com_ptr<ITensorNative> spTensorValueNative;
         tensorValue.as(spTensorValueNative);
 
-        BYTE* actualData;
+        PointerType* actualData;
         uint32_t actualSizeInBytes;
-        spTensorValueNative->GetBuffer(&actualData,
-                                       &actualSizeInBytes); // Need to GetBuffer to have CPU memory backing tensorValue
+        spTensorValueNative->GetBuffer(reinterpret_cast<BYTE**>(&actualData),
+                                                                &actualSizeInBytes);
 
         if (args.IsCSVInput())
         {
-            WriteDataToBinding<DataType>(tensorStringInput, reinterpret_cast<DataType*>(actualData), actualSizeInBytes);
+            if (tensorStringInput.size() != actualSizeInBytes / sizeof(PointerType))
+            {
+                throw hresult_invalid_argument(L"CSV input size/shape is different from what model expects");
+            }
+
+            // Write the elementStrings into the iTensorNative
+            PointerType* dataPtr = actualData;
+            for (const auto &tensorString : tensorStringInput)
+            {
+                ArithmeticType value;
+                std::stringstream(tensorString) >> value;
+                *dataPtr = ConvertArithmeticTypeToPointerType<T,PointerType,ArithmeticType>(value);
+                dataPtr++;
+            }
         }
         else if (args.IsImageInput())
         {
@@ -629,7 +737,7 @@ namespace BindingUtilities
         {
             if (desc.Kind() == LearningModelFeatureKind::Tensor)
             {
-                std::wstring name = desc.Name().c_str();
+                std::wstring name(desc.Name());
                 if (args.IsSaveTensor() && args.SaveTensorMode() == L"First" && iterationNum > 0)
                 {
                     return;

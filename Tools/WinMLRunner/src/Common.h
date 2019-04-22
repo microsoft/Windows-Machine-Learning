@@ -25,12 +25,6 @@
 #include "TimerHelper.h"
 #include "DirectXPackedVector.h"
 
-#if __has_include("dxcore.h")
-#include <initguid.h>
-#include <dxcore.h>
-#define DXCORE_SUPPORTED_BUILD
-#endif
-
 enum WINML_MODEL_TEST_PERF
 {
     ENTIRE_TEST = 0,

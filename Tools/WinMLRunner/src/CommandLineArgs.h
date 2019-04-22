@@ -110,9 +110,9 @@ public:
     void SetTopK(unsigned k) { m_topK = k; }
     void SetPerformanceCSVPath(const std::wstring& performanceCSVPath) { m_perfOutputPath = performanceCSVPath; }
     void SetRunIterations(const uint32_t iterations) { m_numIterations = iterations; }
-    void AddPerformanceFileMetadata(const std::pair<std::string, std::string>& metadata)
+    void AddPerformanceFileMetadata(const std::string& key, const std::string& value)
     {
-        m_perfFileMetadata.push_back(metadata);
+        m_perfFileMetadata.push_back(std::make_pair(key, value));
     }
     std::wstring SaveTensorMode() const { return m_saveTensorMode; }
 

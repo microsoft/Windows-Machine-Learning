@@ -9,7 +9,7 @@ You can either download the x64 executable or build it yourself.
 
 ### Download
 
-[Download x64 and x86 Exe](https://github.com/Microsoft/Windows-Machine-Learning/releases/tag/v1.0.1.0)
+[Download x64 and x86 Exe](https://github.com/Microsoft/Windows-Machine-Learning/releases)
 
 ### Build
 

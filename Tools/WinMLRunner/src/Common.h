@@ -45,6 +45,16 @@ enum WINML_MODEL_TEST_PERF
 
 #define MAX_PROFILING_LOOP 100
 
+//
+// Exception information
+//
+#ifndef FACILITY_VISUALCPP
+#define FACILITY_VISUALCPP ((LONG)0x6d)
+#endif
+#ifndef VcppException
+#define VcppException(sev, err) ((sev) | (FACILITY_VISUALCPP << 16) | err)
+#endif
+
 using namespace winrt;
 #ifndef THROW_IF_FAILED
 #define THROW_IF_FAILED(hr)                                                                                            \

@@ -110,6 +110,25 @@ HRESULT LoadModel(LearningModel& model, const std::wstring& path, bool capturePe
     return S_OK;
 }
 
+#ifdef DXCORE_SUPPORTED_BUILD
+HRESULT CreateDXGIFactory2SEH(void** dxgiFactory)
+{
+    // Recover from delay-load module failure.
+    HRESULT hr;
+    __try
+    {
+        hr = CreateDXGIFactory2(0, __uuidof(IDXGIFactory4), dxgiFactory);
+    }
+    __except (GetExceptionCode() == VcppException(ERROR_SEVERITY_ERROR, ERROR_MOD_NOT_FOUND)
+                  ? EXCEPTION_EXECUTE_HANDLER
+                  : EXCEPTION_CONTINUE_SEARCH)
+    {
+        hr = HRESULT_FROM_WIN32(ERROR_MOD_NOT_FOUND);
+    }
+    return hr;
+}
+#endif
+
 HRESULT CreateSession(LearningModelSession& session, IDirect3DDevice& winrtDevice, LearningModel& model,
                       CommandLineArgs& args, OutputHelper& output, DeviceType deviceType,
                       DeviceCreationLocation deviceCreationLocation, Profiler<WINML_MODEL_TEST_PERF>& profiler)
@@ -253,15 +272,26 @@ HRESULT CreateSession(LearningModelSession& session, IDirect3DDevice& winrtDevic
              {
                  d3dFeatureLevel = D3D_FEATURE_LEVEL::D3D_FEATURE_LEVEL_11_0;
                  com_ptr<IDXGIFactory4> dxgiFactory4;
-                 THROW_IF_FAILED(CreateDXGIFactory2(0, __uuidof(IDXGIFactory4), dxgiFactory4.put_void()));
-
-                 // If DXGI factory creation was successful then get the IDXGIAdapter from the LUID acquired from the
-                 // selectedAdapter
-                 LUID adapterLuid;
-                 THROW_IF_FAILED(spAdapter->GetLUID(&adapterLuid));
-                 THROW_IF_FAILED(
-                     dxgiFactory4->EnumAdapterByLuid(adapterLuid, __uuidof(IDXGIAdapter), spDxgiAdapter.put_void()));
-                 pAdapter = spDxgiAdapter.get();
+                 HRESULT hr;
+                 try
+                 {
+                     hr = CreateDXGIFactory2SEH(dxgiFactory4.put_void());
+                 }
+                 catch (...)
+                 {
+                     hr = E_FAIL;
+                 }
+                 if (hr == S_OK)
+                 {
+                     // If DXGI factory creation was successful then get the IDXGIAdapter from the LUID acquired from
+                     // the selectedAdapter
+                     std::cout << "Using DXGI for adapter creation.." << std::endl;
+                     LUID adapterLuid;
+                     THROW_IF_FAILED(spAdapter->GetLUID(&adapterLuid));
+                     THROW_IF_FAILED(dxgiFactory4->EnumAdapterByLuid(adapterLuid, __uuidof(IDXGIAdapter),
+                                                                     spDxgiAdapter.put_void()));
+                     pAdapter = spDxgiAdapter.get();
+                 }
              }
              else
              {
@@ -559,6 +589,64 @@ std::vector<DeviceCreationLocation> FetchDeviceCreationLocations(const CommandLi
     return deviceCreationLocations;
 }
 
+#if defined(_AMD64_)
+void StartPIXCapture(OutputHelper& output)
+{
+    __try
+    {
+        // PIX markers only work on AMD64
+        if (output.GetGraphicsAnalysis().get())
+        {
+            // If PIX tool is attached to WinMLRunner then begin capture. First capture will include
+            // session creation, first iteration bind and first iteration evaluate.
+            output.GetGraphicsAnalysis()->BeginCapture();
+        }
+    }
+    __except (GetExceptionCode() == VcppException(ERROR_SEVERITY_ERROR, ERROR_MOD_NOT_FOUND)
+                  ? EXCEPTION_EXECUTE_HANDLER : EXCEPTION_CONTINUE_SEARCH)
+    {
+        std::cout << "DXGI module not found." << std::endl;
+    }
+}
+
+void EndPIXCapture(OutputHelper& output)
+{
+    __try
+    {
+        // PIX markers only work on AMD64
+        if (output.GetGraphicsAnalysis().get())
+        {
+            // If PIX tool is attached to WinMLRunner then end capture.
+            output.GetGraphicsAnalysis()->EndCapture();
+        }
+    }
+    __except (GetExceptionCode() == VcppException(ERROR_SEVERITY_ERROR, ERROR_MOD_NOT_FOUND)
+                  ? EXCEPTION_EXECUTE_HANDLER
+                  : EXCEPTION_CONTINUE_SEARCH)
+    {
+        std::cout << "DXGI module not found." << std::endl;
+    }
+}
+
+void PrintIfPIXToolAttached(OutputHelper& output)
+{
+    __try
+    {
+        // PIX markers only work on AMD64
+        // Check if PIX tool is attached to WinMLRunner
+        // Try to acquire IDXGraphicsAnalysis - this only succeeds if PIX is attached
+        if (SUCCEEDED(DXGIGetDebugInterface1(0, IID_PPV_ARGS(output.GetGraphicsAnalysis().put()))))
+        {
+            std::cout << "Detected PIX tool is attached to WinMLRunner" << std::endl;
+        }
+    }
+    __except (GetExceptionCode() == VcppException(ERROR_SEVERITY_ERROR, ERROR_MOD_NOT_FOUND)
+                  ? EXCEPTION_EXECUTE_HANDLER : EXCEPTION_CONTINUE_SEARCH)
+    {
+        std::cout << "DXGI module not found." << std::endl;
+    }
+}
+#endif
 int run(CommandLineArgs& args, Profiler<WINML_MODEL_TEST_PERF>& profiler) try
 {
     // Initialize COM in a multi-threaded environment.
@@ -566,13 +654,7 @@ int run(CommandLineArgs& args, Profiler<WINML_MODEL_TEST_PERF>& profiler) try
     OutputHelper output(args.NumIterations());
 
 #if defined(_AMD64_)
-    // PIX markers only work on AMD64
-    // Check if PIX tool is attached to WinMLRunner
-    // Try to acquire IDXGraphicsAnalysis - this only succeeds if PIX is attached
-    if (SUCCEEDED(DXGIGetDebugInterface1(0, IID_PPV_ARGS(output.GetGraphicsAnalysis().put()))))
-    {
-        std::cout << "Detected PIX tool is attached to WinMLRunner" << std::endl;
-    }
+    PrintIfPIXToolAttached(output);
 #endif
 
     // Profiler is a wrapper class that captures and stores timing and memory usage data on the
@@ -618,13 +700,7 @@ int run(CommandLineArgs& args, Profiler<WINML_MODEL_TEST_PERF>& profiler) try
                 for (auto deviceCreationLocation : deviceCreationLocations)
                 {
 #if defined(_AMD64_)
-                    // PIX markers only work on AMD64
-                    if (output.GetGraphicsAnalysis().get())
-                    {
-                        // If PIX tool is attached to WinMLRunner then begin capture. First capture will include
-                        // session creation, first iteration bind and first iteration evaluate.
-                        output.GetGraphicsAnalysis()->BeginCapture();
-                    }
+                    StartPIXCapture(output);
 #endif
                     LearningModelSession session = nullptr;
                     IDirect3DDevice winrtDevice = nullptr;
@@ -651,9 +727,9 @@ int run(CommandLineArgs& args, Profiler<WINML_MODEL_TEST_PERF>& profiler) try
                                 // If PIX tool was attached then capture already began for the first iteration before
                                 // session creation. This is to begin PIX capture for each iteration after the first
                                 // iteration.
-                                if (i > 0 && output.GetGraphicsAnalysis())
+                                if (i > 0)
                                 {
-                                    output.GetGraphicsAnalysis()->BeginCapture();
+                                    StartPIXCapture(output);
                                 }
 #endif
                                 LearningModelBinding context(session);
@@ -684,12 +760,7 @@ int run(CommandLineArgs& args, Profiler<WINML_MODEL_TEST_PERF>& profiler) try
                                     }
                                 }
 #if defined(_AMD64_)
-                                // PIX markers only work on AMD64
-                                if (output.GetGraphicsAnalysis())
-                                {
-                                    // If PIX tool is attached, then end the capture
-                                    output.GetGraphicsAnalysis()->EndCapture();
-                                }
+                                EndPIXCapture(output);
 #endif
                             }
 

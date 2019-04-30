@@ -274,15 +274,26 @@ HRESULT CreateSession(LearningModelSession& session, IDirect3DDevice& winrtDevic
              {
                  d3dFeatureLevel = D3D_FEATURE_LEVEL::D3D_FEATURE_LEVEL_11_0;
                  com_ptr<IDXGIFactory4> dxgiFactory4;
-                 THROW_IF_FAILED(CreateDXGIFactory2SEH(dxgiFactory4.put_void()));
-
-                 // If DXGI factory creation was successful then get the IDXGIAdapter from the LUID acquired from the
-                 // selectedAdapter
-                 LUID adapterLuid;
-                 THROW_IF_FAILED(spAdapter->GetLUID(&adapterLuid));
-                 THROW_IF_FAILED(
-                     dxgiFactory4->EnumAdapterByLuid(adapterLuid, __uuidof(IDXGIAdapter), spDxgiAdapter.put_void()));
-                 pAdapter = spDxgiAdapter.get();
+                 HRESULT hr;
+                 try
+                 {
+                     hr = CreateDXGIFactory2SEH(dxgiFactory4.put_void());
+                 }
+                 catch (...)
+                 {
+                     hr = E_FAIL;
+                 }
+                 if (hr == S_OK)
+                 {
+                     // If DXGI factory creation was successful then get the IDXGIAdapter from the LUID acquired from
+                     // the selectedAdapter
+                     std::cout << "Using DXGI for adapter creation.." << std::endl;
+                     LUID adapterLuid;
+                     THROW_IF_FAILED(spAdapter->GetLUID(&adapterLuid));
+                     THROW_IF_FAILED(dxgiFactory4->EnumAdapterByLuid(adapterLuid, __uuidof(IDXGIAdapter),
+                                                                     spDxgiAdapter.put_void()));
+                     pAdapter = spDxgiAdapter.get();
+                 }
              }
              else
              {

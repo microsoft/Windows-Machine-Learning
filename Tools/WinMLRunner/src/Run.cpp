@@ -115,7 +115,6 @@ HRESULT CreateDXGIFactory2SEH(void** dxgiFactory)
 {
     // Recover from delay-load module failure.
     HRESULT hr;
-
     __try
     {
         hr = CreateDXGIFactory2(0, __uuidof(IDXGIFactory4), dxgiFactory);
@@ -126,7 +125,6 @@ HRESULT CreateDXGIFactory2SEH(void** dxgiFactory)
     {
         hr = HRESULT_FROM_WIN32(ERROR_MOD_NOT_FOUND);
     }
-
     return hr;
 }
 #endif

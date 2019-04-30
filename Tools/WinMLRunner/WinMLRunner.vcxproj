@@ -160,7 +160,7 @@
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>WindowsApp.lib; mincore.lib; DXGI.lib</AdditionalDependencies>
-      <DelayLoadDLLs>"ext-ms-win-dxcore-l1-1-0.dll"</DelayLoadDLLs>
+      <DelayLoadDLLs>"ext-ms-win-dxcore-l1-1-0.dll"; dxgi.dll; d3d11.dll</DelayLoadDLLs>
     </Link>
     <PreBuildEvent>
       <Command>$(ProjectDir)src\GenerateVersionStrings.cmd $(ProjectDir) $(IntDir)</Command>

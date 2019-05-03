@@ -1,7 +1,7 @@
 | Sample/Tool | Status |
 |---------|--------------|
-| All Samples | [![Build Status](https://mscodehub.visualstudio.com/WindowsAI/_apis/build/status/winml/WinML%20Public%20Samples%20CI%20Build%20(Github-yml)?branchName=master)](https://mscodehub.visualstudio.com/WindowsAI/_build/latest?definitionId=612?branchName=master) |
-| WinmlRunner | [![Build status](https://mscodehub.visualstudio.com/DefaultCollection/WindowsAI/_apis/build/status/winml/WinML%20Dashboard%20CI%20Build)](https://mscodehub.visualstudio.com/DefaultCollection/WindowsAI/_build/latest?definitionId=602) |
+| All Samples | [![Build Status](https://microsoft.visualstudio.com/WindowsAI/_apis/build/status/WinML/Samples/Github%20Public%20Samples%20Build%20RS5?branchName=master)](https://microsoft.visualstudio.com/WindowsAI/_build/latest?definitionId=39302&branchName=master) |
+| WinmlRunner | [![Build Status](https://microsoft.visualstudio.com/WindowsAI/_apis/build/status/WInMLRunner%20CI%20Build?branchName=master)](https://microsoft.visualstudio.com/WindowsAI/_build/latest?definitionId=38654&branchName=master) |
 | WinML Dashboard | [![Build status](https://mscodehub.visualstudio.com/DefaultCollection/WindowsAI/_apis/build/status/winml/WinML%20Dashboard%20CI%20Build)](https://mscodehub.visualstudio.com/DefaultCollection/WindowsAI/_build/latest?definitionId=601) |
 
 

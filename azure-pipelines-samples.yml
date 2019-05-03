@@ -24,7 +24,7 @@ strategy:
       BuildConfiguration: Debug
 
 pool:
-  name: Package ES CodeHub Lab E
+  name: Package ES Lab E
 #  demands: agent.osversion -equals 10.0.17763
 
 # CI trigger

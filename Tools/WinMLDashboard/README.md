@@ -75,13 +75,16 @@ To debug your model follow these steps:
 
 <img src="./public/ConfigureDebug.png" width=800/>
 <img src="./public/DebugView.png" width=800/>
+<img src="./public/DebugPngs.png" width=800/>
+
+*Intermediate PNG convolutional output from an image of a [kitten](../../SharedContent/media/kitten_224.png)*
 
 
 ## Install
 
 You can install an early preview version of WinML Dashboard from here.
 
-[Download Preview Version](https://github.com/Microsoft/Windows-Machine-Learning/releases/tag/v0.5.1)
+[Download Preview Version](https://github.com/Microsoft/Windows-Machine-Learning/releases/tag/v0.6.1)
 
 Note that the prerelease version is not currently signed so you may see a warning about the binary being untrusted when you try to download and run the installer. 
 

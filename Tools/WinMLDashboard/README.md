@@ -75,9 +75,11 @@ To debug your model follow these steps:
 
 <img src="./public/ConfigureDebug.png" width=800/>
 <img src="./public/DebugView.png" width=800/>
-<img src="./public/DebugPngs.png" width=800/>
 
 *Intermediate PNG convolutional output from an image of a [kitten](../../SharedContent/media/kitten_224.png)*
+
+<img src="./public/DebugPngs.png" width=800/>
+
 
 
 ## Install

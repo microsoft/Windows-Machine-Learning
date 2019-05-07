@@ -2,7 +2,7 @@
 |---------|--------------|
 | All Samples | [![Build Status](https://microsoft.visualstudio.com/WindowsAI/_apis/build/status/WinML/Samples/Github%20Public%20Samples%20Build%20RS5?branchName=master)](https://microsoft.visualstudio.com/WindowsAI/_build/latest?definitionId=39302&branchName=master) |
 | WinmlRunner | [![Build Status](https://microsoft.visualstudio.com/WindowsAI/_apis/build/status/WInMLRunner%20CI%20Build?branchName=master)](https://microsoft.visualstudio.com/WindowsAI/_build/latest?definitionId=38654&branchName=master) |
-| WinML Dashboard | [![Build status](https://mscodehub.visualstudio.com/DefaultCollection/WindowsAI/_apis/build/status/winml/WinML%20Dashboard%20CI%20Build)](https://mscodehub.visualstudio.com/DefaultCollection/WindowsAI/_build/latest?definitionId=601) |
+| WinML Dashboard | [![Build Status](https://microsoft.visualstudio.com/WindowsAI/_apis/build/status/WinML/WinMLTools/WinML%20Dashboard%20CI%20Build%20(Github)?branchName=master)](https://microsoft.visualstudio.com/WindowsAI/_build/latest?definitionId=39375&branchName=master) |
 
 
 # Windows ML

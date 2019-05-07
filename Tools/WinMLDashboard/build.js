@@ -9,9 +9,9 @@ resultPromise = electronInstaller.createWindowsInstaller({
     loadingGif: './public/progress_bar.gif',
     noMsi: true,
     outputDirectory: path.join('./installer'), 
-    setupExe: 'WinMLDashboard_setup_0.5.1.exe',
+    setupExe: 'WinMLDashboard_setup_0.6.1.exe',
     setupIcon: './public/winml_icon.ico',
-    version: '0.5.1',
+    version: '0.6.1',
   });
 
 // tslint:disable-next-line:no-console

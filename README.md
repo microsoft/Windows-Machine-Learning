@@ -15,7 +15,7 @@ For additional information on Windows ML, including step-by-step tutorials and h
 
 ## Developer Tools
 - **[WinML Dashboard (Preview)](https://github.com/Microsoft/Windows-Machine-Learning/tree/master/Tools/WinMLDashboard)**: a GUI-based tool for viewing, editing, converting, and validating machine learning models for Windows ML inference engine. 
-[Download Preview Version](https://github.com/Microsoft/Windows-Machine-Learning/releases/tag/0.5.1)
+[Download Preview Version](https://github.com/Microsoft/Windows-Machine-Learning/releases/tag/v0.6.1)
 
   <img src='./Tools/WinMLDashboard/public/EditorView2.PNG' width=800/>
 

@@ -112,7 +112,12 @@ public:
     void SetRunIterations(const uint32_t iterations) { m_numIterations = iterations; }
     void AddPerformanceFileMetadata(const std::string& key, const std::string& value)
     {
-        m_perfFileMetadata.push_back(std::make_pair(key, value));
+        auto metadataPair = std::make_pair(key, value);
+        metadataPair.first.erase(std::remove(metadataPair.first.begin(), metadataPair.first.end(), ','),
+                                 metadataPair.first.end());
+        metadataPair.second.erase(std::remove(metadataPair.second.begin(), metadataPair.second.end(), ','),
+                                  metadataPair.second.end());
+        m_perfFileMetadata.push_back(metadataPair);
     }
     std::wstring SaveTensorMode() const { return m_saveTensorMode; }
 

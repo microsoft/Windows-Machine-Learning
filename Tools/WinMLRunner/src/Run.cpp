@@ -317,7 +317,15 @@ HRESULT CreateSession(LearningModelSession& session, IDirect3DDevice& winrtDevic
              com_ptr<::IUnknown> spUnkLearningModelDevice;
              THROW_IF_FAILED(
                  factory->CreateFromD3D12CommandQueue(d3d12CommandQueue.get(), spUnkLearningModelDevice.put()));
+             if (args.IsPerformanceCapture())
+             {
+                 WINML_PROFILING_START(profiler, WINML_MODEL_TEST_PERF::CREATE_SESSION);
+             }
              session = LearningModelSession(model, spUnkLearningModelDevice.as<LearningModelDevice>());
+             if (args.IsPerformanceCapture())
+             {
+                 WINML_PROFILING_STOP(profiler, WINML_MODEL_TEST_PERF::CREATE_SESSION);
+             }
          }
 #endif
         else

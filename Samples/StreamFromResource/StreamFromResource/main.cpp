@@ -25,41 +25,54 @@ int main()
     if (modelMem == nullptr)
     {
         printf("failed to load resource");
+        return 2;
     }
 
-    // get a byte point to the resource
-    const unsigned char* pModelData = static_cast<const unsigned char*>(LockResource(modelMem));
-    const auto size = SizeofResource(NULL, modelResource);
+    try
+    {
+        // get a byte point to the resource
+        const unsigned char* pModelData = static_cast<const unsigned char*>(LockResource(modelMem));
+        const auto size = SizeofResource(NULL, modelResource);
 
-    // write the bytes into a stream
-    InMemoryRandomAccessStream modelStream;
-    DataWriter writer(modelStream);
-    writer.WriteBytes(array_view<const unsigned char>(pModelData, pModelData + size));
-    writer.StoreAsync().get();
-    modelStream.Seek(0);
+        // write the bytes into a stream
+        InMemoryRandomAccessStream modelStream;
+        DataWriter writer(modelStream);
+        writer.WriteBytes(array_view<const unsigned char>(pModelData, pModelData + size));
+        writer.StoreAsync().get();
 
-    // wrap the stream in a stream reference
-    auto modelStreamReference = RandomAccessStreamReference::CreateFromStream(modelStream);
+        // clean up.
+        FreeResource(modelMem);
 
-    // load the model from stream reference
-    auto learningModel = LearningModel::LoadFromStream(modelStreamReference);
+        modelStream.Seek(0);
 
-    // create the session binding
-    auto learningModelSession = LearningModelSession(learningModel);
-    auto learningModelBinding = LearningModelBinding(learningModelSession);
+        // wrap the stream in a stream reference
+        auto modelStreamReference = RandomAccessStreamReference::CreateFromStream(modelStream);
 
-    // bind uninitialized data
-    std::vector<int64_t> shape = { 1,3,224,224 };
-    std::vector<float> inputData;
-    inputData.resize(3*224*224);
-    auto inputTensor = TensorFloat::CreateFromArray(shape, inputData);
-    learningModelBinding.Bind(L"data_0", inputTensor);
+        // load the model from stream reference
+        auto learningModel = LearningModel::LoadFromStream(modelStreamReference);
 
-    // evaluate
-    auto results = learningModelSession.Evaluate(learningModelBinding, L"");
+        // create the session binding
+        auto learningModelSession = LearningModelSession(learningModel);
+        auto learningModelBinding = LearningModelBinding(learningModelSession);
 
-    // clean up.
-    FreeResource(modelMem);
+        // bind uninitialized data
+        std::vector<int64_t> shape = { 1,3,224,224 };
+        std::vector<float> inputData;
+        inputData.resize(3 * 224 * 224);
+        auto inputTensor = TensorFloat::CreateFromArray(shape, inputData);
+        learningModelBinding.Bind(L"data_0", inputTensor);
+
+        // evaluate
+        auto results = learningModelSession.Evaluate(learningModelBinding, L"");
+    }
+    catch (...)
+    {
+        printf("caught an exception");
+        return 3;
+    }
+
+    printf("success!");
+    return 0;
 }
 
 

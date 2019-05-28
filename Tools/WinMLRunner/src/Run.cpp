@@ -11,7 +11,8 @@ using namespace winrt::Windows::Graphics::DirectX::Direct3D11;
 std::vector<ILearningModelFeatureValue> GenerateInputFeatures(const LearningModel& model, const CommandLineArgs& args,
                                                               InputBindingType inputBindingType,
                                                               InputDataType inputDataType,
-                                                              const IDirect3DDevice winrtDevice, uint32_t iterationNum)
+                                                              const IDirect3DDevice winrtDevice, uint32_t iterationNum,
+                                                              const std::wstring& imagePath)
 {
     std::vector<ILearningModelFeatureValue> inputFeatures;
 
@@ -27,7 +28,7 @@ std::vector<ILearningModelFeatureValue> GenerateInputFeatures(const LearningMode
         }
         else
         {
-            auto imageFeature = BindingUtilities::CreateBindableImage(description, args.ImagePath(), inputBindingType,
+            auto imageFeature = BindingUtilities::CreateBindableImage(description, imagePath, inputBindingType,
                                                                       inputDataType, winrtDevice, args, iterationNum);
             inputFeatures.push_back(imageFeature);
         }
@@ -363,7 +364,7 @@ HRESULT BindInputs(LearningModelBinding& context, const LearningModel& model, co
                    OutputHelper& output, DeviceType deviceType, const CommandLineArgs& args,
                    InputBindingType inputBindingType, InputDataType inputDataType, const IDirect3DDevice& winrtDevice,
                    DeviceCreationLocation deviceCreationLocation, uint32_t iteration,
-                   Profiler<WINML_MODEL_TEST_PERF>& profiler)
+                   Profiler<WINML_MODEL_TEST_PERF>& profiler, const std::wstring& imagePath)
 {
     if (deviceType == DeviceType::CPU && inputDataType == InputDataType::Tensor &&
         inputBindingType == InputBindingType::GPU)
@@ -381,7 +382,7 @@ HRESULT BindInputs(LearningModelBinding& context, const LearningModel& model, co
     std::vector<ILearningModelFeatureValue> inputFeatures;
     try
     {
-        inputFeatures = GenerateInputFeatures(model, args, inputBindingType, inputDataType, winrtDevice, iteration);
+        inputFeatures = GenerateInputFeatures(model, args, inputBindingType, inputDataType, winrtDevice, iteration, imagePath);
     }
     catch (hresult_error hr)
     {
@@ -636,6 +637,78 @@ void EndPIXCapture(OutputHelper& output)
     }
 }
 
+void RunConfiguration(CommandLineArgs& args, OutputHelper& output, LearningModelSession& session,
+                      HRESULT& lastHr, LearningModel& model, const DeviceType deviceType,
+                      const InputBindingType inputBindingType, const InputDataType inputDataType,
+                      const IDirect3DDevice& winrtDevice, const DeviceCreationLocation deviceCreationLocation,
+                      Profiler<WINML_MODEL_TEST_PERF>& profiler, const std::wstring& modelPath, const std::wstring& imagePath)
+{
+    for (uint32_t i = 0; i < args.NumIterations(); i++)
+    {
+#if defined(_AMD64_)
+        // PIX markers only work on AMD64
+        // If PIX tool was attached then capture already began for the first iteration before
+        // session creation. This is to begin PIX capture for each iteration after the first
+        // iteration.
+        if (i > 0)
+        {
+            StartPIXCapture(output);
+        }
+#endif
+        LearningModelBinding context(session);
+        lastHr = BindInputs(context, model, session, output, deviceType, args, inputBindingType, inputDataType,
+                            winrtDevice, deviceCreationLocation, i, profiler, imagePath);
+        if (FAILED(lastHr))
+        {
+            break;
+        }
+        LearningModelEvaluationResult result = nullptr;
+        bool capture_perf = args.IsPerformanceCapture() || args.IsPerIterationCapture();
+        lastHr = EvaluateModel(result, model, context, session, args, output, capture_perf, i, profiler);
+        if (FAILED(lastHr))
+        {
+            output.PrintEvaluatingInfo(i + 1, deviceType, inputBindingType, inputDataType, deviceCreationLocation,
+                                       "[FAILED]");
+            break;
+        }
+        else if (!args.TerseOutput() || i == 0)
+        {
+            output.PrintEvaluatingInfo(i + 1, deviceType, inputBindingType, inputDataType, deviceCreationLocation,
+                                       "[SUCCESS]");
+            if (args.TerseOutput() && args.NumIterations() > 1)
+            {
+                printf("Binding and Evaluating %d more time%s...", args.NumIterations() - 1,
+                       (args.NumIterations() == 2 ? "" : "s"));
+            }
+        }
+#if defined(_AMD64_)
+        EndPIXCapture(output);
+#endif
+    }
+
+    // print metrics after iterations
+    if (SUCCEEDED(lastHr) && args.IsPerformanceCapture())
+    {
+        output.PrintResults(profiler, args.NumIterations(), deviceType, inputBindingType, inputDataType,
+                            deviceCreationLocation, args.IsPerformanceConsoleOutputVerbose());
+        if (args.IsOutputPerf())
+        {
+            std::string deviceTypeStringified = TypeHelper::Stringify(deviceType);
+            std::string inputDataTypeStringified = TypeHelper::Stringify(inputDataType);
+            std::string inputBindingTypeStringified = TypeHelper::Stringify(inputBindingType);
+            std::string deviceCreationLocationStringified = TypeHelper::Stringify(deviceCreationLocation);
+            output.WritePerformanceDataToCSV(profiler, args.NumIterations(), modelPath, deviceTypeStringified,
+                                             inputDataTypeStringified, inputBindingTypeStringified,
+                                             deviceCreationLocationStringified, args.GetPerformanceFileMetadata());
+        }
+    }
+
+    if (SUCCEEDED(lastHr) && args.IsPerIterationCapture())
+    {
+        output.WritePerIterationPerformance(args, model.Name().c_str());
+    }
+}
+
 void PrintIfPIXToolAttached(OutputHelper& output)
 {
     __try
@@ -728,74 +801,19 @@ int run(CommandLineArgs& args, Profiler<WINML_MODEL_TEST_PERF>& profiler) try
                                 // Resets all values from profiler for bind and evaluate.
                                 profiler.Reset(WINML_MODEL_TEST_PERF::BIND_VALUE, WINML_MODEL_TEST_PERF::COUNT);
                             }
-                            for (uint32_t i = 0; i < args.NumIterations(); i++)
+                            if (args.IsImageInput())
                             {
-#if defined(_AMD64_)
-                                // PIX markers only work on AMD64
-                                // If PIX tool was attached then capture already began for the first iteration before
-                                // session creation. This is to begin PIX capture for each iteration after the first
-                                // iteration.
-                                if (i > 0)
+                                for (const std::wstring& inputImagePath : args.ImagePaths())
                                 {
-                                    StartPIXCapture(output);
-                                }
-#endif
-                                LearningModelBinding context(session);
-                                lastHr = BindInputs(context, model, session, output, deviceType, args, inputBindingType,
-                                                    inputDataType, winrtDevice, deviceCreationLocation, i, profiler);
-                                if (FAILED(lastHr))
-                                {
-                                    break;
-                                }
-                                LearningModelEvaluationResult result = nullptr;
-                                bool capture_perf = args.IsPerformanceCapture() || args.IsPerIterationCapture();
-                                lastHr = EvaluateModel(result, model, context, session, args, output, capture_perf, i,
-                                                       profiler);
-                                if (FAILED(lastHr))
-                                {
-                                    output.PrintEvaluatingInfo(i + 1, deviceType, inputBindingType, inputDataType,
-                                                               deviceCreationLocation, "[FAILED]");
-                                    break;
-                                }
-                                else if (!args.TerseOutput() || i == 0)
-                                {
-                                    output.PrintEvaluatingInfo(i + 1, deviceType, inputBindingType, inputDataType,
-                                                               deviceCreationLocation, "[SUCCESS]");
-                                    if (args.TerseOutput() && args.NumIterations() > 1)
-                                    {
-                                        printf("Binding and Evaluating %d more time%s...", args.NumIterations() - 1,
-                                               (args.NumIterations() == 2 ? "" : "s"));
-                                    }
-                                }
-#if defined(_AMD64_)
-                                EndPIXCapture(output);
-#endif
-                            }
-
-                            // print metrics after iterations
-                            if (SUCCEEDED(lastHr) && args.IsPerformanceCapture())
-                            {
-                                output.PrintResults(profiler, args.NumIterations(), deviceType, inputBindingType,
-                                                    inputDataType, deviceCreationLocation,
-                                                    args.IsPerformanceConsoleOutputVerbose());
-                                if (args.IsOutputPerf())
-                                {
-                                    std::string deviceTypeStringified = TypeHelper::Stringify(deviceType);
-                                    std::string inputDataTypeStringified = TypeHelper::Stringify(inputDataType);
-                                    std::string inputBindingTypeStringified = TypeHelper::Stringify(inputBindingType);
-                                    std::string deviceCreationLocationStringified =
-                                        TypeHelper::Stringify(deviceCreationLocation);
-                                    output.WritePerformanceDataToCSV(profiler, args.NumIterations(), path,
-                                                                     deviceTypeStringified, inputDataTypeStringified,
-                                                                     inputBindingTypeStringified,
-                                                                     deviceCreationLocationStringified,
-                                                                     args.GetPerformanceFileMetadata());
+                                    RunConfiguration(args, output, session, lastHr, model, deviceType, inputBindingType,
+                                                     inputDataType, winrtDevice, deviceCreationLocation, profiler, path,
+                                                     inputImagePath);
                                 }
                             }
-
-                            if (SUCCEEDED(lastHr) && args.IsPerIterationCapture())
+                            else
                             {
-                                output.WritePerIterationPerformance(args, model.Name().c_str());
+                                RunConfiguration(args, output, session, lastHr, model, deviceType, inputBindingType,
+                                             inputDataType, winrtDevice, deviceCreationLocation, profiler, path, nullptr);
                             }
                        }
                     }

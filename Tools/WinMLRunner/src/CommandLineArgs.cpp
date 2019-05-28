@@ -36,6 +36,7 @@ void CommandLineArgs::PrintUsage()
               << std::endl;
     std::cout << "  -Iterations : # times perf measurements will be run/averaged. (maximum: 1024 times)" << std::endl;
     std::cout << "  -Input <fully qualified path> : binds image or CSV to model" << std::endl;
+    std::cout << "  -InputImageFolder <fully qualified path> : folder of images to bind to model" << std::endl;
     std::cout << "  -TopK <number> : print top <number> values in the result. Default to 1" << std::endl;
     std::cout << "  -BaseOutputPath [<fully qualified path>] : base output directory path for results, default to cwd"
               << std::endl;
@@ -139,7 +140,13 @@ CommandLineArgs::CommandLineArgs(const std::vector<std::wstring>& args)
         }
         else if ((_wcsicmp(args[i].c_str(), L"-Input") == 0))
         {
+            CheckNextArgument(args, i);
             m_inputData = args[++i];
+        }
+        else if ((_wcsicmp(args[i].c_str(), L"-InputImageFolder") == 0))
+        {
+            CheckNextArgument(args, i);
+            m_inputImageFolderPath = args[++i];
         }
         else if ((_wcsicmp(args[i].c_str(), L"-PerfOutput") == 0))
         {
@@ -326,7 +333,7 @@ CommandLineArgs::CommandLineArgs(const std::vector<std::wstring>& args)
         if (m_inputData.find(L".png") != std::string::npos || m_inputData.find(L".jpg") != std::string::npos ||
             m_inputData.find(L".jpeg") != std::string::npos)
         {
-            m_imagePath = m_inputData;
+            m_imagePaths.push_back(m_inputData);
         }
         else if (m_inputData.find(L".csv") != std::string::npos)
         {
@@ -339,10 +346,29 @@ CommandLineArgs::CommandLineArgs(const std::vector<std::wstring>& args)
             throw hresult_invalid_argument(msg.c_str());
         }
     }
-
+    if (!m_inputImageFolderPath.empty())
+    {
+        PopulateInputImagePaths();
+    }
     SetupOutputDirectories(sBaseOutputPath, sPerfOutputPath, sPerIterationDataPath);
 
     CheckForInvalidArguments();
+}
+
+void CommandLineArgs::PopulateInputImagePaths()
+{
+    for (auto& it : std::filesystem::directory_iterator(m_inputImageFolderPath))
+    {
+        std::string path = it.path().string();
+        if (it.path().string().find(".png") != std::string::npos ||
+            it.path().string().find(".jpg") != std::string::npos ||
+            it.path().string().find(".jpeg") != std::string::npos)
+        {
+            std::wstring fileName;
+            fileName.assign(path.begin(), path.end());
+            m_imagePaths.push_back(fileName);
+        }
+    }
 }
 
 void CommandLineArgs::SetupOutputDirectories(const std::wstring& sBaseOutputPath,

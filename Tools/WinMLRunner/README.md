@@ -45,7 +45,8 @@ Required command-Line arguments:
 -Tensor : load the input as a tensor
 -Perf [all]: capture performance measurements such as timing and memory usage. Specifying "all" will output all measurements
 -Iterations : # times perf measurements will be run/averaged. (maximum: 1024 times)
--Input <fully qualified path>: binds image or CSV to model
+-Input <path to input file>: binds image or CSV to model
+-InputImageFolder <path to directory of images> : specify folder of images to bind to model" << std::endl;
 -TopK <number>: print top <number> values in the result. Default to 1
 -BaseOutputPath [<fully qualified path>] : base output directory path for results, default to cwd
 -PerfOutput [<path>] : fully qualified or relative path including csv filename for perf results

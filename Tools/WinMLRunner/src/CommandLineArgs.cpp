@@ -36,8 +36,8 @@ void CommandLineArgs::PrintUsage()
                  "will output all measurements"
               << std::endl;
     std::cout << "  -Iterations : # times perf measurements will be run/averaged. (maximum: 1024 times)" << std::endl;
-    std::cout << "  -Input <fully qualified path> : binds image or CSV to model" << std::endl;
-    std::cout << "  -InputImageFolder <fully qualified path> : folder of images to bind to model" << std::endl;
+    std::cout << "  -Input <path to input file>: binds image or CSV to model" << std::endl;
+    std::cout << "  -InputImageFolder <path to directory of images> : specify folder of images to bind to model" << std::endl;
     std::cout << "  -TopK <number> : print top <number> values in the result. Default to 1" << std::endl;
     std::cout << "  -BaseOutputPath [<fully qualified path>] : base output directory path for results, default to cwd"
               << std::endl;

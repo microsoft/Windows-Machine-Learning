@@ -220,9 +220,7 @@ namespace WinMLRunnerTest
         return true;
     }
 
-    TEST_CLASS(GarbageInputTest) { 
-    public: 
-        TEST_CLASS_INITIALIZE(SetupClass) {
+    TEST_CLASS(GarbageInputTest) { public: TEST_CLASS_INITIALIZE(SetupClass) {
             // Make test_folder_input folder before starting the tests
             std::string mkFolderCommand = "mkdir " + std::string(INPUT_FOLDER_PATH.begin(), INPUT_FOLDER_PATH.end());
             system(mkFolderCommand.c_str());

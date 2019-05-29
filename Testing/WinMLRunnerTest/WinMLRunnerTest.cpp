@@ -538,7 +538,7 @@ namespace WinMLRunnerTest
             }
         }
 
-        TEST_CLASS_CLEANUP(CleanupClass)
+        TEST_METHOD_CLEANUP(CleanupMethod)
         {
             std::string copyCommand = "rd /s /q ";
             copyCommand += std::string(INPUT_FOLDER_PATH.begin(), INPUT_FOLDER_PATH.end());

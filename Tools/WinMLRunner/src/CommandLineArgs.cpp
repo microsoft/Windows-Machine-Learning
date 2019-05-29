@@ -5,6 +5,7 @@
 #include <ctime>
 #include <iomanip>
 #include <filesystem>
+#include "Filehelper.h"
 
 using namespace Windows::AI::MachineLearning;
 
@@ -141,12 +142,12 @@ CommandLineArgs::CommandLineArgs(const std::vector<std::wstring>& args)
         else if ((_wcsicmp(args[i].c_str(), L"-Input") == 0))
         {
             CheckNextArgument(args, i);
-            m_inputData = args[++i];
+            m_inputData = FileHelper::GetAbsolutePath(args[++i]);
         }
         else if ((_wcsicmp(args[i].c_str(), L"-InputImageFolder") == 0))
         {
             CheckNextArgument(args, i);
-            m_inputImageFolderPath = args[++i];
+            m_inputImageFolderPath = FileHelper::GetAbsolutePath(args[++i]);
         }
         else if ((_wcsicmp(args[i].c_str(), L"-PerfOutput") == 0))
         {
@@ -445,5 +446,9 @@ void CommandLineArgs::CheckForInvalidArguments()
     if (IsGarbageInput() && IsSaveTensor())
     {
         throw hresult_invalid_argument(L"Cannot save tensor output if no input data is provided!");
+    }
+    if (m_imagePaths.size() > 1 && IsSaveTensor())
+    {
+        throw hresult_not_implemented(L"Saving tensor output for multiple images isn't implemented yet.");
     }
 }

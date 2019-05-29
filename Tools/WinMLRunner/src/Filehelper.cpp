@@ -22,4 +22,15 @@ namespace FileHelper
 
         return val;
     }
+    std::wstring GetAbsolutePath(std::wstring relativePath)
+    {
+        TCHAR** lppPart = { NULL };
+        wchar_t absolutePath[MAX_PATH] = { 0 };
+        errno_t err = GetFullPathName(relativePath.c_str(), MAX_PATH, absolutePath, lppPart);
+        if (err == 0)
+        {
+            throw HRESULT_FROM_WIN32(GetLastError());
+        }
+        return absolutePath;
+    }
 } // namespace FileHelper

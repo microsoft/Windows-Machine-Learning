@@ -650,7 +650,7 @@ namespace WinMLRunnerTest
 
             std::vector<std::string> images = { "fish.png", "kitten_224.png" };
 
-            // Copy models from list to test_folder_input
+            // Copy images from list to test_folder_input
             for (auto image : images)
             {
                 std::string copyCommand = "Copy ";

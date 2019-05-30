@@ -221,21 +221,21 @@ namespace WinMLRunnerTest
     }
 
     TEST_CLASS(GarbageInputTest) { public: TEST_CLASS_INITIALIZE(SetupClass) {
-            // Make test_folder_input folder before starting the tests
-            std::string mkFolderCommand = "mkdir " + std::string(INPUT_FOLDER_PATH.begin(), INPUT_FOLDER_PATH.end());
-            system(mkFolderCommand.c_str());
+    // Make test_folder_input folder before starting the tests
+    std::string mkFolderCommand = "mkdir " + std::string(INPUT_FOLDER_PATH.begin(), INPUT_FOLDER_PATH.end());
+    system(mkFolderCommand.c_str());
 
-            std::vector<std::string> models = { "SqueezeNet.onnx", "keras_Add_ImageNet_small.onnx" };
+    std::vector<std::string> models = { "SqueezeNet.onnx", "keras_Add_ImageNet_small.onnx" };
 
-            // Copy models from list to test_folder_input
-            for (auto model : models)
-            {
-                std::string copyCommand = "Copy ";
-                copyCommand += model;
-                copyCommand += ' ' + std::string(INPUT_FOLDER_PATH.begin(), INPUT_FOLDER_PATH.end());
-                system(copyCommand.c_str());
-            }
-        } // namespace WinMLRunnerTest
+    // Copy models from list to test_folder_input
+    for (auto model : models)
+    {
+        std::string copyCommand = "Copy ";
+        copyCommand += model;
+        copyCommand += ' ' + std::string(INPUT_FOLDER_PATH.begin(), INPUT_FOLDER_PATH.end());
+        system(copyCommand.c_str());
+    }
+} // namespace WinMLRunnerTest
 
         TEST_CLASS_CLEANUP(CleanupClass)
         {
@@ -520,30 +520,8 @@ namespace WinMLRunnerTest
     TEST_CLASS(ImageInputTest)
     {
     public:
-        TEST_CLASS_INITIALIZE(SetupClass)
-        {
-            // Make test_folder_input folder before starting the tests
-            std::string mkFolderCommand = "mkdir " + std::string(INPUT_FOLDER_PATH.begin(), INPUT_FOLDER_PATH.end());
-            system(mkFolderCommand.c_str());
-
-            std::vector<std::string> models = { "fish.png", "kitten_224.png"};
-
-            // Copy models from list to test_folder_input
-            for (auto model : models)
-            {
-                std::string copyCommand = "Copy ";
-                copyCommand += model;
-                copyCommand += ' ' + std::string(INPUT_FOLDER_PATH.begin(), INPUT_FOLDER_PATH.end());
-                system(copyCommand.c_str());
-            }
-        }
-
         TEST_METHOD_CLEANUP(CleanupMethod)
         {
-            std::string copyCommand = "rd /s /q ";
-            copyCommand += std::string(INPUT_FOLDER_PATH.begin(), INPUT_FOLDER_PATH.end());
-            system(copyCommand.c_str());
-
             // Remove output.csv after each test
             // TODO: this will not work if each test runs in parallel. Use different file path for each test, and clean up at class setup
             std::remove(std::string(OUTPUT_PATH.begin(), OUTPUT_PATH.end()).c_str());
@@ -662,12 +640,6 @@ namespace WinMLRunnerTest
 
             // We need to expect one more line because of the header
             Assert::AreEqual(static_cast<size_t>(2), GetOutputCSVLineCount(tensorDataPath + L"\\PerIterationData\\Summary.csv"));
-        }
-
-        TEST_METHOD(ProvidedImageInputFolder)
-        {
-            const std::wstring command = BuildCommand({ EXE_PATH, L"-model", L"SqueezeNet.onnx", L"-InputImageFolder", INPUT_FOLDER_PATH});
-            Assert::AreEqual(S_OK, RunProc((wchar_t*)command.c_str()));
         }
     };
 
@@ -801,12 +773,6 @@ namespace WinMLRunnerTest
             }
         }
 
-        TEST_CLASS_CLEANUP(CleanupClass)
-        {
-            std::string copyCommand = "rd /s /q ";
-            copyCommand += std::string(INPUT_FOLDER_PATH.begin(), INPUT_FOLDER_PATH.end());
-            system(copyCommand.c_str());
-        }
         TEST_METHOD(RunFolder)
         {
             const std::wstring command = BuildCommand({

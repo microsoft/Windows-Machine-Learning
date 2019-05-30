@@ -634,11 +634,31 @@ void EndPIXCapture(OutputHelper& output)
     }
 }
 
-void RunConfiguration(CommandLineArgs& args, OutputHelper& output, LearningModelSession& session,
-                      HRESULT& lastHr, LearningModel& model, const DeviceType deviceType,
-                      const InputBindingType inputBindingType, const InputDataType inputDataType,
-                      const IDirect3DDevice& winrtDevice, const DeviceCreationLocation deviceCreationLocation,
-                      Profiler<WINML_MODEL_TEST_PERF>& profiler, const std::wstring& modelPath, const std::wstring& imagePath)
+void PrintIfPIXToolAttached(OutputHelper& output)
+{
+    __try
+    {
+        // PIX markers only work on AMD64
+        // Check if PIX tool is attached to WinMLRunner
+        // Try to acquire IDXGraphicsAnalysis - this only succeeds if PIX is attached
+        if (SUCCEEDED(DXGIGetDebugInterface1(0, IID_PPV_ARGS(output.GetGraphicsAnalysis().put()))))
+        {
+            std::cout << "Detected PIX tool is attached to WinMLRunner" << std::endl;
+        }
+    }
+    __except (GetExceptionCode() == VcppException(ERROR_SEVERITY_ERROR, ERROR_MOD_NOT_FOUND)
+                  ? EXCEPTION_EXECUTE_HANDLER : EXCEPTION_CONTINUE_SEARCH)
+    {
+        std::cout << "DXGI module not found." << std::endl;
+    }
+}
+#endif
+
+void RunConfiguration(CommandLineArgs& args, OutputHelper& output, LearningModelSession& session, HRESULT& lastHr,
+                      LearningModel& model, const DeviceType deviceType, const InputBindingType inputBindingType,
+                      const InputDataType inputDataType, const IDirect3DDevice& winrtDevice,
+                      const DeviceCreationLocation deviceCreationLocation, Profiler<WINML_MODEL_TEST_PERF>& profiler,
+                      const std::wstring& modelPath, const std::wstring& imagePath)
 {
     for (uint32_t i = 0; i < args.NumIterations(); i++)
     {
@@ -702,8 +722,8 @@ void RunConfiguration(CommandLineArgs& args, OutputHelper& output, LearningModel
             std::string inputBindingTypeStringified = TypeHelper::Stringify(inputBindingType);
             std::string deviceCreationLocationStringified = TypeHelper::Stringify(deviceCreationLocation);
             output.WritePerformanceDataToCSV(profiler, args.NumIterations(), modelPath, deviceTypeStringified,
-                                             inputDataTypeStringified, inputBindingTypeStringified,
-                                             deviceCreationLocationStringified, args.GetPerformanceFileMetadata());
+                                                inputDataTypeStringified, inputBindingTypeStringified,
+                                                deviceCreationLocationStringified, args.GetPerformanceFileMetadata());
         }
     }
 
@@ -712,26 +732,6 @@ void RunConfiguration(CommandLineArgs& args, OutputHelper& output, LearningModel
         output.WritePerIterationPerformance(args, model.Name().c_str(), imagePath);
     }
 }
-
-void PrintIfPIXToolAttached(OutputHelper& output)
-{
-    __try
-    {
-        // PIX markers only work on AMD64
-        // Check if PIX tool is attached to WinMLRunner
-        // Try to acquire IDXGraphicsAnalysis - this only succeeds if PIX is attached
-        if (SUCCEEDED(DXGIGetDebugInterface1(0, IID_PPV_ARGS(output.GetGraphicsAnalysis().put()))))
-        {
-            std::cout << "Detected PIX tool is attached to WinMLRunner" << std::endl;
-        }
-    }
-    __except (GetExceptionCode() == VcppException(ERROR_SEVERITY_ERROR, ERROR_MOD_NOT_FOUND)
-                  ? EXCEPTION_EXECUTE_HANDLER : EXCEPTION_CONTINUE_SEARCH)
-    {
-        std::cout << "DXGI module not found." << std::endl;
-    }
-}
-#endif
 int run(CommandLineArgs& args, Profiler<WINML_MODEL_TEST_PERF>& profiler) try
 {
     // Initialize COM in a multi-threaded environment.

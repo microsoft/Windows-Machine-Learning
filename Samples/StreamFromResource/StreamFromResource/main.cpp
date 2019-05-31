@@ -43,8 +43,6 @@ int main()
         // clean up.
         FreeResource(modelMem);
 
-        modelStream.Seek(0);
-
         // wrap the stream in a stream reference
         auto modelStreamReference = RandomAccessStreamReference::CreateFromStream(modelStream);
 

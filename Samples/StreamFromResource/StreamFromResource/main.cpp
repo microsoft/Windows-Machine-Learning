@@ -72,18 +72,3 @@ int main()
     printf("success!");
     return 0;
 }
-
-
-
-//if (const HRSRC hResource = ::FindResource(hModule, MAKEINTRESOURCE(iRessourceID), L"DNN"))
-//{
-//    if (HGLOBAL hMem = ::LoadResource(hModule, hResource))
-//    {
-//        void* pData = ::LockResource(hMem);
-//        const size_t iSize = ::SizeofResource(hModule, hResource);
-//
-//        ret = CNTK::Function::Load((const char*)pData, iSize);
-//
-//        ::FreeResource(hMem);
-//    }
-//}

@@ -199,6 +199,19 @@ steps:
       createLogFile: true
     condition: succeededOrFailed()
 
+  - task: VSBuild@1
+    displayName: 'Build StreamFromResource Sample'
+    inputs:
+      solution: Samples/StreamFromResource/StreamFromResource.sln
+      vsVersion: 15.0
+      msbuildArgs: '-v:diag /p:OutDir=$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\StreamFromResource\'
+      platform: '$(BuildPlatform)'
+      configuration: '$(BuildConfiguration)'
+      clean: true
+      msbuildArchitecture: x64
+      createLogFile: true
+    condition: succeededOrFailed()
+
   - task: CopyFiles@2
     inputs:
       targetFolder: '$(Build.ArtifactStagingDirectory)\$(BuildPlatform)\$(BuildConfiguration)\'

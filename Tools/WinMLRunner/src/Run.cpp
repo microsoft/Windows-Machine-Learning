@@ -15,7 +15,7 @@ std::vector<ILearningModelFeatureValue> GenerateInputFeatures(const LearningMode
                                                               const std::wstring& imagePath)
 {
     std::vector<ILearningModelFeatureValue> inputFeatures;
-    if (!imagePath.empty())
+    if (!imagePath.empty() && (!args.TerseOutput() || args.TerseOutput() && iterationNum == 0))
     {
         std::wcout << L"Generating input feature(s) with image: " << imagePath << std::endl;
     }

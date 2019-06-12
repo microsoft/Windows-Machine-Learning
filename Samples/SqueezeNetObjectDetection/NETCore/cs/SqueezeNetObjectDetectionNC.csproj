@@ -6,9 +6,18 @@
     <ApplicationIcon />
     <Win32Resource />
     <LangVersion>7.3</LangVersion>
+    <Platforms>AnyCPU;x86;x64</Platforms>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <WarningLevel>1</WarningLevel>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <WarningLevel>1</WarningLevel>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x86'">
     <WarningLevel>1</WarningLevel>
   </PropertyGroup>
 

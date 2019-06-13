@@ -21,7 +21,7 @@ public:
     bool IsAutoScale() const { return m_autoScale; }
     bool IsOutputPerf() const { return m_perfOutput; }
     bool IsSaveTensor() const { return m_saveTensor; }
-
+    bool IsTimeLimitIterations() const { return m_timeLimitIterations; }
     BitmapInterpolationMode AutoScaleInterpMode() const { return m_autoScaleInterpMode; }
 
     const std::wstring& ImagePath() const { return m_imagePath; }
@@ -76,6 +76,7 @@ public:
     bool IsImageInput() const { return !m_imagePath.empty() && m_csvData.empty(); }
 
     uint32_t NumIterations() const { return m_numIterations; }
+    double IterationTimeLimit() const { return m_iterationTimeLimitMilliseconds; }
     uint32_t NumThreads() const { return m_numThreads; }
     uint32_t ThreadInterval() const { return m_threadInterval; } // Thread interval in milliseconds
     uint32_t TopK() const { return m_topK; }
@@ -114,6 +115,12 @@ public:
     {
         m_perfFileMetadata.push_back(std::make_pair(key, value));
     }
+    // Stop iterating when total time of iterations after the first iteration exceeds time limit.
+    void SetIterationTimeLimit(const double milliseconds)
+    {
+        m_timeLimitIterations = true;
+        m_iterationTimeLimitMilliseconds = milliseconds;
+    }
     std::wstring SaveTensorMode() const { return m_saveTensorMode; }
 
 private:
@@ -139,6 +146,7 @@ private:
     bool m_perfOutput = false;
     BitmapInterpolationMode m_autoScaleInterpMode = BitmapInterpolationMode::Cubic;
     bool m_saveTensor = false;
+    bool m_timeLimitIterations = false;
     std::wstring m_saveTensorMode = L"First";
 
     std::wstring m_modelFolderPath;
@@ -152,6 +160,7 @@ private:
     std::wstring m_perfOutputPath;
     std::wstring m_perIterationDataPath;
     uint32_t m_numIterations = 1;
+    double m_iterationTimeLimitMilliseconds = 0;
     uint32_t m_numThreads = 1;
     uint32_t m_threadInterval = 0;
     uint32_t m_topK = 1;

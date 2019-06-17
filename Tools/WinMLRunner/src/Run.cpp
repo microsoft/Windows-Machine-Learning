@@ -448,7 +448,7 @@ HRESULT CheckIfModelAndConfigurationsAreSupported(LearningModel& model, const st
         if (inputFeature.Kind() != LearningModelFeatureKind::Tensor &&
             inputFeature.Kind() != LearningModelFeatureKind::Image)
         {
-            std::wcout << L"Model: " + modelPath + L" has an input type that isn't supported by WinMLRunner yet."
+            std::wcout << L"Model: " + modelPath + L" has an input type that isn't supported by WinMLRunner."
                        << std::endl;
             return E_NOTIMPL;
         }

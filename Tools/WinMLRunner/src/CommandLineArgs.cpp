@@ -449,6 +449,6 @@ void CommandLineArgs::CheckForInvalidArguments()
     }
     if (m_imagePaths.size() > 1 && IsSaveTensor())
     {
-        throw hresult_not_implemented(L"Saving tensor output for multiple images isn't implemented yet.");
+        throw hresult_not_implemented(L"Saving tensor output for multiple images isn't implemented.");
     }
 }

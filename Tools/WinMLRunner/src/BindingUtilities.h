@@ -477,8 +477,8 @@ namespace BindingUtilities
         }
         else if (args.IsImageInput())
         {
-            // Creating Tensors for Input Images haven't been added yet.
-            throw hresult_not_implemented(L"Creating Tensors for Input Images haven't been implemented yet!");
+            // Creating Tensors for Input Images haven't been added.
+            throw hresult_not_implemented(L"Creating Tensors for Input Images haven't been implemented!");
         }
 
         if (inputBindingType == InputBindingType::CPU)
@@ -605,7 +605,7 @@ namespace BindingUtilities
             }
             else
             {
-                throw hresult_not_implemented(L"BitmapPixel format not yet handled by WinMLRunner.");
+                throw hresult_not_implemented(L"BitmapPixel format not handled by WinMLRunner.");
             }
             std::vector<int64_t> shape = { 1, channels, imageFeatureDescriptor.Height(),
                                            imageFeatureDescriptor.Width() };

@@ -202,11 +202,13 @@ public:
         double createSessionTime = profiler[CREATE_SESSION].GetAverage(CounterType::TIMER);
 
         double averageBindTime = profiler[BIND_VALUE].GetAverage(CounterType::TIMER);
+        double stdevBindTime = profiler[BIND_VALUE].GetStdev(CounterType::TIMER);
         double minBindTime = profiler[BIND_VALUE].GetMin(CounterType::TIMER);
         double maxBindTime = profiler[BIND_VALUE].GetMax(CounterType::TIMER);
         double firstBindTime = profiler[BIND_VALUE_FIRST_RUN].GetAverage(CounterType::TIMER);
 
         double averageEvalTime = profiler[EVAL_MODEL].GetAverage(CounterType::TIMER);
+        double stdevEvalTime = profiler[EVAL_MODEL].GetStdev(CounterType::TIMER);
         double minEvalTime = profiler[EVAL_MODEL].GetMin(CounterType::TIMER);
         double maxEvalTime = profiler[EVAL_MODEL].GetMax(CounterType::TIMER);
         double firstEvalTime = profiler[EVAL_MODEL_FIRST_RUN].GetAverage(CounterType::TIMER);
@@ -226,6 +228,7 @@ public:
             profiler[CREATE_SESSION].GetAverage(CounterType::PEAK_WORKING_SET_USAGE);
 
         double averageBindMemoryUsage = profiler[BIND_VALUE].GetAverage(CounterType::WORKING_SET_USAGE);
+        double stdevBindMemoryUsage = profiler[BIND_VALUE].GetStdev(CounterType::WORKING_SET_USAGE);
         double minBindMemoryUsage = profiler[BIND_VALUE].GetMin(CounterType::WORKING_SET_USAGE);
         double maxBindMemoryUsage = profiler[BIND_VALUE].GetMax(CounterType::WORKING_SET_USAGE);
         double firstBindMemoryUsage = profiler[BIND_VALUE_FIRST_RUN].GetAverage(CounterType::WORKING_SET_USAGE);
@@ -233,6 +236,7 @@ public:
             profiler[BIND_VALUE_FIRST_RUN].GetAverage(CounterType::PEAK_WORKING_SET_USAGE);
 
         double averageEvalMemoryUsage = profiler[EVAL_MODEL].GetAverage(CounterType::WORKING_SET_USAGE);
+        double stdevEvalMemoryUsage = profiler[EVAL_MODEL].GetStdev(CounterType::WORKING_SET_USAGE);
         double minEvalMemoryUsage = profiler[EVAL_MODEL].GetMin(CounterType::WORKING_SET_USAGE);
         double maxEvalMemoryUsage = profiler[EVAL_MODEL].GetMax(CounterType::WORKING_SET_USAGE);
         double firstEvalMemoryUsage = profiler[EVAL_MODEL_FIRST_RUN].GetAverage(CounterType::WORKING_SET_USAGE);
@@ -240,24 +244,28 @@ public:
             profiler[EVAL_MODEL_FIRST_RUN].GetAverage(CounterType::PEAK_WORKING_SET_USAGE);
 
         double averageBindDedicatedMemoryUsage = profiler[BIND_VALUE].GetAverage(CounterType::GPU_DEDICATED_MEM_USAGE);
+        double stdevBindDedicatedMemoryUsage = profiler[BIND_VALUE].GetStdev(CounterType::GPU_DEDICATED_MEM_USAGE);
         double minBindDedicatedMemoryUsage = profiler[BIND_VALUE].GetMin(CounterType::GPU_DEDICATED_MEM_USAGE);
         double maxBindDedicatedMemoryUsage = profiler[BIND_VALUE].GetMax(CounterType::GPU_DEDICATED_MEM_USAGE);
         double firstBindDedicatedMemoryUsage =
             profiler[BIND_VALUE_FIRST_RUN].GetAverage(CounterType::GPU_DEDICATED_MEM_USAGE);
 
         double averageEvalDedicatedMemoryUsage = profiler[EVAL_MODEL].GetAverage(CounterType::GPU_DEDICATED_MEM_USAGE);
+        double stdevEvalDedicatedMemoryUsage = profiler[EVAL_MODEL].GetStdev(CounterType::GPU_DEDICATED_MEM_USAGE);
         double minEvalDedicatedMemoryUsage = profiler[EVAL_MODEL].GetMin(CounterType::GPU_DEDICATED_MEM_USAGE);
         double maxEvalDedicatedMemoryUsage = profiler[EVAL_MODEL].GetMax(CounterType::GPU_DEDICATED_MEM_USAGE);
         double firstEvalDedicatedMemoryUsage =
             profiler[EVAL_MODEL_FIRST_RUN].GetAverage(CounterType::GPU_DEDICATED_MEM_USAGE);
 
         double averageBindSharedMemoryUsage = profiler[BIND_VALUE].GetAverage(CounterType::GPU_SHARED_MEM_USAGE);
+        double stdevBindSharedMemoryUsage = profiler[BIND_VALUE].GetStdev(CounterType::GPU_SHARED_MEM_USAGE);
         double minBindSharedMemoryUsage = profiler[BIND_VALUE].GetMin(CounterType::GPU_SHARED_MEM_USAGE);
         double maxBindSharedMemoryUsage = profiler[BIND_VALUE].GetMax(CounterType::GPU_SHARED_MEM_USAGE);
         double firstBindSharedMemoryUsage =
             profiler[BIND_VALUE_FIRST_RUN].GetAverage(CounterType::GPU_SHARED_MEM_USAGE);
 
         double averageEvalSharedMemoryUsage = profiler[EVAL_MODEL].GetAverage(CounterType::GPU_SHARED_MEM_USAGE);
+        double stdevEvalSharedMemoryUsage = profiler[EVAL_MODEL].GetStdev(CounterType::GPU_SHARED_MEM_USAGE);
         double minEvalSharedMemoryUsage = profiler[EVAL_MODEL].GetMin(CounterType::GPU_SHARED_MEM_USAGE);
         double maxEvalSharedMemoryUsage = profiler[EVAL_MODEL].GetMax(CounterType::GPU_SHARED_MEM_USAGE);
         double firstEvalSharedMemoryUsage =
@@ -368,12 +376,14 @@ public:
             {
                 std::cout << "  Minimum Bind: " << minBindTime << " ms" << std::endl;
                 std::cout << "  Maximum Bind: " << maxBindTime << " ms" << std::endl;
+                std::cout << "  Standard Deviation Bind: " << stdevBindTime << " ms" << std::endl;
             }
             std::cout << "  Average Evaluate: " << averageEvalTime << " ms" << std::endl;
             if (isPerformanceConsoleOutputVerbose)
             {
                 std::cout << "  Minimum Evaluate: " << minEvalTime << " ms" << std::endl;
                 std::cout << "  Maximum Evaluate: " << maxEvalTime << " ms" << std::endl;
+                std::cout << "  Standard Deviation Evaluate: " << stdevEvalTime << " ms" << std::endl;
             }
 
             std::cout << "\n  Average Working Set Memory usage (bind): " << averageBindMemoryUsage << " MB"
@@ -382,6 +392,8 @@ public:
             {
                 std::cout << "  Min Working Set Memory usage (bind): " << minBindMemoryUsage << " MB" << std::endl;
                 std::cout << "  Max Working Set Memory usage (bind): " << maxBindMemoryUsage << " MB" << std::endl;
+                std::cout << "  Standard Deviation Working Set Memory usage (bind): " << stdevBindMemoryUsage << " MB"
+                          << std::endl;
             }
             std::cout << "  Average Working Set Memory usage (evaluate): " << averageEvalMemoryUsage << " MB"
                       << std::endl;
@@ -389,6 +401,8 @@ public:
             {
                 std::cout << "  Min Working Set Memory usage (evaluate): " << minEvalMemoryUsage << " MB" << std::endl;
                 std::cout << "  Max Working Set Memory usage (evaluate): " << maxEvalMemoryUsage << " MB" << std::endl;
+                std::cout << "  Standard Deviation Working Set Memory usage (evaluate): " << stdevEvalMemoryUsage
+                          << " MB" << std::endl;
             }
 
             std::cout << "\n  Average Dedicated Memory usage (bind): " << averageBindDedicatedMemoryUsage << " MB"
@@ -399,6 +413,8 @@ public:
                           << std::endl;
                 std::cout << "  Max Dedicated Memory usage (bind): " << maxBindDedicatedMemoryUsage << " MB"
                           << std::endl;
+                std::cout << "  Standard Deviation Working Set Memory usage (evaluate): "
+                          << stdevBindDedicatedMemoryUsage << " MB" << std::endl;
             }
             std::cout << "  Average Dedicated Memory usage (evaluate): " << averageEvalDedicatedMemoryUsage << " MB"
                       << std::endl;
@@ -408,6 +424,8 @@ public:
                           << std::endl;
                 std::cout << "  Max Dedicated Memory usage (evaluate): " << maxEvalDedicatedMemoryUsage << " MB"
                           << std::endl;
+                std::cout << "  Standard Deviation Dedicated Memory usage (evaluate): " << stdevEvalDedicatedMemoryUsage
+                          << " MB" << std::endl;
             }
 
             std::cout << "\n  Average Shared Memory usage (bind): " << averageBindSharedMemoryUsage << " MB"
@@ -416,6 +434,8 @@ public:
             {
                 std::cout << "  Min Shared Memory usage (bind): " << minBindSharedMemoryUsage << " MB" << std::endl;
                 std::cout << "  Max Shared Memory usage (bind): " << maxBindSharedMemoryUsage << " MB" << std::endl;
+                std::cout << "  Standard Deviation Shared Memory usage (bind): " << stdevBindSharedMemoryUsage << " MB"
+                          << std::endl;
             }
             std::cout << "  Average Shared Memory usage (evaluate): " << averageEvalSharedMemoryUsage << " MB"
                       << std::endl;
@@ -423,6 +443,8 @@ public:
             {
                 std::cout << "  Min Shared Memory usage (evaluate): " << minEvalSharedMemoryUsage << " MB" << std::endl;
                 std::cout << "  Max Shared Memory usage (evaluate): " << maxEvalSharedMemoryUsage << " MB" << std::endl;
+                std::cout << "  Standard Deviation Shared Memory usage (evaluate): " << stdevEvalSharedMemoryUsage
+                          << " MB" << std::endl;
             }
         }
         std::cout << std::endl << std::endl << std::endl;
@@ -518,16 +540,18 @@ public:
     }
     void SaveBindTimes(Profiler<WINML_MODEL_TEST_PERF>& profiler, uint32_t iterNum)
     {
-        m_clockBindTimes[iterNum] = profiler[BIND_VALUE].GetClockTime();
+        m_clockBindTimes[iterNum] =
+            (iterNum == 0) ? profiler[BIND_VALUE_FIRST_RUN].GetClockTime() : profiler[BIND_VALUE].GetClockTime();
     }
     void SaveEvalPerformance(Profiler<WINML_MODEL_TEST_PERF>& profiler, uint32_t iterNum)
     {
-        m_clockEvalTimes[iterNum] = profiler[EVAL_MODEL].GetClockTime();
-        m_CPUWorkingDiff[iterNum] = profiler[EVAL_MODEL].GetCpuWorkingDiff();
-        m_CPUWorkingStart[iterNum] = profiler[EVAL_MODEL].GetCpuWorkingStart();
-        m_GPUSharedDiff[iterNum] = profiler[EVAL_MODEL].GetGpuSharedDiff();
-        m_GPUSharedStart[iterNum] = profiler[EVAL_MODEL].GetGpuSharedStart();
-        m_GPUDedicatedDiff[iterNum] = profiler[EVAL_MODEL].GetGpuDedicatedDiff();
+        iterationNum = (iterNum == 0) ? EVAL_MODEL_FIRST_RUN : EVAL_MODEL;
+        m_clockEvalTimes[iterationNum] = profiler[EVAL_MODEL_FIRST_RUN].GetClockTime();
+        m_CPUWorkingDiff[iterationNum] = profiler[EVAL_MODEL_FIRST_RUN].GetCpuWorkingDiff();
+        m_CPUWorkingStart[iterationNum] = profiler[EVAL_MODEL_FIRST_RUN].GetCpuWorkingStart();
+        m_GPUSharedDiff[iterationNum] = profiler[EVAL_MODEL_FIRST_RUN].GetGpuSharedDiff();
+        m_GPUSharedStart[iterationNum] = profiler[EVAL_MODEL_FIRST_RUN].GetGpuSharedStart();
+        m_GPUDedicatedDiff[iterationNum] = profiler[EVAL_MODEL_FIRST_RUN].GetGpuDedicatedDiff();
     }
 
     void SaveResult(uint32_t iterationNum, std::string result, int hashcode)
@@ -749,11 +773,13 @@ public:
         double createSessionTime = profiler[CREATE_SESSION].GetAverage(CounterType::TIMER);
 
         double averageBindTime = profiler[BIND_VALUE].GetAverage(CounterType::TIMER);
+        double stdevBindTime = profiler[BIND_VALUE].GetStdev(CounterType::TIMER);
         double minBindTime = profiler[BIND_VALUE].GetMin(CounterType::TIMER);
         double maxBindTime = profiler[BIND_VALUE].GetMax(CounterType::TIMER);
         double firstBindTime = profiler[BIND_VALUE_FIRST_RUN].GetAverage(CounterType::TIMER);
 
         double averageEvalTime = profiler[EVAL_MODEL].GetAverage(CounterType::TIMER);
+        double stdevEvalTime = profiler[EVAL_MODEL].GetStdev(CounterType::TIMER);
         double minEvalTime = profiler[EVAL_MODEL].GetMin(CounterType::TIMER);
         double maxEvalTime = profiler[EVAL_MODEL].GetMax(CounterType::TIMER);
         double firstEvalTime = profiler[EVAL_MODEL_FIRST_RUN].GetAverage(CounterType::TIMER);
@@ -770,34 +796,40 @@ public:
             profiler[CREATE_SESSION].GetAverage(CounterType::GPU_DEDICATED_MEM_USAGE);
 
         double averageBindMemoryUsage = profiler[BIND_VALUE].GetAverage(CounterType::WORKING_SET_USAGE);
+        double stdevBindMemoryUsage = profiler[BIND_VALUE].GetStdev(CounterType::WORKING_SET_USAGE);
         double minBindMemoryUsage = profiler[BIND_VALUE].GetMin(CounterType::WORKING_SET_USAGE);
         double maxBindMemoryUsage = profiler[BIND_VALUE].GetMax(CounterType::WORKING_SET_USAGE);
         double firstBindMemoryUsage = profiler[BIND_VALUE_FIRST_RUN].GetAverage(CounterType::WORKING_SET_USAGE);
 
         double averageEvalMemoryUsage = profiler[EVAL_MODEL].GetAverage(CounterType::WORKING_SET_USAGE);
+        double stdevEvalMemoryUsage = profiler[EVAL_MODEL].GetStdev(CounterType::WORKING_SET_USAGE);
         double minEvalMemoryUsage = profiler[EVAL_MODEL].GetMin(CounterType::WORKING_SET_USAGE);
         double maxEvalMemoryUsage = profiler[EVAL_MODEL].GetMax(CounterType::WORKING_SET_USAGE);
         double firstEvalMemoryUsage = profiler[EVAL_MODEL_FIRST_RUN].GetAverage(CounterType::WORKING_SET_USAGE);
 
         double averageBindDedicatedMemoryUsage = profiler[BIND_VALUE].GetAverage(CounterType::GPU_DEDICATED_MEM_USAGE);
+        double stdevBindDedicatedMemoryUsage = profiler[BIND_VALUE].GetStdev(CounterType::GPU_DEDICATED_MEM_USAGE);
         double minBindDedicatedMemoryUsage = profiler[BIND_VALUE].GetMin(CounterType::GPU_DEDICATED_MEM_USAGE);
         double maxBindDedicatedMemoryUsage = profiler[BIND_VALUE].GetMax(CounterType::GPU_DEDICATED_MEM_USAGE);
         double firstBindDedicatedMemoryUsage =
             profiler[BIND_VALUE_FIRST_RUN].GetAverage(CounterType::GPU_DEDICATED_MEM_USAGE);
 
         double averageEvalDedicatedMemoryUsage = profiler[EVAL_MODEL].GetAverage(CounterType::GPU_DEDICATED_MEM_USAGE);
+        double stdevEvalDedicatedMemoryUsage = profiler[EVAL_MODEL].GetStdev(CounterType::GPU_DEDICATED_MEM_USAGE);
         double minEvalDedicatedMemoryUsage = profiler[EVAL_MODEL].GetMin(CounterType::GPU_DEDICATED_MEM_USAGE);
         double maxEvalDedicatedMemoryUsage = profiler[EVAL_MODEL].GetMax(CounterType::GPU_DEDICATED_MEM_USAGE);
         double firstEvalDedicatedMemoryUsage =
             profiler[EVAL_MODEL_FIRST_RUN].GetAverage(CounterType::GPU_DEDICATED_MEM_USAGE);
 
         double averageBindSharedMemoryUsage = profiler[BIND_VALUE].GetAverage(CounterType::GPU_SHARED_MEM_USAGE);
+        double stdevBindSharedMemoryUsage = profiler[BIND_VALUE].GetStdev(CounterType::GPU_SHARED_MEM_USAGE);
         double minBindSharedMemoryUsage = profiler[BIND_VALUE].GetMin(CounterType::GPU_SHARED_MEM_USAGE);
         double maxBindSharedMemoryUsage = profiler[BIND_VALUE].GetMax(CounterType::GPU_SHARED_MEM_USAGE);
         double firstBindSharedMemoryUsage =
             profiler[BIND_VALUE_FIRST_RUN].GetAverage(CounterType::GPU_SHARED_MEM_USAGE);
 
         double averageEvalSharedMemoryUsage = profiler[EVAL_MODEL].GetAverage(CounterType::GPU_SHARED_MEM_USAGE);
+        double stdevEvalSharedMemoryUsage = profiler[EVAL_MODEL].GetStdev(CounterType::GPU_SHARED_MEM_USAGE);
         double minEvalSharedMemoryUsage = profiler[EVAL_MODEL].GetMin(CounterType::GPU_SHARED_MEM_USAGE);
         double maxEvalSharedMemoryUsage = profiler[EVAL_MODEL].GetMax(CounterType::GPU_SHARED_MEM_USAGE);
         double firstEvalSharedMemoryUsage =
@@ -844,6 +876,8 @@ public:
                      << ","
                      << "average bind (ms)"
                      << ","
+                     << "standard deviation bind (ms)"
+                     << ","
                      << "min bind (ms)"
                      << ","
                      << "max bind (ms)"
@@ -851,6 +885,8 @@ public:
                      << "first evaluate (ms)"
                      << ","
                      << "average evaluate (ms)"
+                     << ","
+                     << "standard deviation evaluate (ms)"
                      << ","
                      << "min evaluate (ms)"
                      << ","
@@ -864,6 +900,8 @@ public:
                      << ","
                      << "bind average working set memory (MB)"
                      << ","
+                     << "bind standard deviation working set memory (MB)"
+                     << ","
                      << "bind max working set memory (MB)"
                      << ","
                      << "bind min working set memory (MB)"
@@ -871,6 +909,8 @@ public:
                      << "first evaluate working set memory (MB)"
                      << ","
                      << "evaluate average working set memory (MB)"
+                     << ","
+                     << "evaluate standard deviation working set memory (MB)"
                      << ","
                      << "evaluate max working set memory (MB)"
                      << ","
@@ -884,6 +924,8 @@ public:
                      << ","
                      << "bind average dedicated memory (MB)"
                      << ","
+                     << "bind standard deviation dedicated memory (MB)"
+                     << ","
                      << "bind max dedicated memory (MB)"
                      << ","
                      << "bind min dedicated memory (MB)"
@@ -891,6 +933,8 @@ public:
                      << "first evaluate dedicated memory (MB)"
                      << ","
                      << "evaluate average dedicated memory (MB)"
+                     << ","
+                     << "evaluate standard deviation dedicated memory (MB)"
                      << ","
                      << "evaluate max dedicated memory (MB)"
                      << ","
@@ -904,6 +948,8 @@ public:
                      << ","
                      << "bind average shared memory (MB)"
                      << ","
+                     << "bind standard deviation shared memory (MB)"
+                     << ","
                      << "bind max shared memory (MB)"
                      << ","
                      << "bind min shared memory (MB)"
@@ -911,6 +957,8 @@ public:
                      << "first evaluate shared memory (MB)"
                      << ","
                      << "evaluate average shared memory (MB)"
+                     << ","
+                     << "evaluate standard deviation shared memory (MB)"
                      << ","
                      << "evaluate max shared memory (MB)"
                      << ","
@@ -925,28 +973,36 @@ public:
             fout << modelName << "," << deviceType << "," << inputBinding << "," << inputType << ","
                  << deviceCreationLocation << "," << numIterations << "," << loadTime << "," << createSessionTime << ","
                  << firstBindTime << "," << (numIterations <= 1 ? 0 : averageBindTime) << ","
+                 << (numIterations <= 1 ? 0 : stdevBindTime) << ","
                  << (numIterations <= 1 ? 0 : minBindTime) << "," << (numIterations <= 1 ? 0 : maxBindTime) << ","
-                 << firstEvalTime << "," << (numIterations <= 1 ? 0 : averageEvalTime) << ","
+                 << firstEvalTime << "," << (numIterations <= 1 ? 0 : averageEvalTime) << "," 
+                 << (numIterations <= 1 ? 0 : stdevEvalTime) << ","
                  << (numIterations <= 1 ? 0 : minEvalTime) << "," << (numIterations <= 1 ? 0 : maxEvalTime) << ","
                  << firstLoadWorkingSetMemoryUsage << "," << firstSessionCreationWorkingSetMemoryUsage << ","
                  << firstBindMemoryUsage << "," << (numIterations <= 1 ? 0 : averageBindMemoryUsage) << ","
+                 << (numIterations <= 1 ? 0 : stdevBindMemoryUsage) << ","
                  << (numIterations <= 1 ? 0 : maxBindMemoryUsage) << ","
                  << (numIterations <= 1 ? 0 : minBindMemoryUsage) << "," << firstEvalMemoryUsage << ","
                  << (numIterations <= 1 ? 0 : averageEvalMemoryUsage) << ","
+                 << (numIterations <= 1 ? 0 : stdevEvalMemoryUsage) << ","
                  << (numIterations <= 1 ? 0 : maxEvalMemoryUsage) << ","
                  << (numIterations <= 1 ? 0 : minEvalMemoryUsage) << "," << firstLoadDedicatedMemoryUsage << ","
                  << firstSessionCreationDedicatedMemoryUsage << "," << firstBindDedicatedMemoryUsage << ","
                  << (numIterations <= 1 ? 0 : averageBindDedicatedMemoryUsage) << ","
+                 << (numIterations <= 1 ? 0 : stdevBindDedicatedMemoryUsage) << ","
                  << (numIterations <= 1 ? 0 : maxBindDedicatedMemoryUsage) << ","
-                 << (numIterations <= 1 ? 0 : minBindDedicatedMemoryUsage) << "," << firstEvalDedicatedMemoryUsage
-                 << "," << (numIterations <= 1 ? 0 : averageEvalDedicatedMemoryUsage) << ","
+                 << (numIterations <= 1 ? 0 : minBindDedicatedMemoryUsage) << "," << firstEvalDedicatedMemoryUsage << ","
+                 << (numIterations <= 1 ? 0 : averageEvalDedicatedMemoryUsage) << ","
+                 << (numIterations <= 1 ? 0 : stdevEvalDedicatedMemoryUsage) << ","
                  << (numIterations <= 1 ? 0 : maxEvalDedicatedMemoryUsage) << ","
                  << (numIterations <= 1 ? 0 : minEvalDedicatedMemoryUsage) << "," << firstLoadSharedMemoryUsage << ","
                  << firstSessionCreationSharedMemoryUsage << "," << firstBindSharedMemoryUsage << ","
                  << (numIterations <= 1 ? 0 : averageBindSharedMemoryUsage) << ","
+                 << (numIterations <= 1 ? 0 : stdevBindSharedMemoryUsage) << ","
                  << (numIterations <= 1 ? 0 : maxBindSharedMemoryUsage) << ","
                  << (numIterations <= 1 ? 0 : minBindSharedMemoryUsage) << "," << firstEvalSharedMemoryUsage << ","
                  << (numIterations <= 1 ? 0 : averageEvalSharedMemoryUsage) << ","
+                 << (numIterations <= 1 ? 0 : stdevEvalSharedMemoryUsage) << ","
                  << (numIterations <= 1 ? 0 : maxEvalSharedMemoryUsage) << ","
                  << (numIterations <= 1 ? 0 : minEvalSharedMemoryUsage) << ",";
             for (auto metaDataPair : perfFileMetadata)
@@ -985,6 +1041,8 @@ private:
     std::vector<double> m_GPUDedicatedDiff;
     std::vector<std::string> m_outputResult;
     std::vector<int> m_outputTensorHash;
+
+    int iterationNum;
 
 #if defined(_AMD64_)
     // PIX markers only work on amd64

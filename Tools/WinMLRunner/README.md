@@ -35,7 +35,7 @@ Required command-Line arguments:
 -GPU : run model on default GPU
 -GPUHighPerformance : run model on GPU with highest performance
 -GPUMinPower : run model on GPU with the least power
--GPUAdapterName <adapter name substring>: run model on GPU specified by its name. NOTE: Please only use this flag on DXCore supported machines.
+-GPUAdapterName <adapter name substring>: run model on GPU specified by its name. NOTE: Please only use this flag when building and running on DXCore supported machines of at least SDK build 18922.
 -CreateDeviceOnClient : create the D3D device on the client and pass it to WinML to create session
 -CreateDeviceInWinML : create the device inside WinML
 -CPUBoundInput : bind the input to the CPU

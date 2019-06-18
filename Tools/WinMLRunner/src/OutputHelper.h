@@ -578,7 +578,7 @@ public:
 
     void SetCSVFileName(const std::wstring& fileName) { m_csvFileName = fileName; }
 
-    void WritePerIterationPerformance(const CommandLineArgs& args, std::wstring model)
+    void WritePerIterationPerformance(const CommandLineArgs& args, const std::wstring model, const std::wstring imagePath)
     {
         if (m_csvFileNamePerIterationSummary.length() > 0)
         {
@@ -599,7 +599,7 @@ public:
             std::string modelName = converter.to_bytes(model);
             std::string fileNameResultDevice = converter.to_bytes(m_fileNameResultDevice);
             std::string inputName = args.IsCSVInput() ? converter.to_bytes(args.CsvPath())
-                                                      : args.IsImageInput() ? converter.to_bytes(args.ImagePath()) : "";
+                                                      : args.IsImageInput() ? converter.to_bytes(imagePath) : "";
 
             if (bNewFile)
             {

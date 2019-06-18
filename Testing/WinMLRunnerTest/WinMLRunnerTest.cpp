@@ -641,6 +641,30 @@ namespace WinMLRunnerTest
             // We need to expect one more line because of the header
             Assert::AreEqual(static_cast<size_t>(2), GetOutputCSVLineCount(tensorDataPath + L"\\PerIterationData\\Summary.csv"));
         }
+
+        TEST_METHOD(ProvidedImageInputFolder)
+        {
+            // Make test_folder_input folder before starting the tests
+            std::string mkFolderCommand = "mkdir " + std::string(INPUT_FOLDER_PATH.begin(), INPUT_FOLDER_PATH.end());
+            system(mkFolderCommand.c_str());
+
+            std::vector<std::string> images = { "fish.png", "kitten_224.png" };
+
+            // Copy images from list to test_folder_input
+            for (auto image : images)
+            {
+                std::string copyCommand = "Copy ";
+                copyCommand += image;
+                copyCommand += ' ' + std::string(INPUT_FOLDER_PATH.begin(), INPUT_FOLDER_PATH.end());
+                system(copyCommand.c_str());
+            }
+            const std::wstring command = BuildCommand({ EXE_PATH, L"-model", L"SqueezeNet.onnx", L"-InputImageFolder", INPUT_FOLDER_PATH });
+            Assert::AreEqual(S_OK, RunProc((wchar_t*)command.c_str()));
+
+            std::string removeCommand = "rd /s /q ";
+            removeCommand += std::string(INPUT_FOLDER_PATH.begin(), INPUT_FOLDER_PATH.end());
+            system(removeCommand.c_str());
+        }
     };
 
     TEST_CLASS(CsvInputTest)

@@ -24,7 +24,7 @@ public:
 
     BitmapInterpolationMode AutoScaleInterpMode() const { return m_autoScaleInterpMode; }
 
-    const std::wstring& ImagePath() const { return m_imagePath; }
+    const std::vector<std::wstring>& ImagePaths() const { return m_imagePaths; }
     const std::wstring& CsvPath() const { return m_csvData; }
     const std::wstring& OutputPath() const { return m_perfOutputPath; }
     const std::wstring& FolderPath() const { return m_modelFolderPath; }
@@ -38,7 +38,7 @@ public:
     bool UseRGB() const
     {
         // If an image is specified without flags, we load it as a BGR image by default
-        return m_useRGB || (!m_imagePath.empty() && !m_useBGR && !m_useTensor);
+        return m_useRGB || (!m_imagePaths.empty() && !m_useBGR && !m_useTensor);
     }
 
     bool UseTensor() const
@@ -70,10 +70,10 @@ public:
     bool IsGarbageInput() const
     {
         // When there is no image or csv input provided, then garbage input binding is used.
-        return m_imagePath.empty() && m_csvData.empty();
+        return m_imagePaths.empty() && m_csvData.empty();
     }
-    bool IsCSVInput() const { return m_imagePath.empty() && !m_csvData.empty(); }
-    bool IsImageInput() const { return !m_imagePath.empty() && m_csvData.empty(); }
+    bool IsCSVInput() const { return m_imagePaths.empty() && !m_csvData.empty(); }
+    bool IsImageInput() const { return !m_imagePaths.empty() && m_csvData.empty(); }
 
     uint32_t NumIterations() const { return m_numIterations; }
     uint32_t NumThreads() const { return m_numThreads; }
@@ -143,7 +143,8 @@ private:
 
     std::wstring m_modelFolderPath;
     std::wstring m_modelPath;
-    std::wstring m_imagePath;
+    std::vector<std::wstring> m_imagePaths;
+    std::wstring m_inputImageFolderPath;
     std::wstring m_csvData;
     std::wstring m_inputData;
 #ifdef DXCORE_SUPPORTED_BUILD
@@ -161,4 +162,5 @@ private:
     void CheckForInvalidArguments();
     void SetupOutputDirectories(const std::wstring& sBaseOutputPath, const std::wstring& sPerfOutputPath,
                                 const std::wstring& sPerIterationDataPath);
+    void PopulateInputImagePaths();
 };

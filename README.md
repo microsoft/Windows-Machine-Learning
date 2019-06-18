@@ -15,7 +15,7 @@ For additional information on Windows ML, including step-by-step tutorials and h
 
 ## Developer Tools
 - **[WinML Dashboard (Preview)](https://github.com/Microsoft/Windows-Machine-Learning/tree/master/Tools/WinMLDashboard)**: a GUI-based tool for viewing, editing, converting, and validating machine learning models for Windows ML inference engine. 
-[Download Preview Version](https://github.com/Microsoft/Windows-Machine-Learning/releases/tag/v0.6.1)
+[Download Preview Version](https://github.com/microsoft/Windows-Machine-Learning/releases)
 
   <img src='./Tools/WinMLDashboard/public/EditorView2.PNG' width=800/>
 
@@ -25,7 +25,7 @@ For additional information on Windows ML, including step-by-step tutorials and h
 
 - **[WinMLRunner](https://github.com/Microsoft/Windows-Machine-Learning/tree/master/Tools/WinMLRunner)**: a command-line tool that can run .onnx or .pb models where the input and output variables are tensors or images. It is a very handy tool to quickly validate an ONNX model. It will attempt to load, bind, and evaluate a model and print out helpful messages. It also captures performance measurements.
 
-  [Download x64 Exe](https://github.com/Microsoft/Windows-Machine-Learning/releases/tag/v1.0.0.0)
+  [Download x64 Exe](https://github.com/microsoft/Windows-Machine-Learning/releases)
 
 - **[WinMLTools](https://pypi.org/project/winmltools/)**: a Python tool for converting models from different machine learning toolkits into ONNX for use with Windows ML.
 

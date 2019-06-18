@@ -4,4 +4,5 @@
 namespace FileHelper
 {
     std::wstring GetModulePath();
+    std::wstring GetAbsolutePath(std::wstring relativePath);
 }

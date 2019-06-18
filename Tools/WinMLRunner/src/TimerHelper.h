@@ -9,7 +9,7 @@
 #endif
 #include <psapi.h>
 
-#define TIMER_SLOT_SIZE (1024)
+#define TIMER_SLOT_SIZE (2048)
 #define CONVERT_100NS_TO_SECOND(x) ((x)*0.0000001)
 #define BYTE_TO_MB(x) ((x) / (1024.0 * 1024.0))
 

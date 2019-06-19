@@ -35,7 +35,7 @@ wstring GetModelPath()
 }
 
 // MAIN !
-// usage: SqueezeNet [modelfile] [imagefile] [cpu|directx]
+// usage: SqueezeNet [imagefile] [cpu|directx]
 int main(int argc, char* argv[])
 {
     init_apartment();
@@ -43,7 +43,7 @@ int main(int argc, char* argv[])
     // did they pass in the args 
     if (ParseArgs(argc, argv) == false)
     {
-        printf("Usage: %s [modelfile] [imagefile] [cpu|directx]", argv[0]);
+        printf("Usage: %s [imagefile] [cpu|directx]", argv[0]);
         return -1;
     }
 
@@ -92,7 +92,7 @@ bool ParseArgs(int argc, char* argv[])
     }
     // get the image file
     imagePath = hstring(wstring_to_utf8().from_bytes(argv[1]));
-    // did they pass a fourth arg?
+    // did they pass a third arg?
     if (argc >= 3)
     {
         deviceName = argv[2];

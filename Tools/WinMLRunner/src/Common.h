@@ -25,10 +25,12 @@
 #include "TimerHelper.h"
 #include "DirectXPackedVector.h"
 
+#ifndef BLOCK_DXCORE
 #if __has_include("dxcore.h")
 #include <initguid.h>
 #include <dxcore.h>
 #define DXCORE_SUPPORTED_BUILD
+#endif
 #endif
 
 enum WINML_MODEL_TEST_PERF

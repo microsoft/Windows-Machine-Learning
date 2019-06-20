@@ -44,7 +44,7 @@ Required command-Line arguments:
 -BGR : load the input as a BGR image
 -Tensor : load the input as a tensor
 -Perf [all]: capture performance measurements such as timing and memory usage. Specifying "all" will output all measurements
--Iterations : # times perf measurements will be run/averaged. (maximum: 2048 times)
+-Iterations : # times perf measurements will be run/averaged. (maximum: 1024 times)
 -Input <path to input file>: binds image or CSV to model
 -InputImageFolder <path to directory of images> : specify folder of images to bind to model" << std::endl;
 -TopK <number>: print top <number> values in the result. Default to 1

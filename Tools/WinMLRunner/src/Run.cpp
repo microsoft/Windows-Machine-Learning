@@ -211,7 +211,7 @@ HRESULT CreateSession(LearningModelSession& session, IDirect3DDevice& winrtDevic
              com_ptr<IDXCoreAdapterList> spAdapterList;
              const GUID dxGUIDs[] = { DXCORE_ADAPTER_ATTRIBUTE_D3D12_CORE_COMPUTE };
 
-             THROW_IF_FAILED(spFactory->GetAdapterList(dxGUIDs, ARRAYSIZE(dxGUIDs), spAdapterList.put()));
+             THROW_IF_FAILED(spFactory->CreateAdapterList(ARRAYSIZE(dxGUIDs), dxGUIDs, IID_PPV_ARGS(spAdapterList.put())));
 
              std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
              std::string adapterNameStr = converter.to_bytes(adapterName);
@@ -221,16 +221,16 @@ HRESULT CreateSession(LearningModelSession& session, IDirect3DDevice& winrtDevic
              printf("Printing available adapters..\n");
              for (UINT i = 0; i < spAdapterList->GetAdapterCount(); i++)
              {
-                 THROW_IF_FAILED(spAdapterList->GetItem(i, currAdapter.put()));
+                 THROW_IF_FAILED(spAdapterList->GetAdapter(i, currAdapter.put()));
 
                  // If the adapter is a software adapter then don't consider it for index selection
                  bool isHardware;
                  size_t driverDescriptionSize;
                  THROW_IF_FAILED(
-                     currAdapter->QueryPropertySize(DXCoreProperty::DriverDescription, &driverDescriptionSize));
+                     currAdapter->GetPropertySize(DXCoreAdapterProperty::DriverDescription, &driverDescriptionSize));
                  CHAR* driverDescription = new CHAR[driverDescriptionSize];
-                 THROW_IF_FAILED(currAdapter->QueryProperty(DXCoreProperty::IsHardware, sizeof(isHardware), &isHardware));
-                 THROW_IF_FAILED(currAdapter->QueryProperty(DXCoreProperty::DriverDescription, driverDescriptionSize,
+                 THROW_IF_FAILED(currAdapter->GetProperty(DXCoreAdapterProperty::IsHardware, sizeof(isHardware), &isHardware));
+                 THROW_IF_FAILED(currAdapter->GetProperty(DXCoreAdapterProperty::DriverDescription, driverDescriptionSize,
                                                           driverDescription));
                  if (isHardware)
                  {
@@ -258,9 +258,9 @@ HRESULT CreateSession(LearningModelSession& session, IDirect3DDevice& winrtDevic
                                                adapterName);
              }
              size_t driverDescriptionSize;
-             THROW_IF_FAILED(spAdapter->QueryPropertySize(DXCoreProperty::DriverDescription, &driverDescriptionSize));
+             THROW_IF_FAILED(spAdapter->GetPropertySize(DXCoreAdapterProperty::DriverDescription, &driverDescriptionSize));
              CHAR* driverDescription = new CHAR[driverDescriptionSize];
-             spAdapter->QueryProperty(DXCoreProperty::DriverDescription, driverDescriptionSize, driverDescription);
+             spAdapter->GetProperty(DXCoreAdapterProperty::DriverDescription, driverDescriptionSize, driverDescription);
              printf("Using adapter : %s\n", driverDescription);
              free(driverDescription);
              IUnknown* pAdapter = spAdapter.get();
@@ -272,7 +272,7 @@ HRESULT CreateSession(LearningModelSession& session, IDirect3DDevice& winrtDevic
              // then GPU was selected that has D3D12 and D3D11 capabilities. It would be the most stable to
              // use DXGI to enumerate GPU and use D3D_FEATURE_LEVEL_11_0 so that image tensorization for
              // video frames would be able to happen on the GPU.
-             if (spAdapter->IsDXAttributeSupported(DXCORE_ADAPTER_ATTRIBUTE_D3D12_GRFX))
+             if (spAdapter->IsAttributeSupported(DXCORE_ADAPTER_ATTRIBUTE_D3D12_GRAPHICS))
              {
                  d3dFeatureLevel = D3D_FEATURE_LEVEL::D3D_FEATURE_LEVEL_11_0;
                  com_ptr<IDXGIFactory4> dxgiFactory4;
@@ -290,8 +290,10 @@ HRESULT CreateSession(LearningModelSession& session, IDirect3DDevice& winrtDevic
                      // If DXGI factory creation was successful then get the IDXGIAdapter from the LUID acquired from
                      // the selectedAdapter
                      std::cout << "Using DXGI for adapter creation.." << std::endl;
+					 size_t luidSize;
+					 THROW_IF_FAILED(spAdapter->GetPropertySize(DXCoreAdapterProperty::InstanceLuid, &luidSize));
                      LUID adapterLuid;
-                     THROW_IF_FAILED(spAdapter->GetLUID(&adapterLuid));
+                     THROW_IF_FAILED(spAdapter->GetProperty(DXCoreAdapterProperty::InstanceLuid, luidSize, &adapterLuid));
                      THROW_IF_FAILED(dxgiFactory4->EnumAdapterByLuid(adapterLuid, __uuidof(IDXGIAdapter),
                                                                      spDxgiAdapter.put_void()));
                      pAdapter = spDxgiAdapter.get();

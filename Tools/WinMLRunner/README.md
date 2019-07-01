@@ -42,7 +42,10 @@ Required command-Line arguments:
 -GPUBoundInput : bind the input to the GPU
 -RGB : load the input as an RGB image
 -BGR : load the input as a BGR image
--Tensor : load the input as a tensor
+-Tensor [function] : load the input as a tensor, with optional function for input preprocessing
+    Optional function arguments:
+        Identity(default) : No input transformations will be performed.
+        Normalize <scale> <means> <stddevs> : float scale factor and comma separated per channel means and stddev for normalization.
 -Perf [all]: capture performance measurements such as timing and memory usage. Specifying "all" will output all measurements
 -Iterations : # times perf measurements will be run/averaged. (maximum: 1024 times)
 -Input <path to input file>: binds image or CSV to model

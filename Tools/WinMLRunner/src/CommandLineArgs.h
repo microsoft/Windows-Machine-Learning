@@ -4,22 +4,23 @@
 enum TensorizeFuncs
 {
     Identity = 0,
-    ScaleMeanStdDev
+    Normalize
 };
 
 class TensorizeArgs
 {
 public:
     TensorizeFuncs Func;
-    struct _ScaleMeanStdDev
+    struct _Normalize
     {
         float Scale;
-        std::vector<float> Factors;
-    } ScaleMeanStdDev;
+        std::vector<float> Means;
+        std::vector<float> StdDevs;
+    } Normalize;
 
     TensorizeArgs() : Func(TensorizeFuncs::Identity)
     {
-        ScaleMeanStdDev.Scale = 1.0f;
+        Normalize.Scale = 1.0f;
     };
 };
 
@@ -192,7 +193,7 @@ private:
     uint32_t m_topK = 1;
     std::vector<std::pair<std::string, std::string>> m_perfFileMetadata;
 
-    void CheckNextArgument(const std::vector<std::wstring>& args, UINT i);
+    void CheckNextArgument(const std::vector<std::wstring>& args, UINT argIdx, UINT checkIdx=0);
     void CheckForInvalidArguments();
     void SetupOutputDirectories(const std::wstring& sBaseOutputPath, const std::wstring& sPerfOutputPath,
                                 const std::wstring& sPerIterationDataPath);

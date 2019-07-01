@@ -122,9 +122,6 @@ namespace WinMLRunnerTest
             Assert::Fail(L"Failed to open tensor files\n");
         }
 
-        std::ofstream testOutStream;
-        testOutStream.open("test_out.txt");
-
         bool isFirstRow = true;
         while (!tensorFileStream.eof())
         {
@@ -137,8 +134,6 @@ namespace WinMLRunnerTest
             }
             if (value != "" && index != "")
             {
-                testOutStream << index << "," << value << std::endl;
-                testOutStream.flush();
                 tensorList.push_back(std::make_pair(std::stoi(index), std::stof(value)));
             }
         }
@@ -703,7 +698,7 @@ namespace WinMLRunnerTest
             const std::wstring tensorDataPath = TENSOR_DATA_PATH + L"\\" + METHOD_NAME;
             const std::wstring command = BuildCommand({ EXE_PATH, L"-model ", modelPath, L"-input", inputPath,
                                                         L"-SaveTensorData", L"First", L"-PerIterationPath", tensorDataPath, L"-CPU",
-                                                        L"-Tensor ScaleMeanStdDev 255 103.939 116.779 123.68" });
+                                                        L"-Tensor Normalize 255 0.485,0.456,0.406 0.229,0.224,0.225" });
             Assert::AreEqual(S_OK, RunProc((wchar_t*)command.c_str()));
             Assert::AreEqual(true, CompareTensors(L"OutputTensorData\\DenseNet121_fp32_kitten_224_input_CPU.csv",
                                                   tensorDataPath + L"\\fc6_1CpuIteration1.csv"));
@@ -715,7 +710,7 @@ namespace WinMLRunnerTest
             const std::wstring tensorDataPath = TENSOR_DATA_PATH + L"\\" + METHOD_NAME;
             const std::wstring command = BuildCommand({ EXE_PATH, L"-model ", modelPath, L"-input", inputPath,
                                                         L"-SaveTensorData", L"First", L"-PerIterationPath", tensorDataPath, L"-GPU",
-                                                        L"-Tensor ScaleMeanStdDev 255 103.939 116.779 123.68" });
+                                                        L"-Tensor Normalize 255 0.485,0.456,0.406 0.229,0.224,0.225" });
             Assert::AreEqual(S_OK, RunProc((wchar_t*)command.c_str()));
             Assert::AreEqual(true, CompareTensors(L"OutputTensorData\\DenseNet121_fp32_kitten_224_input_GPU.csv",
                                                   tensorDataPath + L"\\fc6_1GpuIteration1.csv"));
@@ -727,7 +722,7 @@ namespace WinMLRunnerTest
             const std::wstring tensorDataPath = TENSOR_DATA_PATH + L"\\" + METHOD_NAME;
             const std::wstring command = BuildCommand({ EXE_PATH, L"-model ", modelPath, L"-input", inputPath,
                                                         L"-SaveTensorData", L"First", L"-PerIterationPath", tensorDataPath, L"-CPU",
-                                                        L"-Tensor ScaleMeanStdDev 255 103.939 116.779 123.68" });
+                                                        L"-Tensor Normalize 255 0.485,0.456,0.406 0.229,0.224,0.225" });
             Assert::AreEqual(S_OK, RunProc((wchar_t*)command.c_str()));
             Assert::AreEqual(true, CompareTensors(L"OutputTensorData\\DenseNet121_fp16_kitten_224_input_CPU.csv",
                                                   tensorDataPath + L"\\fc6_1CpuIteration1.csv"));
@@ -739,7 +734,7 @@ namespace WinMLRunnerTest
             const std::wstring tensorDataPath = TENSOR_DATA_PATH + L"\\" + METHOD_NAME;
             const std::wstring command = BuildCommand({ EXE_PATH, L"-model ", modelPath, L"-input", inputPath,
                                                         L"-SaveTensorData", L"First", L"-PerIterationPath", tensorDataPath, L"-GPU",
-                                                        L"-Tensor ScaleMeanStdDev 255 103.939 116.779 123.68" });
+                                                        L"-Tensor Normalize 255 0.485,0.456,0.406 0.229,0.224,0.225" });
             Assert::AreEqual(S_OK, RunProc((wchar_t*)command.c_str()));
             Assert::AreEqual(true, CompareTensorsFP16(L"OutputTensorData\\DenseNet121_fp16_kitten_224_input_GPU.csv",
                                                       tensorDataPath + L"\\fc6_1GpuIteration1.csv"));

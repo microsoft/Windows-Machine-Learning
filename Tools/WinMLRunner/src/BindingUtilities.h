@@ -15,63 +15,6 @@ using namespace winrt::Windows::Graphics::Imaging;
 using namespace winrt::Windows::Graphics::DirectX::Direct3D11;
 using namespace DirectX::PackedVector;
 
-template <TensorKind T> struct TensorKindToArithmeticType
-{
-    static_assert(true, "No TensorKind mapped for given type!");
-};
-template <> struct TensorKindToArithmeticType<TensorKind::UInt8>
-{
-    typedef uint8_t Type;
-};
-template <> struct TensorKindToArithmeticType<TensorKind::Int8>
-{
-    typedef uint8_t Type;
-};
-template <> struct TensorKindToArithmeticType<TensorKind::UInt16>
-{
-    typedef uint16_t Type;
-};
-template <> struct TensorKindToArithmeticType<TensorKind::Int16>
-{
-    typedef int16_t Type;
-};
-template <> struct TensorKindToArithmeticType<TensorKind::UInt32>
-{
-    typedef uint32_t Type;
-};
-template <> struct TensorKindToArithmeticType<TensorKind::Int32>
-{
-    typedef int32_t Type;
-};
-template <> struct TensorKindToArithmeticType<TensorKind::UInt64>
-{
-    typedef uint64_t Type;
-};
-template <> struct TensorKindToArithmeticType<TensorKind::Int64>
-{
-    typedef int64_t Type;
-};
-template <> struct TensorKindToArithmeticType<TensorKind::Boolean>
-{
-    typedef boolean Type;
-};
-template <> struct TensorKindToArithmeticType<TensorKind::Double>
-{
-    typedef double Type;
-};
-template <> struct TensorKindToArithmeticType<TensorKind::Float>
-{
-    typedef float Type;
-};
-template <> struct TensorKindToArithmeticType<TensorKind::Float16>
-{
-    typedef float Type;
-};
-template <> struct TensorKindToArithmeticType<TensorKind::String>
-{
-    typedef winrt::hstring Type;
-};
-
 template <TensorKind T> struct TensorKindToPointerType
 {
     static_assert(true, "No TensorKind mapped for given type!");
@@ -82,7 +25,7 @@ template <> struct TensorKindToPointerType<TensorKind::UInt8>
 };
 template <> struct TensorKindToPointerType<TensorKind::Int8>
 {
-    typedef uint8_t Type;
+    typedef int8_t Type;
 };
 template <> struct TensorKindToPointerType<TensorKind::UInt16>
 {
@@ -186,60 +129,61 @@ template <> struct TensorKindToValue<TensorKind::String>
     typedef TensorString Type;
 };
 
-template <TensorKind T, typename PointerType, typename ArithmeticType>
-PointerType ConvertArithmeticTypeToPointerType(ArithmeticType value)
+template <TensorKind T, typename ToType, typename FromType>
+ToType ConvertToPointerType(FromType value)
 {
     static_assert(true, "No TensorKind mapped for given type!");
+    return 0;
 };
-template <> uint8_t ConvertArithmeticTypeToPointerType<TensorKind::UInt8>(uint8_t value)
+template <> uint8_t ConvertToPointerType<TensorKind::UInt8>(float value)
 {
     return static_cast<uint8_t>(value);
 };
-template <> uint8_t ConvertArithmeticTypeToPointerType<TensorKind::Int8>(uint8_t value)
+template <> int8_t ConvertToPointerType<TensorKind::Int8>(float value)
 {
-    return static_cast<uint8_t>(value);
+    return static_cast<int8_t>(value);
 };
-template <> uint16_t ConvertArithmeticTypeToPointerType<TensorKind::UInt16>(uint16_t value)
+template <> uint16_t ConvertToPointerType<TensorKind::UInt16>(float value)
 {
     return static_cast<uint16_t>(value);
 };
-template <> int16_t ConvertArithmeticTypeToPointerType<TensorKind::Int16>(int16_t value)
+template <> int16_t ConvertToPointerType<TensorKind::Int16>(float value)
 {
     return static_cast<int16_t>(value);
 };
-template <> uint32_t ConvertArithmeticTypeToPointerType<TensorKind::UInt32>(uint32_t value)
+template <> uint32_t ConvertToPointerType<TensorKind::UInt32>(float value)
 {
     return static_cast<uint32_t>(value);
 };
-template <> int32_t ConvertArithmeticTypeToPointerType<TensorKind::Int32>(int32_t value)
+template <> int32_t ConvertToPointerType<TensorKind::Int32>(float value)
 {
     return static_cast<int32_t>(value);
 };
-template <> uint64_t ConvertArithmeticTypeToPointerType<TensorKind::UInt64>(uint64_t value)
+template <> uint64_t ConvertToPointerType<TensorKind::UInt64>(float value)
 {
     return static_cast<uint64_t>(value);
 };
-template <> int64_t ConvertArithmeticTypeToPointerType<TensorKind::Int64>(int64_t value)
+template <> int64_t ConvertToPointerType<TensorKind::Int64>(float value)
 {
     return static_cast<int64_t>(value);
 };
-template <> boolean ConvertArithmeticTypeToPointerType<TensorKind::Boolean>(boolean value)
+template <> boolean ConvertToPointerType<TensorKind::Boolean>(float value)
 {
     return static_cast<boolean>(value);
 };
-template <> double ConvertArithmeticTypeToPointerType<TensorKind::Double>(double value)
+template <> double ConvertToPointerType<TensorKind::Double>(double value)
 {
     return static_cast<double>(value);
 };
-template <> float ConvertArithmeticTypeToPointerType<TensorKind::Float>(float value)
+template <> float ConvertToPointerType<TensorKind::Float>(float value)
 {
     return static_cast<float>(value);
 };
-template <> HALF ConvertArithmeticTypeToPointerType<TensorKind::Float16>(float value)
+template <> HALF ConvertToPointerType<TensorKind::Float16>(float value)
 {
     return XMConvertFloatToHalf(value);
 };
-template <> winrt::hstring ConvertArithmeticTypeToPointerType<TensorKind::String>(winrt::hstring value)
+template <> winrt::hstring ConvertToPointerType<TensorKind::String>(winrt::hstring value)
 {
     return static_cast<winrt::hstring>(value);
 };
@@ -434,12 +378,11 @@ namespace BindingUtilities
     template <TensorKind TKind, typename InputType>
     void CopyTensorFromBuffer(void* actualData, uint32_t tensorHeight, uint32_t tensorWidth,
                               const InputBufferDesc& inputBufferDesc, float scale,
-                              const std::vector<float>& channelFactors)
+                              const std::vector<float>& means, const std::vector<float>& stddevs)
     {
-        using ArithmeticType = typename TensorKindToArithmeticType<TKind>::Type;
-        using PointerType = typename TensorKindToPointerType<TKind>::Type;
+        using WriteType = typename TensorKindToPointerType<TKind>::Type;
 
-        PointerType* pDataOut = static_cast<PointerType*>(actualData);
+        WriteType* pDataOut = static_cast<WriteType*>(actualData);
         InputType* pDataIn = (InputType*)inputBufferDesc.elements;
         uint32_t elementOffsetMultiplier = inputBufferDesc.isPlanar ? inputBufferDesc.numChannelsPerElement : 1;
         uint32_t channelOffsetMultiplier = inputBufferDesc.isPlanar ? 1 : tensorHeight * tensorWidth;
@@ -448,8 +391,8 @@ namespace BindingUtilities
             for (uint32_t channel = 0; channel < inputBufferDesc.numChannelsPerElement; ++channel)
             {
                 pDataOut[element * elementOffsetMultiplier + channel * channelOffsetMultiplier] = 
-                    ConvertArithmeticTypeToPointerType<TKind, PointerType, ArithmeticType>(
-                        (static_cast<ArithmeticType>(pDataIn[channel]) - channelFactors[channel]) / scale);
+                    ConvertToPointerType<TKind, WriteType>(
+                        ((pDataIn[channel] / scale) - means[channel]) / stddevs[channel]);
             }
             pDataIn += inputBufferDesc.elementStrideInBytes / sizeof(InputType);
         }
@@ -460,8 +403,7 @@ namespace BindingUtilities
                                 const InputBindingType inputBindingType, const InputBufferDesc& inputBufferDesc)
     {
         using TensorValue = typename TensorKindToValue<T>::Type;
-        using ArithmeticType = typename TensorKindToArithmeticType<T>::Type;
-        using PointerType = typename TensorKindToPointerType<T>::Type;
+        using WriteType = typename TensorKindToPointerType<T>::Type;
 
         // Map the incoming Tensor as a TensorNative to get the actual data buffer.
         auto tensorValue = TensorValue::Create(tensorShape);
@@ -469,7 +411,7 @@ namespace BindingUtilities
         com_ptr<ITensorNative> spTensorValueNative;
         tensorValue.as(spTensorValueNative);
 
-        PointerType* actualData;
+        WriteType* actualData;
         uint32_t actualSizeInBytes;
         spTensorValueNative->GetBuffer(reinterpret_cast<BYTE**>(&actualData), &actualSizeInBytes);
 
@@ -482,35 +424,50 @@ namespace BindingUtilities
 
             // Check to make sure the sizes are right
             uint32_t inputElementCount = inputBufferDesc.totalSizeInBytes / inputBufferDesc.elementStrideInBytes;
-            uint32_t outputElementCount = actualSizeInBytes / (channels * sizeof(PointerType));
+            uint32_t outputElementCount = actualSizeInBytes / (channels * sizeof(WriteType));
             if (inputElementCount != outputElementCount)
             {
                 throw hresult_invalid_argument(L"Input size / shape is different from what the model expects");
             }
 
             float scale;
-            std::vector<float> channelFactors = {};
+            std::vector<float> means = {};
+            std::vector<float> stddevs = {};
 
             const auto& tensorizeArgs = args.TensorizeArgs();
-            const auto& scaleMeanStdDevFactors = tensorizeArgs.ScaleMeanStdDev;
+            const auto& normalizeParams = tensorizeArgs.Normalize;
             switch (tensorizeArgs.Func)
             {
                 case TensorizeFuncs::Identity:
                     scale = 1.0f;
-                    channelFactors.resize(channels, 0.0f);
+                    means.resize(channels, 0.0f);
+                    stddevs.resize(channels, 1.0f);
                     break;
-                case TensorizeFuncs::ScaleMeanStdDev:
+                case TensorizeFuncs::Normalize:
                     switch (inputBufferDesc.elementFormat)
                     {
                         case BitmapPixelFormat::Gray8:
                         case BitmapPixelFormat::Gray16:
                         case BitmapPixelFormat::Rgba8:
-                        case BitmapPixelFormat::Bgra8:
                         case BitmapPixelFormat::Rgba16:
-                            scale = scaleMeanStdDevFactors.Scale;
-                            channelFactors.resize(channels);
+                            scale = normalizeParams.Scale;
+                            means.resize(channels);
+                            stddevs.resize(channels);
                             for (uint32_t i = 0; i < channels; ++i)
-                                channelFactors[i] = scaleMeanStdDevFactors.Factors[i];
+                            {
+                                means[i] = normalizeParams.Means[i];
+                                stddevs[i] = normalizeParams.StdDevs[i];
+                            }
+                            break;
+                        case BitmapPixelFormat::Bgra8:
+                            scale = normalizeParams.Scale;
+                            means.resize(channels);
+                            stddevs.resize(channels);
+                            for (uint32_t i = 0; i < channels; ++i)
+                            {
+                                means[channels - 1 - i] = normalizeParams.Means[i];
+                                stddevs[channels - 1 - i] = normalizeParams.StdDevs[i];
+                            }
                             break;
 
                         default:
@@ -525,11 +482,11 @@ namespace BindingUtilities
             {
                 case TensorKind::UInt8:
                     CopyTensorFromBuffer<T, uint8_t>(actualData, tensorHeight, tensorWidth, inputBufferDesc, scale,
-                                                     channelFactors);
+                                                     means, stddevs);
                     break;
                 case TensorKind::Float:
                     CopyTensorFromBuffer<T, float>(actualData, tensorHeight, tensorWidth, inputBufferDesc, scale,
-                                                   channelFactors);
+                                                   means, stddevs);
                     break;
                 default:
                     throw hresult_not_implemented(L"Creating Tensors for Input Images with unhandled channel format!");

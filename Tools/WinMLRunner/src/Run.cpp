@@ -268,7 +268,7 @@ HRESULT CreateSession(LearningModelSession& session, IDirect3DDevice& winrtDevic
              D3D_FEATURE_LEVEL d3dFeatureLevel = D3D_FEATURE_LEVEL_1_0_CORE;
              D3D12_COMMAND_LIST_TYPE commandQueueType = D3D12_COMMAND_LIST_TYPE_COMPUTE;
 
-             // Check if adapter selected has DXCORE_ADAPTER_ATTRIBUTE_D3D12_GRFX attribute selected. If so,
+             // Check if adapter selected has DXCORE_ADAPTER_ATTRIBUTE_D3D12_GRAPHICS attribute selected. If so,
              // then GPU was selected that has D3D12 and D3D11 capabilities. It would be the most stable to
              // use DXGI to enumerate GPU and use D3D_FEATURE_LEVEL_11_0 so that image tensorization for
              // video frames would be able to happen on the GPU.
@@ -290,20 +290,14 @@ HRESULT CreateSession(LearningModelSession& session, IDirect3DDevice& winrtDevic
                      // If DXGI factory creation was successful then get the IDXGIAdapter from the LUID acquired from
                      // the selectedAdapter
                      std::cout << "Using DXGI for adapter creation.." << std::endl;
-					 size_t luidSize;
-					 THROW_IF_FAILED(spAdapter->GetPropertySize(DXCoreAdapterProperty::InstanceLuid, &luidSize));
+                     size_t luidSize;
+                     THROW_IF_FAILED(spAdapter->GetPropertySize(DXCoreAdapterProperty::InstanceLuid, &luidSize));
                      LUID adapterLuid;
                      THROW_IF_FAILED(spAdapter->GetProperty(DXCoreAdapterProperty::InstanceLuid, luidSize, &adapterLuid));
                      THROW_IF_FAILED(dxgiFactory4->EnumAdapterByLuid(adapterLuid, __uuidof(IDXGIAdapter),
                                                                      spDxgiAdapter.put_void()));
                      pAdapter = spDxgiAdapter.get();
                  }
-             }
-             else
-             {
-                 // Need to enable experimental features to create D3D12 Device with adapter that has compute only
-                 // capabilities.
-                 THROW_IF_FAILED(D3D12EnableExperimentalFeatures(1, &D3D12ComputeOnlyDevices, nullptr, 0));
              }
 
              // create D3D12Device

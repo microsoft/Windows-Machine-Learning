@@ -48,7 +48,7 @@
     <ProjectGuid>{31653A2F-02CC-4A95-9880-BF86965FB262}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>WinMLRunner</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.18926.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.17763.0</WindowsTargetPlatformVersion>
     <WindowsSDKDesktopARM64Support>true</WindowsSDKDesktopARM64Support>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />

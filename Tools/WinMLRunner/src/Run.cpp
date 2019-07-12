@@ -229,7 +229,7 @@ HRESULT CreateSession(LearningModelSession& session, IDirect3DDevice& winrtDevic
                  THROW_IF_FAILED(
                      currAdapter->GetPropertySize(DXCoreAdapterProperty::DriverDescription, &driverDescriptionSize));
                  CHAR* driverDescription = new CHAR[driverDescriptionSize];
-                 THROW_IF_FAILED(currAdapter->GetProperty(DXCoreAdapterProperty::IsHardware, sizeof(isHardware), &isHardware));
+                 THROW_IF_FAILED(currAdapter->GetProperty(DXCoreAdapterProperty::IsHardware, &isHardware));
                  THROW_IF_FAILED(currAdapter->GetProperty(DXCoreAdapterProperty::DriverDescription, driverDescriptionSize,
                                                           driverDescription));
                  if (isHardware)
@@ -290,10 +290,8 @@ HRESULT CreateSession(LearningModelSession& session, IDirect3DDevice& winrtDevic
                      // If DXGI factory creation was successful then get the IDXGIAdapter from the LUID acquired from
                      // the selectedAdapter
                      std::cout << "Using DXGI for adapter creation.." << std::endl;
-                     size_t luidSize;
-                     THROW_IF_FAILED(spAdapter->GetPropertySize(DXCoreAdapterProperty::InstanceLuid, &luidSize));
                      LUID adapterLuid;
-                     THROW_IF_FAILED(spAdapter->GetProperty(DXCoreAdapterProperty::InstanceLuid, luidSize, &adapterLuid));
+                     THROW_IF_FAILED(spAdapter->GetProperty(DXCoreAdapterProperty::InstanceLuid, &adapterLuid));
                      THROW_IF_FAILED(dxgiFactory4->EnumAdapterByLuid(adapterLuid, __uuidof(IDXGIAdapter),
                                                                      spDxgiAdapter.put_void()));
                      pAdapter = spDxgiAdapter.get();

@@ -868,6 +868,9 @@ int run(CommandLineArgs& args, Profiler<WINML_MODEL_TEST_PERF>& profiler) try
                                                      inputDataType, winrtDevice, deviceCreationLocation, profiler, path,
                                                      L"", sessionCreationIteration);
                                 }
+                                // Close and destroy session
+                                session.Close();
+                                session.~LearningModelSession();
                             }
                         }
                     }

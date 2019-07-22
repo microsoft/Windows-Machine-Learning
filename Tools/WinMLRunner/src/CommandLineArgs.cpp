@@ -102,7 +102,7 @@ CommandLineArgs::CommandLineArgs(const std::vector<std::wstring>& args)
             m_useGPUMinPower = true;
         }
 #ifdef DXCORE_SUPPORTED_BUILD
-        else if ((_wcsicmp(args[i].c_str(), L"-GPUAdapterName") == 0) || (_wcsicmp(args[i].c_str(), L"-GPUAdapterIndex") == 0))
+        else if (_wcsicmp(args[i].c_str(), L"-GPUAdapterName") == 0)
         {
             CheckNextArgument(args, i);
             HMODULE library = nullptr;

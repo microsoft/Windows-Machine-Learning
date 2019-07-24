@@ -452,18 +452,12 @@ public:
 
     static std::wstring FeatureDescriptorToString(const ILearningModelFeatureDescriptor& descriptor)
     {
-        // IMPORTANT: This tensorKinds array needs to match the "enum class TensorKind" idl in
-        // Windows.AI.MachineLearning.0.h
-        const std::wstring tensorKind[] = {
-            L"Undefined", L"Float",   L"UInt8",   L"Int8",   L"UInt16", L"Int16",  L"Int32",     L"Int64",
-            L"String",    L"Boolean", L"Float16", L"Double", L"UInt32", L"UInt64", L"Complex64", L"Complex128",
-        };
         switch (descriptor.Kind())
         {
             case LearningModelFeatureKind::Tensor:
             {
                 auto tensorDescriptor = descriptor.as<TensorFeatureDescriptor>();
-                return tensorKind[(int)tensorDescriptor.TensorKind()];
+                return TypeHelper::Stringify(tensorDescriptor.TensorKind());
             }
             case LearningModelFeatureKind::Image:
             {
@@ -475,7 +469,7 @@ public:
             case LearningModelFeatureKind::Map:
             {
                 auto mapDescriptor = descriptor.as<MapFeatureDescriptor>();
-                std::wstring str = L"Map<" + tensorKind[(int)mapDescriptor.KeyKind()] + L",";
+                std::wstring str = L"Map<" + TypeHelper::Stringify(mapDescriptor.KeyKind()) + L",";
                 str += FeatureDescriptorToString(mapDescriptor.ValueDescriptor());
                 str += L">";
                 return str;

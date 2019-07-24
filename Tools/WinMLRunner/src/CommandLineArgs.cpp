@@ -5,6 +5,7 @@
 #include <ctime>
 #include <iomanip>
 #include <filesystem>
+#include <codecvt>
 #include "Filehelper.h"
 
 using namespace Windows::AI::MachineLearning;
@@ -22,22 +23,31 @@ void CommandLineArgs::PrintUsage()
     std::cout << "  -GPUHighPerformance : run model on GPU with highest performance" << std::endl;
     std::cout << "  -GPUMinPower : run model on GPU with the least power" << std::endl;
 #ifdef DXCORE_SUPPORTED_BUILD
-    std::cout << "  -GPUAdapterName <adapter name substring>: run model on GPU specified by its name. NOTE: Please only use this flag on DXCore supported machines." 
+    std::cout << "  -GPUAdapterName <adapter name substring>: run model on GPU specified by its name. NOTE: Please "
+                 "only use this flag on DXCore supported machines."
               << std::endl;
 #endif
-    std::cout << "  -CreateDeviceOnClient : create the D3D device on the client and pass it to WinML to create session" << std::endl;
+    std::cout << "  -CreateDeviceOnClient : create the D3D device on the client and pass it to WinML to create session"
+              << std::endl;
     std::cout << "  -CreateDeviceInWinML : create the device inside WinML" << std::endl;
     std::cout << "  -CPUBoundInput : bind the input to the CPU" << std::endl;
     std::cout << "  -GPUBoundInput : bind the input to the GPU" << std::endl;
     std::cout << "  -RGB : load the input as an RGB image" << std::endl;
     std::cout << "  -BGR : load the input as a BGR image" << std::endl;
-    std::cout << "  -Tensor : load the input as a tensor" << std::endl;
+    std::cout << "  -Tensor [function] : load the input as a tensor, with optional function for input preprocessing"
+              << std::endl;
+    std::cout << "      Optional function arguments:" << std::endl;
+    std::cout << "          Identity(default) : No input transformations will be performed." << std::endl;
+    std::cout << "          Normalize <scale> <means> <stddevs> : float scale factor and comma separated per channel "
+                 "means and stddev for normalization."
+              << std::endl;
     std::cout << "  -Perf [all]: capture performance measurements such as timing and memory usage. Specifying \"all\" "
                  "will output all measurements"
               << std::endl;
     std::cout << "  -Iterations : # times perf measurements will be run/averaged. (maximum: 1024 times)" << std::endl;
     std::cout << "  -Input <path to input file>: binds image or CSV to model" << std::endl;
-    std::cout << "  -InputImageFolder <path to directory of images> : specify folder of images to bind to model" << std::endl;
+    std::cout << "  -InputImageFolder <path to directory of images> : specify folder of images to bind to model"
+              << std::endl;
     std::cout << "  -TopK <number> : print top <number> values in the result. Default to 1" << std::endl;
     std::cout << "  -BaseOutputPath [<fully qualified path>] : base output directory path for results, default to cwd"
               << std::endl;
@@ -53,7 +63,7 @@ void CommandLineArgs::PrintUsage()
     std::cout << "  -DebugEvaluate: Print evaluation debug output to debug console if debugger is present."
               << std::endl;
     std::cout << "  -Terse: Terse Mode (suppresses repetitive console output)" << std::endl;
-    std::cout << "  -AutoScale <interpolationMode>: Enable image autoscaling and set the interpolation mode [Nearest, "
+    std::cout << "  -AutoScale <interpolationMode> : Enable image autoscaling and set the interpolation mode [Nearest, "
                  "Linear, Cubic, Fant]"
               << std::endl;
     std::cout << std::endl;
@@ -76,6 +86,9 @@ void CheckAPICall(int return_value)
         throw hresult_invalid_argument(msg.c_str());
     }
 }
+
+#pragma warning(push)
+#pragma warning(disable : 4996)
 
 CommandLineArgs::CommandLineArgs(const std::vector<std::wstring>& args)
 {
@@ -112,7 +125,7 @@ CommandLineArgs::CommandLineArgs(const std::vector<std::wstring>& args)
                 throw hresult_invalid_argument(
                     L"ERROR: DXCORE isn't supported on this machine. "
                     L"GpuAdapterName flag should only be used with DXCore supported machines.");
-                }
+            }
             m_adapterName = args[++i];
             m_useGPU = true;
         }
@@ -132,7 +145,7 @@ CommandLineArgs::CommandLineArgs(const std::vector<std::wstring>& args)
         else if ((_wcsicmp(args[i].c_str(), L"-Model") == 0))
         {
             CheckNextArgument(args, i);
-            m_modelPath = args[++i];
+            m_modelPath = FileHelper::GetAbsolutePath(args[++i]);
         }
         else if ((_wcsicmp(args[i].c_str(), L"-Folder") == 0))
         {
@@ -165,9 +178,46 @@ CommandLineArgs::CommandLineArgs(const std::vector<std::wstring>& args)
         {
             m_useBGR = true;
         }
-        else if ((_wcsicmp(args[i].c_str(), L"-Tensor") == 0))
+        else if (_wcsicmp(args[i].c_str(), L"-Tensor") == 0)
         {
             m_useTensor = true;
+            m_tensorizeArgs.Func = TensorizeFuncs::Identity;
+            if (i + 1 < args.size() && args[i + 1][0] != L'-')
+            {
+                if (_wcsicmp(args[++i].c_str(), L"Identity") == 0)
+                {
+                }
+                else if (_wcsicmp(args[i].c_str(), L"Normalize") == 0)
+                {
+                    CheckNextArgument(args, i, i + 1);
+                    CheckNextArgument(args, i, i + 2);
+                    CheckNextArgument(args, i, i + 3);
+
+                    m_tensorizeArgs.Func = TensorizeFuncs::Normalize;
+                    m_tensorizeArgs.Normalize.Scale = (float)_wtof(args[++i].c_str());
+
+                    std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
+                    std::istringstream means(converter.to_bytes(args[++i]));
+                    std::string mean;
+                    while (std::getline(means, mean, ','))
+                        m_tensorizeArgs.Normalize.Means.push_back((float)std::stof(mean.c_str()));
+
+                    std::istringstream stddevs(converter.to_bytes(args[++i]));
+                    std::string stddev;
+                    while (std::getline(stddevs, stddev, ','))
+                        m_tensorizeArgs.Normalize.StdDevs.push_back((float)std::stof(stddev.c_str()));
+
+                    if (m_tensorizeArgs.Normalize.Means.size() != m_tensorizeArgs.Normalize.StdDevs.size())
+                        throw hresult_invalid_argument(
+                            L"-Tensor Normalize: must be the same number of mean and stddev arguments!");
+                }
+                else
+                {
+                    std::wstring msg = L"-Tensor unknown option ";
+                    msg += args[i].c_str();
+                    throw hresult_invalid_argument(msg.c_str());
+                }
+            }
         }
         else if ((_wcsicmp(args[i].c_str(), L"-CPUBoundInput") == 0))
         {
@@ -257,7 +307,7 @@ CommandLineArgs::CommandLineArgs(const std::vector<std::wstring>& args)
                 throw hresult_invalid_argument(L"Unknown SaveTensorData Mode[" + m_saveTensorMode + L"]!");
             }
         }
-        else if (_wcsicmp(args[i].c_str(), L"-version") == 0)
+        else if (_wcsicmp(args[i].c_str(), L"-Version") == 0)
         {
             TCHAR szExeFileName[MAX_PATH];
             auto ret = GetModuleFileName(NULL, szExeFileName, MAX_PATH);
@@ -356,6 +406,8 @@ CommandLineArgs::CommandLineArgs(const std::vector<std::wstring>& args)
     CheckForInvalidArguments();
 }
 
+#pragma warning(pop)
+
 void CommandLineArgs::PopulateInputImagePaths()
 {
     for (auto& it : std::filesystem::directory_iterator(m_inputImageFolderPath))
@@ -372,8 +424,7 @@ void CommandLineArgs::PopulateInputImagePaths()
     }
 }
 
-void CommandLineArgs::SetupOutputDirectories(const std::wstring& sBaseOutputPath,
-                                             const std::wstring& sPerfOutputPath,
+void CommandLineArgs::SetupOutputDirectories(const std::wstring& sBaseOutputPath, const std::wstring& sPerfOutputPath,
                                              const std::wstring& sPerIterationDataPath)
 {
     std::filesystem::path PerfOutputPath(sPerfOutputPath);
@@ -431,12 +482,13 @@ void CommandLineArgs::SetupOutputDirectories(const std::wstring& sBaseOutputPath
     }
 }
 
-void CommandLineArgs::CheckNextArgument(const std::vector<std::wstring>& args, UINT i)
+void CommandLineArgs::CheckNextArgument(const std::vector<std::wstring>& args, UINT argIdx, UINT checkIdx)
 {
-    if (i + 1 >= args.size() || args[i + 1][0] == L'-')
+    UINT localCheckIdx = checkIdx == 0 ? argIdx + 1 : checkIdx;
+    if (localCheckIdx >= args.size() || args[localCheckIdx][0] == L'-')
     {
         std::wstring msg = L"Invalid parameter for ";
-        msg += args[i].c_str();
+        msg += args[argIdx].c_str();
         throw hresult_invalid_argument(msg.c_str());
     }
 }

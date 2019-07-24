@@ -98,19 +98,18 @@ CommandLineArgs::CommandLineArgs(const std::vector<std::wstring>& args)
         {
             m_useGPUMinPower = true;
         }
-
-        else if ((_wcsicmp(args[i].c_str(), L"-GPUAdapterName") == 0) || (_wcsicmp(args[i].c_str(), L"-GPUAdapterIndex") == 0))
+        else if (_wcsicmp(args[i].c_str(), L"-GPUAdapterName") == 0)
         {
             CheckNextArgument(args, i);
 #ifdef DXCORE_SUPPORTED_BUILD
-			HMODULE library = nullptr;
+            HMODULE library = nullptr;
             library = LoadLibrary(L"dxcore.dll");
             if (!library)
             {
                 throw hresult_invalid_argument(
                     L"ERROR: DXCORE isn't supported on this machine. "
                     L"GpuAdapterName flag should only be used with DXCore supported machines.");
-             }
+                }
 #endif
             m_adapterName = args[++i];
             m_useGPU = true;

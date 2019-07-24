@@ -31,9 +31,8 @@ public:
     const std::wstring& ModelPath() const { return m_modelPath; }
     const std::wstring& PerIterationDataPath() const { return m_perIterationDataPath; }
     std::vector<std::pair<std::string, std::string>>& GetPerformanceFileMetadata() { return m_perfFileMetadata; }
-#ifdef DXCORE_SUPPORTED_BUILD
     const std::wstring& GetGPUAdapterName() const { return m_adapterName; }
-#endif
+
 
     bool UseRGB() const
     {
@@ -159,9 +158,7 @@ private:
     std::wstring m_inputImageFolderPath;
     std::wstring m_csvData;
     std::wstring m_inputData;
-#ifdef DXCORE_SUPPORTED_BUILD
     std::wstring m_adapterName;
-#endif
     std::wstring m_perfOutputPath;
     std::wstring m_perIterationDataPath;
     uint32_t m_numIterations = 1;

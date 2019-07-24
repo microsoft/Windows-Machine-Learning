@@ -144,9 +144,9 @@ HRESULT CreateSession(LearningModelSession& session, IDirect3DDevice& winrtDevic
     {
         return hresult_invalid_argument().code();
     }
-#ifdef DXCORE_SUPPORTED_BUILD
+
     const std::wstring& adapterName = args.GetGPUAdapterName();
-#endif
+
     try
     {
         if (deviceCreationLocation == DeviceCreationLocation::UserD3DDevice && deviceType != DeviceType::CPU)
@@ -160,8 +160,29 @@ HRESULT CreateSession(LearningModelSession& session, IDirect3DDevice& winrtDevic
             switch (deviceType)
             {
                 case DeviceType::DefaultGPU:
-                    hr = factory->EnumAdapterByGpuPreference(0, DXGI_GPU_PREFERENCE_UNSPECIFIED, __uuidof(IDXGIAdapter),
-                                                             adapter.put_void());
+					if (adapterName.empty())
+					{
+						hr = factory->EnumAdapterByGpuPreference(0, DXGI_GPU_PREFERENCE_UNSPECIFIED,
+                                                                 __uuidof(IDXGIAdapter), adapter.put_void());
+					}
+					else
+					{
+						DXGI_ADAPTER_DESC desc;
+						
+						int adapterIndex = 0;
+						do
+                        {
+                            hr = factory->EnumAdapters(adapterIndex, adapter.put());
+
+							if (adapter)
+							{
+								adapter->GetDesc(&desc);
+							}
+
+							adapterIndex++;
+                        } while ((hr != DXGI_ERROR_NOT_FOUND) &&
+                                 (wcsstr(desc.Description, adapterName.c_str()) == NULL));
+					}
                     break;
                 case DeviceType::MinPowerGPU:
                     hr = factory->EnumAdapterByGpuPreference(0, DXGI_GPU_PREFERENCE_MINIMUM_POWER,

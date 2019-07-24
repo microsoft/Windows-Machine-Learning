@@ -413,7 +413,7 @@ namespace BindingUtilities
 
         WriteType* actualData;
         uint32_t actualSizeInBytes;
-        spTensorValueNative->GetBuffer(reinterpret_cast<BYTE**>(&actualData), &actualSizeInBytes);
+        THROW_IF_FAILED(spTensorValueNative->GetBuffer(reinterpret_cast<BYTE**>(&actualData), &actualSizeInBytes));
 
         if (args.IsCSVInput() || args.IsImageInput())
         {

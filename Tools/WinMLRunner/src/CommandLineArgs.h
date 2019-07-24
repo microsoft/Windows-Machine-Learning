@@ -193,7 +193,7 @@ private:
     uint32_t m_topK = 1;
     std::vector<std::pair<std::string, std::string>> m_perfFileMetadata;
 
-    void CheckNextArgument(const std::vector<std::wstring>& args, UINT argIdx, UINT checkIdx=0);
+    void CheckNextArgument(const std::vector<std::wstring>& args, UINT argIdx, UINT checkIdx = 0);
     void CheckForInvalidArguments();
     void SetupOutputDirectories(const std::wstring& sBaseOutputPath, const std::wstring& sPerfOutputPath,
                                 const std::wstring& sPerIterationDataPath);

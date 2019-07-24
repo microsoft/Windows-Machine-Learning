@@ -101,6 +101,8 @@ public:
     bool IsImageInput() const { return !m_imagePaths.empty() && m_csvData.empty(); }
 
     uint32_t NumIterations() const { return m_numIterations; }
+    uint32_t NumLoadIterations() const { return m_numLoadIterations; }
+    uint32_t NumSessionCreationIterations() const { return m_numSessionIterations; }
     double IterationTimeLimit() const { return m_iterationTimeLimitMilliseconds; }
     uint32_t NumThreads() const { return m_numThreads; }
     uint32_t ThreadInterval() const { return m_threadInterval; } // Thread interval in milliseconds
@@ -136,6 +138,8 @@ public:
     void SetTopK(unsigned k) { m_topK = k; }
     void SetPerformanceCSVPath(const std::wstring& performanceCSVPath) { m_perfOutputPath = performanceCSVPath; }
     void SetRunIterations(const uint32_t iterations) { m_numIterations = iterations; }
+    void SetSessionCreationIterations(const uint32_t iterations) { m_numSessionIterations = iterations; }
+    void SetLoadIterations(const uint32_t iterations) { m_numLoadIterations = iterations; }
     void AddPerformanceFileMetadata(const std::string& key, const std::string& value)
     {
         m_perfFileMetadata.push_back(std::make_pair(key, value));
@@ -187,6 +191,8 @@ private:
     std::wstring m_perfOutputPath;
     std::wstring m_perIterationDataPath;
     uint32_t m_numIterations = 1;
+    uint32_t m_numLoadIterations = 1;
+    uint32_t m_numSessionIterations = 1;
     double m_iterationTimeLimitMilliseconds = 0;
     uint32_t m_numThreads = 1;
     uint32_t m_threadInterval = 0;

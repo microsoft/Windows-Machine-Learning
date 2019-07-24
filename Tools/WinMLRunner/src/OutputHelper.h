@@ -539,7 +539,7 @@ public:
     }
     void SaveEvalPerformance(Profiler<WINML_MODEL_TEST_PERF>& profiler, uint32_t iterNum)
     {
-        enum WINML_MODEL_TEST_PERF eval = (iterNum == 0)? EVAL_MODEL_FIRST_RUN: EVAL_MODEL;
+        enum WINML_MODEL_TEST_PERF eval = (iterNum == 0) ? EVAL_MODEL_FIRST_RUN : EVAL_MODEL;
         m_clockEvalTimes[iterNum] = profiler[eval].GetClockTime();
         m_CPUWorkingDiff[iterNum] = profiler[eval].GetCpuWorkingDiff();
         m_CPUWorkingStart[iterNum] = profiler[eval].GetCpuWorkingStart();
@@ -596,7 +596,8 @@ public:
 
     void SetCSVFileName(const std::wstring& fileName) { m_csvFileName = fileName; }
 
-    void WritePerIterationPerformance(const CommandLineArgs& args, const std::wstring model, const std::wstring imagePath)
+    void WritePerIterationPerformance(const CommandLineArgs& args, const std::wstring model,
+                                      const std::wstring imagePath)
     {
         if (m_csvFileNamePerIterationSummary.length() > 0)
         {
@@ -708,8 +709,7 @@ public:
 
     template <typename T>
     void ProcessTensorResult(const CommandLineArgs& args, const void* buffer, const uint32_t uCapacity,
-                             std::vector<std::pair<float,int>>& maxValues, std::ofstream& fout,
-                             unsigned int k)
+                             std::vector<std::pair<float, int>>& maxValues, std::ofstream& fout, unsigned int k)
     {
         // Create a priority queue of size k that pops the lowest value first
         // We will remove lowest values as we iterate over all the values
@@ -761,72 +761,158 @@ public:
     void WritePerformanceDataToCSV(const Profiler<WINML_MODEL_TEST_PERF>& profiler, int numIterations,
                                    std::wstring model, const std::string& deviceType, const std::string& inputBinding,
                                    const std::string& inputType, const std::string& deviceCreationLocation,
-                                   const std::vector<std::pair<std::string,std::string>>& perfFileMetadata) const
+                                   const std::vector<std::pair<std::string, std::string>>& perfFileMetadata) const
     {
-        double loadTime = profiler[LOAD_MODEL].GetAverage(CounterType::TIMER);
-        double createSessionTime = profiler[CREATE_SESSION].GetAverage(CounterType::TIMER);
+        double averageLoadTime = profiler[LOAD_MODEL].GetAverage(CounterType::TIMER);
+        double stdevLoadTime = profiler[LOAD_MODEL].GetStdev(CounterType::TIMER);
+        double minLoadTime = profiler[LOAD_MODEL].GetMin(CounterType::TIMER);
+        double maxLoadTime = profiler[LOAD_MODEL].GetMax(CounterType::TIMER);
+        uint32_t numberLoadIterations = profiler[LOAD_MODEL].GetCount();
+
+        double averageCreateSessionTime = profiler[CREATE_SESSION].GetAverage(CounterType::TIMER);
+        double stdevCreateSessionTime = profiler[CREATE_SESSION].GetStdev(CounterType::TIMER);
+        double minCreateSessionTime = profiler[CREATE_SESSION].GetMin(CounterType::TIMER);
+        double maxCreateSessionTime = profiler[CREATE_SESSION].GetMax(CounterType::TIMER);
+        uint32_t numberCreateSessionIterations = profiler[CREATE_SESSION].GetCount();
 
         double averageBindTime = profiler[BIND_VALUE].GetAverage(CounterType::TIMER);
         double stdevBindTime = profiler[BIND_VALUE].GetStdev(CounterType::TIMER);
         double minBindTime = profiler[BIND_VALUE].GetMin(CounterType::TIMER);
         double maxBindTime = profiler[BIND_VALUE].GetMax(CounterType::TIMER);
-        double firstBindTime = profiler[BIND_VALUE_FIRST_RUN].GetAverage(CounterType::TIMER);
+
+        double averageFirstBindTime = profiler[BIND_VALUE_FIRST_RUN].GetAverage(CounterType::TIMER);
+        double stdevFirstBindTime = profiler[BIND_VALUE_FIRST_RUN].GetStdev(CounterType::TIMER);
+        double minFirstBindTime = profiler[BIND_VALUE_FIRST_RUN].GetMin(CounterType::TIMER);
+        double maxFirstBindTime = profiler[BIND_VALUE_FIRST_RUN].GetMax(CounterType::TIMER);
 
         double averageEvalTime = profiler[EVAL_MODEL].GetAverage(CounterType::TIMER);
         double stdevEvalTime = profiler[EVAL_MODEL].GetStdev(CounterType::TIMER);
         double minEvalTime = profiler[EVAL_MODEL].GetMin(CounterType::TIMER);
         double maxEvalTime = profiler[EVAL_MODEL].GetMax(CounterType::TIMER);
-        double firstEvalTime = profiler[EVAL_MODEL_FIRST_RUN].GetAverage(CounterType::TIMER);
 
-        double firstLoadWorkingSetMemoryUsage = profiler[LOAD_MODEL].GetAverage(CounterType::WORKING_SET_USAGE);
-        double firstLoadSharedMemoryUsage = profiler[LOAD_MODEL].GetAverage(CounterType::GPU_SHARED_MEM_USAGE);
-        double firstLoadDedicatedMemoryUsage = profiler[LOAD_MODEL].GetAverage(CounterType::GPU_DEDICATED_MEM_USAGE);
+        double averageFirstEvalTime = profiler[EVAL_MODEL_FIRST_RUN].GetAverage(CounterType::TIMER);
+        double stdevFirstEvalTime = profiler[EVAL_MODEL_FIRST_RUN].GetStdev(CounterType::TIMER);
+        double minFirstEvalTime = profiler[EVAL_MODEL_FIRST_RUN].GetMin(CounterType::TIMER);
+        double maxFirstEvalTime = profiler[EVAL_MODEL_FIRST_RUN].GetMax(CounterType::TIMER);
 
-        double firstSessionCreationWorkingSetMemoryUsage =
+        double averageLoadWorkingSetMemoryUsage = profiler[LOAD_MODEL].GetAverage(CounterType::WORKING_SET_USAGE);
+        double stdevLoadWorkingSetMemoryUsage = profiler[LOAD_MODEL].GetStdev(CounterType::WORKING_SET_USAGE);
+        double minLoadWorkingSetMemoryUsage = profiler[LOAD_MODEL].GetMin(CounterType::WORKING_SET_USAGE);
+        double maxLoadWorkingSetMemoryUsage = profiler[LOAD_MODEL].GetMax(CounterType::WORKING_SET_USAGE);
+
+        double averageCreateSessionWorkingSetMemoryUsage =
             profiler[CREATE_SESSION].GetAverage(CounterType::WORKING_SET_USAGE);
-        double firstSessionCreationSharedMemoryUsage =
-            profiler[CREATE_SESSION].GetAverage(CounterType::GPU_SHARED_MEM_USAGE);
-        double firstSessionCreationDedicatedMemoryUsage =
+        double stdevCreateSessionWorkingSetMemoryUsage =
+            profiler[CREATE_SESSION].GetStdev(CounterType::WORKING_SET_USAGE);
+        double minCreateSessionWorkingSetMemoryUsage = profiler[CREATE_SESSION].GetMin(CounterType::WORKING_SET_USAGE);
+        double maxCreateSessionWorkingSetMemoryUsage = profiler[CREATE_SESSION].GetMax(CounterType::WORKING_SET_USAGE);
+
+        double averageBindWorkingSetMemoryUsage = profiler[BIND_VALUE].GetAverage(CounterType::WORKING_SET_USAGE);
+        double stdevBindWorkingSetMemoryUsage = profiler[BIND_VALUE].GetStdev(CounterType::WORKING_SET_USAGE);
+        double minBindWorkingSetMemoryUsage = profiler[BIND_VALUE].GetMin(CounterType::WORKING_SET_USAGE);
+        double maxBindWorkingSetMemoryUsage = profiler[BIND_VALUE].GetMax(CounterType::WORKING_SET_USAGE);
+
+        double averageFirstBindWorkingSetMemoryUsage =
+            profiler[BIND_VALUE_FIRST_RUN].GetAverage(CounterType::WORKING_SET_USAGE);
+        double stdevFirstBindWorkingSetMemoryUsage =
+            profiler[BIND_VALUE_FIRST_RUN].GetStdev(CounterType::WORKING_SET_USAGE);
+        double minFirstBindWorkingSetMemoryUsage =
+            profiler[BIND_VALUE_FIRST_RUN].GetMin(CounterType::WORKING_SET_USAGE);
+        double maxFirstBindWorkingSetMemoryUsage =
+            profiler[BIND_VALUE_FIRST_RUN].GetMax(CounterType::WORKING_SET_USAGE);
+
+        double averageEvalWorkingSetMemoryUsage = profiler[EVAL_MODEL].GetAverage(CounterType::WORKING_SET_USAGE);
+        double stdevEvalWorkingSetMemoryUsage = profiler[EVAL_MODEL].GetStdev(CounterType::WORKING_SET_USAGE);
+        double minEvalWorkingSetMemoryUsage = profiler[EVAL_MODEL].GetMin(CounterType::WORKING_SET_USAGE);
+        double maxEvalWorkingSetMemoryUsage = profiler[EVAL_MODEL].GetMax(CounterType::WORKING_SET_USAGE);
+
+        double averageFirstEvalWorkingSetMemoryUsage =
+            profiler[EVAL_MODEL_FIRST_RUN].GetAverage(CounterType::WORKING_SET_USAGE);
+        double stdevFirstEvalWorkingSetMemoryUsage =
+            profiler[EVAL_MODEL_FIRST_RUN].GetAverage(CounterType::WORKING_SET_USAGE);
+        double minFirstEvalWorkingSetMemoryUsage =
+            profiler[EVAL_MODEL_FIRST_RUN].GetAverage(CounterType::WORKING_SET_USAGE);
+        double maxFirstEvalWorkingSetMemoryUsage =
+            profiler[EVAL_MODEL_FIRST_RUN].GetAverage(CounterType::WORKING_SET_USAGE);
+
+        double averageLoadDedicatedMemoryUsage = profiler[LOAD_MODEL].GetAverage(CounterType::GPU_DEDICATED_MEM_USAGE);
+        double stdevLoadDedicatedMemoryUsage = profiler[LOAD_MODEL].GetStdev(CounterType::GPU_DEDICATED_MEM_USAGE);
+        double minLoadDedicatedMemoryUsage = profiler[LOAD_MODEL].GetMin(CounterType::GPU_DEDICATED_MEM_USAGE);
+        double maxLoadDedicatedMemoryUsage = profiler[LOAD_MODEL].GetMax(CounterType::GPU_DEDICATED_MEM_USAGE);
+
+        double averageCreateSessionDedicatedMemoryUsage =
             profiler[CREATE_SESSION].GetAverage(CounterType::GPU_DEDICATED_MEM_USAGE);
-
-        double averageBindMemoryUsage = profiler[BIND_VALUE].GetAverage(CounterType::WORKING_SET_USAGE);
-        double stdevBindMemoryUsage = profiler[BIND_VALUE].GetStdev(CounterType::WORKING_SET_USAGE);
-        double minBindMemoryUsage = profiler[BIND_VALUE].GetMin(CounterType::WORKING_SET_USAGE);
-        double maxBindMemoryUsage = profiler[BIND_VALUE].GetMax(CounterType::WORKING_SET_USAGE);
-        double firstBindMemoryUsage = profiler[BIND_VALUE_FIRST_RUN].GetAverage(CounterType::WORKING_SET_USAGE);
-
-        double averageEvalMemoryUsage = profiler[EVAL_MODEL].GetAverage(CounterType::WORKING_SET_USAGE);
-        double stdevEvalMemoryUsage = profiler[EVAL_MODEL].GetStdev(CounterType::WORKING_SET_USAGE);
-        double minEvalMemoryUsage = profiler[EVAL_MODEL].GetMin(CounterType::WORKING_SET_USAGE);
-        double maxEvalMemoryUsage = profiler[EVAL_MODEL].GetMax(CounterType::WORKING_SET_USAGE);
-        double firstEvalMemoryUsage = profiler[EVAL_MODEL_FIRST_RUN].GetAverage(CounterType::WORKING_SET_USAGE);
+        double stdevCreateSessionDedicatedMemoryUsage =
+            profiler[CREATE_SESSION].GetStdev(CounterType::GPU_DEDICATED_MEM_USAGE);
+        double minCreateSessionDedicatedMemoryUsage =
+            profiler[CREATE_SESSION].GetMin(CounterType::GPU_DEDICATED_MEM_USAGE);
+        double maxCreateSessionDedicatedMemoryUsage =
+            profiler[CREATE_SESSION].GetMax(CounterType::GPU_DEDICATED_MEM_USAGE);
 
         double averageBindDedicatedMemoryUsage = profiler[BIND_VALUE].GetAverage(CounterType::GPU_DEDICATED_MEM_USAGE);
         double stdevBindDedicatedMemoryUsage = profiler[BIND_VALUE].GetStdev(CounterType::GPU_DEDICATED_MEM_USAGE);
         double minBindDedicatedMemoryUsage = profiler[BIND_VALUE].GetMin(CounterType::GPU_DEDICATED_MEM_USAGE);
         double maxBindDedicatedMemoryUsage = profiler[BIND_VALUE].GetMax(CounterType::GPU_DEDICATED_MEM_USAGE);
-        double firstBindDedicatedMemoryUsage =
+
+        double averageFirstBindDedicatedMemoryUsage =
             profiler[BIND_VALUE_FIRST_RUN].GetAverage(CounterType::GPU_DEDICATED_MEM_USAGE);
+        double stdevFirstBindDedicatedMemoryUsage =
+            profiler[BIND_VALUE_FIRST_RUN].GetStdev(CounterType::GPU_DEDICATED_MEM_USAGE);
+        double minFirstBindDedicatedMemoryUsage =
+            profiler[BIND_VALUE_FIRST_RUN].GetMin(CounterType::GPU_DEDICATED_MEM_USAGE);
+        double maxFirstBindDedicatedMemoryUsage =
+            profiler[BIND_VALUE_FIRST_RUN].GetMax(CounterType::GPU_DEDICATED_MEM_USAGE);
 
         double averageEvalDedicatedMemoryUsage = profiler[EVAL_MODEL].GetAverage(CounterType::GPU_DEDICATED_MEM_USAGE);
         double stdevEvalDedicatedMemoryUsage = profiler[EVAL_MODEL].GetStdev(CounterType::GPU_DEDICATED_MEM_USAGE);
         double minEvalDedicatedMemoryUsage = profiler[EVAL_MODEL].GetMin(CounterType::GPU_DEDICATED_MEM_USAGE);
         double maxEvalDedicatedMemoryUsage = profiler[EVAL_MODEL].GetMax(CounterType::GPU_DEDICATED_MEM_USAGE);
-        double firstEvalDedicatedMemoryUsage =
+
+        double averageFirstEvalDedicatedMemoryUsage =
             profiler[EVAL_MODEL_FIRST_RUN].GetAverage(CounterType::GPU_DEDICATED_MEM_USAGE);
+        double stdevFirstEvalDedicatedMemoryUsage =
+            profiler[EVAL_MODEL_FIRST_RUN].GetAverage(CounterType::GPU_DEDICATED_MEM_USAGE);
+        double minFirstEvalDedicatedMemoryUsage =
+            profiler[EVAL_MODEL_FIRST_RUN].GetAverage(CounterType::GPU_DEDICATED_MEM_USAGE);
+        double maxFirstEvalDedicatedMemoryUsage =
+            profiler[EVAL_MODEL_FIRST_RUN].GetAverage(CounterType::GPU_DEDICATED_MEM_USAGE);
+
+        double averageLoadSharedMemoryUsage = profiler[LOAD_MODEL].GetAverage(CounterType::GPU_SHARED_MEM_USAGE);
+        double stdevLoadSharedMemoryUsage = profiler[LOAD_MODEL].GetStdev(CounterType::GPU_SHARED_MEM_USAGE);
+        double minLoadSharedMemoryUsage = profiler[LOAD_MODEL].GetMin(CounterType::GPU_SHARED_MEM_USAGE);
+        double maxLoadSharedMemoryUsage = profiler[LOAD_MODEL].GetMax(CounterType::GPU_SHARED_MEM_USAGE);
+
+        double averageCreateSessionSharedMemoryUsage =
+            profiler[CREATE_SESSION].GetAverage(CounterType::GPU_SHARED_MEM_USAGE);
+        double stdevCreateSessionSharedMemoryUsage =
+            profiler[CREATE_SESSION].GetStdev(CounterType::GPU_SHARED_MEM_USAGE);
+        double minCreateSessionSharedMemoryUsage = profiler[CREATE_SESSION].GetMin(CounterType::GPU_SHARED_MEM_USAGE);
+        double maxCreateSessionSharedMemoryUsage = profiler[CREATE_SESSION].GetMax(CounterType::GPU_SHARED_MEM_USAGE);
 
         double averageBindSharedMemoryUsage = profiler[BIND_VALUE].GetAverage(CounterType::GPU_SHARED_MEM_USAGE);
         double stdevBindSharedMemoryUsage = profiler[BIND_VALUE].GetStdev(CounterType::GPU_SHARED_MEM_USAGE);
         double minBindSharedMemoryUsage = profiler[BIND_VALUE].GetMin(CounterType::GPU_SHARED_MEM_USAGE);
         double maxBindSharedMemoryUsage = profiler[BIND_VALUE].GetMax(CounterType::GPU_SHARED_MEM_USAGE);
-        double firstBindSharedMemoryUsage =
+
+        double averageFirstBindSharedMemoryUsage =
             profiler[BIND_VALUE_FIRST_RUN].GetAverage(CounterType::GPU_SHARED_MEM_USAGE);
+        double stdevFirstBindSharedMemoryUsage =
+            profiler[BIND_VALUE_FIRST_RUN].GetStdev(CounterType::GPU_SHARED_MEM_USAGE);
+        double minFirstBindSharedMemoryUsage = profiler[BIND_VALUE_FIRST_RUN].GetMin(CounterType::GPU_SHARED_MEM_USAGE);
+        double maxFirstBindSharedMemoryUsage = profiler[BIND_VALUE_FIRST_RUN].GetMax(CounterType::GPU_SHARED_MEM_USAGE);
 
         double averageEvalSharedMemoryUsage = profiler[EVAL_MODEL].GetAverage(CounterType::GPU_SHARED_MEM_USAGE);
         double stdevEvalSharedMemoryUsage = profiler[EVAL_MODEL].GetStdev(CounterType::GPU_SHARED_MEM_USAGE);
         double minEvalSharedMemoryUsage = profiler[EVAL_MODEL].GetMin(CounterType::GPU_SHARED_MEM_USAGE);
         double maxEvalSharedMemoryUsage = profiler[EVAL_MODEL].GetMax(CounterType::GPU_SHARED_MEM_USAGE);
-        double firstEvalSharedMemoryUsage =
+
+        double averageFirstEvalSharedMemoryUsage =
+            profiler[EVAL_MODEL_FIRST_RUN].GetAverage(CounterType::GPU_SHARED_MEM_USAGE);
+        double stdevFirstEvalSharedMemoryUsage =
+            profiler[EVAL_MODEL_FIRST_RUN].GetAverage(CounterType::GPU_SHARED_MEM_USAGE);
+        double minFirstEvalSharedMemoryUsage =
+            profiler[EVAL_MODEL_FIRST_RUN].GetAverage(CounterType::GPU_SHARED_MEM_USAGE);
+        double maxFirstEvalSharedMemoryUsage =
             profiler[EVAL_MODEL_FIRST_RUN].GetAverage(CounterType::GPU_SHARED_MEM_USAGE);
 
         if (!m_csvFileName.empty())
@@ -862,11 +948,33 @@ public:
                      << ","
                      << "iterations"
                      << ","
-                     << "load (ms)"
+                     << "load iterations"
                      << ","
-                     << "session creation (ms)"
+                     << "session creation iterations"
                      << ","
-                     << "first bind (ms)"
+                     << "average load (ms)"
+                     << ","
+                     << "standard deviation load (ms)"
+                     << ","
+                     << "min load (ms)"
+                     << ","
+                     << "max load (ms)"
+                     << ","
+                     << "average session creation (ms)"
+                     << ","
+                     << "standard deviation session creation (ms)"
+                     << ","
+                     << "min session creation (ms)"
+                     << ","
+                     << "max session creation (ms)"
+                     << ","
+                     << "average first bind (ms)"
+                     << ","
+                     << "standard deviation first bind (ms)"
+                     << ","
+                     << "min first bind (ms)"
+                     << ","
+                     << "max first bind (ms)"
                      << ","
                      << "average bind (ms)"
                      << ","
@@ -876,7 +984,13 @@ public:
                      << ","
                      << "max bind (ms)"
                      << ","
-                     << "first evaluate (ms)"
+                     << "average first evaluate (ms)"
+                     << ","
+                     << "standard deviation first evaluate (ms)"
+                     << ","
+                     << "min first evaluate (ms)"
+                     << ","
+                     << "max first evaluate (ms)"
                      << ","
                      << "average evaluate (ms)"
                      << ","
@@ -886,115 +1000,201 @@ public:
                      << ","
                      << "max evaluate (ms)"
                      << ","
-                     << "load working set memory (MB)"
+                     << "load average working set memory (MB)"
                      << ","
-                     << "session creation working set memory (MB)"
+                     << "load standard deviation working set memory (MB)"
                      << ","
-                     << "first bind working set memory (MB)"
+                     << "load min working set memory (MB)"
+                     << ","
+                     << "load max working set memory (MB)"
+                     << ","
+                     << "session creation average working set memory (MB)"
+                     << ","
+                     << "session creation standard deviation working set memory (MB)"
+                     << ","
+                     << "session creation min working set memory (MB)"
+                     << ","
+                     << "session creation max working set memory (MB)"
+                     << ","
+                     << "first bind average working set memory (MB)"
+                     << ","
+                     << "first bind standard deviation working set memory (MB)"
+                     << ","
+                     << "first bind min working set memory (MB)"
+                     << ","
+                     << "first bind max working set memory (MB)"
                      << ","
                      << "bind average working set memory (MB)"
                      << ","
                      << "bind standard deviation working set memory (MB)"
                      << ","
-                     << "bind max working set memory (MB)"
-                     << ","
                      << "bind min working set memory (MB)"
                      << ","
-                     << "first evaluate working set memory (MB)"
+                     << "bind max working set memory (MB)"
+                     << ","
+                     << "first evaluate average working set memory (MB)"
+                     << ","
+                     << "first evaluate standard deviation working set memory (MB)"
+                     << ","
+                     << "first evaluate min working set memory (MB)"
+                     << ","
+                     << "first evaluate max working set memory (MB)"
                      << ","
                      << "evaluate average working set memory (MB)"
                      << ","
                      << "evaluate standard deviation working set memory (MB)"
                      << ","
-                     << "evaluate max working set memory (MB)"
-                     << ","
                      << "evaluate min working set memory (MB)"
                      << ","
-                     << "load dedicated memory (MB)"
+                     << "evaluate max working set memory (MB)"
                      << ","
-                     << "session creation dedicated memory (MB)"
+                     << "load average dedicated memory (MB)"
                      << ","
-                     << "first bind dedicated memory (MB)"
+                     << "load standard deviation dedicated memory (MB)"
+                     << ","
+                     << "load min dedicated memory (MB)"
+                     << ","
+                     << "load max dedicated memory (MB)"
+                     << ","
+                     << "session creation average dedicated memory (MB)"
+                     << ","
+                     << "session creation standard deviation dedicated memory (MB)"
+                     << ","
+                     << "session creation min dedicated memory (MB)"
+                     << ","
+                     << "session creation max dedicated memory (MB)"
+                     << ","
+                     << "first bind average dedicated memory (MB)"
+                     << ","
+                     << "first bind standard deviation dedicated memory (MB)"
+                     << ","
+                     << "first bind min dedicated memory (MB)"
+                     << ","
+                     << "first bind max dedicated memory (MB)"
                      << ","
                      << "bind average dedicated memory (MB)"
                      << ","
                      << "bind standard deviation dedicated memory (MB)"
                      << ","
-                     << "bind max dedicated memory (MB)"
-                     << ","
                      << "bind min dedicated memory (MB)"
                      << ","
-                     << "first evaluate dedicated memory (MB)"
+                     << "bind max dedicated memory (MB)"
+                     << ","
+                     << "first evaluate average dedicated memory (MB)"
+                     << ","
+                     << "first evaluate standard deviation dedicated memory (MB)"
+                     << ","
+                     << "first evaluate min dedicated memory (MB)"
+                     << ","
+                     << "first evaluate max dedicated memory (MB)"
                      << ","
                      << "evaluate average dedicated memory (MB)"
                      << ","
                      << "evaluate standard deviation dedicated memory (MB)"
                      << ","
-                     << "evaluate max dedicated memory (MB)"
-                     << ","
                      << "evaluate min dedicated memory (MB)"
                      << ","
-                     << "load shared memory (MB)"
+                     << "evaluate max dedicated memory (MB)"
                      << ","
-                     << "session creation shared memory (MB)"
+                     << "load average shared memory (MB)"
                      << ","
-                     << "first bind shared memory (MB)"
+                     << "load standard deviation shared memory (MB)"
+                     << ","
+                     << "load min shared memory (MB)"
+                     << ","
+                     << "load max shared memory (MB)"
+                     << ","
+                     << "session creation average shared memory (MB)"
+                     << ","
+                     << "session creation standard deviation shared memory (MB)"
+                     << ","
+                     << "session creation min shared memory (MB)"
+                     << ","
+                     << "session creation max shared memory (MB)"
+                     << ","
+                     << "first bind average shared memory (MB)"
+                     << ","
+                     << "first bind standard deviation shared memory (MB)"
+                     << ","
+                     << "first bind min shared memory (MB)"
+                     << ","
+                     << "first bind max shared memory (MB)"
                      << ","
                      << "bind average shared memory (MB)"
                      << ","
                      << "bind standard deviation shared memory (MB)"
                      << ","
-                     << "bind max shared memory (MB)"
-                     << ","
                      << "bind min shared memory (MB)"
                      << ","
-                     << "first evaluate shared memory (MB)"
+                     << "bind max shared memory (MB)"
+                     << ","
+                     << "first evaluate average shared memory (MB)"
+                     << ","
+                     << "first evaluate standard deviation shared memory (MB)"
+                     << ","
+                     << "first evaluate min shared memory (MB)"
+                     << ","
+                     << "first evaluate max shared memory (MB)"
                      << ","
                      << "evaluate average shared memory (MB)"
                      << ","
                      << "evaluate standard deviation shared memory (MB)"
                      << ","
-                     << "evaluate max shared memory (MB)"
-                     << ","
                      << "evaluate min shared memory (MB)"
+                     << ","
+                     << "evaluate max shared memory (MB)"
                      << ",";
                 for (auto metaDataPair : perfFileMetadata)
                 {
                     fout << metaDataPair.first << ",";
                 }
-                    fout << std::endl;
+                fout << std::endl;
             }
             fout << modelName << "," << deviceType << "," << inputBinding << "," << inputType << ","
-                 << deviceCreationLocation << "," << numIterations << "," << loadTime << "," << createSessionTime << ","
-                 << firstBindTime << "," << (numIterations <= 1 ? 0 : averageBindTime) << ","
-                 << (numIterations <= 1 ? 0 : stdevBindTime) << ","
+                 << deviceCreationLocation << "," << numIterations << "," << numberLoadIterations << "," << numberCreateSessionIterations << "," 
+                 << averageLoadTime << "," << stdevLoadTime << "," << minLoadTime << "," << maxLoadTime << ","
+                 << averageCreateSessionTime << "," << stdevCreateSessionTime << "," << minCreateSessionTime << "," << maxCreateSessionTime << ","
+                 << averageFirstBindTime << "," << stdevFirstBindTime << "," << minFirstBindTime << "," << maxFirstBindTime << ","
+                 << (numIterations <= 1 ? 0 : averageBindTime) << "," << (numIterations <= 1 ? 0 : stdevBindTime) << ","
                  << (numIterations <= 1 ? 0 : minBindTime) << "," << (numIterations <= 1 ? 0 : maxBindTime) << ","
-                 << firstEvalTime << "," << (numIterations <= 1 ? 0 : averageEvalTime) << "," 
-                 << (numIterations <= 1 ? 0 : stdevEvalTime) << ","
+                 << averageFirstEvalTime << "," << stdevFirstEvalTime << "," << minFirstEvalTime << "," << maxFirstEvalTime<< ","
+                 << (numIterations <= 1 ? 0 : averageEvalTime) << "," << (numIterations <= 1 ? 0 : stdevEvalTime) << "," 
                  << (numIterations <= 1 ? 0 : minEvalTime) << "," << (numIterations <= 1 ? 0 : maxEvalTime) << ","
-                 << firstLoadWorkingSetMemoryUsage << "," << firstSessionCreationWorkingSetMemoryUsage << ","
-                 << firstBindMemoryUsage << "," << (numIterations <= 1 ? 0 : averageBindMemoryUsage) << ","
-                 << (numIterations <= 1 ? 0 : stdevBindMemoryUsage) << ","
-                 << (numIterations <= 1 ? 0 : maxBindMemoryUsage) << ","
-                 << (numIterations <= 1 ? 0 : minBindMemoryUsage) << "," << firstEvalMemoryUsage << ","
-                 << (numIterations <= 1 ? 0 : averageEvalMemoryUsage) << ","
-                 << (numIterations <= 1 ? 0 : stdevEvalMemoryUsage) << ","
-                 << (numIterations <= 1 ? 0 : maxEvalMemoryUsage) << ","
-                 << (numIterations <= 1 ? 0 : minEvalMemoryUsage) << "," << firstLoadDedicatedMemoryUsage << ","
-                 << firstSessionCreationDedicatedMemoryUsage << "," << firstBindDedicatedMemoryUsage << ","
+                 
+                 << averageLoadWorkingSetMemoryUsage << "," << stdevLoadWorkingSetMemoryUsage << "," << minLoadWorkingSetMemoryUsage << "," << maxLoadWorkingSetMemoryUsage << ","
+                 << averageCreateSessionWorkingSetMemoryUsage << "," << stdevCreateSessionWorkingSetMemoryUsage << "," << minCreateSessionWorkingSetMemoryUsage << "," << maxCreateSessionWorkingSetMemoryUsage << ","
+                 << averageFirstBindWorkingSetMemoryUsage << "," << stdevFirstBindWorkingSetMemoryUsage << "," << minFirstBindWorkingSetMemoryUsage << "," << maxFirstBindWorkingSetMemoryUsage << ","
+                 << (numIterations <= 1 ? 0 : averageBindWorkingSetMemoryUsage) << ","
+                 << (numIterations <= 1 ? 0 : stdevBindWorkingSetMemoryUsage) << ","
+                 << (numIterations <= 1 ? 0 : maxBindWorkingSetMemoryUsage) << ","
+                 << (numIterations <= 1 ? 0 : minBindWorkingSetMemoryUsage) << ","
+                 << averageFirstBindWorkingSetMemoryUsage << "," << stdevFirstBindWorkingSetMemoryUsage << "," << minFirstBindWorkingSetMemoryUsage << "," << maxFirstBindWorkingSetMemoryUsage << ","
+                 << (numIterations <= 1 ? 0 : averageEvalWorkingSetMemoryUsage) << ","
+                 << (numIterations <= 1 ? 0 : stdevEvalWorkingSetMemoryUsage) << ","
+                 << (numIterations <= 1 ? 0 : maxEvalWorkingSetMemoryUsage) << ","
+                 << (numIterations <= 1 ? 0 : minEvalWorkingSetMemoryUsage) << ","
+                 
+                 << averageLoadDedicatedMemoryUsage << "," << stdevLoadDedicatedMemoryUsage << "," << minLoadDedicatedMemoryUsage << "," << maxLoadDedicatedMemoryUsage << ","
+                 << averageCreateSessionDedicatedMemoryUsage << "," << stdevCreateSessionDedicatedMemoryUsage << "," << minCreateSessionDedicatedMemoryUsage << "," << maxCreateSessionDedicatedMemoryUsage << ","
+                 << averageFirstBindDedicatedMemoryUsage << "," << stdevFirstBindDedicatedMemoryUsage << "," << minFirstBindDedicatedMemoryUsage << "," << maxFirstBindDedicatedMemoryUsage << ","
                  << (numIterations <= 1 ? 0 : averageBindDedicatedMemoryUsage) << ","
                  << (numIterations <= 1 ? 0 : stdevBindDedicatedMemoryUsage) << ","
                  << (numIterations <= 1 ? 0 : maxBindDedicatedMemoryUsage) << ","
-                 << (numIterations <= 1 ? 0 : minBindDedicatedMemoryUsage) << "," << firstEvalDedicatedMemoryUsage << ","
+                 << (numIterations <= 1 ? 0 : minBindDedicatedMemoryUsage) << ","
+                 << averageFirstBindDedicatedMemoryUsage << "," << stdevFirstBindDedicatedMemoryUsage << "," << minFirstBindDedicatedMemoryUsage << "," << maxFirstBindDedicatedMemoryUsage << ","
                  << (numIterations <= 1 ? 0 : averageEvalDedicatedMemoryUsage) << ","
                  << (numIterations <= 1 ? 0 : stdevEvalDedicatedMemoryUsage) << ","
                  << (numIterations <= 1 ? 0 : maxEvalDedicatedMemoryUsage) << ","
-                 << (numIterations <= 1 ? 0 : minEvalDedicatedMemoryUsage) << "," << firstLoadSharedMemoryUsage << ","
-                 << firstSessionCreationSharedMemoryUsage << "," << firstBindSharedMemoryUsage << ","
+                 << (numIterations <= 1 ? 0 : minEvalDedicatedMemoryUsage) << ","
+
+                 << averageLoadSharedMemoryUsage << "," << stdevLoadSharedMemoryUsage << "," << minLoadSharedMemoryUsage << "," << maxLoadSharedMemoryUsage << ","
+                 << averageCreateSessionSharedMemoryUsage << "," << stdevCreateSessionSharedMemoryUsage << "," << minCreateSessionSharedMemoryUsage << "," << maxCreateSessionSharedMemoryUsage << ","
+                 << averageFirstBindSharedMemoryUsage << "," << stdevFirstBindSharedMemoryUsage << "," << minFirstBindSharedMemoryUsage << "," << maxFirstBindSharedMemoryUsage << ","
                  << (numIterations <= 1 ? 0 : averageBindSharedMemoryUsage) << ","
                  << (numIterations <= 1 ? 0 : stdevBindSharedMemoryUsage) << ","
                  << (numIterations <= 1 ? 0 : maxBindSharedMemoryUsage) << ","
-                 << (numIterations <= 1 ? 0 : minBindSharedMemoryUsage) << "," << firstEvalSharedMemoryUsage << ","
+                 << (numIterations <= 1 ? 0 : minBindSharedMemoryUsage) << ","
+                 << averageFirstBindSharedMemoryUsage << "," << stdevFirstBindSharedMemoryUsage << "," << minFirstBindSharedMemoryUsage << "," << maxFirstBindSharedMemoryUsage << ","
                  << (numIterations <= 1 ? 0 : averageEvalSharedMemoryUsage) << ","
                  << (numIterations <= 1 ? 0 : stdevEvalSharedMemoryUsage) << ","
                  << (numIterations <= 1 ? 0 : maxEvalSharedMemoryUsage) << ","

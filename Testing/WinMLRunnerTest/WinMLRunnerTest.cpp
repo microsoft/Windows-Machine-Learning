@@ -95,7 +95,7 @@ namespace WinMLRunnerTest
                 L"One of the output tensors is empty or expected and Actual Output tensors are different sizes\n");
         }
         bool doesActualMatchExpected = true;
-        for (int i = 0; i < expectedOutputTensors.size(); i++)
+        for (uint32_t i = 0; i < expectedOutputTensors.size(); i++)
         {
             float actualValueNum = actualOutputTensors[i].second;
             float expectedValueNum = expectedOutputTensors[i].second;
@@ -163,8 +163,9 @@ namespace WinMLRunnerTest
 
         bool currentValueIsLargeEnough = true;
         bool doesActualMatchExpected = true;
-        int currentIndex = 0;
-        while (currentValueIsLargeEnough && currentIndex < expectedOutputTensors.size())
+        uint32_t currentIndex = 0;
+        uint32_t maxIndex = min(expectedOutputTensors.size(), 20);
+        while (currentValueIsLargeEnough && currentIndex < maxIndex)
         {
             // Compare expected vs actual prediction index
             if (expectedOutputTensors[currentIndex].first != actualOutputTensors[currentIndex].first)
@@ -724,8 +725,8 @@ namespace WinMLRunnerTest
                                                         L"-SaveTensorData", L"First", L"-PerIterationPath", tensorDataPath, L"-CPU",
                                                         L"-Tensor Normalize 255 0.485,0.456,0.406 0.229,0.224,0.225" });
             Assert::AreEqual(S_OK, RunProc((wchar_t*)command.c_str()));
-            Assert::AreEqual(true, CompareTensors(L"OutputTensorData\\DenseNet121_fp16_kitten_224_input_CPU.csv",
-                                                  tensorDataPath + L"\\fc6_1CpuIteration1.csv"));
+            Assert::AreEqual(true, CompareTensorsFP16(L"OutputTensorData\\DenseNet121_fp16_kitten_224_input_CPU.csv",
+                                                      tensorDataPath + L"\\fc6_1CpuIteration1.csv"));
         }
 
         TEST_METHOD_WITH_NAME(ProvidedImageInputOnlyGpuSaveTensorTensorizeScaleMeanStdDevFP16)

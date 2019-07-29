@@ -6,8 +6,9 @@
 #include <Windows.Graphics.DirectX.Direct3D11.interop.h>
 #include "Run.h"
 #include "Scenarios.h"
+#include <winrt/Windows.Foundation.Metadata.h>
 using namespace winrt::Windows::Graphics::DirectX::Direct3D11;
-
+using namespace winrt::Windows::Foundation::Metadata;
 std::vector<ILearningModelFeatureValue> GenerateInputFeatures(const LearningModel& model, const CommandLineArgs& args,
                                                               InputBindingType inputBindingType,
                                                               InputDataType inputDataType,
@@ -137,10 +138,30 @@ HRESULT CreateDXGIFactory2SEH(void** dxgiFactory)
 }
 #endif
 
+void PopulateSessionOptions(LearningModelSessionOptions& sessionOptions)
+{ 
+    sessionOptions.BatchSizeOverride(1);
+}
+
+bool CheckIfSessionOptionsSupported()
+{
+    bool isSessionTypePresent = false;
+    bool isSessionOptionsTypePresent = false;
+    bool isApiContract1 = false;
+    bool isApiContract2 = false;
+    auto statics = get_activation_factory<ApiInformation, IApiInformationStatics>();
+    isSessionTypePresent = statics.IsTypePresent(L"Windows.AI.MachineLearning.LearningModelSession");
+    isSessionOptionsTypePresent = isSessionOptionsTypePresent = statics.IsTypePresent(L"Windows.AI.MachineLearning.LearningModelSessionOptions");
+    isApiContract1 = statics.IsApiContractPresent(L"Windows.AI.MachineLearning.MachineLearningContract", 1);
+    isApiContract2 = statics.IsApiContractPresent(L"Windows.AI.MachineLearning.MachineLearningContract", 2);
+    return isSessionOptionsTypePresent;
+}
+
 HRESULT CreateSession(LearningModelSession& session, IDirect3DDevice& winrtDevice, LearningModel& model,
                       CommandLineArgs& args, OutputHelper& output, DeviceType deviceType,
                       DeviceCreationLocation deviceCreationLocation, Profiler<WINML_MODEL_TEST_PERF>& profiler)
 {
+    CheckIfSessionOptionsSupported();
     if (model == nullptr)
     {
         return hresult_invalid_argument().code();

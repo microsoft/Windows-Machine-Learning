@@ -27,8 +27,8 @@ std::vector<ILearningModelFeatureValue> GenerateInputFeatures(const LearningMode
         if (inputDataType == InputDataType::Tensor)
         {
             // If CSV data is provided, then every input will contain the same CSV data
-            auto tensorFeature = BindingUtilities::CreateBindableTensor(description, imagePath, inputBindingType,
-                                                                        inputDataType, args, iterationNum);
+            auto tensorFeature = BindingUtilities::CreateBindableTensor(description, imagePath, inputBindingType, inputDataType,
+                                                                        args, iterationNum);
             inputFeatures.push_back(tensorFeature);
         }
         else
@@ -152,8 +152,10 @@ void PopulateSessionOptions(LearningModelSessionOptions& sessionOptions)
     }
 }
 
-void CreateSessionConsideringSupportForSessionOptions(LearningModelSession& session, LearningModel& model,
-                                                      Profiler<WINML_MODEL_TEST_PERF>& profiler, CommandLineArgs& args,
+void CreateSessionConsideringSupportForSessionOptions(LearningModelSession& session,
+                                                      LearningModel& model,
+                                                      Profiler<WINML_MODEL_TEST_PERF>& profiler,
+                                                      CommandLineArgs& args,
                                                       LearningModelDevice& learningModelDevice)
 {
     auto statics = get_activation_factory<ApiInformation, IApiInformationStatics>();
@@ -249,124 +251,123 @@ HRESULT CreateSession(LearningModelSession& session, IDirect3DDevice& winrtDevic
         }
 #ifdef DXCORE_SUPPORTED_BUILD
         else if ((TypeHelper::GetWinmlDeviceKind(deviceType) != LearningModelDeviceKind::Cpu) && !adapterName.empty())
-        {
-            com_ptr<IDXCoreAdapterFactory> spFactory;
-            THROW_IF_FAILED(DXCoreCreateAdapterFactory(IID_PPV_ARGS(spFactory.put())));
+             {
+             com_ptr<IDXCoreAdapterFactory> spFactory;
+             THROW_IF_FAILED(DXCoreCreateAdapterFactory(IID_PPV_ARGS(spFactory.put())));
 
-            com_ptr<IDXCoreAdapterList> spAdapterList;
-            const GUID dxGUIDs[] = { DXCORE_ADAPTER_ATTRIBUTE_D3D12_CORE_COMPUTE };
+             com_ptr<IDXCoreAdapterList> spAdapterList;
+             const GUID dxGUIDs[] = { DXCORE_ADAPTER_ATTRIBUTE_D3D12_CORE_COMPUTE };
 
-            THROW_IF_FAILED(
-                spFactory->CreateAdapterList(ARRAYSIZE(dxGUIDs), dxGUIDs, IID_PPV_ARGS(spAdapterList.put())));
+             THROW_IF_FAILED(spFactory->CreateAdapterList(ARRAYSIZE(dxGUIDs), dxGUIDs, IID_PPV_ARGS(spAdapterList.put())));
 
-            std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
-            std::string adapterNameStr = converter.to_bytes(adapterName);
-            com_ptr<IDXCoreAdapter> spAdapter = nullptr;
-            com_ptr<IDXCoreAdapter> currAdapter = nullptr;
-            bool chosenAdapterFound = false;
-            printf("Printing available adapters..\n");
-            for (UINT i = 0; i < spAdapterList->GetAdapterCount(); i++)
-            {
-                THROW_IF_FAILED(spAdapterList->GetAdapter(i, currAdapter.put()));
+             std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
+             std::string adapterNameStr = converter.to_bytes(adapterName);
+             com_ptr<IDXCoreAdapter> spAdapter = nullptr;
+             com_ptr<IDXCoreAdapter> currAdapter = nullptr;
+             bool chosenAdapterFound = false;
+             printf("Printing available adapters..\n");
+             for (UINT i = 0; i < spAdapterList->GetAdapterCount(); i++)
+             {
+                 THROW_IF_FAILED(spAdapterList->GetAdapter(i, currAdapter.put()));
 
-                // If the adapter is a software adapter then don't consider it for index selection
-                bool isHardware;
-                size_t driverDescriptionSize;
-                THROW_IF_FAILED(
-                    currAdapter->GetPropertySize(DXCoreAdapterProperty::DriverDescription, &driverDescriptionSize));
-                CHAR* driverDescription = new CHAR[driverDescriptionSize];
-                THROW_IF_FAILED(currAdapter->GetProperty(DXCoreAdapterProperty::IsHardware, &isHardware));
-                THROW_IF_FAILED(currAdapter->GetProperty(DXCoreAdapterProperty::DriverDescription,
-                                                         driverDescriptionSize, driverDescription));
-                if (isHardware)
-                {
-                    printf("Description: %s\n", driverDescription);
-                }
-                if (!adapterName.empty() && !chosenAdapterFound)
-                {
-                    std::string driverDescriptionStr = std::string(driverDescription);
-                    std::transform(driverDescriptionStr.begin(), driverDescriptionStr.end(),
-                                   driverDescriptionStr.begin(), ::tolower);
-                    std::transform(adapterNameStr.begin(), adapterNameStr.end(), adapterNameStr.begin(), ::tolower);
-                    if (strstr(driverDescriptionStr.c_str(), adapterNameStr.c_str()))
-                    {
-                        chosenAdapterFound = true;
-                        spAdapter = currAdapter;
-                    }
-                }
-                currAdapter = nullptr;
-                free(driverDescription);
-            }
+                 // If the adapter is a software adapter then don't consider it for index selection
+                 bool isHardware;
+                 size_t driverDescriptionSize;
+                 THROW_IF_FAILED(
+                     currAdapter->GetPropertySize(DXCoreAdapterProperty::DriverDescription, &driverDescriptionSize));
+                 CHAR* driverDescription = new CHAR[driverDescriptionSize];
+                 THROW_IF_FAILED(currAdapter->GetProperty(DXCoreAdapterProperty::IsHardware, &isHardware));
+                 THROW_IF_FAILED(currAdapter->GetProperty(DXCoreAdapterProperty::DriverDescription, driverDescriptionSize,
+                                                          driverDescription));
+                 if (isHardware)
+                 {
+                     printf("Description: %s\n", driverDescription);
+                 }
+                 if (!adapterName.empty() && !chosenAdapterFound)
+                 {
+                     std::string driverDescriptionStr = std::string(driverDescription);
+                     std::transform(driverDescriptionStr.begin(), driverDescriptionStr.end(),
+                                    driverDescriptionStr.begin(), ::tolower);
+                     std::transform(adapterNameStr.begin(), adapterNameStr.end(), adapterNameStr.begin(), ::tolower);
+                     if (strstr(driverDescriptionStr.c_str(), adapterNameStr.c_str()))
+                     {
+                         chosenAdapterFound = true;
+                         spAdapter = currAdapter;
+                     }
+                 }
+                 currAdapter = nullptr;
+                 free(driverDescription);
+             }
+             
+             if (spAdapter == nullptr)
+             {
+                 throw hresult_invalid_argument(L"ERROR: No matching adapter with given adapter name: " +
+                                               adapterName);
+             }
+             size_t driverDescriptionSize;
+             THROW_IF_FAILED(spAdapter->GetPropertySize(DXCoreAdapterProperty::DriverDescription, &driverDescriptionSize));
+             CHAR* driverDescription = new CHAR[driverDescriptionSize];
+             spAdapter->GetProperty(DXCoreAdapterProperty::DriverDescription, driverDescriptionSize, driverDescription);
+             printf("Using adapter : %s\n", driverDescription);
+             free(driverDescription);
+             IUnknown* pAdapter = spAdapter.get();
+             com_ptr<IDXGIAdapter> spDxgiAdapter;
+             D3D_FEATURE_LEVEL d3dFeatureLevel = D3D_FEATURE_LEVEL_1_0_CORE;
+             D3D12_COMMAND_LIST_TYPE commandQueueType = D3D12_COMMAND_LIST_TYPE_COMPUTE;
 
-            if (spAdapter == nullptr)
-            {
-                throw hresult_invalid_argument(L"ERROR: No matching adapter with given adapter name: " + adapterName);
-            }
-            size_t driverDescriptionSize;
-            THROW_IF_FAILED(
-                spAdapter->GetPropertySize(DXCoreAdapterProperty::DriverDescription, &driverDescriptionSize));
-            CHAR* driverDescription = new CHAR[driverDescriptionSize];
-            spAdapter->GetProperty(DXCoreAdapterProperty::DriverDescription, driverDescriptionSize, driverDescription);
-            printf("Using adapter : %s\n", driverDescription);
-            free(driverDescription);
-            IUnknown* pAdapter = spAdapter.get();
-            com_ptr<IDXGIAdapter> spDxgiAdapter;
-            D3D_FEATURE_LEVEL d3dFeatureLevel = D3D_FEATURE_LEVEL_1_0_CORE;
-            D3D12_COMMAND_LIST_TYPE commandQueueType = D3D12_COMMAND_LIST_TYPE_COMPUTE;
+             // Check if adapter selected has DXCORE_ADAPTER_ATTRIBUTE_D3D12_GRAPHICS attribute selected. If so,
+             // then GPU was selected that has D3D12 and D3D11 capabilities. It would be the most stable to
+             // use DXGI to enumerate GPU and use D3D_FEATURE_LEVEL_11_0 so that image tensorization for
+             // video frames would be able to happen on the GPU.
+             if (spAdapter->IsAttributeSupported(DXCORE_ADAPTER_ATTRIBUTE_D3D12_GRAPHICS))
+             {
+                 d3dFeatureLevel = D3D_FEATURE_LEVEL::D3D_FEATURE_LEVEL_11_0;
+                 com_ptr<IDXGIFactory4> dxgiFactory4;
+                 HRESULT hr;
+                 try
+                 {
+                     hr = CreateDXGIFactory2SEH(dxgiFactory4.put_void());
+                 }
+                 catch (...)
+                 {
+                     hr = E_FAIL;
+                 }
+                 if (hr == S_OK)
+                 {
+                     // If DXGI factory creation was successful then get the IDXGIAdapter from the LUID acquired from
+                     // the selectedAdapter
+                     std::cout << "Using DXGI for adapter creation.." << std::endl;
+                     LUID adapterLuid;
+                     THROW_IF_FAILED(spAdapter->GetProperty(DXCoreAdapterProperty::InstanceLuid, &adapterLuid));
+                     THROW_IF_FAILED(dxgiFactory4->EnumAdapterByLuid(adapterLuid, __uuidof(IDXGIAdapter),
+                                                                     spDxgiAdapter.put_void()));
+                     pAdapter = spDxgiAdapter.get();
+                 }
+             }
 
-            // Check if adapter selected has DXCORE_ADAPTER_ATTRIBUTE_D3D12_GRAPHICS attribute selected. If so,
-            // then GPU was selected that has D3D12 and D3D11 capabilities. It would be the most stable to
-            // use DXGI to enumerate GPU and use D3D_FEATURE_LEVEL_11_0 so that image tensorization for
-            // video frames would be able to happen on the GPU.
-            if (spAdapter->IsAttributeSupported(DXCORE_ADAPTER_ATTRIBUTE_D3D12_GRAPHICS))
-            {
-                d3dFeatureLevel = D3D_FEATURE_LEVEL::D3D_FEATURE_LEVEL_11_0;
-                com_ptr<IDXGIFactory4> dxgiFactory4;
-                HRESULT hr;
-                try
-                {
-                    hr = CreateDXGIFactory2SEH(dxgiFactory4.put_void());
-                }
-                catch (...)
-                {
-                    hr = E_FAIL;
-                }
-                if (hr == S_OK)
-                {
-                    // If DXGI factory creation was successful then get the IDXGIAdapter from the LUID acquired from
-                    // the selectedAdapter
-                    std::cout << "Using DXGI for adapter creation.." << std::endl;
-                    LUID adapterLuid;
-                    THROW_IF_FAILED(spAdapter->GetProperty(DXCoreAdapterProperty::InstanceLuid, &adapterLuid));
-                    THROW_IF_FAILED(
-                        dxgiFactory4->EnumAdapterByLuid(adapterLuid, __uuidof(IDXGIAdapter), spDxgiAdapter.put_void()));
-                    pAdapter = spDxgiAdapter.get();
-                }
-            }
+             // create D3D12Device
+             com_ptr<ID3D12Device> d3d12Device;
+             THROW_IF_FAILED(
+                 D3D12CreateDevice(pAdapter, d3dFeatureLevel, __uuidof(ID3D12Device), d3d12Device.put_void()));
 
-            // create D3D12Device
-            com_ptr<ID3D12Device> d3d12Device;
-            THROW_IF_FAILED(
-                D3D12CreateDevice(pAdapter, d3dFeatureLevel, __uuidof(ID3D12Device), d3d12Device.put_void()));
+             // create D3D12 command queue from device
+             com_ptr<ID3D12CommandQueue> d3d12CommandQueue;
+             D3D12_COMMAND_QUEUE_DESC commandQueueDesc = {};
+             commandQueueDesc.Type = commandQueueType;
+             THROW_IF_FAILED(d3d12Device->CreateCommandQueue(&commandQueueDesc, __uuidof(ID3D12CommandQueue),
+                                                             d3d12CommandQueue.put_void()));
 
-            // create D3D12 command queue from device
-            com_ptr<ID3D12CommandQueue> d3d12CommandQueue;
-            D3D12_COMMAND_QUEUE_DESC commandQueueDesc = {};
-            commandQueueDesc.Type = commandQueueType;
-            THROW_IF_FAILED(d3d12Device->CreateCommandQueue(&commandQueueDesc, __uuidof(ID3D12CommandQueue),
-                                                            d3d12CommandQueue.put_void()));
-
-            // create LearningModelDevice from command queue
-            auto factory = get_activation_factory<LearningModelDevice, ILearningModelDeviceFactoryNative>();
-            com_ptr<::IUnknown> spUnkLearningModelDevice;
-            THROW_IF_FAILED(
-                factory->CreateFromD3D12CommandQueue(d3d12CommandQueue.get(), spUnkLearningModelDevice.put()));
-            learningModelDevice = spUnkLearningModelDevice.as<LearningModelDevice>();
-        }
+             // create LearningModelDevice from command queue
+             auto factory = get_activation_factory<LearningModelDevice, ILearningModelDeviceFactoryNative>();
+             com_ptr<::IUnknown> spUnkLearningModelDevice;
+             THROW_IF_FAILED(
+                 factory->CreateFromD3D12CommandQueue(d3d12CommandQueue.get(), spUnkLearningModelDevice.put()));
+             learningModelDevice = spUnkLearningModelDevice.as<LearningModelDevice>();
+         }
 #endif
         else
         {
-            learningModelDevice = LearningModelDevice(TypeHelper::GetWinmlDeviceKind(deviceType));
+            learningModelDevice =  LearningModelDevice(TypeHelper::GetWinmlDeviceKind(deviceType));
         }
         output.PrintLearningModelDevice(deviceType, learningModelDevice);
         CreateSessionConsideringSupportForSessionOptions(session, model, profiler, args, learningModelDevice);
@@ -409,8 +410,7 @@ HRESULT BindInputs(LearningModelBinding& context, const LearningModel& model, co
     std::vector<ILearningModelFeatureValue> inputFeatures;
     try
     {
-        inputFeatures =
-            GenerateInputFeatures(model, args, inputBindingType, inputDataType, winrtDevice, iteration, imagePath);
+        inputFeatures = GenerateInputFeatures(model, args, inputBindingType, inputDataType, winrtDevice, iteration, imagePath);
     }
     catch (hresult_error hr)
     {
@@ -634,8 +634,7 @@ void StartPIXCapture(OutputHelper& output)
         }
     }
     __except (GetExceptionCode() == VcppException(ERROR_SEVERITY_ERROR, ERROR_MOD_NOT_FOUND)
-                  ? EXCEPTION_EXECUTE_HANDLER
-                  : EXCEPTION_CONTINUE_SEARCH)
+                  ? EXCEPTION_EXECUTE_HANDLER : EXCEPTION_CONTINUE_SEARCH)
     {
         std::cout << "DXGI module not found." << std::endl;
     }
@@ -673,16 +672,15 @@ void PrintIfPIXToolAttached(OutputHelper& output)
         }
     }
     __except (GetExceptionCode() == VcppException(ERROR_SEVERITY_ERROR, ERROR_MOD_NOT_FOUND)
-                  ? EXCEPTION_EXECUTE_HANDLER
-                  : EXCEPTION_CONTINUE_SEARCH)
+                  ? EXCEPTION_EXECUTE_HANDLER : EXCEPTION_CONTINUE_SEARCH)
     {
         std::cout << "DXGI module not found." << std::endl;
     }
 }
 #endif
 
-void IterateBindAndEvaluate(const int maxBindAndEvalIterations, int& lastIteration, CommandLineArgs& args,
-                            OutputHelper& output, LearningModelSession& session, HRESULT& lastHr, LearningModel& model,
+void IterateBindAndEvaluate(const int maxBindAndEvalIterations, int& lastIteration, CommandLineArgs& args, OutputHelper& output,
+                            LearningModelSession& session, HRESULT& lastHr, LearningModel& model,
                             const DeviceType deviceType, const InputBindingType inputBindingType,
                             const InputDataType inputDataType, const IDirect3DDevice& winrtDevice,
                             const DeviceCreationLocation deviceCreationLocation,
@@ -752,26 +750,26 @@ void IterateBindAndEvaluate(const int maxBindAndEvalIterations, int& lastIterati
     }
 }
 
-void RunBindAndEvaluateOnce(CommandLineArgs& args, OutputHelper& output, LearningModelSession& session, HRESULT& lastHr,
-                            LearningModel& model, const DeviceType deviceType, const InputBindingType inputBindingType,
-                            const InputDataType inputDataType, const IDirect3DDevice& winrtDevice,
-                            const DeviceCreationLocation deviceCreationLocation,
+void RunBindAndEvaluateOnce(CommandLineArgs& args, OutputHelper& output, LearningModelSession& session,
+                            HRESULT& lastHr, LearningModel& model, const DeviceType deviceType,
+                            const InputBindingType inputBindingType, const InputDataType inputDataType, 
+                            const IDirect3DDevice& winrtDevice, const DeviceCreationLocation deviceCreationLocation,
                             Profiler<WINML_MODEL_TEST_PERF>& profiler, const std::wstring& imagePath)
 {
     int lastIteration = 0;
-    IterateBindAndEvaluate(1, lastIteration, args, output, session, lastHr, model, deviceType, inputBindingType,
-                           inputDataType, winrtDevice, deviceCreationLocation, profiler, imagePath);
+    IterateBindAndEvaluate(1, lastIteration, args, output, session, lastHr, model, deviceType,
+                           inputBindingType, inputDataType, winrtDevice, deviceCreationLocation, profiler, imagePath);
 }
 
-void WritePerfResults(CommandLineArgs& args, OutputHelper& output, LearningModelSession& session, LearningModel& model,
-                      const DeviceType deviceType, const InputBindingType inputBindingType,
+void WritePerfResults(CommandLineArgs& args, OutputHelper& output, LearningModelSession& session,
+                      LearningModel& model, const DeviceType deviceType, const InputBindingType inputBindingType,
                       const InputDataType inputDataType, const IDirect3DDevice& winrtDevice,
                       const DeviceCreationLocation deviceCreationLocation, Profiler<WINML_MODEL_TEST_PERF>& profiler,
                       const std::wstring& modelPath, const std::wstring& imagePath,
                       const uint32_t sessionCreationIteration, const int lastIteration)
 {
-    output.PrintResults(profiler, lastIteration, deviceType, inputBindingType, inputDataType, deviceCreationLocation,
-                        args.IsPerformanceConsoleOutputVerbose());
+    output.PrintResults(profiler, lastIteration, deviceType, inputBindingType, inputDataType,
+                        deviceCreationLocation, args.IsPerformanceConsoleOutputVerbose());
     if (args.IsOutputPerf())
     {
         std::string deviceTypeStringified = TypeHelper::Stringify(deviceType);
@@ -779,8 +777,8 @@ void WritePerfResults(CommandLineArgs& args, OutputHelper& output, LearningModel
         std::string inputBindingTypeStringified = TypeHelper::Stringify(inputBindingType);
         std::string deviceCreationLocationStringified = TypeHelper::Stringify(deviceCreationLocation);
         output.WritePerformanceDataToCSV(profiler, lastIteration, modelPath, deviceTypeStringified,
-                                         inputDataTypeStringified, inputBindingTypeStringified,
-                                         deviceCreationLocationStringified, args.GetPerformanceFileMetadata());
+                                            inputDataTypeStringified, inputBindingTypeStringified,
+                                            deviceCreationLocationStringified, args.GetPerformanceFileMetadata());
     }
     if (args.IsPerIterationCapture())
     {
@@ -797,16 +795,15 @@ void RunConfiguration(CommandLineArgs& args, OutputHelper& output, LearningModel
 {
     if (sessionCreationIteration < args.NumSessionCreationIterations() - 1)
     {
-        RunBindAndEvaluateOnce(args, output, session, lastHr, model, deviceType, inputBindingType, inputDataType,
-                               winrtDevice, deviceCreationLocation, profiler, imagePath);
+        RunBindAndEvaluateOnce(args, output, session, lastHr, model, deviceType, inputBindingType,
+                               inputDataType, winrtDevice, deviceCreationLocation, profiler, imagePath);
         return;
     }
     else
     {
         int lastIteration = 0;
         IterateBindAndEvaluate(args.NumIterations(), lastIteration, args, output, session, lastHr, model, deviceType,
-                               inputBindingType, inputDataType, winrtDevice, deviceCreationLocation, profiler,
-                               imagePath);
+                               inputBindingType, inputDataType, winrtDevice, deviceCreationLocation, profiler, imagePath);
         if (args.IsPerformanceCapture() && SUCCEEDED(lastHr))
         {
             WritePerfResults(args, output, session, model, deviceType, inputBindingType, inputDataType, winrtDevice,
@@ -883,8 +880,8 @@ int run(CommandLineArgs& args, Profiler<WINML_MODEL_TEST_PERF>& profiler) try
                                 profiler.Reset(WINML_MODEL_TEST_PERF::BIND_VALUE, WINML_MODEL_TEST_PERF::COUNT);
                             }
                             for (uint32_t sessionCreationIteration = 0;
-                                 sessionCreationIteration < args.NumSessionCreationIterations();
-                                 sessionCreationIteration++)
+                                sessionCreationIteration < args.NumSessionCreationIterations();
+                                sessionCreationIteration++)
                             {
                                 lastHr = CreateSession(session, winrtDevice, model, args, output, deviceType,
                                                        deviceCreationLocation, profiler);

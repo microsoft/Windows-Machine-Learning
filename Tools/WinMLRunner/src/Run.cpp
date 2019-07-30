@@ -138,22 +138,17 @@ HRESULT CreateDXGIFactory2SEH(void** dxgiFactory)
 }
 #endif
 
-void PopulateSessionOptions(LearningModel& model, LearningModelSessionOptions& sessionOptions)
+void PopulateSessionOptions(LearningModelSessionOptions& sessionOptions)
 {
-    // Batch Size Override for models with free dimensions
-    bool hasFreeDimension = false;
-    for (auto input : model.InputFeatures())
+    // Batch Size Override as 1
+    try
     {
-        if (input.Kind() == LearningModelFeatureKind::Tensor)
-        {
-            auto inputAsTensor = input.as<TensorFeatureDescriptor>().Shape();
-            if (inputAsTensor.Size() == 4 && inputAsTensor.GetAt(0) == -1)
-            {
-                hasFreeDimension = true;
-                sessionOptions.BatchSizeOverride(1);
-                return;
-            }
-        }
+        sessionOptions.BatchSizeOverride(1);
+    }
+    catch (...)
+    {
+        printf("Batch size override couldn't be set.\n");
+        throw;
     }
 }
 
@@ -169,7 +164,7 @@ void CreateSessionConsideringSupportForSessionOptions(LearningModelSession& sess
     if (isSessionOptionsTypePresent)
     {
         LearningModelSessionOptions sessionOptions;
-        PopulateSessionOptions(model, sessionOptions);
+        PopulateSessionOptions(sessionOptions);
         if (args.IsPerformanceCapture())
         {
             WINML_PROFILING_START(profiler, WINML_MODEL_TEST_PERF::CREATE_SESSION);

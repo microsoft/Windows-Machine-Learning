@@ -6,8 +6,9 @@
 #include <Windows.Graphics.DirectX.Direct3D11.interop.h>
 #include "Run.h"
 #include "Scenarios.h"
+#include <winrt/Windows.Foundation.Metadata.h>
 using namespace winrt::Windows::Graphics::DirectX::Direct3D11;
-
+using namespace winrt::Windows::Foundation::Metadata;
 std::vector<ILearningModelFeatureValue> GenerateInputFeatures(const LearningModel& model, const CommandLineArgs& args,
                                                               InputBindingType inputBindingType,
                                                               InputDataType inputDataType,
@@ -137,6 +138,57 @@ HRESULT CreateDXGIFactory2SEH(void** dxgiFactory)
 }
 #endif
 
+void PopulateSessionOptions(LearningModelSessionOptions& sessionOptions)
+{
+    // Batch Size Override as 1
+    try
+    {
+        sessionOptions.BatchSizeOverride(1);
+    }
+    catch (...)
+    {
+        printf("Batch size override couldn't be set.\n");
+        throw;
+    }
+}
+
+void CreateSessionConsideringSupportForSessionOptions(LearningModelSession& session,
+                                                      LearningModel& model,
+                                                      Profiler<WINML_MODEL_TEST_PERF>& profiler,
+                                                      CommandLineArgs& args,
+                                                      LearningModelDevice& learningModelDevice)
+{
+    auto statics = get_activation_factory<ApiInformation, IApiInformationStatics>();
+    bool isSessionOptionsTypePresent = isSessionOptionsTypePresent =
+        statics.IsTypePresent(L"Windows.AI.MachineLearning.LearningModelSessionOptions");
+    if (isSessionOptionsTypePresent)
+    {
+        LearningModelSessionOptions sessionOptions;
+        PopulateSessionOptions(sessionOptions);
+        if (args.IsPerformanceCapture())
+        {
+            WINML_PROFILING_START(profiler, WINML_MODEL_TEST_PERF::CREATE_SESSION);
+        }
+        session = LearningModelSession(model, learningModelDevice, sessionOptions);
+        if (args.IsPerformanceCapture())
+        {
+            WINML_PROFILING_STOP(profiler, WINML_MODEL_TEST_PERF::CREATE_SESSION);
+        }
+    }
+    else
+    {
+        if (args.IsPerformanceCapture())
+        {
+            WINML_PROFILING_START(profiler, WINML_MODEL_TEST_PERF::CREATE_SESSION);
+        }
+        session = LearningModelSession(model, learningModelDevice);
+        if (args.IsPerformanceCapture())
+        {
+            WINML_PROFILING_STOP(profiler, WINML_MODEL_TEST_PERF::CREATE_SESSION);
+        }
+    }
+}
+
 HRESULT CreateSession(LearningModelSession& session, IDirect3DDevice& winrtDevice, LearningModel& model,
                       CommandLineArgs& args, OutputHelper& output, DeviceType deviceType,
                       DeviceCreationLocation deviceCreationLocation, Profiler<WINML_MODEL_TEST_PERF>& profiler)
@@ -150,6 +202,7 @@ HRESULT CreateSession(LearningModelSession& session, IDirect3DDevice& winrtDevic
 #endif
     try
     {
+        LearningModelDevice learningModelDevice = NULL;
         if (deviceCreationLocation == DeviceCreationLocation::UserD3DDevice && deviceType != DeviceType::CPU)
         {
             // Enumerate Adapters to pick the requested one.
@@ -194,17 +247,7 @@ HRESULT CreateSession(LearningModelSession& session, IDirect3DDevice& winrtDevic
             THROW_IF_FAILED(hr);
 
             winrtDevice = inspectableDevice.as<IDirect3DDevice>();
-            LearningModelDevice learningModelDevice = LearningModelDevice::CreateFromDirect3D11Device(winrtDevice);
-            output.PrintLearningModelDevice(deviceType, learningModelDevice);
-            if (args.IsPerformanceCapture())
-            {
-                WINML_PROFILING_START(profiler, WINML_MODEL_TEST_PERF::CREATE_SESSION);
-            }
-            session = LearningModelSession(model, learningModelDevice);
-            if (args.IsPerformanceCapture())
-            {
-                WINML_PROFILING_STOP(profiler, WINML_MODEL_TEST_PERF::CREATE_SESSION);
-            }
+            learningModelDevice = LearningModelDevice::CreateFromDirect3D11Device(winrtDevice);
         }
 #ifdef DXCORE_SUPPORTED_BUILD
         else if ((TypeHelper::GetWinmlDeviceKind(deviceType) != LearningModelDeviceKind::Cpu) && !adapterName.empty())
@@ -319,31 +362,15 @@ HRESULT CreateSession(LearningModelSession& session, IDirect3DDevice& winrtDevic
              com_ptr<::IUnknown> spUnkLearningModelDevice;
              THROW_IF_FAILED(
                  factory->CreateFromD3D12CommandQueue(d3d12CommandQueue.get(), spUnkLearningModelDevice.put()));
-             if (args.IsPerformanceCapture())
-             {
-                 WINML_PROFILING_START(profiler, WINML_MODEL_TEST_PERF::CREATE_SESSION);
-             }
-             session = LearningModelSession(model, spUnkLearningModelDevice.as<LearningModelDevice>());
-             if (args.IsPerformanceCapture())
-             {
-                 WINML_PROFILING_STOP(profiler, WINML_MODEL_TEST_PERF::CREATE_SESSION);
-             }
+             learningModelDevice = spUnkLearningModelDevice.as<LearningModelDevice>();
          }
 #endif
         else
         {
-            LearningModelDevice learningModelDevice(TypeHelper::GetWinmlDeviceKind(deviceType));
-            output.PrintLearningModelDevice(deviceType, learningModelDevice);
-            if (args.IsPerformanceCapture())
-            {
-                WINML_PROFILING_START(profiler, WINML_MODEL_TEST_PERF::CREATE_SESSION);
-            }
-            session = LearningModelSession(model, learningModelDevice);
-            if (args.IsPerformanceCapture())
-            {
-                WINML_PROFILING_STOP(profiler, WINML_MODEL_TEST_PERF::CREATE_SESSION);
-            }
+            learningModelDevice =  LearningModelDevice(TypeHelper::GetWinmlDeviceKind(deviceType));
         }
+        output.PrintLearningModelDevice(deviceType, learningModelDevice);
+        CreateSessionConsideringSupportForSessionOptions(session, model, profiler, args, learningModelDevice);
     }
     catch (hresult_error hr)
     {

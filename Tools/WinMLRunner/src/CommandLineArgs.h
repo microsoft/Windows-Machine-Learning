@@ -18,10 +18,7 @@ public:
         std::vector<float> StdDevs;
     } Normalize;
 
-    TensorizeArgs() : Func(TensorizeFuncs::Identity)
-    {
-        Normalize.Scale = 1.0f;
-    };
+    TensorizeArgs() : Func(TensorizeFuncs::Identity) { Normalize.Scale = 1.0f; };
 };
 
 class CommandLineArgs
@@ -151,6 +148,11 @@ public:
         m_iterationTimeLimitMilliseconds = milliseconds;
     }
     std::wstring SaveTensorMode() const { return m_saveTensorMode; }
+
+    std::vector<InputBindingType> FetchInputBindingTypes();
+    std::vector<DeviceType> FetchDeviceTypes();
+    std::vector<DeviceCreationLocation> FetchDeviceCreationLocations();
+    std::vector<InputDataType> FetchInputDataTypes();
 
 private:
     bool m_perfCapture = false;

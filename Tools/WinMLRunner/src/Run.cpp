@@ -510,89 +510,6 @@ HRESULT EvaluateModel(LearningModelEvaluationResult& result, const LearningModel
     return S_OK;
 }
 
-std::vector<InputDataType> FetchInputDataTypes(const CommandLineArgs& args)
-{
-    std::vector<InputDataType> inputDataTypes;
-
-    if (args.UseTensor())
-    {
-        inputDataTypes.push_back(InputDataType::Tensor);
-    }
-
-    if (args.UseRGB())
-    {
-        inputDataTypes.push_back(InputDataType::ImageRGB);
-    }
-
-    if (args.UseBGR())
-    {
-        inputDataTypes.push_back(InputDataType::ImageBGR);
-    }
-
-    return inputDataTypes;
-}
-
-std::vector<DeviceType> FetchDeviceTypes(const CommandLineArgs& args)
-{
-    std::vector<DeviceType> deviceTypes;
-
-    if (args.UseCPU())
-    {
-        deviceTypes.push_back(DeviceType::CPU);
-    }
-
-    if (args.UseGPU())
-    {
-        deviceTypes.push_back(DeviceType::DefaultGPU);
-    }
-
-    if (args.IsUsingGPUHighPerformance())
-    {
-        deviceTypes.push_back(DeviceType::HighPerfGPU);
-    }
-
-    if (args.IsUsingGPUMinPower())
-    {
-        deviceTypes.push_back(DeviceType::MinPowerGPU);
-    }
-
-    return deviceTypes;
-}
-
-std::vector<InputBindingType> FetchInputBindingTypes(const CommandLineArgs& args)
-{
-    std::vector<InputBindingType> inputBindingTypes;
-
-    if (args.UseCPUBoundInput())
-    {
-        inputBindingTypes.push_back(InputBindingType::CPU);
-    }
-
-    if (args.IsUsingGPUBoundInput())
-    {
-        inputBindingTypes.push_back(InputBindingType::GPU);
-    }
-
-    return inputBindingTypes;
-}
-
-std::vector<DeviceCreationLocation> FetchDeviceCreationLocations(const CommandLineArgs& args)
-{
-    std::vector<DeviceCreationLocation> deviceCreationLocations;
-
-    if (args.CreateDeviceInWinML())
-    {
-        deviceCreationLocations.push_back(DeviceCreationLocation::WinML);
-    }
-
-    if (args.IsCreateDeviceOnClient())
-    {
-        deviceCreationLocations.push_back(DeviceCreationLocation::UserD3DDevice);
-    }
-
-    return deviceCreationLocations;
-}
-
 #if defined(_AMD64_)
 void StartPIXCapture(OutputHelper& output)
 {
@@ -808,10 +725,10 @@ int run(CommandLineArgs& args, Profiler<WINML_MODEL_TEST_PERF>& profiler) try
 
     if (!args.ModelPath().empty() || !args.FolderPath().empty())
     {
-        std::vector<DeviceType> deviceTypes = FetchDeviceTypes(args);
-        std::vector<InputBindingType> inputBindingTypes = FetchInputBindingTypes(args);
-        std::vector<InputDataType> inputDataTypes = FetchInputDataTypes(args);
-        std::vector<DeviceCreationLocation> deviceCreationLocations = FetchDeviceCreationLocations(args);
+        std::vector<DeviceType> deviceTypes = args.FetchDeviceTypes();
+        std::vector<InputBindingType> inputBindingTypes = args.FetchInputBindingTypes();
+        std::vector<InputDataType> inputDataTypes = args.FetchInputDataTypes();
+        std::vector<DeviceCreationLocation> deviceCreationLocations = args.FetchDeviceCreationLocations();
         std::vector<std::wstring> modelPaths = args.ModelPath().empty()
                                                    ? GetModelsInDirectory(args, &output)
                                                    : std::vector<std::wstring>(1, args.ModelPath());

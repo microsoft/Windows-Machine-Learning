@@ -35,12 +35,14 @@
     <ClInclude Include="src/Run.h" />
     <ClInclude Include="src/TimerHelper.h" />
     <ClInclude Include="src/TypeHelper.h" />
+    <ClInclude Include="src\LearningModelDeviceHelper.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src/CommandLineArgs.cpp" />
     <ClCompile Include="src/dllload.cpp" />
     <ClCompile Include="src/Filehelper.cpp" />
     <ClCompile Include="src/Run.cpp" />
+    <ClCompile Include="src\LearningModelDeviceHelper.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>

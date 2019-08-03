@@ -165,15 +165,15 @@ public:
         std::cout << std::endl;
     }
 
-    void PrintLearningModelDevice(DeviceType deviceType, const LearningModelDevice& device)
+    void PrintLearningModelDevice(const LearningModelDeviceWithMetadata& device)
     {
-        if (deviceType == DeviceType::CPU)
+        if (device.DeviceType == DeviceType::CPU)
         {
             std::cout << "\nCreating Session with CPU device" << std::endl;
             return;
         }
 
-        IDirect3DDevice d3dDevice = device.Direct3D11Device();
+        IDirect3DDevice d3dDevice = device.LearningModelDevice.Direct3D11Device();
         com_ptr<IDirect3DDxgiInterfaceAccess> dxgi;
         dxgi = d3dDevice.try_as<IDirect3DDxgiInterfaceAccess>();
         if (dxgi)

@@ -13,6 +13,9 @@
     <ClCompile Include="src/Run.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\LearningModelDeviceHelper.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src/BindingUtilities.h">
@@ -37,6 +40,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src/Run.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\LearningModelDeviceHelper.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

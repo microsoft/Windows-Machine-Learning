@@ -26,7 +26,6 @@ int main(int argc, char *argv[])
         return hr.code();
     }
     Profiler<WINML_MODEL_TEST_PERF> profiler;
-    int returnCode = 0;
     vector<LearningModelDeviceWithMetadata> deviceList;
     try
     {
@@ -37,7 +36,7 @@ int main(int argc, char *argv[])
         wprintf(error.message().c_str());
         return error.code();
     }
-    returnCode = run(*commandLineArgs, profiler, deviceList);
+    int returnCode = run(*commandLineArgs, profiler, deviceList);
     free(commandLineArgs);
     return returnCode;
 }

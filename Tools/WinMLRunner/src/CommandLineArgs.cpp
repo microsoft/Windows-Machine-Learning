@@ -587,3 +587,10 @@ std::vector<DeviceCreationLocation> CommandLineArgs::FetchDeviceCreationLocation
 
     return deviceCreationLocations;
 }
+void CommandLineArgs::AddPerformanceFileMetadata(const std::string& key, const std::string& value)
+{
+    // remove commas that may affect processing of CSV
+    std::string cleanedValue(value.size(), '0');
+    cleanedValue.erase(std::remove_copy(value.begin(), value.end(), cleanedValue.begin(), ','), cleanedValue.end());
+    m_perfFileMetadata.push_back(std::make_pair(key, cleanedValue));
+}

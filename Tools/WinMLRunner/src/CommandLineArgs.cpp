@@ -504,3 +504,93 @@ void CommandLineArgs::CheckForInvalidArguments()
         throw hresult_not_implemented(L"Saving tensor output for multiple images isn't implemented.");
     }
 }
+
+std::vector<InputDataType> CommandLineArgs::FetchInputDataTypes()
+{
+    std::vector<InputDataType> inputDataTypes;
+
+    if (this->UseTensor())
+    {
+        inputDataTypes.push_back(InputDataType::Tensor);
+    }
+
+    if (this->UseRGB())
+    {
+        inputDataTypes.push_back(InputDataType::ImageRGB);
+    }
+
+    if (this->UseBGR())
+    {
+        inputDataTypes.push_back(InputDataType::ImageBGR);
+    }
+
+    return inputDataTypes;
+}
+
+std::vector<DeviceType> CommandLineArgs::FetchDeviceTypes()
+{
+    std::vector<DeviceType> deviceTypes;
+
+    if (this->UseCPU())
+    {
+        deviceTypes.push_back(DeviceType::CPU);
+    }
+
+    if (this->UseGPU())
+    {
+        deviceTypes.push_back(DeviceType::DefaultGPU);
+    }
+
+    if (this->IsUsingGPUHighPerformance())
+    {
+        deviceTypes.push_back(DeviceType::HighPerfGPU);
+    }
+
+    if (this->IsUsingGPUMinPower())
+    {
+        deviceTypes.push_back(DeviceType::MinPowerGPU);
+    }
+
+    return deviceTypes;
+}
+
+std::vector<InputBindingType> CommandLineArgs::FetchInputBindingTypes()
+{
+    std::vector<InputBindingType> inputBindingTypes;
+
+    if (this->UseCPUBoundInput())
+    {
+        inputBindingTypes.push_back(InputBindingType::CPU);
+    }
+
+    if (this->IsUsingGPUBoundInput())
+    {
+        inputBindingTypes.push_back(InputBindingType::GPU);
+    }
+
+    return inputBindingTypes;
+}
+
+std::vector<DeviceCreationLocation> CommandLineArgs::FetchDeviceCreationLocations()
+{
+    std::vector<DeviceCreationLocation> deviceCreationLocations;
+
+    if (this->CreateDeviceInWinML())
+    {
+        deviceCreationLocations.push_back(DeviceCreationLocation::WinML);
+    }
+
+    if (this->IsCreateDeviceOnClient())
+    {
+        deviceCreationLocations.push_back(DeviceCreationLocation::UserD3DDevice);
+    }
+
+    return deviceCreationLocations;
+}
+void CommandLineArgs::AddPerformanceFileMetadata(const std::string& key, const std::string& value)
+{
+    // remove commas that may affect processing of CSV
+    std::string cleanedValue(value.size(), '0');
+    cleanedValue.erase(std::remove_copy(value.begin(), value.end(), cleanedValue.begin(), ','), cleanedValue.end());
+    m_perfFileMetadata.push_back(std::make_pair(key, cleanedValue));
+}

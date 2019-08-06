@@ -18,10 +18,7 @@ public:
         std::vector<float> StdDevs;
     } Normalize;
 
-    TensorizeArgs() : Func(TensorizeFuncs::Identity)
-    {
-        Normalize.Scale = 1.0f;
-    };
+    TensorizeArgs() : Func(TensorizeFuncs::Identity) { Normalize.Scale = 1.0f; };
 };
 
 class CommandLineArgs
@@ -140,10 +137,8 @@ public:
     void SetRunIterations(const uint32_t iterations) { m_numIterations = iterations; }
     void SetSessionCreationIterations(const uint32_t iterations) { m_numSessionIterations = iterations; }
     void SetLoadIterations(const uint32_t iterations) { m_numLoadIterations = iterations; }
-    void AddPerformanceFileMetadata(const std::string& key, const std::string& value)
-    {
-        m_perfFileMetadata.push_back(std::make_pair(key, value));
-    }
+    void AddPerformanceFileMetadata(const std::string& key, const std::string& value);
+
     // Stop iterating when total time of iterations after the first iteration exceeds time limit.
     void SetIterationTimeLimit(const double milliseconds)
     {
@@ -151,6 +146,11 @@ public:
         m_iterationTimeLimitMilliseconds = milliseconds;
     }
     std::wstring SaveTensorMode() const { return m_saveTensorMode; }
+
+    std::vector<InputBindingType> FetchInputBindingTypes();
+    std::vector<DeviceType> FetchDeviceTypes();
+    std::vector<DeviceCreationLocation> FetchDeviceCreationLocations();
+    std::vector<InputDataType> FetchInputDataTypes();
 
 private:
     bool m_perfCapture = false;

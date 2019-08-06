@@ -26,7 +26,17 @@ int main(int argc, char *argv[])
         return hr.code();
     }
     Profiler<WINML_MODEL_TEST_PERF> profiler;
-    int returnCode = run(*commandLineArgs, profiler);
+    vector<LearningModelDeviceWithMetadata> deviceList;
+    try
+    {
+        PopulateLearningModelDeviceList(*commandLineArgs, deviceList);
+    }
+    catch (const hresult_error& error)
+    {
+        wprintf(error.message().c_str());
+        return error.code();
+    }
+    int returnCode = run(*commandLineArgs, profiler, deviceList);
     free(commandLineArgs);
     return returnCode;
 }

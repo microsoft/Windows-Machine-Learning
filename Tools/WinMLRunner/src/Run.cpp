@@ -573,7 +573,7 @@ int run(CommandLineArgs& args,
 
             LoadModel(model, path, args.IsPerformanceCapture() || args.IsPerIterationCapture(), output, args, 0,
                       profiler);
-            for (const LearningModelDeviceWithMetadata& learningModelDevice : deviceList)
+            for (auto& learningModelDevice : deviceList)
             {
                 lastHr = CheckIfModelAndConfigurationsAreSupported(model, path, learningModelDevice.DeviceType, inputDataTypes);
                 if (FAILED(lastHr))

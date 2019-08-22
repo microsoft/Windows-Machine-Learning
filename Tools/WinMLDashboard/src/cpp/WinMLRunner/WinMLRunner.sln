@@ -3,12 +3,6 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.27004.2005
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "WinMLRunnerTest", "..\..\..\..\..\Testing\WinMLRunnerTest\WinMLRunnerTest.vcxproj", "{E9D4AC92-8295-4FB4-BF7D-3FAF74B564E8}"
-	ProjectSection(ProjectDependencies) = postProject
-		{31653A2F-02CC-4A95-9880-BF86965FB262} = {31653A2F-02CC-4A95-9880-BF86965FB262}
-		{C3BCBEA1-90E6-426F-88AC-64C274BCEF45} = {C3BCBEA1-90E6-426F-88AC-64C274BCEF45}
-	EndProjectSection
-EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "WinMLRunner", "WinMLRunner.vcxproj", "{31653A2F-02CC-4A95-9880-BF86965FB262}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "WinMLRunnerStaticLib", "WinMLRunnerStaticLib.vcxproj", "{C3BCBEA1-90E6-426F-88AC-64C274BCEF45}"

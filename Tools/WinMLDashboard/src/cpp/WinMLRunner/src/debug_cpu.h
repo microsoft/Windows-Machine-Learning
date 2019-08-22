@@ -1,7 +1,7 @@
 #pragma once
 
-#include <windows.h>
-#include <winrt/Windows.AI.MachineLearning.h>
+#include "Common.h"
+#include "Windows.AI.Machinelearning.Native.h"
 #include "MLOperatorAuthor.h"
 
 struct DebugShapeInferrer : winrt::implements<DebugShapeInferrer, IMLOperatorShapeInferrer>

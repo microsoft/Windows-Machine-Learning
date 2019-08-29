@@ -180,7 +180,6 @@ HRESULT CreateSession(LearningModelSession& session, LearningModel& model, const
     }
     try
     {
-        output.PrintLearningModelDevice(learningModelDevice);
         CreateSessionConsideringSupportForSessionOptions(session, model, profiler, args, learningModelDevice);
     }
     catch (hresult_error hr)

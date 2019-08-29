@@ -6,6 +6,7 @@
 #include <Windows.Graphics.DirectX.Direct3D11.interop.h>
 #include "Windows.AI.MachineLearning.Native.h"
 #include <codecvt>
+#include "OutputHelper.h"
 using namespace winrt::Windows::Graphics::DirectX::Direct3D11;
 
 #ifdef DXCORE_SUPPORTED_BUILD
@@ -83,11 +84,14 @@ void PopulateLearningModelDeviceList(CommandLineArgs& args, std::vector<Learning
                     com_ptr<IInspectable> inspectableDevice;
                     hr = CreateDirect3D11DeviceFromDXGIDevice(dxgiDevice.get(), inspectableDevice.put());
                     THROW_IF_FAILED(hr);
-                    deviceList.push_back({
+                    LearningModelDeviceWithMetadata learningModelDeviceWithMetadata =
+                        {
                         LearningModelDevice::CreateFromDirect3D11Device(inspectableDevice.as<IDirect3DDevice>()),
                         deviceType,
                         deviceCreationLocation
-                        });
+                        };
+                    OutputHelper::PrintLearningModelDevice(learningModelDeviceWithMetadata);
+                    deviceList.push_back(learningModelDeviceWithMetadata);
                 }
 #ifdef DXCORE_SUPPORTED_BUILD
                 else if ((TypeHelper::GetWinmlDeviceKind(deviceType) != LearningModelDeviceKind::Cpu) &&
@@ -216,11 +220,11 @@ void PopulateLearningModelDeviceList(CommandLineArgs& args, std::vector<Learning
 #endif
                 else
                 {
-                    deviceList.push_back({
-                        LearningModelDevice(TypeHelper::GetWinmlDeviceKind(deviceType)),
-                        deviceType,
-                        deviceCreationLocation
-                        });
+                    LearningModelDeviceWithMetadata learningModelDeviceWithMetadata = { LearningModelDevice(
+                                                                 TypeHelper::GetWinmlDeviceKind(deviceType)),
+                                                             deviceType, deviceCreationLocation };
+                    OutputHelper::PrintLearningModelDevice(learningModelDeviceWithMetadata);
+                    deviceList.push_back(learningModelDeviceWithMetadata);
                 }
             }
             catch (...)

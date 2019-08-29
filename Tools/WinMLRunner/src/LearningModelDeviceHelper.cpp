@@ -220,9 +220,12 @@ void PopulateLearningModelDeviceList(CommandLineArgs& args, std::vector<Learning
 #endif
                 else
                 {
-                    LearningModelDeviceWithMetadata learningModelDeviceWithMetadata = { LearningModelDevice(
-                                                                 TypeHelper::GetWinmlDeviceKind(deviceType)),
-                                                             deviceType, deviceCreationLocation };
+                    LearningModelDeviceWithMetadata learningModelDeviceWithMetadata = 
+                    { 
+                        LearningModelDevice( TypeHelper::GetWinmlDeviceKind(deviceType)),
+                                             deviceType, 
+                                             deviceCreationLocation 
+                    };
                     OutputHelper::PrintLearningModelDevice(learningModelDeviceWithMetadata);
                     deviceList.push_back(learningModelDeviceWithMetadata);
                 }

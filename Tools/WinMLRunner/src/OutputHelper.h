@@ -165,11 +165,11 @@ public:
         std::cout << std::endl;
     }
 
-    void PrintLearningModelDevice(const LearningModelDeviceWithMetadata& device)
+    static void PrintLearningModelDevice(const LearningModelDeviceWithMetadata& device)
     {
         if (device.DeviceType == DeviceType::CPU)
         {
-            std::cout << "\nCreating Session with CPU device" << std::endl;
+            std::cout << "\nCreated LearningModelDevice with CPU device" << std::endl;
             return;
         }
 
@@ -185,7 +185,7 @@ public:
             DXGI_ADAPTER_DESC description;
             if (SUCCEEDED(adapter->GetDesc(&description)))
             {
-                std::wcout << L"\nCreating Session with GPU: " << description.Description << std::endl;
+                std::wcout << L"\nCreated LearningModelDevice with GPU: " << description.Description << std::endl;
             }
         }
         else

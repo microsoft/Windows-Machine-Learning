@@ -492,6 +492,10 @@ namespace BindingUtilities
                     throw hresult_not_implemented(L"Creating Tensors for Input Images with unhandled channel format!");
             }
         }
+        else // Garbage Data
+        {
+            std::memset(reinterpret_cast<BYTE*>(actualData), 0, actualSizeInBytes);
+        }
 
         if (inputBindingType == InputBindingType::CPU)
         {

@@ -23,11 +23,41 @@ namespace MNIST_Demo
         private LearningModel model;
         private LearningModelSession session;
         private LearningModelBinding binding;
+        public enum deviceKind
+        {
+            CPU,                      //Will run on Host CPU
+            HighPerfGPU,              //Will run on GPU (LearningModelDeviceKind.DirectX device, not DirectXHighPerformance
+            LowPowerVPU               //Will run on Intel Movidius VPU
+        };
+
+        public static deviceKind device_type = deviceKind.CPU; //Initialized to VPU
         public static async Task<mnistModel> CreateFromStreamAsync(IRandomAccessStreamReference stream)
         {
+
+            
+            LearningModelDevice dev = null;
+            DXCore_WinRTComponent.DXCoreHelper helper = new DXCore_WinRTComponent.DXCoreHelper();
             mnistModel learningModel = new mnistModel();
             learningModel.model = await LearningModel.LoadFromStreamAsync(stream);
-            learningModel.session = new LearningModelSession(learningModel.model);
+            
+
+            // Define the device based on user input
+            if (mnistModel.device_type == deviceKind.HighPerfGPU)
+            {
+                LearningModelDevice learningModelDevice = new Windows.AI.MachineLearning.LearningModelDevice(Windows.AI.MachineLearning.LearningModelDeviceKind.DirectX);
+                learningModel.session = new LearningModelSession(learningModel.model, learningModelDevice);
+            }
+            else if (mnistModel.device_type == deviceKind.LowPowerVPU)
+            {
+                dev = helper.GetDeviceFromVpuAdapter();
+                learningModel.session = new LearningModelSession(learningModel.model, dev);
+            }
+            else //Default to CPU or if CPU is selected
+            {
+                LearningModelDevice learningModelDevice = new Windows.AI.MachineLearning.LearningModelDevice(Windows.AI.MachineLearning.LearningModelDeviceKind.Cpu);
+                learningModel.session = new LearningModelSession(learningModel.model, learningModelDevice);
+            }
+            
             learningModel.binding = new LearningModelBinding(learningModel.session);
             return learningModel;
         }

@@ -67,6 +67,28 @@ namespace MNIST_Demo
             numberLabel.Text = maxIndex.ToString();
         }
 
+        private void Device_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            string deviceName = e.AddedItems[0].ToString();
+            switch (deviceName)
+            {
+                case "Intel CPU":
+                    mnistModel.device_type = mnistModel.deviceKind.CPU;
+                    break;
+                case "Intel iGPU":
+                    mnistModel.device_type = mnistModel.deviceKind.HighPerfGPU;
+                    break;
+                case "Intel VPU":
+                    mnistModel.device_type = mnistModel.deviceKind.LowPowerVPU;
+                    break;
+                default: //Default to CPU
+                    mnistModel.device_type = mnistModel.deviceKind.CPU;
+                    break;
+            }
+
+            LoadModelAsync();
+        }
+
         private void clearButton_Click(object sender, RoutedEventArgs e)
         {
             inkCanvas.InkPresenter.StrokeContainer.Clear();

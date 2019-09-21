@@ -49,6 +49,7 @@ namespace MNIST_Demo
                 dev = DXCore_WinRTComponent.DXCoreHelper.GetDeviceFromVpuAdapter();
 
                 // DXCoreHelper returns null if a valid device matching the requested criteria was not found.
+                // This could occur if the VPU became unavailable after the app was launched.
                 if (dev != null)
                 {
                     learningModel.session = new LearningModelSession(learningModel.model, dev);

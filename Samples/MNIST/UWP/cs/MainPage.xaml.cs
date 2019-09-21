@@ -37,6 +37,13 @@ namespace MNIST_Demo
                     IgnoreTilt = true,
                 }
             );
+
+            // Only show the "VPU" device selection option if available.
+            if (DXCore_WinRTComponent.DXCoreHelper.GetDeviceFromVpuAdapter() != null)
+            {
+                Device.Items.Add("VPU");
+            }
+
             LoadModelAsync();
         }
 

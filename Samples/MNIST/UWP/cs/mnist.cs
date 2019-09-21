@@ -23,14 +23,16 @@ namespace MNIST_Demo
         private LearningModel model;
         private LearningModelSession session;
         private LearningModelBinding binding;
-        public enum deviceKind
+        public enum ExtendedDeviceKind
         {
-            CPU,                      //Will run on Host CPU
-            HighPerfGPU,              //Will run on GPU (LearningModelDeviceKind.DirectX device, not DirectXHighPerformance
-            LowPowerVPU               //Will run on Intel Movidius VPU
+            CPU,
+            GPU,
+            VPU // Run MNIST on an Intel Movidius VPU, if present.
+                // The VPU is not accessible via the standard LearningModelDeviceKind enumeration.
+                // Instead, we use the DXCore_WinRTComponent helper.
         };
 
-        public static deviceKind device_type = deviceKind.CPU; //Initialized to VPU
+        public static ExtendedDeviceKind device_type = ExtendedDeviceKind.CPU;
         public static async Task<mnistModel> CreateFromStreamAsync(IRandomAccessStreamReference stream)
         {
 
@@ -42,17 +44,17 @@ namespace MNIST_Demo
             
 
             // Define the device based on user input
-            if (mnistModel.device_type == deviceKind.HighPerfGPU)
+            if (mnistModel.device_type == ExtendedDeviceKind.GPU)
             {
                 LearningModelDevice learningModelDevice = new Windows.AI.MachineLearning.LearningModelDevice(Windows.AI.MachineLearning.LearningModelDeviceKind.DirectX);
                 learningModel.session = new LearningModelSession(learningModel.model, learningModelDevice);
             }
-            else if (mnistModel.device_type == deviceKind.LowPowerVPU)
+            else if (mnistModel.device_type == ExtendedDeviceKind.VPU)
             {
                 dev = helper.GetDeviceFromVpuAdapter();
                 learningModel.session = new LearningModelSession(learningModel.model, dev);
             }
-            else //Default to CPU or if CPU is selected
+            else
             {
                 LearningModelDevice learningModelDevice = new Windows.AI.MachineLearning.LearningModelDevice(Windows.AI.MachineLearning.LearningModelDeviceKind.Cpu);
                 learningModel.session = new LearningModelSession(learningModel.model, learningModelDevice);

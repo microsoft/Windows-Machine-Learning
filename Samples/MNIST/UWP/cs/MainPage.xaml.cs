@@ -72,17 +72,17 @@ namespace MNIST_Demo
             string deviceName = e.AddedItems[0].ToString();
             switch (deviceName)
             {
-                case "Intel CPU":
-                    mnistModel.device_type = mnistModel.deviceKind.CPU;
+                case "CPU":
+                    mnistModel.device_type = mnistModel.ExtendedDeviceKind.CPU;
                     break;
-                case "Intel iGPU":
-                    mnistModel.device_type = mnistModel.deviceKind.HighPerfGPU;
+                case "GPU":
+                    mnistModel.device_type = mnistModel.ExtendedDeviceKind.GPU;
                     break;
-                case "Intel VPU":
-                    mnistModel.device_type = mnistModel.deviceKind.LowPowerVPU;
+                case "VPU":
+                    mnistModel.device_type = mnistModel.ExtendedDeviceKind.VPU;
                     break;
-                default: //Default to CPU
-                    mnistModel.device_type = mnistModel.deviceKind.CPU;
+                default: // Default to CPU
+                    mnistModel.device_type = mnistModel.ExtendedDeviceKind.CPU;
                     break;
             }
 

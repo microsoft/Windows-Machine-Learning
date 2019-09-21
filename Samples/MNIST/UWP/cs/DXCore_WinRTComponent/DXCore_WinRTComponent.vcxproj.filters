@@ -21,6 +21,7 @@
   <ItemGroup>
     <None Include="DXCore_WinRTComponent.def" />
     <None Include="packages.config" />
+    <None Include="readme.md" />
   </ItemGroup>
   <ItemGroup>
     <Midl Include="DxcoreHelper.idl" />

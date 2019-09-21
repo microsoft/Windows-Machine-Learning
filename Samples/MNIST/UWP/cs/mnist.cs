@@ -7,7 +7,6 @@ using Windows.Storage.Streams;
 using Windows.AI.MachineLearning;
 namespace MNIST_Demo
 {
-
     public sealed class mnistInput
     {
         public ImageFeatureValue Input3; // BitmapPixelFormat: Gray8, BitmapAlphaMode: Premultiplied, width: 28, height: 28
@@ -35,30 +34,34 @@ namespace MNIST_Demo
         public static ExtendedDeviceKind device_type = ExtendedDeviceKind.CPU;
         public static async Task<mnistModel> CreateFromStreamAsync(IRandomAccessStreamReference stream)
         {
-
-            
             LearningModelDevice dev = null;
-            DXCore_WinRTComponent.DXCoreHelper helper = new DXCore_WinRTComponent.DXCoreHelper();
             mnistModel learningModel = new mnistModel();
             learningModel.model = await LearningModel.LoadFromStreamAsync(stream);
-            
 
             // Define the device based on user input
             if (mnistModel.device_type == ExtendedDeviceKind.GPU)
             {
-                LearningModelDevice learningModelDevice = new Windows.AI.MachineLearning.LearningModelDevice(Windows.AI.MachineLearning.LearningModelDeviceKind.DirectX);
-                learningModel.session = new LearningModelSession(learningModel.model, learningModelDevice);
+                LearningModelDevice gpuDevice = new Windows.AI.MachineLearning.LearningModelDevice(Windows.AI.MachineLearning.LearningModelDeviceKind.DirectX);
+                learningModel.session = new LearningModelSession(learningModel.model, gpuDevice);
             }
             else if (mnistModel.device_type == ExtendedDeviceKind.VPU)
             {
-                dev = helper.GetDeviceFromVpuAdapter();
-                learningModel.session = new LearningModelSession(learningModel.model, dev);
+                dev = DXCore_WinRTComponent.DXCoreHelper.GetDeviceFromVpuAdapter();
+
+                // DXCoreHelper returns null if a valid device matching the requested criteria was not found.
+                if (dev != null)
+                {
+                    learningModel.session = new LearningModelSession(learningModel.model, dev);
+                }
             }
-            else
+
+            // Either the user selected CPU, or we failed to create a LearningModelSession from a device.
+            if (learningModel.session == null)
             {
-                LearningModelDevice learningModelDevice = new Windows.AI.MachineLearning.LearningModelDevice(Windows.AI.MachineLearning.LearningModelDeviceKind.Cpu);
-                learningModel.session = new LearningModelSession(learningModel.model, learningModelDevice);
+                LearningModelDevice cpuDevice = new Windows.AI.MachineLearning.LearningModelDevice(Windows.AI.MachineLearning.LearningModelDeviceKind.Cpu);
+                learningModel.session = new LearningModelSession(learningModel.model, cpuDevice);
             }
+
             
             learningModel.binding = new LearningModelBinding(learningModel.session);
             return learningModel;

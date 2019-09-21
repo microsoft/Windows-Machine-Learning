@@ -7,11 +7,6 @@ using namespace Windows::Foundation::Collections;
 
 namespace winrt::DXCore_WinRTComponent::implementation
 {
-    DXCoreHelper::DXCoreHelper()
-    {
-        check_hresult(DXCoreCreateAdapterFactory(IID_PPV_ARGS(_factory.put())));
-    }
-
     ///<summary>
     /// Uses the DXCore API to specifically target the Intel MyriadX VPU;
     /// returns nullptr if no VPU is found.
@@ -21,7 +16,9 @@ namespace winrt::DXCore_WinRTComponent::implementation
         com_ptr<IDXCoreAdapterList> spAdapterList;
         const GUID dxGUIDs[] = { DXCORE_ADAPTER_ATTRIBUTE_D3D12_CORE_COMPUTE };
 
-        check_hresult(_factory->CreateAdapterList(ARRAYSIZE(dxGUIDs), dxGUIDs, IID_PPV_ARGS(&spAdapterList)));
+        winrt::com_ptr<IDXCoreAdapterFactory> factory;
+        check_hresult(DXCoreCreateAdapterFactory(IID_PPV_ARGS(factory.put())));
+        check_hresult(factory->CreateAdapterList(ARRAYSIZE(dxGUIDs), dxGUIDs, IID_PPV_ARGS(&spAdapterList)));
 
         com_ptr<IDXCoreAdapter> vpuAdapter;
         for (UINT i = 0; i < spAdapterList->GetAdapterCount(); i++)
@@ -61,7 +58,9 @@ namespace winrt::DXCore_WinRTComponent::implementation
         com_ptr<IDXCoreAdapterList> spAdapterList;
         const GUID dxGUIDs[] = { DXCORE_ADAPTER_ATTRIBUTE_D3D12_CORE_COMPUTE };
 
-        check_hresult(_factory->CreateAdapterList(ARRAYSIZE(dxGUIDs), dxGUIDs, IID_PPV_ARGS(&spAdapterList)));
+        winrt::com_ptr<IDXCoreAdapterFactory> factory;
+        check_hresult(DXCoreCreateAdapterFactory(IID_PPV_ARGS(factory.put())));
+        check_hresult(factory->CreateAdapterList(ARRAYSIZE(dxGUIDs), dxGUIDs, IID_PPV_ARGS(&spAdapterList)));
 
         com_ptr<IDXCoreAdapter> hwAdapter;
         for (UINT i = 0; i < spAdapterList->GetAdapterCount(); i++)
@@ -110,7 +109,9 @@ namespace winrt::DXCore_WinRTComponent::implementation
             DXCORE_ADAPTER_ATTRIBUTE_D3D12_CORE_COMPUTE,
             DXCORE_ADAPTER_ATTRIBUTE_D3D12_GRAPHICS };
 
-        check_hresult(_factory->CreateAdapterList(ARRAYSIZE(dxGUIDs), dxGUIDs, IID_PPV_ARGS(&spAdapterList)));
+        winrt::com_ptr<IDXCoreAdapterFactory> factory;
+        check_hresult(DXCoreCreateAdapterFactory(IID_PPV_ARGS(factory.put())));
+        check_hresult(factory->CreateAdapterList(ARRAYSIZE(dxGUIDs), dxGUIDs, IID_PPV_ARGS(&spAdapterList)));
 
         com_ptr<IDXCoreAdapter> hwAdapter;
         for (UINT i = 0; i < spAdapterList->GetAdapterCount(); i++)
@@ -151,7 +152,9 @@ namespace winrt::DXCore_WinRTComponent::implementation
         com_ptr<IDXCoreAdapterList> spAdapterList;
         const GUID dxGUIDs[] = { DXCORE_ADAPTER_ATTRIBUTE_D3D12_CORE_COMPUTE };
 
-        check_hresult(_factory->CreateAdapterList(ARRAYSIZE(dxGUIDs), dxGUIDs, IID_PPV_ARGS(&spAdapterList)));
+        winrt::com_ptr<IDXCoreAdapterFactory> factory;
+        check_hresult(DXCoreCreateAdapterFactory(IID_PPV_ARGS(factory.put())));
+        check_hresult(factory->CreateAdapterList(ARRAYSIZE(dxGUIDs), dxGUIDs, IID_PPV_ARGS(&spAdapterList)));
 
         auto devices = single_threaded_vector<LearningModelDevice>();
         for (UINT i = 0; i < spAdapterList->GetAdapterCount(); i++)

@@ -17,19 +17,20 @@ namespace MNIST_Demo
         public TensorFloat Plus214_Output_0; // shape(1,10)
     }
 
+    public enum ExtendedDeviceKind
+    {
+        CPU,
+        GPU,
+        VPU // Run MNIST on an Intel Movidius VPU, if present.
+            // The VPU is not accessible via the standard LearningModelDeviceKind enumeration.
+            // Instead, we use the DXCore_WinRTComponent helper.
+    };
+
     public sealed class mnistModel
     {
         private LearningModel model;
         private LearningModelSession session;
         private LearningModelBinding binding;
-        public enum ExtendedDeviceKind
-        {
-            CPU,
-            GPU,
-            VPU // Run MNIST on an Intel Movidius VPU, if present.
-                // The VPU is not accessible via the standard LearningModelDeviceKind enumeration.
-                // Instead, we use the DXCore_WinRTComponent helper.
-        };
 
         public static ExtendedDeviceKind device_type = ExtendedDeviceKind.CPU;
         public static async Task<mnistModel> CreateFromStreamAsync(IRandomAccessStreamReference stream)

@@ -30,10 +30,8 @@
                FontSize="36"
                VerticalAlignment="Center"
                Grid.Column="3" />
-        <ComboBox  x:Name="Device" x:Uid="deviceSelector" Width = "190" HorizontalAlignment = "Left" SelectionChanged="Device_SelectionChanged" IsDropDownOpen="True" AllowDrop="True"  Header="Device" PlaceholderText="Pick a Device" Margin="0,1,0,1" Grid.Row="2" VerticalAlignment="Stretch" Grid.ColumnSpan="3">
-            <x:String>CPU</x:String>
-            <x:String>GPU</x:String>
-            <!-- VPU device option is generated in code -->
+        <ComboBox x:Name="Device" x:Uid="deviceSelector" Width = "190" HorizontalAlignment = "Left" SelectionChanged="Device_SelectionChanged" IsDropDownOpen="True" AllowDrop="True"  Header="Device" PlaceholderText="Pick a Device" Margin="0,1,0,1" Grid.Row="2" VerticalAlignment="Stretch" Grid.ColumnSpan="3">
+            <!-- VPU device options are generated in code -->
         </ComboBox>
         <Button 
             Name="recognizeButton"

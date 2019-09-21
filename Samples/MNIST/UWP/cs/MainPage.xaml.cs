@@ -38,10 +38,13 @@ namespace MNIST_Demo
                 }
             );
 
+            Device.Items.Add(ExtendedDeviceKind.CPU);
+            Device.Items.Add(ExtendedDeviceKind.GPU);
+
             // Only show the "VPU" device selection option if available.
             if (DXCore_WinRTComponent.DXCoreHelper.GetDeviceFromVpuAdapter() != null)
             {
-                Device.Items.Add("VPU");
+                Device.Items.Add(ExtendedDeviceKind.VPU);
             }
 
             LoadModelAsync();
@@ -76,23 +79,7 @@ namespace MNIST_Demo
 
         private void Device_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            string deviceName = e.AddedItems[0].ToString();
-            switch (deviceName)
-            {
-                case "CPU":
-                    mnistModel.device_type = mnistModel.ExtendedDeviceKind.CPU;
-                    break;
-                case "GPU":
-                    mnistModel.device_type = mnistModel.ExtendedDeviceKind.GPU;
-                    break;
-                case "VPU":
-                    mnistModel.device_type = mnistModel.ExtendedDeviceKind.VPU;
-                    break;
-                default: // Default to CPU
-                    mnistModel.device_type = mnistModel.ExtendedDeviceKind.CPU;
-                    break;
-            }
-
+            mnistModel.device_type = (ExtendedDeviceKind)e.AddedItems[0];
             LoadModelAsync();
         }
 

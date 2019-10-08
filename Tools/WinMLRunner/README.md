@@ -59,6 +59,7 @@ Required command-Line arguments:
 -DebugEvaluate: Print evaluation debug output to debug console if debugger is present.
 -Terse: Terse Mode (suppresses repetitive console output)
 -AutoScale <interpolationMode>: Enable image autoscaling and set the interpolation mode [Nearest, Linear, Cubic, Fant]
+-GarbageDataMaxValue <maxValue>: Limit generated garbage data to a maximum value.  Helpful if input data is used as an index.
 
 Concurrency Options:
 -ConcurrentLoad: load models concurrently

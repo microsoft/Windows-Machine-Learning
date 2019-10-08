@@ -49,6 +49,7 @@ void CommandLineArgs::PrintUsage()
     std::cout << "  -InputImageFolder <path to directory of images> : specify folder of images to bind to model"
               << std::endl;
     std::cout << "  -TopK <number> : print top <number> values in the result. Default to 1" << std::endl;
+    std::cout << "  -GarbageDataMaxValue <number> : limit garbage data range to a max random value" << std::endl;
     std::cout << "  -BaseOutputPath [<fully qualified path>] : base output directory path for results, default to cwd"
               << std::endl;
     std::cout << "  -PerfOutput [<path>] : fully qualified or relative path including csv filename for perf results"
@@ -362,6 +363,11 @@ CommandLineArgs::CommandLineArgs(const std::vector<std::wstring>& args)
         {
             CheckNextArgument(args, i);
             SetTopK(std::stoi(args[++i].c_str()));
+        }
+        else if ((_wcsicmp(args[i].c_str(), L"-GarbageDataMaxValue") == 0))
+        {
+            CheckNextArgument(args, i);
+            SetGarbageDataMaxValue(std::stoul(args[++i].c_str()));
         }
         else
         {

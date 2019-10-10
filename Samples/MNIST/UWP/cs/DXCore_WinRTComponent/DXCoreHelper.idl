@@ -1,0 +1,11 @@
+namespace DXCore_WinRTComponent
+{
+    [default_interface]
+    static runtimeclass DXCoreHelper
+    {
+        static Windows.AI.MachineLearning.LearningModelDevice GetDeviceFromVpuAdapter();
+        static Windows.AI.MachineLearning.LearningModelDevice GetDeviceFromComputeOnlyAdapter();
+        static Windows.AI.MachineLearning.LearningModelDevice GetDeviceFromGraphicsAdapter();
+        static Windows.Foundation.Collections.IVectorView<Windows.AI.MachineLearning.LearningModelDevice> GetAllHardwareDevices();
+    }
+}

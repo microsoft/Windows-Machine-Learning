@@ -37,6 +37,16 @@ namespace MNIST_Demo
                     IgnoreTilt = true,
                 }
             );
+
+            Device.Items.Add(ExtendedDeviceKind.CPU);
+            Device.Items.Add(ExtendedDeviceKind.GPU);
+
+            // Only show the "VPU" device selection option if available.
+            if (DXCore_WinRTComponent.DXCoreHelper.GetDeviceFromVpuAdapter() != null)
+            {
+                Device.Items.Add(ExtendedDeviceKind.VPU);
+            }
+
             LoadModelAsync();
         }
 
@@ -65,6 +75,12 @@ namespace MNIST_Demo
 
             //Display the results
             numberLabel.Text = maxIndex.ToString();
+        }
+
+        private void Device_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            mnistModel.device_type = (ExtendedDeviceKind)e.AddedItems[0];
+            LoadModelAsync();
         }
 
         private void clearButton_Click(object sender, RoutedEventArgs e)

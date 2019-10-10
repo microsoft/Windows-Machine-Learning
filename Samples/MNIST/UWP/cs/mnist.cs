@@ -7,7 +7,6 @@ using Windows.Storage.Streams;
 using Windows.AI.MachineLearning;
 namespace MNIST_Demo
 {
-
     public sealed class mnistInput
     {
         public ImageFeatureValue Input3; // BitmapPixelFormat: Gray8, BitmapAlphaMode: Premultiplied, width: 28, height: 28
@@ -18,16 +17,54 @@ namespace MNIST_Demo
         public TensorFloat Plus214_Output_0; // shape(1,10)
     }
 
+    public enum ExtendedDeviceKind
+    {
+        CPU,
+        GPU,
+        VPU // Run MNIST on an Intel Movidius VPU, if present.
+            // The VPU is not accessible via the standard LearningModelDeviceKind enumeration.
+            // Instead, we use the DXCore_WinRTComponent helper.
+    };
+
     public sealed class mnistModel
     {
         private LearningModel model;
         private LearningModelSession session;
         private LearningModelBinding binding;
+
+        public static ExtendedDeviceKind device_type = ExtendedDeviceKind.CPU;
         public static async Task<mnistModel> CreateFromStreamAsync(IRandomAccessStreamReference stream)
         {
+            LearningModelDevice dev = null;
             mnistModel learningModel = new mnistModel();
             learningModel.model = await LearningModel.LoadFromStreamAsync(stream);
-            learningModel.session = new LearningModelSession(learningModel.model);
+
+            // Define the device based on user input
+            if (mnistModel.device_type == ExtendedDeviceKind.GPU)
+            {
+                LearningModelDevice gpuDevice = new Windows.AI.MachineLearning.LearningModelDevice(Windows.AI.MachineLearning.LearningModelDeviceKind.DirectX);
+                learningModel.session = new LearningModelSession(learningModel.model, gpuDevice);
+            }
+            else if (mnistModel.device_type == ExtendedDeviceKind.VPU)
+            {
+                dev = DXCore_WinRTComponent.DXCoreHelper.GetDeviceFromVpuAdapter();
+
+                // DXCoreHelper returns null if a valid device matching the requested criteria was not found.
+                // This could occur if the VPU became unavailable after the app was launched.
+                if (dev != null)
+                {
+                    learningModel.session = new LearningModelSession(learningModel.model, dev);
+                }
+            }
+
+            // Either the user selected CPU, or we failed to create a LearningModelSession from a device.
+            if (learningModel.session == null)
+            {
+                LearningModelDevice cpuDevice = new Windows.AI.MachineLearning.LearningModelDevice(Windows.AI.MachineLearning.LearningModelDeviceKind.Cpu);
+                learningModel.session = new LearningModelSession(learningModel.model, cpuDevice);
+            }
+
+            
             learningModel.binding = new LearningModelBinding(learningModel.session);
             return learningModel;
         }

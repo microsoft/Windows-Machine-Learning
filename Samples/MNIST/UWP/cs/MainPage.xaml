@@ -5,36 +5,40 @@
     xmlns:local="using:MNIST_Demo"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    mc:Ignorable="d" Width="731.195" Height="496">
+    mc:Ignorable="d" Width="768.333" Height="519.111">
 
     <Grid
         x:Name="parentGrid"
-        Margin="40">
+        Margin="40,40,40,10" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
         <Grid.RowDefinitions>
             <RowDefinition Height="70" />
             <RowDefinition Height="336" />
+            <RowDefinition Height="60" />
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="336" />
+            <ColumnDefinition Width="25.778" />
+            <ColumnDefinition Width="37.222"/>
+            <ColumnDefinition Width="272.889"/>
             <ColumnDefinition Width="336" />
         </Grid.ColumnDefinitions>
 
         <TextBlock Text="Handwritten Digit:"
                FontSize="36"
                VerticalAlignment="Center"
-               Grid.Row="0"
-               Grid.Column="0" />
+               Grid.Column="0" Grid.ColumnSpan="3" />
         <TextBlock Text="Result:"
                FontSize="36"
                VerticalAlignment="Center"
-               Grid.Row="0"
-               Grid.Column="1" />
+               Grid.Column="3" />
+        <ComboBox x:Name="Device" x:Uid="deviceSelector" Width = "190" HorizontalAlignment = "Left" SelectionChanged="Device_SelectionChanged" IsDropDownOpen="True" AllowDrop="True"  Header="Device" PlaceholderText="Pick a Device" Margin="0,1,0,1" Grid.Row="2" VerticalAlignment="Stretch" Grid.ColumnSpan="3">
+            <!-- VPU device options are generated in code -->
+        </ComboBox>
         <Button 
             Name="recognizeButton"
             Content="Recognize"
             Click="recognizeButton_Click"
             FontSize="26"
-            Grid.Column="1" 
+            Grid.Column="3" 
             Grid.Row="1" 
             Height="75" 
             Width="150"
@@ -46,7 +50,7 @@
             Content="Clear Digit"
             Click="clearButton_Click"
             FontSize="26"
-            Grid.Column="1" 
+            Grid.Column="3" 
             Grid.Row="1" 
             Height="75" 
             Width="150"
@@ -55,19 +59,18 @@
             HorizontalAlignment="Left"/>
         <TextBlock Name="numberLabel"
             FontSize="100" 
-            Grid.Column="1" 
-            Margin="60,0,100,192"
+            Grid.Column="3" 
+            Margin="60,0,100,190"
             Text="" VerticalAlignment="Bottom" Grid.Row="1"/>
         <Border BorderThickness="4"
             BorderBrush="Black"
-            Margin="0,0,0,0"
             Grid.Row="1"
-            Grid.Column="0"/>
+            Grid.Column="0" Grid.ColumnSpan="3" Margin="0,0,0,0"/>
 
         <Grid Name="inkGrid" 
             Background="Black"
             Grid.Row="1"
-            Grid.Column="0">
+            Grid.Column="0" Grid.ColumnSpan="3">
             <InkCanvas 
                     Name="inkCanvas"
                     Height="336" 

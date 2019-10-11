@@ -1,7 +1,9 @@
 #pragma once
 
 #include "noisyrelu_cpu.h"
+#include "relu.h"
 #include "relu_cpu.h"
+#include "relu_gpu.h"
 #include "debug_cpu.h"
 
 struct CustomOperatorProvider :
@@ -22,6 +24,7 @@ struct CustomOperatorProvider :
 
     void RegisterSchemas()
     {
+        ReluOperator::RegisterReluSchema(m_registry);
         NoisyReluOperatorFactory::RegisterNoisyReluSchema(m_registry);
 
         DebugOperatorFactory::RegisterDebugSchema(m_registry);
@@ -30,7 +33,10 @@ struct CustomOperatorProvider :
     void RegisterKernels()
     {
         // Replace the Relu operator kernel
-        ReluOperatorFactory::RegisterReluKernel(m_registry);
+        CpuReluOperatorFactory::RegisterReluKernel(m_registry);
+
+        // Replace the Relu operator kernel
+        GpuReluOperatorFactory::RegisterReluKernel(m_registry);
 
         // Add a new operator kernel for Relu
         NoisyReluOperatorFactory::RegisterNoisyReluKernel(m_registry);

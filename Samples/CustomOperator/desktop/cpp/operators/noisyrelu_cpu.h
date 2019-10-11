@@ -9,12 +9,12 @@ struct NoisyReluShapeInferrer : winrt::implements<NoisyReluShapeInferrer, IMLOpe
         try
         {
             uint32_t inputDimsSize;
-            context->GetInputTensorDimensionCount(0, &inputDimsSize);
+            winrt::check_hresult(context->GetInputTensorDimensionCount(0, &inputDimsSize));
 
-            auto inputDims = std::unique_ptr<uint32_t[]>(new uint32_t[inputDimsSize]);
-            context->GetInputTensorShape(0, inputDimsSize, inputDims.get());
+            std::vector<uint32_t> inputDims(inputDimsSize);
+            winrt::check_hresult(context->GetInputTensorShape(0, inputDimsSize, inputDims.data()));
 
-            context->SetOutputTensorShape(0, inputDimsSize, inputDims.get());
+            winrt::check_hresult(context->SetOutputTensorShape(0, inputDimsSize, inputDims.data()));
             return S_OK;
         }
         catch (...)
@@ -43,11 +43,11 @@ struct NoisyReluOperator: winrt::implements<NoisyReluOperator, IMLOperatorKernel
         {
             // Get the input tensor
             winrt::com_ptr<IMLOperatorTensor> inputTensor;
-            context->GetInputTensor(0, inputTensor.put());
+            winrt::check_hresult(context->GetInputTensor(0, inputTensor.put()));
 
             // Get the output tensor
             winrt::com_ptr<IMLOperatorTensor> outputTensor;
-            context->GetOutputTensor(0, outputTensor.put());
+            winrt::check_hresult(context->GetOutputTensor(0, outputTensor.put()));
 
             // Get the input and output shape sizes
             uint32_t inputDimsSize = inputTensor->GetDimensionCount();
@@ -59,11 +59,11 @@ struct NoisyReluOperator: winrt::implements<NoisyReluOperator, IMLOperatorKernel
 
             // Get the input shape
             std::vector<uint32_t> inputDims(inputDimsSize);
-            outputTensor->GetShape(inputDimsSize, inputDims.data());
+            winrt::check_hresult(outputTensor->GetShape(inputDimsSize, inputDims.data()));
 
             // Get the output shape
             std::vector<uint32_t> outputDims(outputDimsSize);
-            outputTensor->GetShape(outputDimsSize, outputDims.data());
+            winrt::check_hresult(outputTensor->GetShape(outputDimsSize, outputDims.data()));
 
             // For the number of total elements in the input and output shapes
             auto outputDataSize = std::accumulate(outputDims.begin(), outputDims.end(), 1, std::multiplies<uint32_t>());
@@ -128,9 +128,9 @@ struct NoisyReluOperatorFactory : winrt::implements<NoisyReluOperatorFactory, IM
         try
         {
             float mean;
-            context->GetAttribute("mean", MLOperatorAttributeType::Float, 1, sizeof(float), reinterpret_cast<void*>(&mean));
+            winrt::check_hresult(context->GetAttribute("mean", MLOperatorAttributeType::Float, 1, sizeof(float), reinterpret_cast<void*>(&mean)));
             float variance;
-            context->GetAttribute("variance", MLOperatorAttributeType::Float, 1, sizeof(float), reinterpret_cast<void*>(&variance));
+            winrt::check_hresult(context->GetAttribute("variance", MLOperatorAttributeType::Float, 1, sizeof(float), reinterpret_cast<void*>(&variance)));
 
             auto noisyReluOperator = winrt::make<NoisyReluOperator>(mean, variance);
             noisyReluOperator.copy_to(kernel);
@@ -155,10 +155,10 @@ struct NoisyReluOperatorFactory : winrt::implements<NoisyReluOperatorFactory, IM
     static void RegisterNoisyReluSchema(winrt::com_ptr<IMLOperatorRegistry> registry)
     {
         MLOperatorSetId operatorSetId;
-        operatorSetId.domain = "";
-        operatorSetId.version = 8;
+        operatorSetId.domain = "MyNoisyReluDomain";
+        operatorSetId.version = 1;
 
-        MLOperatorSchemaDescription noisyReluSchema;
+        MLOperatorSchemaDescription noisyReluSchema = {};
         noisyReluSchema.name = "NoisyRelu";
         noisyReluSchema.operatorSetVersionAtLastChange = 1;
 
@@ -228,20 +228,20 @@ struct NoisyReluOperatorFactory : winrt::implements<NoisyReluOperatorFactory, IM
         noisyReluSchema.defaultAttributeCount = static_cast<uint32_t>(attributeDefaultValues.size());
 
         std::vector<const MLOperatorSchemaDescription*> schemas { &noisyReluSchema };
-        registry->RegisterOperatorSetSchema(
+        winrt::check_hresult(registry->RegisterOperatorSetSchema(
             &operatorSetId,
             7 /* baseline version */,
             schemas.data(),
             static_cast<uint32_t>(schemas.size()),
             nullptr,
             nullptr
-        );
+        ));
     }
 
     static void RegisterNoisyReluKernel(winrt::com_ptr<IMLOperatorRegistry> registry)
     {
-        MLOperatorKernelDescription kernelDescription;
-        kernelDescription.domain = "";
+        MLOperatorKernelDescription kernelDescription = {};
+        kernelDescription.domain = "MyNoisyReluDomain";
         kernelDescription.name = "NoisyRelu";
         kernelDescription.minimumOperatorSetVersion = 1;
         kernelDescription.executionType = MLOperatorExecutionType::Cpu;
@@ -284,10 +284,10 @@ struct NoisyReluOperatorFactory : winrt::implements<NoisyReluOperatorFactory, IM
         auto factory = winrt::make<NoisyReluOperatorFactory>();
         auto shareInferrer = winrt::make<NoisyReluShapeInferrer>();
 
-        registry->RegisterOperatorKernel(
+        winrt::check_hresult(registry->RegisterOperatorKernel(
             &kernelDescription,
             factory.get(),
             shareInferrer.get()
-        );
+        ));
     }
 };

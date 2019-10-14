@@ -27,9 +27,9 @@ HRESULT DebugShapeInferrer::InferOutputShapes (IMLOperatorShapeInferenceContext*
         context->GetInputTensorDimensionCount(0, &inputDimsSize);
 
         uint32_t *inputDims = new uint32_t[inputDimsSize];
-        context->GetInputTensorShape(0, inputDimsSize, inputDims);
+        winrt::check_hresult(context->GetInputTensorShape(0, inputDimsSize, inputDims));
 
-        context->SetOutputTensorShape(0, inputDimsSize, inputDims);
+        winrt::check_hresult(context->SetOutputTensorShape(0, inputDimsSize, inputDims));
         return S_OK;
     }
     catch (...)
@@ -148,11 +148,11 @@ HRESULT DebugOperator::Compute(IMLOperatorKernelContext* context)
     {
         // Get the input tensor
         winrt::com_ptr<IMLOperatorTensor> inputTensor;
-        context->GetInputTensor(0, inputTensor.put());
+        winrt::check_hresult(context->GetInputTensor(0, inputTensor.put()));
 
         // Get the output tensor
         winrt::com_ptr<IMLOperatorTensor> outputTensor;
-        context->GetOutputTensor(0, outputTensor.put());
+        winrt::check_hresult(context->GetOutputTensor(0, outputTensor.put()));
 
         // Get the input and output shape sizes
         uint32_t inputDimsSize = inputTensor->GetDimensionCount();
@@ -164,11 +164,11 @@ HRESULT DebugOperator::Compute(IMLOperatorKernelContext* context)
 
         // Get the input shape
         std::vector<uint32_t> inputDims(inputDimsSize);
-        inputTensor->GetShape(inputDimsSize, inputDims.data());
+        winrt::check_hresult(inputTensor->GetShape(inputDimsSize, inputDims.data()));
 
         // Get the output shape
         std::vector<uint32_t> outputDims(outputDimsSize);
-        outputTensor->GetShape(outputDimsSize, outputDims.data());
+        winrt::check_hresult(outputTensor->GetShape(outputDimsSize, outputDims.data()));
 
         // For the number of total elements in the input and output shapes
         auto outputDataSize = std::accumulate(outputDims.begin(), outputDims.end(), 1, std::multiplies<uint32_t>());
@@ -279,7 +279,7 @@ void DebugOperatorFactory::RegisterDebugSchema(winrt::com_ptr<IMLOperatorRegistr
     operatorSetId.domain = "";
     operatorSetId.version = TARGET_OPSET;
 
-    MLOperatorSchemaDescription debugSchema;
+    MLOperatorSchemaDescription debugSchema = {};
     debugSchema.name = "Debug";
     debugSchema.operatorSetVersionAtLastChange = 1;
 
@@ -374,7 +374,7 @@ void DebugOperatorFactory::RegisterDebugSchema(winrt::com_ptr<IMLOperatorRegistr
 
 void DebugOperatorFactory::RegisterDebugKernel(winrt::com_ptr<IMLOperatorRegistry> registry)
 {
-    MLOperatorKernelDescription kernelDescription;
+    MLOperatorKernelDescription kernelDescription = {};
     kernelDescription.domain = "";
     kernelDescription.name = "Debug";
     kernelDescription.minimumOperatorSetVersion = 1;
@@ -420,9 +420,9 @@ void DebugOperatorFactory::RegisterDebugKernel(winrt::com_ptr<IMLOperatorRegistr
     auto factory = winrt::make<DebugOperatorFactory>();
     auto shareInferrer = winrt::make<DebugShapeInferrer>();
 
-    registry->RegisterOperatorKernel(
+    winrt::check_hresult(registry->RegisterOperatorKernel(
         &kernelDescription,
         factory.get(),
         shareInferrer.get()
-    );
+    ));
 }

@@ -3,12 +3,12 @@
 #include "operators/customoperatorprovider.h"
 
 using namespace winrt;
-using namespace Windows::Foundation;
-using namespace Windows::Foundation::Collections;
-using namespace Windows::Media;
-using namespace Windows::Graphics::Imaging;
-using namespace Windows::Storage;
-using namespace Windows::AI::MachineLearning;
+using namespace winrt::Windows::Foundation;
+using namespace winrt::Windows::Foundation::Collections;
+using namespace winrt::Windows::Media;
+using namespace winrt::Windows::Graphics::Imaging;
+using namespace winrt::Windows::Storage;
+using namespace winrt::Windows::AI::MachineLearning;
 using namespace std;
 
 wstring GetModulePath() {
@@ -43,7 +43,7 @@ struct CommandLineInterpreter
             {
                 return GetModelPath(L"squeezenet_debug_one_output.onnx");
             }
-            else if (0 == _wcsicmp(L"relu", m_commandLineArgs[1].c_str()))
+            else if (0 == _wcsicmp(L"relu", m_commandLineArgs[1].c_str()) || 0 == _wcsicmp(L"relu_gpu", m_commandLineArgs[1].c_str()))
             {
                 return GetModelPath(L"relu.onnx");
             }
@@ -54,6 +54,19 @@ struct CommandLineInterpreter
         }
 
         return L"";
+    }
+
+    bool UseGpu()
+    {
+        if (m_commandLineArgs.size() >= 2)
+        {
+            if (0 == _wcsicmp(L"relu_gpu", m_commandLineArgs[1].c_str()))
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     bool IsDebugOperator() {
@@ -93,7 +106,7 @@ void LoadLabels()
     while (getline(labelFile, s, ','))
     {
         int labelValue = atoi(s.c_str());
-        if (labelValue >= labels.size())
+        if (static_cast<size_t>(labelValue) >= labels.size())
         {
             labels.resize(labelValue + 1);
         }
@@ -229,7 +242,7 @@ int wmain(int argc, wchar_t * argv[])
     auto modelPath = args.TryGetModelPath();
     if (modelPath.empty())
     {
-        wprintf(L"Must supply first parameter: <debug|relu|noisyrelu>");
+        wprintf(L"Must supply first parameter: <debug|relu|relu_gpu|noisyrelu>");
         return 0;
     }
 
@@ -242,7 +255,7 @@ int wmain(int argc, wchar_t * argv[])
     auto model = Model::LoadFromFilePath(modelPath, provider);
 
     printf("Creating ModelSession.\n");
-    Session session(model, Device(Kind::Default));
+    Session session(model, Device(args.UseGpu() ? Kind::DirectXHighPerformance : Kind::Default));
 
     if (args.IsDebugOperator()) {
         // debug operator sample model is squeezenet as it is best demonstrated on an image recognition model

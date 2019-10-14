@@ -95,11 +95,11 @@ steps:
     condition: succeededOrFailed()
 
   - task: VSBuild@1
-    displayName: 'Build CustomOperatorCPU Sample'
+    displayName: 'Build CustomOperator Sample'
     inputs:
-      solution: Samples/CustomOperatorCPU/desktop/cpp/custom-operator-cpu-sample.sln
+      solution: Samples/CustomOperator/desktop/cpp/custom-operator-sample.sln
       vsVersion: 15.0
-      msbuildArgs: '-v:diag /p:OutDir=$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\CustomOperatorCPU\'
+      msbuildArgs: '-v:diag /p:OutDir=$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\CustomOperator\'
       platform: '$(BuildPlatform)'
       configuration: '$(BuildConfiguration)'
       clean: true
@@ -226,7 +226,7 @@ steps:
       targetFolder: '$(Build.ArtifactStagingDirectory)\$(BuildPlatform)\$(BuildConfiguration)\'
       sourceFolder: '$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\'
       Contents: |
-        ?(AdapterSelection|CustomOperatorCPU|CustomTensorization)**\*
+        ?(AdapterSelection|CustomOperator|CustomTensorization)**\*
         SqueezeNetObjectDetection\*
     condition: succeededOrFailed()
 

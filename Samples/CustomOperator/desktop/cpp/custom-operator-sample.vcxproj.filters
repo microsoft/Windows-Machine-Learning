@@ -21,6 +21,12 @@
     <ClInclude Include="operators\debug_cpu.h">
       <Filter>operators</Filter>
     </ClInclude>
+    <ClInclude Include="operators\relu_gpu.h">
+      <Filter>operators</Filter>
+    </ClInclude>
+    <ClInclude Include="operators\relu.h">
+      <Filter>operators</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="models">
@@ -59,5 +65,10 @@
     </None>
     <None Include="README.md" />
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="operators\relu_shader.hlsl">
+      <Filter>operators</Filter>
+    </FxCompile>
   </ItemGroup>
 </Project>

@@ -170,7 +170,7 @@ static ColorManagementMode GetColorManagementMode(const LearningModel& model)
     }
     // Due diligence should be done to make sure that the input image is within the model's colorspace. There are
     // multiple non-sRGB color spaces.
-    printf("    Model metadata indicates that color gamma space is : %ws. Will not manage color space...\n",
+    printf("    Model metadata indicates that color gamma space is : %ws. Will not manage color space to sRGB...\n",
            gammaSpace.c_str());
     return ColorManagementMode::DoNotColorManage;
 }

@@ -11,6 +11,7 @@
 #include <winrt/Windows.Media.h>
 #include <winrt/Windows.Storage.h>
 #include <winrt/Windows.Storage.Streams.h>
+#include <array>
 #include <vector>
 #include <string>
 #include <iostream>

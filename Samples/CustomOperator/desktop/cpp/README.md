@@ -5,7 +5,6 @@ The necessary code is included to define and register these custom operators. AP
 
 ## Included custom operators
 There are three custom operators included in this sample: Relu, NoisyRelu and Debug.
-The Relu custom operator is replacing an existing operator while NoisyRelu and Debug are new operators.
 
 Relu transforms the input data using the function max(0, input). Noisy Relu is a variant of Relu which introduces Guassian noise.
 For more information on these functions: 
@@ -46,6 +45,7 @@ The Relu and NoisyRelu operator client code curates its own input data, but the 
   ```
   custom-operator-cpu-sample.exe debug <path to image file>
   custom-operator-cpu-sample.exe relu
+  custom-operator-cpu-sample.exe relu_gpu
   custom-operator-cpu-sample.exe noisyrelu
   ```
 

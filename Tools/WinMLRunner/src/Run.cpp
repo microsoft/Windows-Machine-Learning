@@ -23,19 +23,23 @@ std::vector<ILearningModelFeatureValue> GenerateInputFeatures(const LearningMode
     for (uint32_t inputNum = 0; inputNum < model.InputFeatures().Size(); inputNum++)
     {
         auto&& description = model.InputFeatures().GetAt(inputNum);
-
+        ColorManagementMode colorManagementMode = ColorManagementMode::DoNotColorManage;
+        if (args.IsImageInput())
+        {
+            colorManagementMode = GetColorManagementMode(model);
+        }
         if (inputDataType == InputDataType::Tensor)
         {
             // If CSV data is provided, then every input will contain the same CSV data
             auto tensorFeature = BindingUtilities::CreateBindableTensor(description, imagePath, inputBindingType, inputDataType,
-                                                                        args, iterationNum);
+                                                                        args, iterationNum, colorManagementMode);
             inputFeatures.push_back(tensorFeature);
         }
         else
         {
             auto imageFeature = BindingUtilities::CreateBindableImage(
                 description, imagePath, inputBindingType, inputDataType, device.LearningModelDevice.Direct3D11Device(),
-                args, iterationNum);
+                args, iterationNum, colorManagementMode);
             inputFeatures.push_back(imageFeature);
         }
     }

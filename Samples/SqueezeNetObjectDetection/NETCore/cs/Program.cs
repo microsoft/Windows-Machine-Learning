@@ -158,16 +158,13 @@ namespace SqueezeNetObjectDetectionNC
             {
                 Console.WriteLine("    Model does not have color space gamma information. Will color manage to sRGB by default...");
             }
-            if (!doesModelContainGammaSpaceMetadata || gammaSpace == "SRGB")
+            if (!doesModelContainGammaSpaceMetadata || gammaSpace.Equals("SRGB", StringComparison.CurrentCultureIgnoreCase))
             {
                 return ColorManagementMode.ColorManageToSRgb;
             }
-            else
-            {
-                // Due diligence should be done to make sure that the input image is within the model's colorspace. There are multiple non-sRGB color spaces.
-                Console.WriteLine("    Model metadata indicates that color gamma space is : {0}. Will not manage color space...", gammaSpace);
-                return ColorManagementMode.DoNotColorManage;
-            }
+            // Due diligence should be done to make sure that the input image is within the model's colorspace. There are multiple non-sRGB color spaces.
+            Console.WriteLine("    Model metadata indicates that color gamma space is : {0}. Will not manage color space...", gammaSpace);
+            return ColorManagementMode.DoNotColorManage;
         }
 
         private static void PrintResults(IReadOnlyList<float> resultVector)

@@ -170,17 +170,13 @@ ColorManagementMode GetColorManagementMode(const LearningModel& model)
     {
         printf("    Model does not have color space gamma information. Will color manage to sRGB by default...\n");
     }
-
-    if (gammaSpace == L"" || gammaSpace == L"SRGB")
+    if (gammaSpace == L"" || _wcsicmp(gammaSpace.c_str(), L"SRGB") == 0)
     {
         return ColorManagementMode::ColorManageToSRgb;
     }
-    else
-    {
-        // Due diligence should be done to make sure that the input image is within the model's colorspace. There are multiple non-sRGB color spaces.
-        printf("    Model metadata indicates that color gamma space is : %ws. Will not manage color space...\n", gammaSpace.c_str());
-        return ColorManagementMode::DoNotColorManage;
-    }
+    // Due diligence should be done to make sure that the input image is within the model's colorspace. There are multiple non-sRGB color spaces.
+    printf("    Model metadata indicates that color gamma space is : %ws. Will not manage color space...\n", gammaSpace.c_str());
+    return ColorManagementMode::DoNotColorManage;
 }
 
 VideoFrame LoadImageFile(hstring filePath, ColorManagementMode colorManagementMode)

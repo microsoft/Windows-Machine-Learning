@@ -245,18 +245,28 @@ namespace BindingUtilities
         uint64_t width = 0;
         uint64_t height = 0;
         GetHeightAndWidthFromLearningModelFeatureDescriptor(modelFeatureDescriptor, width, height);
+        IRandomAccessStream stream;
+        BitmapDecoder decoder = NULL;
         try
         {
             // open the file
             StorageFile file = StorageFile::GetFileFromPathAsync(filePath).get();
             // get a stream on it
-            auto stream = file.OpenAsync(FileAccessMode::Read).get();
+            stream = file.OpenAsync(FileAccessMode::Read).get();
             // Create the decoder from the stream
-            BitmapDecoder decoder = BitmapDecoder::CreateAsync(stream).get();
-            BitmapPixelFormat format = inputDataType == InputDataType::Tensor
-                                           ? decoder.BitmapPixelFormat()
-                                           : TypeHelper::GetBitmapPixelFormat(inputDataType);
-
+            decoder = BitmapDecoder::CreateAsync(stream).get();
+        }
+        catch (hresult_error hr)
+        {
+            printf("    Failed to load the image file, make sure you are using fully qualified paths\r\n");
+            printf("    %ws\n", hr.message().c_str());
+            exit(hr.code());
+        }
+        BitmapPixelFormat format = inputDataType == InputDataType::Tensor
+                                       ? decoder.BitmapPixelFormat()
+                                       : TypeHelper::GetBitmapPixelFormat(inputDataType);
+        try
+        {
             // If input dimensions are different from tensor input, then scale / crop while reading
             if (args.IsAutoScale() && (decoder.PixelHeight() != height || decoder.PixelWidth() != width))
             {
@@ -273,23 +283,22 @@ namespace BindingUtilities
                 // get the bitmap
                 return decoder
                     .GetSoftwareBitmapAsync(format, decoder.BitmapAlphaMode(), transform,
-                                            ExifOrientationMode::RespectExifOrientation,
-                                            colorManagementMode)
-                    .get();
+                                            ExifOrientationMode::RespectExifOrientation, colorManagementMode).get();
             }
             else
             {
                 // get the bitmap
-                return decoder.GetSoftwareBitmapAsync(format, decoder.BitmapAlphaMode(), BitmapTransform(),
-                                                      ExifOrientationMode::RespectExifOrientation, colorManagementMode).get();
+                return decoder
+                    .GetSoftwareBitmapAsync(format, decoder.BitmapAlphaMode(), BitmapTransform(),
+                                            ExifOrientationMode::RespectExifOrientation, colorManagementMode).get();
             }
         }
-        catch (...)
+        catch (hresult_error hr)
         {
-            std::wcout << L"BindingUtilities: could not open image file (" << std::wstring(filePath) << L"), "
-                       << L"make sure you are using fully qualified paths. Also please make sure that input image is within the model's colorspace. " << std::endl;
-
-            return nullptr;
+            printf("    Failed to create SoftwareBitmap! Please make sure that input image is within the model's "
+                   "colorspace.\n");
+            printf("    %ws\n", hr.message().c_str());
+            exit(hr.code());
         }
     }
 
@@ -391,7 +400,8 @@ namespace BindingUtilities
     template <TensorKind TKind, typename WriteType>
     static void GenerateRandomData(WriteType* data, uint32_t sizeInBytes, uint32_t maxValue)
     {
-        static std::independent_bits_engine<std::default_random_engine, sizeof(uint32_t) * 8, uint32_t> randomBitsEngine;
+        static std::independent_bits_engine<std::default_random_engine, sizeof(uint32_t) * 8, uint32_t>
+            randomBitsEngine;
         randomBitsEngine.seed(seed++);
 
         WriteType* begin = data;
@@ -810,13 +820,12 @@ namespace BindingUtilities
     ImageFeatureValue CreateBindableImage(const ILearningModelFeatureDescriptor& featureDescriptor,
                                           const std::wstring& imagePath, InputBindingType inputBindingType,
                                           InputDataType inputDataType, const IDirect3DDevice winrtDevice,
-                                          const CommandLineArgs& args, uint32_t iterationNum, 
+                                          const CommandLineArgs& args, uint32_t iterationNum,
                                           ColorManagementMode colorManagementMode)
     {
-        auto softwareBitmap =
-            imagePath.empty() ? GenerateGarbageImage(featureDescriptor, inputDataType)
-                              : LoadImageFile(featureDescriptor, inputDataType, imagePath.c_str(),
-                                              args, iterationNum, colorManagementMode);
+        auto softwareBitmap = imagePath.empty() ? GenerateGarbageImage(featureDescriptor, inputDataType)
+                                                : LoadImageFile(featureDescriptor, inputDataType, imagePath.c_str(),
+                                                                args, iterationNum, colorManagementMode);
         auto videoFrame = CreateVideoFrame(softwareBitmap, inputBindingType, inputDataType, winrtDevice);
         return ImageFeatureValue::CreateFromVideoFrame(videoFrame);
     }

@@ -122,9 +122,19 @@ namespace SqueezeNetObjectDetectionNC
 
         private static ImageFeatureValue LoadImageFile(ColorManagementMode colorManagementMode)
         {
-            StorageFile imageFile = AsyncHelper(StorageFile.GetFileFromPathAsync(_imagePath));
-            IRandomAccessStream stream = AsyncHelper(imageFile.OpenReadAsync());
-            BitmapDecoder decoder = AsyncHelper(BitmapDecoder.CreateAsync(stream));
+            BitmapDecoder decoder = null;
+            try
+            {
+                StorageFile imageFile = AsyncHelper(StorageFile.GetFileFromPathAsync(_imagePath));
+                IRandomAccessStream stream = AsyncHelper(imageFile.OpenReadAsync());
+                decoder = AsyncHelper(BitmapDecoder.CreateAsync(stream));
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("Failed to load image file! Make sure that fully qualified paths are used.");
+                Console.WriteLine(" Exception caught.\n {0}", e);
+                System.Environment.Exit(e.HResult);
+            }
             SoftwareBitmap softwareBitmap = null;
             try
             {
@@ -163,7 +173,7 @@ namespace SqueezeNetObjectDetectionNC
                 return ColorManagementMode.ColorManageToSRgb;
             }
             // Due diligence should be done to make sure that the input image is within the model's colorspace. There are multiple non-sRGB color spaces.
-            Console.WriteLine("    Model metadata indicates that color gamma space is : {0}. Will not manage color space...", gammaSpace);
+            Console.WriteLine("    Model metadata indicates that color gamma space is : {0}. Will not manage color space to sRGB...", gammaSpace);
             return ColorManagementMode.DoNotColorManage;
         }
 

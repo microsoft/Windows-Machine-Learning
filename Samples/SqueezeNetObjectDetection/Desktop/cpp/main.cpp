@@ -175,12 +175,13 @@ ColorManagementMode GetColorManagementMode(const LearningModel& model)
         return ColorManagementMode::ColorManageToSRgb;
     }
     // Due diligence should be done to make sure that the input image is within the model's colorspace. There are multiple non-sRGB color spaces.
-    printf("    Model metadata indicates that color gamma space is : %ws. Will not manage color space...\n", gammaSpace.c_str());
+    printf("    Model metadata indicates that color gamma space is : %ws. Will not manage color space to sRGB...\n", gammaSpace.c_str());
     return ColorManagementMode::DoNotColorManage;
 }
 
 VideoFrame LoadImageFile(hstring filePath, ColorManagementMode colorManagementMode)
 {
+    BitmapDecoder decoder = NULL;
     try
     {
         // open the file
@@ -188,36 +189,45 @@ VideoFrame LoadImageFile(hstring filePath, ColorManagementMode colorManagementMo
         // get a stream on it
         auto stream = file.OpenAsync(FileAccessMode::Read).get();
         // Create the decoder from the stream
-        BitmapDecoder decoder = BitmapDecoder::CreateAsync(stream).get();
-
-        SoftwareBitmap softwareBitmap = NULL;
-        try
-        {
-            softwareBitmap = decoder.GetSoftwareBitmapAsync(
-                decoder.BitmapPixelFormat(),
-                decoder.BitmapAlphaMode(),
-                BitmapTransform(),
-                ExifOrientationMode::RespectExifOrientation,
-                colorManagementMode
-            ).get();
-        }
-        catch (hresult_error hr)
-        {
-            printf("    Failed to create SoftwareBitmap! Please make sure that input image is within the model's colorspace.\n");
-            printf("    %ws\n", hr.message().c_str());
-            exit(hr.code());
-        }
-
-        // load a videoframe from it
-        VideoFrame inputImage = VideoFrame::CreateWithSoftwareBitmap(softwareBitmap);
-        // all done
-        return inputImage;
+        decoder = BitmapDecoder::CreateAsync(stream).get();
     }
     catch (...)
     {
         printf("    Failed to load the image file, make sure you are using fully qualified paths\r\n");
         exit(EXIT_FAILURE);
     }
+    SoftwareBitmap softwareBitmap = NULL;
+    try
+    {
+        softwareBitmap = decoder.GetSoftwareBitmapAsync(
+            decoder.BitmapPixelFormat(),
+            decoder.BitmapAlphaMode(),
+            BitmapTransform(),
+            ExifOrientationMode::RespectExifOrientation,
+            colorManagementMode
+        ).get();
+    }
+    catch (hresult_error hr)
+    {
+        printf("    Failed to create SoftwareBitmap! Please make sure that input image is within the model's colorspace.\n");
+        printf("    %ws\n", hr.message().c_str());
+        exit(hr.code());
+    }
+    VideoFrame inputImage = NULL;
+    try
+    {
+        // load a videoframe from it
+        inputImage = VideoFrame::CreateWithSoftwareBitmap(softwareBitmap);
+    }
+    catch (hresult_error hr)
+    {
+        printf("Failed to create videoframe from software bitmap.");
+        printf("    %ws\n", hr.message().c_str());
+        exit(hr.code());
+    }
+    // all done
+    return inputImage;
+    
 }
 
 void PrintResults(IVectorView<float> results)

@@ -22,9 +22,10 @@ hstring imagePath;
 // helper functions
 string GetModulePath();
 void LoadLabels();
-VideoFrame LoadImageFile(hstring filePath);
+VideoFrame LoadImageFile(hstring filePath, ColorManagementMode colorManagementMode);
 void PrintResults(IVectorView<float> results);
 bool ParseArgs(int argc, char* argv[]);
+ColorManagementMode GetColorManagementMode(const LearningModel& model);
 
 wstring GetModelPath()
 {
@@ -57,9 +58,13 @@ int main(int argc, char* argv[])
     ticks = GetTickCount() - ticks;
     printf("model file loaded in %d ticks\n", ticks);
 
+    // get model color management mode
+    printf("Getting model color management mode...\n");
+    ColorManagementMode colorManagementMode = GetColorManagementMode(model);
+
     // load the image
     printf("Loading the image...\n");
-    auto imageFrame = LoadImageFile(imagePath);
+    auto imageFrame = LoadImageFile(imagePath, colorManagementMode);
     // now create a session and binding
     LearningModelSession session(model, LearningModelDevice(deviceKind));
     LearningModelBinding binding(session);
@@ -153,8 +158,30 @@ void LoadLabels()
     }
 }
 
-VideoFrame LoadImageFile(hstring filePath)
+ColorManagementMode GetColorManagementMode(const LearningModel& model)
 {
+    // Get model color space gamma
+    hstring gammaSpace = L"";
+    try
+    {
+        gammaSpace = model.Metadata().Lookup(L"Image.ColorSpaceGamma");
+    }
+    catch (...)
+    {
+        printf("    Model does not have color space gamma information. Will color manage to sRGB by default...\n");
+    }
+    if (gammaSpace == L"" || _wcsicmp(gammaSpace.c_str(), L"SRGB") == 0)
+    {
+        return ColorManagementMode::ColorManageToSRgb;
+    }
+    // Due diligence should be done to make sure that the input image is within the model's colorspace. There are multiple non-sRGB color spaces.
+    printf("    Model metadata indicates that color gamma space is : %ws. Will not manage color space to sRGB...\n", gammaSpace.c_str());
+    return ColorManagementMode::DoNotColorManage;
+}
+
+VideoFrame LoadImageFile(hstring filePath, ColorManagementMode colorManagementMode)
+{
+    BitmapDecoder decoder = NULL;
     try
     {
         // open the file
@@ -162,19 +189,45 @@ VideoFrame LoadImageFile(hstring filePath)
         // get a stream on it
         auto stream = file.OpenAsync(FileAccessMode::Read).get();
         // Create the decoder from the stream
-        BitmapDecoder decoder = BitmapDecoder::CreateAsync(stream).get();
-        // get the bitmap
-        SoftwareBitmap softwareBitmap = decoder.GetSoftwareBitmapAsync().get();
-        // load a videoframe from it
-        VideoFrame inputImage = VideoFrame::CreateWithSoftwareBitmap(softwareBitmap);
-        // all done
-        return inputImage;
+        decoder = BitmapDecoder::CreateAsync(stream).get();
     }
     catch (...)
     {
-        printf("failed to load the image file, make sure you are using fully qualified paths\r\n");
+        printf("    Failed to load the image file, make sure you are using fully qualified paths\r\n");
         exit(EXIT_FAILURE);
     }
+    SoftwareBitmap softwareBitmap = NULL;
+    try
+    {
+        softwareBitmap = decoder.GetSoftwareBitmapAsync(
+            decoder.BitmapPixelFormat(),
+            decoder.BitmapAlphaMode(),
+            BitmapTransform(),
+            ExifOrientationMode::RespectExifOrientation,
+            colorManagementMode
+        ).get();
+    }
+    catch (hresult_error hr)
+    {
+        printf("    Failed to create SoftwareBitmap! Please make sure that input image is within the model's colorspace.\n");
+        printf("    %ws\n", hr.message().c_str());
+        exit(hr.code());
+    }
+    VideoFrame inputImage = NULL;
+    try
+    {
+        // load a videoframe from it
+        inputImage = VideoFrame::CreateWithSoftwareBitmap(softwareBitmap);
+    }
+    catch (hresult_error hr)
+    {
+        printf("Failed to create videoframe from software bitmap.");
+        printf("    %ws\n", hr.message().c_str());
+        exit(hr.code());
+    }
+    // all done
+    return inputImage;
+    
 }
 
 void PrintResults(IVectorView<float> results)

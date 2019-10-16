@@ -45,8 +45,11 @@ namespace SqueezeNetObjectDetectionNC
             // Create the evaluation session with the model and device
             _session = new LearningModelSession(_model, new LearningModelDevice(_deviceKind));
 
+            Console.WriteLine("Getting color management mode...");
+            ColorManagementMode colorManagementMode = GetColorManagementMode();
+
             Console.WriteLine("Loading the image...");
-            ImageFeatureValue imageTensor = LoadImageFile();
+            ImageFeatureValue imageTensor = LoadImageFile(colorManagementMode);
 
             // create a binding object from the session
             Console.WriteLine("Binding...");
@@ -117,15 +120,61 @@ namespace SqueezeNetObjectDetectionNC
             return operation.GetResults();
         }
 
-        private static ImageFeatureValue LoadImageFile()
+        private static ImageFeatureValue LoadImageFile(ColorManagementMode colorManagementMode)
         {
-            StorageFile imageFile = AsyncHelper(StorageFile.GetFileFromPathAsync(_imagePath));
-            IRandomAccessStream stream = AsyncHelper(imageFile.OpenReadAsync());
-            BitmapDecoder decoder = AsyncHelper(BitmapDecoder.CreateAsync(stream));
-            SoftwareBitmap softwareBitmap = AsyncHelper(decoder.GetSoftwareBitmapAsync());
+            BitmapDecoder decoder = null;
+            try
+            {
+                StorageFile imageFile = AsyncHelper(StorageFile.GetFileFromPathAsync(_imagePath));
+                IRandomAccessStream stream = AsyncHelper(imageFile.OpenReadAsync());
+                decoder = AsyncHelper(BitmapDecoder.CreateAsync(stream));
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("Failed to load image file! Make sure that fully qualified paths are used.");
+                Console.WriteLine(" Exception caught.\n {0}", e);
+                System.Environment.Exit(e.HResult);
+            }
+            SoftwareBitmap softwareBitmap = null;
+            try
+            {
+                softwareBitmap = AsyncHelper(
+                    decoder.GetSoftwareBitmapAsync(
+                        decoder.BitmapPixelFormat,
+                        decoder.BitmapAlphaMode,
+                        new BitmapTransform(),
+                        ExifOrientationMode.RespectExifOrientation,
+                        colorManagementMode
+                    )
+                );
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("Failed to create SoftwareBitmap! Please make sure that input image is within the model's colorspace.");
+                Console.WriteLine(" Exception caught.\n {0}", e);
+                System.Environment.Exit(e.HResult);
+            }
             softwareBitmap = SoftwareBitmap.Convert(softwareBitmap, BitmapPixelFormat.Bgra8, BitmapAlphaMode.Premultiplied);
             VideoFrame inputImage = VideoFrame.CreateWithSoftwareBitmap(softwareBitmap);
             return ImageFeatureValue.CreateFromVideoFrame(inputImage);
+        }
+
+        private static ColorManagementMode GetColorManagementMode()
+        {
+            // Get model color space gamma
+            string gammaSpace = "";
+            bool doesModelContainGammaSpaceMetadata = _model.Metadata.TryGetValue("Image.ColorSpaceGamma", out gammaSpace);
+            if (!doesModelContainGammaSpaceMetadata)
+            {
+                Console.WriteLine("    Model does not have color space gamma information. Will color manage to sRGB by default...");
+            }
+            if (!doesModelContainGammaSpaceMetadata || gammaSpace.Equals("SRGB", StringComparison.CurrentCultureIgnoreCase))
+            {
+                return ColorManagementMode.ColorManageToSRgb;
+            }
+            // Due diligence should be done to make sure that the input image is within the model's colorspace. There are multiple non-sRGB color spaces.
+            Console.WriteLine("    Model metadata indicates that color gamma space is : {0}. Will not manage color space to sRGB...", gammaSpace);
+            return ColorManagementMode.DoNotColorManage;
         }
 
         private static void PrintResults(IReadOnlyList<float> resultVector)

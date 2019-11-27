@@ -2,6 +2,7 @@
 //
 
 #include "pch.h"
+#include "FileHelper.h"
 
 using namespace winrt;
 using namespace Windows::Foundation;
@@ -19,8 +20,6 @@ LearningModelDeviceKind deviceKind = LearningModelDeviceKind::Default;
 string deviceName = "default";
 hstring imagePath;
 
-// helper functions
-string GetModulePath();
 void LoadLabels();
 VideoFrame LoadImageFile(hstring filePath, ColorManagementMode colorManagementMode);
 void PrintResults(IVectorView<float> results);
@@ -30,7 +29,7 @@ ColorManagementMode GetColorManagementMode(const LearningModel& model);
 wstring GetModelPath()
 {
     wostringstream woss;
-    woss << GetModulePath().c_str();
+    woss << FileHelper::GetModulePath().c_str();
     woss << "SqueezeNet.onnx";
     return woss.str();
 }
@@ -118,26 +117,10 @@ bool ParseArgs(int argc, char* argv[])
     return true;
 }
 
-string GetModulePath()
-{
-    string val;
-    char modulePath[MAX_PATH] = {};
-    GetModuleFileNameA(NULL, modulePath, ARRAYSIZE(modulePath));
-    char drive[_MAX_DRIVE];
-    char dir[_MAX_DIR];
-    char filename[_MAX_FNAME];
-    char ext[_MAX_EXT];
-    _splitpath_s(modulePath, drive, _MAX_DRIVE, dir, _MAX_DIR, filename, _MAX_FNAME, ext, _MAX_EXT);
-
-    val = drive;
-    val += dir;
-    return val;
-}
-
 void LoadLabels()
 {
     // Parse labels from labels file.  We know the file's entries are already sorted in order.
-    std::string labelsFilePath = GetModulePath() + labelsFileName;
+    std::string labelsFilePath = FileHelper::GetModulePath() + labelsFileName;
     ifstream labelFile(labelsFilePath, ifstream::in);
     if (labelFile.fail())
     {

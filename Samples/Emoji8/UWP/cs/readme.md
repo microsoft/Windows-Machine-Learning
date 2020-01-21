@@ -6,7 +6,7 @@
 
 This sample shows you how you can use [Windows Machine Learning](https://aka.ms/winmldocsfromemoji8oss) to power a fun emotion-detecting application.
 
-Emoji8 is sample UWP application [available in the Store](https://aka.ms/getemoji8fromoss) that evaluates your facial expressions while you imitate a random selection of emojis. The app takes in a video feed from your computer's webcam and evaluates the images with the [FER+ Emotion Recognition model (version 1.2)](https://aka.ms/emoji8emotionmodelfromoss) locally on your machine. You can tweet a gif summarizing your best scoring pics when you have an internet connection and continue playing even when you don't have one!
+Emoji8 is sample UWP application that evaluates your facial expressions while you imitate a random selection of emojis. The app takes in a video feed from your computer's webcam and evaluates the images with the [FER+ Emotion Recognition model (version 1.2)](https://github.com/onnx/models/tree/master/vision/body_analysis/emotion_ferplus) locally on your machine. You can tweet a gif summarizing your best scoring pics when you have an internet connection and continue playing even when you don't have one!
 
 This app will give you a great end-to-end example of how you can use the Windows ML APIs to create simple yet magical experiences.
 

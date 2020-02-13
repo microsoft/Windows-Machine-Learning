@@ -1,5 +1,5 @@
-#include "SampleHelper.h"
 #include "pch.h"
+#include "SampleHelper.h"
 
 #include "Windows.AI.MachineLearning.Native.h"
 #include <MemoryBuffer.h>
@@ -16,6 +16,8 @@ using namespace winrt::Windows::Storage::Streams;
 using namespace winrt::Windows::Storage;
 
 EXTERN_C IMAGE_DOS_HEADER __ImageBase;
+
+#define BATCH_SIZE 3
 
 namespace SampleHelper {
 std::wstring GetModulePath() {
@@ -103,9 +105,7 @@ SoftwareBitmapToSoftwareTensor(SoftwareBitmap softwareBitmap) {
 }
 
 VideoFrame LoadImageFile(hstring filePath) {
-  DWORD ticks = GetTickCount();
   VideoFrame inputImage = nullptr;
-
   try {
     // open the file
     StorageFile file = StorageFile::GetFileFromPathAsync(filePath).get();
@@ -122,11 +122,50 @@ VideoFrame LoadImageFile(hstring filePath) {
            "qualified paths\r\n");
     exit(EXIT_FAILURE);
   }
-
-  ticks = GetTickCount() - ticks;
-  printf("image file loaded in %d ticks\n", ticks);
   // all done
   return inputImage;
+}
+
+hstring GetModelPath(std::string modelType) {
+  hstring modelPath;
+  if (modelType == "fixedBatchSize") {
+    modelPath =
+        static_cast<hstring>(GetModulePath().c_str()) + L"SqueezeNet_free.onnx";
+  } else {
+    modelPath =
+        static_cast<hstring>(GetModulePath().c_str()) + L"SqueezeNet.onnx";
+  }
+  return modelPath;
+}
+
+TensorFloat CreateInputTensorFloat() {
+  std::vector<hstring> imageNames = {L"fish.png", L"kitten_224.png", L"fish.png"};
+  std::vector<float> inputVector = {};
+  for (hstring imageName : imageNames) {
+    auto imagePath = static_cast<hstring>(GetModulePath().c_str()) + imageName;
+    auto imageFrame = LoadImageFile(imagePath);
+    std::vector<float> imageVector =
+      SoftwareBitmapToSoftwareTensor(imageFrame.SoftwareBitmap());
+    inputVector.insert(inputVector.end(), imageVector.begin(), imageVector.end());
+  }
+  auto inputShape = std::vector<int64_t>{ BATCH_SIZE, 3, 224, 224 };
+  auto inputValue = TensorFloat::CreateFromIterable(
+    inputShape,
+    single_threaded_vector<float>(std::move(inputVector)).GetView());
+ 
+  return inputValue;
+}
+
+IVector<VideoFrame> CreateVideoFrames() {
+  std::vector<hstring> imageNames = { L"fish.png", L"kitten_224.png", L"fish.png" };
+  std::vector<VideoFrame> inputFrames = {};
+  for (hstring imageName : imageNames) {
+    auto imagePath = static_cast<hstring>(GetModulePath().c_str()) + imageName;
+    auto imageFrame = LoadImageFile(imagePath);
+    inputFrames.emplace_back(imageFrame);
+  }
+  auto videoFrames = winrt::single_threaded_vector(std::move(inputFrames));
+  return videoFrames;
 }
 
 std::vector<std::string> LoadLabels(std::string labelsFilePath) {
@@ -162,15 +201,15 @@ void PrintResults(IVectorView<float> results) {
   std::vector<std::string> labels = LoadLabels(labelsFilePath);
   // SqueezeNet returns a list of 1000 options, with probabilities for each,
   // loop through all
-  for (uint32_t batchId = 0; batchId < 3; ++batchId) {
+  for (uint32_t batchId = 0; batchId < BATCH_SIZE; ++batchId) {
     // Find the top probability
     float topProbability = 0;
     int topProbabilityLabelIndex;
-    uint32_t oneOutputSize = results.Size() / 3;
+    uint32_t oneOutputSize = results.Size() / BATCH_SIZE;
     for (uint32_t i = 0; i < oneOutputSize; i++) {
-      if (results.GetAt(i + oneOutputSize) > topProbability) {
+      if (results.GetAt(i + oneOutputSize * batchId) > topProbability) {
         topProbabilityLabelIndex = i;
-        topProbability = results.GetAt(i + oneOutputSize);
+        topProbability = results.GetAt(i + oneOutputSize * batchId);
       }
     }
     // Display the result

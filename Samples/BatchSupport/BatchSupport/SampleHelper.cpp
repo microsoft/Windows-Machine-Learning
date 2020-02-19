@@ -110,7 +110,7 @@ hstring GetModelPath(std::string modelType) {
   hstring modelPath;
   if (modelType == "fixedBatchSize") {
     modelPath =
-        static_cast<hstring>(GetModulePath().c_str()) + L"SqueezeNet.onnx";
+        static_cast<hstring>(GetModulePath().c_str()) + L"SqueezeNet_batch3.onnx";
   } else {
     modelPath =
         static_cast<hstring>(GetModulePath().c_str()) + L"SqueezeNet_free.onnx";

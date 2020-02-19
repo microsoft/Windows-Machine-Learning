@@ -11,7 +11,7 @@ namespace SampleHelper
   std::wstring GetModulePath();
 
   // Convert SoftwareBitmap to std::vector<float>
-  std::vector<float> SoftwareBitmapToSoftwareTensor(
+  std::vector<float> SoftwareBitmapToFloatVector(
     winrt::Windows::Graphics::Imaging::SoftwareBitmap softwareBitmap);
 
   // Load Image File as VideoFrame

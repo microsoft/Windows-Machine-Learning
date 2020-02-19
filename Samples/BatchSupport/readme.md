@@ -53,7 +53,7 @@ This sample tells how to bind and evaluate batches of input in WinML
 ## Prepare Model
 1. Download [WinMLDashboard](https://github.com/microsoft/Windows-Machine-Learning/releases/tag/v0.6.1) 
 2. change the batch dimension of model input and output to a fixed number or -1 (free dimension)
-   <img src='.\forReadMe\fixBatchSize.png' width=400 />  <img src='.\forReadMe\freeBatchSize.png' width=400 /> 
+   <img src='./forReadMe/fixBatchSize.png' width=400 />  <img src='./forReadMe/freeBatchSize.png' width=400 /> 
 
 ## Create Session and Bind Inputs
 Take binding batches of VideoFrame as example:

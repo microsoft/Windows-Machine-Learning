@@ -25,25 +25,28 @@ int main(int argc, char *argv[]) {
 
   // did they pass in the args
   if (ParseArgs(argc, argv) == false) {
-    printf("Usage: %s [fixedBatchSize|freeBatchSize] [TensorFloat|VideoFrame] \n", argv[0]);
+    printf("Usage: %s [freeBatchSize|fixedBatchSize] [TensorFloat|VideoFrame] \n", argv[0]);
   }
 
   // load the model
   hstring modelPath = SampleHelper::GetModelPath(modelType);
   printf("Loading modelfile '%ws' on the CPU\n", modelPath.c_str());
-  DWORD ticks = GetTickCount();
   auto model = LearningModel::LoadFromFilePath(modelPath);
-  ticks = GetTickCount() - ticks;
-  printf("model file loaded in %d ticks\n", ticks);
 
   // now create a session and binding
   LearningModelDeviceKind deviceKind = LearningModelDeviceKind::Cpu;
-  LearningModelSessionOptions options;
+  LearningModelSession session = nullptr;
   if ("freeBatchSize" == modelType) { 
-    // If the model has free dimentional batch, override the free dimension with batch_size
+    // If the model has free dimensional batch, override the free dimension with batch_size 
+    // for performance improvement.
+    LearningModelSessionOptions options;
+    printf("Override Batch Size by %d\n", BATCH_SIZE);
     options.BatchSizeOverride(static_cast<uint32_t>(BATCH_SIZE));
+    session = LearningModelSession(model, LearningModelDevice(deviceKind), options);
   }
-  LearningModelSession session(model, LearningModelDevice(deviceKind), options);
+  else {
+    session = LearningModelSession(model, LearningModelDevice(deviceKind));
+  }
   LearningModelBinding binding(session);
 
   // bind the intput image
@@ -69,7 +72,7 @@ int main(int argc, char *argv[]) {
 
   // now run the model
   printf("Running the model...\n");
-  ticks = GetTickCount();
+  DWORD ticks = GetTickCount();
   auto results = session.EvaluateAsync(binding, L"RunId").get();
   ticks = GetTickCount() - ticks;
   printf("model run took %d ticks\n", ticks);

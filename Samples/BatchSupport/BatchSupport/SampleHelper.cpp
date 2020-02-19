@@ -38,7 +38,7 @@ std::wstring GetModulePath() {
 }
 
 std::vector<float>
-SoftwareBitmapToSoftwareTensor(SoftwareBitmap softwareBitmap) {
+SoftwareBitmapToFloatVector(SoftwareBitmap softwareBitmap) {
   /* Manully tensorize from CPU resource, steps:
   1. Get the access to buffer of softwarebitmap
   2. Transform the data in buffer to a vector of float
@@ -69,38 +69,18 @@ SoftwareBitmapToSoftwareTensor(SoftwareBitmap softwareBitmap) {
 
   // 2. Transform the data in buffer to a vector of float
   if (BitmapPixelFormat::Bgra8 == pixelFormat) {
-    for (UINT32 i = 0; i < size; i += 4) {
+    for (uint32_t i = 0; i < size; i += 4) {
       // suppose the model expects BGR image.
       // index 0 is B, 1 is G, 2 is R, 3 is alpha(dropped).
-      UINT32 pixelInd = i / 4;
+      uint32_t pixelInd = i / 4;
       outputVector[pixelInd] = (float)pData[i];
       outputVector[(height * width) + pixelInd] = (float)pData[i + 1];
       outputVector[(height * width * 2) + pixelInd] = (float)pData[i + 2];
     }
-  } else if (BitmapPixelFormat::Rgba8 == pixelFormat) {
-    for (UINT32 i = 0; i < size; i += 4) {
-      // suppose the model expects BGR image.
-      // index 0 is B, 1 is G, 2 is R, 3 is alpha(dropped).
-      UINT32 pixelInd = i / 4;
-      outputVector[pixelInd] = (float)pData[i + 2];
-      outputVector[(height * width) + pixelInd] = (float)pData[i + 1];
-      outputVector[(height * width * 2) + pixelInd] = (float)pData[i];
-    }
-  } else if (BitmapPixelFormat::Gray8 == pixelFormat) {
-    for (UINT32 i = 0; i < size; i += 4) {
-      // suppose the model expects BGR image.
-      // index 0 is B, 1 is G, 2 is R, 3 is alpha(dropped).
-      UINT32 pixelInd = i / 4;
-      float red = (float)pData[i + 2];
-      float green = (float)pData[i + 1];
-      float blue = (float)pData[i];
-      float gray = 0.2126f * red + 0.7152f * green + 0.0722f * blue;
-      outputVector[pixelInd] = gray;
-    }
   }
+
   // Pixel Value Normalization can be done at here. We are using the range from
-  // 0-255, but the range can be normilized to 0-1 before we return the
-  // TensorFloat.
+  // 0-255, but the range can be normilized to 0-1 before we return
   return outputVector;
 }
 
@@ -130,10 +110,10 @@ hstring GetModelPath(std::string modelType) {
   hstring modelPath;
   if (modelType == "fixedBatchSize") {
     modelPath =
-        static_cast<hstring>(GetModulePath().c_str()) + L"SqueezeNet_free.onnx";
+        static_cast<hstring>(GetModulePath().c_str()) + L"SqueezeNet.onnx";
   } else {
     modelPath =
-        static_cast<hstring>(GetModulePath().c_str()) + L"SqueezeNet.onnx";
+        static_cast<hstring>(GetModulePath().c_str()) + L"SqueezeNet_free.onnx";
   }
   return modelPath;
 }
@@ -145,9 +125,11 @@ TensorFloat CreateInputTensorFloat() {
     auto imagePath = static_cast<hstring>(GetModulePath().c_str()) + imageName;
     auto imageFrame = LoadImageFile(imagePath);
     std::vector<float> imageVector =
-      SoftwareBitmapToSoftwareTensor(imageFrame.SoftwareBitmap());
+      SoftwareBitmapToFloatVector(imageFrame.SoftwareBitmap());
     inputVector.insert(inputVector.end(), imageVector.begin(), imageVector.end());
   }
+
+  // 224, 224 below are height and width specified in model input.
   auto inputShape = std::vector<int64_t>{ BATCH_SIZE, 3, 224, 224 };
   auto inputValue = TensorFloat::CreateFromIterable(
     inputShape,

@@ -40,19 +40,19 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <CopyFileToFolders Include="kitten_224.png">
+    <CopyFileToFolders Include="..\..\..\SharedContent\media\fish.png">
       <Filter>Resource Files</Filter>
     </CopyFileToFolders>
-    <CopyFileToFolders Include="SqueezeNet.onnx">
+    <CopyFileToFolders Include="..\..\..\SharedContent\media\kitten_224.png">
       <Filter>Resource Files</Filter>
     </CopyFileToFolders>
-    <CopyFileToFolders Include="SqueezeNet_free.onnx">
+    <CopyFileToFolders Include="..\..\..\SharedContent\models\SqueezeNet_batch3.onnx">
       <Filter>Resource Files</Filter>
     </CopyFileToFolders>
-    <CopyFileToFolders Include="Labels.txt">
+    <CopyFileToFolders Include="..\..\..\SharedContent\models\SqueezeNet_free.onnx">
       <Filter>Resource Files</Filter>
     </CopyFileToFolders>
-    <CopyFileToFolders Include="fish.png">
+    <CopyFileToFolders Include="..\..\SqueezeNetObjectDetection\Desktop\cpp\Labels.txt">
       <Filter>Resource Files</Filter>
     </CopyFileToFolders>
   </ItemGroup>

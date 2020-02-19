@@ -112,30 +112,28 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <CopyFileToFolders Include="..\..\..\SharedContent\models\SqueezeNet_batch3.onnx">
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</DeploymentContent>
+      <FileType>Document</FileType>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\..\..\SharedContent\models\SqueezeNet_free.onnx">
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</DeploymentContent>
+      <FileType>Document</FileType>
+    </CopyFileToFolders>
     <None Include="packages.config">
       <SubType>Designer</SubType>
     </None>
-    <CopyFileToFolders Include="SqueezeNet.onnx">
-      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</DeploymentContent>
-      <FileType>Document</FileType>
-    </CopyFileToFolders>
-    <CopyFileToFolders Include="SqueezeNet_free.onnx">
-      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</DeploymentContent>
-      <FileType>Document</FileType>
-    </CopyFileToFolders>
   </ItemGroup>
   <ItemGroup>
-    <CopyFileToFolders Include="kitten_224.png">
+    <CopyFileToFolders Include="..\..\..\SharedContent\media\fish.png">
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</DeploymentContent>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\..\..\SharedContent\media\kitten_224.png">
       <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</DeploymentContent>
     </CopyFileToFolders>
   </ItemGroup>
   <ItemGroup>
-    <CopyFileToFolders Include="Labels.txt">
-      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</DeploymentContent>
-    </CopyFileToFolders>
-  </ItemGroup>
-  <ItemGroup>
-    <CopyFileToFolders Include="fish.png">
+    <CopyFileToFolders Include="..\..\SqueezeNetObjectDetection\Desktop\cpp\Labels.txt">
       <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</DeploymentContent>
     </CopyFileToFolders>
   </ItemGroup>

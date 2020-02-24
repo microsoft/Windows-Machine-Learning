@@ -63,13 +63,6 @@ int main(int argc, char *argv[]) {
     binding.Bind(inputFeatureDescriptor.Current().Name(), inputVideoFrames);
   }
 
-  // bind output tensor
-  auto outputShape = std::vector<int64_t>{BATCH_SIZE, 1000, 1, 1};
-  auto outputValue = TensorFloat::Create(outputShape);
-  std::wstring outputDataBindingName =
-      std::wstring(model.OutputFeatures().First().Current().Name());
-  binding.Bind(outputDataBindingName, outputValue);
-
   // now run the model
   printf("Running the model...\n");
   DWORD ticks = GetTickCount();
@@ -78,7 +71,10 @@ int main(int argc, char *argv[]) {
   printf("model run took %d ticks\n", ticks);
 
   // Print Results
-  SampleHelper::PrintResults(outputValue.GetAsVectorView());
+  auto outputs = results.Outputs().Lookup(L"softmaxout_1").as<TensorFloat>();
+  auto outputShape = outputs.Shape();
+  printf("output dimensions [%d, %d, %d, %d]\n", outputShape.GetAt(0), outputShape.GetAt(1), outputShape.GetAt(2), outputShape.GetAt(3));
+  SampleHelper::PrintResults(outputs.GetAsVectorView());
 }
 
 bool ParseArgs(int argc, char *argv[]) {

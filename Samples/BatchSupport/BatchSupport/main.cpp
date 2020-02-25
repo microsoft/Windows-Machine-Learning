@@ -63,7 +63,7 @@ int main(int argc, char *argv[]) {
     binding.Bind(inputFeatureDescriptor.Current().Name(), inputVideoFrames);
   }
 
-  // bind output tensor, this step is optional, conmented in the sample
+  // bind output tensor, this step is optional, conmented out in the sample
   /*
   auto outputShape = std::vector<int64_t>{ BATCH_SIZE, 1000, 1, 1 };
   auto outputValue = TensorFloat::Create(outputShape);
@@ -82,11 +82,11 @@ int main(int argc, char *argv[]) {
 
   // Print Results
 
-  // conment three lines below if bind output
+  // conment out three lines below if bind output
   auto outputValue = results.Outputs().Lookup(L"softmaxout_1").as<TensorFloat>(); // Get outputs by output name
   auto outputShape = outputValue.Shape();
   printf("output dimensions [%d, %d, %d, %d]\n", outputShape.GetAt(0), outputShape.GetAt(1), outputShape.GetAt(2), outputShape.GetAt(3));
-  // conment three lines above if bind output
+  // conment out three lines above if bind output
 
   SampleHelper::PrintResults(outputValue.GetAsVectorView());
 }

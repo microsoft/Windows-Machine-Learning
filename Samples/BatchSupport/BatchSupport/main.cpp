@@ -71,7 +71,7 @@ int main(int argc, char *argv[]) {
   printf("model run took %d ticks\n", ticks);
 
   // Print Results
-  auto outputs = results.Outputs().Lookup(L"softmaxout_1").as<TensorFloat>();
+  auto outputs = results.Outputs().Lookup(L"softmaxout_1").as<TensorFloat>(); // Get outputs by output name
   auto outputShape = outputs.Shape();
   printf("output dimensions [%d, %d, %d, %d]\n", outputShape.GetAt(0), outputShape.GetAt(1), outputShape.GetAt(2), outputShape.GetAt(3));
   SampleHelper::PrintResults(outputs.GetAsVectorView());

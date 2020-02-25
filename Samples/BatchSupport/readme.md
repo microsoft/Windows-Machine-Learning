@@ -94,3 +94,15 @@ Take binding batches of VideoFrame as example:
     // Bind
     binding.Bind(inputFeatureDescriptor.Current().Name(), inputVideoFrames);
 ```
+
+### 3. Bind Outputs(optional)
+
+The sample does not bind the output, but you could also bind the output as below:
+```C++
+  auto outputShape = std::vector<int64_t>{BATCH_SIZE, 1000, 1, 1};	
+  auto outputValue = TensorFloat::Create(outputShape);	
+  std::wstring outputDataBindingName =	
+      std::wstring(model.OutputFeatures().First().Current().Name());	
+  binding.Bind(outputDataBindingName, outputValue);
+  SampleHelper::PrintResults(outputValue.GetAsVectorView()); // Print Results
+```

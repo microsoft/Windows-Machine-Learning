@@ -171,8 +171,8 @@ class RunView extends React.Component<IComponentProperties, IComponentState> {
                 <div className='ArgumentsControl'>
                     {this.getArgumentsView()}
                 </div>
-                <DefaultButton id='RunButton' text='Run' 
-                    disabled={!this.state.model || (this.state.capture === Capture.Debug && !(this.state.inputPath && this.state.outputPath))} 
+                <DefaultButton id='RunButton' text='Run'
+                    disabled={!this.state.model || (this.state.capture === Capture.Debug && !(this.state.inputPath && this.state.outputPath))}
                     onClick={this.execModelRunner}/>
             </div>
         )
@@ -322,9 +322,13 @@ class RunView extends React.Component<IComponentProperties, IComponentState> {
             });
     }
 
-    private logError = (error: string | Error) => {
-        const message = typeof error === 'string' ? error : (`${error.stack ? `${error.stack}: ` : ''}${error.message}`);
-        log.error(message)
+    private logError = (error: string | Error | Error[]) => {
+        const toString = (error: string | Error) => typeof error === 'string' ? error : (`${error.stack ? `${error.stack}: ` : ''}${error.message}`);
+        if (Array.isArray(error)) {
+            log.error(error.map(toString).join('\n'));
+        } else {
+            log.error(toString(error));
+        }
     }
 
     private printMessage = (message: string) => {
@@ -351,7 +355,7 @@ class RunView extends React.Component<IComponentProperties, IComponentState> {
             save(ModelProtoSingleton.serialize(true), this.getDebugModelPath());
             runPath = debugRunnerPath;
             procParameters = [this.getDebugModelPath(), this.state.inputPath];
-        } 
+        }
 
         this.setState({
             console: '',
@@ -367,7 +371,7 @@ class RunView extends React.Component<IComponentProperties, IComponentState> {
             this.logError(e);
             this.printMessage("\n---------------------------\nRun Failed!\n")
             this.printMessage(`\n${(e as Error).message}`)
-            
+
             log.info(this.state.model + " is failed to run");
             this.setState({
                 currentStep: Step.Idle,
@@ -393,7 +397,7 @@ class RunView extends React.Component<IComponentProperties, IComponentState> {
         ncp.ncp(ModelProtoSingleton.getCurrentModelDebugDir(), filename, this.copyCallbackFunction);
     }
 
-    private copyCallbackFunction = (err: Error) => {
+    private copyCallbackFunction = (err: Error[] | null) => {
         const runDialogOptions = {
             message: '',
             title: 'run result',
@@ -402,7 +406,6 @@ class RunView extends React.Component<IComponentProperties, IComponentState> {
             this.logError(err);
             runDialogOptions.message = 'Run failed! See console log for details.'
             require('electron').remote.dialog.showMessageBox(require('electron').remote.getCurrentWindow(), runDialogOptions)
-
         } else {
             runDialogOptions.message = 'Run Successful: Debug capture saved to output path'
             require('electron').remote.dialog.showMessageBox(require('electron').remote.getCurrentWindow(), runDialogOptions)

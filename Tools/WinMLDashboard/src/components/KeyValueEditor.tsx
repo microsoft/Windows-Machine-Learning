@@ -156,7 +156,7 @@ class KeyValueEditor extends React.Component<IComponentProperties, IComponentSta
     }
 
     private copyRenameKey = (obj: any, oldKey: string, newKey: string) => {
-        return Object.entries(obj).reduce((acc: any[], keyValue: [string, string]) => {
+        return Object.entries(obj).reduce((previousValue: any, keyValue: [string, string], currentIndex: number, acc: any[]) => {
             const [key, value] = keyValue;
             acc[key === oldKey ? newKey : key] = value;
             return acc;

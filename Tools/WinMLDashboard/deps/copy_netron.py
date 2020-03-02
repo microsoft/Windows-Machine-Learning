@@ -83,8 +83,16 @@ def main():
     if rebuild_needed(static_scripts, bundle_destination):
         import tempfile
         with tempfile.NamedTemporaryFile() as f:
-            f.write(bundle_scripts(static_scripts))
-            minify(f.name, bundle_destination)
+            bundled_scripts = bundle_scripts(static_scripts)
+            f.write(bundled_scripts)
+            try:
+                minify(f.name, bundle_destination)
+            except:
+                import traceback
+                traceback.print_exc()
+                print('Minifying Netron failed! A non-minified build will be done instead')
+                with open(bundle_destination, 'wb') as f:
+                    f.write(bundled_scripts)
     else:
         print('Bundle is already up to date')
 

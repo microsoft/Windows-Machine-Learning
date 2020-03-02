@@ -187,6 +187,19 @@ steps:
     condition: succeededOrFailed()
 
   - task: VSBuild@1
+    displayName: 'Build BatchSupport Sample'
+    inputs:
+      solution: Samples/BatchSupport/BatchSupport.sln
+      vsVersion: 15.0
+      msbuildArgs: '-v:diag /p:OutDir=$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\BatchSupport\'
+      platform: '$(BuildPlatform)'
+      configuration: '$(BuildConfiguration)'
+      clean: true
+      msbuildArchitecture: x64
+      createLogFile: true
+    condition: succeededOrFailed()
+
+  - task: VSBuild@1
     displayName: 'Build Emoji Sample'
     inputs:
       solution: Samples/Emoji8/UWP/cs/Emoji8.sln

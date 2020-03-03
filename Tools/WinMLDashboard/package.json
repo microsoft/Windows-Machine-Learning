@@ -1,6 +1,6 @@
 {
   "name": "WinMLDashboard",
-  "version": "0.6.1",
+  "version": "0.7.0",
   "icon": "public/winml_icon.ico",
   "description": "Dashboard for development in ONNX using Windows ML",
   "author": "Microsoft Corporation",

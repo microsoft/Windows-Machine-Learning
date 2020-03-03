@@ -827,28 +827,6 @@ namespace WinMLRunnerTest
             Assert::AreEqual(true, CompareTensorsFP16(L"OutputTensorData\\Squeezenet_fp16_fish_input_CPU.csv",
                                                       tensorDataPath + L"\\softmaxout_1CpuIteration1.csv"));
         }
-
-        TEST_METHOD_WITH_NAME(ProvidedCSVInputOnlyGpuSaveCpuBoundTensorImageDenotation)
-            const std::wstring modelPath = CURRENT_PATH + L"mnist.onnx";
-            const std::wstring inputPath = CURRENT_PATH + L"mnist_28.csv";
-            const std::wstring tensorDataPath = TENSOR_DATA_PATH + L"\\" + METHOD_NAME;
-            const std::wstring command = BuildCommand({ EXE_PATH, L"-model ", modelPath, L"-input", inputPath,
-                                                        L"-SaveTensorData", L"First", L"-PerIterationPath", tensorDataPath, L"-GPU" });
-            Assert::AreEqual(S_OK, RunProc((wchar_t*)command.c_str()));
-            Assert::AreEqual(true, CompareTensors(L"OutputTensorData\\Mnist_8_input_GPU.csv",
-                tensorDataPath + L"\\Plus214_Output_0GpuIteration1.csv"));
-        }
-
-        TEST_METHOD_WITH_NAME(ProvidedCSVInputOnlyCpuSaveCpuBoundTensorImageDenotation)
-            const std::wstring modelPath = CURRENT_PATH + L"mnist.onnx";
-            const std::wstring inputPath = CURRENT_PATH + L"mnist_28.csv";
-            const std::wstring tensorDataPath = TENSOR_DATA_PATH + L"\\" + METHOD_NAME;
-            const std::wstring command = BuildCommand({ EXE_PATH, L"-model ", modelPath, L"-input", inputPath,
-                                                        L"-SaveTensorData", L"First", L"-PerIterationPath", tensorDataPath, L"-CPU" });
-            Assert::AreEqual(S_OK, RunProc((wchar_t*)command.c_str()));
-            Assert::AreEqual(true, CompareTensors(L"OutputTensorData\\Mnist_8_input_CPU.csv",
-                tensorDataPath + L"\\Plus214_Output_0CpuIteration1.csv"));
-        }
     };
 
     TEST_CLASS(ConcurrencyTest)

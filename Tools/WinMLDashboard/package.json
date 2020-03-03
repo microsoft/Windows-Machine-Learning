@@ -1,6 +1,6 @@
 {
   "name": "WinMLDashboard",
-  "version": "0.6.1",
+  "version": "0.7.0",
   "icon": "public/winml_icon.ico",
   "description": "Dashboard for development in ONNX using Windows ML",
   "author": "Microsoft Corporation",
@@ -61,7 +61,7 @@
     "npm-font-open-sans": "^1.1.0",
     "office-ui-fabric-react": "^6.40.0",
     "react": "^16.5.2",
-    "react-app-rewired": "^2.1.5",
+    "react-app-rewired": "1.6.2",
     "react-dom": "^16.4.1",
     "react-markdown": "^4.3.1",
     "react-redux": "^7.2.0",

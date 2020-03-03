@@ -323,6 +323,7 @@ class RunView extends React.Component<IComponentProperties, IComponentState> {
     }
 
     private logError = (error: string | Error | Error[]) => {
+        // tslint:disable-next-line:no-shadowed-variable
         const toString = (error: string | Error) => typeof error === 'string' ? error : (`${error.stack ? `${error.stack}: ` : ''}${error.message}`);
         if (Array.isArray(error)) {
             log.error(error.map(toString).join('\n'));

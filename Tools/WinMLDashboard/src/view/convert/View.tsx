@@ -223,6 +223,7 @@ class ConvertView extends React.Component<IComponentProperties, IComponentState>
         const ONNXVersionOptions = [
             { value: '1.2', label: '1.2 (opset V7)' },
             { value: '1.3', label: '1.3 (opset V8)' },
+            { value: '1.5', label: '1.5 (opset V10)' },
         ]
         const QuantizationOptions = [
             { value: 'none', label: 'None' },

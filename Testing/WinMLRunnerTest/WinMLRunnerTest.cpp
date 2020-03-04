@@ -865,7 +865,8 @@ namespace WinMLRunnerTest
         TEST_METHOD(LoadModelFailModelNotFound)
         {
             const std::wstring command = BuildCommand({ EXE_PATH, L"-model", L"invalid_model_name" });
-            Assert::AreEqual(HRESULT_FROM_WIN32(ERROR_FILE_NOT_FOUND), RunProc((wchar_t *)command.c_str()));
+            auto temp = RunProc((wchar_t *)command.c_str());
+            Assert::AreEqual(HRESULT_FROM_WIN32(E_FAIL), temp);
         }
 
         TEST_METHOD(TestPrintUsage)

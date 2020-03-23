@@ -235,8 +235,3 @@ void PrintResults(IVectorView<float> results)
         printf("%s with confidence of %f\n", labels[curr.second].c_str(), curr.first);
     }
 }
-
-int32_t WINRT_CALL WINRT_CoIncrementMTAUsage(void** cookie) noexcept
-{
-	return CoIncrementMTAUsage((CO_MTA_USAGE_COOKIE*)cookie);
-}

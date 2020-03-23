@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft Corporation. 
 // Licensed under the MIT license. 
 
-using Microsoft.Services.Store.Engagement;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -39,7 +38,5 @@ namespace Emoji8
         public static readonly string TwitterConsumerKey = "";
         public static readonly string TwitterConsumerSecret = "";
         public static readonly string TwitterCallbackURI = "";
-
-        public static StoreServicesCustomEventLogger LOGGER = StoreServicesCustomEventLogger.GetDefault();
     }
 }

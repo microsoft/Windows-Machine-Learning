@@ -71,7 +71,7 @@ namespace Emoji8
                 Debug.WriteLine("Finished cleaning up MainPage, ready to move onto EmotionPage");
             }
 
-            Constants.LOGGER.Log(GameText.LOADER.GetString("LoggerStartButtonClicked"));
+            Debug.WriteLine(GameText.LOADER.GetString("LoggerStartButtonClicked"));
             Frame.Navigate(typeof(EmotionPage));
         }
 

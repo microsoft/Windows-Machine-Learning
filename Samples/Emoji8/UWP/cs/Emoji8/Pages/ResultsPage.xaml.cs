@@ -16,6 +16,7 @@ using Emoji8.Services;
 using Emoji8.Pages.PageHelpers;
 using Microsoft.Toolkit.Services.Twitter;
 using System.IO;
+using System.Diagnostics;
 
 // The Blank Page item template is documented at https://go.microsoft.com/fwlink/?LinkId=234238
 
@@ -124,7 +125,7 @@ namespace Emoji8
             Gif.Source = null;
             brandedGif.Source = null;
 
-            Constants.LOGGER.Log(GameText.LOADER.GetString("LoggerPlayAgainClicked"));
+            Debug.WriteLine(GameText.LOADER.GetString("LoggerPlayAgainClicked"));
             Frame.Navigate(typeof(EmotionPage));
         }
 
@@ -133,11 +134,11 @@ namespace Emoji8
             try
             {
                 await EstablishTwitterUserAsync();
-                Constants.LOGGER.Log(GameText.LOADER.GetString("LoggerShareToTwitterClicked"));
+                Debug.WriteLine(GameText.LOADER.GetString("LoggerShareToTwitterClicked"));
             }
             catch (Exception ex)
             {
-                Constants.LOGGER.Log($"{GameText.LOADER.GetString("LoggerShareToTwitterError")} {ex.Message}");
+                Debug.WriteLine($"{GameText.LOADER.GetString("LoggerShareToTwitterError")} {ex.Message}");
                 await MessageDialogService.Current.WriteMessage(GameText.LOADER.GetString("TwitterServiceUnavailable"));
                 await ReturnScreenToNormalAfterPopupAsync(PostTweetBorder);
                 return;
@@ -150,7 +151,7 @@ namespace Emoji8
 
             //confirmed user can now edit Tweet content
             CreateTweet();
-            Constants.LOGGER.Log(GameText.LOADER.GetString("LoggerContinuePostingYesClicked"));
+            Debug.WriteLine(GameText.LOADER.GetString("LoggerContinuePostingYesClicked"));
         }
 
         private async void ContinueAsLoggedInUserClickedNo(object sender, RoutedEventArgs e)
@@ -160,13 +161,13 @@ namespace Emoji8
             //log out user and prompt then to log in again
             TwitterService.Instance.Logout();
             await EstablishTwitterUserAsync();
-            Constants.LOGGER.Log(GameText.LOADER.GetString("LoggerContinuePostingNoClicked"));
+            Debug.WriteLine(GameText.LOADER.GetString("LoggerContinuePostingNoClicked"));
         }
 
         private async void PostTweetClickedCancel(object sender, RoutedEventArgs e)
         {
             await ReturnScreenToNormalAfterPopupAsync(PostTweetBorder);
-            Constants.LOGGER.Log(GameText.LOADER.GetString("LoggerPostTweetCancelClicked"));
+            Debug.WriteLine(GameText.LOADER.GetString("LoggerPostTweetCancelClicked"));
         }
 
         private async void PostTweetClickedShare(object sender, RoutedEventArgs e)
@@ -185,7 +186,7 @@ namespace Emoji8
             }
             
             await ReturnScreenToNormalAfterPopupAsync(PostTweetBorder);
-            Constants.LOGGER.Log(GameText.LOADER.GetString("LoggerPostTweetClicked"));
+            Debug.WriteLine(GameText.LOADER.GetString("LoggerPostTweetClicked"));
         }
 
         private async Task ReturnScreenToNormalAfterPopupAsync(UIElement p)

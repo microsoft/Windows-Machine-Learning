@@ -32,7 +32,6 @@ namespace Emoji8.Services
         public static IntelligenceService Current => _current ?? (_current = new IntelligenceService());
 
         private LearningModel _model = null;
-        private LearningModelDevice _device;
         private LearningModelSession _session;
         private TensorFeatureDescriptor _inputImageDescriptor;
         private TensorFeatureDescriptor _outputTensorDescriptor;

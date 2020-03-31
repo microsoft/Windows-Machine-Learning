@@ -3,13 +3,10 @@
   <ItemGroup>
     <ClCompile Include="main.cpp" />
     <ClCompile Include="pch.cpp" />
-    <ClCompile Include="dllload.cpp" />
-    <ClCompile Include="Filehelper.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
     <ClInclude Include="..\..\..\..\SharedContent\models\SqueezeNet.h" />
-    <ClInclude Include="Filehelper.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

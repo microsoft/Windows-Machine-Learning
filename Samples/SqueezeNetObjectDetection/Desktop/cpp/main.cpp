@@ -15,7 +15,7 @@ using namespace std;
 
 // globals
 vector<string> labels;
-string labelsFileName("labels.txt");
+wstring labelsFileName = L"labels.txt";
 LearningModelDeviceKind deviceKind = LearningModelDeviceKind::Default;
 string deviceName = "default";
 hstring imagePath;
@@ -120,7 +120,7 @@ bool ParseArgs(int argc, char* argv[])
 void LoadLabels()
 {
     // Parse labels from labels file.  We know the file's entries are already sorted in order.
-    std::string labelsFilePath = FileHelper::GetModulePath() + labelsFileName;
+    std::wstring labelsFilePath = FileHelper::GetModulePath() + labelsFileName;
     ifstream labelFile(labelsFilePath, ifstream::in);
     if (labelFile.fail())
     {

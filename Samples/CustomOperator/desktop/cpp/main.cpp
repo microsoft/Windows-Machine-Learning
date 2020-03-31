@@ -1,5 +1,5 @@
 ﻿#include "pch.h"
-
+#include "FileHelper.h"
 #include "operators/customoperatorprovider.h"
 
 using namespace winrt;
@@ -10,15 +10,6 @@ using namespace winrt::Windows::Graphics::Imaging;
 using namespace winrt::Windows::Storage;
 using namespace winrt::Windows::AI::MachineLearning;
 using namespace std;
-
-wstring GetModulePath() {
-    wchar_t wzModuleFilePath[MAX_PATH + 1];
-    GetModuleFileName(NULL, wzModuleFilePath, MAX_PATH + 1);
-    wstring moduleFilePath(wzModuleFilePath);
-    return wstring(
-            moduleFilePath.begin(),
-            moduleFilePath.begin() + moduleFilePath.find_last_of(L"\\"));;
-}
 
 struct CommandLineInterpreter
 {
@@ -32,7 +23,7 @@ struct CommandLineInterpreter
     {
         wchar_t wzModuleFilePath[MAX_PATH + 1];
         GetModuleFileName(NULL, wzModuleFilePath, MAX_PATH + 1);
-        return GetModulePath() + L"\\" + pName;
+        return FileHelper::GetModulePath() + L"\\" + pName;
     }
 
     wstring TryGetModelPath()
@@ -90,59 +81,13 @@ using Session = LearningModelSession;
 using Kind = LearningModelDeviceKind;
 vector<string> labels;
 
-void LoadLabels()
-{
-    wstring labelsFileName = L"labels.txt";
-
-    // Parse labels from labels file.  We know the file's entries are already sorted in order.
-    wstring labelsFilePath = GetModulePath() + L"\\" + labelsFileName;
-    ifstream labelFile(labelsFilePath, ifstream::in);
-    if (labelFile.fail())
-    {
-        printf("failed to load the %ls file.  Make sure it exists in the same folder as the app\r\n", labelsFileName.c_str());
-        exit(EXIT_FAILURE);
-    }
-    string s;
-    while (getline(labelFile, s, ','))
-    {
-        int labelValue = atoi(s.c_str());
-        if (static_cast<size_t>(labelValue) >= labels.size())
-        {
-            labels.resize(labelValue + 1);
-        }
-        getline(labelFile, s);
-        labels[labelValue] = s;
-    }
-}
-
-VideoFrame LoadImageFile(hstring filePath)
-{
-    try
-    {
-        // open the file
-        StorageFile file = StorageFile::GetFileFromPathAsync(filePath).get();
-        // get a stream on it
-        auto stream = file.OpenAsync(FileAccessMode::Read).get();
-        // Create the decoder from the stream
-        BitmapDecoder decoder = BitmapDecoder::CreateAsync(stream).get();
-        // get the bitmap
-        SoftwareBitmap softwareBitmap = decoder.GetSoftwareBitmapAsync().get();
-        // load a videoframe from it
-        VideoFrame inputImage = VideoFrame::CreateWithSoftwareBitmap(softwareBitmap);
-        // all done
-        return inputImage;
-    }
-    catch (...)
-    {
-        printf("failed to load the image file, make sure you are using fully qualified paths\r\n");
-        exit(EXIT_FAILURE);
-    }
-}
-
 void PrintResults(IVectorView<float> results)
 {
     // load the labels
-    LoadLabels();
+    auto modulePath = FileHelper::GetModulePath();
+    std::string labelsFilePath =
+      std::string(modulePath.begin(), modulePath.end()) + "Labels.txt";
+    labels = FileHelper::LoadLabels(labelsFilePath);
 
     vector<pair<float, uint32_t>> sortedResults;
     for (uint32_t i = 0; i < results.Size(); i++) {
@@ -167,7 +112,7 @@ void RunSqueezeNet(Session session, Model model, hstring imagePath) {
 
     // load the image
     printf("Loading the image...\n");
-    auto imageFrame = LoadImageFile(imagePath);
+    auto imageFrame = FileHelper::LoadImageFile(imagePath);
 
     // bind the input image
     printf("Binding...\n");

@@ -193,7 +193,7 @@ void PrintResults(IVectorView<float> results)
     auto modulePath = FileHelper::GetModulePath();
     std::string labelsFilePath =
       std::string(modulePath.begin(), modulePath.end()) + labelsFileName;
-    std::vector<std::string> labels = FileHelper::LoadLabels(labelsFilePath);
+    labels = FileHelper::LoadLabels(labelsFilePath);
 
     vector<pair<float, uint32_t>> sortedResults;
     for (uint32_t i = 0; i < results.Size(); i++) {

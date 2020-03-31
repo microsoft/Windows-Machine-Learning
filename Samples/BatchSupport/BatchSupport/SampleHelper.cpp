@@ -1,6 +1,5 @@
 #include "pch.h"
 #include "SampleHelper.h"
-
 #include "Windows.AI.MachineLearning.Native.h"
 #include <MemoryBuffer.h>
 #include <windows.h>
@@ -15,27 +14,9 @@ using namespace winrt::Windows::Graphics::Imaging;
 using namespace winrt::Windows::Storage::Streams;
 using namespace winrt::Windows::Storage;
 
-EXTERN_C IMAGE_DOS_HEADER __ImageBase;
-
 #define BATCH_SIZE 3
 
 namespace SampleHelper {
-std::wstring GetModulePath() {
-  std::wstring val;
-  wchar_t modulePath[MAX_PATH] = {0};
-  GetModuleFileNameW((HINSTANCE)&__ImageBase, modulePath, _countof(modulePath));
-  wchar_t drive[_MAX_DRIVE];
-  wchar_t dir[_MAX_DIR];
-  wchar_t filename[_MAX_FNAME];
-  wchar_t ext[_MAX_EXT];
-  _wsplitpath_s(modulePath, drive, _MAX_DRIVE, dir, _MAX_DIR, filename,
-                _MAX_FNAME, ext, _MAX_EXT);
-
-  val = drive;
-  val += dir;
-
-  return val;
-}
 
 std::vector<float>
 SoftwareBitmapToFloatVector(SoftwareBitmap softwareBitmap) {
@@ -110,10 +91,10 @@ hstring GetModelPath(std::string modelType) {
   hstring modelPath;
   if (modelType == "fixedBatchSize") {
     modelPath =
-        static_cast<hstring>(GetModulePath().c_str()) + L"SqueezeNet_batch3.onnx";
+        static_cast<hstring>(FileHelper::GetModulePath().c_str()) + L"SqueezeNet_batch3.onnx";
   } else {
     modelPath =
-        static_cast<hstring>(GetModulePath().c_str()) + L"SqueezeNet_free.onnx";
+        static_cast<hstring>(FileHelper::GetModulePath().c_str()) + L"SqueezeNet_free.onnx";
   }
   return modelPath;
 }
@@ -122,7 +103,7 @@ TensorFloat CreateInputTensorFloat() {
   std::vector<hstring> imageNames = {L"fish.png", L"kitten_224.png", L"fish.png"};
   std::vector<float> inputVector = {};
   for (hstring imageName : imageNames) {
-    auto imagePath = static_cast<hstring>(GetModulePath().c_str()) + imageName;
+    auto imagePath = static_cast<hstring>(FileHelper::GetModulePath().c_str()) + imageName;
     auto imageFrame = LoadImageFile(imagePath);
     std::vector<float> imageVector =
       SoftwareBitmapToFloatVector(imageFrame.SoftwareBitmap());
@@ -142,7 +123,7 @@ IVector<VideoFrame> CreateVideoFrames() {
   std::vector<hstring> imageNames = { L"fish.png", L"kitten_224.png", L"fish.png" };
   std::vector<VideoFrame> inputFrames = {};
   for (hstring imageName : imageNames) {
-    auto imagePath = static_cast<hstring>(GetModulePath().c_str()) + imageName;
+    auto imagePath = static_cast<hstring>(FileHelper::GetModulePath().c_str()) + imageName;
     auto imageFrame = LoadImageFile(imagePath);
     inputFrames.emplace_back(imageFrame);
   }
@@ -177,7 +158,7 @@ std::vector<std::string> LoadLabels(std::string labelsFilePath) {
 
 void PrintResults(IVectorView<float> results) {
   // load the labels
-  auto modulePath = GetModulePath();
+  auto modulePath = FileHelper::GetModulePath();
   std::string labelsFilePath =
       std::string(modulePath.begin(), modulePath.end()) + "Labels.txt";
   std::vector<std::string> labels = LoadLabels(labelsFilePath);

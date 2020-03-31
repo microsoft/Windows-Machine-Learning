@@ -3,5 +3,5 @@
 #include <Windows.h>
 namespace FileHelper
 {
-    std::string GetModulePath();
+  std::wstring GetModulePath();
 }

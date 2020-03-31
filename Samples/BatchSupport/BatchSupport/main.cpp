@@ -16,7 +16,7 @@ string modelType = "freeBatchSize";
 string inputType = "TensorFloat";
 
 hstring executionPath =
-    static_cast<hstring>(SampleHelper::GetModulePath().c_str());
+    static_cast<hstring>(FileHelper::GetModulePath().c_str());
 
 bool ParseArgs(int argc, char *argv[]);
 

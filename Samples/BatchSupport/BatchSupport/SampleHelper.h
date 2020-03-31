@@ -4,12 +4,10 @@
 #include <unknwn.h>
 #include <winrt/Windows.Media.h>
 #include <winrt/Windows.Graphics.Imaging.h>
+#include "FileHelper.h"
 
 namespace SampleHelper
 {
-  // Return the path where BatchSupport.exe is located
-  std::wstring GetModulePath();
-
   // Convert SoftwareBitmap to std::vector<float>
   std::vector<float> SoftwareBitmapToFloatVector(
     winrt::Windows::Graphics::Imaging::SoftwareBitmap softwareBitmap);

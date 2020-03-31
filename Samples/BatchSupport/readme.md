@@ -33,7 +33,7 @@ This sample tells how to bind and evaluate batches of input in WinML
 2. Change the current folder to the folder containing the built EXE (`cd <path-to-exe>`).
 3. Run the executable as shown below. Make sure to replace the install location with what matches yours:
   ```
-  SqueezeNetObjectDetection.exe [fixedBatchSize|freeBatchSize] [TensorFloat|VideoFrame]
+  BatchSupport.exe [fixedBatchSize|freeBatchSize] [TensorFloat|VideoFrame]
   ```
 4. You should get output similar to the following:
     ```

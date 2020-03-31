@@ -1,5 +1,5 @@
 #include "pch.h"
-#include "SampleHelper.h"
+#include "FileHelper.h"
 #include <winrt/Windows.Foundation.h>
 #include <winstring.h>
 
@@ -26,7 +26,7 @@ int32_t __stdcall WINRT_RoGetActivationFactory(void* classId, winrt::guid const&
                           WindowsGetStringLen(static_cast<HSTRING>(classId)) };
   HMODULE library{ nullptr };
 
-  std::wstring winmlDllPath = SampleHelper::GetModulePath() + L"Windows.AI.MachineLearning.dll";
+  std::wstring winmlDllPath = FileHelper::GetModulePath() + L"Windows.AI.MachineLearning.dll";
 
   if (starts_with(name, L"Windows.AI.MachineLearning."))
   {

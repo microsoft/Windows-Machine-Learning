@@ -1,4 +1,5 @@
 #include "pch.h"
+#include "FileHelper.h"
 
 using namespace winrt;
 using namespace Windows::Foundation::Collections;
@@ -15,9 +16,6 @@ hstring modelPath;
 hstring imagePath;
 
 // helper functions
-string GetModulePath();
-void LoadLabels();
-VideoFrame LoadImageFile(hstring filePath);
 void PrintResults(IVectorView<float> results);
 bool ParseArgs(int argc, char* argv[]);
 LearningModelDevice getLearningModelDeviceFromAdapter(com_ptr<IDXGIAdapter1> spAdapter);
@@ -88,7 +86,7 @@ int main(int argc, char* argv[])
 
 	// load the image
 	printf("Loading the image...\n");
-	auto imageFrame = LoadImageFile(imagePath);
+	auto imageFrame = FileHelper::LoadImageFile(imagePath);
 
 	// bind the input image
 	printf("Binding...\n");
@@ -149,74 +147,12 @@ bool ParseArgs(int argc, char* argv[])
 	return true;
 }
 
-string GetModulePath()
-{
-	string val;
-	char modulePath[MAX_PATH] = {};
-	GetModuleFileNameA(NULL, modulePath, ARRAYSIZE(modulePath));
-	char drive[_MAX_DRIVE];
-	char dir[_MAX_DIR];
-	char filename[_MAX_FNAME];
-	char ext[_MAX_EXT];
-	_splitpath_s(modulePath, drive, _MAX_DRIVE, dir, _MAX_DIR, filename, _MAX_FNAME, ext, _MAX_EXT);
-
-	val = drive;
-	val += dir;
-	return val;
-}
-
-void LoadLabels()
-{
-	// Parse labels from labels file.  We know the file's entries are already sorted in order.
-	std::string labelsFilePath = GetModulePath() + labelsFileName;
-	ifstream labelFile(labelsFilePath, ifstream::in);
-	if (labelFile.fail())
-	{
-		printf("failed to load the %s file.  Make sure it exists in the same folder as the app\r\n", labelsFileName.c_str());
-		exit(EXIT_FAILURE);
-	}
-
-	std::string s;
-	while (std::getline(labelFile, s, ','))
-	{
-		int labelValue = atoi(s.c_str());
-		if (labelValue >= static_cast<int>(labels.size()))
-		{
-			labels.resize(labelValue + 1);
-		}
-		std::getline(labelFile, s);
-		labels[labelValue] = s;
-	}
-}
-
-VideoFrame LoadImageFile(hstring filePath)
-{
-	try
-	{
-		// open the file
-		StorageFile file = StorageFile::GetFileFromPathAsync(filePath).get();
-		// get a stream on it
-		auto stream = file.OpenAsync(FileAccessMode::Read).get();
-		// Create the decoder from the stream
-		BitmapDecoder decoder = BitmapDecoder::CreateAsync(stream).get();
-		// get the bitmap
-		SoftwareBitmap softwareBitmap = decoder.GetSoftwareBitmapAsync().get();
-		// load a videoframe from it
-		VideoFrame inputImage = VideoFrame::CreateWithSoftwareBitmap(softwareBitmap);
-		// all done
-		return inputImage;
-	}
-	catch (...)
-	{
-		printf("failed to load the image file, make sure you are using fully qualified paths\r\n");
-		exit(EXIT_FAILURE);
-	}
-}
-
 void PrintResults(IVectorView<float> results)
 {
     // load the labels
-    LoadLabels();
+    auto modulePath = FileHelper::GetModulePath();
+    std::string labelsFilePath = std::string(modulePath.begin(), modulePath.end()) + labelsFileName;
+    labels = FileHelper::LoadLabels(labelsFilePath);
 
     vector<pair<float, uint32_t>> sortedResults;
     for (uint32_t i = 0; i < results.Size(); i++) {

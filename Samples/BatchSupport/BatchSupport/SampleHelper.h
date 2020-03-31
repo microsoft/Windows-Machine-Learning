@@ -12,13 +12,6 @@ namespace SampleHelper
   std::vector<float> SoftwareBitmapToFloatVector(
     winrt::Windows::Graphics::Imaging::SoftwareBitmap softwareBitmap);
 
-  // Load Image File as VideoFrame
-  winrt::Windows::Media::VideoFrame LoadImageFile(
-    winrt::hstring filePath);
-
-  // Load object detection labels
-  std::vector<std::string> LoadLabels(std::string labelsFilePath);
-
   // Create input Tensorfloats with 3 images.
   winrt::Windows::AI::MachineLearning::TensorFloat CreateInputTensorFloat();
 

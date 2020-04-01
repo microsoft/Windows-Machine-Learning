@@ -35,13 +35,13 @@ int32_t __stdcall WINRT_RoGetActivationFactory(void* classId, winrt::guid const&
   }
   else
   {
-    return OS_RoGetActivationFactory(static_cast<HSTRING>(classId), iid, factory);
+    return OS_RoGetActivationFactory(static_cast<HSTRING>(classId), reinterpret_cast<GUID const&>(iid), factory);
   }
 
   // If the library is not found, get the default one
   if (!library)
   {
-    return OS_RoGetActivationFactory(static_cast<HSTRING>(classId), iid, factory);
+    return OS_RoGetActivationFactory(static_cast<HSTRING>(classId), reinterpret_cast<GUID const&>(iid), factory);
   }
 
   using DllGetActivationFactory = HRESULT __stdcall(HSTRING classId, void** factory);

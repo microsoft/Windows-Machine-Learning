@@ -15,12 +15,11 @@ using namespace std;
 
 // globals
 vector<string> labels;
-wstring labelsFileName = L"labels.txt";
+string labelsFileName("labels.txt");
 LearningModelDeviceKind deviceKind = LearningModelDeviceKind::Default;
 string deviceName = "default";
 hstring imagePath;
 
-void LoadLabels();
 VideoFrame LoadImageFile(hstring filePath, ColorManagementMode colorManagementMode);
 void PrintResults(IVectorView<float> results);
 bool ParseArgs(int argc, char* argv[]);
@@ -117,30 +116,6 @@ bool ParseArgs(int argc, char* argv[])
     return true;
 }
 
-void LoadLabels()
-{
-    // Parse labels from labels file.  We know the file's entries are already sorted in order.
-    std::wstring labelsFilePath = FileHelper::GetModulePath() + labelsFileName;
-    ifstream labelFile(labelsFilePath, ifstream::in);
-    if (labelFile.fail())
-    {
-        printf("failed to load the %s file.  Make sure it exists in the same folder as the app\r\n", labelsFileName.c_str());
-        exit(EXIT_FAILURE);
-    }
-
-    std::string s;
-    while (std::getline(labelFile, s, ','))
-    {
-        int labelValue = atoi(s.c_str());
-        if (static_cast<uint32_t>(labelValue) >= labels.size())
-        {
-            labels.resize(labelValue + 1);
-        }
-        std::getline(labelFile, s);
-        labels[labelValue] = s;
-    }
-}
-
 ColorManagementMode GetColorManagementMode(const LearningModel& model)
 {
     // Get model color space gamma
@@ -210,13 +185,15 @@ VideoFrame LoadImageFile(hstring filePath, ColorManagementMode colorManagementMo
     }
     // all done
     return inputImage;
-    
 }
 
 void PrintResults(IVectorView<float> results)
 {
     // load the labels
-    LoadLabels();
+    auto modulePath = FileHelper::GetModulePath();
+    std::string labelsFilePath =
+      std::string(modulePath.begin(), modulePath.end()) + labelsFileName;
+    labels = FileHelper::LoadLabels(labelsFilePath);
 
     vector<pair<float, uint32_t>> sortedResults;
     for (uint32_t i = 0; i < results.Size(); i++) {

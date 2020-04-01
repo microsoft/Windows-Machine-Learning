@@ -65,28 +65,6 @@ SoftwareBitmapToFloatVector(SoftwareBitmap softwareBitmap) {
   return outputVector;
 }
 
-VideoFrame LoadImageFile(hstring filePath) {
-  VideoFrame inputImage = nullptr;
-  try {
-    // open the file
-    StorageFile file = StorageFile::GetFileFromPathAsync(filePath).get();
-    // get a stream on it
-    auto stream = file.OpenAsync(FileAccessMode::Read).get();
-    // Create the decoder from the stream
-    BitmapDecoder decoder = BitmapDecoder::CreateAsync(stream).get();
-    // get the bitmap
-    SoftwareBitmap softwareBitmap = decoder.GetSoftwareBitmapAsync().get();
-    // load a videoframe from it
-    inputImage = VideoFrame::CreateWithSoftwareBitmap(softwareBitmap);
-  } catch (...) {
-    printf("failed to load the image file, make sure you are using fully "
-           "qualified paths\r\n");
-    exit(EXIT_FAILURE);
-  }
-  // all done
-  return inputImage;
-}
-
 hstring GetModelPath(std::string modelType) {
   hstring modelPath;
   if (modelType == "fixedBatchSize") {
@@ -104,7 +82,7 @@ TensorFloat CreateInputTensorFloat() {
   std::vector<float> inputVector = {};
   for (hstring imageName : imageNames) {
     auto imagePath = static_cast<hstring>(FileHelper::GetModulePath().c_str()) + imageName;
-    auto imageFrame = LoadImageFile(imagePath);
+    auto imageFrame = FileHelper::LoadImageFile(imagePath);
     std::vector<float> imageVector =
       SoftwareBitmapToFloatVector(imageFrame.SoftwareBitmap());
     inputVector.insert(inputVector.end(), imageVector.begin(), imageVector.end());
@@ -124,36 +102,11 @@ IVector<VideoFrame> CreateVideoFrames() {
   std::vector<VideoFrame> inputFrames = {};
   for (hstring imageName : imageNames) {
     auto imagePath = static_cast<hstring>(FileHelper::GetModulePath().c_str()) + imageName;
-    auto imageFrame = LoadImageFile(imagePath);
+    auto imageFrame = FileHelper::LoadImageFile(imagePath);
     inputFrames.emplace_back(imageFrame);
   }
   auto videoFrames = winrt::single_threaded_vector(std::move(inputFrames));
   return videoFrames;
-}
-
-std::vector<std::string> LoadLabels(std::string labelsFilePath) {
-  // Parse labels from labels file.  We know the file's entries are already
-  // sorted in order.
-  std::vector<std::string> labels;
-  std::ifstream labelFile{labelsFilePath, std::ifstream::in};
-  if (labelFile.fail()) {
-    printf("failed to load the %s file.  Make sure it exists in the same "
-           "folder as the app\r\n",
-           labelsFilePath.c_str());
-    exit(EXIT_FAILURE);
-  }
-
-  std::string s;
-  while (std::getline(labelFile, s, ',')) {
-    int labelValue = atoi(s.c_str());
-    if (labelValue >= labels.size()) {
-      labels.resize(labelValue + 1);
-    }
-    std::getline(labelFile, s);
-    labels[labelValue] = s;
-  }
-
-  return labels;
 }
 
 void PrintResults(IVectorView<float> results) {
@@ -161,7 +114,7 @@ void PrintResults(IVectorView<float> results) {
   auto modulePath = FileHelper::GetModulePath();
   std::string labelsFilePath =
       std::string(modulePath.begin(), modulePath.end()) + "Labels.txt";
-  std::vector<std::string> labels = LoadLabels(labelsFilePath);
+  std::vector<std::string> labels = FileHelper::LoadLabels(labelsFilePath);
   // SqueezeNet returns a list of 1000 options, with probabilities for each,
   // loop through all
   for (uint32_t batchId = 0; batchId < BATCH_SIZE; ++batchId) {

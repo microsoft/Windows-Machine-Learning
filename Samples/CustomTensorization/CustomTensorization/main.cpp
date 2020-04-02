@@ -1,5 +1,6 @@
 ﻿#include "pch.h"
 #include "TensorConvertor.h"
+#include "FileHelper.h"
 using namespace winrt;
 using namespace Windows::Foundation;
 using namespace Windows::AI::MachineLearning;
@@ -18,11 +19,10 @@ LearningModel model = nullptr;
 LearningModelSession session = nullptr;
 LearningModelBinding binding = nullptr;
 
-const wstring modulePath{ TensorizationHelper::GetModulePath() };
+const wstring modulePath{ FileHelper::GetModulePath() };
 
 // Forward declarations
 void LoadModel(hstring modelPath);
-VideoFrame LoadImageFile(hstring filePath);
 void BindModel(
     VideoFrame imageFrame,
     string deviceName = "default");
@@ -41,7 +41,7 @@ int main()
     // Mannually-tensorization from CPU
     printf("Mannually-tensorization from CPU\n");
     LoadModel(modelPath);
-    VideoFrame imageFrame = LoadImageFile(imagePath);
+    VideoFrame imageFrame = FileHelper::LoadImageFile(imagePath);
     BindModel(imageFrame, "CPU");
     ImageFeatureValue output = EvaluateModel();
     SaveOutputToDisk(output, L"output_cpu.png");
@@ -49,7 +49,7 @@ int main()
     // Mannually-tensorization from GPU
     printf("\n\nMannually-tensorization from GPU\n");
     LoadModel(modelPath);
-    imageFrame = LoadImageFile(imagePath);
+    imageFrame = FileHelper::LoadImageFile(imagePath);
     BindModel(imageFrame, "GPU");
     output = EvaluateModel();
     SaveOutputToDisk(output, L"output_gpu.png");
@@ -71,37 +71,6 @@ void LoadModel(hstring modelPath)
     }
     ticks = GetTickCount() - ticks;
     printf("model file loaded in %d ticks\n", ticks);
-}
-
-VideoFrame LoadImageFile(hstring filePath)
-{
-    printf("Loading the image...\n");
-    DWORD ticks = GetTickCount();
-    VideoFrame inputImage = nullptr;
-
-    try
-    {
-        // open the file
-        StorageFile file = StorageFile::GetFileFromPathAsync(filePath).get();
-        // get a stream on it
-        auto stream = file.OpenAsync(FileAccessMode::Read).get();
-        // Create the decoder from the stream
-        BitmapDecoder decoder = BitmapDecoder::CreateAsync(stream).get();
-        // get the bitmap
-        SoftwareBitmap softwareBitmap = decoder.GetSoftwareBitmapAsync().get();
-        // load a videoframe from it
-        inputImage = VideoFrame::CreateWithSoftwareBitmap(softwareBitmap);
-    }
-    catch (...)
-    {
-        printf("failed to load the image file, make sure you are using fully qualified paths\r\n");
-        exit(EXIT_FAILURE);
-    }
-
-    ticks = GetTickCount() - ticks;
-    printf("image file loaded in %d ticks\n", ticks);
-    // all done
-    return inputImage;
 }
 
 void BindModel(

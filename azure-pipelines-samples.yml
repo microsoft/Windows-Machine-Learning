@@ -64,7 +64,7 @@ steps:
     inputs:
       versionSpec: 4.9.2
     condition: succeededOrFailed()
-
+ 
   - task: 333b11bd-d341-40d9-afcf-b32d5ce6f23b@2
     displayName: 'NuGet restore'
     condition: succeededOrFailed()
@@ -75,8 +75,11 @@ steps:
       project: '274e76ac-6b29-4f77-a85d-7914c77cabd5'
       pipeline: '39810'
       buildVersionToDownload: 'latest'
-      downloadType: 'specific'
-      downloadPath: '$(System.DefaultWorkingDirectory)'
+      downloadType: 'single'
+      itemPattern: |
+        **\bin\*.pdb
+        **\bin\*.dll
+      downloadPath: '$(System.ArtifactsDirectory)'
       
   - task: VSBuild@1
     displayName: 'Build UI test solution Testing/**/SamplesTest.sln'

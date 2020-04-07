@@ -18,7 +18,7 @@
     <ProjectTypeGuids>{A5A43C5B-DE2A-4C0C-9213-0A381AF9435A};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <WindowsXamlEnableOverview>true</WindowsXamlEnableOverview>
     <PackageCertificateKeyFile>MNIST_Demo_TemporaryKey.pfx</PackageCertificateKeyFile>
-    <PackageCertificateThumbprint>0C7693B440908EA43036A02969766F6388787EA2</PackageCertificateThumbprint>
+    <PackageCertificateThumbprint>78EFC7105ED86F47D1BD424ACC445C4855146952</PackageCertificateThumbprint>
     <GenerateAppInstallerFile>False</GenerateAppInstallerFile>
     <AppxAutoIncrementPackageRevision>False</AppxAutoIncrementPackageRevision>
     <AppxBundle>Never</AppxBundle>

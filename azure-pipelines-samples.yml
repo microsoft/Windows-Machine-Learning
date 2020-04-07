@@ -76,7 +76,7 @@ steps:
       pipeline: '39810'
       buildVersionToDownload: 'latest'
       downloadType: 'specific'
-      downloadPath: '$(System.ArtifactsDirectory)'
+      downloadPath: '$(System.DefaultWorkingDirectory)'
       
   - task: VSBuild@1
     displayName: 'Build UI test solution Testing/**/SamplesTest.sln'
@@ -86,7 +86,7 @@ steps:
       msbuildArgs: '-v:diag /p:OutDir=$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\SamplesTest\'
       platform: '$(BuildPlatform)'
       configuration: '$(BuildConfiguration)'
-      clean: true
+      clean: false
       msbuildArchitecture: x64
       createLogFile: true
     condition: succeededOrFailed()
@@ -99,7 +99,7 @@ steps:
       msbuildArgs: '-v:diag /p:OutDir=$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\AdapterSelection\'
       platform: '$(BuildPlatform)'
       configuration: '$(BuildConfiguration)'
-      clean: true
+      clean: false
       msbuildArchitecture: x64
       createLogFile: true
     condition: succeededOrFailed()
@@ -112,7 +112,7 @@ steps:
       msbuildArgs: '-v:diag /p:OutDir=$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\CustomOperator\'
       platform: '$(BuildPlatform)'
       configuration: '$(BuildConfiguration)'
-      clean: true
+      clean: false
       msbuildArchitecture: x64
       createLogFile: true
     condition: succeededOrFailed()
@@ -126,7 +126,7 @@ steps:
       msbuildArgs: '-v:diag /p:OutDir=$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\MNIST-Tutorial\'
       platform: '$(BuildPlatform)'
       configuration: '$(BuildConfiguration)'
-      clean: true
+      clean: false
       msbuildArchitecture: x64
       createLogFile: true
     condition: succeededOrFailed()

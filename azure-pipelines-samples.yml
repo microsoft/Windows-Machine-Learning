@@ -76,10 +76,7 @@ steps:
       pipeline: '39810'
       buildVersionToDownload: 'latest'
       downloadType: 'single'
-      itemPattern: |
-        **\bin\*.pdb
-        **\bin\*.dll
-      downloadPath: '$(System.ArtifactsDirectory)'
+      downloadPath: '$(System.ArtifactsDirectory)\BuildArtifacts'
       
   - task: VSBuild@1
     displayName: 'Build UI test solution Testing/**/SamplesTest.sln'
@@ -95,6 +92,39 @@ steps:
     condition: succeededOrFailed()
 
   - task: VSBuild@1
+    displayName: 'Build BatchSupport Sample'
+    inputs:
+      solution: Samples/BatchSupport/BatchSupport.sln
+      vsVersion: 15.0
+      msbuildArgs: '-v:diag /p:OutDir=$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\BatchSupport\'
+      platform: '$(BuildPlatform)'
+      configuration: '$(BuildConfiguration)'
+      clean: true
+      msbuildArchitecture: x64
+      createLogFile: true
+    condition: succeededOrFailed()
+
+  - task: CopyFiles@2
+    inputs:
+      SourceFolder: '$(System.ArtifactsDirectory)\BuildArtifacts\'
+      Contents: |
+        '$(BuildPlatform)-win-inbox-$(Configuration)\bin\onnxruntime.dll'
+        '$(BuildPlatform)-win-inbox-$(Configuration)\bin\onnxruntime.pdb'
+        '$(BuildPlatform)-win-inbox-$(Configuration)\bin\DirectML.pdb'
+        '$(BuildPlatform)-win-inbox-$(Configuration)\bin\DirectML.dll'
+        '$(BuildPlatform)-win-inbox-$(Configuration)\bin\windows.ai.machinelearning.dll'
+        '$(BuildPlatform)-win-inbox-$(Configuration)\bin\windows.ai.machinelearning.pdb'
+      TargetFolder: '$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\BatchSupport\'
+      OverWrite: true
+  
+  - task: PowerShell@2
+    inputs:
+      targetType: 'inline'
+      script: .\batchSupport.exe
+      failOnStderr: true
+      workingDirectory: '$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\BatchSupport\'
+
+  - task: VSBuild@1
     displayName: 'Build AdapterSelection Sample'
     inputs:
       solution: Samples/AdapterSelection/AdapterSelection.sln
@@ -106,6 +136,9 @@ steps:
       msbuildArchitecture: x64
       createLogFile: true
     condition: succeededOrFailed()
+
+  
+  
 
   - task: VSBuild@1
     displayName: 'Build CustomOperator Sample'
@@ -199,18 +232,7 @@ steps:
       createLogFile: true
     condition: succeededOrFailed()
 
-  - task: VSBuild@1
-    displayName: 'Build BatchSupport Sample'
-    inputs:
-      solution: Samples/BatchSupport/BatchSupport.sln
-      vsVersion: 15.0
-      msbuildArgs: '-v:diag /p:OutDir=$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\BatchSupport\'
-      platform: '$(BuildPlatform)'
-      configuration: '$(BuildConfiguration)'
-      clean: true
-      msbuildArchitecture: x64
-      createLogFile: true
-    condition: succeededOrFailed()
+  
 
   - task: VSBuild@1
     displayName: 'Build Emoji Sample'

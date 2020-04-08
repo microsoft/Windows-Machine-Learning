@@ -107,14 +107,14 @@ steps:
   - task: CopyFiles@2
     displayName: 'Copy dlls'
     inputs:
-      SourceFolder: '$(System.DefaultWorkingDirectory)\BuildArtifacts\'
+      SourceFolder: '$(System.DefaultWorkingDirectory)\BuildArtifacts\$(BuildPlatform)-win-redist-$(BuildConfiguration)'
       Contents: |
-        '$(BuildPlatform)-win-inbox-$(BuildConfiguration)\bin\onnxruntime.dll'
-        '$(BuildPlatform)-win-inbox-$(BuildConfiguration)\bin\onnxruntime.pdb'
-        '$(BuildPlatform)-win-inbox-$(BuildConfiguration)\bin\DirectML.pdb'
-        '$(BuildPlatform)-win-inbox-$(BuildConfiguration)\bin\DirectML.dll'
-        '$(BuildPlatform)-win-inbox-$(BuildConfiguration)\bin\windows.ai.machinelearning.dll'
-        '$(BuildPlatform)-win-inbox-$(BuildConfiguration)\bin\windows.ai.machinelearning.pdb'
+        '\bin\onnxruntime.dll'
+        '\bin\onnxruntime.pdb'
+        '\bin\DirectML.pdb'
+        '\bin\DirectML.dll'
+        '\bin\windows.ai.machinelearning.dll'
+        '\bin\windows.ai.machinelearning.pdb'
       TargetFolder: '$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\BatchSupport\'
       OverWrite: true
   

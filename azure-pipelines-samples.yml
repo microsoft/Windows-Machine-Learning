@@ -109,12 +109,12 @@ steps:
     inputs:
       SourceFolder: '$(System.DefaultWorkingDirectory)\BuildArtifacts\$(BuildPlatform)-win-redist-$(BuildConfiguration)'
       Contents: |
-        '\bin\onnxruntime.dll'
-        '\bin\onnxruntime.pdb'
-        '\bin\DirectML.pdb'
-        '\bin\DirectML.dll'
-        '\bin\windows.ai.machinelearning.dll'
-        '\bin\windows.ai.machinelearning.pdb'
+        'bin\onnxruntime.dll'
+        'bin\onnxruntime.pdb'
+        'bin\DirectML.pdb'
+        'bin\DirectML.dll'
+        'bin\windows.ai.machinelearning.dll'
+        'bin\windows.ai.machinelearning.pdb'
       TargetFolder: '$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\BatchSupport\'
       OverWrite: true
   

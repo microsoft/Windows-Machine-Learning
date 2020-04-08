@@ -105,19 +105,21 @@ steps:
     condition: succeededOrFailed()
 
   - task: CopyFiles@2
+    displatName: 'Copy dlls'
     inputs:
       SourceFolder: '$(System.ArtifactsDirectory)\BuildArtifacts\'
       Contents: |
-        '$(BuildPlatform)-win-inbox-$(Configuration)\bin\onnxruntime.dll'
-        '$(BuildPlatform)-win-inbox-$(Configuration)\bin\onnxruntime.pdb'
-        '$(BuildPlatform)-win-inbox-$(Configuration)\bin\DirectML.pdb'
-        '$(BuildPlatform)-win-inbox-$(Configuration)\bin\DirectML.dll'
-        '$(BuildPlatform)-win-inbox-$(Configuration)\bin\windows.ai.machinelearning.dll'
-        '$(BuildPlatform)-win-inbox-$(Configuration)\bin\windows.ai.machinelearning.pdb'
+        '$(BuildPlatform)-win-inbox-$(BuildConfiguration)\bin\onnxruntime.dll'
+        '$(BuildPlatform)-win-inbox-$(BuildConfiguration)\bin\onnxruntime.pdb'
+        '$(BuildPlatform)-win-inbox-$(BuildConfiguration)\bin\DirectML.pdb'
+        '$(BuildPlatform)-win-inbox-$(BuildConfiguration)\bin\DirectML.dll'
+        '$(BuildPlatform)-win-inbox-$(BuildConfiguration)\bin\windows.ai.machinelearning.dll'
+        '$(BuildPlatform)-win-inbox-$(BuildConfiguration)\bin\windows.ai.machinelearning.pdb'
       TargetFolder: '$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\BatchSupport\'
       OverWrite: true
   
   - task: PowerShell@2
+    displayName: 'Execute BatchSupport Sample'
     inputs:
       targetType: 'inline'
       script: .\batchSupport.exe

@@ -76,7 +76,7 @@ steps:
       pipeline: '39810'
       buildVersionToDownload: 'latest'
       downloadType: 'specific'
-      downloadPath: '$(System.ArtifactsDirectory)\BuildArtifacts\'
+      downloadPath: '$(System.DefaultWorkingDirectory)\BuildArtifacts\'
       
   - task: VSBuild@1
     displayName: 'Build UI test solution Testing/**/SamplesTest.sln'
@@ -107,7 +107,7 @@ steps:
   - task: CopyFiles@2
     displayName: 'Copy dlls'
     inputs:
-      SourceFolder: '$(System.ArtifactsDirectory)\BuildArtifacts\'
+      SourceFolder: '$(System.DefaultWorkingDirectory)\BuildArtifacts\'
       Contents: |
         '$(BuildPlatform)-win-inbox-$(BuildConfiguration)\bin\onnxruntime.dll'
         '$(BuildPlatform)-win-inbox-$(BuildConfiguration)\bin\onnxruntime.pdb'

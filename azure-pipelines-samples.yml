@@ -84,7 +84,7 @@ steps:
       buildVersionToDownload: 'latestFromBranch'
       branchName: 'refs/heads/master'
       artifactName: '$(ArtifactNameRedist)'
-      targetPath: '$(System.DefaultWorkingDirectory)\buildArtifacts'
+      targetPath: '$(System.DefaultWorkingDirectory)\buildArtifacts\$(ArtifactNameRedist)'
     condition: succeededOrFailed()
   
   - task: DownloadPipelineArtifact@2
@@ -96,7 +96,7 @@ steps:
       buildVersionToDownload: 'latestFromBranch'
       branchName: 'refs/heads/master'
       artifactName: '$(ArtifactNameInbox)'
-      targetPath: '$(System.DefaultWorkingDirectory)\buildArtifacts'
+      targetPath: '$(System.DefaultWorkingDirectory)\buildArtifacts\$(ArtifactNameInbox)'
     condition: succeededOrFailed()
 
   - task: VSBuild@1

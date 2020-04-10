@@ -13,23 +13,23 @@ strategy:
     Release_x64:
       BuildPlatform: x64
       BuildConfiguration: Release
-      ArtifactNameRedist: x64-win-redist-release
-      ArtifactNameInbox: x64-win-inbox-release
+      ArtifactNameRedist: x64-win-redist-Release
+      ArtifactNameInbox: x64-win-inbox-Release
     Debug_x64:
       BuildPlatform: x64
       BuildConfiguration: Debug
-      ArtifactNameRedist: x64-win-redist-debug
-      ArtifactNameInbox: x64-win-inbox-debug
+      ArtifactNameRedist: x64-win-redist-Debug
+      ArtifactNameInbox: x64-win-inbox-Debug
     Release_x86:
       BuildPlatform: x86
       BuildConfiguration: Release
-      ArtifactNameRedist: x86-win-redist-release
-      ArtifactNameInbox: x86-win-inbox-release
+      ArtifactNameRedist: x86-win-redist-Release
+      ArtifactNameInbox: x86-win-inbox-Release
     Debug_x86:
       BuildPlatform: x86
       BuildConfiguration: Debug
-      ArtifactNameRedist: x96-win-redist-debug
-      ArtifactNameInbox: x86-win-inbox-debug
+      ArtifactNameRedist: x86-win-redist-Debug
+      ArtifactNameInbox: x86-win-inbox-Debug
 
 pool:
   name: Package ES Lab E
@@ -71,33 +71,32 @@ steps:
     inputs:
       versionSpec: 4.9.2
     condition: succeededOrFailed()
-
+  
   - task: 333b11bd-d341-40d9-afcf-b32d5ce6f23b@2
     displayName: 'NuGet restore'
-    condition: succeededOrFailed()
 
-  - task: DownloadBuildArtifacts@0
+  - task: DownloadPipelineArtifact@2
     displayName: 'download Redist Artifact'
     inputs:
       buildType: 'specific'
       project: '274e76ac-6b29-4f77-a85d-7914c77cabd5'
-      pipeline: '39810'
-      buildVersionToDownload: 'latest'
-      downloadType: 'single'
+      definition: '39810'
+      buildVersionToDownload: 'latestFromBranch'
+      branchName: 'refs/heads/master'
       artifactName: '$(ArtifactNameRedist)'
-      downloadPath: '$(System.DefaultWorkingDirectory)\buildArtifacts'
+      targetPath: '$(System.DefaultWorkingDirectory)\buildArtifacts'
     condition: succeededOrFailed()
   
-  - task: DownloadBuildArtifacts@0
+  - task: DownloadPipelineArtifact@2
     displayName: 'download Inbox Artifact'
     inputs:
       buildType: 'specific'
       project: '274e76ac-6b29-4f77-a85d-7914c77cabd5'
-      pipeline: '39810'
-      buildVersionToDownload: 'latest'
-      downloadType: 'single'
+      definition: '39810'
+      buildVersionToDownload: 'latestFromBranch'
+      branchName: 'refs/heads/master'
       artifactName: '$(ArtifactNameInbox)'
-      downloadPath: '$(System.DefaultWorkingDirectory)\buildArtifacts'
+      targetPath: '$(System.DefaultWorkingDirectory)\buildArtifacts'
     condition: succeededOrFailed()
 
   - task: VSBuild@1
@@ -286,18 +285,19 @@ steps:
       createLogFile: true
     condition: succeededOrFailed()
 
-  - task: VSBuild@1
-    displayName: 'Build SqueezenetObjectDetection Sample'
-    inputs:
-      solution: Samples/SqueezeNetObjectDetection/squeezenetobjectdetection.sln
-      vsVersion: 15.0
-      msbuildArgs: '-v:diag /p:OutDir=$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\SqueezeNetObjectDetection\'
-      platform: '$(BuildPlatform)'
-      configuration: '$(BuildConfiguration)'
-      clean: true
-      msbuildArchitecture: x64
-      createLogFile: true
-    condition: succeededOrFailed()
+  # TODO: Bug 25927815: SqueezeNetObjectDetection NetCore Sample is failing to be built
+  #- task: VSBuild@1
+  #  displayName: 'Build SqueezenetObjectDetection Sample'
+  #  inputs:
+  #    solution: Samples/SqueezeNetObjectDetection/squeezenetobjectdetection.sln
+  #    vsVersion: 15.0
+  #    msbuildArgs: '-v:diag /p:OutDir=$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\SqueezeNetObjectDetection\'
+  #    platform: '$(BuildPlatform)'
+  #    configuration: '$(BuildConfiguration)'
+  #    clean: true
+  #    msbuildArchitecture: x64
+  #    createLogFile: true
+  #  condition: succeededOrFailed()
 
   - task: VSBuild@1
     displayName: 'Build FNSCandyStyleTransfer-UWP-CS Sample'

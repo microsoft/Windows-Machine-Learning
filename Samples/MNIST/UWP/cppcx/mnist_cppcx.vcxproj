@@ -98,7 +98,7 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
     <PackageCertificateKeyFile>mnist_cppcx_TemporaryKey.pfx</PackageCertificateKeyFile>
-    <PackageCertificateThumbprint>B23CBDBC47A77064D6E6EF69178D43BD014FC24D</PackageCertificateThumbprint>
+    <PackageCertificateThumbprint>34C79AC4198F40BB3EC5FB12F2CFD0DF00367BB9</PackageCertificateThumbprint>
     <GenerateAppInstallerFile>False</GenerateAppInstallerFile>
     <AppxAutoIncrementPackageRevision>False</AppxAutoIncrementPackageRevision>
     <AppxBundle>Never</AppxBundle>

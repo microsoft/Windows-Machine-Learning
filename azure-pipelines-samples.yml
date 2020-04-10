@@ -5,7 +5,7 @@ resources:
 
 variables:
   SamplesBin: SamplesBin
-  WINDOWS_WINMD: C:\Program Files (x86)\Windows Kits\10\UnionMetadata\10.0.17763.0\Windows.winmd
+  WINDOWS_WINMD: C:\Program Files (x86)\Windows Kits\10\UnionMetadata\10.0.18362.0\Windows.winmd
 
 strategy:
   maxParallel: 8
@@ -13,15 +13,23 @@ strategy:
     Release_x64:
       BuildPlatform: x64
       BuildConfiguration: Release
+      ArtifactNameRedist: x64-win-redist-release
+      ArtifactNameInbox: x64-win-inbox-release
     Debug_x64:
       BuildPlatform: x64
       BuildConfiguration: Debug
+      ArtifactNameRedist: x64-win-redist-debug
+      ArtifactNameInbox: x64-win-inbox-debug
     Release_x86:
       BuildPlatform: x86
       BuildConfiguration: Release
+      ArtifactNameRedist: x86-win-redist-release
+      ArtifactNameInbox: x86-win-inbox-release
     Debug_x86:
       BuildPlatform: x86
       BuildConfiguration: Debug
+      ArtifactNameRedist: x96-win-redist-debug
+      ArtifactNameInbox: x86-win-inbox-debug
 
 pool:
   name: Package ES Lab E
@@ -47,10 +55,10 @@ pr:
 
 steps: 
   - task: PowerShell@2
-    displayName: 'Check SDK Version 17763 is present'
+    displayName: 'Check SDK Version 18362 is present'
     inputs:
       targetType: inline
-      script: dir "${ENV:programfiles(x86)}\windows Kits\10\include\10.0.17763.0\"
+      script: dir "${ENV:programfiles(x86)}\windows Kits\10\include\10.0.18362.0\"
     
   - task: DotNetCoreInstaller@0
     displayName: 'Use .NET Core sdk 2.1.300'
@@ -68,6 +76,30 @@ steps:
     displayName: 'NuGet restore'
     condition: succeededOrFailed()
 
+  - task: DownloadBuildArtifacts@0
+    displayName: 'download Redist Artifact'
+    inputs:
+      buildType: 'specific'
+      project: '274e76ac-6b29-4f77-a85d-7914c77cabd5'
+      pipeline: '39810'
+      buildVersionToDownload: 'latest'
+      downloadType: 'single'
+      artifactName: '$(ArtifactNameRedist)'
+      downloadPath: '$(System.DefaultWorkingDirectory)\buildArtifacts'
+    condition: succeededOrFailed()
+  
+  - task: DownloadBuildArtifacts@0
+    displayName: 'download Inbox Artifact'
+    inputs:
+      buildType: 'specific'
+      project: '274e76ac-6b29-4f77-a85d-7914c77cabd5'
+      pipeline: '39810'
+      buildVersionToDownload: 'latest'
+      downloadType: 'single'
+      artifactName: '$(ArtifactNameInbox)'
+      downloadPath: '$(System.DefaultWorkingDirectory)\buildArtifacts'
+    condition: succeededOrFailed()
+
   - task: VSBuild@1
     displayName: 'Build UI test solution Testing/**/SamplesTest.sln'
     inputs:
@@ -79,6 +111,73 @@ steps:
       clean: true
       msbuildArchitecture: x64
       createLogFile: true
+    condition: succeededOrFailed()
+
+  - task: VSBuild@1
+    displayName: 'Build BatchSupport Sample'
+    inputs:
+      solution: Samples/BatchSupport/BatchSupport.sln
+      vsVersion: 15.0
+      msbuildArgs: '-v:diag /p:OutDir=$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\BatchSupport\'
+      platform: '$(BuildPlatform)'
+      configuration: '$(BuildConfiguration)'
+      clean: true
+      msbuildArchitecture: x64
+      createLogFile: true
+    condition: succeededOrFailed()
+
+  - task: CopyFiles@2
+    displayName: 'copy Redist dlls to BatchSupport Sample'
+    inputs:
+      SourceFolder: '$(System.DefaultWorkingDirectory)\buildArtifacts\$(ArtifactNameRedist)\bin'
+      Contents: |
+        windows.ai.machinelearning.dll
+        onnxruntime.dll
+        DirectML.dll
+        DirectML.pdb
+        onnxruntime.pdb
+        windows.ai.machinelearning.pdb
+      TargetFolder: '$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\BatchSupport\'
+      OverWrite: true
+    condition: succeededOrFailed()
+
+  - task: PowerShell@2
+    displayName: 'Test BatchSupport Sample With Redist Dlls'
+    inputs:
+      targetType: 'inline'
+      script: |
+        .\BatchSupport.exe freeBatchSize TensorFloat
+        .\BatchSupport.exe fixedBatchSize TensorFloat
+        .\BatchSupport.exe fixedBatchSize VideoFrame
+        .\BatchSupport.exe freeBatchSize VideoFrame
+      workingDirectory: '$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\BatchSupport\'
+    condition: succeededOrFailed()
+
+  - task: CopyFiles@2
+    displayName: 'copy inbox dlls to BatchSupport Sample'
+    inputs:
+      SourceFolder: '$(System.DefaultWorkingDirectory)\buildArtifacts\$(ArtifactNameinbox)\bin'
+      Contents: |
+        windows.ai.machinelearning.dll
+        onnxruntime.dll
+        DirectML.dll
+        DirectML.pdb
+        onnxruntime.pdb
+        windows.ai.machinelearning.pdb
+      TargetFolder: '$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\BatchSupport\'
+      OverWrite: true
+    condition: succeededOrFailed()
+
+  - task: PowerShell@2
+    displayName: 'Test BatchSupport Sample With Inbox Dlls'
+    inputs:
+      targetType: 'inline'
+      script: |
+        .\BatchSupport.exe freeBatchSize TensorFloat
+        .\BatchSupport.exe fixedBatchSize TensorFloat
+        .\BatchSupport.exe fixedBatchSize VideoFrame
+        .\BatchSupport.exe freeBatchSize VideoFrame
+      workingDirectory: '$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\BatchSupport\'
     condition: succeededOrFailed()
 
   - task: VSBuild@1
@@ -107,6 +206,59 @@ steps:
       createLogFile: true
     condition: succeededOrFailed()
 
+  - task: CopyFiles@2
+    displayName: 'copy Redist dlls to CustomOperator Sample'
+    inputs:
+      SourceFolder: '$(System.DefaultWorkingDirectory)\buildArtifacts\$(ArtifactNameRedist)\bin'
+      Contents: |
+        windows.ai.machinelearning.dll
+        onnxruntime.dll
+        DirectML.dll
+        DirectML.pdb
+        onnxruntime.pdb
+        windows.ai.machinelearning.pdb
+      TargetFolder: '$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\CustomOperator\'
+      OverWrite: true
+    condition: succeededOrFailed()
+
+  - task: PowerShell@2
+    displayName: 'Test CustomOperator Sample with Redist Dlls'
+    inputs:
+      targetType: 'inline'
+      script: |
+        .\custom-operator-sample.exe relu
+        .\custom-operator-sample.exe debug
+        .\custom-operator-sample.exe relu_gpu
+        .\custom-operator-sample.exe noisyrelu
+      workingDirectory: '$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\CustomOperator\'
+    condition: succeededOrFailed()
+
+  - task: CopyFiles@2
+    displayName: 'copy Inbox dlls to CustomOperator Sample'
+    inputs:
+      SourceFolder: '$(System.DefaultWorkingDirectory)\buildArtifacts\$(ArtifactNameInbox)\bin'
+      Contents: |
+        windows.ai.machinelearning.dll
+        onnxruntime.dll
+        DirectML.dll
+        DirectML.pdb
+        onnxruntime.pdb
+        windows.ai.machinelearning.pdb
+      TargetFolder: '$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\CustomOperator\'
+      OverWrite: true
+    condition: succeededOrFailed()
+
+  - task: PowerShell@2
+    displayName: 'Test CustomOperator Sample with Inbox Dlls'
+    inputs:
+      targetType: 'inline'
+      script: |
+        .\custom-operator-sample.exe relu
+        .\custom-operator-sample.exe debug
+        .\custom-operator-sample.exe relu_gpu
+        .\custom-operator-sample.exe noisyrelu
+      workingDirectory: '$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\CustomOperator\'
+    condition: succeededOrFailed()
 
   - task: VSBuild@1
     displayName: 'Build MNIST-Tutorial-cs Sample'
@@ -186,17 +338,50 @@ steps:
       createLogFile: true
     condition: succeededOrFailed()
 
-  - task: VSBuild@1
-    displayName: 'Build BatchSupport Sample'
+  - task: CopyFiles@2
+    displayName: 'copy Redist dlls to CustomTensorization Sample'
     inputs:
-      solution: Samples/BatchSupport/BatchSupport.sln
-      vsVersion: 15.0
-      msbuildArgs: '-v:diag /p:OutDir=$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\BatchSupport\'
-      platform: '$(BuildPlatform)'
-      configuration: '$(BuildConfiguration)'
-      clean: true
-      msbuildArchitecture: x64
-      createLogFile: true
+      SourceFolder: '$(System.DefaultWorkingDirectory)\buildArtifacts\$(ArtifactNameRedist)\bin'
+      Contents: |
+        windows.ai.machinelearning.dll
+        onnxruntime.dll
+        DirectML.dll
+        DirectML.pdb
+        onnxruntime.pdb
+        windows.ai.machinelearning.pdb
+      TargetFolder: '$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\CustomTensorization\'
+      OverWrite: true
+    condition: succeededOrFailed()
+
+  - task: PowerShell@2
+    displayName: 'Test CustomTensorization Sample With Redist Dlls'
+    inputs:
+      targetType: 'inline'
+      script: '.\CustomTensorization.exe'
+      workingDirectory: '$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\CustomTensorization\'
+    condition: succeededOrFailed()
+
+  - task: CopyFiles@2
+    displayName: 'copy Inbox dlls to CustomTensorization Sample'
+    inputs:
+      SourceFolder: '$(System.DefaultWorkingDirectory)\buildArtifacts\$(ArtifactNameInbox)\bin'
+      Contents: |
+        windows.ai.machinelearning.dll
+        onnxruntime.dll
+        DirectML.dll
+        DirectML.pdb
+        onnxruntime.pdb
+        windows.ai.machinelearning.pdb
+      TargetFolder: '$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\CustomTensorization\'
+      OverWrite: true
+    condition: succeededOrFailed()
+
+  - task: PowerShell@2
+    displayName: 'Test CustomTensorization Sample With Inbox Dlls'
+    inputs:
+      targetType: 'inline'
+      script: '.\CustomTensorization.exe'
+      workingDirectory: '$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\CustomTensorization\'
     condition: succeededOrFailed()
 
   - task: VSBuild@1
@@ -224,6 +409,53 @@ steps:
       msbuildArchitecture: x64
       createLogFile: true
     condition: succeededOrFailed()
+
+  - task: CopyFiles@2
+    displayName: 'copy Redist dlls to StreamFromResource Sample'
+    inputs:
+      SourceFolder: '$(System.DefaultWorkingDirectory)\buildArtifacts\$(ArtifactNameRedist)\bin'
+      Contents: |
+        windows.ai.machinelearning.dll
+        onnxruntime.dll
+        DirectML.dll
+        DirectML.pdb
+        onnxruntime.pdb
+        windows.ai.machinelearning.pdb
+      TargetFolder: '$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\StreamFromResource\'
+      OverWrite: true
+    condition: succeededOrFailed()
+
+  - task: PowerShell@2
+    displayName: 'Test StreamFromResource Sample With Redist Dlls'
+    inputs:
+      targetType: 'inline'
+      script: '.\StreamFromResource.exe'
+      workingDirectory: '$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\StreamFromResource\'
+    condition: succeededOrFailed()
+
+  - task: CopyFiles@2
+    displayName: 'copy Inbox dlls to StreamFromResource Sample'
+    inputs:
+      SourceFolder: '$(System.DefaultWorkingDirectory)\buildArtifacts\$(ArtifactNameInbox)\bin'
+      Contents: |
+        windows.ai.machinelearning.dll
+        onnxruntime.dll
+        DirectML.dll
+        DirectML.pdb
+        onnxruntime.pdb
+        windows.ai.machinelearning.pdb
+      TargetFolder: '$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\StreamFromResource\'
+      OverWrite: true
+    condition: succeededOrFailed()
+
+  - task: PowerShell@2
+    displayName: 'Test StreamFromResource Sample With Inbox Dlls'
+    inputs:
+      targetType: 'inline'
+      script: '.\StreamFromResource.exe'
+      workingDirectory: '$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\StreamFromResource\'
+    condition: succeededOrFailed()
+
 
   - task: CopyFiles@2
     inputs:

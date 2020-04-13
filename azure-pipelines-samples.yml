@@ -255,5 +255,5 @@ steps:
     displayName: 'Publish Artifact: Samples'
     inputs:
       pathtoPublish: '$(Build.ArtifactStagingDirectory)'
-      artifactName: WinMLPublicSamples-RS5
+      artifactName: WinMLPublicSamples
     condition: succeededOrFailed()

@@ -53,7 +53,7 @@
     <MinimumVisualStudioVersion>$(VersionNumberMajor).$(VersionNumberMinor)</MinimumVisualStudioVersion>
     <DefaultLanguage>en-US</DefaultLanguage>
     <PackageCertificateKeyFile>SqueezeNetObjectDetectionJS_TemporaryKey.pfx</PackageCertificateKeyFile>
-    <PackageCertificateThumbprint>C3CF24DA639657EFA9A19E2696BD94C12C1E03C3</PackageCertificateThumbprint>
+    <PackageCertificateThumbprint>DBDCD46A04093B7D0AD2EC5B8E819128EA3D247F</PackageCertificateThumbprint>
     <GenerateAppInstallerFile>False</GenerateAppInstallerFile>
     <AppxAutoIncrementPackageRevision>False</AppxAutoIncrementPackageRevision>
     <AppxBundle>Never</AppxBundle>

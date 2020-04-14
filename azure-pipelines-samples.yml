@@ -5,7 +5,7 @@ resources:
 
 variables:
   SamplesBin: SamplesBin
-  WINDOWS_WINMD: C:\Program Files (x86)\Windows Kits\10\UnionMetadata\10.0.17763.0\Windows.winmd
+  WINDOWS_WINMD: C:\Program Files (x86)\Windows Kits\10\UnionMetadata\10.0.18362.0\Windows.winmd
 
 strategy:
   maxParallel: 8
@@ -47,10 +47,10 @@ pr:
 
 steps: 
   - task: PowerShell@2
-    displayName: 'Check SDK Version 17763 is present'
+    displayName: 'Check SDK Version 18362 is present'
     inputs:
       targetType: inline
-      script: dir "${ENV:programfiles(x86)}\windows Kits\10\include\10.0.17763.0\"
+      script: dir "${ENV:programfiles(x86)}\windows Kits\10\include\10.0.18362.0\"
     
   - task: DotNetCoreInstaller@0
     displayName: 'Use .NET Core sdk 2.1.300'
@@ -134,18 +134,20 @@ steps:
       createLogFile: true
     condition: succeededOrFailed()
 
-  - task: VSBuild@1
-    displayName: 'Build SqueezenetObjectDetection Sample'
-    inputs:
-      solution: Samples/SqueezeNetObjectDetection/squeezenetobjectdetection.sln
-      vsVersion: 15.0
-      msbuildArgs: '-v:diag /p:OutDir=$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\SqueezeNetObjectDetection\'
-      platform: '$(BuildPlatform)'
-      configuration: '$(BuildConfiguration)'
-      clean: true
-      msbuildArchitecture: x64
-      createLogFile: true
-    condition: succeededOrFailed()
+  # Bug 25927815: SqueezeNetObjectDetection NetCore Sample is failing to be built
+  # Also the test should be added when the code below is uncommented
+  # - task: VSBuild@1
+  #  displayName: 'Build SqueezenetObjectDetection Sample'
+  #  inputs:
+  #    solution: Samples/SqueezeNetObjectDetection/squeezenetobjectdetection.sln
+  #    vsVersion: 15.0
+  #    msbuildArgs: '-v:diag /p:OutDir=$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\SqueezeNetObjectDetection\'
+  #    platform: '$(BuildPlatform)'
+  #    configuration: '$(BuildConfiguration)'
+  #    clean: true
+  #    msbuildArchitecture: x64
+  #    createLogFile: true
+  #  condition: succeededOrFailed()
 
   - task: VSBuild@1
     displayName: 'Build FNSCandyStyleTransfer-UWP-CS Sample'
@@ -255,5 +257,5 @@ steps:
     displayName: 'Publish Artifact: Samples'
     inputs:
       pathtoPublish: '$(Build.ArtifactStagingDirectory)'
-      artifactName: WinMLPublicSamples-RS5
+      artifactName: WinMLPublicSamples
     condition: succeededOrFailed()

@@ -64,22 +64,22 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <OutDir>$(Platform)\$(Configuration)\</OutDir>
+    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">
     <OutDir>$(Platform)\$(Configuration)\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <OutDir>$(Platform)\$(Configuration)\</OutDir>
+    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">
     <OutDir>$(Platform)\$(Configuration)\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <OutDir>$(Configuration)\</OutDir>
+    <OutDir>$(SolutionDir)$(Configuration)\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <OutDir>$(Configuration)\</OutDir>
+    <OutDir>$(SolutionDir)$(Configuration)\</OutDir>
   </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>
@@ -240,17 +240,17 @@
       <AdditionalIncludeDirectories>$(SolutionDir)\packages\rapidjson.v110.1.1.0\build\native\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">ole32.lib;kernel32.lib;user32.lib;dxguid.lib;$(SolutionDir)\$(OutDir)\SampleSharedLib.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">ole32.lib;kernel32.lib;user32.lib;dxguid.lib;$(OutDir)\SampleSharedLib.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <Link>
-      <AdditionalDependencies Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">ole32.lib;kernel32.lib;user32.lib;dxguid.lib;$(SolutionDir)\$(OutDir)\SampleSharedLib.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">ole32.lib;kernel32.lib;user32.lib;dxguid.lib;$(OutDir)\SampleSharedLib.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <Link>
-      <AdditionalDependencies Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">ole32.lib;kernel32.lib;user32.lib;dxguid.lib;$(SolutionDir)\$(OutDir)\SampleSharedLib.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">ole32.lib;kernel32.lib;user32.lib;dxguid.lib;$(OutDir)\SampleSharedLib.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalDependencies Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">ole32.lib;kernel32.lib;user32.lib;dxguid.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <Link>
-      <AdditionalDependencies Condition="'$(Configuration)|$(Platform)'=='Release|x64'">ole32.lib;kernel32.lib;user32.lib;dxguid.lib;$(SolutionDir)\$(OutDir)\SampleSharedLib.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies Condition="'$(Configuration)|$(Platform)'=='Release|x64'">ole32.lib;kernel32.lib;user32.lib;dxguid.lib;$(OutDir)\SampleSharedLib.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalDependencies Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">ole32.lib;kernel32.lib;user32.lib;dxguid.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>

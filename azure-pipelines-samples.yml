@@ -6,6 +6,7 @@ resources:
 variables:
   SamplesBin: SamplesBin
   WINDOWS_WINMD: C:\Program Files (x86)\Windows Kits\10\UnionMetadata\10.0.18362.0\Windows.winmd
+  WindowsTargetPlatformVersion: 10.0.18362.0
 
 strategy:
   maxParallel: 8
@@ -73,7 +74,7 @@ steps:
     inputs:
       solution: 'Testing/**/SamplesTest.sln'
       vsVersion: 15.0
-      msbuildArgs: '-v:diag /p:OutDir=$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\SamplesTest\'
+      msbuildArgs: '-v:diag /p:OutDir=$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\SamplesTest\ /p:WindowsTargetPlatformVersion=$(WindowsTargetPlatformVersion)'
       platform: '$(BuildPlatform)'
       configuration: '$(BuildConfiguration)'
       clean: true
@@ -86,7 +87,7 @@ steps:
     inputs:
       solution: Samples/AdapterSelection/AdapterSelection.sln
       vsVersion: 15.0
-      msbuildArgs: '-v:diag /p:OutDir=$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\AdapterSelection\'
+      msbuildArgs: '-v:diag /p:OutDir=$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\AdapterSelection\ /p:WindowsTargetPlatformVersion=$(WindowsTargetPlatformVersion)'
       platform: '$(BuildPlatform)'
       configuration: '$(BuildConfiguration)'
       clean: true
@@ -99,7 +100,7 @@ steps:
     inputs:
       solution: Samples/CustomOperator/desktop/cpp/custom-operator-sample.sln
       vsVersion: 15.0
-      msbuildArgs: '-v:diag /p:OutDir=$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\CustomOperator\'
+      msbuildArgs: '-v:diag /p:OutDir=$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\CustomOperator\ /p:WindowsTargetPlatformVersion=$(WindowsTargetPlatformVersion)'
       platform: '$(BuildPlatform)'
       configuration: '$(BuildConfiguration)'
       clean: true
@@ -113,7 +114,7 @@ steps:
     inputs:
       solution: 'Samples/MNIST/Tutorial/cs/mnist_demo.sln'
       vsVersion: 15.0
-      msbuildArgs: '-v:diag /p:OutDir=$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\MNIST-Tutorial\'
+      msbuildArgs: '-v:diag /p:OutDir=$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\MNIST-Tutorial\ /p:WindowsTargetPlatformVersion=$(WindowsTargetPlatformVersion)'
       platform: '$(BuildPlatform)'
       configuration: '$(BuildConfiguration)'
       clean: true
@@ -126,7 +127,7 @@ steps:
     inputs:
       solution: 'Samples/MNIST/UWP/cs/mnist_demo.sln'
       vsVersion: 15.0
-      msbuildArgs: '-v:diag /p:OutDir=$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\MNIST-cs\'
+      msbuildArgs: '-v:diag /p:OutDir=$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\MNIST-cs\ /p:WindowsTargetPlatformVersion=$(WindowsTargetPlatformVersion)'
       platform: '$(BuildPlatform)'
       configuration: '$(BuildConfiguration)'
       clean: true
@@ -141,7 +142,7 @@ steps:
   #  inputs:
   #    solution: Samples/SqueezeNetObjectDetection/squeezenetobjectdetection.sln
   #    vsVersion: 15.0
-  #    msbuildArgs: '-v:diag /p:OutDir=$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\SqueezeNetObjectDetection\'
+  #    msbuildArgs: '-v:diag /p:OutDir=$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\SqueezeNetObjectDetection\ /p:WindowsTargetPlatformVersion=$(WindowsTargetPlatformVersion)'
   #    platform: '$(BuildPlatform)'
   #    configuration: '$(BuildConfiguration)'
   #    clean: true
@@ -154,7 +155,7 @@ steps:
     inputs:
       solution: Samples/FNSCandyStyleTransfer/UWP/CS/snapcandy.sln
       vsVersion: 15.0
-      msbuildArgs: '-v:diag  /p:OutDir=$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\FNSCandyStyleTransfer\'
+      msbuildArgs: '-v:diag  /p:OutDir=$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\FNSCandyStyleTransfer\ /p:WindowsTargetPlatformVersion=$(WindowsTargetPlatformVersion)'
       platform: '$(BuildPlatform)'
       configuration: '$(BuildConfiguration)'
       clean: true
@@ -167,7 +168,7 @@ steps:
     inputs:
       solution: 'Samples/MNIST/UWP/cppcx/mnist_cppcx.sln'
       vsVersion: 15.0
-      msbuildArgs: '-v:diag /p:OutDir=$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\MNIST-cppcx\'
+      msbuildArgs: '-v:diag /p:OutDir=$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\MNIST-cppcx\ /p:WindowsTargetPlatformVersion=$(WindowsTargetPlatformVersion)'
       platform: '$(BuildPlatform)'
       configuration: '$(BuildConfiguration)'
       clean: true
@@ -180,7 +181,7 @@ steps:
     inputs:
       solution: Samples/CustomTensorization/CustomTensorization.sln
       vsVersion: 15.0
-      msbuildArgs: '-v:diag /p:OutDir=$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\CustomTensorization\'
+      msbuildArgs: '-v:diag /p:OutDir=$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\CustomTensorization\ /p:WindowsTargetPlatformVersion=$(WindowsTargetPlatformVersion)'
       platform: '$(BuildPlatform)'
       configuration: '$(BuildConfiguration)'
       clean: true
@@ -193,7 +194,7 @@ steps:
     inputs:
       solution: Samples/BatchSupport/BatchSupport.sln
       vsVersion: 15.0
-      msbuildArgs: '-v:diag /p:OutDir=$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\BatchSupport\'
+      msbuildArgs: '-v:diag /p:OutDir=$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\BatchSupport\ /p:WindowsTargetPlatformVersion=$(WindowsTargetPlatformVersion)'
       platform: '$(BuildPlatform)'
       configuration: '$(BuildConfiguration)'
       clean: true
@@ -206,7 +207,7 @@ steps:
     inputs:
       solution: Samples/Emoji8/UWP/cs/Emoji8.sln
       vsVersion: 15.0
-      msbuildArgs: '-v:diag /p:OutDir=$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\Emoji8\'
+      msbuildArgs: '-v:diag /p:OutDir=$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\Emoji8\ /p:WindowsTargetPlatformVersion=$(WindowsTargetPlatformVersion)'
       platform: '$(BuildPlatform)'
       configuration: '$(BuildConfiguration)'
       clean: true
@@ -219,7 +220,7 @@ steps:
     inputs:
       solution: Samples/StreamFromResource/StreamFromResource.sln
       vsVersion: 15.0
-      msbuildArgs: '-v:diag /p:OutDir=$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\StreamFromResource\'
+      msbuildArgs: '-v:diag /p:OutDir=$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\StreamFromResource\ /p:WindowsTargetPlatformVersion=$(WindowsTargetPlatformVersion)'
       platform: '$(BuildPlatform)'
       configuration: '$(BuildConfiguration)'
       clean: true

@@ -238,7 +238,7 @@ namespace SnapCandy
                     _perfStopwatch.Stop();
 
                     // Setting preferred inference device given user's intent
-                    m_inferenceDeviceSelected = _useGPU ? LearningModelDeviceKind.DirectXHighPerformance : LearningModelDeviceKind.Cpu;
+                    m_inferenceDeviceSelected = _useGPU ? LearningModelDeviceKind.DirectXMinPower: LearningModelDeviceKind.Cpu;
                     m_session = new LearningModelSession(m_model, new LearningModelDevice(m_inferenceDeviceSelected));
 
                     // Debugging logic to see the input and output of ther model and retrieve dimensions of input/output variables
@@ -441,7 +441,8 @@ namespace SnapCandy
                     });
 
                     // Crop the input image to communicate appropriately to the user what is being evaluated
-                    _inputFrame = await ImageHelper.CenterCropImageAsync(inputVideoFrame, m_inWidth, m_inHeight);
+                    //_inputFrame = await ImageHelper.CenterCropImageAsync(inputVideoFrame, m_inWidth, m_inHeight);
+                    _inputFrame = inputVideoFrame;
 
                     _perfStopwatch.Stop();
                     Int64 cropTime = _perfStopwatch.ElapsedMilliseconds;
@@ -949,7 +950,7 @@ namespace SnapCandy
                 {
                     SourceGroup = _selectedMediaFrameSourceGroup,
                     PhotoCaptureSource = PhotoCaptureSource.Auto,
-                    MemoryPreference = MediaCaptureMemoryPreference.Cpu,
+                    //MemoryPreference = MediaCaptureMemoryPreference.Cpu,
                     StreamingCaptureMode = StreamingCaptureMode.Video
                 };
 

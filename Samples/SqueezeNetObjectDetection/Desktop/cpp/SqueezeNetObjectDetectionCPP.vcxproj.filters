@@ -6,13 +6,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
-    <ClInclude Include="..\..\..\..\SharedContent\models\SqueezeNet.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <Text Include="readme.txt" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="SharedContent">

@@ -19,6 +19,10 @@
 #include <winrt/Windows.Graphics.h>
 #include <winrt/Windows.Graphics.Imaging.h>
 
+#ifdef USE_WINML_NUGET
+#include "winrt/Microsoft.AI.MachineLearning.h"
+#endif
+
 #include <string>
 #include <codecvt>
 #include <fstream>

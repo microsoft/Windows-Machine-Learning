@@ -69,6 +69,20 @@ steps:
     displayName: 'NuGet restore'
     condition: succeededOrFailed()
 
+  # Bug 25927815: SqueezeNetObjectDetection NetCore Sample is failing to be built
+  # Also the test should be added when the code below is uncommented
+  - task: VSBuild@1
+    displayName: 'Build SqueezenetObjectDetection Sample'
+    inputs:
+      solution: Samples/SqueezeNetObjectDetection/squeezenetobjectdetection.sln
+      vsVersion: 15.0
+      msbuildArgs: '-v:diag /p:OutDir=$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\SqueezeNetObjectDetection\ /p:WindowsTargetPlatformVersion=$(WindowsTargetPlatformVersion)'
+      platform: '$(BuildPlatform)'
+      configuration: '$(BuildConfiguration)'
+      clean: true
+      msbuildArchitecture: x64
+      createLogFile: true
+    condition: succeededOrFailed()
   - task: VSBuild@1
     displayName: 'Build UI test solution Testing/**/SamplesTest.sln'
     inputs:

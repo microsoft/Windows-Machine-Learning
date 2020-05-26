@@ -136,6 +136,19 @@ steps:
     condition: succeededOrFailed()
 
   - task: VSBuild@1
+    displayName: 'Build SqueezenetObjectDetection Sample'
+    inputs:
+      solution: Samples/SqueezeNetObjectDetection/squeezenetobjectdetection.sln
+      vsVersion: 15.0
+      msbuildArgs: '-v:diag /p:OutDir=$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\SqueezeNetObjectDetection\ /p:WindowsTargetPlatformVersion=$(WindowsTargetPlatformVersion)'	
+      platform: '$(BuildPlatform)'
+      configuration: '$(BuildConfiguration)'
+      clean: true
+      msbuildArchitecture: x64
+      createLogFile: true
+    condition: succeededOrFailed()
+
+  - task: VSBuild@1
     displayName: 'Build FNSCandyStyleTransfer-UWP-CS Sample'
     inputs:
       solution: Samples/FNSCandyStyleTransfer/UWP/CS/snapcandy.sln

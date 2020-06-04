@@ -7,8 +7,165 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+  <Page.Resources>
+    <DataTemplate x:Key="ModelSelectionStyle">
+      <TextBlock FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center"></TextBlock>
+    </DataTemplate>
+    <Style x:Key="TextBlockStyling" TargetType="TextBlock">
+      <Setter Property="Foreground" Value="Black"/>
+    </Style>
+  </Page.Resources>
 
-  <Grid>
+  <RelativePanel Margin="10,0,0,10" >
+    <TextBlock x:Name="TitleTextBlock" Text="Style Transfer Demo" FontSize="24" Width="223" Margin="24,0,0,24"/>
+    <Grid Name="InputControlGrid" RelativePanel.Below="TitleTextBlock" HorizontalAlignment="Center" RelativePanel.AlignHorizontalCenterWithPanel="True" Padding="10,0,10,0" >
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="Auto"/>
+        <ColumnDefinition Width="Auto" />
+        <ColumnDefinition Width="Auto"/>
+      </Grid.ColumnDefinitions>
+      <Grid.RowDefinitions>
+        <RowDefinition Height="Auto" />
+        <RowDefinition Height="Auto" />
+      </Grid.RowDefinitions>
 
-  </Grid>
+      <TextBlock Text="Input Device" FontSize="16"  Grid.Row="0" HorizontalAlignment="Center" VerticalAlignment="Bottom"/>
+      <TextBlock Text="Input Media" FontSize="16"  Grid.Row="0" Grid.Column="1" HorizontalAlignment="Center" />
+      <TextBlock Text="Input Model" FontSize="16"  Grid.Row="0" Grid.Column="2" HorizontalAlignment="Center" />
+
+      <ListBox Name="UIStyleList" HorizontalAlignment="Center" Grid.Row="1" Grid.Column="2" ItemsSource="{x:Bind modelFileNames}" Margin="5,0,5,0">
+        <ListBox.ItemsPanel>
+          <ItemsPanelTemplate>
+            <VirtualizingStackPanel Orientation="Horizontal"/>
+          </ItemsPanelTemplate>
+        </ListBox.ItemsPanel>
+      </ListBox>
+
+      <StackPanel Orientation="Horizontal" Grid.Row="1" Grid.Column="1" HorizontalAlignment="Center"  Width="154" VerticalAlignment="Top" Height="{Binding ActualHeight, ElementName=UIStyleList}" Margin="5,0,5,0">
+        <Button Name="UIButtonLiveStream"
+                    ToolTipService.ToolTip="Camera preview">
+          <Button.Content>
+            <SymbolIcon Symbol="Video"/>
+          </Button.Content>
+        </Button>
+        <Button Name="UIButtonAcquireImage"
+                    ToolTipService.ToolTip="Take a photo">
+          <Button.Content>
+            <SymbolIcon Symbol="Camera"/>
+          </Button.Content>
+        </Button>
+        <Button Name="UIButtonFilePick"
+                    ToolTipService.ToolTip="Select an image from a file">
+          <Button.Content>
+            <SymbolIcon Symbol="OpenFile"/>
+          </Button.Content>
+        </Button>
+        <Button Name="UIButtonInking"
+                    ToolTipService.ToolTip="Draw on a canvas">
+          <Button.Content>
+            <SymbolIcon Symbol="Edit"/>
+          </Button.Content>
+        </Button>
+      </StackPanel>
+      <ToggleSwitch Name="UIToggleInferenceDevice"
+                            OnContent="GPU"
+                            OffContent="CPU"
+                            IsOn="True" HorizontalContentAlignment="Center" Width="100" VerticalAlignment="Top" Grid.Row="1" HorizontalAlignment="Center" />
+    </Grid>
+    <Grid RelativePanel.Below="InputControlGrid" RelativePanel.AlignHorizontalCenterWithPanel="True" Margin="0,25,0,0" Name="MediaDisplayGrid">
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="200*"/>
+        <ColumnDefinition Width="200*"/>
+      </Grid.ColumnDefinitions>
+      <Grid.RowDefinitions>
+        <RowDefinition Height="300*"></RowDefinition>
+      </Grid.RowDefinitions>
+
+      <Viewbox Stretch="Uniform">
+        <StackPanel Name="UIInkControls"
+                            Visibility="Collapsed"
+                            Grid.Column="0">
+          <InkToolbar TargetInkCanvas="{x:Bind UIInkCanvasInput}" VerticalAlignment="Top" />
+
+          <!--inking canvas-->
+          <Viewbox Stretch="Uniform"
+                           MaxWidth="720"
+                           MaxHeight="720">
+            <Grid BorderBrush="Black"
+                          BorderThickness="1">
+              <Grid Name="UIInkGrid"
+                            Background="Black"
+                            MinWidth="200"
+                            MinHeight="200"
+                            MaxWidth="720"
+                            MaxHeight="720">
+                <InkCanvas Name="UIInkCanvasInput"/>
+              </Grid>
+            </Grid>
+          </Viewbox>
+        </StackPanel>
+      </Viewbox>
+
+      <Viewbox Stretch="Uniform" Grid.Column="0">
+        <Image Name="UIInputImage"
+                Grid.Column="0"
+                Stretch="Uniform"
+                MaxHeight="720"
+                MaxWidth="720" Source="/Assets/Input.jpg"/>
+      </Viewbox>
+      <Viewbox Stretch="Uniform" Grid.Column="0" VerticalAlignment="Stretch">
+        <MediaPlayerElement Name="UIMediaPlayerElement"
+                Stretch="Uniform"
+                AreTransportControlsEnabled="False"
+                Canvas.ZIndex="-1"
+                Grid.Column="0"
+                MaxHeight="720"
+                MaxWidth="720"/>
+      </Viewbox>
+
+      <Viewbox Stretch="Uniform" Grid.Column="1">
+        <Image Name="UIResultImage"
+            Grid.Column="1"
+            Stretch="Uniform"
+           Source="/Assets/Output.jpg"
+            MaxHeight="720"
+            MaxWidth="720"/>
+      </Viewbox>
+    </Grid>
+    <StackPanel Name="UICameraSelectionControls" Orientation="vertical" Visibility="Collapsed" VerticalAlignment="Bottom" HorizontalAlignment="Left" RelativePanel.Below="MediaDisplayGrid" RelativePanel.AlignLeftWithPanel="True">
+      <TextBlock Text="Camera: " Style="{StaticResource TextBlockStyling}"/>
+      <ComboBox Name="UICmbCamera" Foreground="White" >
+        <ComboBox.Background>
+          <SolidColorBrush Color="Black" Opacity="0.3"/>
+        </ComboBox.Background>
+      </ComboBox>
+      <TextBlock Text="Preview resolution: " Style="{StaticResource TextBlockStyling}"/>
+      <TextBlock Name="UITxtBlockPreviewProperties" Text="0x0" Style="{StaticResource TextBlockStyling}"/>
+    </StackPanel>
+
+    <Button Name="UIButtonSaveImage"
+                        ToolTipService.ToolTip="Save the image result to a file"
+                        IsEnabled="false"
+                        Background="#FF939393"
+                        HorizontalAlignment="Right" VerticalAlignment="Top" RelativePanel.Below="MediaDisplayGrid" RelativePanel.AlignRightWithPanel="True">
+      <Button.Content>
+        <SymbolIcon Symbol="Save"/>
+      </Button.Content>
+    </Button>
+    <Grid Name="FPSDisplayGrid" RelativePanel.Below="MediaDisplayGrid" HorizontalAlignment="Center" RelativePanel.AlignHorizontalCenterWithPanel="True" Padding="10,0,10,0" >
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="Auto"/>
+        <ColumnDefinition Width="Auto" />
+      </Grid.ColumnDefinitions>
+      <Grid.RowDefinitions>
+        <RowDefinition Height="Auto" />
+        <RowDefinition Height="Auto" />
+      </Grid.RowDefinitions>
+      <TextBlock Grid.Row="0" Grid.Column="0">Capture FPS</TextBlock>
+      <TextBlock Grid.Row="1" Grid.Column="0"  Text="{x:Bind dummyFPS}"></TextBlock>
+
+      <TextBlock Grid.Row="0" Grid.Column="1">Render FPS</TextBlock>
+      <TextBlock Grid.Row="1" Grid.Column="1"  Text="{x:Bind dummyFPS}"></TextBlock>
+    </Grid>
+  </RelativePanel>
 </Page>

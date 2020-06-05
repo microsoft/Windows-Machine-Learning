@@ -31,7 +31,7 @@ Copyright (C) Microsoft Corporation. All rights reserved.
                 <RowDefinition Height="30"/>
             </Grid.RowDefinitions>
 
-            <!--Status and result display-->
+            <!-- Input control panel -->
             <Grid Name="InputControlGrid" HorizontalAlignment="Center" Padding="10,0,10,0" >
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/>
@@ -44,11 +44,25 @@ Copyright (C) Microsoft Corporation. All rights reserved.
                     <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
 
-                <TextBlock Text="Input Device" FontSize="16"  Grid.Row="0" Grid.Column="2" HorizontalAlignment="Center" VerticalAlignment="Bottom"/>
-                <TextBlock Text="Input Media" FontSize="16"  Grid.Row="0" Grid.Column="0" HorizontalAlignment="Center"/>
-                <TextBlock Text="Input Style" FontSize="16"  Grid.Row="0" Grid.Column="1" HorizontalAlignment="Center"/>
+                <!-- Input control labels -->
+                <TextBlock x:Uid="TxtInputMedia" FontSize="16"  Grid.Row="0" Grid.Column="0" HorizontalAlignment="Center"/>
+                <TextBlock x:Uid="TxtInputStyle" FontSize="16"  Grid.Row="0" Grid.Column="1" HorizontalAlignment="Center"/>
+                <TextBlock x:Uid="TxtInputDevice" FontSize="16"  Grid.Row="0" Grid.Column="2" HorizontalAlignment="Center"/>
 
-                <TextBlock Text="3. Choose a device to use for style transfer."
+                <!-- Input control descriptions -->
+                <TextBlock x:Uid="TxtInputMediaDescription"
+                  FontSize="10"
+                  Grid.Row="2" Grid.Column="0"
+                  HorizontalAlignment="Center"
+                  TextWrapping="WrapWholeWords"
+                   Width="{Binding ActualWidth, ElementName=InputMediaList}" VerticalAlignment="Top" Margin="5,0,5,0"/>
+                <TextBlock x:Uid="TxtInputStyleDescription"
+                  FontSize="10"
+                  Grid.Row="2" Grid.Column="1"
+                  HorizontalAlignment="Center"
+                  TextWrapping="WrapWholeWords"
+                  Width="{Binding ActualWidth, ElementName=UIStyleList}" VerticalAlignment="Top" Margin="5,0,5,0"/>
+                <TextBlock x:Uid="TxtInputDeviceDescription"
                   FontSize="10"
                   Grid.Row="2" Grid.Column="2"
                   HorizontalAlignment="Center"
@@ -56,19 +70,8 @@ Copyright (C) Microsoft Corporation. All rights reserved.
                   TextWrapping="WrapWholeWords"
                   Width="{Binding ActualWidth, ElementName=UIToggleInferenceDevice}"
                   Margin="5,0,5,0" SelectionChanged="TextBlock_SelectionChanged"/>
-                <TextBlock Text="1. Start by choosing a media source to transform."
-                  FontSize="10"
-                  Grid.Row="2" Grid.Column="0"
-                  HorizontalAlignment="Center"
-                  TextWrapping="WrapWholeWords"
-                   Width="{Binding ActualWidth, ElementName=InputMediaList}" VerticalAlignment="Top" Margin="5,0,5,0"/>
-                <TextBlock Text="2. Select a style to apply by loading a specific model."
-                  FontSize="10"
-                  Grid.Row="2" Grid.Column="1"
-                  HorizontalAlignment="Center"
-                  TextWrapping="WrapWholeWords"
-                  Width="{Binding ActualWidth, ElementName=UIStyleList}" VerticalAlignment="Top" Margin="5,0,5,0"/>
 
+                <!-- Input models -->
                 <ListBox Name="UIStyleList" HorizontalAlignment="Center" Grid.Row="1" Grid.Column="1" ItemsSource="{x:Bind modelFileNames}" Margin="5,0,5,0">
                     <ListBox.ItemsPanel>
                         <ItemsPanelTemplate>
@@ -77,14 +80,14 @@ Copyright (C) Microsoft Corporation. All rights reserved.
                     </ListBox.ItemsPanel>
                 </ListBox>
 
+                <!-- Input media -->
                 <StackPanel
-          Name="InputMediaList"
-          Orientation="Horizontal"
-          Grid.Row="1" Grid.Column="0"
-          HorizontalAlignment="Center"
-          VerticalAlignment="Top"
-          Height="{Binding ActualHeight, ElementName=UIStyleList}"
-         >
+                  Name="InputMediaList"
+                  Orientation="Horizontal"
+                  Grid.Row="1" Grid.Column="0"
+                  HorizontalAlignment="Center"
+                  VerticalAlignment="Top"
+                  Height="{Binding ActualHeight, ElementName=UIStyleList}">
                     <Button Name="UIButtonLiveStream"
                       ToolTipService.ToolTip="Camera preview">
                         <Button.Content>
@@ -110,27 +113,27 @@ Copyright (C) Microsoft Corporation. All rights reserved.
                         </Button.Content>
                     </Button>
                 </StackPanel>
+
+                <!-- Inference device -->
                 <ToggleSwitch Name="UIToggleInferenceDevice"
                               OnContent="GPU"
                               OffContent="CPU"
                               IsOn="True" HorizontalContentAlignment="Center" Width="100" VerticalAlignment="Top" Grid.Row="1" Grid.Column="2" HorizontalAlignment="Center" />
             </Grid>
-            <!--<StackPanel Orientation="Horizontal">-->
 
-            <!--<Viewbox Stretch="Uniform" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Grid.Row="1">-->
+            <!-- Input/output media display grid -->
             <Grid Grid.Row="1">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="200*"/>
                     <ColumnDefinition Width="200*"/>
                 </Grid.ColumnDefinitions>
 
+                <!-- Inking canvas -->
                 <Viewbox Stretch="Uniform">
                     <StackPanel Name="UIInkControls"
                           Visibility="Collapsed"
                           Grid.Column="0">
                         <InkToolbar TargetInkCanvas="{x:Bind UIInkCanvasInput}" VerticalAlignment="Top" />
-
-                        <!--inking canvas-->
                         <Viewbox Stretch="Uniform"
                          MaxWidth="720"
                          MaxHeight="720">
@@ -149,7 +152,7 @@ Copyright (C) Microsoft Corporation. All rights reserved.
                     </StackPanel>
                 </Viewbox>
 
-                <!--Camera preview-->
+                <!-- Camera preview -->
                 <MediaPlayerElement Name="UIMediaPlayerElement"
                                 Stretch="Uniform"
                                 AreTransportControlsEnabled="False"
@@ -158,31 +161,32 @@ Copyright (C) Microsoft Corporation. All rights reserved.
                                 MaxHeight="720"
                                 Grid.Column="0"/>
 
+                <!-- Input image preview -->
                 <Image Name="UIInputImage"
                    Grid.Column="0"
                    Stretch="Uniform"
                    MaxWidth="720"
                    MaxHeight="720" Source="/Assets/Input.jpg"/>
+
                 <!--Output image panel-->
                 <Grid  Grid.Column="1" VerticalAlignment="Stretch">
-
                     <Image Name="UIResultImage"
-                  Stretch="Uniform"
-                  MaxWidth="720"
-                  MaxHeight="720" Source="/Assets/Output.jpg"/>
+                        Stretch="Uniform"
+                        MaxWidth="720"
+                        MaxHeight="720" Source="/Assets/Output.jpg"/>
 
                     <Button Name="UIButtonSaveImage"
-                 ToolTipService.ToolTip="Save the image result to a file"
-                 IsEnabled="false"
-                 Background="#FF939393"
-                 HorizontalAlignment="Right" VerticalAlignment="Bottom">
+                        ToolTipService.ToolTip="Save the image result to a file"
+                        IsEnabled="false"
+                        Background="#FF939393"
+                        HorizontalAlignment="Right" VerticalAlignment="Bottom">
                         <Button.Content>
                             <SymbolIcon Symbol="Save"/>
                         </Button.Content>
                     </Button>
                 </Grid>
+
             </Grid>
-            <!--</Viewbox>-->
 
             <StackPanel Name="UICameraSelectionControls" Orientation="vertical" Visibility="Collapsed" VerticalAlignment="Bottom" HorizontalAlignment="Left" Grid.Row="1">
                 <TextBlock Text="Camera: " Style="{StaticResource TextBlockStyling}"/>
@@ -203,15 +207,16 @@ Copyright (C) Microsoft Corporation. All rights reserved.
                        HorizontalAlignment="Left"
                        Grid.Row="2"
                        Margin="10,0,0,0" Foreground="#FF02487F"/>
+
             <Border x:Name="UIStatusBorder" Grid.Row="2" Background="#CC348508">
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
                     <TextBlock Margin="0,0,10,0" Visibility="Visible">
-            <Run FontWeight="Bold">Capture FPS</Run>
-            <Run Text="{x:Bind dummyFPS}"></Run>
+                        <Run FontWeight="Bold" x:Uid="TxtCapture"></Run>
+                        <Run Text="{x:Bind dummyFPS}"></Run>
                     </TextBlock>
                     <TextBlock Margin="10,0,0,0" Visibility="Visible">
-            <Run FontWeight="Bold">Render FPS</Run>
-            <Run Text="{x:Bind dummyFPS}" FontWeight="Normal"></Run>
+                        <Run FontWeight="Bold" x:Uid="TxtRender"></Run>
+                        <Run Text="{x:Bind dummyFPS}" FontWeight="Normal"></Run>
                     </TextBlock>
                 </StackPanel>
             </Border>

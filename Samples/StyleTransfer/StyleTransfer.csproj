@@ -208,6 +208,9 @@
     <PackageReference Include="Microsoft.UI.Xaml">
       <Version>2.4.2</Version>
     </PackageReference>
+    <PackageReference Include="MvvmLightLibs">
+      <Version>5.4.1.1</Version>
+    </PackageReference>
   </ItemGroup>
   <ItemGroup>
     <PRIResource Include="Strings\en-US\Resources.resw" />

@@ -30,14 +30,12 @@ namespace StyleTransfer
                 "la_muse",
                 "udnie"
             };
+        private AppViewModel _viewModel;
         public MainPage()
         {
             this.InitializeComponent();
-        }
-
-        private void TextBlock_SelectionChanged(object sender, RoutedEventArgs e)
-        {
-
+            _viewModel = new AppViewModel();
+            this.DataContext = _viewModel;
         }
     }
 }

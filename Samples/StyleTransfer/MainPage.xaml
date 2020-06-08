@@ -69,7 +69,7 @@ Copyright (C) Microsoft Corporation. All rights reserved.
                   VerticalAlignment="Top"
                   TextWrapping="WrapWholeWords"
                   Width="{Binding ActualWidth, ElementName=UIToggleInferenceDevice}"
-                  Margin="5,0,5,0" SelectionChanged="TextBlock_SelectionChanged"/>
+                  Margin="5,0,5,0"/>
 
                 <!-- Input models -->
                 <ListBox Name="UIStyleList" HorizontalAlignment="Center" Grid.Row="1" Grid.Column="1" ItemsSource="{x:Bind modelFileNames}" Margin="5,0,5,0">

@@ -373,6 +373,7 @@ namespace SnapCandy
                 {
                     // Load image to VideoFrame
                     inputFrame = await ImageHelper.LoadVideoFrameFromFilePickedAsync();
+                    _inputFrame = inputFrame;
                 }
                 if (inputFrame == null)
                 {

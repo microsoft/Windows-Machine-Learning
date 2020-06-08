@@ -12,6 +12,14 @@ namespace StyleTransfer
 {
     class AppViewModel : INotifyPropertyChanged
     {
+        public AppViewModel()
+        {
+            _appModel = new AppModel();
+            // TODO: Add a param to check if have an image to save. 
+            SaveCommand = new RelayCommand(this.SaveOutput);
+            MediaSourceCommand = new RelayCommand<string>(SetMediaSource);
+        }
+
         private AppModel _appModel;
         public AppModel CurrentApp
         {
@@ -31,22 +39,21 @@ namespace StyleTransfer
         public ICommand MediaSourceCommand { get; set; }
 
         public event PropertyChangedEventHandler PropertyChanged;
-        public AppViewModel()
-        {
-            _appModel = new AppModel();
-            // TODO: Add a param to check if have an image to save
-            SaveCommand = new RelayCommand(this.SaveOutput);
-            MediaSourceCommand = new RelayCommand<string>(SetMediaSource);
-        }
 
         public void SaveOutput()
         {
+            // TODO: Take from UIButtonSaveImage_Click
             return;
         }
         public void SetMediaSource(object obj)
         {
-            // TODO: Convert to a better value for the appModel object here 
+            // TODO: Convert to a better value for the appModel object here. 
             _appModel.InputMediaSource = obj.ToString();
+
+            // If video source, whole different code flow
+
+            // If camera/image upload, gather input image then put to eval/render
+            // If source == upload --> HelperMethods::LoadVideoFrameFromFilePickedAsync
             return;
         }
     }

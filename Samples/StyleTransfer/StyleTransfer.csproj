@@ -121,7 +121,6 @@
     </Compile>
     <Compile Include="AppModel.cs" />
     <Compile Include="AppViewModel.cs" />
-    <Compile Include="RelayCommand.cs" />
     <Compile Include="MainPage.xaml.cs">
       <DependentUpon>MainPage.xaml</DependentUpon>
     </Compile>

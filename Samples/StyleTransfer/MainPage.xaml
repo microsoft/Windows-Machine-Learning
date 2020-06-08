@@ -175,13 +175,14 @@ Copyright (C) Microsoft Corporation. All rights reserved.
         </Viewbox>
 
         <!-- Camera preview -->
-        <MediaPlayerElement Name="UIMediaPlayerElement"
-                        Stretch="Uniform"
-                        AreTransportControlsEnabled="False"
-                        Canvas.ZIndex="-1"
-                        MaxWidth="720"
-                        MaxHeight="720"
-                        Grid.Column="0"/>
+        <MediaPlayerElement
+          Name="UIMediaPlayerElement"
+          Stretch="Uniform"
+          AreTransportControlsEnabled="False"
+          Canvas.ZIndex="-1"
+          MaxWidth="720"
+          MaxHeight="720"
+          Grid.Column="0"/>
 
         <!-- Input image preview -->
         <Image Name="UIInputImage"

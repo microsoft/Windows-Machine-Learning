@@ -13,6 +13,8 @@ using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
 using Microsoft.AI.MachineLearning;
+using Windows.Media.Playback;
+using Windows.Media.Core;
 
 // The Blank Page item template is documented at https://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
 
@@ -36,6 +38,15 @@ namespace StyleTransfer
             this.InitializeComponent();
             _viewModel = new AppViewModel();
             this.DataContext = _viewModel;
+
+            var mediaSource = MediaSource.CreateFromUri(new Uri("ms-appx:///Assets/video_sample.wmv"));
+            var mediaPlayer = new MediaPlayer();
+            mediaPlayer.Source = mediaSource;
+
+            UIOutputMediaPlayerElement.SetMediaPlayer(mediaPlayer);
+            UIInputMediaPlayerElement.SetMediaPlayer(mediaPlayer);
+            mediaPlayer.AutoPlay = true;
+
         }
     }
 }

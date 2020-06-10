@@ -131,7 +131,7 @@
 
                     <Button
                         Name="UIButtonLiveStream"
-                        Click="UIButtonLiveStream_Click"
+                        Command="{Binding LiveStreamCommand}"
                         CommandParameter="LiveStream"
                         ToolTipService.ToolTip="Camera preview">
                         <Button.Content>
@@ -222,8 +222,11 @@
                     MaxWidth="720"
                     MaxHeight="720"
                     AreTransportControlsEnabled="False"
+                    AutoPlay="True"
                     Canvas.ZIndex="-1"
-                    Stretch="Uniform" />
+                    Source="{Binding CurrentApp.InputMediaSource}"
+                    Stretch="Uniform"
+                    Visibility="Visible" />
 
                 <!--  Input image preview  -->
                 <Image
@@ -246,8 +249,11 @@
                         MaxWidth="720"
                         MaxHeight="720"
                         AreTransportControlsEnabled="False"
+                        AutoPlay="True"
                         Canvas.ZIndex="-1"
-                        Stretch="Uniform" />
+                        Source="{Binding CurrentApp.OutputMediaSource}"
+                        Stretch="Uniform"
+                        Visibility="Visible" />
 
                     <Button
                         Name="UIButtonSaveImage"
@@ -270,9 +276,13 @@
                 HorizontalAlignment="Left"
                 VerticalAlignment="Bottom"
                 Orientation="vertical"
-                Visibility="Collapsed">
+                Visibility="Visible">
                 <TextBlock Style="{StaticResource TextBlockStyling}" Text="Camera: " />
-                <ComboBox Name="UICmbCamera" Foreground="White">
+                <ComboBox
+                    Name="UICmbCamera"
+                    Foreground="White"
+                    ItemsSource="{Binding CurrentApp.CameraNamesList}"
+                    SelectedIndex="{Binding CurrentApp.SelectedCameraIndex, Mode=TwoWay}">
                     <ComboBox.Background>
                         <SolidColorBrush Opacity="0.3" Color="Black" />
                     </ComboBox.Background>

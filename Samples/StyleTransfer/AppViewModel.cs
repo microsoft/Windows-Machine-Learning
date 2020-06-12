@@ -11,6 +11,9 @@ using Windows.Media.Capture.Frames;
 using System.Diagnostics;
 using Windows.Media.Capture;
 using Windows.Media.Playback;
+using Windows.Media.Effects;
+using Windows.Media;
+using Windows.Foundation.Collections;
 
 namespace StyleTransfer
 {
@@ -99,6 +102,12 @@ namespace StyleTransfer
 
                 // Initialize MediaCapture
                 await _mediaCapture.InitializeAsync(settings);
+
+                // Initialize VideoEffect
+                var videoEffectDefinition = new VideoEffectDefinition("VideoEffectComponent.StyleTransferVideoEffect");
+                IMediaExtension videoEffect = await _mediaCapture.AddVideoEffectAsync(videoEffectDefinition, MediaStreamType.VideoPreview);
+                videoEffect.SetProperties(new PropertySet() { { "FadeValue", .15 } });
+
                 StartPreview();
             }
             catch (Exception ex)
@@ -124,6 +133,7 @@ namespace StyleTransfer
 
         private void StartPreview()
         {
+
             Debug.WriteLine("StartPreview");
             _selectedMediaFrameSource = _mediaCapture.FrameSources.FirstOrDefault(source => source.Value.Info.MediaStreamType == MediaStreamType.VideoPreview
                                                                                   && source.Value.Info.SourceKind == MediaFrameSourceKind.Color).Value;

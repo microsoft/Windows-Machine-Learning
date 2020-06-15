@@ -14,7 +14,7 @@ using Windows.Media.Playback;
 using Windows.Media.Effects;
 using Windows.Media;
 using Windows.Foundation.Collections;
-using Microsoft.AI.MachineLearning;
+using Windows.AI.MachineLearning;
 using Windows.Storage;
 
 namespace StyleTransfer
@@ -35,14 +35,15 @@ namespace StyleTransfer
         private MediaFrameSourceGroup _selectedMediaFrameSourceGroup;
         private MediaFrameSource _selectedMediaFrameSource;
 
+        private IDictionary<string, object> modelSetup;
         private LearningModel m_model = null;
         private LearningModelDeviceKind m_inferenceDeviceSelected = LearningModelDeviceKind.Default;
         private LearningModelDevice m_device;
         private LearningModelSession m_session;
         private LearningModelBinding m_binding;
         string m_outName, m_inName;
-        ImageFeatureDescriptor _inputImageDescription;
-        ImageFeatureDescriptor _outputImageDescription;
+        string _inputImageDescription;
+        string _outputImageDescription;
 
         private AppModel _appModel;
         public AppModel CurrentApp
@@ -113,13 +114,17 @@ namespace StyleTransfer
 
                 // Initialize MediaCapture
                 await _mediaCapture.InitializeAsync(settings);
-
+                await LoadModelAsync();
 
                 // Initialize VideoEffect
                 var videoEffectDefinition = new VideoEffectDefinition("StyleTransferEffectComponent.StyleTransferVideoEffect");
                 IMediaExtension videoEffect = await _mediaCapture.AddVideoEffectAsync(videoEffectDefinition, MediaStreamType.VideoPreview);
                 // Try loading the model here and passing as a property instead
-                videoEffect.SetProperties(new PropertySet() { { "ModelName", "candy" } }); // need to await this first
+                videoEffect.SetProperties(new PropertySet() {
+                    { "Model", m_model},
+                    { "Session", m_session },
+                    { "InputImageDescription", _inputImageDescription },
+                    { "OutputImageDescription", _outputImageDescription } });
 
                 StartPreview();
             }
@@ -129,25 +134,68 @@ namespace StyleTransfer
             }
         }
 
-        private async Task LoadModelAsync(String modelFileName)
+        private async Task LoadModelAsync()
         {
-            StorageFile modelFile = await StorageFile.GetFileFromApplicationUriAsync(new Uri($"ms-appx:///Assets/{modelFileName}.onnx"));
+            modelSetup = new Dictionary<string, object>();
+
+            StorageFile modelFile = await StorageFile.GetFileFromApplicationUriAsync(new Uri("ms-appx:///Assets/candy.onnx"));
             m_model = await LearningModel.LoadFromStorageFileAsync(modelFile);
+            modelSetup.Add("Model", m_model);
 
             // TODO: Pass in useGPU as well. OR decide which side of binary these go on. 
             //m_inferenceDeviceSelected = _useGPU ? LearningModelDeviceKind.DirectXHighPerformance : LearningModelDeviceKind.Cpu;
             m_inferenceDeviceSelected = LearningModelDeviceKind.Cpu;
             m_session = new LearningModelSession(m_model, new LearningModelDevice(m_inferenceDeviceSelected));
+            modelSetup.Add("Session", m_session);
 
-            _inputImageDescription =
-                        m_model.InputFeatures.FirstOrDefault(feature => feature.Kind == LearningModelFeatureKind.Image)
-                        as ImageFeatureDescriptor;
+            debugIO();
 
-            _outputImageDescription =
-                        m_model.OutputFeatures.FirstOrDefault(feature => feature.Kind == LearningModelFeatureKind.Image)
-                        as ImageFeatureDescriptor;
+            _inputImageDescription = m_model.InputFeatures.ToList().First().Name;
+            //m_model.InputFeatures.FirstOrDefault(feature => feature.Kind == LearningModelFeatureKind.Tensor)
+            //as ImageFeatureDescriptor;
+            modelSetup.Add("InputImageDescription", _inputImageDescription);
+
+            _outputImageDescription = m_model.OutputFeatures.ToList().First().Name;
+            //m_model.OutputFeatures.FirstOrDefault(feature => feature.Kind == LearningModelFeatureKind.Tensor)
+            //as ImageFeatureDescriptor;
+            modelSetup.Add("OutputImageDescription", _outputImageDescription);
         }
 
+        public void debugIO()
+        {
+            uint m_inWidth, m_inHeight, m_outWidth, m_outHeight;
+            string m_inName, m_outName;
+            foreach (var inputF in m_model.InputFeatures)
+            {
+                Debug.WriteLine($"input | kind:{inputF.Kind}, name:{inputF.Name}, type:{inputF.GetType()}");
+                int i = 0;
+                ImageFeatureDescriptor imgDesc = inputF as ImageFeatureDescriptor;
+                TensorFeatureDescriptor tfDesc = inputF as TensorFeatureDescriptor;
+                m_inWidth = (uint)(imgDesc == null ? tfDesc.Shape[3] : imgDesc.Width);
+                m_inHeight = (uint)(imgDesc == null ? tfDesc.Shape[2] : imgDesc.Height);
+                m_inName = inputF.Name;
+
+                Debug.WriteLine($"N: {(imgDesc == null ? tfDesc.Shape[0] : 1)}, " +
+                    $"Channel: {(imgDesc == null ? tfDesc.Shape[1].ToString() : imgDesc.BitmapPixelFormat.ToString())}, " +
+                    $"Height:{(imgDesc == null ? tfDesc.Shape[2] : imgDesc.Height)}, " +
+                    $"Width: {(imgDesc == null ? tfDesc.Shape[3] : imgDesc.Width)}");
+            }
+            foreach (var outputF in m_model.OutputFeatures)
+            {
+                Debug.WriteLine($"output | kind:{outputF.Kind}, name:{outputF.Name}, type:{outputF.GetType()}");
+                int i = 0;
+                ImageFeatureDescriptor imgDesc = outputF as ImageFeatureDescriptor;
+                TensorFeatureDescriptor tfDesc = outputF as TensorFeatureDescriptor;
+                m_outWidth = (uint)(imgDesc == null ? tfDesc.Shape[3] : imgDesc.Width);
+                m_outHeight = (uint)(imgDesc == null ? tfDesc.Shape[2] : imgDesc.Height);
+                m_outName = outputF.Name;
+
+                Debug.WriteLine($"N: {(imgDesc == null ? tfDesc.Shape[0] : 1)}, " +
+                   $"Channel: {(imgDesc == null ? tfDesc.Shape[1].ToString() : imgDesc.BitmapPixelFormat.ToString())}, " +
+                   $"Height:{(imgDesc == null ? tfDesc.Shape[2] : imgDesc.Height)}, " +
+                   $"Width: {(imgDesc == null ? tfDesc.Shape[3] : imgDesc.Width)}");
+            }
+        }
         public void SetMediaSource(object obj)
         {
             // TODO: Convert to a better value for the appModel object here. 

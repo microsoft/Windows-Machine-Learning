@@ -19,6 +19,7 @@ namespace StyleTransfer
         {
             this._useGPU = true;
             this._selectedCameraIndex = 0;
+            this._modelSource = "candy";
         }
 
         private string _modelSource;

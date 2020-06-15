@@ -224,9 +224,15 @@
     <PRIResource Include="Strings\en-US\Resources.resw" />
   </ItemGroup>
   <ItemGroup>
-    <Reference Include="VideoEffectComponent">
-      <HintPath>..\..\..\source\repos\VideoEffectComponent\bin\x64\Debug\VideoEffectComponent.winmd</HintPath>
+    <WCFMetadata Include="Connected Services\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="StyleTransferEffectComponent">
+      <HintPath>StyleTransferEffectComponent\bin\x64\Debug\StyleTransferEffectComponent.winmd</HintPath>
     </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Assets\candy.onnx" />
   </ItemGroup>
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '14.0' ">
     <VisualStudioVersion>14.0</VisualStudioVersion>

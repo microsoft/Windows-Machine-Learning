@@ -8,6 +8,7 @@ using System.Runtime.InteropServices.WindowsRuntime;
 using System.Text;
 using System.Threading.Tasks;
 using Windows.Media;
+using Windows.Media.Capture;
 using Windows.Media.Core;
 using Windows.Media.Playback;
 
@@ -84,6 +85,13 @@ namespace StyleTransfer
         {
             get { return _selectedCameraIndex; }
             set { _selectedCameraIndex = value; OnPropertyChanged(); }
+        }
+
+        private MediaCapture _inputMediaCapture;
+        public MediaCapture InputMediaCapture
+        {
+            get { return _inputMediaCapture; }
+            set { _inputMediaCapture = value; OnPropertyChanged(); }
         }
 
         public event PropertyChangedEventHandler PropertyChanged;

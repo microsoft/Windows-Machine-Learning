@@ -131,6 +131,7 @@
 
           <Button
               Name="UIButtonLiveStream"
+              Click="UIButtonLiveStream_Click"
               Command="{Binding LiveStreamCommand}"
               CommandParameter="LiveStream"
               ToolTipService.ToolTip="Camera preview">
@@ -215,7 +216,7 @@
           </StackPanel>
         </Viewbox>
 
-        <!--  Camera preview  -->
+        <!--  Camera preview
         <MediaPlayerElement
             Name="UIInputMediaPlayerElement"
             Grid.Column="0"
@@ -226,7 +227,12 @@
             Canvas.ZIndex="-1"
             Source="{Binding CurrentApp.InputMediaSource}"
             Stretch="Uniform"
-            Visibility="Visible" />
+            Visibility="Visible" />-->
+
+        <CaptureElement
+            Name="PreviewControl"
+            Source="{Binding CurrentApp.InputMediaCapture}"
+            Stretch="Uniform" />
 
         <!--  Input image preview  -->
         <Image

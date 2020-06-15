@@ -38,10 +38,7 @@ namespace StyleTransfer
         private IDictionary<string, object> modelSetup;
         private LearningModel m_model = null;
         private LearningModelDeviceKind m_inferenceDeviceSelected = LearningModelDeviceKind.Default;
-        private LearningModelDevice m_device;
         private LearningModelSession m_session;
-        private LearningModelBinding m_binding;
-        string m_outName, m_inName;
         string _inputImageDescription;
         string _outputImageDescription;
 
@@ -233,7 +230,6 @@ namespace StyleTransfer
             _mediaPlayer.AutoPlay = true;
             _appModel.OutputMediaSource = MediaSource.CreateFromMediaFrameSource(_selectedMediaFrameSource);
             _appModel.InputMediaSource = MediaSource.CreateFromMediaFrameSource(_selectedMediaFrameSource);
-
 
             //UIInputMediaPlayerElement.SetMediaPlayer(_mediaPlayer);
             //UIOutputMediaPlayerElement.SetMediaPlayer(_mediaPlayer);

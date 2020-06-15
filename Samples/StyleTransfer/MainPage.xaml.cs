@@ -54,6 +54,9 @@ namespace StyleTransfer
         DisplayRequest displayRequest = new DisplayRequest();
         private async void UIButtonLiveStream_Click(object sender, RoutedEventArgs e)
         {
+            var btn = sender as Button;
+            btn.Command.Execute(btn.CommandParameter);
+
             // Need to have separate thread ? for style transfer section
             try
             {

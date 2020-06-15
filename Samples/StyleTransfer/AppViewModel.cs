@@ -28,6 +28,7 @@ namespace StyleTransfer
             SaveCommand = new RelayCommand(this.SaveOutput);
             MediaSourceCommand = new RelayCommand<string>(SetMediaSource);
             LiveStreamCommand = new RelayCommand(async () => await StartWebcamStream());
+            ChangeMediaInputCommand = new RelayCommand(async () => await ChangeMediaInput());
         }
 
         Windows.Media.Capture.MediaCapture _mediaCapture;
@@ -60,6 +61,7 @@ namespace StyleTransfer
 
         public ICommand MediaSourceCommand { get; set; }
         public ICommand LiveStreamCommand { get; set; }
+        public ICommand ChangeMediaInputCommand { get; set; }
 
         public event PropertyChangedEventHandler PropertyChanged;
 
@@ -93,42 +95,7 @@ namespace StyleTransfer
             }
 
             _appModel.CameraNamesList = _mediaFrameSourceGroupList.Select(group => group.DisplayName);
-
-            // UICmbCamera_SelectionChanged
-            try
-            {
-                _selectedMediaFrameSourceGroup = _mediaFrameSourceGroupList[_appModel.SelectedCameraIndex];
-
-                // Create MediaCapture and its settings
-                _mediaCapture = new MediaCapture();
-                var settings = new MediaCaptureInitializationSettings
-                {
-                    SourceGroup = _selectedMediaFrameSourceGroup,
-                    PhotoCaptureSource = PhotoCaptureSource.Auto,
-                    MemoryPreference = MediaCaptureMemoryPreference.Cpu,
-                    StreamingCaptureMode = StreamingCaptureMode.Video
-                };
-
-                // Initialize MediaCapture
-                await _mediaCapture.InitializeAsync(settings);
-                await LoadModelAsync();
-
-                // Initialize VideoEffect
-                var videoEffectDefinition = new VideoEffectDefinition("StyleTransferEffectComponent.StyleTransferVideoEffect");
-                IMediaExtension videoEffect = await _mediaCapture.AddVideoEffectAsync(videoEffectDefinition, MediaStreamType.VideoPreview);
-                // Try loading the model here and passing as a property instead
-                videoEffect.SetProperties(new PropertySet() {
-                    { "Model", m_model},
-                    { "Session", m_session },
-                    { "InputImageDescription", _inputImageDescription },
-                    { "OutputImageDescription", _outputImageDescription } });
-
-                StartPreview();
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine(ex.ToString());
-            }
+            _appModel.SelectedCameraIndex = 0;
         }
 
         private async Task LoadModelAsync()
@@ -244,6 +211,45 @@ namespace StyleTransfer
             UIInputMediaPlayerElement.Visibility = Visibility.Visible;
             UIOutputMediaPlayerElement.Visibility = Visibility.Visible;*/
 
+        }
+
+        private async Task ChangeMediaInput()
+        {
+            // UICmbCamera_SelectionChanged
+            try
+            {
+                _selectedMediaFrameSourceGroup = _mediaFrameSourceGroupList[_appModel.SelectedCameraIndex];
+
+                // Create MediaCapture and its settings
+                _mediaCapture = new MediaCapture();
+                var settings = new MediaCaptureInitializationSettings
+                {
+                    SourceGroup = _selectedMediaFrameSourceGroup,
+                    PhotoCaptureSource = PhotoCaptureSource.Auto,
+                    MemoryPreference = MediaCaptureMemoryPreference.Cpu,
+                    StreamingCaptureMode = StreamingCaptureMode.Video
+                };
+
+                // Initialize MediaCapture
+                await _mediaCapture.InitializeAsync(settings);
+                await LoadModelAsync();
+
+                // Initialize VideoEffect
+                var videoEffectDefinition = new VideoEffectDefinition("StyleTransferEffectComponent.StyleTransferVideoEffect");
+                IMediaExtension videoEffect = await _mediaCapture.AddVideoEffectAsync(videoEffectDefinition, MediaStreamType.VideoPreview);
+                // Try loading the model here and passing as a property instead
+                videoEffect.SetProperties(new PropertySet() {
+                    { "Model", m_model},
+                    { "Session", m_session },
+                    { "InputImageDescription", _inputImageDescription },
+                    { "OutputImageDescription", _outputImageDescription } });
+
+                StartPreview();
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex.ToString());
+            }
         }
     }
 }

@@ -14,6 +14,8 @@ using Windows.Media.Playback;
 using Windows.Media.Effects;
 using Windows.Media;
 using Windows.Foundation.Collections;
+using Microsoft.AI.MachineLearning;
+using Windows.Storage;
 
 namespace StyleTransfer
 {
@@ -32,6 +34,15 @@ namespace StyleTransfer
         private List<MediaFrameSourceGroup> _mediaFrameSourceGroupList;
         private MediaFrameSourceGroup _selectedMediaFrameSourceGroup;
         private MediaFrameSource _selectedMediaFrameSource;
+
+        private LearningModel m_model = null;
+        private LearningModelDeviceKind m_inferenceDeviceSelected = LearningModelDeviceKind.Default;
+        private LearningModelDevice m_device;
+        private LearningModelSession m_session;
+        private LearningModelBinding m_binding;
+        string m_outName, m_inName;
+        ImageFeatureDescriptor _inputImageDescription;
+        ImageFeatureDescriptor _outputImageDescription;
 
         private AppModel _appModel;
         public AppModel CurrentApp
@@ -103,10 +114,12 @@ namespace StyleTransfer
                 // Initialize MediaCapture
                 await _mediaCapture.InitializeAsync(settings);
 
+
                 // Initialize VideoEffect
-                var videoEffectDefinition = new VideoEffectDefinition("VideoEffectComponent.StyleTransferVideoEffect");
+                var videoEffectDefinition = new VideoEffectDefinition("StyleTransferEffectComponent.StyleTransferVideoEffect");
                 IMediaExtension videoEffect = await _mediaCapture.AddVideoEffectAsync(videoEffectDefinition, MediaStreamType.VideoPreview);
-                videoEffect.SetProperties(new PropertySet() { { "FadeValue", .15 } });
+                // Try loading the model here and passing as a property instead
+                videoEffect.SetProperties(new PropertySet() { { "ModelName", "candy" } }); // need to await this first
 
                 StartPreview();
             }
@@ -116,6 +129,24 @@ namespace StyleTransfer
             }
         }
 
+        private async Task LoadModelAsync(String modelFileName)
+        {
+            StorageFile modelFile = await StorageFile.GetFileFromApplicationUriAsync(new Uri($"ms-appx:///Assets/{modelFileName}.onnx"));
+            m_model = await LearningModel.LoadFromStorageFileAsync(modelFile);
+
+            // TODO: Pass in useGPU as well. OR decide which side of binary these go on. 
+            //m_inferenceDeviceSelected = _useGPU ? LearningModelDeviceKind.DirectXHighPerformance : LearningModelDeviceKind.Cpu;
+            m_inferenceDeviceSelected = LearningModelDeviceKind.Cpu;
+            m_session = new LearningModelSession(m_model, new LearningModelDevice(m_inferenceDeviceSelected));
+
+            _inputImageDescription =
+                        m_model.InputFeatures.FirstOrDefault(feature => feature.Kind == LearningModelFeatureKind.Image)
+                        as ImageFeatureDescriptor;
+
+            _outputImageDescription =
+                        m_model.OutputFeatures.FirstOrDefault(feature => feature.Kind == LearningModelFeatureKind.Image)
+                        as ImageFeatureDescriptor;
+        }
 
         public void SetMediaSource(object obj)
         {

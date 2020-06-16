@@ -119,6 +119,11 @@
               <VirtualizingStackPanel Orientation="Horizontal" />
             </ItemsPanelTemplate>
           </ListBox.ItemsPanel>
+          <i:Interaction.Behaviors>
+            <core:EventTriggerBehavior EventName="SelectionChanged">
+              <core:InvokeCommandAction Command="{Binding ChangeMediaInputCommand}" />
+            </core:EventTriggerBehavior>
+          </i:Interaction.Behaviors>
         </ListBox>
 
         <!--  Input media  -->
@@ -290,7 +295,7 @@
             Name="UICmbCamera"
             Foreground="White"
             ItemsSource="{Binding CurrentApp.CameraNamesList}"
-            SelectedIndex="{Binding SelectedCameraIndex, Mode=TwoWay}">
+            SelectedIndex="{Binding CurrentApp.SelectedCameraIndex, Mode=TwoWay}">
           <i:Interaction.Behaviors>
             <core:EventTriggerBehavior EventName="SelectionChanged">
               <core:InvokeCommandAction Command="{Binding ChangeMediaInputCommand}" />

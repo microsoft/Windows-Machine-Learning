@@ -64,18 +64,6 @@ namespace StyleTransfer
         public ICommand LiveStreamCommand { get; set; }
         public ICommand ChangeMediaInputCommand { get; set; }
 
-        private int _selectedCameraIndex;
-        public int SelectedCameraIndex
-        {
-            get { return _selectedCameraIndex; }
-            set
-            {
-                _selectedCameraIndex = value;
-                //ChangeMediaInput();
-                OnPropertyChanged();
-            }
-        }
-
         public event PropertyChangedEventHandler PropertyChanged;
         private void OnPropertyChanged([CallerMemberName] string propertyName = null)
         {
@@ -112,13 +100,13 @@ namespace StyleTransfer
             }
 
             _appModel.CameraNamesList = _mediaFrameSourceGroupList.Select(group => group.DisplayName);
-            SelectedCameraIndex = 0;
+            _appModel.SelectedCameraIndex = 0;
         }
 
         private async Task LoadModelAsync()
         {
 
-            StorageFile modelFile = await StorageFile.GetFileFromApplicationUriAsync(new Uri("ms-appx:///Assets/candy.onnx"));
+            StorageFile modelFile = await StorageFile.GetFileFromApplicationUriAsync(new Uri($"ms-appx:///Assets/{_appModel.ModelSource}.onnx"));
             m_model = await LearningModel.LoadFromStorageFileAsync(modelFile);
 
             // TODO: Pass in useGPU as well. OR decide which side of binary these go on. 
@@ -230,10 +218,10 @@ namespace StyleTransfer
             // UICmbCamera_SelectionChanged
 
             //await CleanupCameraAsync();
-
+            if (_mediaFrameSourceGroupList == null) { return; }
             try
             {
-                _selectedMediaFrameSourceGroup = _mediaFrameSourceGroupList[SelectedCameraIndex];
+                _selectedMediaFrameSourceGroup = _mediaFrameSourceGroupList[_appModel.SelectedCameraIndex];
 
                 // Create MediaCapture and its settings
                 _mediaCapture = new MediaCapture();

@@ -237,6 +237,11 @@
   <ItemGroup>
     <Content Include="Assets\candy.onnx" />
   </ItemGroup>
+  <ItemGroup>
+    <Content Include="Assets\la_muse.onnx" />
+    <Content Include="Assets\mosaic.onnx" />
+    <Content Include="Assets\udnie.onnx" />
+  </ItemGroup>
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '14.0' ">
     <VisualStudioVersion>14.0</VisualStudioVersion>
   </PropertyGroup>

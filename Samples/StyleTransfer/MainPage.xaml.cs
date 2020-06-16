@@ -22,6 +22,7 @@ using Windows.Media.Capture.Frames;
 using System.Diagnostics;
 using Windows.System.Display;
 using Windows.Graphics.Display;
+using System.Threading.Tasks;
 
 // The Blank Page item template is documented at https://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
 
@@ -54,8 +55,8 @@ namespace StyleTransfer
         DisplayRequest displayRequest = new DisplayRequest();
         private async void UIButtonLiveStream_Click(object sender, RoutedEventArgs e)
         {
-            var btn = sender as Button;
-            btn.Command.Execute(btn.CommandParameter);
+            //var btn = sender as Button;
+            //await Task.Run(() => btn.Command.Execute(btn.CommandParameter));
 
             // Need to have separate thread ? for style transfer section
             try
@@ -89,6 +90,9 @@ namespace StyleTransfer
             return;
         }
 
+        private void UICmbCamera_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
 
+        }
     }
 }

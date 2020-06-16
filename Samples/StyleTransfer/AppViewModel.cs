@@ -16,6 +16,7 @@ using Windows.Media;
 using Windows.Foundation.Collections;
 using Windows.AI.MachineLearning;
 using Windows.Storage;
+using System.Runtime.CompilerServices;
 
 namespace StyleTransfer
 {
@@ -36,12 +37,12 @@ namespace StyleTransfer
         private MediaFrameSourceGroup _selectedMediaFrameSourceGroup;
         private MediaFrameSource _selectedMediaFrameSource;
 
-        private IDictionary<string, object> modelSetup;
         private LearningModel m_model = null;
         private LearningModelDeviceKind m_inferenceDeviceSelected = LearningModelDeviceKind.Default;
         private LearningModelSession m_session;
         string _inputImageDescription;
         string _outputImageDescription;
+        IMediaExtension videoEffect;
 
         private AppModel _appModel;
         public AppModel CurrentApp
@@ -63,7 +64,23 @@ namespace StyleTransfer
         public ICommand LiveStreamCommand { get; set; }
         public ICommand ChangeMediaInputCommand { get; set; }
 
+        private int _selectedCameraIndex;
+        public int SelectedCameraIndex
+        {
+            get { return _selectedCameraIndex; }
+            set
+            {
+                _selectedCameraIndex = value;
+                ChangeMediaInput();
+                OnPropertyChanged();
+            }
+        }
+
         public event PropertyChangedEventHandler PropertyChanged;
+        private void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
 
         public void SaveOutput()
         {
@@ -95,34 +112,29 @@ namespace StyleTransfer
             }
 
             _appModel.CameraNamesList = _mediaFrameSourceGroupList.Select(group => group.DisplayName);
-            _appModel.SelectedCameraIndex = 0;
+            SelectedCameraIndex = 0;
         }
 
         private async Task LoadModelAsync()
         {
-            modelSetup = new Dictionary<string, object>();
 
             StorageFile modelFile = await StorageFile.GetFileFromApplicationUriAsync(new Uri("ms-appx:///Assets/candy.onnx"));
             m_model = await LearningModel.LoadFromStorageFileAsync(modelFile);
-            modelSetup.Add("Model", m_model);
 
             // TODO: Pass in useGPU as well. OR decide which side of binary these go on. 
             //m_inferenceDeviceSelected = _useGPU ? LearningModelDeviceKind.DirectXHighPerformance : LearningModelDeviceKind.Cpu;
             m_inferenceDeviceSelected = LearningModelDeviceKind.Cpu;
             m_session = new LearningModelSession(m_model, new LearningModelDevice(m_inferenceDeviceSelected));
-            modelSetup.Add("Session", m_session);
 
             debugIO();
 
             _inputImageDescription = m_model.InputFeatures.ToList().First().Name;
             //m_model.InputFeatures.FirstOrDefault(feature => feature.Kind == LearningModelFeatureKind.Tensor)
             //as ImageFeatureDescriptor;
-            modelSetup.Add("InputImageDescription", _inputImageDescription);
 
             _outputImageDescription = m_model.OutputFeatures.ToList().First().Name;
             //m_model.OutputFeatures.FirstOrDefault(feature => feature.Kind == LearningModelFeatureKind.Tensor)
             //as ImageFeatureDescriptor;
-            modelSetup.Add("OutputImageDescription", _outputImageDescription);
         }
 
         public void debugIO()
@@ -216,9 +228,12 @@ namespace StyleTransfer
         private async Task ChangeMediaInput()
         {
             // UICmbCamera_SelectionChanged
+
+            //await CleanupCameraAsync();
+
             try
             {
-                _selectedMediaFrameSourceGroup = _mediaFrameSourceGroupList[_appModel.SelectedCameraIndex];
+                _selectedMediaFrameSourceGroup = _mediaFrameSourceGroupList[SelectedCameraIndex];
 
                 // Create MediaCapture and its settings
                 _mediaCapture = new MediaCapture();
@@ -235,8 +250,8 @@ namespace StyleTransfer
                 await LoadModelAsync();
 
                 // Initialize VideoEffect
-                var videoEffectDefinition = new VideoEffectDefinition("StyleTransferEffectComponent.StyleTransferVideoEffect");
-                IMediaExtension videoEffect = await _mediaCapture.AddVideoEffectAsync(videoEffectDefinition, MediaStreamType.VideoPreview);
+                VideoEffectDefinition videoEffectDefinition = new VideoEffectDefinition("StyleTransferEffectComponent.StyleTransferVideoEffect");
+                videoEffect = await _mediaCapture.AddVideoEffectAsync(videoEffectDefinition, MediaStreamType.VideoPreview);
                 // Try loading the model here and passing as a property instead
                 videoEffect.SetProperties(new PropertySet() {
                     { "Model", m_model},
@@ -250,6 +265,37 @@ namespace StyleTransfer
             {
                 Debug.WriteLine(ex.ToString());
             }
+        }
+
+        private async Task CleanupCameraAsync()
+        {
+            Debug.WriteLine("CleanupCameraAsync");
+
+            try
+            {
+                if (_mediaCapture != null)
+                {
+                    if (videoEffect != null) await _mediaCapture.RemoveEffectAsync(videoEffect);
+                    await _mediaCapture.StopRecordAsync();
+                    _mediaCapture = null;
+                }
+                if (_appModel.OutputMediaSource != null)
+                {
+                    _appModel.OutputMediaSource = null;
+                }
+                if (videoEffect != null)
+                {
+                    videoEffect = null;
+                }
+
+                // Add inputmediasource once can show both at the same time
+            }
+
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"CleanupCameraAsync: {ex.Message}");
+            }
+
         }
     }
 }

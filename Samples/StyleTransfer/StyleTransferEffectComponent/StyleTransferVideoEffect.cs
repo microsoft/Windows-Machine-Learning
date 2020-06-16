@@ -27,7 +27,13 @@ namespace StyleTransferEffectComponent
         public void Close(MediaEffectClosedReason reason)
         {
             // Dispose of effect resources
+            if (_model != null) { _model = null; }
+            if (_session != null) { _session = null; }
+            if (_binding != null) { _binding = null; }
+            if (_inputImageDescription != null) { _inputImageDescription = null; }
+            if (_outputImageDescription != null) { _outputImageDescription = null; }
         }
+
 
         private int frameCount;
         public void DiscardQueuedFrames()

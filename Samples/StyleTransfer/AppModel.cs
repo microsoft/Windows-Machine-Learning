@@ -80,19 +80,6 @@ namespace StyleTransfer
             set { _cameraNamesList = value; OnPropertyChanged(); }
         }
 
-        private int _selectedCameraIndex;
-        public int SelectedCameraIndex
-        {
-            get { return _selectedCameraIndex; }
-            set { _selectedCameraIndex = value; OnPropertyChanged(); }
-        }
-
-        private MediaCapture _inputMediaCapture;
-        public MediaCapture InputMediaCapture
-        {
-            get { return _inputMediaCapture; }
-            set { _inputMediaCapture = value; OnPropertyChanged(); }
-        }
 
         public event PropertyChangedEventHandler PropertyChanged;
         private void OnPropertyChanged([CallerMemberName] string propertyName = null)

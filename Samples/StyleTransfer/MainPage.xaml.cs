@@ -90,9 +90,5 @@ namespace StyleTransfer
             return;
         }
 
-        private void UICmbCamera_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-
-        }
     }
 }

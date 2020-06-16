@@ -71,7 +71,7 @@ namespace StyleTransfer
             set
             {
                 _selectedCameraIndex = value;
-                ChangeMediaInput();
+                //ChangeMediaInput();
                 OnPropertyChanged();
             }
         }
@@ -225,7 +225,7 @@ namespace StyleTransfer
 
         }
 
-        private async Task ChangeMediaInput()
+        public async Task ChangeMediaInput()
         {
             // UICmbCamera_SelectionChanged
 

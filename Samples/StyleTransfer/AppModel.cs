@@ -11,6 +11,7 @@ using Windows.Media;
 using Windows.Media.Capture;
 using Windows.Media.Core;
 using Windows.Media.Playback;
+using Windows.UI.Composition;
 
 namespace StyleTransfer
 {
@@ -19,10 +20,10 @@ namespace StyleTransfer
         public AppModel()
         {
             this._useGPU = true;
-            //this._selectedCameraIndex = 0;
             this._modelSource = "candy";
         }
 
+        // Name of the style transfer model to apply to input media
         private string _modelSource;
         public string ModelSource
         {
@@ -34,6 +35,7 @@ namespace StyleTransfer
             }
         }
 
+        // Type of input media to use
         private string _inputMedia;
         public string InputMedia
         {
@@ -42,6 +44,7 @@ namespace StyleTransfer
             {
                 _inputMedia = value;
                 OnPropertyChanged();
+                OnPropertyChanged("StreamingControlsVisible");
             }
         }
 
@@ -56,16 +59,15 @@ namespace StyleTransfer
             }
         }
 
+        // MediaSource for transformed media
         private MediaSource _outputMediaSource;
         public MediaSource OutputMediaSource
         {
-            get
-            {
-                // TODO: Configure mediasource based on profile? or in VM
-                return _outputMediaSource;
-            }
+            get { return _outputMediaSource; }
             set { _outputMediaSource = value; OnPropertyChanged(); }
         }
+
+        // MediaSource for the input media
         private MediaSource _inputMediaSource;
         public MediaSource InputMediaSource
         {
@@ -73,6 +75,7 @@ namespace StyleTransfer
             set { _inputMediaSource = value; OnPropertyChanged(); }
         }
 
+        // List of cameras available to use as input
         private IEnumerable<string> _cameraNamesList;
         public IEnumerable<string> CameraNamesList
         {
@@ -80,6 +83,7 @@ namespace StyleTransfer
             set { _cameraNamesList = value; OnPropertyChanged(); }
         }
 
+        // Index in CameraNamesList of the selected input camera
         private int _selectedCameraIndex;
         public int SelectedCameraIndex
         {
@@ -88,6 +92,14 @@ namespace StyleTransfer
             {
                 _selectedCameraIndex = value;
                 OnPropertyChanged();
+            }
+        }
+
+        public bool StreamingControlsVisible
+        {
+            get
+            {
+                return _inputMedia == "LiveStream";
             }
         }
 

@@ -89,6 +89,6 @@ namespace StyleTransfer
 
             return;
         }
-
     }
+
 }

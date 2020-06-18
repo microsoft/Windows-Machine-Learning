@@ -129,6 +129,7 @@
     </Compile>
     <Compile Include="AppModel.cs" />
     <Compile Include="AppViewModel.cs" />
+    <Compile Include="BooleanToVisibilityConverter.cs" />
     <Compile Include="MainPage.xaml.cs">
       <DependentUpon>MainPage.xaml</DependentUpon>
     </Compile>
@@ -241,6 +242,9 @@
     <Content Include="Assets\la_muse.onnx" />
     <Content Include="Assets\mosaic.onnx" />
     <Content Include="Assets\udnie.onnx" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Helpers\" />
   </ItemGroup>
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '14.0' ">
     <VisualStudioVersion>14.0</VisualStudioVersion>

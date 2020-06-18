@@ -18,6 +18,7 @@
     mc:Ignorable="d">
 
   <Page.Resources>
+    <local:BooleanToVisibilityConverter x:Key="BoolToVis" />
     <SolidColorBrush
         x:Key="TranslucentBlackBrush"
         Opacity="0.3"
@@ -121,7 +122,7 @@
           </ListBox.ItemsPanel>
           <i:Interaction.Behaviors>
             <core:EventTriggerBehavior EventName="SelectionChanged">
-              <core:InvokeCommandAction Command="{Binding ChangeMediaInputCommand}" />
+              <core:InvokeCommandAction Command="{Binding SetModelSourceCommand}" />
             </core:EventTriggerBehavior>
           </i:Interaction.Behaviors>
         </ListBox>
@@ -138,7 +139,7 @@
 
           <Button
               Name="UIButtonLiveStream"
-              Command="{Binding LiveStreamCommand}"
+              Command="{Binding SetMediaSourceCommand}"
               CommandParameter="LiveStream"
               ToolTipService.ToolTip="Camera preview">
             <Button.Content>
@@ -147,7 +148,7 @@
           </Button>
           <Button
               Name="UIButtonAcquireImage"
-              Command="{Binding MediaSourceCommand}"
+              Command="{Binding SetMediaSourceCommand}"
               CommandParameter="AcquireImage"
               ToolTipService.ToolTip="Take a photo">
             <Button.Content>
@@ -156,7 +157,7 @@
           </Button>
           <Button
               Name="UIButtonFilePick"
-              Command="{Binding MediaSourceCommand}"
+              Command="{Binding SetMediaSourceCommand}"
               CommandParameter="FilePick"
               ToolTipService.ToolTip="Select an image from a file">
             <Button.Content>
@@ -165,7 +166,7 @@
           </Button>
           <Button
               Name="UIButtonInking"
-              Command="{Binding MediaSourceCommand}"
+              Command="{Binding SetMediaSourceCommand}"
               CommandParameter="Inking"
               ToolTipService.ToolTip="Draw on a canvas">
             <Button.Content>
@@ -222,19 +223,6 @@
           </StackPanel>
         </Viewbox>
 
-        <!--  Camera preview
-        <MediaPlayerElement
-            Name="UIInputMediaPlayerElement"
-            Grid.Column="0"
-            MaxWidth="720"
-            MaxHeight="720"
-            AreTransportControlsEnabled="False"
-            AutoPlay="True"
-            Canvas.ZIndex="-1"
-            Source="{Binding CurrentApp.InputMediaSource}"
-            Stretch="Uniform"
-            Visibility="Visible" />-->
-
         <CaptureElement
             Name="PreviewControl"
             Source="{Binding CurrentApp.InputMediaCapture}"
@@ -289,7 +277,7 @@
           HorizontalAlignment="Left"
           VerticalAlignment="Bottom"
           Orientation="vertical"
-          Visibility="Visible">
+          Visibility="{Binding CurrentApp.StreamingControlsVisible, Converter={StaticResource BoolToVis}, Mode=OneWay}">
         <TextBlock Style="{StaticResource TextBlockStyling}" Text="Camera: " />
         <ComboBox
             Name="UICmbCamera"
@@ -298,18 +286,20 @@
             SelectedIndex="{Binding CurrentApp.SelectedCameraIndex, Mode=TwoWay}">
           <i:Interaction.Behaviors>
             <core:EventTriggerBehavior EventName="SelectionChanged">
-              <core:InvokeCommandAction Command="{Binding ChangeMediaInputCommand}" />
+              <core:InvokeCommandAction Command="{Binding ChangeLiveStreamCommand}" />
             </core:EventTriggerBehavior>
           </i:Interaction.Behaviors>
           <ComboBox.Background>
             <SolidColorBrush Opacity="0.3" Color="Black" />
           </ComboBox.Background>
         </ComboBox>
+        <!-- TODO: Add back in once have preview stream
         <TextBlock Style="{StaticResource TextBlockStyling}" Text="Preview resolution: " />
         <TextBlock
             Name="UITxtBlockPreviewProperties"
             Style="{StaticResource TextBlockStyling}"
             Text="0x0" />
+         !-->
       </StackPanel>
 
       <ProgressRing
@@ -321,7 +311,7 @@
           HorizontalAlignment="Left"
           Foreground="#FF02487F"
           IsActive="true"
-          Visibility="Visible" />
+          Visibility="{Binding CurrentApp.StreamingControlsVisible, Converter={StaticResource BoolToVis}, Mode=OneWay}" />
 
       <Border
           x:Name="UIStatusBorder"
@@ -330,7 +320,8 @@
         <StackPanel
             HorizontalAlignment="Center"
             VerticalAlignment="Center"
-            Orientation="Horizontal">
+            Orientation="Horizontal"
+            Visibility="{Binding CurrentApp.StreamingControlsVisible, Converter={StaticResource BoolToVis}, Mode=OneWay}">
           <TextBlock Margin="0,0,10,0" Visibility="Visible">
             <Run x:Uid="TxtCapture" FontWeight="Bold" />
             <Run Text="{x:Bind dummyFPS}" />

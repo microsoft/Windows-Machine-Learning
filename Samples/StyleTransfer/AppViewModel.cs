@@ -66,13 +66,13 @@ namespace StyleTransfer
         public ICommand ChangeLiveStreamCommand { get; set; }
         public ICommand SetModelSourceCommand { get; set; }
 
-        private SoftwareBitmapSource _inputSoftwareBitmapSource;
+        private SoftwareBitmapSource _inputSoftwareBitmapSource = new SoftwareBitmapSource();
         public SoftwareBitmapSource InputSoftwareBitmapSource
         {
             get { return _inputSoftwareBitmapSource; }
             set { _inputSoftwareBitmapSource = value; OnPropertyChanged(); }
         }
-        private SoftwareBitmapSource _outputSoftwareBitmapSource;
+        private SoftwareBitmapSource _outputSoftwareBitmapSource = new SoftwareBitmapSource();
         public SoftwareBitmapSource OutputSoftwareBitmapSource
         {
             get { return _outputSoftwareBitmapSource; }
@@ -92,20 +92,24 @@ namespace StyleTransfer
             _appModel.InputMedia = obj;
 
             // TODO: Reset media source stuff: set Camera input controls visibility to 0, etc. 
-            await CleanupCameraAsync();
+            CleanupCameraAsync();
             CleanupInputImage();
+
 
             // Changes media source while keeping all other controls 
             switch (_appModel.InputMedia)
             {
                 case "LiveStream":
+
                     await StartLiveStream();
                     // TODO: Also spin up a Capture for preview on left side
                     break;
                 case "AcquireImage":
+
+                    await StartAcquireImage();
                     break;
                 case "FilePick":
-                    // HelperMethods::LoadVideoFrameFromFilePickedAsync
+
                     await StartFilePick();
                     break;
                 case "Inking":
@@ -120,13 +124,14 @@ namespace StyleTransfer
             // Clean up model, etc. by setting to null? 
             // Based on InputMedia, call ChangeLiveStream/ChangeCamera/ChangeImage
             await LoadModelAsync();
+
             switch (_appModel.InputMedia)
             {
                 case "LiveStream":
                     await ChangeLiveStream();
-                    // TODO: Also spin up a Capture for preview on left side
                     break;
                 case "AcquireImage":
+                    await ChangeFilePick();
                     break;
                 case "FilePick":
                     await ChangeFilePick();
@@ -136,10 +141,32 @@ namespace StyleTransfer
             }
         }
 
+
+        private async Task StartAcquireImage()
+        {
+
+            CameraCaptureUI dialog = new CameraCaptureUI();
+            dialog.PhotoSettings.AllowCropping = false;
+            dialog.PhotoSettings.Format = CameraCaptureUIPhotoFormat.Png;
+
+            StorageFile file = await dialog.CaptureFileAsync(CameraCaptureUIMode.Photo);
+
+            if (file != null)
+            {
+                _appModel.InputFrame = await ImageHelper.LoadVideoFrameFromStorageFileAsync(file);
+
+            }
+            else
+            {
+                Debug.WriteLine("Failed to capture image");
+            }
+
+            await ChangeFilePick();
+        }
+
         public async Task StartFilePick()
         {
             Debug.WriteLine("StartFilePick");
-            InputSoftwareBitmapSource = new SoftwareBitmapSource();
 
             try
             {
@@ -176,7 +203,6 @@ namespace StyleTransfer
 
         private async Task EvaluateVideoFrameAsync()
         {
-            OutputSoftwareBitmapSource = new SoftwareBitmapSource();
 
             if ((_appModel.InputFrame != null) &&
                 (_appModel.InputFrame.SoftwareBitmap != null || _appModel.InputFrame.Direct3DSurface != null))
@@ -295,6 +321,8 @@ namespace StyleTransfer
 
         private async Task LoadModelAsync()
         {
+            m_model?.Dispose();
+            m_session?.Dispose();
 
             StorageFile modelFile = await StorageFile.GetFileFromApplicationUriAsync(new Uri($"ms-appx:///Assets/{_appModel.ModelSource}.onnx"));
             m_model = await LearningModel.LoadFromStorageFileAsync(modelFile);
@@ -346,17 +374,13 @@ namespace StyleTransfer
             }
         }
 
-        private async Task CleanupCameraAsync()
+        private void CleanupCameraAsync()
         {
             Debug.WriteLine("CleanupCameraAsync");
             try
             {
-                if (_mediaCapture != null)
-                {
-                    if (videoEffect != null) await _mediaCapture.RemoveEffectAsync(videoEffect);
-                    await _mediaCapture.StopRecordAsync();
-                    _mediaCapture = null;
-                }
+                _mediaCapture?.Dispose();
+                _appModel.OutputMediaSource?.Dispose();
                 if (_appModel.OutputMediaSource != null)
                 {
                     _appModel.OutputMediaSource = null;
@@ -378,6 +402,9 @@ namespace StyleTransfer
         {
             InputSoftwareBitmapSource?.Dispose();
             OutputSoftwareBitmapSource?.Dispose();
+
+            InputSoftwareBitmapSource = new SoftwareBitmapSource();
+            OutputSoftwareBitmapSource = new SoftwareBitmapSource();
 
             _appModel.OutputFrame?.Dispose();
             _appModel.OutputFrame = new VideoFrame(BitmapPixelFormat.Bgra8, (int)m_outWidth, (int)m_outHeight);

@@ -41,8 +41,9 @@ namespace StyleTransfer
         private LearningModel m_model = null;
         private LearningModelDeviceKind m_inferenceDeviceSelected = LearningModelDeviceKind.Default;
         private LearningModelSession m_session;
-        string _inputImageDescription;
-        string _outputImageDescription;
+        private LearningModelBinding m_binding;
+        string m_inputImageDescription;
+        string m_outputImageDescription;
         IMediaExtension videoEffect;
 
 
@@ -168,10 +169,10 @@ namespace StyleTransfer
                 VideoEffectDefinition videoEffectDefinition = new VideoEffectDefinition("StyleTransferEffectComponent.StyleTransferVideoEffect");
                 videoEffect = await _mediaCapture.AddVideoEffectAsync(videoEffectDefinition, MediaStreamType.VideoPreview);
                 videoEffect.SetProperties(new PropertySet() {
-                    { "Model", m_model},
-                    { "Session", m_session },
-                    { "InputImageDescription", _inputImageDescription },
-                    { "OutputImageDescription", _outputImageDescription } });
+                    { "Session", m_session},
+                    { "Binding", m_binding },
+                    { "InputImageDescription", m_inputImageDescription },
+                    { "OutputImageDescription", m_outputImageDescription } });
 
                 StartPreview();
             }
@@ -213,12 +214,13 @@ namespace StyleTransfer
             // TODO: Pass in useGPU as well.
             m_inferenceDeviceSelected = LearningModelDeviceKind.Cpu;
             m_session = new LearningModelSession(m_model, new LearningModelDevice(m_inferenceDeviceSelected));
+            m_binding = new LearningModelBinding(m_session);
 
             debugModelIO();
 
-            _inputImageDescription = m_model.InputFeatures.ToList().First().Name;
+            m_inputImageDescription = m_model.InputFeatures.ToList().First().Name;
 
-            _outputImageDescription = m_model.OutputFeatures.ToList().First().Name;
+            m_outputImageDescription = m_model.OutputFeatures.ToList().First().Name;
         }
 
         public void debugModelIO()

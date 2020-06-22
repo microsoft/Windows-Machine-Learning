@@ -18,7 +18,6 @@ namespace StyleTransferEffectComponent
     public sealed class StyleTransferVideoEffect : IBasicVideoEffect
     {
 
-        private LearningModel _model = null;
         private LearningModelSession _session;
         private LearningModelBinding _binding;
         string _inputImageDescription;
@@ -27,7 +26,6 @@ namespace StyleTransferEffectComponent
         public void Close(MediaEffectClosedReason reason)
         {
             // Dispose of effect resources
-            if (_model != null) { _model = null; }
             if (_session != null) { _session = null; }
             if (_binding != null) { _binding = null; }
             if (_inputImageDescription != null) { _inputImageDescription = null; }
@@ -35,11 +33,7 @@ namespace StyleTransferEffectComponent
         }
 
 
-        private int frameCount;
-        public void DiscardQueuedFrames()
-        {
-            frameCount = 0;
-        }
+        public void DiscardQueuedFrames() { }
         public bool IsReadOnly { get { return false; } }
 
         private VideoEncodingProperties encodingProperties;
@@ -71,20 +65,20 @@ namespace StyleTransferEffectComponent
             this.configuration = configuration;
         }
 
-
-        public LearningModel Model
+        public LearningModelBinding Binding
         {
             get
             {   // TODO: Read in model from configuration
                 // If null, then fail. 
                 object val;
-                if (configuration != null && configuration.TryGetValue("Model", out val))
+                if (configuration != null && configuration.TryGetValue("Binding", out val))
                 {
-                    return (LearningModel)val;
+                    return (LearningModelBinding)val;
                 }
                 return null; // Different default value/ raise exception
             }
         }
+
         public LearningModelSession Session
         {
             get
@@ -128,18 +122,16 @@ namespace StyleTransferEffectComponent
         }
 
 
-
         public void ProcessFrame(ProcessVideoFrameContext context)
         {
             using (VideoFrame inputVideoFrame = context.InputFrame)
             using (VideoFrame outputVideoFrame = context.OutputFrame)
             {
-                _model = Model; // Don't even need to pass model, just session
+                _binding = Binding;
                 _session = Session;
                 _inputImageDescription = InputImageDescription;
                 _outputImageDescription = OutputImageDescription;
 
-                _binding = new LearningModelBinding(_session);
                 _binding.Bind(_inputImageDescription, ImageFeatureValue.CreateFromVideoFrame(inputVideoFrame));
                 _binding.Bind(_outputImageDescription, ImageFeatureValue.CreateFromVideoFrame(outputVideoFrame)); // Check if this correctly sets the context output
 

@@ -79,9 +79,11 @@ namespace StyleTransfer
             set { _outputSoftwareBitmapSource = value; OnPropertyChanged(); }
         }
 
-        public void SaveOutput()
+        public async void SaveOutput()
         {
             // TODO: Take from UIButtonSaveImage_Click
+            Debug.WriteLine("UIButtonSaveImage_Click");
+            await ImageHelper.SaveVideoFrameToFilePickedAsync(_appModel.OutputFrame);
             return;
         }
 

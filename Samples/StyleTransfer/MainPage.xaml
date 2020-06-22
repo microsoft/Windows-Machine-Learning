@@ -234,6 +234,7 @@
             Grid.Column="0"
             MaxWidth="720"
             MaxHeight="720"
+            Source="{Binding InputSoftwareBitmapSource}"
             Stretch="Uniform" />
 
         <!--  Output image panel  -->
@@ -242,6 +243,7 @@
               Name="UIResultImage"
               MaxWidth="720"
               MaxHeight="720"
+              Source="{Binding OutputSoftwareBitmapSource}"
               Stretch="Uniform" />
 
           <MediaPlayerElement

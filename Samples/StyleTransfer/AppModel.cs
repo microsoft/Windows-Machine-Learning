@@ -59,6 +59,29 @@ namespace StyleTransfer
             }
         }
 
+        // Input VideoFrame when processing images
+        private VideoFrame _inputFrame;
+        public VideoFrame InputFrame
+        {
+            get { return _inputFrame; }
+            set
+            {
+                _inputFrame = value;
+                OnPropertyChanged();
+            }
+        }
+
+        // o
+        private VideoFrame _outputFrame;
+        public VideoFrame OutputFrame
+        {
+            get { return _outputFrame; }
+            set
+            {
+                _outputFrame = value;
+                OnPropertyChanged();
+            }
+        }
         // MediaSource for transformed media
         private MediaSource _outputMediaSource;
         public MediaSource OutputMediaSource

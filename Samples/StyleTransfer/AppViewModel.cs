@@ -17,10 +17,12 @@ using Windows.Foundation.Collections;
 using Windows.AI.MachineLearning;
 using Windows.Storage;
 using System.Runtime.CompilerServices;
+using Windows.Graphics.Imaging;
+using Windows.UI.Xaml.Media.Imaging;
 
 namespace StyleTransfer
 {
-    class AppViewModel
+    class AppViewModel : INotifyPropertyChanged
     {
         public AppViewModel()
         {
@@ -46,6 +48,11 @@ namespace StyleTransfer
         string m_outputImageDescription;
         IMediaExtension videoEffect;
 
+        // Image style transfer properties
+        private bool _showInitialImage;
+        uint m_inWidth, m_inHeight, m_outWidth, m_outHeight;
+        private string _DefaultImageFileName = "Input.jpg";
+
 
         private AppModel _appModel;
         public AppModel CurrentApp
@@ -59,6 +66,19 @@ namespace StyleTransfer
         public ICommand ChangeLiveStreamCommand { get; set; }
         public ICommand SetModelSourceCommand { get; set; }
 
+        private SoftwareBitmapSource _inputSoftwareBitmapSource;
+        public SoftwareBitmapSource InputSoftwareBitmapSource
+        {
+            get { return _inputSoftwareBitmapSource; }
+            set { _inputSoftwareBitmapSource = value; OnPropertyChanged(); }
+        }
+        private SoftwareBitmapSource _outputSoftwareBitmapSource;
+        public SoftwareBitmapSource OutputSoftwareBitmapSource
+        {
+            get { return _outputSoftwareBitmapSource; }
+            set { _outputSoftwareBitmapSource = value; OnPropertyChanged(); }
+        }
+
         public void SaveOutput()
         {
             // TODO: Take from UIButtonSaveImage_Click
@@ -71,7 +91,7 @@ namespace StyleTransfer
 
             // TODO: Reset media source stuff: set Camera input controls visibility to 0, etc. 
             await CleanupCameraAsync();
-            // TODO: CleanupInputImage()
+            CleanupInputImage();
 
             // Changes media source while keeping all other controls 
             switch (_appModel.InputMedia)
@@ -84,6 +104,7 @@ namespace StyleTransfer
                     break;
                 case "FilePick":
                     // HelperMethods::LoadVideoFrameFromFilePickedAsync
+                    await StartFilePick();
                     break;
                 case "Inking":
                     break;
@@ -106,12 +127,76 @@ namespace StyleTransfer
                 case "AcquireImage":
                     break;
                 case "FilePick":
+                    await ChangeFilePick();
                     break;
                 case "Inking":
                     break;
             }
         }
 
+        public async Task StartFilePick()
+        {
+            Debug.WriteLine("StartFilePick");
+            try
+            {
+                // Load image to VideoFrame
+                _appModel.InputFrame = await ImageHelper.LoadVideoFrameFromFilePickedAsync();
+                if (_appModel.InputFrame == null)
+                {
+                    Debug.WriteLine("no valid image file selected");
+                }
+                else
+                {
+                    await ChangeFilePick();
+                }
+
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"error: {ex.Message}");
+                //NotifyUser(ex.Message, NotifyType.ErrorMessage);
+            }
+        }
+
+        public async Task ChangeFilePick()
+        {
+            // Make sure have an input image, use default otherwise
+            if (_appModel.InputFrame == null)
+            {
+                var file = await StorageFile.GetFileFromApplicationUriAsync(new Uri($"ms-appx:///Assets/{_DefaultImageFileName}"));
+                _appModel.InputFrame = await ImageHelper.LoadVideoFrameFromStorageFileAsync(file);
+            }
+
+            await EvaluateVideoFrameAsync();
+        }
+
+        private async Task EvaluateVideoFrameAsync()
+        {
+            InputSoftwareBitmapSource = new SoftwareBitmapSource();
+            OutputSoftwareBitmapSource = new SoftwareBitmapSource();
+
+            if ((_appModel.InputFrame != null) &&
+                (_appModel.InputFrame.SoftwareBitmap != null || _appModel.InputFrame.Direct3DSurface != null))
+            {
+                // _appModel.InputFrame = await ImageHelper.CenterCropImageAsync(inputVideoFrame, m_inWidth, m_inHeight);
+
+                m_binding.Bind(m_inputImageDescription, ImageFeatureValue.CreateFromVideoFrame(_appModel.InputFrame));
+                m_binding.Bind(m_outputImageDescription, ImageFeatureValue.CreateFromVideoFrame(_appModel.OutputFrame));
+
+                var results = m_session.Evaluate(m_binding, "test");
+
+                // Parse Results
+                IReadOnlyDictionary<string, object> outputs = results.Outputs;
+                foreach (var output in outputs)
+                {
+                    Debug.WriteLine($"{output.Key} : {output.Value} -> {output.Value.GetType()}");
+                }
+
+                await InputSoftwareBitmapSource.SetBitmapAsync(_appModel.InputFrame.SoftwareBitmap);
+                await OutputSoftwareBitmapSource.SetBitmapAsync(_appModel.OutputFrame.SoftwareBitmap);
+
+            }
+        }
         public async Task StartLiveStream()
         {
             Debug.WriteLine("StartLiveStream");
@@ -221,11 +306,13 @@ namespace StyleTransfer
             m_inputImageDescription = m_model.InputFeatures.ToList().First().Name;
 
             m_outputImageDescription = m_model.OutputFeatures.ToList().First().Name;
+
+            _appModel.OutputFrame?.Dispose();
+            _appModel.OutputFrame = new VideoFrame(BitmapPixelFormat.Bgra8, (int)m_outWidth, (int)m_outHeight);
         }
 
         public void debugModelIO()
         {
-            uint m_inWidth, m_inHeight, m_outWidth, m_outHeight;
             string m_inName, m_outName;
             foreach (var inputF in m_model.InputFeatures)
             {
@@ -285,6 +372,19 @@ namespace StyleTransfer
             {
                 Debug.WriteLine($"CleanupCameraAsync: {ex.Message}");
             }
+        }
+
+        private void CleanupInputImage()
+        {
+            InputSoftwareBitmapSource?.Dispose();
+            OutputSoftwareBitmapSource?.Dispose();
+
+        }
+
+        public event PropertyChangedEventHandler PropertyChanged;
+        private void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
     }
 }

@@ -130,6 +130,7 @@
     <Compile Include="AppModel.cs" />
     <Compile Include="AppViewModel.cs" />
     <Compile Include="BooleanToVisibilityConverter.cs" />
+    <Compile Include="ImageHelper.cs" />
     <Compile Include="MainPage.xaml.cs">
       <DependentUpon>MainPage.xaml</DependentUpon>
     </Compile>

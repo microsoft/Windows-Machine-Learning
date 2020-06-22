@@ -131,10 +131,10 @@ namespace StyleTransfer
                     await ChangeLiveStream();
                     break;
                 case "AcquireImage":
-                    await ChangeFilePick();
+                    await ChangeImage();
                     break;
                 case "FilePick":
-                    await ChangeFilePick();
+                    await ChangeImage();
                     break;
                 case "Inking":
                     break;
@@ -161,7 +161,7 @@ namespace StyleTransfer
                 Debug.WriteLine("Failed to capture image");
             }
 
-            await ChangeFilePick();
+            await ChangeImage();
         }
 
         public async Task StartFilePick()
@@ -178,7 +178,7 @@ namespace StyleTransfer
                 }
                 else
                 {
-                    await ChangeFilePick();
+                    await ChangeImage();
                 }
 
             }
@@ -189,7 +189,7 @@ namespace StyleTransfer
             }
         }
 
-        public async Task ChangeFilePick()
+        public async Task ChangeImage()
         {
             // Make sure have an input image, use default otherwise
             if (_appModel.InputFrame == null)
@@ -221,9 +221,9 @@ namespace StyleTransfer
                     Debug.WriteLine($"{output.Key} : {output.Value} -> {output.Value.GetType()}");
                 }
 
+
                 await InputSoftwareBitmapSource.SetBitmapAsync(_appModel.InputFrame.SoftwareBitmap);
                 await OutputSoftwareBitmapSource.SetBitmapAsync(_appModel.OutputFrame.SoftwareBitmap);
-
             }
         }
         public async Task StartLiveStream()

@@ -137,6 +137,8 @@ namespace StyleTransfer
         public async Task StartFilePick()
         {
             Debug.WriteLine("StartFilePick");
+            InputSoftwareBitmapSource = new SoftwareBitmapSource();
+
             try
             {
                 // Load image to VideoFrame
@@ -172,13 +174,12 @@ namespace StyleTransfer
 
         private async Task EvaluateVideoFrameAsync()
         {
-            InputSoftwareBitmapSource = new SoftwareBitmapSource();
             OutputSoftwareBitmapSource = new SoftwareBitmapSource();
 
             if ((_appModel.InputFrame != null) &&
                 (_appModel.InputFrame.SoftwareBitmap != null || _appModel.InputFrame.Direct3DSurface != null))
             {
-                // _appModel.InputFrame = await ImageHelper.CenterCropImageAsync(inputVideoFrame, m_inWidth, m_inHeight);
+                _appModel.InputFrame = await ImageHelper.CenterCropImageAsync(_appModel.InputFrame, m_inWidth, m_inHeight);
 
                 m_binding.Bind(m_inputImageDescription, ImageFeatureValue.CreateFromVideoFrame(_appModel.InputFrame));
                 m_binding.Bind(m_outputImageDescription, ImageFeatureValue.CreateFromVideoFrame(_appModel.OutputFrame));
@@ -306,9 +307,6 @@ namespace StyleTransfer
             m_inputImageDescription = m_model.InputFeatures.ToList().First().Name;
 
             m_outputImageDescription = m_model.OutputFeatures.ToList().First().Name;
-
-            _appModel.OutputFrame?.Dispose();
-            _appModel.OutputFrame = new VideoFrame(BitmapPixelFormat.Bgra8, (int)m_outWidth, (int)m_outHeight);
         }
 
         public void debugModelIO()
@@ -379,6 +377,8 @@ namespace StyleTransfer
             InputSoftwareBitmapSource?.Dispose();
             OutputSoftwareBitmapSource?.Dispose();
 
+            _appModel.OutputFrame?.Dispose();
+            _appModel.OutputFrame = new VideoFrame(BitmapPixelFormat.Bgra8, (int)m_outWidth, (int)m_outHeight);
         }
 
         public event PropertyChangedEventHandler PropertyChanged;

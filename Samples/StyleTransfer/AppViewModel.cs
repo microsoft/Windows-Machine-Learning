@@ -321,7 +321,6 @@ namespace StyleTransfer
 
         private async Task LoadModelAsync()
         {
-            m_model?.Dispose();
             m_session?.Dispose();
 
             StorageFile modelFile = await StorageFile.GetFileFromApplicationUriAsync(new Uri($"ms-appx:///Assets/{_appModel.ModelSource}.onnx"));

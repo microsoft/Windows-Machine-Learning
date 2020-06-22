@@ -8,7 +8,10 @@ using System.Runtime.InteropServices.WindowsRuntime;
 using System.Text;
 using System.Threading.Tasks;
 using Windows.Media;
+using Windows.Media.Capture;
 using Windows.Media.Core;
+using Windows.Media.Playback;
+using Windows.UI.Composition;
 
 namespace StyleTransfer
 {
@@ -17,8 +20,10 @@ namespace StyleTransfer
         public AppModel()
         {
             this._useGPU = true;
+            this._modelSource = "candy";
         }
 
+        // Name of the style transfer model to apply to input media
         private string _modelSource;
         public string ModelSource
         {
@@ -30,14 +35,16 @@ namespace StyleTransfer
             }
         }
 
-        private string _inputMediaSource;
-        public string InputMediaSource
+        // Type of input media to use
+        private string _inputMedia;
+        public string InputMedia
         {
-            get { return _inputMediaSource; }
+            get { return _inputMedia; }
             set
             {
-                _inputMediaSource = value;
+                _inputMedia = value;
                 OnPropertyChanged();
+                OnPropertyChanged("StreamingControlsVisible");
             }
         }
 
@@ -52,17 +59,50 @@ namespace StyleTransfer
             }
         }
 
-        // In AppModel or in AppViewModel?
-        private VideoFrame _outputFrame;
-        public VideoFrame OutputFrame
+        // MediaSource for transformed media
+        private MediaSource _outputMediaSource;
+        public MediaSource OutputMediaSource
         {
-            get { return _outputFrame; }
+            get { return _outputMediaSource; }
+            set { _outputMediaSource = value; OnPropertyChanged(); }
+        }
+
+        // MediaSource for the input media
+        private MediaSource _inputMediaSource;
+        public MediaSource InputMediaSource
+        {
+            get { return _inputMediaSource; }
+            set { _inputMediaSource = value; OnPropertyChanged(); }
+        }
+
+        // List of cameras available to use as input
+        private IEnumerable<string> _cameraNamesList;
+        public IEnumerable<string> CameraNamesList
+        {
+            get { return _cameraNamesList; }
+            set { _cameraNamesList = value; OnPropertyChanged(); }
+        }
+
+        // Index in CameraNamesList of the selected input camera
+        private int _selectedCameraIndex;
+        public int SelectedCameraIndex
+        {
+            get { return _selectedCameraIndex; }
             set
             {
-                _outputFrame = value;
+                _selectedCameraIndex = value;
                 OnPropertyChanged();
             }
         }
+
+        public bool StreamingControlsVisible
+        {
+            get
+            {
+                return _inputMedia == "LiveStream";
+            }
+        }
+
 
         public event PropertyChangedEventHandler PropertyChanged;
         private void OnPropertyChanged([CallerMemberName] string propertyName = null)

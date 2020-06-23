@@ -19,6 +19,7 @@ using Windows.Storage;
 using System.Runtime.CompilerServices;
 using Windows.Graphics.Imaging;
 using Windows.UI.Xaml.Media.Imaging;
+using Windows.UI.Xaml.Media;
 
 namespace StyleTransfer
 {
@@ -31,6 +32,11 @@ namespace StyleTransfer
             SetMediaSourceCommand = new RelayCommand<string>(async (x) => await SetMediaSource(x));
             SetModelSourceCommand = new RelayCommand(async () => await SetModelSource());
             ChangeLiveStreamCommand = new RelayCommand(async () => await ChangeLiveStream());
+
+            _inputSoftwareBitmapSource = new SoftwareBitmapSource();
+            _outputSoftwareBitmapSource = new SoftwareBitmapSource();
+            NotifyUser(true);
+
         }
 
         // Media capture properties
@@ -49,9 +55,13 @@ namespace StyleTransfer
         IMediaExtension videoEffect;
 
         // Image style transfer properties
-        private bool _showInitialImage;
         uint m_inWidth, m_inHeight, m_outWidth, m_outHeight;
         private string _DefaultImageFileName = "Input.jpg";
+
+        // User notifiaction properties
+        private bool _succeed;
+        private SolidColorBrush _successColor = new SolidColorBrush(Windows.UI.Colors.Green);
+        private SolidColorBrush _failColor = new SolidColorBrush(Windows.UI.Colors.Red);
 
 
         private AppModel _appModel;
@@ -66,22 +76,33 @@ namespace StyleTransfer
         public ICommand ChangeLiveStreamCommand { get; set; }
         public ICommand SetModelSourceCommand { get; set; }
 
-        private SoftwareBitmapSource _inputSoftwareBitmapSource = new SoftwareBitmapSource();
+        private SoftwareBitmapSource _inputSoftwareBitmapSource;
         public SoftwareBitmapSource InputSoftwareBitmapSource
         {
             get { return _inputSoftwareBitmapSource; }
             set { _inputSoftwareBitmapSource = value; OnPropertyChanged(); }
         }
-        private SoftwareBitmapSource _outputSoftwareBitmapSource = new SoftwareBitmapSource();
+        private SoftwareBitmapSource _outputSoftwareBitmapSource;
         public SoftwareBitmapSource OutputSoftwareBitmapSource
         {
             get { return _outputSoftwareBitmapSource; }
             set { _outputSoftwareBitmapSource = value; OnPropertyChanged(); }
         }
 
+        public SolidColorBrush StatusBarColor
+        {
+            get { return _succeed ? _successColor : _failColor; }
+        }
+
+        private string _notifyMessage;
+        public string StatusMessage
+        {
+            get { return _notifyMessage; }
+            set { _notifyMessage = value; OnPropertyChanged(); OnPropertyChanged("StatusBarColor"); }
+        }
+
         public async void SaveOutput()
         {
-            // TODO: Take from UIButtonSaveImage_Click
             Debug.WriteLine("UIButtonSaveImage_Click");
             await ImageHelper.SaveVideoFrameToFilePickedAsync(_appModel.OutputFrame);
             return;
@@ -94,7 +115,7 @@ namespace StyleTransfer
             // TODO: Reset media source stuff: set Camera input controls visibility to 0, etc. 
             CleanupCameraAsync();
             CleanupInputImage();
-
+            NotifyUser(true);
 
             // Changes media source while keeping all other controls 
             switch (_appModel.InputMedia)
@@ -122,7 +143,6 @@ namespace StyleTransfer
         public async Task SetModelSource()
         {
             // Clean up model, etc. by setting to null? 
-            // Based on InputMedia, call ChangeLiveStream/ChangeCamera/ChangeImage
             await LoadModelAsync();
 
             switch (_appModel.InputMedia)
@@ -159,6 +179,7 @@ namespace StyleTransfer
             else
             {
                 Debug.WriteLine("Failed to capture image");
+                NotifyUser(false, "Failed to capture image.");
             }
 
             await ChangeImage();
@@ -178,14 +199,15 @@ namespace StyleTransfer
                 }
                 else
                 {
-                    await ChangeImage();
                 }
+                await ChangeImage();
+
 
             }
             catch (Exception ex)
             {
                 Debug.WriteLine($"error: {ex.Message}");
-                //NotifyUser(ex.Message, NotifyType.ErrorMessage);
+                NotifyUser(false, ex.Message);
             }
         }
 
@@ -194,6 +216,7 @@ namespace StyleTransfer
             // Make sure have an input image, use default otherwise
             if (_appModel.InputFrame == null)
             {
+                NotifyUser(false, "No valid image file selected, using default image instead.");
                 var file = await StorageFile.GetFileFromApplicationUriAsync(new Uri($"ms-appx:///Assets/{_DefaultImageFileName}"));
                 _appModel.InputFrame = await ImageHelper.LoadVideoFrameFromStorageFileAsync(file);
             }
@@ -221,7 +244,6 @@ namespace StyleTransfer
                     Debug.WriteLine($"{output.Key} : {output.Value} -> {output.Value.GetType()}");
                 }
 
-
                 await InputSoftwareBitmapSource.SetBitmapAsync(_appModel.InputFrame.SoftwareBitmap);
                 await OutputSoftwareBitmapSource.SetBitmapAsync(_appModel.OutputFrame.SoftwareBitmap);
             }
@@ -248,6 +270,7 @@ namespace StyleTransfer
             {
                 // No camera sources found
                 Debug.WriteLine("No Camera found");
+                NotifyUser(false, "No Camera found.");
                 return;
             }
 
@@ -407,6 +430,12 @@ namespace StyleTransfer
 
             _appModel.OutputFrame?.Dispose();
             _appModel.OutputFrame = new VideoFrame(BitmapPixelFormat.Bgra8, (int)m_outWidth, (int)m_outHeight);
+        }
+
+        public void NotifyUser(bool success, string strMessage = "")
+        {
+            _succeed = success;
+            StatusMessage = strMessage;
         }
 
         public event PropertyChangedEventHandler PropertyChanged;

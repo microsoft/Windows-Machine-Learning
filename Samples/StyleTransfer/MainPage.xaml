@@ -318,21 +318,25 @@
       <Border
           x:Name="UIStatusBorder"
           Grid.Row="2"
-          Background="#CC348508">
-        <StackPanel
-            HorizontalAlignment="Center"
-            VerticalAlignment="Center"
-            Orientation="Horizontal"
-            Visibility="{Binding CurrentApp.StreamingControlsVisible, Converter={StaticResource BoolToVis}, Mode=OneWay}">
-          <TextBlock Margin="0,0,10,0" Visibility="Visible">
+          Background="{Binding StatusBarColor}">
+
+        <RelativePanel>
+          <TextBlock
+              RelativePanel.AlignVerticalCenterWithPanel="True"
+              Text="{Binding StatusMessage}"
+              TextAlignment="Center" />
+          <TextBlock
+              RelativePanel.AlignHorizontalCenterWithPanel="True"
+              RelativePanel.AlignVerticalCenterWithPanel="True"
+              Visibility="{Binding CurrentApp.StreamingControlsVisible, Converter={StaticResource BoolToVis}, Mode=OneWay}">
             <Run x:Uid="TxtCapture" FontWeight="Bold" />
             <Run Text="{x:Bind dummyFPS}" />
-          </TextBlock>
-          <TextBlock Margin="10,0,0,0" Visibility="Visible">
             <Run x:Uid="TxtRender" FontWeight="Bold" />
             <Run FontWeight="Normal" Text="{x:Bind dummyFPS}" />
           </TextBlock>
-        </StackPanel>
+
+        </RelativePanel>
+
       </Border>
 
     </Grid>

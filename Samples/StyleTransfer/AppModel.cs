@@ -71,7 +71,7 @@ namespace StyleTransfer
             }
         }
 
-        // o
+        // Output VideoFrame when processing images
         private VideoFrame _outputFrame;
         public VideoFrame OutputFrame
         {

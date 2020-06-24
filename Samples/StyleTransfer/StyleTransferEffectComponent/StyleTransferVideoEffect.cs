@@ -10,7 +10,7 @@ using Windows.Graphics.DirectX.Direct3D11;
 using Windows.Graphics.Imaging;
 using System.Runtime.InteropServices;
 using Windows.Media;
-using Windows.AI.MachineLearning;
+using Microsoft.AI.MachineLearning;
 using Windows.Storage;
 
 namespace StyleTransferEffectComponent

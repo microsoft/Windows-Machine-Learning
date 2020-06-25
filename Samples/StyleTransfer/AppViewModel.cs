@@ -226,7 +226,7 @@ namespace StyleTransfer
 
         private async Task EvaluateVideoFrameAsync()
         {
-
+            Debug.WriteLine("Has Direct3dsurface", _appModel.InputFrame.Direct3DSurface != null);
             if ((_appModel.InputFrame != null) &&
                 (_appModel.InputFrame.SoftwareBitmap != null || _appModel.InputFrame.Direct3DSurface != null))
             {
@@ -295,7 +295,7 @@ namespace StyleTransfer
                 {
                     SourceGroup = _selectedMediaFrameSourceGroup,
                     PhotoCaptureSource = PhotoCaptureSource.Auto,
-                    MemoryPreference = MediaCaptureMemoryPreference.Cpu,
+                    MemoryPreference = _appModel.UseGPU ? MediaCaptureMemoryPreference.Auto : MediaCaptureMemoryPreference.Cpu,
                     StreamingCaptureMode = StreamingCaptureMode.Video
                 };
 
@@ -339,7 +339,6 @@ namespace StyleTransfer
 
             _appModel.OutputMediaSource = MediaSource.CreateFromMediaFrameSource(_selectedMediaFrameSource);
             _appModel.InputMediaSource = MediaSource.CreateFromMediaFrameSource(_selectedMediaFrameSource);
-
         }
 
         private async Task LoadModelAsync()
@@ -350,7 +349,7 @@ namespace StyleTransfer
             m_model = await LearningModel.LoadFromStorageFileAsync(modelFile);
 
             // TODO: Pass in useGPU as well.
-            m_inferenceDeviceSelected = LearningModelDeviceKind.Cpu;
+            m_inferenceDeviceSelected = _appModel.UseGPU ? LearningModelDeviceKind.DirectX : LearningModelDeviceKind.Cpu;
             m_session = new LearningModelSession(m_model, new LearningModelDevice(m_inferenceDeviceSelected));
             m_binding = new LearningModelBinding(m_session);
 

@@ -12,7 +12,7 @@ using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
-using Microsoft.AI.MachineLearning;
+using Windows.AI.MachineLearning;
 using Windows.Media.Playback;
 using Windows.Media.Core;
 using Windows.Media.Capture;

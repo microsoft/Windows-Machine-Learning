@@ -10,7 +10,7 @@ using Windows.Graphics.DirectX.Direct3D11;
 using Windows.Graphics.Imaging;
 using System.Runtime.InteropServices;
 using Windows.Media;
-using Microsoft.AI.MachineLearning;
+using Windows.AI.MachineLearning;
 using Windows.Storage;
 
 namespace StyleTransferEffectComponent
@@ -132,10 +132,22 @@ namespace StyleTransferEffectComponent
                 _inputImageDescription = InputImageDescription;
                 _outputImageDescription = OutputImageDescription;
 
-                _binding.Bind(_inputImageDescription, ImageFeatureValue.CreateFromVideoFrame(inputVideoFrame));
-                _binding.Bind(_outputImageDescription, ImageFeatureValue.CreateFromVideoFrame(outputVideoFrame));
+                VideoFrame inputTransformed = new VideoFrame(BitmapPixelFormat.Bgra8, 720, 720);
+                Task.Run(async () =>
+                {
+                    await inputVideoFrame.CopyToAsync(inputTransformed);
 
-                var results = _session.Evaluate(_binding, "test");
+                    VideoFrame outputTransformed = new VideoFrame(BitmapPixelFormat.Bgra8, 720, 720);
+                    await inputVideoFrame.CopyToAsync(inputTransformed);
+
+                    _binding.Bind(_inputImageDescription, ImageFeatureValue.CreateFromVideoFrame(inputTransformed));
+                    _binding.Bind(_outputImageDescription, ImageFeatureValue.CreateFromVideoFrame(outputTransformed));
+
+                    var results = _session.Evaluate(_binding, "test");
+                    await outputTransformed.CopyToAsync(outputVideoFrame);
+                }).ConfigureAwait(false).GetAwaiter().GetResult();
+
+
             }
         }
     }

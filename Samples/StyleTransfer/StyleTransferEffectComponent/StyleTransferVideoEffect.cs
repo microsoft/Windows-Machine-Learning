@@ -55,7 +55,7 @@ namespace StyleTransferEffectComponent
             }
         }
         // TODO: Chagne to GpuAndCpu, or based on toggle value in UI
-        public MediaMemoryTypes SupportedMemoryTypes { get { return MediaMemoryTypes.Cpu; } }
+        public MediaMemoryTypes SupportedMemoryTypes { get { return MediaMemoryTypes.GpuAndCpu; } }
 
         public bool TimeIndependent { get { return true; } }
 

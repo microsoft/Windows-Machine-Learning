@@ -212,24 +212,33 @@
             </StackPanel>
 
             <Border x:Name="UIStatusBorder" Grid.Row="2">
-                <RelativePanel Orientation="Horizontal">
+                <StackPanel Orientation="Horizontal">
                     <TextBlock
                         x:Name="StatusBlock"
-                        Width="151"
-                        Margin="10,0,0,0"
-                        HorizontalAlignment="Left"
-                        VerticalAlignment="Center"
+                        Width="700"
+                        Margin="10,2,0,0"
                         FontWeight="Bold"
                         Text="Select a style to begin"
                         TextWrapping="Wrap" />
                     <TextBlock
-                        x:Name="StatusBlock_Copy"
-                        Width="Auto"
-                        VerticalAlignment="Center"
+                        Margin="10,2,0,0"
                         FontWeight="Bold"
-                        TextAlignment="Center"
-                        TextWrapping="Wrap"><Run FontWeight="Bold" Text="Capture FPS" /></TextBlock>
-                </RelativePanel>
+                        Text="Capture FPS" />
+                    <TextBlock
+                        x:Name="CaptureFPS"
+                        Margin="10,2,0,0"
+                        Text="0 fps"
+                        TextWrapping="Wrap" />
+                    <TextBlock
+                        Margin="10,2,0,0"
+                        FontWeight="Bold"
+                        Text="Render FPS" />
+                    <TextBlock
+                        x:Name="RenderFPS"
+                        Margin="10,2,0,0"
+                        Text="0 fps"
+                        TextWrapping="Wrap" />
+                </StackPanel>
             </Border>
 
         </Grid>

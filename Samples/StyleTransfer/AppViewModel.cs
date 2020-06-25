@@ -20,6 +20,8 @@ using System.Runtime.CompilerServices;
 using Windows.Graphics.Imaging;
 using Windows.UI.Xaml.Media.Imaging;
 using Windows.UI.Xaml.Media;
+using Windows.Media.MediaProperties;
+using Windows.Storage.Pickers;
 
 namespace StyleTransfer
 {
@@ -35,6 +37,7 @@ namespace StyleTransfer
 
             _inputSoftwareBitmapSource = new SoftwareBitmapSource();
             _outputSoftwareBitmapSource = new SoftwareBitmapSource();
+            _saveEnabled = true;
             NotifyUser(true);
 
         }
@@ -88,6 +91,12 @@ namespace StyleTransfer
             get { return _outputSoftwareBitmapSource; }
             set { _outputSoftwareBitmapSource = value; OnPropertyChanged(); }
         }
+        private bool _saveEnabled;
+        public bool SaveEnabled
+        {
+            get { return _saveEnabled; }
+            set { _saveEnabled = value; OnPropertyChanged(); }
+        }
 
         public SolidColorBrush StatusBarColor
         {
@@ -104,7 +113,23 @@ namespace StyleTransfer
         public async void SaveOutput()
         {
             Debug.WriteLine("UIButtonSaveImage_Click");
-            await ImageHelper.SaveVideoFrameToFilePickedAsync(_appModel.OutputFrame);
+            if (_appModel.InputMedia == "LiveStream")
+            {
+
+                var previewProperties = _mediaCapture.VideoDeviceController.GetMediaStreamProperties(MediaStreamType.VideoPreview) as VideoEncodingProperties;
+
+                // Create the video frame to request a SoftwareBitmap preview frame
+                var videoFrame = new VideoFrame(BitmapPixelFormat.Bgra8, (int)previewProperties.Width, (int)previewProperties.Height);
+
+                // Capture the preview frame
+                using (var currentFrame = await _mediaCapture.GetPreviewFrameAsync(videoFrame))
+                {
+                    SoftwareBitmap previewFrame = currentFrame.SoftwareBitmap;
+                    await ImageHelper.SaveVideoFrameToFilePickedAsync(videoFrame);
+                }
+            }
+            else await ImageHelper.SaveVideoFrameToFilePickedAsync(_appModel.OutputFrame);
+
             return;
         }
 
@@ -116,12 +141,12 @@ namespace StyleTransfer
             CleanupCameraAsync();
             CleanupInputImage();
             NotifyUser(true);
+            SaveEnabled = true;
 
             // Changes media source while keeping all other controls 
             switch (_appModel.InputMedia)
             {
                 case "LiveStream":
-
                     await StartLiveStream();
                     // TODO: Also spin up a Capture for preview on left side
                     break;
@@ -281,6 +306,8 @@ namespace StyleTransfer
         public async Task ChangeLiveStream()
         {
             Debug.WriteLine("ChangeLiveStream");
+            SaveEnabled = false;
+
 
             // If webcam hasn't been initialized, bail.
             if (_mediaFrameSourceGroupList == null) { return; }

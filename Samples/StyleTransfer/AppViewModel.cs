@@ -17,10 +17,15 @@ using Windows.Foundation.Collections;
 using Windows.AI.MachineLearning;
 using Windows.Storage;
 using System.Runtime.CompilerServices;
+using Windows.Graphics.Imaging;
+using Windows.UI.Xaml.Media.Imaging;
+using Windows.UI.Xaml.Media;
+using Windows.Media.MediaProperties;
+using Windows.Storage.Pickers;
 
 namespace StyleTransfer
 {
-    class AppViewModel
+    class AppViewModel : INotifyPropertyChanged
     {
         public AppViewModel()
         {
@@ -29,6 +34,12 @@ namespace StyleTransfer
             SetMediaSourceCommand = new RelayCommand<string>(async (x) => await SetMediaSource(x));
             SetModelSourceCommand = new RelayCommand(async () => await SetModelSource());
             ChangeLiveStreamCommand = new RelayCommand(async () => await ChangeLiveStream());
+
+            _inputSoftwareBitmapSource = new SoftwareBitmapSource();
+            _outputSoftwareBitmapSource = new SoftwareBitmapSource();
+            _saveEnabled = true;
+            NotifyUser(true);
+
         }
 
         // Media capture properties
@@ -36,21 +47,67 @@ namespace StyleTransfer
         private List<MediaFrameSourceGroup> _mediaFrameSourceGroupList;
         private MediaFrameSourceGroup _selectedMediaFrameSourceGroup;
         private MediaFrameSource _selectedMediaFrameSource;
+        public int dummyFPS = 10;
 
         // Style transfer effect properties
         private LearningModel m_model = null;
         private LearningModelDeviceKind m_inferenceDeviceSelected = LearningModelDeviceKind.Default;
         private LearningModelSession m_session;
         private LearningModelBinding m_binding;
-        string m_inputImageDescription;
-        string m_outputImageDescription;
-        IMediaExtension videoEffect;
+        private string m_inputImageDescription;
+        private string m_outputImageDescription;
+        private IMediaExtension videoEffect;
+        public readonly List<string> modelFileNames = new List<string>
+        {   "candy",
+            "mosaic",
+            "la_muse",
+            "udnie"
+        };
 
+        // Image style transfer properties
+        uint m_inWidth, m_inHeight, m_outWidth, m_outHeight;
+        private string _DefaultImageFileName = "Input.jpg";
+
+        // User notifiaction properties
+        private bool _succeed;
+        private SolidColorBrush _successColor = new SolidColorBrush(Windows.UI.Colors.Green);
+        private SolidColorBrush _failColor = new SolidColorBrush(Windows.UI.Colors.Red);
 
         private AppModel _appModel;
         public AppModel CurrentApp
         {
             get { return _appModel; }
+        }
+
+        private SoftwareBitmapSource _inputSoftwareBitmapSource;
+        public SoftwareBitmapSource InputSoftwareBitmapSource
+        {
+            get { return _inputSoftwareBitmapSource; }
+            set { _inputSoftwareBitmapSource = value; OnPropertyChanged(); }
+        }
+        private SoftwareBitmapSource _outputSoftwareBitmapSource;
+        public SoftwareBitmapSource OutputSoftwareBitmapSource
+        {
+            get { return _outputSoftwareBitmapSource; }
+            set { _outputSoftwareBitmapSource = value; OnPropertyChanged(); }
+        }
+        private bool _saveEnabled;
+        public bool SaveEnabled
+        {
+            get { return _saveEnabled; }
+            set { _saveEnabled = value; OnPropertyChanged(); }
+        }
+
+        public SolidColorBrush StatusBarColor
+        {
+            get { return _succeed ? _successColor : _failColor; }
+        }
+
+        private string _notifyMessage;
+        public string StatusMessage
+        {
+            get { return _notifyMessage; }
+            set { _notifyMessage = value; OnPropertyChanged(); OnPropertyChanged("StatusBarColor"); }
         }
 
         // Command defintions
@@ -59,19 +116,20 @@ namespace StyleTransfer
         public ICommand ChangeLiveStreamCommand { get; set; }
         public ICommand SetModelSourceCommand { get; set; }
 
-        public void SaveOutput()
+        public async void SaveOutput()
         {
-            // TODO: Take from UIButtonSaveImage_Click
-            return;
+            Debug.WriteLine("UIButtonSaveImage_Click");
+            if (_appModel.InputMedia != "LiveStream") await ImageHelper.SaveVideoFrameToFilePickedAsync(_appModel.OutputFrame);
         }
 
-        public async Task SetMediaSource(string obj)
+        public async Task SetMediaSource(string src)
         {
-            _appModel.InputMedia = obj;
+            _appModel.InputMedia = src;
 
-            // TODO: Reset media source stuff: set Camera input controls visibility to 0, etc. 
-            await CleanupCameraAsync();
-            // TODO: CleanupInputImage()
+            CleanupCameraAsync();
+            CleanupInputImage();
+            NotifyUser(true);
+            SaveEnabled = true;
 
             // Changes media source while keeping all other controls 
             switch (_appModel.InputMedia)
@@ -81,9 +139,12 @@ namespace StyleTransfer
                     // TODO: Also spin up a Capture for preview on left side
                     break;
                 case "AcquireImage":
+
+                    await StartAcquireImage();
                     break;
                 case "FilePick":
-                    // HelperMethods::LoadVideoFrameFromFilePickedAsync
+
+                    await StartFilePick();
                     break;
                 case "Inking":
                     break;
@@ -94,24 +155,109 @@ namespace StyleTransfer
 
         public async Task SetModelSource()
         {
-            // Clean up model, etc. by setting to null? 
-            // Based on InputMedia, call ChangeLiveStream/ChangeCamera/ChangeImage
             await LoadModelAsync();
+
             switch (_appModel.InputMedia)
             {
                 case "LiveStream":
                     await ChangeLiveStream();
-                    // TODO: Also spin up a Capture for preview on left side
                     break;
                 case "AcquireImage":
+                    await ChangeImage();
                     break;
                 case "FilePick":
+                    await ChangeImage();
                     break;
                 case "Inking":
                     break;
             }
         }
 
+
+        private async Task StartAcquireImage()
+        {
+
+            CameraCaptureUI dialog = new CameraCaptureUI();
+            dialog.PhotoSettings.AllowCropping = false;
+            dialog.PhotoSettings.Format = CameraCaptureUIPhotoFormat.Png;
+
+            StorageFile file = await dialog.CaptureFileAsync(CameraCaptureUIMode.Photo);
+
+            if (file != null)
+            {
+                _appModel.InputFrame = await ImageHelper.LoadVideoFrameFromStorageFileAsync(file);
+            }
+            else
+            {
+                Debug.WriteLine("Failed to capture image");
+                NotifyUser(false, "Failed to capture image.");
+            }
+
+            await ChangeImage();
+        }
+
+        public async Task StartFilePick()
+        {
+            Debug.WriteLine("StartFilePick");
+
+            try
+            {
+                // Load image to VideoFrame
+                _appModel.InputFrame = await ImageHelper.LoadVideoFrameFromFilePickedAsync();
+                if (_appModel.InputFrame == null)
+                {
+                    Debug.WriteLine("no valid image file selected");
+                }
+                else
+                {
+                }
+                await ChangeImage();
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"error: {ex.Message}");
+                NotifyUser(false, ex.Message);
+            }
+        }
+
+        public async Task ChangeImage()
+        {
+            // Make sure have an input image, use default otherwise
+            if (_appModel.InputFrame == null)
+            {
+                NotifyUser(false, "No valid image file selected, using default image instead.");
+                var file = await StorageFile.GetFileFromApplicationUriAsync(new Uri($"ms-appx:///Assets/{_DefaultImageFileName}"));
+                _appModel.InputFrame = await ImageHelper.LoadVideoFrameFromStorageFileAsync(file);
+            }
+
+            await EvaluateVideoFrameAsync();
+        }
+
+        private async Task EvaluateVideoFrameAsync()
+        {
+            Debug.WriteLine("EvaluateVideoFrameAsync");
+            Debug.WriteLine("Has Direct3dsurface", _appModel.InputFrame.Direct3DSurface != null);
+            if ((_appModel.InputFrame != null) &&
+                (_appModel.InputFrame.SoftwareBitmap != null || _appModel.InputFrame.Direct3DSurface != null))
+            {
+                _appModel.InputFrame = await ImageHelper.CenterCropImageAsync(_appModel.InputFrame, m_inWidth, m_inHeight);
+
+                m_binding.Bind(m_inputImageDescription, ImageFeatureValue.CreateFromVideoFrame(_appModel.InputFrame));
+                m_binding.Bind(m_outputImageDescription, ImageFeatureValue.CreateFromVideoFrame(_appModel.OutputFrame));
+
+                var results = m_session.Evaluate(m_binding, "test");
+
+                // Parse Results
+                IReadOnlyDictionary<string, object> outputs = results.Outputs;
+                foreach (var output in outputs)
+                {
+                    Debug.WriteLine($"{output.Key} : {output.Value} -> {output.Value.GetType()}");
+                }
+
+                await InputSoftwareBitmapSource.SetBitmapAsync(_appModel.InputFrame.SoftwareBitmap);
+                await OutputSoftwareBitmapSource.SetBitmapAsync(_appModel.OutputFrame.SoftwareBitmap);
+            }
+        }
         public async Task StartLiveStream()
         {
             Debug.WriteLine("StartLiveStream");
@@ -134,6 +280,7 @@ namespace StyleTransfer
             {
                 // No camera sources found
                 Debug.WriteLine("No Camera found");
+                NotifyUser(false, "No Camera found.");
                 return;
             }
 
@@ -144,9 +291,10 @@ namespace StyleTransfer
         public async Task ChangeLiveStream()
         {
             Debug.WriteLine("ChangeLiveStream");
+            SaveEnabled = false;
 
             // If webcam hasn't been initialized, bail.
-            if (_mediaFrameSourceGroupList == null) { return; }
+            if (_mediaFrameSourceGroupList == null) return;
 
             try
             {
@@ -158,7 +306,7 @@ namespace StyleTransfer
                 {
                     SourceGroup = _selectedMediaFrameSourceGroup,
                     PhotoCaptureSource = PhotoCaptureSource.Auto,
-                    MemoryPreference = MediaCaptureMemoryPreference.Cpu,
+                    MemoryPreference = _appModel.UseGPU ? MediaCaptureMemoryPreference.Auto : MediaCaptureMemoryPreference.Cpu,
                     StreamingCaptureMode = StreamingCaptureMode.Video
                 };
 
@@ -202,30 +350,27 @@ namespace StyleTransfer
 
             _appModel.OutputMediaSource = MediaSource.CreateFromMediaFrameSource(_selectedMediaFrameSource);
             _appModel.InputMediaSource = MediaSource.CreateFromMediaFrameSource(_selectedMediaFrameSource);
-
         }
 
         private async Task LoadModelAsync()
         {
+            m_session?.Dispose();
 
             StorageFile modelFile = await StorageFile.GetFileFromApplicationUriAsync(new Uri($"ms-appx:///Assets/{_appModel.ModelSource}.onnx"));
             m_model = await LearningModel.LoadFromStorageFileAsync(modelFile);
 
-            // TODO: Pass in useGPU as well.
-            m_inferenceDeviceSelected = LearningModelDeviceKind.Cpu;
+            m_inferenceDeviceSelected = _appModel.UseGPU ? LearningModelDeviceKind.DirectX : LearningModelDeviceKind.Cpu;
             m_session = new LearningModelSession(m_model, new LearningModelDevice(m_inferenceDeviceSelected));
             m_binding = new LearningModelBinding(m_session);
 
             debugModelIO();
 
             m_inputImageDescription = m_model.InputFeatures.ToList().First().Name;
-
             m_outputImageDescription = m_model.OutputFeatures.ToList().First().Name;
         }
 
         public void debugModelIO()
         {
-            uint m_inWidth, m_inHeight, m_outWidth, m_outHeight;
             string m_inName, m_outName;
             foreach (var inputF in m_model.InputFeatures)
             {
@@ -259,17 +404,13 @@ namespace StyleTransfer
             }
         }
 
-        private async Task CleanupCameraAsync()
+        private void CleanupCameraAsync()
         {
             Debug.WriteLine("CleanupCameraAsync");
             try
             {
-                if (_mediaCapture != null)
-                {
-                    if (videoEffect != null) await _mediaCapture.RemoveEffectAsync(videoEffect);
-                    await _mediaCapture.StopRecordAsync();
-                    _mediaCapture = null;
-                }
+                _mediaCapture?.Dispose();
+                _appModel.OutputMediaSource?.Dispose();
                 if (_appModel.OutputMediaSource != null)
                 {
                     _appModel.OutputMediaSource = null;
@@ -278,13 +419,36 @@ namespace StyleTransfer
                 {
                     videoEffect = null;
                 }
-                // TODO: Add inputmediasource once can show both at the same time
             }
 
             catch (Exception ex)
             {
                 Debug.WriteLine($"CleanupCameraAsync: {ex.Message}");
             }
+        }
+
+        private void CleanupInputImage()
+        {
+            InputSoftwareBitmapSource?.Dispose();
+            OutputSoftwareBitmapSource?.Dispose();
+
+            InputSoftwareBitmapSource = new SoftwareBitmapSource();
+            OutputSoftwareBitmapSource = new SoftwareBitmapSource();
+
+            _appModel.OutputFrame?.Dispose();
+            _appModel.OutputFrame = new VideoFrame(BitmapPixelFormat.Bgra8, (int)m_outWidth, (int)m_outHeight);
+        }
+
+        public void NotifyUser(bool success, string strMessage = "")
+        {
+            _succeed = success;
+            StatusMessage = strMessage;
+        }
+
+        public event PropertyChangedEventHandler PropertyChanged;
+        private void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
     }
 }

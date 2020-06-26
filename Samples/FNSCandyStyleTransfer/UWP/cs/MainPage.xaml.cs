@@ -584,22 +584,22 @@ namespace SnapCandy
                 _frameAquisitionLock.Release();
 
             }).ContinueWith(async (antecedent) =>
-        {
-            if (antecedent.IsCompletedSuccessfully && _isReadyForEval)
             {
-                await Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
+                if (antecedent.IsCompletedSuccessfully && _isReadyForEval)
                 {
-                    NotifyUser($"Ready to stylize! ", NotifyType.StatusMessage);
-                    UIImageControls.IsEnabled = true;
-                    UIModelControls.IsEnabled = true;
-                    UIToggleInferenceDevice.IsEnabled = true;
-                    if (_isrocessingImages)
+                    await Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
                     {
-                        UIButtonFilePick_Click(null, null);
-                    }
-                });
-            }
-        });
+                        NotifyUser($"Ready to stylize! ", NotifyType.StatusMessage);
+                        UIImageControls.IsEnabled = true;
+                        UIModelControls.IsEnabled = true;
+                        UIToggleInferenceDevice.IsEnabled = true;
+                        if (_isrocessingImages)
+                        {
+                            UIButtonFilePick_Click(null, null);
+                        }
+                    });
+                }
+            });
         }
 
         /// <summary>

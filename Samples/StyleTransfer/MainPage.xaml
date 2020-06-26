@@ -234,6 +234,7 @@
             Grid.Column="0"
             MaxWidth="720"
             MaxHeight="720"
+            Source="{Binding InputSoftwareBitmapSource}"
             Stretch="Uniform" />
 
         <!--  Output image panel  -->
@@ -242,6 +243,7 @@
               Name="UIResultImage"
               MaxWidth="720"
               MaxHeight="720"
+              Source="{Binding OutputSoftwareBitmapSource}"
               Stretch="Uniform" />
 
           <MediaPlayerElement
@@ -262,7 +264,8 @@
               Background="#FF939393"
               Command="{Binding SaveCommand}"
               IsEnabled="true"
-              ToolTipService.ToolTip="Save the image result to a file">
+              ToolTipService.ToolTip="Save the image result to a file"
+              Visibility="{Binding SaveEnabled, Converter={StaticResource BoolToVis}, Mode=OneWay}">
             <Button.Content>
               <SymbolIcon Symbol="Save" />
             </Button.Content>
@@ -294,43 +297,33 @@
           </ComboBox.Background>
         </ComboBox>
         <!-- TODO: Add back in once have preview stream
-        <TextBlock Style="{StaticResource TextBlockStyling}" Text="Preview resolution: " />
-        <TextBlock
-            Name="UITxtBlockPreviewProperties"
-            Style="{StaticResource TextBlockStyling}"
-            Text="0x0" />
-         !-->
+                  <TextBlock Style="{StaticResource TextBlockStyling}" Text="Preview resolution: " />
+                  <TextBlock
+                      Name="UITxtBlockPreviewProperties"
+                      Style="{StaticResource TextBlockStyling}"
+                      Text="0x0" />
+                !-->
       </StackPanel>
-
-      <ProgressRing
-          Name="UIProcessingProgressRing"
-          Grid.Row="2"
-          MaxWidth="720"
-          MaxHeight="720"
-          Margin="10,0,0,0"
-          HorizontalAlignment="Left"
-          Foreground="#FF02487F"
-          IsActive="true"
-          Visibility="{Binding CurrentApp.StreamingControlsVisible, Converter={StaticResource BoolToVis}, Mode=OneWay}" />
 
       <Border
           x:Name="UIStatusBorder"
           Grid.Row="2"
-          Background="#CC348508">
-        <StackPanel
-            HorizontalAlignment="Center"
-            VerticalAlignment="Center"
-            Orientation="Horizontal"
-            Visibility="{Binding CurrentApp.StreamingControlsVisible, Converter={StaticResource BoolToVis}, Mode=OneWay}">
-          <TextBlock Margin="0,0,10,0" Visibility="Visible">
+          Background="{Binding StatusBarColor}">
+        <RelativePanel>
+          <TextBlock
+              RelativePanel.AlignVerticalCenterWithPanel="True"
+              Text="{Binding StatusMessage}"
+              TextAlignment="Center" />
+          <TextBlock
+              RelativePanel.AlignHorizontalCenterWithPanel="True"
+              RelativePanel.AlignVerticalCenterWithPanel="True"
+              Visibility="{Binding CurrentApp.StreamingControlsVisible, Converter={StaticResource BoolToVis}, Mode=OneWay}">
             <Run x:Uid="TxtCapture" FontWeight="Bold" />
             <Run Text="{x:Bind dummyFPS}" />
-          </TextBlock>
-          <TextBlock Margin="10,0,0,0" Visibility="Visible">
             <Run x:Uid="TxtRender" FontWeight="Bold" />
             <Run FontWeight="Normal" Text="{x:Bind dummyFPS}" />
           </TextBlock>
-        </StackPanel>
+        </RelativePanel>
       </Border>
 
     </Grid>

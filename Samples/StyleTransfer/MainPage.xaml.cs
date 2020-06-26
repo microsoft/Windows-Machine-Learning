@@ -12,7 +12,7 @@ using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
-using Microsoft.AI.MachineLearning;
+using Windows.AI.MachineLearning;
 using Windows.Media.Playback;
 using Windows.Media.Core;
 using Windows.Media.Capture;
@@ -33,13 +33,7 @@ namespace StyleTransfer
     /// </summary>
     public sealed partial class MainPage : Page
     {
-        public int dummyFPS = 10;
-        public List<string> modelFileNames = new List<string>
-            {"candy",
-                "mosaic",
-                "la_muse",
-                "udnie"
-            };
+
         private AppViewModel _viewModel;
 
         public MainPage()

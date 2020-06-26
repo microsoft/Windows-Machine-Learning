@@ -26,10 +26,10 @@ namespace StyleTransferEffectComponent
         public void Close(MediaEffectClosedReason reason)
         {
             // Dispose of effect resources
-            if (_session != null) { _session = null; }
-            if (_binding != null) { _binding = null; }
-            if (_inputImageDescription != null) { _inputImageDescription = null; }
-            if (_outputImageDescription != null) { _outputImageDescription = null; }
+            if (_session != null) _session = null;
+            if (_binding != null) _binding = null;
+            if (_inputImageDescription != null) _inputImageDescription = null;
+            if (_outputImageDescription != null) _outputImageDescription = null;
         }
 
 
@@ -49,13 +49,9 @@ namespace StyleTransferEffectComponent
                 var encodingProperties = new VideoEncodingProperties();
                 encodingProperties.Subtype = "ARGB32";
                 return new List<VideoEncodingProperties>() { encodingProperties };
-
-                // If the list is empty, the encoding type will be ARGB32.
-                // return new List<VideoEncodingProperties>();
             }
         }
-        // TODO: Chagne to GpuAndCpu, or based on toggle value in UI
-        public MediaMemoryTypes SupportedMemoryTypes { get { return MediaMemoryTypes.Cpu; } }
+        public MediaMemoryTypes SupportedMemoryTypes { get { return MediaMemoryTypes.GpuAndCpu; } }
 
         public bool TimeIndependent { get { return true; } }
 
@@ -68,56 +64,52 @@ namespace StyleTransferEffectComponent
         public LearningModelBinding Binding
         {
             get
-            {   // TODO: Read in model from configuration
-                // If null, then fail. 
+            {
                 object val;
                 if (configuration != null && configuration.TryGetValue("Binding", out val))
                 {
                     return (LearningModelBinding)val;
                 }
-                return null; // Different default value/ raise exception
+                return null;
             }
         }
 
         public LearningModelSession Session
         {
             get
-            {   // TODO: Read in model from configuration
-                // If null, then fail. 
+            {
                 object val;
                 if (configuration != null && configuration.TryGetValue("Session", out val))
                 {
                     return (LearningModelSession)val;
                 }
-                return null; // Different default value/ raise exception
+                return null;
             }
         }
 
         public string InputImageDescription
         {
             get
-            {   // TODO: Read in model from configuration
-                // If null, then fail. 
+            {
                 object val;
                 if (configuration != null && configuration.TryGetValue("InputImageDescription", out val))
                 {
                     return (string)val;
                 }
-                return null; // Different default value/ raise exception
+                return null;
             }
         }
 
         public string OutputImageDescription
         {
             get
-            {   // TODO: Read in model from configuration
-                // If null, then fail. 
+            {
                 object val;
                 if (configuration != null && configuration.TryGetValue("OutputImageDescription", out val))
                 {
                     return (string)val;
                 }
-                return null; // Different default value/ raise exception
+                return null;
             }
         }
 
@@ -132,10 +124,22 @@ namespace StyleTransferEffectComponent
                 _inputImageDescription = InputImageDescription;
                 _outputImageDescription = OutputImageDescription;
 
-                _binding.Bind(_inputImageDescription, ImageFeatureValue.CreateFromVideoFrame(inputVideoFrame));
-                _binding.Bind(_outputImageDescription, ImageFeatureValue.CreateFromVideoFrame(outputVideoFrame)); // Check if this correctly sets the context output
+                VideoFrame inputTransformed = new VideoFrame(BitmapPixelFormat.Bgra8, 720, 720);
+                Task.Run(async () =>
+                {
+                    await inputVideoFrame.CopyToAsync(inputTransformed);
 
-                var results = _session.Evaluate(_binding, "test");
+                    VideoFrame outputTransformed = new VideoFrame(BitmapPixelFormat.Bgra8, 720, 720);
+                    await inputVideoFrame.CopyToAsync(inputTransformed);
+
+                    _binding.Bind(_inputImageDescription, ImageFeatureValue.CreateFromVideoFrame(inputTransformed));
+                    _binding.Bind(_outputImageDescription, ImageFeatureValue.CreateFromVideoFrame(outputTransformed));
+
+                    var results = _session.Evaluate(_binding, "test");
+                    await outputTransformed.CopyToAsync(outputVideoFrame);
+                }).ConfigureAwait(false).GetAwaiter().GetResult();
+
+
             }
         }
     }

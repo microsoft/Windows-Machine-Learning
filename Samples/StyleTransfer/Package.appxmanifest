@@ -9,7 +9,7 @@
   <Identity
     Name="967b0fd3-32f7-4959-aafd-759d8517182a"
     Publisher="CN=t-limay"
-    Version="1.0.0.0" />
+    Version="1.0.1.0" />
 
   <mp:PhoneIdentity PhoneProductId="967b0fd3-32f7-4959-aafd-759d8517182a" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
 
@@ -42,6 +42,15 @@
       </uap:VisualElements>
     </Application>
   </Applications>
+
+  <Extensions>
+    <Extension Category="windows.activatableClass.inProcessServer">
+      <InProcessServer>
+        <Path>CLRHost.dll</Path>
+        <ActivatableClass ActivatableClassId="StyleEffect.StyleTransferVideoEffect" ThreadingModel="both" />
+      </InProcessServer>
+    </Extension>
+  </Extensions>
 
   <Capabilities>
     <Capability Name="internetClient" />

@@ -47,15 +47,22 @@ namespace StyleTransfer
         private List<MediaFrameSourceGroup> _mediaFrameSourceGroupList;
         private MediaFrameSourceGroup _selectedMediaFrameSourceGroup;
         private MediaFrameSource _selectedMediaFrameSource;
+        public int dummyFPS = 10;
 
         // Style transfer effect properties
         private LearningModel m_model = null;
         private LearningModelDeviceKind m_inferenceDeviceSelected = LearningModelDeviceKind.Default;
         private LearningModelSession m_session;
         private LearningModelBinding m_binding;
-        string m_inputImageDescription;
-        string m_outputImageDescription;
-        IMediaExtension videoEffect;
+        private string m_inputImageDescription;
+        private string m_outputImageDescription;
+        private IMediaExtension videoEffect;
+        public readonly List<string> modelFileNames = new List<string>
+        {   "candy",
+            "mosaic",
+            "la_muse",
+            "udnie"
+        };
 
         // Image style transfer properties
         uint m_inWidth, m_inHeight, m_outWidth, m_outHeight;
@@ -66,18 +73,11 @@ namespace StyleTransfer
         private SolidColorBrush _successColor = new SolidColorBrush(Windows.UI.Colors.Green);
         private SolidColorBrush _failColor = new SolidColorBrush(Windows.UI.Colors.Red);
 
-
         private AppModel _appModel;
         public AppModel CurrentApp
         {
             get { return _appModel; }
         }
-
-        // Command defintions
-        public ICommand SaveCommand { get; set; }
-        public ICommand SetMediaSourceCommand { get; set; }
-        public ICommand ChangeLiveStreamCommand { get; set; }
-        public ICommand SetModelSourceCommand { get; set; }
 
         private SoftwareBitmapSource _inputSoftwareBitmapSource;
         public SoftwareBitmapSource InputSoftwareBitmapSource
@@ -110,34 +110,22 @@ namespace StyleTransfer
             set { _notifyMessage = value; OnPropertyChanged(); OnPropertyChanged("StatusBarColor"); }
         }
 
+        // Command defintions
+        public ICommand SaveCommand { get; set; }
+        public ICommand SetMediaSourceCommand { get; set; }
+        public ICommand ChangeLiveStreamCommand { get; set; }
+        public ICommand SetModelSourceCommand { get; set; }
+
         public async void SaveOutput()
         {
             Debug.WriteLine("UIButtonSaveImage_Click");
-            if (_appModel.InputMedia == "LiveStream")
-            {
-
-                var previewProperties = _mediaCapture.VideoDeviceController.GetMediaStreamProperties(MediaStreamType.VideoPreview) as VideoEncodingProperties;
-
-                // Create the video frame to request a SoftwareBitmap preview frame
-                var videoFrame = new VideoFrame(BitmapPixelFormat.Bgra8, (int)previewProperties.Width, (int)previewProperties.Height);
-
-                // Capture the preview frame
-                using (var currentFrame = await _mediaCapture.GetPreviewFrameAsync(videoFrame))
-                {
-                    SoftwareBitmap previewFrame = currentFrame.SoftwareBitmap;
-                    await ImageHelper.SaveVideoFrameToFilePickedAsync(videoFrame);
-                }
-            }
-            else await ImageHelper.SaveVideoFrameToFilePickedAsync(_appModel.OutputFrame);
-
-            return;
+            if (_appModel.InputMedia != "LiveStream") await ImageHelper.SaveVideoFrameToFilePickedAsync(_appModel.OutputFrame);
         }
 
-        public async Task SetMediaSource(string obj)
+        public async Task SetMediaSource(string src)
         {
-            _appModel.InputMedia = obj;
+            _appModel.InputMedia = src;
 
-            // TODO: Reset media source stuff: set Camera input controls visibility to 0, etc. 
             CleanupCameraAsync();
             CleanupInputImage();
             NotifyUser(true);
@@ -167,7 +155,6 @@ namespace StyleTransfer
 
         public async Task SetModelSource()
         {
-            // Clean up model, etc. by setting to null? 
             await LoadModelAsync();
 
             switch (_appModel.InputMedia)
@@ -199,7 +186,6 @@ namespace StyleTransfer
             if (file != null)
             {
                 _appModel.InputFrame = await ImageHelper.LoadVideoFrameFromStorageFileAsync(file);
-
             }
             else
             {
@@ -226,8 +212,6 @@ namespace StyleTransfer
                 {
                 }
                 await ChangeImage();
-
-
             }
             catch (Exception ex)
             {
@@ -251,6 +235,7 @@ namespace StyleTransfer
 
         private async Task EvaluateVideoFrameAsync()
         {
+            Debug.WriteLine("EvaluateVideoFrameAsync");
             Debug.WriteLine("Has Direct3dsurface", _appModel.InputFrame.Direct3DSurface != null);
             if ((_appModel.InputFrame != null) &&
                 (_appModel.InputFrame.SoftwareBitmap != null || _appModel.InputFrame.Direct3DSurface != null))
@@ -308,9 +293,8 @@ namespace StyleTransfer
             Debug.WriteLine("ChangeLiveStream");
             SaveEnabled = false;
 
-
             // If webcam hasn't been initialized, bail.
-            if (_mediaFrameSourceGroupList == null) { return; }
+            if (_mediaFrameSourceGroupList == null) return;
 
             try
             {
@@ -375,7 +359,6 @@ namespace StyleTransfer
             StorageFile modelFile = await StorageFile.GetFileFromApplicationUriAsync(new Uri($"ms-appx:///Assets/{_appModel.ModelSource}.onnx"));
             m_model = await LearningModel.LoadFromStorageFileAsync(modelFile);
 
-            // TODO: Pass in useGPU as well.
             m_inferenceDeviceSelected = _appModel.UseGPU ? LearningModelDeviceKind.DirectX : LearningModelDeviceKind.Cpu;
             m_session = new LearningModelSession(m_model, new LearningModelDevice(m_inferenceDeviceSelected));
             m_binding = new LearningModelBinding(m_session);
@@ -383,7 +366,6 @@ namespace StyleTransfer
             debugModelIO();
 
             m_inputImageDescription = m_model.InputFeatures.ToList().First().Name;
-
             m_outputImageDescription = m_model.OutputFeatures.ToList().First().Name;
         }
 
@@ -437,7 +419,6 @@ namespace StyleTransfer
                 {
                     videoEffect = null;
                 }
-                // TODO: Add inputmediasource once can show both at the same time
             }
 
             catch (Exception ex)

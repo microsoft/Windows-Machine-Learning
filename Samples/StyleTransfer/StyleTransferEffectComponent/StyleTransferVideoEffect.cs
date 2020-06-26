@@ -26,10 +26,10 @@ namespace StyleTransferEffectComponent
         public void Close(MediaEffectClosedReason reason)
         {
             // Dispose of effect resources
-            if (_session != null) { _session = null; }
-            if (_binding != null) { _binding = null; }
-            if (_inputImageDescription != null) { _inputImageDescription = null; }
-            if (_outputImageDescription != null) { _outputImageDescription = null; }
+            if (_session != null) _session = null;
+            if (_binding != null) _binding = null;
+            if (_inputImageDescription != null) _inputImageDescription = null;
+            if (_outputImageDescription != null) _outputImageDescription = null;
         }
 
 
@@ -49,12 +49,8 @@ namespace StyleTransferEffectComponent
                 var encodingProperties = new VideoEncodingProperties();
                 encodingProperties.Subtype = "ARGB32";
                 return new List<VideoEncodingProperties>() { encodingProperties };
-
-                // If the list is empty, the encoding type will be ARGB32.
-                // return new List<VideoEncodingProperties>();
             }
         }
-        // TODO: Chagne to GpuAndCpu, or based on toggle value in UI
         public MediaMemoryTypes SupportedMemoryTypes { get { return MediaMemoryTypes.GpuAndCpu; } }
 
         public bool TimeIndependent { get { return true; } }
@@ -68,56 +64,52 @@ namespace StyleTransferEffectComponent
         public LearningModelBinding Binding
         {
             get
-            {   // TODO: Read in model from configuration
-                // If null, then fail. 
+            {
                 object val;
                 if (configuration != null && configuration.TryGetValue("Binding", out val))
                 {
                     return (LearningModelBinding)val;
                 }
-                return null; // Different default value/ raise exception
+                return null;
             }
         }
 
         public LearningModelSession Session
         {
             get
-            {   // TODO: Read in model from configuration
-                // If null, then fail. 
+            {
                 object val;
                 if (configuration != null && configuration.TryGetValue("Session", out val))
                 {
                     return (LearningModelSession)val;
                 }
-                return null; // Different default value/ raise exception
+                return null;
             }
         }
 
         public string InputImageDescription
         {
             get
-            {   // TODO: Read in model from configuration
-                // If null, then fail. 
+            {
                 object val;
                 if (configuration != null && configuration.TryGetValue("InputImageDescription", out val))
                 {
                     return (string)val;
                 }
-                return null; // Different default value/ raise exception
+                return null;
             }
         }
 
         public string OutputImageDescription
         {
             get
-            {   // TODO: Read in model from configuration
-                // If null, then fail. 
+            {
                 object val;
                 if (configuration != null && configuration.TryGetValue("OutputImageDescription", out val))
                 {
                     return (string)val;
                 }
-                return null; // Different default value/ raise exception
+                return null;
             }
         }
 

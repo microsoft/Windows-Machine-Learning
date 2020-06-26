@@ -33,13 +33,7 @@ namespace StyleTransfer
     /// </summary>
     public sealed partial class MainPage : Page
     {
-        public int dummyFPS = 10;
-        public List<string> modelFileNames = new List<string>
-            {"candy",
-                "mosaic",
-                "la_muse",
-                "udnie"
-            };
+
         private AppViewModel _viewModel;
 
         public MainPage()

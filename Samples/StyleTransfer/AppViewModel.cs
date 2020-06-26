@@ -47,7 +47,6 @@ namespace StyleTransfer
         private List<MediaFrameSourceGroup> _mediaFrameSourceGroupList;
         private MediaFrameSourceGroup _selectedMediaFrameSourceGroup;
         private MediaFrameSource _selectedMediaFrameSource;
-        public int dummyFPS = 10;
 
         // Style transfer effect properties
         private LearningModel m_model = null;
@@ -57,12 +56,7 @@ namespace StyleTransfer
         private string m_inputImageDescription;
         private string m_outputImageDescription;
         private IMediaExtension videoEffect;
-        public readonly List<string> modelFileNames = new List<string>
-        {   "candy",
-            "mosaic",
-            "la_muse",
-            "udnie"
-        };
+
 
         // Image style transfer properties
         uint m_inWidth, m_inHeight, m_outWidth, m_outHeight;

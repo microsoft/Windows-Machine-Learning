@@ -28,6 +28,8 @@ using System.Threading.Tasks;
 
 namespace StyleTransfer
 {
+
+
     /// <summary>
     /// An empty page that can be used on its own or navigated to within a Frame.
     /// </summary>
@@ -35,6 +37,13 @@ namespace StyleTransfer
     {
 
         private AppViewModel _viewModel;
+        public readonly List<string> modelFileNames = new List<string>
+        {   "candy",
+            "mosaic",
+            "la_muse",
+            "udnie"
+        };
+        public int dummyFPS = 10;
 
         public MainPage()
         {

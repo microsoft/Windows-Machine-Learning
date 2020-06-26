@@ -50,12 +50,12 @@ namespace StyleTransfer
         private LearningModelDeviceKind m_inferenceDeviceSelected = LearningModelDeviceKind.Default;
         private LearningModelSession m_session;
         private LearningModelBinding m_binding;
-        string m_inputImageDescription;
-        string m_outputImageDescription;
-        IMediaExtension videoEffect;
+        private string m_inputImageDescription;
+        private string m_outputImageDescription;
+        private IMediaExtension videoEffect;
 
         // Image style transfer properties
-        uint m_inWidth, m_inHeight, m_outWidth, m_outHeight;
+        private uint m_inWidth, m_inHeight, m_outWidth, m_outHeight;
         private string _DefaultImageFileName = "Input.jpg";
 
         // User notifiaction properties
@@ -104,7 +104,8 @@ namespace StyleTransfer
         public async void SaveOutput()
         {
             Debug.WriteLine("UIButtonSaveImage_Click");
-            await ImageHelper.SaveVideoFrameToFilePickedAsync(_appModel.OutputFrame);
+            // Can't save from live stream, bail if somehow triggered in live stream
+            if (_appModel.InputMedia != "LiveStream") await ImageHelper.SaveVideoFrameToFilePickedAsync(_appModel.OutputFrame);
             return;
         }
 
@@ -112,7 +113,7 @@ namespace StyleTransfer
         {
             _appModel.InputMedia = obj;
 
-            // TODO: Reset media source stuff: set Camera input controls visibility to 0, etc. 
+            // Reset media source, cameras, notification bar
             CleanupCameraAsync();
             CleanupInputImage();
             NotifyUser(true);
@@ -126,11 +127,9 @@ namespace StyleTransfer
                     // TODO: Also spin up a Capture for preview on left side
                     break;
                 case "AcquireImage":
-
                     await StartAcquireImage();
                     break;
                 case "FilePick":
-
                     await StartFilePick();
                     break;
                 case "Inking":
@@ -142,7 +141,6 @@ namespace StyleTransfer
 
         public async Task SetModelSource()
         {
-            // Clean up model, etc. by setting to null? 
             await LoadModelAsync();
 
             switch (_appModel.InputMedia)

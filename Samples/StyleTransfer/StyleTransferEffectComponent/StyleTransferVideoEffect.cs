@@ -133,7 +133,7 @@ namespace StyleTransferEffectComponent
                 _outputImageDescription = OutputImageDescription;
 
                 _binding.Bind(_inputImageDescription, ImageFeatureValue.CreateFromVideoFrame(inputVideoFrame));
-                _binding.Bind(_outputImageDescription, ImageFeatureValue.CreateFromVideoFrame(outputVideoFrame)); // Check if this correctly sets the context output
+                _binding.Bind(_outputImageDescription, ImageFeatureValue.CreateFromVideoFrame(outputVideoFrame));
 
                 var results = _session.Evaluate(_binding, "test");
             }

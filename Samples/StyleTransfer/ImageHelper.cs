@@ -208,7 +208,6 @@ namespace StyleTransfer
                         frameToEncode.SoftwareBitmap.BitmapPixelFormat.Equals(BitmapPixelFormat.Bgra8) ?
                         frameToEncode.SoftwareBitmap
                         : SoftwareBitmap.Convert(frameToEncode.SoftwareBitmap, BitmapPixelFormat.Bgra8));
-
                     await encoder.FlushAsync();
                 }
             });

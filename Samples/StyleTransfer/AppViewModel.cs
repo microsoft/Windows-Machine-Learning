@@ -133,7 +133,6 @@ namespace StyleTransfer
                     // TODO: Also spin up a Capture for preview on left side
                     break;
                 case "AcquireImage":
-
                     await StartAcquireImage();
                     break;
                 case "FilePick":
@@ -230,7 +229,7 @@ namespace StyleTransfer
         private async Task EvaluateVideoFrameAsync()
         {
             Debug.WriteLine("EvaluateVideoFrameAsync");
-            Debug.WriteLine("Has Direct3dsurface", _appModel.InputFrame.Direct3DSurface != null);
+            if (_appModel.InputFrame.Direct3DSurface != null) Debug.WriteLine("Has Direct3dsurface");
             if ((_appModel.InputFrame != null) &&
                 (_appModel.InputFrame.SoftwareBitmap != null || _appModel.InputFrame.Direct3DSurface != null))
             {

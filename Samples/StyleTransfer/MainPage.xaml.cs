@@ -43,7 +43,7 @@ namespace StyleTransfer
             "la_muse",
             "udnie"
         };
-        public int dummyFPS = 10;
+        public int dummyFPS = 0;
 
         public MainPage()
         {

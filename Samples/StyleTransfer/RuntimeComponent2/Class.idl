@@ -1,0 +1,11 @@
+
+namespace RuntimeComponent2
+{
+	[default_interface]
+	runtimeclass Class : Windows.Media.Effects.IBasicVideoEffect
+	{
+		Class();
+		Int32 MyProperty;
+		void SetProperties(Windows.Foundation.Collections.IPropertySet config);
+	}
+}

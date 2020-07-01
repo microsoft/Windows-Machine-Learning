@@ -14,7 +14,7 @@ using Windows.Media.Playback;
 using Windows.Media.Effects;
 using Windows.Media;
 using Windows.Foundation.Collections;
-using Windows.AI.MachineLearning;
+using Microsoft.AI.MachineLearning;
 using Windows.Storage;
 using System.Runtime.CompilerServices;
 using Windows.Graphics.Imaging;

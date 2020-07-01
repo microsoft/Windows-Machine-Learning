@@ -5,6 +5,7 @@
 
 namespace winrt::RuntimeComponent2::implementation
 {
+	Class::Class() : outputTransformed(VideoFrame(Windows::Graphics::Imaging::BitmapPixelFormat::Bgra8, 720, 720)) {}
 
 	IVectorView<VideoEncodingProperties> Class::SupportedEncodingProperties() {
 		VideoEncodingProperties encodingProperties = VideoEncodingProperties();
@@ -60,16 +61,19 @@ namespace winrt::RuntimeComponent2::implementation
 		throw hresult_not_implemented();
 	}
 
+
 	void Class::ProcessFrame(ProcessVideoFrameContext context) {
 		LearningModelSession _session = Session();
 		LearningModelBinding _binding = Binding();
 		VideoFrame inputFrame = context.InputFrame();
 		VideoFrame outputFrame = context.OutputFrame();
 
-		_binding.Bind(InputImageDescription(), inputFrame);
-		_binding.Bind(OutputImageDescription(), outputFrame);
 
-		auto results = _session.Evaluate(_binding, L"test");
+		_binding.Bind(InputImageDescription(), inputFrame);
+		_binding.Bind(OutputImageDescription(), outputTransformed);
+
+		_session.Evaluate(_binding, L"test");
+		outputTransformed.CopyToAsync(context.OutputFrame());
 	}
 
 	void Class::SetEncodingProperties(VideoEncodingProperties props, IDirect3DDevice device) {

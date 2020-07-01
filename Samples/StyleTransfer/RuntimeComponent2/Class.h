@@ -14,7 +14,8 @@ namespace winrt::RuntimeComponent2::implementation
 {
 	struct Class : ClassT<Class>
 	{
-		Class() = default;
+		Class();
+		VideoFrame outputTransformed;
 
 		IVectorView<VideoEncodingProperties> SupportedEncodingProperties();
 		bool TimeIndependent();

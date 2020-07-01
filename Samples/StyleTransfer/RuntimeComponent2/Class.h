@@ -16,7 +16,6 @@ namespace winrt::RuntimeComponent2::implementation
 	{
 		Class() = default;
 
-		int32_t MyProperty();
 		IVectorView<VideoEncodingProperties> SupportedEncodingProperties();
 		bool TimeIndependent();
 		MediaMemoryTypes SupportedMemoryTypes();
@@ -35,7 +34,7 @@ namespace winrt::RuntimeComponent2::implementation
 		LearningModelBinding Binding();
 		hstring InputImageDescription();
 		hstring OutputImageDescription();
-
+		VideoEncodingProperties encodingProperties;
 	};
 }
 

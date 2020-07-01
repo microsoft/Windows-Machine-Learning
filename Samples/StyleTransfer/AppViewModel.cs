@@ -307,7 +307,7 @@ namespace StyleTransfer
                 await _mediaCapture.InitializeAsync(settings);
 
                 // Initialize VideoEffect
-                VideoEffectDefinition videoEffectDefinition = new VideoEffectDefinition("StyleTransferEffectComponent.StyleTransferVideoEffect");
+                VideoEffectDefinition videoEffectDefinition = new VideoEffectDefinition("RuntimeComponent2.Class");
                 videoEffect = await _mediaCapture.AddVideoEffectAsync(videoEffectDefinition, MediaStreamType.VideoPreview);
                 videoEffect.SetProperties(new PropertySet() {
                     { "Session", m_session},

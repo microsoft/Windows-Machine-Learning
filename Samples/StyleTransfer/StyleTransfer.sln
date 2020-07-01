@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StyleTransfer", "StyleTrans
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StyleTransferEffectComponent", "StyleTransferEffectComponent\StyleTransferEffectComponent.csproj", "{62925583-4D02-451E-9A72-27B12B66712C}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "RuntimeComponent2", "RuntimeComponent2\RuntimeComponent2.vcxproj", "{E9C60C87-553F-406B-892E-1F827A31930D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -67,6 +69,24 @@ Global
 		{62925583-4D02-451E-9A72-27B12B66712C}.Release|x64.Build.0 = Release|x64
 		{62925583-4D02-451E-9A72-27B12B66712C}.Release|x86.ActiveCfg = Release|x86
 		{62925583-4D02-451E-9A72-27B12B66712C}.Release|x86.Build.0 = Release|x86
+		{E9C60C87-553F-406B-892E-1F827A31930D}.Debug|Any CPU.ActiveCfg = Debug|Win32
+		{E9C60C87-553F-406B-892E-1F827A31930D}.Debug|ARM.ActiveCfg = Debug|ARM
+		{E9C60C87-553F-406B-892E-1F827A31930D}.Debug|ARM.Build.0 = Debug|ARM
+		{E9C60C87-553F-406B-892E-1F827A31930D}.Debug|ARM64.ActiveCfg = Debug|ARM64
+		{E9C60C87-553F-406B-892E-1F827A31930D}.Debug|ARM64.Build.0 = Debug|ARM64
+		{E9C60C87-553F-406B-892E-1F827A31930D}.Debug|x64.ActiveCfg = Debug|x64
+		{E9C60C87-553F-406B-892E-1F827A31930D}.Debug|x64.Build.0 = Debug|x64
+		{E9C60C87-553F-406B-892E-1F827A31930D}.Debug|x86.ActiveCfg = Debug|Win32
+		{E9C60C87-553F-406B-892E-1F827A31930D}.Debug|x86.Build.0 = Debug|Win32
+		{E9C60C87-553F-406B-892E-1F827A31930D}.Release|Any CPU.ActiveCfg = Release|Win32
+		{E9C60C87-553F-406B-892E-1F827A31930D}.Release|ARM.ActiveCfg = Release|ARM
+		{E9C60C87-553F-406B-892E-1F827A31930D}.Release|ARM.Build.0 = Release|ARM
+		{E9C60C87-553F-406B-892E-1F827A31930D}.Release|ARM64.ActiveCfg = Release|ARM64
+		{E9C60C87-553F-406B-892E-1F827A31930D}.Release|ARM64.Build.0 = Release|ARM64
+		{E9C60C87-553F-406B-892E-1F827A31930D}.Release|x64.ActiveCfg = Release|x64
+		{E9C60C87-553F-406B-892E-1F827A31930D}.Release|x64.Build.0 = Release|x64
+		{E9C60C87-553F-406B-892E-1F827A31930D}.Release|x86.ActiveCfg = Release|Win32
+		{E9C60C87-553F-406B-892E-1F827A31930D}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

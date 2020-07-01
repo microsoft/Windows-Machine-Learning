@@ -5,15 +5,6 @@
 
 namespace winrt::RuntimeComponent2::implementation
 {
-	int32_t Class::MyProperty()
-	{
-		throw hresult_not_implemented();
-	}
-
-	void Class::MyProperty(int32_t /* value */)
-	{
-		throw hresult_not_implemented();
-	}
 
 	IVectorView<VideoEncodingProperties> Class::SupportedEncodingProperties() {
 		VideoEncodingProperties encodingProperties = VideoEncodingProperties();
@@ -22,7 +13,7 @@ namespace winrt::RuntimeComponent2::implementation
 	}
 
 	LearningModelSession Class::Session() {
-		if (!configuration) {
+		if (this->configuration) {
 			IInspectable val = configuration.TryLookup(L"Session");
 			if (val) {
 				return val.try_as<LearningModelSession>();
@@ -31,9 +22,9 @@ namespace winrt::RuntimeComponent2::implementation
 		return NULL;
 	}
 	LearningModelBinding Class::Binding() {
-		if (!configuration) {
+		if (configuration) {
 			IInspectable val = configuration.TryLookup(L"Binding");
-			if (!configuration && val) {
+			if (val) {
 				return val.try_as<LearningModelBinding>();
 			}
 		}
@@ -41,18 +32,18 @@ namespace winrt::RuntimeComponent2::implementation
 	}
 
 	hstring Class::InputImageDescription() {
-		if (!configuration) {
+		if (configuration) {
 			IInspectable val = configuration.TryLookup(L"InputImageDescription");
-			if (!configuration && val) {
+			if (val) {
 				return unbox_value<hstring>(val);
 			}
 		}
 		return L"";
 	}
 	hstring Class::OutputImageDescription() {
-		if (!configuration) {
+		if (configuration) {
 			IInspectable val = configuration.TryLookup(L"OutputImageDescription");
-			if (!configuration && val) {
+			if (val) {
 				return unbox_value<hstring>(val);
 			}
 		}
@@ -81,11 +72,11 @@ namespace winrt::RuntimeComponent2::implementation
 		auto results = _session.Evaluate(_binding, L"test");
 	}
 
-	void Class::SetEncodingProperties(VideoEncodingProperties, IDirect3DDevice) {
-		throw hresult_not_implemented();
+	void Class::SetEncodingProperties(VideoEncodingProperties props, IDirect3DDevice device) {
+		encodingProperties = props;
 	}
 
 	void Class::SetProperties(IPropertySet config) {
-		configuration = config;
+		this->configuration = config;
 	}
 }

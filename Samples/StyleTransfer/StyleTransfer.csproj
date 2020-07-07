@@ -250,13 +250,9 @@
     <Folder Include="Helpers\" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="RuntimeComponent2\RuntimeComponent2.vcxproj">
-      <Project>{e9c60c87-553f-406b-892e-1f827a31930d}</Project>
-      <Name>RuntimeComponent2</Name>
-    </ProjectReference>
-    <ProjectReference Include="StyleTransferEffectComponent\StyleTransferEffectComponent.csproj">
-      <Project>{62925583-4d02-451e-9a72-27b12b66712c}</Project>
-      <Name>StyleTransferEffectComponent</Name>
+    <ProjectReference Include="VideoEffect\StyleTransferEffectCpp\StyleTransferEffectCpp.vcxproj">
+      <Project>{05dffb01-62c4-458c-be13-7a97e8583e43}</Project>
+      <Name>StyleTransferEffectCpp</Name>
     </ProjectReference>
   </ItemGroup>
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '14.0' ">

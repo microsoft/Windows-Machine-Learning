@@ -1,5 +1,5 @@
 ========================================================================
-    C++/WinRT RuntimeComponent2 Project Overview
+    C++/WinRT StyleTransferEffectCpp Project Overview
 ========================================================================
 
 This project demonstrates how to get started authoring Windows Runtime 

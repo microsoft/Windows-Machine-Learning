@@ -56,7 +56,9 @@ namespace StyleTransfer
         private string m_inputImageDescription;
         private string m_outputImageDescription;
         private IMediaExtension videoEffect;
-
+        private VideoEffectDefinition videoEffectDefinition;
+        // Activatable Class ID of the video effect. 
+        private String _videoEffectID = "StyleTransferEffectCpp.StyleTransferEffect";
 
         // Image style transfer properties
         uint m_inWidth, m_inHeight, m_outWidth, m_outHeight;
@@ -130,7 +132,6 @@ namespace StyleTransfer
             {
                 case "LiveStream":
                     await StartLiveStream();
-                    // TODO: Also spin up a Capture for preview on left side
                     break;
                 case "AcquireImage":
                     await StartAcquireImage();
@@ -148,6 +149,7 @@ namespace StyleTransfer
 
         public async Task SetModelSource()
         {
+            CleanupCameraAsync();
             await LoadModelAsync();
 
             switch (_appModel.InputMedia)
@@ -283,6 +285,7 @@ namespace StyleTransfer
 
         public async Task ChangeLiveStream()
         {
+            CleanupCameraAsync();
             Debug.WriteLine("ChangeLiveStream");
             SaveEnabled = false;
 
@@ -307,7 +310,7 @@ namespace StyleTransfer
                 await _mediaCapture.InitializeAsync(settings);
 
                 // Initialize VideoEffect
-                VideoEffectDefinition videoEffectDefinition = new VideoEffectDefinition("RuntimeComponent2.Class");
+                videoEffectDefinition = new VideoEffectDefinition(_videoEffectID);
                 videoEffect = await _mediaCapture.AddVideoEffectAsync(videoEffectDefinition, MediaStreamType.VideoPreview);
                 videoEffect.SetProperties(new PropertySet() {
                     { "Session", m_session},
@@ -412,6 +415,7 @@ namespace StyleTransfer
                 {
                     videoEffect = null;
                 }
+                if (videoEffectDefinition != null) videoEffectDefinition = null;
             }
 
             catch (Exception ex)
@@ -422,14 +426,21 @@ namespace StyleTransfer
 
         private void CleanupInputImage()
         {
-            InputSoftwareBitmapSource?.Dispose();
-            OutputSoftwareBitmapSource?.Dispose();
+            try
+            {
+                InputSoftwareBitmapSource?.Dispose();
+                OutputSoftwareBitmapSource?.Dispose();
 
-            InputSoftwareBitmapSource = new SoftwareBitmapSource();
-            OutputSoftwareBitmapSource = new SoftwareBitmapSource();
+                InputSoftwareBitmapSource = new SoftwareBitmapSource();
+                OutputSoftwareBitmapSource = new SoftwareBitmapSource();
 
-            _appModel.OutputFrame?.Dispose();
-            _appModel.OutputFrame = new VideoFrame(BitmapPixelFormat.Bgra8, (int)m_outWidth, (int)m_outHeight);
+                _appModel.OutputFrame?.Dispose();
+                _appModel.OutputFrame = new VideoFrame(BitmapPixelFormat.Bgra8, (int)m_outWidth, (int)m_outHeight);
+            }
+            catch (Exception e)
+            {
+                Debug.WriteLine(e.Message);
+            }
         }
 
         public void NotifyUser(bool success, string strMessage = "")

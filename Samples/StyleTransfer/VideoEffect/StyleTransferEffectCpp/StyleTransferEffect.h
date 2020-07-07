@@ -1,7 +1,6 @@
 ﻿#pragma once
 
-#include "Class.g.h"
-#include "winrt\Windows.Media.Effects.h"
+#include "StyleTransferEffect.g.h"
 
 using namespace winrt::Windows::Media::Effects;
 using namespace winrt::Windows::Media::MediaProperties;
@@ -10,11 +9,11 @@ using namespace winrt::Windows::Foundation::Collections;
 using namespace winrt::Microsoft::AI::MachineLearning;
 using namespace winrt::Windows::Media;
 
-namespace winrt::RuntimeComponent2::implementation
+namespace winrt::StyleTransferEffectCpp::implementation
 {
-	struct Class : ClassT<Class>
+	struct StyleTransferEffect : StyleTransferEffectT<StyleTransferEffect>
 	{
-		Class();
+		StyleTransferEffect();
 		VideoFrame outputTransformed;
 
 		IVectorView<VideoEncodingProperties> SupportedEncodingProperties();
@@ -23,7 +22,6 @@ namespace winrt::RuntimeComponent2::implementation
 		bool IsReadOnly();
 		IPropertySet configuration;
 
-		void MyProperty(int32_t value);
 		void DiscardQueuedFrames();
 		void Close(MediaEffectClosedReason);
 		void ProcessFrame(ProcessVideoFrameContext);
@@ -39,9 +37,9 @@ namespace winrt::RuntimeComponent2::implementation
 	};
 }
 
-namespace winrt::RuntimeComponent2::factory_implementation
+namespace winrt::StyleTransferEffectCpp::factory_implementation
 {
-	struct Class : ClassT<Class, implementation::Class>
+	struct StyleTransferEffect : StyleTransferEffectT<StyleTransferEffect, implementation::StyleTransferEffect>
 	{
 	};
 }

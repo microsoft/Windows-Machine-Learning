@@ -1,19 +1,20 @@
 ﻿#include "pch.h"
-#include "Class.h"
-#include "Class.g.cpp"
+#include "StyleTransferEffect.h"
+#include "StyleTransferEffect.g.cpp"
 
 
-namespace winrt::RuntimeComponent2::implementation
+namespace winrt::StyleTransferEffectCpp::implementation
 {
-	Class::Class() : outputTransformed(VideoFrame(Windows::Graphics::Imaging::BitmapPixelFormat::Bgra8, 720, 720)) {}
+	StyleTransferEffect::StyleTransferEffect() : outputTransformed(VideoFrame(Windows::Graphics::Imaging::BitmapPixelFormat::Bgra8, 720, 720)) {
+	}
 
-	IVectorView<VideoEncodingProperties> Class::SupportedEncodingProperties() {
+	IVectorView<VideoEncodingProperties> StyleTransferEffect::SupportedEncodingProperties() {
 		VideoEncodingProperties encodingProperties = VideoEncodingProperties();
 		encodingProperties.Subtype(L"ARGB32");
 		return single_threaded_vector(std::move(std::vector<VideoEncodingProperties>{encodingProperties})).GetView();
 	}
 
-	LearningModelSession Class::Session() {
+	LearningModelSession StyleTransferEffect::Session() {
 		if (this->configuration) {
 			IInspectable val = configuration.TryLookup(L"Session");
 			if (val) {
@@ -22,7 +23,7 @@ namespace winrt::RuntimeComponent2::implementation
 		}
 		return NULL;
 	}
-	LearningModelBinding Class::Binding() {
+	LearningModelBinding StyleTransferEffect::Binding() {
 		if (configuration) {
 			IInspectable val = configuration.TryLookup(L"Binding");
 			if (val) {
@@ -32,7 +33,7 @@ namespace winrt::RuntimeComponent2::implementation
 		return NULL;
 	}
 
-	hstring Class::InputImageDescription() {
+	hstring StyleTransferEffect::InputImageDescription() {
 		if (configuration) {
 			IInspectable val = configuration.TryLookup(L"InputImageDescription");
 			if (val) {
@@ -41,7 +42,7 @@ namespace winrt::RuntimeComponent2::implementation
 		}
 		return L"";
 	}
-	hstring Class::OutputImageDescription() {
+	hstring StyleTransferEffect::OutputImageDescription() {
 		if (configuration) {
 			IInspectable val = configuration.TryLookup(L"OutputImageDescription");
 			if (val) {
@@ -52,17 +53,16 @@ namespace winrt::RuntimeComponent2::implementation
 	}
 
 
-	bool Class::TimeIndependent() { return true; }
-	MediaMemoryTypes Class::SupportedMemoryTypes() { return MediaMemoryTypes::GpuAndCpu; }
-	bool Class::IsReadOnly() { return false; }
-	void Class::DiscardQueuedFrames() {}
+	bool StyleTransferEffect::TimeIndependent() { return true; }
+	MediaMemoryTypes StyleTransferEffect::SupportedMemoryTypes() { return MediaMemoryTypes::GpuAndCpu; }
+	bool StyleTransferEffect::IsReadOnly() { return false; }
+	void StyleTransferEffect::DiscardQueuedFrames() {}
 
-	void Class::Close(MediaEffectClosedReason) {
-		throw hresult_not_implemented();
+	void StyleTransferEffect::Close(MediaEffectClosedReason) {
 	}
 
 
-	void Class::ProcessFrame(ProcessVideoFrameContext context) {
+	void StyleTransferEffect::ProcessFrame(ProcessVideoFrameContext context) {
 		LearningModelSession _session = Session();
 		LearningModelBinding _binding = Binding();
 		VideoFrame inputFrame = context.InputFrame();
@@ -76,11 +76,12 @@ namespace winrt::RuntimeComponent2::implementation
 		outputTransformed.CopyToAsync(context.OutputFrame());
 	}
 
-	void Class::SetEncodingProperties(VideoEncodingProperties props, IDirect3DDevice device) {
+	void StyleTransferEffect::SetEncodingProperties(VideoEncodingProperties props, IDirect3DDevice device) {
 		encodingProperties = props;
 	}
 
-	void Class::SetProperties(IPropertySet config) {
+	void StyleTransferEffect::SetProperties(IPropertySet config) {
 		this->configuration = config;
+
 	}
 }

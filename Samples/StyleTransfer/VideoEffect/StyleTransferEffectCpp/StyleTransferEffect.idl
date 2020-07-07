@@ -1,0 +1,9 @@
+namespace StyleTransferEffectCpp
+{
+	[default_interface]
+	runtimeclass StyleTransferEffect : Windows.Media.Effects.IBasicVideoEffect
+	{
+		StyleTransferEffect();
+		void SetProperties(Windows.Foundation.Collections.IPropertySet config);
+	}
+}

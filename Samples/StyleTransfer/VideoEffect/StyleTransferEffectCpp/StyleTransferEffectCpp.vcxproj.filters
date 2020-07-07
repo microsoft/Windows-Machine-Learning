@@ -11,17 +11,13 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp" />
-    <ClCompile Include="Class.cpp" />
     <ClCompile Include="$(GeneratedFilesDir)module.g.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
   </ItemGroup>
   <ItemGroup>
-    <Midl Include="Class.idl" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="RuntimeComponent2.def" />
+    <None Include="StyleTransferEffectCpp.def" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
@@ -29,5 +25,8 @@
   </ItemGroup>
   <ItemGroup>
     <Text Include="readme.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Midl Include="StyleTransferEffect.idl" />
   </ItemGroup>
 </Project>

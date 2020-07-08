@@ -150,7 +150,7 @@ namespace StyleTransfer
         public async Task SetModelSource()
         {
             CleanupCameraAsync();
-            await LoadModelAsync();
+            //await LoadModelAsync();
 
             switch (_appModel.InputMedia)
             {
@@ -310,13 +310,13 @@ namespace StyleTransfer
                 await _mediaCapture.InitializeAsync(settings);
 
                 // Initialize VideoEffect
-                videoEffectDefinition = new VideoEffectDefinition(_videoEffectID);
+                /*videoEffectDefinition = new VideoEffectDefinition(_videoEffectID);
                 videoEffect = await _mediaCapture.AddVideoEffectAsync(videoEffectDefinition, MediaStreamType.VideoPreview);
                 videoEffect.SetProperties(new PropertySet() {
                     { "Session", m_session},
                     { "Binding", m_binding },
                     { "InputImageDescription", m_inputImageDescription },
-                    { "OutputImageDescription", m_outputImageDescription } });
+                    { "OutputImageDescription", m_outputImageDescription } });*/
 
                 StartPreview();
             }
@@ -435,7 +435,7 @@ namespace StyleTransfer
                 OutputSoftwareBitmapSource = new SoftwareBitmapSource();
 
                 _appModel.OutputFrame?.Dispose();
-                _appModel.OutputFrame = new VideoFrame(BitmapPixelFormat.Bgra8, (int)m_outWidth, (int)m_outHeight);
+                //_appModel.OutputFrame = new VideoFrame(BitmapPixelFormat.Bgra8, (int)m_outWidth, (int)m_outHeight);
             }
             catch (Exception e)
             {

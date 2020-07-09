@@ -139,8 +139,7 @@
 
           <Button
               Name="UIButtonLiveStream"
-              Command="{Binding SetMediaSourceCommand}"
-              CommandParameter="LiveStream"
+              Click="UIButtonLiveStream_Click"
               ToolTipService.ToolTip="Camera preview">
             <Button.Content>
               <SymbolIcon Symbol="Video" />
@@ -225,7 +224,7 @@
 
         <CaptureElement
             Name="PreviewControl"
-            Source="{Binding CurrentApp.InputMediaCapture}"
+            Source="{Binding CurrentApp.OutputMediaCapture}"
             Stretch="Uniform" />
 
         <!--  Input image preview  -->
@@ -246,16 +245,16 @@
               Source="{Binding OutputSoftwareBitmapSource}"
               Stretch="Uniform" />
 
-          <MediaPlayerElement
+          <!--<MediaPlayerElement
               Name="UIOutputMediaPlayerElement"
               MaxWidth="720"
               MaxHeight="720"
               AreTransportControlsEnabled="False"
               AutoPlay="True"
               Canvas.ZIndex="-1"
-              Source="{Binding CurrentApp.OutputMediaSource}"
+              Source="{Binding CurrentApp.OutputMediaCapture}"
               Stretch="Uniform"
-              Visibility="Visible" />
+              Visibility="Visible" />!-->
 
           <Button
               Name="UIButtonSaveImage"

@@ -12,6 +12,7 @@ using Windows.Media.Capture;
 using Windows.Media.Core;
 using Windows.Media.Playback;
 using Windows.UI.Composition;
+using Windows.UI.Xaml.Controls;
 
 namespace StyleTransfer
 {
@@ -21,6 +22,8 @@ namespace StyleTransfer
         {
             this._useGPU = true;
             this._modelSource = "candy";
+            this._selectedCameraIndex = 0;
+            this._outputMediaCapture = new CaptureElement();
         }
 
         // Name of the style transfer model to apply to input media
@@ -83,11 +86,14 @@ namespace StyleTransfer
             }
         }
         // MediaSource for transformed media
-        private MediaSource _outputMediaSource;
-        public MediaSource OutputMediaSource
+        private CaptureElement _outputMediaCapture;
+        public CaptureElement OutputMediaCapture
         {
-            get { return _outputMediaSource; }
-            set { _outputMediaSource = value; OnPropertyChanged(); }
+            get {
+                if (_outputMediaCapture == null) _outputMediaCapture = new CaptureElement();
+                return _outputMediaCapture; 
+            }
+            set { _outputMediaCapture = value; OnPropertyChanged(); }
         }
 
         // MediaSource for the input media

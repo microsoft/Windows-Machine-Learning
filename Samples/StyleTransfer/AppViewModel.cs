@@ -22,6 +22,7 @@ using Windows.UI.Xaml.Media.Imaging;
 using Windows.UI.Xaml.Media;
 using Windows.Media.MediaProperties;
 using Windows.Storage.Pickers;
+using Windows.UI.Xaml.Controls;
 
 namespace StyleTransfer
 {
@@ -43,22 +44,24 @@ namespace StyleTransfer
         }
 
         // Media capture properties
-        Windows.Media.Capture.MediaCapture _mediaCapture;
+        public Windows.Media.Capture.MediaCapture _mediaCapture;
         private List<MediaFrameSourceGroup> _mediaFrameSourceGroupList;
         private MediaFrameSourceGroup _selectedMediaFrameSourceGroup;
         private MediaFrameSource _selectedMediaFrameSource;
+        public bool isPreviewing;
+
 
         // Style transfer effect properties
-        private LearningModel m_model = null;
-        private LearningModelDeviceKind m_inferenceDeviceSelected = LearningModelDeviceKind.Default;
-        private LearningModelSession m_session;
-        private LearningModelBinding m_binding;
-        private string m_inputImageDescription;
-        private string m_outputImageDescription;
-        private IMediaExtension videoEffect;
-        private VideoEffectDefinition videoEffectDefinition;
+        public LearningModel m_model = null;
+        public LearningModelDeviceKind m_inferenceDeviceSelected = LearningModelDeviceKind.Default;
+        public LearningModelSession m_session;
+        public LearningModelBinding m_binding;
+        public string m_inputImageDescription;
+        public string m_outputImageDescription;
+        public IMediaExtension videoEffect;
+        public VideoEffectDefinition videoEffectDefinition;
         // Activatable Class ID of the video effect. 
-        private String _videoEffectID = "StyleTransferEffectCpp.StyleTransferEffect";
+        public String _videoEffectID = "StyleTransferEffectCpp.StyleTransferEffect";
 
         // Image style transfer properties
         uint m_inWidth, m_inHeight, m_outWidth, m_outHeight;
@@ -123,6 +126,7 @@ namespace StyleTransfer
             _appModel.InputMedia = src;
 
             CleanupCameraAsync();
+
             CleanupInputImage();
             NotifyUser(true);
             SaveEnabled = true;
@@ -149,8 +153,8 @@ namespace StyleTransfer
 
         public async Task SetModelSource()
         {
-            CleanupCameraAsync();
-            //await LoadModelAsync();
+            //CleanupCameraAsync();
+            await LoadModelAsync();
 
             switch (_appModel.InputMedia)
             {
@@ -280,7 +284,6 @@ namespace StyleTransfer
             }
 
             _appModel.CameraNamesList = _mediaFrameSourceGroupList.Select(group => group.DisplayName);
-            _appModel.SelectedCameraIndex = 0;
         }
 
         public async Task ChangeLiveStream()
@@ -294,31 +297,13 @@ namespace StyleTransfer
 
             try
             {
+                // Check that SCI hasn't < 0 
                 _selectedMediaFrameSourceGroup = _mediaFrameSourceGroupList[_appModel.SelectedCameraIndex];
 
                 // Create MediaCapture and its settings
                 _mediaCapture = new MediaCapture();
-                var settings = new MediaCaptureInitializationSettings
-                {
-                    SourceGroup = _selectedMediaFrameSourceGroup,
-                    PhotoCaptureSource = PhotoCaptureSource.Auto,
-                    MemoryPreference = _appModel.UseGPU ? MediaCaptureMemoryPreference.Auto : MediaCaptureMemoryPreference.Cpu,
-                    StreamingCaptureMode = StreamingCaptureMode.Video
-                };
+                await _mediaCapture.InitializeAsync();
 
-                // Initialize MediaCapture
-                await _mediaCapture.InitializeAsync(settings);
-
-                // Initialize VideoEffect
-                /*videoEffectDefinition = new VideoEffectDefinition(_videoEffectID);
-                videoEffect = await _mediaCapture.AddVideoEffectAsync(videoEffectDefinition, MediaStreamType.VideoPreview);
-                videoEffect.SetProperties(new PropertySet() {
-                    { "Session", m_session},
-                    { "Binding", m_binding },
-                    { "InputImageDescription", m_inputImageDescription },
-                    { "OutputImageDescription", m_outputImageDescription } });*/
-
-                StartPreview();
             }
             catch (Exception ex)
             {
@@ -344,8 +329,8 @@ namespace StyleTransfer
                 return;
             }
 
-            _appModel.OutputMediaSource = MediaSource.CreateFromMediaFrameSource(_selectedMediaFrameSource);
-            _appModel.InputMediaSource = MediaSource.CreateFromMediaFrameSource(_selectedMediaFrameSource);
+            //_appModel.OutputMediaCapture = MediaSource.CreateFromMediaFrameSource(_selectedMediaFrameSource);
+            //_appModel.InputMediaSource = MediaSource.CreateFromMediaFrameSource(_selectedMediaFrameSource);
         }
 
         private async Task LoadModelAsync()
@@ -406,10 +391,11 @@ namespace StyleTransfer
             try
             {
                 _mediaCapture?.Dispose();
-                _appModel.OutputMediaSource?.Dispose();
-                if (_appModel.OutputMediaSource != null)
+                if (_appModel.OutputMediaCapture != null)
                 {
-                    _appModel.OutputMediaSource = null;
+                    CaptureElement output = _appModel.OutputMediaCapture;
+                    _appModel.OutputMediaCapture = null;
+
                 }
                 if (videoEffect != null)
                 {
@@ -435,7 +421,7 @@ namespace StyleTransfer
                 OutputSoftwareBitmapSource = new SoftwareBitmapSource();
 
                 _appModel.OutputFrame?.Dispose();
-                //_appModel.OutputFrame = new VideoFrame(BitmapPixelFormat.Bgra8, (int)m_outWidth, (int)m_outHeight);
+                _appModel.OutputFrame = new VideoFrame(BitmapPixelFormat.Bgra8, (int)m_outWidth, (int)m_outHeight);
             }
             catch (Exception e)
             {

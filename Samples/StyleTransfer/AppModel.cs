@@ -23,7 +23,7 @@ namespace StyleTransfer
             this._useGPU = true;
             this._modelSource = "candy";
             this._selectedCameraIndex = 0;
-            this._outputMediaCapture = new CaptureElement();
+            this._outputCaptureElement = new CaptureElement();
         }
 
         // Name of the style transfer model to apply to input media
@@ -86,14 +86,15 @@ namespace StyleTransfer
             }
         }
         // MediaSource for transformed media
-        private CaptureElement _outputMediaCapture;
-        public CaptureElement OutputMediaCapture
+        private CaptureElement _outputCaptureElement;
+        public CaptureElement OutputCaptureElement
         {
-            get {
-                if (_outputMediaCapture == null) _outputMediaCapture = new CaptureElement();
-                return _outputMediaCapture; 
+            get
+            {
+                if (_outputCaptureElement == null) _outputCaptureElement = new CaptureElement();
+                return _outputCaptureElement;
             }
-            set { _outputMediaCapture = value; OnPropertyChanged(); }
+            set { _outputCaptureElement = value; OnPropertyChanged(); }
         }
 
         // MediaSource for the input media

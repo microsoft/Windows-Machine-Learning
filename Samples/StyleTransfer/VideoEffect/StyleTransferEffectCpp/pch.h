@@ -11,5 +11,6 @@
 
 #include <string>
 #include <fstream>
+#include <mutex>
 
 #include <Windows.h>

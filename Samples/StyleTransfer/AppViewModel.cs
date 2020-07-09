@@ -298,12 +298,33 @@ namespace StyleTransfer
             try
             {
                 // Check that SCI hasn't < 0 
+                if (_appModel.SelectedCameraIndex < 0) _appModel.SelectedCameraIndex = 0;
                 _selectedMediaFrameSourceGroup = _mediaFrameSourceGroupList[_appModel.SelectedCameraIndex];
 
                 // Create MediaCapture and its settings
+                var settings = new MediaCaptureInitializationSettings
+                {
+                    SourceGroup = _selectedMediaFrameSourceGroup,
+                    PhotoCaptureSource = PhotoCaptureSource.Auto,
+                    MemoryPreference = _appModel.UseGPU ? MediaCaptureMemoryPreference.Auto : MediaCaptureMemoryPreference.Cpu,
+                    StreamingCaptureMode = StreamingCaptureMode.Video
+                };
                 _mediaCapture = new MediaCapture();
-                await _mediaCapture.InitializeAsync();
+                await _mediaCapture.InitializeAsync(settings);
 
+                var capture = new CaptureElement();
+                capture.Source = _mediaCapture;
+                _appModel.OutputCaptureElement = capture;
+
+                videoEffectDefinition = new VideoEffectDefinition(_videoEffectID);
+                videoEffect = await _mediaCapture.AddVideoEffectAsync(videoEffectDefinition, MediaStreamType.VideoPreview);
+                videoEffect.SetProperties(new PropertySet() {
+                    { "Session", m_session},
+                    { "Binding", m_binding },
+                    { "InputImageDescription", m_inputImageDescription },
+                    { "OutputImageDescription", m_outputImageDescription } });
+
+                await _mediaCapture.StartPreviewAsync();
             }
             catch (Exception ex)
             {
@@ -329,12 +350,13 @@ namespace StyleTransfer
                 return;
             }
 
-            //_appModel.OutputMediaCapture = MediaSource.CreateFromMediaFrameSource(_selectedMediaFrameSource);
+            //_appModel.OutputCaptureElement = MediaSource.CreateFromMediaFrameSource(_selectedMediaFrameSource);
             //_appModel.InputMediaSource = MediaSource.CreateFromMediaFrameSource(_selectedMediaFrameSource);
         }
 
         private async Task LoadModelAsync()
         {
+
             m_session?.Dispose();
 
             StorageFile modelFile = await StorageFile.GetFileFromApplicationUriAsync(new Uri($"ms-appx:///Assets/{_appModel.ModelSource}.onnx"));
@@ -391,10 +413,9 @@ namespace StyleTransfer
             try
             {
                 _mediaCapture?.Dispose();
-                if (_appModel.OutputMediaCapture != null)
+                if (_appModel.OutputCaptureElement != null)
                 {
-                    CaptureElement output = _appModel.OutputMediaCapture;
-                    _appModel.OutputMediaCapture = null;
+                    _appModel.OutputCaptureElement = null;
 
                 }
                 if (videoEffect != null)
@@ -409,6 +430,7 @@ namespace StyleTransfer
                 Debug.WriteLine($"CleanupCameraAsync: {ex.Message}");
             }
         }
+
 
         private void CleanupInputImage()
         {

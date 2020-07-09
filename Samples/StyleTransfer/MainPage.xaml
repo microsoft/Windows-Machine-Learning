@@ -139,7 +139,8 @@
 
           <Button
               Name="UIButtonLiveStream"
-              Click="UIButtonLiveStream_Click"
+              Command="{Binding SetMediaSourceCommand}"
+              CommandParameter="LiveStream"
               ToolTipService.ToolTip="Camera preview">
             <Button.Content>
               <SymbolIcon Symbol="Video" />
@@ -222,10 +223,11 @@
           </StackPanel>
         </Viewbox>
 
-        <CaptureElement
+        <ContentControl
             Name="PreviewControl"
-            Source="{Binding CurrentApp.OutputMediaCapture}"
-            Stretch="Uniform" />
+            Width="720"
+            Height="720"
+            Content="{Binding CurrentApp.OutputCaptureElement}" />
 
         <!--  Input image preview  -->
         <Image

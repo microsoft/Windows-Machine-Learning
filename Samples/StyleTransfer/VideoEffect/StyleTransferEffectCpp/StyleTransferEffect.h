@@ -29,11 +29,12 @@ namespace winrt::StyleTransferEffectCpp::implementation
 		void SetProperties(IPropertySet);
 
 	private:
-		LearningModelSession Session();
-		LearningModelBinding Binding();
-		hstring InputImageDescription();
-		hstring OutputImageDescription();
+		LearningModelSession Session;
+		LearningModelBinding Binding;
+		hstring InputImageDescription;
+		hstring OutputImageDescription;
 		VideoEncodingProperties encodingProperties;
+		std::mutex Processing;
 	};
 }
 

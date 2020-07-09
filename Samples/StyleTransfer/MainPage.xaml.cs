@@ -69,7 +69,7 @@ namespace StyleTransfer
             }
             try
             {
-                PreviewControl.Source = _viewModel._mediaCapture;
+                //PreviewControl.Source = _viewModel._mediaCapture;
 
                 _viewModel.videoEffectDefinition = new VideoEffectDefinition(_viewModel._videoEffectID);
                 _viewModel.videoEffect = await _viewModel._mediaCapture.AddVideoEffectAsync(_viewModel.videoEffectDefinition, MediaStreamType.VideoPreview);

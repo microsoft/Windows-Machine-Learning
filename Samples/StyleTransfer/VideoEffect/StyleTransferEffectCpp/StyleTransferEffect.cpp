@@ -1,7 +1,9 @@
 ﻿#include "pch.h"
 #include "StyleTransferEffect.h"
 #include "StyleTransferEffect.g.cpp"
-
+using namespace std;
+using namespace winrt::Windows::Storage;
+using namespace winrt::Windows::Storage::Streams;
 
 namespace winrt::StyleTransferEffectCpp::implementation
 {
@@ -56,22 +58,25 @@ namespace winrt::StyleTransferEffectCpp::implementation
 
 	void StyleTransferEffect::SetProperties(IPropertySet config) {
 		this->configuration = config;
+		hstring modelName;
+		IInspectable val = config.TryLookup(L"ModelName");
+		if (!val) {
+			return;
+		}
+		modelName = unbox_value<hstring>(val);
+		val = configuration.TryLookup(L"UseGPU");
+		bool useGpu = unbox_value<bool>(val);
+		OutputDebugString(modelName.c_str());
+		//std::wstring fullModelName(L"ms-appx:///Assets/");
+		//fullModelName += modelName + L".onnx";
+		//OutputDebugString(fullModelName.c_str());
+		LearningModel m_model = LearningModel::LoadFromFilePath(modelName);
 
-		IInspectable val = configuration.TryLookup(L"Session");
-		if (val) {
-			Session = val.try_as<LearningModelSession>();
-		}
-		val = configuration.TryLookup(L"Binding");
-		if (val) {
-			Binding = val.try_as<LearningModelBinding>();
-		}
-		val = configuration.TryLookup(L"InputImageDescription");
-		if (val) {
-			InputImageDescription = unbox_value<hstring>(val);
-		}
-		val = configuration.TryLookup(L"OutputImageDescription");
-		if (val) {
-			OutputImageDescription = unbox_value<hstring>(val);
-		}
+		LearningModelDeviceKind m_device = useGpu ? LearningModelDeviceKind::DirectX : LearningModelDeviceKind::Cpu;
+		Session = LearningModelSession{ m_model, LearningModelDevice(m_device) };
+		Binding = LearningModelBinding{ Session };
+
+		InputImageDescription = L"inputImage";
+		OutputImageDescription = L"outputImage";
 	}
 }

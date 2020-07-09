@@ -23,6 +23,7 @@ using Windows.UI.Xaml.Media;
 using Windows.Media.MediaProperties;
 using Windows.Storage.Pickers;
 using Windows.UI.Xaml.Controls;
+using System.IO;
 
 namespace StyleTransfer
 {
@@ -316,13 +317,13 @@ namespace StyleTransfer
                 capture.Source = _mediaCapture;
                 _appModel.OutputCaptureElement = capture;
 
+                // var modelPath = new Uri($"./Assets/{_appModel.ModelSource}.onnx");
+                var modelPath = Path.GetFullPath($"./Assets/{_appModel.ModelSource}.onnx");
                 videoEffectDefinition = new VideoEffectDefinition(_videoEffectID);
                 videoEffect = await _mediaCapture.AddVideoEffectAsync(videoEffectDefinition, MediaStreamType.VideoPreview);
                 videoEffect.SetProperties(new PropertySet() {
-                    { "Session", m_session},
-                    { "Binding", m_binding },
-                    { "InputImageDescription", m_inputImageDescription },
-                    { "OutputImageDescription", m_outputImageDescription } });
+                    {"ModelName", modelPath },
+                    {"UseGPU", _appModel.UseGPU }});
 
                 await _mediaCapture.StartPreviewAsync();
             }
@@ -416,7 +417,6 @@ namespace StyleTransfer
                 if (_appModel.OutputCaptureElement != null)
                 {
                     _appModel.OutputCaptureElement = null;
-
                 }
                 if (videoEffect != null)
                 {

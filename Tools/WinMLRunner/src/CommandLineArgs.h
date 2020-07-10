@@ -95,7 +95,7 @@ public:
         // When there is no image or csv input provided, then garbage input binding is used.
         return m_imagePaths.empty() && m_csvData.empty() && m_providedInputFeatureValue.empty();
     }
-    bool IsCSVInput() const { return !m_csvData.empty() && m_imagePaths.empty(); }
+    bool IsCSVInput() const { return m_imagePaths.empty() && !m_csvData.empty(); }
     bool IsImageInput() const { return !m_imagePaths.empty() && m_csvData.empty(); }
     bool InputFeatureValuesProvided() const { return !m_providedInputFeatureValue.empty(); }
     uint32_t NumIterations() const { return m_numIterations; }

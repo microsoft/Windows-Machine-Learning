@@ -600,10 +600,6 @@ void CommandLineArgs::AddPerformanceFileMetadata(const std::string& key, const s
     cleanedValue.erase(std::remove_copy(value.begin(), value.end(), cleanedValue.begin(), ','), cleanedValue.end());
     m_perfFileMetadata.push_back(std::make_pair(key, cleanedValue));
 }
-
-void CommandLineArgs::AddProtobufInputPath(const std::wstring& protobufFilePath) {
-    m_protobufPaths.push_back(protobufFilePath);
-}
 void CommandLineArgs::AddProvidedInputFeatureValue(const ILearningModelFeatureValue& input)
 {
     m_providedInputFeatureValue.push_back(input);

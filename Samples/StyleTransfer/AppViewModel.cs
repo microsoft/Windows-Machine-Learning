@@ -129,8 +129,6 @@ namespace StyleTransfer
         {
             _appModel.InputMedia = src;
 
-            CleanupCameraAsync();
-
             CleanupInputImage();
             NotifyUser(true);
             SaveEnabled = true;
@@ -337,28 +335,6 @@ namespace StyleTransfer
             }
         }
 
-        // Preview the input and output media 
-        private void StartPreview()
-        {
-            Debug.WriteLine("StartPreview");
-            _selectedMediaFrameSource = _mediaCapture.FrameSources.FirstOrDefault(source => source.Value.Info.MediaStreamType == MediaStreamType.VideoPreview
-                                                                                  && source.Value.Info.SourceKind == MediaFrameSourceKind.Color).Value;
-            if (_selectedMediaFrameSource == null)
-            {
-                _selectedMediaFrameSource = _mediaCapture.FrameSources.FirstOrDefault(source => source.Value.Info.MediaStreamType == MediaStreamType.VideoRecord
-                                                                                      && source.Value.Info.SourceKind == MediaFrameSourceKind.Color).Value;
-            }
-
-            // If no preview stream are available, bail
-            if (_selectedMediaFrameSource == null)
-            {
-                return;
-            }
-
-            //_appModel.OutputCaptureElement = MediaSource.CreateFromMediaFrameSource(_selectedMediaFrameSource);
-            //_appModel.InputMediaSource = MediaSource.CreateFromMediaFrameSource(_selectedMediaFrameSource);
-        }
-
         private async Task LoadModelAsync()
         {
 
@@ -423,6 +399,7 @@ namespace StyleTransfer
                     if (isPreviewing)
                     {
                         await _mediaCapture.StopPreviewAsync();
+                        isPreviewing = false;
                     }
                     await DispatcherHelper.RunAsync(() =>
                     {
@@ -433,8 +410,10 @@ namespace StyleTransfer
                         {
                             displayRequest.RequestRelease();
                         }
-                        _mediaCapture.Dispose();
+
+                        MediaCapture m = _mediaCapture;
                         _mediaCapture = null;
+                        m.Dispose();
                     });
                 }
                 if (videoEffect != null)

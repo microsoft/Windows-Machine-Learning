@@ -57,6 +57,7 @@ namespace winrt::StyleTransferEffectCpp::implementation
 	}
 
 	void StyleTransferEffect::SetProperties(IPropertySet config) {
+		Processing.lock();
 		this->configuration = config;
 		hstring modelName;
 		IInspectable val = config.TryLookup(L"ModelName");
@@ -67,9 +68,6 @@ namespace winrt::StyleTransferEffectCpp::implementation
 		val = configuration.TryLookup(L"UseGPU");
 		bool useGpu = unbox_value<bool>(val);
 		OutputDebugString(modelName.c_str());
-		//std::wstring fullModelName(L"ms-appx:///Assets/");
-		//fullModelName += modelName + L".onnx";
-		//OutputDebugString(fullModelName.c_str());
 		LearningModel m_model = LearningModel::LoadFromFilePath(modelName);
 
 		LearningModelDeviceKind m_device = useGpu ? LearningModelDeviceKind::DirectX : LearningModelDeviceKind::Cpu;
@@ -78,5 +76,6 @@ namespace winrt::StyleTransferEffectCpp::implementation
 
 		InputImageDescription = L"inputImage";
 		OutputImageDescription = L"outputImage";
+		Processing.unlock();
 	}
 }

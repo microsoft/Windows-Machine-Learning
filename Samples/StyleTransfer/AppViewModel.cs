@@ -24,6 +24,9 @@ using Windows.Media.MediaProperties;
 using Windows.Storage.Pickers;
 using Windows.UI.Xaml.Controls;
 using System.IO;
+using Windows.System.Display;
+using Windows.UI.Core;
+using GalaSoft.MvvmLight.Threading;
 
 namespace StyleTransfer
 {
@@ -49,20 +52,20 @@ namespace StyleTransfer
         private List<MediaFrameSourceGroup> _mediaFrameSourceGroupList;
         private MediaFrameSourceGroup _selectedMediaFrameSourceGroup;
         private MediaFrameSource _selectedMediaFrameSource;
-        public bool isPreviewing;
-
+        private bool isPreviewing;
+        private DisplayRequest displayRequest = new DisplayRequest();
 
         // Style transfer effect properties
-        public LearningModel m_model = null;
-        public LearningModelDeviceKind m_inferenceDeviceSelected = LearningModelDeviceKind.Default;
-        public LearningModelSession m_session;
-        public LearningModelBinding m_binding;
-        public string m_inputImageDescription;
-        public string m_outputImageDescription;
-        public IMediaExtension videoEffect;
-        public VideoEffectDefinition videoEffectDefinition;
+        private LearningModel m_model = null;
+        private LearningModelDeviceKind m_inferenceDeviceSelected = LearningModelDeviceKind.Default;
+        private LearningModelSession m_session;
+        private LearningModelBinding m_binding;
+        private string m_inputImageDescription;
+        private string m_outputImageDescription;
+        private IMediaExtension videoEffect;
+        private VideoEffectDefinition videoEffectDefinition;
         // Activatable Class ID of the video effect. 
-        public String _videoEffectID = "StyleTransferEffectCpp.StyleTransferEffect";
+        private String _videoEffectID = "StyleTransferEffectCpp.StyleTransferEffect";
 
         // Image style transfer properties
         uint m_inWidth, m_inHeight, m_outWidth, m_outHeight;
@@ -289,7 +292,7 @@ namespace StyleTransfer
 
         public async Task ChangeLiveStream()
         {
-            CleanupCameraAsync();
+            await CleanupCameraAsync();
             Debug.WriteLine("ChangeLiveStream");
             SaveEnabled = false;
 
@@ -312,12 +315,12 @@ namespace StyleTransfer
                 };
                 _mediaCapture = new MediaCapture();
                 await _mediaCapture.InitializeAsync(settings);
+                displayRequest.RequestActive();
 
                 var capture = new CaptureElement();
                 capture.Source = _mediaCapture;
                 _appModel.OutputCaptureElement = capture;
 
-                // var modelPath = new Uri($"./Assets/{_appModel.ModelSource}.onnx");
                 var modelPath = Path.GetFullPath($"./Assets/{_appModel.ModelSource}.onnx");
                 videoEffectDefinition = new VideoEffectDefinition(_videoEffectID);
                 videoEffect = await _mediaCapture.AddVideoEffectAsync(videoEffectDefinition, MediaStreamType.VideoPreview);
@@ -326,6 +329,7 @@ namespace StyleTransfer
                     {"UseGPU", _appModel.UseGPU }});
 
                 await _mediaCapture.StartPreviewAsync();
+                isPreviewing = true;
             }
             catch (Exception ex)
             {
@@ -408,15 +412,30 @@ namespace StyleTransfer
             }
         }
 
-        private void CleanupCameraAsync()
+        private async Task CleanupCameraAsync()
         {
             Debug.WriteLine("CleanupCameraAsync");
             try
             {
-                _mediaCapture?.Dispose();
-                if (_appModel.OutputCaptureElement != null)
+                // Clean up the media capture
+                if (_mediaCapture != null)
                 {
-                    _appModel.OutputCaptureElement = null;
+                    if (isPreviewing)
+                    {
+                        await _mediaCapture.StopPreviewAsync();
+                    }
+                    await DispatcherHelper.RunAsync(() =>
+                    {
+                        CaptureElement cap = new CaptureElement();
+                        cap.Source = null;
+                        _appModel.OutputCaptureElement = cap;
+                        if (displayRequest != null)
+                        {
+                            displayRequest.RequestRelease();
+                        }
+                        _mediaCapture.Dispose();
+                        _mediaCapture = null;
+                    });
                 }
                 if (videoEffect != null)
                 {

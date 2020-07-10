@@ -53,42 +53,6 @@ namespace StyleTransfer
             _viewModel = new AppViewModel();
             this.DataContext = _viewModel;
         }
-
-        public async void UIButtonLiveStream_Click(object sender, RoutedEventArgs e)
-        {
-            try
-            {
-                _viewModel._mediaCapture = new MediaCapture();
-                await _viewModel._mediaCapture.InitializeAsync();
-            }
-            catch (UnauthorizedAccessException)
-            {
-                // This will be thrown if the user denied access to the camera in privacy settings
-                Debug.WriteLine("The app was denied access to the camera");
-                return;
-            }
-            try
-            {
-                //PreviewControl.Source = _viewModel._mediaCapture;
-
-                _viewModel.videoEffectDefinition = new VideoEffectDefinition(_viewModel._videoEffectID);
-                _viewModel.videoEffect = await _viewModel._mediaCapture.AddVideoEffectAsync(_viewModel.videoEffectDefinition, MediaStreamType.VideoPreview);
-                _viewModel.videoEffect.SetProperties(new PropertySet() {
-                    { "Session", _viewModel.m_session},
-                    { "Binding", _viewModel.m_binding },
-                    { "InputImageDescription", _viewModel.m_inputImageDescription },
-                    { "OutputImageDescription", _viewModel.m_outputImageDescription } });
-
-                await _viewModel._mediaCapture.StartPreviewAsync();
-                _viewModel.isPreviewing = true;
-            }
-            catch (System.IO.FileLoadException)
-            {
-                Debug.WriteLine("File Load Exception");
-                return;
-            }
-        }
-
     }
 
 }

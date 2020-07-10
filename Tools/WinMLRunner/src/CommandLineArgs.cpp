@@ -604,3 +604,7 @@ void CommandLineArgs::AddPerformanceFileMetadata(const std::string& key, const s
 void CommandLineArgs::AddProtobufInputPath(const std::wstring& protobufFilePath) {
     m_protobufPaths.push_back(protobufFilePath);
 }
+void CommandLineArgs::AddProvidedInputFeatureValue(const ILearningModelFeatureValue& input)
+{
+    m_providedInputFeatureValue.push_back(input);
+}

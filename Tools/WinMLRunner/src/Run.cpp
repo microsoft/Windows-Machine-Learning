@@ -1,4 +1,3 @@
-#include "protobufHelpers.h"
 #include "Run.h"
 #include "Common.h"
 #include "OutputHelper.h"
@@ -29,28 +28,19 @@ std::vector<ILearningModelFeatureValue> GenerateInputFeatures(const LearningMode
         {
             colorManagementMode = GetColorManagementMode(model);
         }
-        if (args.ArePredefinedProtobufsProvided())
+        if (inputDataType == InputDataType::Tensor)
         {
-            inputFeatures.push_back(ProtobufHelpers::LoadTensorFromProtobufFile(
-                args.ProtobufPaths()[inputNum],
-                description.as<TensorFeatureDescriptor>().TensorKind() == TensorKind::Float16));
+            // If CSV data is provided, then every input will contain the same CSV data
+            auto tensorFeature = BindingUtilities::CreateBindableTensor(
+                description, imagePath, inputBindingType, inputDataType, args, iterationNum, colorManagementMode);
+            inputFeatures.push_back(tensorFeature);
         }
         else
         {
-            if (inputDataType == InputDataType::Tensor)
-            {
-                // If CSV data is provided, then every input will contain the same CSV data
-                auto tensorFeature = BindingUtilities::CreateBindableTensor(
-                    description, imagePath, inputBindingType, inputDataType, args, iterationNum, colorManagementMode);
-                inputFeatures.push_back(tensorFeature);
-            }
-            else
-            {
-                auto imageFeature = BindingUtilities::CreateBindableImage(
-                    description, imagePath, inputBindingType, inputDataType,
-                    device.LearningModelDevice.Direct3D11Device(), args, iterationNum, colorManagementMode);
-                inputFeatures.push_back(imageFeature);
-            }
+            auto imageFeature = BindingUtilities::CreateBindableImage(
+                description, imagePath, inputBindingType, inputDataType,
+                device.LearningModelDevice.Direct3D11Device(), args, iterationNum, colorManagementMode);
+            inputFeatures.push_back(imageFeature);
         }
     }
 
@@ -228,15 +218,23 @@ HRESULT BindInputs(LearningModelBinding& context, const LearningModelSession& se
     bool captureIterationPerf = args.IsPerformanceCapture() || args.IsPerIterationCapture();
 
     std::vector<ILearningModelFeatureValue> inputFeatures;
-    try
+    if (args.InputFeatureValuesProvided())
     {
-        inputFeatures = GenerateInputFeatures(session.Model(), args, inputBindingType, inputDataType, device, iteration, imagePath);
+        inputFeatures = args.ProvidedInputFeatureValues();
     }
-    catch (hresult_error hr)
+    else
     {
-        std::wcout << "\nGenerating Input Features [FAILED]" << std::endl;
-        std::wcout << hr.message().c_str() << std::endl;
-        return hr.code();
+        try
+        {
+            inputFeatures = GenerateInputFeatures(session.Model(), args, inputBindingType, inputDataType, device,
+                                                  iteration, imagePath);
+        }
+        catch (hresult_error hr)
+        {
+            std::wcout << "\nGenerating Input Features [FAILED]" << std::endl;
+            std::wcout << hr.message().c_str() << std::endl;
+            return hr.code();
+        }
     }
 
     HRESULT bindInputResult =

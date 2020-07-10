@@ -141,6 +141,7 @@ public:
     void SetSessionCreationIterations(const uint32_t iterations) { m_numSessionIterations = iterations; }
     void SetLoadIterations(const uint32_t iterations) { m_numLoadIterations = iterations; }
     void AddPerformanceFileMetadata(const std::string& key, const std::string& value);
+    void AddProtobufInputPath(const std::wstring& protobufFilePath);
     void SetGarbageDataMaxValue(const uint32_t value) { m_garbageDataMaxValue = value; }
 
     // Stop iterating when total time of iterations after the first iteration exceeds time limit.

@@ -1,3 +1,4 @@
+#include "protobufHelpers.h"
 #include "Run.h"
 #include "Common.h"
 #include "OutputHelper.h"
@@ -30,8 +31,9 @@ std::vector<ILearningModelFeatureValue> GenerateInputFeatures(const LearningMode
         }
         if (args.ArePredefinedProtobufsProvided())
         {
-            //auto tensorFeature = BindingUtilities::ExtractTensorFromProtobuf(args.ProtobufPaths().at(inputNum));
-            //inputFeatures.push_back(tensorFeature);
+            inputFeatures.push_back(ProtobufHelpers::LoadTensorFromProtobufFile(
+                args.ProtobufPaths()[inputNum],
+                description.as<TensorFeatureDescriptor>().TensorKind() == TensorKind::Float16));
         }
         else
         {

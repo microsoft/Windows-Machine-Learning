@@ -28,19 +28,27 @@ std::vector<ILearningModelFeatureValue> GenerateInputFeatures(const LearningMode
         {
             colorManagementMode = GetColorManagementMode(model);
         }
-        if (inputDataType == InputDataType::Tensor)
+        if (args.ArePredefinedProtobufsProvided())
         {
-            // If CSV data is provided, then every input will contain the same CSV data
-            auto tensorFeature = BindingUtilities::CreateBindableTensor(description, imagePath, inputBindingType, inputDataType,
-                                                                        args, iterationNum, colorManagementMode);
-            inputFeatures.push_back(tensorFeature);
+            //auto tensorFeature = BindingUtilities::ExtractTensorFromProtobuf(args.ProtobufPaths().at(inputNum));
+            //inputFeatures.push_back(tensorFeature);
         }
         else
         {
-            auto imageFeature = BindingUtilities::CreateBindableImage(
-                description, imagePath, inputBindingType, inputDataType, device.LearningModelDevice.Direct3D11Device(),
-                args, iterationNum, colorManagementMode);
-            inputFeatures.push_back(imageFeature);
+            if (inputDataType == InputDataType::Tensor)
+            {
+                // If CSV data is provided, then every input will contain the same CSV data
+                auto tensorFeature = BindingUtilities::CreateBindableTensor(
+                    description, imagePath, inputBindingType, inputDataType, args, iterationNum, colorManagementMode);
+                inputFeatures.push_back(tensorFeature);
+            }
+            else
+            {
+                auto imageFeature = BindingUtilities::CreateBindableImage(
+                    description, imagePath, inputBindingType, inputDataType,
+                    device.LearningModelDevice.Direct3D11Device(), args, iterationNum, colorManagementMode);
+                inputFeatures.push_back(imageFeature);
+            }
         }
     }
 
@@ -213,9 +221,6 @@ HRESULT BindInputs(LearningModelBinding& context, const LearningModelSession& se
         std::cout << "Cannot create D3D12 device on client if CPU device type is selected." << std::endl;
         return E_INVALIDARG;
     }
-    bool useInputData = false;
-    bool isGarbageData = args.IsGarbageInput();
-    std::string completionString = "\n";
 
     // Run the binding + evaluate multiple times and average the results
     bool captureIterationPerf = args.IsPerformanceCapture() || args.IsPerIterationCapture();

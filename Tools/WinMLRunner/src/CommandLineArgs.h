@@ -45,6 +45,7 @@ public:
     BitmapInterpolationMode AutoScaleInterpMode() const { return m_autoScaleInterpMode; }
 
     const std::vector<std::wstring>& ImagePaths() const { return m_imagePaths; }
+    const std::vector<std::wstring>& ProtobufPaths() const { return m_protobufPaths; }
     const std::wstring& CsvPath() const { return m_csvData; }
     const std::wstring& OutputPath() const { return m_perfOutputPath; }
     const std::wstring& FolderPath() const { return m_modelFolderPath; }
@@ -92,11 +93,11 @@ public:
     bool IsGarbageInput() const
     {
         // When there is no image or csv input provided, then garbage input binding is used.
-        return m_imagePaths.empty() && m_csvData.empty();
+        return m_imagePaths.empty() && m_csvData.empty() && m_protobufPaths.empty();
     }
-    bool IsCSVInput() const { return m_imagePaths.empty() && !m_csvData.empty(); }
+    bool IsCSVInput() const { return !m_csvData.empty() && m_imagePaths.empty(); }
     bool IsImageInput() const { return !m_imagePaths.empty() && m_csvData.empty(); }
-
+    bool ArePredefinedProtobufsProvided() const { return !m_protobufPaths.empty(); }
     uint32_t NumIterations() const { return m_numIterations; }
     uint32_t NumLoadIterations() const { return m_numLoadIterations; }
     uint32_t NumSessionCreationIterations() const { return m_numSessionIterations; }
@@ -185,6 +186,7 @@ private:
     std::wstring m_modelFolderPath;
     std::wstring m_modelPath;
     std::vector<std::wstring> m_imagePaths;
+    std::vector<std::wstring> m_protobufPaths;
     std::wstring m_inputImageFolderPath;
     std::wstring m_csvData;
     std::wstring m_inputData;

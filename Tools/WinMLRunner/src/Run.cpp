@@ -293,13 +293,6 @@ HRESULT CheckIfModelAndConfigurationsAreSupported(LearningModel& model, const st
         else if (inputFeature.Kind() == LearningModelFeatureKind::Tensor)
         {
             auto tensorFeatureDescriptor = inputFeature.try_as<TensorFeatureDescriptor>();
-            if (tensorFeatureDescriptor.Shape().Size() > 4 && deviceType != DeviceType::CPU)
-            {
-                std::cout << "Input feature " << to_string(inputFeature.Name())
-                          << " shape is too large. GPU path only accepts tensor dimensions <= 4 : "
-                          << tensorFeatureDescriptor.Shape().Size() << std::endl;
-                return E_INVALIDARG;
-            }
 
             // If image as input binding, then the model's tensor inputs should have channel 3 or 1
             if (hasInputBindingImage &&

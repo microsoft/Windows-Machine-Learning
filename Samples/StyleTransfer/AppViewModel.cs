@@ -51,7 +51,6 @@ namespace StyleTransfer
         public Windows.Media.Capture.MediaCapture _mediaCapture;
         private List<MediaFrameSourceGroup> _mediaFrameSourceGroupList;
         private MediaFrameSourceGroup _selectedMediaFrameSourceGroup;
-        private MediaFrameSource _selectedMediaFrameSource;
         private bool isPreviewing;
         private DisplayRequest displayRequest = new DisplayRequest();
 
@@ -318,7 +317,6 @@ namespace StyleTransfer
                     StreamingCaptureMode = StreamingCaptureMode.Video
                 };
                 _mediaCapture = new MediaCapture();
-                Debug.WriteLine("initalized mediacapture");
                 await _mediaCapture.InitializeAsync(settings);
                 displayRequest.RequestActive();
 

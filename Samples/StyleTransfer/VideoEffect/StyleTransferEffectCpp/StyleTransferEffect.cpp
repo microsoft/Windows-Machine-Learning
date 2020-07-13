@@ -57,7 +57,6 @@ namespace winrt::StyleTransferEffectCpp::implementation
 	}
 
 	void StyleTransferEffect::SetProperties(IPropertySet config) {
-		//Processing.lock();
 		this->configuration = config;
 		hstring modelName;
 		IInspectable val = config.TryLookup(L"ModelName");
@@ -76,6 +75,5 @@ namespace winrt::StyleTransferEffectCpp::implementation
 
 		InputImageDescription = L"inputImage";
 		OutputImageDescription = L"outputImage";
-		//Processing.unlock();
 	}
 }

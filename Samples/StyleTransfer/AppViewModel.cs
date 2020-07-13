@@ -262,6 +262,7 @@ namespace StyleTransfer
         public async Task StartLiveStream()
         {
             Debug.WriteLine("StartLiveStream");
+            await CleanupCameraAsync();
 
             try
             {
@@ -290,8 +291,9 @@ namespace StyleTransfer
 
         public async Task ChangeLiveStream()
         {
-            await CleanupCameraAsync();
             Debug.WriteLine("ChangeLiveStream");
+            await CleanupCameraAsync();
+
             SaveEnabled = false;
 
             // If webcam hasn't been initialized, bail.
@@ -300,7 +302,11 @@ namespace StyleTransfer
             try
             {
                 // Check that SCI hasn't < 0 
-                if (_appModel.SelectedCameraIndex < 0) _appModel.SelectedCameraIndex = 0;
+                if (_appModel.SelectedCameraIndex < 0)
+                {
+                    _appModel.SelectedCameraIndex = 0;
+                    return;
+                }
                 _selectedMediaFrameSourceGroup = _mediaFrameSourceGroupList[_appModel.SelectedCameraIndex];
 
                 // Create MediaCapture and its settings
@@ -312,6 +318,7 @@ namespace StyleTransfer
                     StreamingCaptureMode = StreamingCaptureMode.Video
                 };
                 _mediaCapture = new MediaCapture();
+                Debug.WriteLine("initalized mediacapture");
                 await _mediaCapture.InitializeAsync(settings);
                 displayRequest.RequestActive();
 
@@ -398,7 +405,12 @@ namespace StyleTransfer
                 {
                     if (isPreviewing)
                     {
-                        await _mediaCapture.StopPreviewAsync();
+                        try
+                        {
+                            await _mediaCapture.StopPreviewAsync();
+                        }
+                        catch (Exception e) { Debug.WriteLine("CleanupCamera: " + e.Message); }
+
                         isPreviewing = false;
                     }
                     await DispatcherHelper.RunAsync(() =>
@@ -416,11 +428,7 @@ namespace StyleTransfer
                         m.Dispose();
                     });
                 }
-                if (videoEffect != null)
-                {
-                    videoEffect = null;
-                }
-                if (videoEffectDefinition != null) videoEffectDefinition = null;
+
             }
 
             catch (Exception ex)

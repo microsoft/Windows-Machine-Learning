@@ -27,6 +27,7 @@ using System.IO;
 using Windows.System.Display;
 using Windows.UI.Core;
 using GalaSoft.MvvmLight.Threading;
+using System.Threading;
 
 namespace StyleTransfer
 {
@@ -65,6 +66,7 @@ namespace StyleTransfer
         private VideoEffectDefinition videoEffectDefinition;
         // Activatable Class ID of the video effect. 
         private String _videoEffectID = "StyleTransferEffectCpp.StyleTransferEffect";
+        System.Threading.Mutex Processing = new Mutex();
 
         // Image style transfer properties
         uint m_inWidth, m_inHeight, m_outWidth, m_outHeight;
@@ -154,7 +156,7 @@ namespace StyleTransfer
 
         public async Task SetModelSource()
         {
-            //CleanupCameraAsync();
+            Debug.WriteLine("SetModelSource");
             await LoadModelAsync();
 
             switch (_appModel.InputMedia)
@@ -206,7 +208,9 @@ namespace StyleTransfer
                 _appModel.InputFrame = await ImageHelper.LoadVideoFrameFromFilePickedAsync();
                 if (_appModel.InputFrame == null)
                 {
-                    Debug.WriteLine("no valid image file selected");
+                    NotifyUser(false, "No valid image file selected, using default image instead.");
+                    var file = await StorageFile.GetFileFromApplicationUriAsync(new Uri($"ms-appx:///Assets/{_DefaultImageFileName}"));
+                    _appModel.InputFrame = await ImageHelper.LoadVideoFrameFromStorageFileAsync(file);
                 }
                 else
                 {
@@ -241,11 +245,17 @@ namespace StyleTransfer
                 (_appModel.InputFrame.SoftwareBitmap != null || _appModel.InputFrame.Direct3DSurface != null))
             {
                 _appModel.InputFrame = await ImageHelper.CenterCropImageAsync(_appModel.InputFrame, m_inWidth, m_inHeight);
+                await InputSoftwareBitmapSource.SetBitmapAsync(_appModel.InputFrame.SoftwareBitmap);
 
+                // Lock so eval + binding not destroyed mid-evaluation
+                Debug.Write("Eval Begin | ");
+                Processing.WaitOne();
+                Debug.Write("Eval Lock | ");
                 m_binding.Bind(m_inputImageDescription, ImageFeatureValue.CreateFromVideoFrame(_appModel.InputFrame));
                 m_binding.Bind(m_outputImageDescription, ImageFeatureValue.CreateFromVideoFrame(_appModel.OutputFrame));
-
                 var results = m_session.Evaluate(m_binding, "test");
+                Processing.ReleaseMutex();
+                Debug.Write("Eval Unlock\n");
 
                 // Parse Results
                 IReadOnlyDictionary<string, object> outputs = results.Outputs;
@@ -254,7 +264,6 @@ namespace StyleTransfer
                     Debug.WriteLine($"{output.Key} : {output.Value} -> {output.Value.GetType()}");
                 }
 
-                await InputSoftwareBitmapSource.SetBitmapAsync(_appModel.InputFrame.SoftwareBitmap);
                 await OutputSoftwareBitmapSource.SetBitmapAsync(_appModel.OutputFrame.SoftwareBitmap);
             }
         }
@@ -342,7 +351,11 @@ namespace StyleTransfer
 
         private async Task LoadModelAsync()
         {
+            Debug.Write("LoadModelBegin | ");
+            Processing.WaitOne();
+            Debug.Write("LoadModel Lock | ");
 
+            m_binding?.Clear();
             m_session?.Dispose();
 
             StorageFile modelFile = await StorageFile.GetFileFromApplicationUriAsync(new Uri($"ms-appx:///Assets/{_appModel.ModelSource}.onnx"));
@@ -356,6 +369,8 @@ namespace StyleTransfer
 
             m_inputImageDescription = m_model.InputFeatures.ToList().First().Name;
             m_outputImageDescription = m_model.OutputFeatures.ToList().First().Name;
+            Processing.ReleaseMutex();
+            Debug.Write("LoadModel Unlock\n");
         }
 
         public void debugModelIO()

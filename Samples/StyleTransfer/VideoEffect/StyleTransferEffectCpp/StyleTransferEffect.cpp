@@ -35,21 +35,25 @@ namespace winrt::StyleTransferEffectCpp::implementation
 	}
 
 	void StyleTransferEffect::ProcessFrame(ProcessVideoFrameContext context) {
-		Processing.lock();
 		OutputDebugString(L"Start ProcessFrame | ");
+		auto startSync = std::chrono::high_resolution_clock::now();
+
 		VideoFrame inputFrame = context.InputFrame();
 		VideoFrame outputFrame = context.OutputFrame();
 
-		OutputDebugString(L"PF Binding | ");
+		Processing.lock();
+		OutputDebugString(L"PF Locked | ");
 		Binding.Bind(InputImageDescription, inputFrame);
 		Binding.Bind(OutputImageDescription, outputTransformed);
 
 		OutputDebugString(L"PF Eval | ");
 		Session.Evaluate(Binding, L"test");
 		outputTransformed.CopyToAsync(context.OutputFrame());
-		OutputDebugString(L"Stop ProcessFrame | ");
 		Processing.unlock();
-		OutputDebugString(L"End Lock ProcessFrame\n");
+		OutputDebugString(L"PF Unlocked");
+
+		auto syncTime = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - startSync);
+		Notifier.SetFrameRate(1000.f / syncTime.count()); // Convert to FPS: milli to seconds, invert 
 	}
 
 	void StyleTransferEffect::SetEncodingProperties(VideoEncodingProperties props, IDirect3DDevice device) {
@@ -66,9 +70,10 @@ namespace winrt::StyleTransferEffectCpp::implementation
 		modelName = unbox_value<hstring>(val);
 		val = configuration.TryLookup(L"UseGPU");
 		bool useGpu = unbox_value<bool>(val);
-		OutputDebugString(modelName.c_str());
-		LearningModel m_model = LearningModel::LoadFromFilePath(modelName);
+		val = configuration.TryLookup(L"Notifier");
+		Notifier = val.try_as<StyleTransferEffectNotifier>();
 
+		LearningModel m_model = LearningModel::LoadFromFilePath(modelName);
 		LearningModelDeviceKind m_device = useGpu ? LearningModelDeviceKind::DirectX : LearningModelDeviceKind::Cpu;
 		Session = LearningModelSession{ m_model, LearningModelDevice(m_device) };
 		Binding = LearningModelBinding{ Session };

@@ -1,0 +1,9 @@
+namespace StyleTransferEffectCpp
+{
+	runtimeclass StyleTransferEffectNotifier
+	{
+		StyleTransferEffectNotifier();
+		void SetFrameRate(Single value);
+		event Windows.Foundation.EventHandler<Single> FrameRateUpdated;
+	}
+}

@@ -320,9 +320,9 @@
               RelativePanel.AlignVerticalCenterWithPanel="True"
               Visibility="{Binding CurrentApp.StreamingControlsVisible, Converter={StaticResource BoolToVis}, Mode=OneWay}">
             <Run x:Uid="TxtCapture" FontWeight="Bold" />
-            <Run Text="{x:Bind dummyFPS}" />
+            <Run Text="{Binding CaptureFPS}" />
             <Run x:Uid="TxtRender" FontWeight="Bold" />
-            <Run FontWeight="Normal" Text="{x:Bind dummyFPS}" />
+            <Run FontWeight="Normal" Text="{Binding RenderFPS}" />
           </TextBlock>
         </RelativePanel>
       </Border>

@@ -35,6 +35,7 @@ namespace winrt::StyleTransferEffectCpp::implementation
 		hstring OutputImageDescription;
 		VideoEncodingProperties encodingProperties;
 		std::mutex Processing;
+		StyleTransferEffectNotifier Notifier;
 	};
 }
 

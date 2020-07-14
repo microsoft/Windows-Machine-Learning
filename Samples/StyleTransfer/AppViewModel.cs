@@ -49,13 +49,8 @@ namespace StyleTransfer
             NotifyUser(true);
 
             m_notifier = new StyleTransferEffectNotifier();
-            m_notifier.AccountIsInDebit += M_notifier_AccountIsInDebit;
-            m_notifier.AdjustBalance(-4.0f);
-        }
+            m_notifier.FrameRateUpdated += async (_, e) => await DispatcherHelper.RunAsync(() => RenderFPS = e);
 
-        private void M_notifier_AccountIsInDebit(object sender, float e)
-        {
-            Debug.WriteLine("Account in Debit: " + e);
         }
 
         // Media capture properties
@@ -77,8 +72,8 @@ namespace StyleTransfer
         // Activatable Class ID of the video effect. 
         private String _videoEffectID = "StyleTransferEffectCpp.StyleTransferEffect";
         System.Threading.Mutex Processing = new Mutex();
-        EventRegistrationToken m_eventToken;
         StyleTransferEffectCpp.StyleTransferEffectNotifier m_notifier;
+        private float _renderFPS;
 
         // Image style transfer properties
         uint m_inWidth, m_inHeight, m_outWidth, m_outHeight;
@@ -95,6 +90,24 @@ namespace StyleTransfer
             get { return _appModel; }
         }
 
+        public float RenderFPS
+        {
+            get { return (float)Math.Round(_renderFPS, 2); }
+            set { _renderFPS = value; OnPropertyChanged(); }
+        }
+
+        private float _captureFPS;
+        public float CaptureFPS
+        {
+            get
+            {
+                return _captureFPS;
+            }
+            set
+            {
+                _captureFPS = value; OnPropertyChanged();
+            }
+        }
         private SoftwareBitmapSource _inputSoftwareBitmapSource;
         public SoftwareBitmapSource InputSoftwareBitmapSource
         {
@@ -350,7 +363,11 @@ namespace StyleTransfer
                 videoEffect = await _mediaCapture.AddVideoEffectAsync(videoEffectDefinition, MediaStreamType.VideoPreview);
                 videoEffect.SetProperties(new PropertySet() {
                     {"ModelName", modelPath },
-                    {"UseGPU", _appModel.UseGPU }});
+                    {"UseGPU", _appModel.UseGPU },
+                    { "Notifier", m_notifier} });
+
+                var props = _mediaCapture.VideoDeviceController.GetMediaStreamProperties(MediaStreamType.VideoPreview) as VideoEncodingProperties;
+                CaptureFPS = props.FrameRate.Numerator / props.FrameRate.Denominator;
 
                 await _mediaCapture.StartPreviewAsync();
                 isPreviewing = true;
@@ -425,6 +442,7 @@ namespace StyleTransfer
             Debug.WriteLine("CleanupCameraAsync");
             try
             {
+                RenderFPS = 0;
                 // Clean up the media capture
                 if (_mediaCapture != null)
                 {

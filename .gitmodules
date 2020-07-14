@@ -1,6 +1,3 @@
 [submodule "Tools/WinML-Dashboard/deps/Netron"]
 	path = Tools/WinMLDashboard/deps/Netron
 	url = https://github.com/lutzroeder/Netron.git
-[submodule "Tools/WinMLRunner/onnxruntime"]
-	path = Tools/WinMLRunner/onnxruntime
-	url = https://github.com/microsoft/onnxruntime.git

@@ -602,5 +602,5 @@ void CommandLineArgs::AddPerformanceFileMetadata(const std::string& key, const s
 }
 void CommandLineArgs::AddProvidedInputFeatureValue(const ILearningModelFeatureValue& input)
 {
-    m_providedInputFeatureValue.push_back(input);
+    m_providedInputFeatureValues.push_back(input);
 }

@@ -47,7 +47,7 @@ public:
     const std::vector<std::wstring>& ImagePaths() const { return m_imagePaths; }
     const std::vector<ILearningModelFeatureValue>& ProvidedInputFeatureValues() const
     {
-        return m_providedInputFeatureValue;
+        return m_providedInputFeatureValues;
     }
     const std::wstring& CsvPath() const { return m_csvData; }
     const std::wstring& OutputPath() const { return m_perfOutputPath; }
@@ -96,11 +96,11 @@ public:
     bool IsGarbageInput() const
     {
         // When there is no image or csv input provided, then garbage input binding is used.
-        return m_imagePaths.empty() && m_csvData.empty() && m_providedInputFeatureValue.empty();
+        return m_imagePaths.empty() && m_csvData.empty() && m_providedInputFeatureValues.empty();
     }
     bool IsCSVInput() const { return m_imagePaths.empty() && !m_csvData.empty(); }
     bool IsImageInput() const { return !m_imagePaths.empty() && m_csvData.empty(); }
-    bool InputFeatureValuesProvided() const { return !m_providedInputFeatureValue.empty(); }
+    bool InputFeatureValuesProvided() const { return !m_providedInputFeatureValues.empty(); }
     uint32_t NumIterations() const { return m_numIterations; }
     uint32_t NumLoadIterations() const { return m_numLoadIterations; }
     uint32_t NumSessionCreationIterations() const { return m_numSessionIterations; }
@@ -145,7 +145,7 @@ public:
     void SetLoadIterations(const uint32_t iterations) { m_numLoadIterations = iterations; }
     void AddPerformanceFileMetadata(const std::string& key, const std::string& value);
     void AddProvidedInputFeatureValue(const ILearningModelFeatureValue& input);
-    void ClearProvidedInputFeatureValues() { m_providedInputFeatureValue.clear(); };
+    void ClearProvidedInputFeatureValues() { m_providedInputFeatureValues.clear(); };
     void SetGarbageDataMaxValue(const uint32_t value) { m_garbageDataMaxValue = value; }
 
     // Stop iterating when total time of iterations after the first iteration exceeds time limit.
@@ -191,7 +191,7 @@ private:
     std::wstring m_modelFolderPath;
     std::wstring m_modelPath;
     std::vector<std::wstring> m_imagePaths;
-    std::vector<ILearningModelFeatureValue> m_providedInputFeatureValue;
+    std::vector<ILearningModelFeatureValue> m_providedInputFeatureValues;
     std::wstring m_inputImageFolderPath;
     std::wstring m_csvData;
     std::wstring m_inputData;

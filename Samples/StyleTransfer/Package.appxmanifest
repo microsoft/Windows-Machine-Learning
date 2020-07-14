@@ -7,11 +7,12 @@
   IgnorableNamespaces="uap mp">
 
   <Identity
-    Name="967b0fd3-32f7-4959-aafd-759d8517182a"
+    Name="7fafd263-abdf-4f88-87a1-ffb0922489d1"
     Publisher="CN=t-limay"
-    Version="1.0.2.0" />
+    Version="1.0.0.0" />
 
-  <mp:PhoneIdentity PhoneProductId="967b0fd3-32f7-4959-aafd-759d8517182a" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
+  <mp:PhoneIdentity PhoneProductId="7fafd263-abdf-4f88-87a1-ffb0922489d1" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
+
 
   <Properties>
     <DisplayName>StyleTransfer</DisplayName>
@@ -37,24 +38,14 @@
         Square44x44Logo="Assets\Square44x44Logo.png"
         Description="StyleTransfer"
         BackgroundColor="transparent">
-        <uap:DefaultTile Wide310x150Logo="Assets\Wide310x150Logo.png" Square71x71Logo="Assets\SmallTile.png" Square310x310Logo="Assets\LargeTile.png"/>
+        <uap:DefaultTile Wide310x150Logo="Assets\Wide310x150Logo.png"/>
         <uap:SplashScreen Image="Assets\SplashScreen.png" />
       </uap:VisualElements>
     </Application>
   </Applications>
 
-  <Extensions>
-    <Extension Category="windows.activatableClass.inProcessServer">
-      <InProcessServer>
-        <Path>CLRHost.dll</Path>
-        <ActivatableClass ActivatableClassId="StyleEffect.StyleTransferVideoEffect" ThreadingModel="both" />
-      </InProcessServer>
-    </Extension>
-  </Extensions>
-
   <Capabilities>
     <Capability Name="internetClient" />
     <DeviceCapability Name="webcam"/>
-    <DeviceCapability Name="microphone"/>
   </Capabilities>
 </Package>

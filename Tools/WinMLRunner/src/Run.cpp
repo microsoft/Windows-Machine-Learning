@@ -31,15 +31,15 @@ std::vector<ILearningModelFeatureValue> GenerateInputFeatures(const LearningMode
         if (inputDataType == InputDataType::Tensor)
         {
             // If CSV data is provided, then every input will contain the same CSV data
-            auto tensorFeature = BindingUtilities::CreateBindableTensor(
-                description, imagePath, inputBindingType, inputDataType, args, iterationNum, colorManagementMode);
+            auto tensorFeature = BindingUtilities::CreateBindableTensor(description, imagePath, inputBindingType, inputDataType,
+                                                                        args, iterationNum, colorManagementMode);
             inputFeatures.push_back(tensorFeature);
         }
         else
         {
             auto imageFeature = BindingUtilities::CreateBindableImage(
-                description, imagePath, inputBindingType, inputDataType,
-                device.LearningModelDevice.Direct3D11Device(), args, iterationNum, colorManagementMode);
+                description, imagePath, inputBindingType, inputDataType, device.LearningModelDevice.Direct3D11Device(),
+                args, iterationNum, colorManagementMode);
             inputFeatures.push_back(imageFeature);
         }
     }
@@ -213,6 +213,9 @@ HRESULT BindInputs(LearningModelBinding& context, const LearningModelSession& se
         std::cout << "Cannot create D3D12 device on client if CPU device type is selected." << std::endl;
         return E_INVALIDARG;
     }
+    bool useInputData = false;
+    bool isGarbageData = args.IsGarbageInput();
+    std::string completionString = "\n";
 
     // Run the binding + evaluate multiple times and average the results
     bool captureIterationPerf = args.IsPerformanceCapture() || args.IsPerIterationCapture();
@@ -226,8 +229,7 @@ HRESULT BindInputs(LearningModelBinding& context, const LearningModelSession& se
     {
         try
         {
-            inputFeatures = GenerateInputFeatures(session.Model(), args, inputBindingType, inputDataType, device,
-                                                  iteration, imagePath);
+            inputFeatures = GenerateInputFeatures(session.Model(), args, inputBindingType, inputDataType, device, iteration, imagePath);
         }
         catch (hresult_error hr)
         {
@@ -236,7 +238,6 @@ HRESULT BindInputs(LearningModelBinding& context, const LearningModelSession& se
             return hr.code();
         }
     }
-
     HRESULT bindInputResult =
         BindInputFeatures(session.Model(), context, inputFeatures, args, output, captureIterationPerf, iteration, profiler);
 

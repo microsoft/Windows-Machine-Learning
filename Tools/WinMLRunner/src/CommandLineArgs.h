@@ -45,7 +45,10 @@ public:
     BitmapInterpolationMode AutoScaleInterpMode() const { return m_autoScaleInterpMode; }
 
     const std::vector<std::wstring>& ImagePaths() const { return m_imagePaths; }
-    const std::vector<ILearningModelFeatureValue>& ProvidedInputFeatureValues() const { return m_providedInputFeatureValue; }
+    const std::vector<ILearningModelFeatureValue>& ProvidedInputFeatureValues() const
+    {
+        return m_providedInputFeatureValue;
+    }
     const std::wstring& CsvPath() const { return m_csvData; }
     const std::wstring& OutputPath() const { return m_perfOutputPath; }
     const std::wstring& FolderPath() const { return m_modelFolderPath; }
@@ -142,6 +145,7 @@ public:
     void SetLoadIterations(const uint32_t iterations) { m_numLoadIterations = iterations; }
     void AddPerformanceFileMetadata(const std::string& key, const std::string& value);
     void AddProvidedInputFeatureValue(const ILearningModelFeatureValue& input);
+    void ClearProvidedInputFeatureValues() { m_providedInputFeatureValue.clear(); };
     void SetGarbageDataMaxValue(const uint32_t value) { m_garbageDataMaxValue = value; }
 
     // Stop iterating when total time of iterations after the first iteration exceeds time limit.

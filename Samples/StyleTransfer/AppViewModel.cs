@@ -28,6 +28,8 @@ using Windows.System.Display;
 using Windows.UI.Core;
 using GalaSoft.MvvmLight.Threading;
 using System.Threading;
+using StyleTransferEffectCpp;
+using System.Runtime.InteropServices.WindowsRuntime;
 
 namespace StyleTransfer
 {
@@ -46,6 +48,14 @@ namespace StyleTransfer
             _saveEnabled = true;
             NotifyUser(true);
 
+            m_notifier = new StyleTransferEffectNotifier();
+            m_notifier.AccountIsInDebit += M_notifier_AccountIsInDebit;
+            m_notifier.AdjustBalance(-4.0f);
+        }
+
+        private void M_notifier_AccountIsInDebit(object sender, float e)
+        {
+            Debug.WriteLine("Account in Debit: " + e);
         }
 
         // Media capture properties
@@ -67,6 +77,8 @@ namespace StyleTransfer
         // Activatable Class ID of the video effect. 
         private String _videoEffectID = "StyleTransferEffectCpp.StyleTransferEffect";
         System.Threading.Mutex Processing = new Mutex();
+        EventRegistrationToken m_eventToken;
+        StyleTransferEffectCpp.StyleTransferEffectNotifier m_notifier;
 
         // Image style transfer properties
         uint m_inWidth, m_inHeight, m_outWidth, m_outHeight;

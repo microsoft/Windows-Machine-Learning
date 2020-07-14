@@ -45,7 +45,6 @@ namespace StyleTransfer
             _outputSoftwareBitmapSource = new SoftwareBitmapSource();
             _saveEnabled = true;
             NotifyUser(true);
-
         }
 
         // Media capture properties

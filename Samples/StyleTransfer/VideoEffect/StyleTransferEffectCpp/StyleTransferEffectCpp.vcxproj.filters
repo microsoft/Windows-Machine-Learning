@@ -12,9 +12,11 @@
   <ItemGroup>
     <ClCompile Include="pch.cpp" />
     <ClCompile Include="$(GeneratedFilesDir)module.g.cpp" />
+    <ClCompile Include="StyleTransferEffectNotifier.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
+    <ClInclude Include="StyleTransferEffectNotifier.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="StyleTransferEffectCpp.def" />
@@ -28,5 +30,6 @@
   </ItemGroup>
   <ItemGroup>
     <Midl Include="StyleTransferEffect.idl" />
+    <Midl Include="StyleTransferEffectNotifier.idl" />
   </ItemGroup>
 </Project>

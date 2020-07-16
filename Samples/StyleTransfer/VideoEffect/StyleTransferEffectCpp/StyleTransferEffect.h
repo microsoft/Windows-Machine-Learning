@@ -36,6 +36,7 @@ namespace winrt::StyleTransferEffectCpp::implementation
 		VideoEncodingProperties encodingProperties;
 		std::mutex Processing;
 		StyleTransferEffectNotifier Notifier;
+		int frameNum = 0;
 	};
 }
 

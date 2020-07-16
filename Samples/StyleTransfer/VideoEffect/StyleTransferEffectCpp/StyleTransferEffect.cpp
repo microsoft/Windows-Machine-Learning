@@ -24,36 +24,41 @@ namespace winrt::StyleTransferEffectCpp::implementation
 	bool StyleTransferEffect::IsReadOnly() { return false; }
 	void StyleTransferEffect::DiscardQueuedFrames() {}
 
-	void StyleTransferEffect::Close(MediaEffectClosedReason) {
+	void StyleTransferEffect::Close(MediaEffectClosedReason m) {
 		OutputDebugString(L"Close Begin | ");
-		Processing.lock();
+		std::lock_guard<mutex> guard{ Processing };
 		OutputDebugString(L"Close\n");
 		if (Binding != nullptr) Binding.Clear();
 		if (Session != nullptr) Session.Close();
 		outputTransformed.Close();
-		Processing.unlock();
 	}
 
 	void StyleTransferEffect::ProcessFrame(ProcessVideoFrameContext context) {
-		OutputDebugString(L"Start ProcessFrame | ");
+		// Play around with dropping frames so as to not overwhelm when processing slowly
+		if ((frameNum + 1) % 5 == 0) {
+			frameNum = 0;
+			OutputDebugString(L"Drop");
+			return;
+		}
+		OutputDebugString(L"PF Start | ");
 		auto startSync = std::chrono::high_resolution_clock::now();
 
 		VideoFrame inputFrame = context.InputFrame();
 		VideoFrame outputFrame = context.OutputFrame();
 
-		Processing.lock();
+		std::lock_guard<mutex> guard{ Processing };
 		OutputDebugString(L"PF Locked | ");
 		Binding.Bind(InputImageDescription, inputFrame);
 		Binding.Bind(OutputImageDescription, outputTransformed);
 
 		OutputDebugString(L"PF Eval | ");
 		Session.Evaluate(Binding, L"test");
-		outputTransformed.CopyToAsync(context.OutputFrame());
-		Processing.unlock();
-		OutputDebugString(L"PF Unlocked");
+		outputTransformed.CopyToAsync(outputFrame).get();
 
 		auto syncTime = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - startSync);
 		Notifier.SetFrameRate(1000.f / syncTime.count()); // Convert to FPS: milli to seconds, invert 
+		OutputDebugString(L"PF End\n ");
+		frameNum++;
 	}
 
 	void StyleTransferEffect::SetEncodingProperties(VideoEncodingProperties props, IDirect3DDevice device) {

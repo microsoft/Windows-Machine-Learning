@@ -342,13 +342,15 @@ namespace StyleTransfer
                 }
                 _selectedMediaFrameSourceGroup = _mediaFrameSourceGroupList[_appModel.SelectedCameraIndex];
 
+                MediaCapture.FindAllVideoProfiles(_selectedMediaFrameSourceGroup.Id);
                 // Create MediaCapture and its settings
                 var settings = new MediaCaptureInitializationSettings
                 {
                     SourceGroup = _selectedMediaFrameSourceGroup,
                     PhotoCaptureSource = PhotoCaptureSource.Auto,
                     MemoryPreference = _appModel.UseGPU ? MediaCaptureMemoryPreference.Auto : MediaCaptureMemoryPreference.Cpu,
-                    StreamingCaptureMode = StreamingCaptureMode.Video
+                    StreamingCaptureMode = StreamingCaptureMode.Video,
+                    MediaCategory = MediaCategory.Communications,
                 };
                 _mediaCapture = new MediaCapture();
                 await _mediaCapture.InitializeAsync(settings);
@@ -376,6 +378,12 @@ namespace StyleTransfer
             {
                 Debug.WriteLine(ex.ToString());
             }
+        }
+
+
+        private void _mediaCapture_Failed(MediaCapture sender, MediaCaptureFailedEventArgs errorEventArgs)
+        {
+            Debug.WriteLine("_mediaCapture FAIL! " + errorEventArgs.Message);
         }
 
         private async Task LoadModelAsync()

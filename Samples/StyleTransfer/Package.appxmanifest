@@ -9,7 +9,7 @@
   <Identity
     Name="7fafd263-abdf-4f88-87a1-ffb0922489d1"
     Publisher="CN=t-limay"
-    Version="1.0.0.0" />
+    Version="1.0.8.0" />
 
   <mp:PhoneIdentity PhoneProductId="7fafd263-abdf-4f88-87a1-ffb0922489d1" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
 

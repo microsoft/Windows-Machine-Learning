@@ -36,7 +36,8 @@ namespace winrt::StyleTransferEffectCpp::implementation
 		VideoEncodingProperties encodingProperties;
 		std::mutex Processing;
 		StyleTransferEffectNotifier Notifier;
-		int frameNum = 0;
+		std::chrono::time_point<std::chrono::steady_clock> m_StartTime;
+		bool firstProcessFrameCall = true;
 	};
 }
 

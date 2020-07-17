@@ -33,15 +33,23 @@ namespace winrt::StyleTransferEffectCpp::implementation
 		outputTransformed.Close();
 	}
 
+
 	void StyleTransferEffect::ProcessFrame(ProcessVideoFrameContext context) {
-		// Play around with dropping frames so as to not overwhelm when processing slowly
-		if ((frameNum + 1) % 5 == 0) {
-			frameNum = 0;
-			OutputDebugString(L"Drop");
-			return;
+		auto now = std::chrono::high_resolution_clock::now();
+		std::chrono::milliseconds timePassed;
+		// If the first time calling ProcessFrame, just start the timer 
+		if (firstProcessFrameCall) {
+			m_StartTime = now;
+			firstProcessFrameCall = false;
 		}
+		// On the second and any proceding process, 
+		else {
+			timePassed = std::chrono::duration_cast<std::chrono::milliseconds>(now - m_StartTime);
+			m_StartTime = now;
+			Notifier.SetFrameRate(1000.f / timePassed.count()); // Convert to FPS: milli to seconds, invert 
+		}
+
 		OutputDebugString(L"PF Start | ");
-		auto startSync = std::chrono::high_resolution_clock::now();
 
 		VideoFrame inputFrame = context.InputFrame();
 		VideoFrame outputFrame = context.OutputFrame();
@@ -55,10 +63,7 @@ namespace winrt::StyleTransferEffectCpp::implementation
 		Session.Evaluate(Binding, L"test");
 		outputTransformed.CopyToAsync(outputFrame).get();
 
-		auto syncTime = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - startSync);
-		Notifier.SetFrameRate(1000.f / syncTime.count()); // Convert to FPS: milli to seconds, invert 
 		OutputDebugString(L"PF End\n ");
-		frameNum++;
 	}
 
 	void StyleTransferEffect::SetEncodingProperties(VideoEncodingProperties props, IDirect3DDevice device) {

@@ -221,17 +221,23 @@ HRESULT BindInputs(LearningModelBinding& context, const LearningModelSession& se
     bool captureIterationPerf = args.IsPerformanceCapture() || args.IsPerIterationCapture();
 
     std::vector<ILearningModelFeatureValue> inputFeatures;
-    try
+    if (args.InputFeatureValuesProvided())
     {
-        inputFeatures = GenerateInputFeatures(session.Model(), args, inputBindingType, inputDataType, device, iteration, imagePath);
+        inputFeatures = args.ProvidedInputFeatureValues();
     }
-    catch (hresult_error hr)
+    else
     {
-        std::wcout << "\nGenerating Input Features [FAILED]" << std::endl;
-        std::wcout << hr.message().c_str() << std::endl;
-        return hr.code();
+        try
+        {
+            inputFeatures = GenerateInputFeatures(session.Model(), args, inputBindingType, inputDataType, device, iteration, imagePath);
+        }
+        catch (hresult_error hr)
+        {
+            std::wcout << "\nGenerating Input Features [FAILED]" << std::endl;
+            std::wcout << hr.message().c_str() << std::endl;
+            return hr.code();
+        }
     }
-
     HRESULT bindInputResult =
         BindInputFeatures(session.Model(), context, inputFeatures, args, output, captureIterationPerf, iteration, profiler);
 

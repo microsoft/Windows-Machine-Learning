@@ -23,6 +23,7 @@ using System.Diagnostics;
 using Windows.System.Display;
 using Windows.Graphics.Display;
 using System.Threading.Tasks;
+using Windows.Media.Effects;
 
 // The Blank Page item template is documented at https://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
 
@@ -44,6 +45,7 @@ namespace StyleTransfer
             "udnie"
         };
         public int dummyFPS = 0;
+        DisplayRequest displayRequest = new DisplayRequest();
 
         public MainPage()
         {
@@ -51,7 +53,6 @@ namespace StyleTransfer
             _viewModel = new AppViewModel();
             this.DataContext = _viewModel;
         }
-
     }
 
 }

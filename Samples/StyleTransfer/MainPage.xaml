@@ -185,7 +185,7 @@
             HorizontalAlignment="Center"
             VerticalAlignment="Top"
             HorizontalContentAlignment="Center"
-            IsOn="{Binding CurrentApp.UseGPU, Mode=TwoWay}"
+            IsOn="{Binding UseGpu, Mode=TwoWay}"
             OffContent="CPU"
             OnContent="GPU" />
       </Grid>
@@ -223,10 +223,11 @@
           </StackPanel>
         </Viewbox>
 
-        <CaptureElement
+        <ContentControl
             Name="PreviewControl"
-            Source="{Binding CurrentApp.InputMediaCapture}"
-            Stretch="Uniform" />
+            Width="720"
+            Height="720"
+            Content="{Binding CurrentApp.OutputCaptureElement}" />
 
         <!--  Input image preview  -->
         <Image
@@ -246,16 +247,16 @@
               Source="{Binding OutputSoftwareBitmapSource}"
               Stretch="Uniform" />
 
-          <MediaPlayerElement
+          <!--<MediaPlayerElement
               Name="UIOutputMediaPlayerElement"
               MaxWidth="720"
               MaxHeight="720"
               AreTransportControlsEnabled="False"
               AutoPlay="True"
               Canvas.ZIndex="-1"
-              Source="{Binding CurrentApp.OutputMediaSource}"
+              Source="{Binding CurrentApp.OutputMediaCapture}"
               Stretch="Uniform"
-              Visibility="Visible" />
+              Visibility="Visible" />!-->
 
           <Button
               Name="UIButtonSaveImage"
@@ -319,9 +320,9 @@
               RelativePanel.AlignVerticalCenterWithPanel="True"
               Visibility="{Binding CurrentApp.StreamingControlsVisible, Converter={StaticResource BoolToVis}, Mode=OneWay}">
             <Run x:Uid="TxtCapture" FontWeight="Bold" />
-            <Run Text="{x:Bind dummyFPS}" />
+            <Run Text="{Binding CaptureFPS}" />
             <Run x:Uid="TxtRender" FontWeight="Bold" />
-            <Run FontWeight="Normal" Text="{x:Bind dummyFPS}" />
+            <Run FontWeight="Normal" Text="{Binding RenderFPS}" />
           </TextBlock>
         </RelativePanel>
       </Border>

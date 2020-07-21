@@ -14,7 +14,7 @@ using Windows.Media.Playback;
 using Windows.Media.Effects;
 using Windows.Media;
 using Windows.Foundation.Collections;
-using Windows.AI.MachineLearning;
+using Microsoft.AI.MachineLearning;
 using Windows.Storage;
 using System.Runtime.CompilerServices;
 using Windows.Graphics.Imaging;
@@ -22,6 +22,15 @@ using Windows.UI.Xaml.Media.Imaging;
 using Windows.UI.Xaml.Media;
 using Windows.Media.MediaProperties;
 using Windows.Storage.Pickers;
+using Windows.UI.Xaml.Controls;
+using System.IO;
+using Windows.System.Display;
+using Windows.UI.Core;
+using GalaSoft.MvvmLight.Threading;
+using System.Threading;
+using StyleTransferEffectCpp;
+using System.Runtime.InteropServices.WindowsRuntime;
+using Windows.Devices.Enumeration;
 
 namespace StyleTransfer
 {
@@ -40,13 +49,18 @@ namespace StyleTransfer
             _saveEnabled = true;
             NotifyUser(true);
 
+            m_notifier = new StyleTransferEffectNotifier();
+            m_notifier.FrameRateUpdated += async (_, e) => await DispatcherHelper.RunAsync(() => RenderFPS = e);
+            _useGpu = true;
+            isPreviewing = false;
         }
 
         // Media capture properties
-        Windows.Media.Capture.MediaCapture _mediaCapture;
+        public Windows.Media.Capture.MediaCapture _mediaCapture;
         private List<MediaFrameSourceGroup> _mediaFrameSourceGroupList;
         private MediaFrameSourceGroup _selectedMediaFrameSourceGroup;
-        private MediaFrameSource _selectedMediaFrameSource;
+        private bool isPreviewing;
+        private DisplayRequest displayRequest = new DisplayRequest();
 
         // Style transfer effect properties
         private LearningModel m_model = null;
@@ -56,6 +70,13 @@ namespace StyleTransfer
         private string m_inputImageDescription;
         private string m_outputImageDescription;
         private IMediaExtension videoEffect;
+        private VideoEffectDefinition videoEffectDefinition;
+        // Activatable Class ID of the video effect. 
+        private String _videoEffectID = "StyleTransferEffectCpp.StyleTransferEffect";
+        System.Threading.Mutex Processing = new Mutex();
+        StyleTransferEffectCpp.StyleTransferEffectNotifier m_notifier;
+        private float _renderFPS;
+        DeviceInformationCollection devices;
 
 
         // Image style transfer properties
@@ -73,6 +94,38 @@ namespace StyleTransfer
             get { return _appModel; }
         }
 
+        public float RenderFPS
+        {
+            get { return (float)Math.Round(_renderFPS, 2); }
+            set { _renderFPS = value; OnPropertyChanged(); }
+        }
+
+        private float _captureFPS;
+        public float CaptureFPS
+        {
+            get
+            {
+                return _captureFPS;
+            }
+            set
+            {
+                _captureFPS = value; OnPropertyChanged();
+            }
+        }
+        private bool _useGpu;
+        public bool UseGpu
+        {
+            get { return _useGpu; }
+            set
+            {
+                _useGpu = value;
+                if (_appModel.InputMedia == "LiveStream")
+                {
+                    SetMediaSourceCommand.Execute("LiveStream");
+                }
+                OnPropertyChanged();
+            }
+        }
         private SoftwareBitmapSource _inputSoftwareBitmapSource;
         public SoftwareBitmapSource InputSoftwareBitmapSource
         {
@@ -120,8 +173,6 @@ namespace StyleTransfer
         {
             _appModel.InputMedia = src;
 
-            CleanupCameraAsync();
-            CleanupInputImage();
             NotifyUser(true);
             SaveEnabled = true;
 
@@ -130,13 +181,13 @@ namespace StyleTransfer
             {
                 case "LiveStream":
                     await StartLiveStream();
-                    // TODO: Also spin up a Capture for preview on left side
                     break;
                 case "AcquireImage":
+                    CleanupInputImage();
                     await StartAcquireImage();
                     break;
                 case "FilePick":
-
+                    CleanupInputImage();
                     await StartFilePick();
                     break;
                 case "Inking":
@@ -148,6 +199,7 @@ namespace StyleTransfer
 
         public async Task SetModelSource()
         {
+            Debug.WriteLine("SetModelSource");
             await LoadModelAsync();
 
             switch (_appModel.InputMedia)
@@ -199,7 +251,9 @@ namespace StyleTransfer
                 _appModel.InputFrame = await ImageHelper.LoadVideoFrameFromFilePickedAsync();
                 if (_appModel.InputFrame == null)
                 {
-                    Debug.WriteLine("no valid image file selected");
+                    NotifyUser(false, "No valid image file selected, using default image instead.");
+                    var file = await StorageFile.GetFileFromApplicationUriAsync(new Uri($"ms-appx:///Assets/{_DefaultImageFileName}"));
+                    _appModel.InputFrame = await ImageHelper.LoadVideoFrameFromStorageFileAsync(file);
                 }
                 else
                 {
@@ -234,11 +288,17 @@ namespace StyleTransfer
                 (_appModel.InputFrame.SoftwareBitmap != null || _appModel.InputFrame.Direct3DSurface != null))
             {
                 _appModel.InputFrame = await ImageHelper.CenterCropImageAsync(_appModel.InputFrame, m_inWidth, m_inHeight);
+                await InputSoftwareBitmapSource.SetBitmapAsync(_appModel.InputFrame.SoftwareBitmap);
 
+                // Lock so eval + binding not destroyed mid-evaluation
+                Debug.Write("Eval Begin | ");
+                Processing.WaitOne();
+                Debug.Write("Eval Lock | ");
                 m_binding.Bind(m_inputImageDescription, ImageFeatureValue.CreateFromVideoFrame(_appModel.InputFrame));
                 m_binding.Bind(m_outputImageDescription, ImageFeatureValue.CreateFromVideoFrame(_appModel.OutputFrame));
-
                 var results = m_session.Evaluate(m_binding, "test");
+                Processing.ReleaseMutex();
+                Debug.Write("Eval Unlock\n");
 
                 // Parse Results
                 IReadOnlyDictionary<string, object> outputs = results.Outputs;
@@ -247,75 +307,99 @@ namespace StyleTransfer
                     Debug.WriteLine($"{output.Key} : {output.Value} -> {output.Value.GetType()}");
                 }
 
-                await InputSoftwareBitmapSource.SetBitmapAsync(_appModel.InputFrame.SoftwareBitmap);
                 await OutputSoftwareBitmapSource.SetBitmapAsync(_appModel.OutputFrame.SoftwareBitmap);
             }
         }
         public async Task StartLiveStream()
         {
             Debug.WriteLine("StartLiveStream");
+            await CleanupCameraAsync();
 
-            try
+            if (devices == null)
             {
-                // Find the sources 
-                var allGroups = await MediaFrameSourceGroup.FindAllAsync();
-                _mediaFrameSourceGroupList = allGroups.Where(group => group.SourceInfos.Any(sourceInfo => sourceInfo.SourceKind == MediaFrameSourceKind.Color
-                                                                                                         && (sourceInfo.MediaStreamType == MediaStreamType.VideoPreview
-                                                                                                         || sourceInfo.MediaStreamType == MediaStreamType.VideoRecord))).ToList();
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine(ex.Message);
-                _mediaFrameSourceGroupList = null;
-            }
-
-            if ((_mediaFrameSourceGroupList == null) || (_mediaFrameSourceGroupList.Count == 0))
-            {
-                // No camera sources found
-                Debug.WriteLine("No Camera found");
-                NotifyUser(false, "No Camera found.");
+                try
+                {
+                    devices = await DeviceInformation.FindAllAsync(DeviceClass.VideoCapture);
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine(ex.Message);
+                    devices = null;
+                }
+                if ((devices == null) || (devices.Count == 0))
+                {
+                    // No camera sources found
+                    Debug.WriteLine("No cameras found");
+                    NotifyUser(false, "No cameras found.");
+                    return;
+                }
+                _appModel.CameraNamesList = devices.Select(device => device.Name);
                 return;
             }
-
-            _appModel.CameraNamesList = _mediaFrameSourceGroupList.Select(group => group.DisplayName);
+            // If just above 0 you fool
+            if (_appModel.SelectedCameraIndex >= 0)
+            {
+                Debug.WriteLine("StartLive: already 0");
+                await ChangeLiveStream();
+                return;
+            }
+            // If already have the list, set to the default
             _appModel.SelectedCameraIndex = 0;
         }
 
         public async Task ChangeLiveStream()
         {
             Debug.WriteLine("ChangeLiveStream");
+            await CleanupCameraAsync();
+
             SaveEnabled = false;
 
             // If webcam hasn't been initialized, bail.
-            if (_mediaFrameSourceGroupList == null) return;
+            if ((devices == null) || (devices.Count == 0))
+                return;
 
             try
             {
-                _selectedMediaFrameSourceGroup = _mediaFrameSourceGroupList[_appModel.SelectedCameraIndex];
-
+                // Check that SCI hasn't < 0 
+                // Probably -1 when doesn't find camera, or when list gone? 
+                if (_appModel.SelectedCameraIndex < 0)
+                {
+                    Debug.WriteLine("selectedCamera < 0");
+                    NotifyUser(false, "Invalid Camera selected, using default");
+                    _appModel.SelectedCameraIndex = 0;
+                    return;
+                }
+                var device = devices.ToList().ElementAt(_appModel.SelectedCameraIndex);
                 // Create MediaCapture and its settings
-                _mediaCapture = new MediaCapture();
                 var settings = new MediaCaptureInitializationSettings
                 {
+                    VideoDeviceId = device.Id,
                     SourceGroup = _selectedMediaFrameSourceGroup,
                     PhotoCaptureSource = PhotoCaptureSource.Auto,
-                    MemoryPreference = _appModel.UseGPU ? MediaCaptureMemoryPreference.Auto : MediaCaptureMemoryPreference.Cpu,
-                    StreamingCaptureMode = StreamingCaptureMode.Video
+                    MemoryPreference = UseGpu ? MediaCaptureMemoryPreference.Auto : MediaCaptureMemoryPreference.Cpu,
+                    StreamingCaptureMode = StreamingCaptureMode.Video,
+                    MediaCategory = MediaCategory.Communications,
                 };
-
-                // Initialize MediaCapture
+                _mediaCapture = new MediaCapture();
                 await _mediaCapture.InitializeAsync(settings);
+                displayRequest.RequestActive();
 
-                // Initialize VideoEffect
-                VideoEffectDefinition videoEffectDefinition = new VideoEffectDefinition("StyleTransferEffectComponent.StyleTransferVideoEffect");
+                var capture = new CaptureElement();
+                capture.Source = _mediaCapture;
+                _appModel.OutputCaptureElement = capture;
+
+                var modelPath = Path.GetFullPath($"./Assets/{_appModel.ModelSource}.onnx");
+                videoEffectDefinition = new VideoEffectDefinition(_videoEffectID, new PropertySet() {
+                    {"ModelName", modelPath },
+                    {"UseGPU", UseGpu },
+                    { "Notifier", m_notifier} });
                 videoEffect = await _mediaCapture.AddVideoEffectAsync(videoEffectDefinition, MediaStreamType.VideoPreview);
-                videoEffect.SetProperties(new PropertySet() {
-                    { "Session", m_session},
-                    { "Binding", m_binding },
-                    { "InputImageDescription", m_inputImageDescription },
-                    { "OutputImageDescription", m_outputImageDescription } });
 
-                StartPreview();
+                var props = _mediaCapture.VideoDeviceController.GetMediaStreamProperties(MediaStreamType.VideoPreview) as VideoEncodingProperties;
+                CaptureFPS = props.FrameRate.Numerator / props.FrameRate.Denominator;
+
+                await _mediaCapture.StartPreviewAsync();
+                isPreviewing = true;
             }
             catch (Exception ex)
             {
@@ -323,36 +407,25 @@ namespace StyleTransfer
             }
         }
 
-        // Preview the input and output media 
-        private void StartPreview()
+
+        private void _mediaCapture_Failed(MediaCapture sender, MediaCaptureFailedEventArgs errorEventArgs)
         {
-            Debug.WriteLine("StartPreview");
-            _selectedMediaFrameSource = _mediaCapture.FrameSources.FirstOrDefault(source => source.Value.Info.MediaStreamType == MediaStreamType.VideoPreview
-                                                                                  && source.Value.Info.SourceKind == MediaFrameSourceKind.Color).Value;
-            if (_selectedMediaFrameSource == null)
-            {
-                _selectedMediaFrameSource = _mediaCapture.FrameSources.FirstOrDefault(source => source.Value.Info.MediaStreamType == MediaStreamType.VideoRecord
-                                                                                      && source.Value.Info.SourceKind == MediaFrameSourceKind.Color).Value;
-            }
-
-            // If no preview stream are available, bail
-            if (_selectedMediaFrameSource == null)
-            {
-                return;
-            }
-
-            _appModel.OutputMediaSource = MediaSource.CreateFromMediaFrameSource(_selectedMediaFrameSource);
-            _appModel.InputMediaSource = MediaSource.CreateFromMediaFrameSource(_selectedMediaFrameSource);
+            Debug.WriteLine("_mediaCapture FAIL! " + errorEventArgs.Message);
         }
 
         private async Task LoadModelAsync()
         {
+            Debug.Write("LoadModelBegin | ");
+            Processing.WaitOne();
+            Debug.Write("LoadModel Lock | ");
+
+            m_binding?.Clear();
             m_session?.Dispose();
 
             StorageFile modelFile = await StorageFile.GetFileFromApplicationUriAsync(new Uri($"ms-appx:///Assets/{_appModel.ModelSource}.onnx"));
             m_model = await LearningModel.LoadFromStorageFileAsync(modelFile);
 
-            m_inferenceDeviceSelected = _appModel.UseGPU ? LearningModelDeviceKind.DirectX : LearningModelDeviceKind.Cpu;
+            m_inferenceDeviceSelected = UseGpu ? LearningModelDeviceKind.DirectX : LearningModelDeviceKind.Cpu;
             m_session = new LearningModelSession(m_model, new LearningModelDevice(m_inferenceDeviceSelected));
             m_binding = new LearningModelBinding(m_session);
 
@@ -360,6 +433,8 @@ namespace StyleTransfer
 
             m_inputImageDescription = m_model.InputFeatures.ToList().First().Name;
             m_outputImageDescription = m_model.OutputFeatures.ToList().First().Name;
+            Processing.ReleaseMutex();
+            Debug.Write("LoadModel Unlock\n");
         }
 
         public void debugModelIO()
@@ -397,21 +472,40 @@ namespace StyleTransfer
             }
         }
 
-        private void CleanupCameraAsync()
+        private async Task CleanupCameraAsync()
         {
             Debug.WriteLine("CleanupCameraAsync");
             try
             {
-                _mediaCapture?.Dispose();
-                _appModel.OutputMediaSource?.Dispose();
-                if (_appModel.OutputMediaSource != null)
+                RenderFPS = 0;
+                // Clean up the media capture
+                if (_mediaCapture != null)
                 {
-                    _appModel.OutputMediaSource = null;
+                    if (isPreviewing)
+                    {
+                        try
+                        {
+                            await _mediaCapture.StopPreviewAsync();
+                        }
+                        catch (Exception e) { Debug.WriteLine("CleanupCamera: " + e.Message); }
+                    }
+                    await DispatcherHelper.RunAsync(() =>
+                    {
+                        CaptureElement cap = new CaptureElement();
+                        cap.Source = null;
+                        _appModel.OutputCaptureElement = cap;
+                        if (isPreviewing)
+                        {
+                            displayRequest.RequestRelease();
+                        }
+
+                        MediaCapture m = _mediaCapture;
+                        _mediaCapture = null;
+                        m.Dispose();
+                        isPreviewing = false;
+                    });
                 }
-                if (videoEffect != null)
-                {
-                    videoEffect = null;
-                }
+
             }
 
             catch (Exception ex)
@@ -420,16 +514,24 @@ namespace StyleTransfer
             }
         }
 
+
         private void CleanupInputImage()
         {
-            InputSoftwareBitmapSource?.Dispose();
-            OutputSoftwareBitmapSource?.Dispose();
+            try
+            {
+                InputSoftwareBitmapSource?.Dispose();
+                OutputSoftwareBitmapSource?.Dispose();
 
-            InputSoftwareBitmapSource = new SoftwareBitmapSource();
-            OutputSoftwareBitmapSource = new SoftwareBitmapSource();
+                InputSoftwareBitmapSource = new SoftwareBitmapSource();
+                OutputSoftwareBitmapSource = new SoftwareBitmapSource();
 
-            _appModel.OutputFrame?.Dispose();
-            _appModel.OutputFrame = new VideoFrame(BitmapPixelFormat.Bgra8, (int)m_outWidth, (int)m_outHeight);
+                _appModel.OutputFrame?.Dispose();
+                _appModel.OutputFrame = new VideoFrame(BitmapPixelFormat.Bgra8, (int)m_outWidth, (int)m_outHeight);
+            }
+            catch (Exception e)
+            {
+                Debug.WriteLine(e.Message);
+            }
         }
 
         public void NotifyUser(bool success, string strMessage = "")

@@ -50,8 +50,17 @@ namespace StyleTransfer
             NotifyUser(true);
 
             m_notifier = new StyleTransferEffectNotifier();
-            m_notifier.FrameRateUpdated += async (_, e) => await DispatcherHelper.RunAsync(() => RenderFPS = e);
-            _useGpu = true;
+            m_notifier.FrameRateUpdated += async (_, e) =>
+            {
+                await DispatcherHelper.RunAsync(() =>
+                {
+                    // Running average just to see where it levels out at
+                    float temp = RenderFPS;
+                    RenderFPS = ((temp * numFrames) + e) / ++numFrames;
+                });
+
+            };
+            _useGpu = false;
             isPreviewing = false;
         }
 
@@ -61,6 +70,7 @@ namespace StyleTransfer
         private MediaFrameSourceGroup _selectedMediaFrameSourceGroup;
         private bool isPreviewing;
         private DisplayRequest displayRequest = new DisplayRequest();
+        private int numFrames = 0;
 
         // Style transfer effect properties
         private LearningModel m_model = null;
@@ -172,6 +182,8 @@ namespace StyleTransfer
         public async Task SetMediaSource(string src)
         {
             _appModel.InputMedia = src;
+            await CleanupCameraAsync();
+            CleanupInputImage();
 
             NotifyUser(true);
             SaveEnabled = true;
@@ -183,11 +195,9 @@ namespace StyleTransfer
                     await StartLiveStream();
                     break;
                 case "AcquireImage":
-                    CleanupInputImage();
                     await StartAcquireImage();
                     break;
                 case "FilePick":
-                    CleanupInputImage();
                     await StartFilePick();
                     break;
                 case "Inking":
@@ -519,14 +529,22 @@ namespace StyleTransfer
         {
             try
             {
-                InputSoftwareBitmapSource?.Dispose();
-                OutputSoftwareBitmapSource?.Dispose();
-
-                InputSoftwareBitmapSource = new SoftwareBitmapSource();
-                OutputSoftwareBitmapSource = new SoftwareBitmapSource();
-
-                _appModel.OutputFrame?.Dispose();
+                if (InputSoftwareBitmapSource != null)
+                {
+                    InputSoftwareBitmapSource.Dispose();
+                    InputSoftwareBitmapSource = new SoftwareBitmapSource();
+                }
+                if (OutputSoftwareBitmapSource != null)
+                {
+                    OutputSoftwareBitmapSource.Dispose();
+                    OutputSoftwareBitmapSource = new SoftwareBitmapSource();
+                }
+                if (_appModel.OutputFrame != null)
+                {
+                    _appModel.OutputFrame.Dispose();
+                }
                 _appModel.OutputFrame = new VideoFrame(BitmapPixelFormat.Bgra8, (int)m_outWidth, (int)m_outHeight);
+
             }
             catch (Exception e)
             {

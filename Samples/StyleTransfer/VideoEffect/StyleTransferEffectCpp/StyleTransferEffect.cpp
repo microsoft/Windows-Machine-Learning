@@ -7,7 +7,10 @@ using namespace winrt::Windows::Storage::Streams;
 
 namespace winrt::StyleTransferEffectCpp::implementation
 {
-	StyleTransferEffect::StyleTransferEffect() : outputTransformed(VideoFrame(Windows::Graphics::Imaging::BitmapPixelFormat::Bgra8, 720, 720)),
+	StyleTransferEffect::StyleTransferEffect() :
+		outputTransformed(VideoFrame(Windows::Graphics::Imaging::BitmapPixelFormat::Bgra8, 720, 720)),
+		inputTransformed(VideoFrame(Windows::Graphics::Imaging::BitmapPixelFormat::Bgra8, 720, 720)),
+		copyBounds(Windows::Graphics::Imaging::BitmapBounds{ 0, 0, 640, 360 }),
 		Session(nullptr),
 		Binding(nullptr)
 	{
@@ -38,16 +41,16 @@ namespace winrt::StyleTransferEffectCpp::implementation
 		std::lock_guard<mutex> guard{ Processing };
 		auto now = std::chrono::high_resolution_clock::now();
 		std::chrono::milliseconds timePassed;
-		// If the first time calling ProcessFrame, just start the timer 
+		// If the first time calling ProcessFrame, just start the timer
 		if (firstProcessFrameCall) {
 			m_StartTime = now;
 			firstProcessFrameCall = false;
 		}
-		// On the second and any proceding process, 
+		// On the second and any proceding process,
 		else {
 			timePassed = std::chrono::duration_cast<std::chrono::milliseconds>(now - m_StartTime);
 			m_StartTime = now;
-			Notifier.SetFrameRate(1000.f / timePassed.count()); // Convert to FPS: milli to seconds, invert 
+			Notifier.SetFrameRate(1000.f / timePassed.count()); // Convert to FPS: milli to seconds, invert
 		}
 
 		OutputDebugString(L"PF Start | ");
@@ -55,12 +58,15 @@ namespace winrt::StyleTransferEffectCpp::implementation
 		VideoFrame inputFrame = context.InputFrame();
 		VideoFrame outputFrame = context.OutputFrame();
 
+		// X, Y, Width, Height
+		//inputFrame.CopyToAsync(inputTransformed, copyBounds, copyBounds).get();
 		OutputDebugString(L"PF Locked | ");
 		Binding.Bind(InputImageDescription, inputFrame);
 		Binding.Bind(OutputImageDescription, outputTransformed);
 
 		OutputDebugString(L"PF Eval | ");
 		Session.Evaluate(Binding, L"test");
+		OutputDebugString(L"PF Copy | ");
 		outputTransformed.CopyToAsync(outputFrame).get();
 
 		OutputDebugString(L"PF End\n ");

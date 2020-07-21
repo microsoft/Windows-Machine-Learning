@@ -20,7 +20,6 @@ namespace StyleTransfer
     {
         public AppModel()
         {
-            this._useGPU = false;
             this._modelSource = "candy";
             this._selectedCameraIndex = 0;
             this._outputCaptureElement = new CaptureElement();
@@ -51,16 +50,7 @@ namespace StyleTransfer
             }
         }
 
-        private bool _useGPU;
-        public bool UseGPU
-        {
-            get { return _useGPU; }
-            set
-            {
-                _useGPU = value;
-                OnPropertyChanged();
-            }
-        }
+
 
         // Input VideoFrame when processing images
         private VideoFrame _inputFrame;

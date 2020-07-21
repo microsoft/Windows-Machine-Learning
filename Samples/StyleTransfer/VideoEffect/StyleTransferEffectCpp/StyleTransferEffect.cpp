@@ -16,7 +16,7 @@ namespace winrt::StyleTransferEffectCpp::implementation
 	IVectorView<VideoEncodingProperties> StyleTransferEffect::SupportedEncodingProperties() {
 		VideoEncodingProperties encodingProperties = VideoEncodingProperties();
 		encodingProperties.Subtype(L"ARGB32");
-		return single_threaded_vector(std::move(std::vector<VideoEncodingProperties>{encodingProperties})).GetView();
+		return single_threaded_vector(std::vector<VideoEncodingProperties>{encodingProperties}).GetView();
 	}
 
 	bool StyleTransferEffect::TimeIndependent() { return true; }
@@ -35,6 +35,7 @@ namespace winrt::StyleTransferEffectCpp::implementation
 
 
 	void StyleTransferEffect::ProcessFrame(ProcessVideoFrameContext context) {
+		std::lock_guard<mutex> guard{ Processing };
 		auto now = std::chrono::high_resolution_clock::now();
 		std::chrono::milliseconds timePassed;
 		// If the first time calling ProcessFrame, just start the timer 
@@ -54,7 +55,6 @@ namespace winrt::StyleTransferEffectCpp::implementation
 		VideoFrame inputFrame = context.InputFrame();
 		VideoFrame outputFrame = context.OutputFrame();
 
-		std::lock_guard<mutex> guard{ Processing };
 		OutputDebugString(L"PF Locked | ");
 		Binding.Bind(InputImageDescription, inputFrame);
 		Binding.Bind(OutputImageDescription, outputTransformed);
@@ -73,15 +73,17 @@ namespace winrt::StyleTransferEffectCpp::implementation
 	void StyleTransferEffect::SetProperties(IPropertySet config) {
 		this->configuration = config;
 		hstring modelName;
+		bool useGpu;
+
 		IInspectable val = config.TryLookup(L"ModelName");
-		if (!val) {
-			return;
-		}
-		modelName = unbox_value<hstring>(val);
-		val = configuration.TryLookup(L"UseGPU");
-		bool useGpu = unbox_value<bool>(val);
+		if (val) modelName = unbox_value<hstring>(val);
+		else winrt::throw_hresult(E_FAIL);
+		val = configuration.TryLookup(L"UseGpu");
+		if (val) useGpu = unbox_value<bool>(val);
+		else winrt::throw_hresult(E_FAIL);
 		val = configuration.TryLookup(L"Notifier");
-		Notifier = val.try_as<StyleTransferEffectNotifier>();
+		if (val) Notifier = val.try_as<StyleTransferEffectNotifier>();
+		else winrt::throw_hresult(E_FAIL);
 
 		LearningModel m_model = LearningModel::LoadFromFilePath(modelName);
 		LearningModelDeviceKind m_device = useGpu ? LearningModelDeviceKind::DirectX : LearningModelDeviceKind::Cpu;

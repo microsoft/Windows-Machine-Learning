@@ -185,7 +185,7 @@
             HorizontalAlignment="Center"
             VerticalAlignment="Top"
             HorizontalContentAlignment="Center"
-            IsOn="{Binding CurrentApp.UseGPU, Mode=TwoWay}"
+            IsOn="{Binding UseGpu, Mode=TwoWay}"
             OffContent="CPU"
             OnContent="GPU" />
       </Grid>

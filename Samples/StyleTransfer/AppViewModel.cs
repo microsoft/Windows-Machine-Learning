@@ -391,7 +391,7 @@ namespace StyleTransfer
                 var modelPath = Path.GetFullPath($"./Assets/{_appModel.ModelSource}.onnx");
                 videoEffectDefinition = new VideoEffectDefinition(_videoEffectID, new PropertySet() {
                     {"ModelName", modelPath },
-                    {"UseGPU", UseGpu },
+                    {"UseGpu", UseGpu },
                     { "Notifier", m_notifier} });
                 videoEffect = await _mediaCapture.AddVideoEffectAsync(videoEffectDefinition, MediaStreamType.VideoPreview);
 

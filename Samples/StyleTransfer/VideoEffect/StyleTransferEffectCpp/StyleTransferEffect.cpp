@@ -1,19 +1,22 @@
 ﻿#include "pch.h"
 #include "StyleTransferEffect.h"
 #include "StyleTransferEffect.g.cpp"
+#include <ppltasks.h>
+
 using namespace std;
 using namespace winrt::Windows::Storage;
 using namespace winrt::Windows::Storage::Streams;
+using namespace concurrency;
 
 namespace winrt::StyleTransferEffectCpp::implementation
 {
 	StyleTransferEffect::StyleTransferEffect() :
 		outputTransformed(VideoFrame(Windows::Graphics::Imaging::BitmapPixelFormat::Bgra8, 720, 720)),
-		inputTransformed(VideoFrame(Windows::Graphics::Imaging::BitmapPixelFormat::Bgra8, 720, 720)),
-		copyBounds(Windows::Graphics::Imaging::BitmapBounds{ 0, 0, 640, 360 }),
+		cachedOutput(VideoFrame(Windows::Graphics::Imaging::BitmapPixelFormat::Bgra8, 720, 720)),
 		Session(nullptr),
 		Binding(nullptr)
 	{
+
 	}
 
 	IVectorView<VideoEncodingProperties> StyleTransferEffect::SupportedEncodingProperties() {
@@ -38,6 +41,17 @@ namespace winrt::StyleTransferEffectCpp::implementation
 
 
 	void StyleTransferEffect::ProcessFrame(ProcessVideoFrameContext context) {
+
+
+		OutputDebugString(L"PF Start | ");
+		if (evalStatus != nullptr && evalStatus.Status() == Windows::Foundation::AsyncStatus::Started) {
+			context.OutputFrame() = cachedOutput;
+			OutputDebugString(L"PF Cache | ");
+			return;
+		}
+		VideoFrame inputFrame = context.InputFrame();
+		VideoFrame outputFrame = context.OutputFrame();
+
 		std::lock_guard<mutex> guard{ Processing };
 		auto now = std::chrono::high_resolution_clock::now();
 		std::chrono::milliseconds timePassed;
@@ -45,6 +59,7 @@ namespace winrt::StyleTransferEffectCpp::implementation
 		if (firstProcessFrameCall) {
 			m_StartTime = now;
 			firstProcessFrameCall = false;
+
 		}
 		// On the second and any proceding process,
 		else {
@@ -53,23 +68,20 @@ namespace winrt::StyleTransferEffectCpp::implementation
 			Notifier.SetFrameRate(1000.f / timePassed.count()); // Convert to FPS: milli to seconds, invert
 		}
 
-		OutputDebugString(L"PF Start | ");
-
-		VideoFrame inputFrame = context.InputFrame();
-		VideoFrame outputFrame = context.OutputFrame();
-
-		// X, Y, Width, Height
-		//inputFrame.CopyToAsync(inputTransformed, copyBounds, copyBounds).get();
 		OutputDebugString(L"PF Locked | ");
 		Binding.Bind(InputImageDescription, inputFrame);
 		Binding.Bind(OutputImageDescription, outputTransformed);
 
 		OutputDebugString(L"PF Eval | ");
-		Session.Evaluate(Binding, L"test");
-		OutputDebugString(L"PF Copy | ");
-		outputTransformed.CopyToAsync(outputFrame).get();
+		evalStatus = Session.EvaluateAsync(Binding, L"test");
+		auto evalTask = create_task(evalStatus);
+		evalTask.then([&](LearningModelEvaluationResult result) {
+			OutputDebugString(L"PF Copy | ");
+			outputTransformed.CopyToAsync(context.OutputFrame()).get();
+			cachedOutput = context.OutputFrame();
+			OutputDebugString(L"PF End\n ");
+			});
 
-		OutputDebugString(L"PF End\n ");
 	}
 
 	void StyleTransferEffect::SetEncodingProperties(VideoEncodingProperties props, IDirect3DDevice device) {

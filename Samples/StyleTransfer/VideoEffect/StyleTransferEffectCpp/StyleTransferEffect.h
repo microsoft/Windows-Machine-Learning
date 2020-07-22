@@ -15,7 +15,6 @@ namespace winrt::StyleTransferEffectCpp::implementation
 	{
 		StyleTransferEffect();
 		VideoFrame outputTransformed;
-		VideoFrame inputTransformed;
 
 		IVectorView<VideoEncodingProperties> SupportedEncodingProperties();
 		bool TimeIndependent();
@@ -40,6 +39,8 @@ namespace winrt::StyleTransferEffectCpp::implementation
 		std::chrono::time_point<std::chrono::steady_clock> m_StartTime;
 		bool firstProcessFrameCall = true;
 		Windows::Graphics::Imaging::BitmapBounds copyBounds;
+		Windows::Foundation::IAsyncOperation<LearningModelEvaluationResult> evalStatus;
+		VideoFrame cachedOutput;
 	};
 }
 

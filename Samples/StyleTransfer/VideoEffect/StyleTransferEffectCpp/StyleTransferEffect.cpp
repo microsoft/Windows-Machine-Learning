@@ -68,6 +68,7 @@ namespace winrt::StyleTransferEffectCpp::implementation
 			Binding.Bind(InputImageDescription, inputFrame);
 			Binding.Bind(OutputImageDescription, outputTransformed);
 			auto nowEval = std::chrono::high_resolution_clock::now();
+			std::lock_guard<mutex> guard{ Processing };
 			evalStatus = Session.EvaluateAsync(Binding, L"test");
 			evalStatus.Completed([&, nowEval](auto&& asyncInfo, winrt::Windows::Foundation::AsyncStatus const args) {
 				VideoFrame output = asyncInfo.GetResults().Outputs().Lookup(OutputImageDescription).try_as<VideoFrame>();

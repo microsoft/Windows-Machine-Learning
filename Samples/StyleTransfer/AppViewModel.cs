@@ -55,8 +55,9 @@ namespace StyleTransfer
                 await DispatcherHelper.RunAsync(() =>
                 {
                     // Running average just to see where it levels out at
-                    float temp = RenderFPS;
-                    RenderFPS = ((temp * numFrames) + e) / ++numFrames;
+                    //float temp = RenderFPS;
+                    //RenderFPS = ((temp * numFrames) + e) / ++numFrames;
+                    RenderFPS = e;
                 });
 
             };

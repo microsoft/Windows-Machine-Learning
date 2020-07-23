@@ -15,7 +15,6 @@ namespace winrt::StyleTransferEffectCpp::implementation
 	{
 		StyleTransferEffect();
 		VideoFrame outputTransformed;
-
 		IVectorView<VideoEncodingProperties> SupportedEncodingProperties();
 		bool TimeIndependent();
 		MediaMemoryTypes SupportedMemoryTypes();
@@ -41,6 +40,7 @@ namespace winrt::StyleTransferEffectCpp::implementation
 		Windows::Graphics::Imaging::BitmapBounds copyBounds;
 		Windows::Foundation::IAsyncOperation<LearningModelEvaluationResult> evalStatus;
 		VideoFrame cachedOutput;
+		VideoFrame cachedOutputCopy;
 	};
 }
 

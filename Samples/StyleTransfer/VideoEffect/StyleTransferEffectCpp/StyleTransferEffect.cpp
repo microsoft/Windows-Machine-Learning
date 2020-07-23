@@ -2,6 +2,7 @@
 #include "StyleTransferEffect.h"
 #include "StyleTransferEffect.g.cpp"
 #include <ppltasks.h>
+#include <sstream>
 
 using namespace std;
 using namespace winrt::Windows::Storage;
@@ -11,8 +12,9 @@ using namespace concurrency;
 namespace winrt::StyleTransferEffectCpp::implementation
 {
 	StyleTransferEffect::StyleTransferEffect() :
+		cachedOutput(nullptr),
+		cachedOutputCopy(VideoFrame(Windows::Graphics::Imaging::BitmapPixelFormat::Bgra8, 640, 360)),
 		outputTransformed(VideoFrame(Windows::Graphics::Imaging::BitmapPixelFormat::Bgra8, 720, 720)),
-		cachedOutput(VideoFrame(Windows::Graphics::Imaging::BitmapPixelFormat::Bgra8, 720, 720)),
 		Session(nullptr),
 		Binding(nullptr)
 	{
@@ -36,51 +38,62 @@ namespace winrt::StyleTransferEffectCpp::implementation
 		OutputDebugString(L"Close\n");
 		if (Binding != nullptr) Binding.Clear();
 		if (Session != nullptr) Session.Close();
-		outputTransformed.Close();
 	}
 
+	std::wstring index(const std::thread::id id)
+	{
+		static std::size_t nextindex = 0;
+		static std::mutex my_mutex;
+		static std::map<std::thread::id, std::string> ids;
+		std::lock_guard<std::mutex> lock(my_mutex);
+		if (ids.find(id) == ids.end()) {
+			ids[id] = std::to_string((int)nextindex);
+			nextindex++;
+		}
+		return std::wstring(ids[id].begin(), ids[id].end());
+	}
 
 	void StyleTransferEffect::ProcessFrame(ProcessVideoFrameContext context) {
 
-
 		OutputDebugString(L"PF Start | ");
-		if (evalStatus != nullptr && evalStatus.Status() == Windows::Foundation::AsyncStatus::Started) {
-			context.OutputFrame() = cachedOutput;
-			OutputDebugString(L"PF Cache | ");
-			return;
-		}
+		//OutputDebugString(index(thread().get_id()).c_str());
+		auto now = std::chrono::high_resolution_clock::now();
 		VideoFrame inputFrame = context.InputFrame();
 		VideoFrame outputFrame = context.OutputFrame();
-
-		std::lock_guard<mutex> guard{ Processing };
-		auto now = std::chrono::high_resolution_clock::now();
-		std::chrono::milliseconds timePassed;
-		// If the first time calling ProcessFrame, just start the timer
-		if (firstProcessFrameCall) {
-			m_StartTime = now;
-			firstProcessFrameCall = false;
-
-		}
-		// On the second and any proceding process,
-		else {
-			timePassed = std::chrono::duration_cast<std::chrono::milliseconds>(now - m_StartTime);
-			m_StartTime = now;
-			Notifier.SetFrameRate(1000.f / timePassed.count()); // Convert to FPS: milli to seconds, invert
-		}
-
-		OutputDebugString(L"PF Locked | ");
-		Binding.Bind(InputImageDescription, inputFrame);
-		Binding.Bind(OutputImageDescription, outputTransformed);
+		VideoFrame temp = cachedOutput;
 
 		OutputDebugString(L"PF Eval | ");
-		evalStatus = Session.EvaluateAsync(Binding, L"test");
-		auto evalTask = create_task(evalStatus);
-		evalTask.then([&](LearningModelEvaluationResult result) {
-			OutputDebugString(L"PF Copy | ");
-			outputTransformed.CopyToAsync(context.OutputFrame()).get();
-			cachedOutput = context.OutputFrame();
-			OutputDebugString(L"PF End\n ");
-			});
+		if (evalStatus == nullptr || evalStatus.Status() != Windows::Foundation::AsyncStatus::Started)
+		{
+			Binding.Bind(InputImageDescription, inputFrame);
+			Binding.Bind(OutputImageDescription, outputTransformed);
+			auto nowEval = std::chrono::high_resolution_clock::now();
+			evalStatus = Session.EvaluateAsync(Binding, L"test");
+			evalStatus.Completed([&, nowEval](auto&& asyncInfo, winrt::Windows::Foundation::AsyncStatus const args) {
+				VideoFrame output = asyncInfo.GetResults().Outputs().Lookup(OutputImageDescription).try_as<VideoFrame>();
+				OutputDebugString(L"PF Copy | ");
+				output.CopyToAsync(cachedOutputCopy);
+				{
+					cachedOutput = cachedOutputCopy;
+				}
+				OutputDebugString(L"PF End\n ");
+				auto timePassedEval = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - nowEval);
+				std::wostringstream ss;
+				ss << (timePassedEval.count() / 1000.f);
+				Notifier.SetFrameRate(timePassedEval.count() / 1000.f);
+				OutputDebugString(L"\nEval Time : ");
+				OutputDebugString(ss.str().c_str());
+				});
+
+		}
+		if (temp != nullptr) {
+			OutputDebugString(L"\nStart CopyAsync | ");
+			temp.CopyToAsync(context.OutputFrame()).get();
+			OutputDebugString(L"Stop CopyAsync\n");
+		}
+
+		auto timePassed = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - now);
+		//Notifier.SetFrameRate(1000.f / timePassed.count()); // Convert to FPS: milli to seconds, invert
 
 	}
 

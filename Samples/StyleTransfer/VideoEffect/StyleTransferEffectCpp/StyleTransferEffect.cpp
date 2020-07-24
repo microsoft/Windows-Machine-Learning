@@ -67,10 +67,9 @@ namespace winrt::StyleTransferEffectCpp::implementation
 
 			// bind the input and the output buffers by name
 			bindings[swapchaindex].binding.Bind(InputImageDescription, input);
-			bindings[swapchaindex].binding.Bind(OutputImageDescription, outputTransformed);
 			// submit an eval and wait for it to finish submitting work
-			std::lock_guard<mutex> guard{ Processing };
-			bindings[swapchaindex].activetask = Session.EvaluateAsync(bindings[swapchaindex].binding, L"0");
+			std::lock_guard<mutex> guard{ Processing }; // Is this still happening inside of Complete? 
+			bindings[swapchaindex].activetask = Session.EvaluateAsync(bindings[swapchaindex].binding, ss.str().c_str());
 			bindings[swapchaindex].activetask.Completed([&](auto&& asyncInfo, winrt::Windows::Foundation::AsyncStatus const args) {
 				OutputDebugString(L"PF Eval completed | ");
 				//OutputDebugString(ss.str().c_str());
@@ -153,7 +152,9 @@ namespace winrt::StyleTransferEffectCpp::implementation
 
 		// Create set of bindings to cycle through
 		for (int i = 0; i < swapChainEntryCount; i++) {
-			bindings[swapChainIndex].binding = LearningModelBinding{ Session };
+			bindings[i].binding = LearningModelBinding(Session);
+			bindings[i].binding.Bind(OutputImageDescription, VideoFrame(Windows::Graphics::Imaging::BitmapPixelFormat::Bgra8, 720, 720));
+
 		}
 	}
 }

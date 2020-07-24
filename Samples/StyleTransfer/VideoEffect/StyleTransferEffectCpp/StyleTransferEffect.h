@@ -14,7 +14,11 @@ namespace winrt::StyleTransferEffectCpp::implementation
 	struct SwapChainEntry {
 		LearningModelBinding binding;
 		Windows::Foundation::IAsyncOperation<LearningModelEvaluationResult> activetask;
-		SwapChainEntry() : binding(nullptr), activetask(nullptr) {}
+		VideoFrame transformOutput;
+		SwapChainEntry() :
+			binding(nullptr),
+			activetask(nullptr),
+			transformOutput(Windows::Graphics::Imaging::BitmapPixelFormat::Bgra8, 720, 720) {}
 	};
 
 	struct StyleTransferEffect : StyleTransferEffectT<StyleTransferEffect>
@@ -40,6 +44,8 @@ namespace winrt::StyleTransferEffectCpp::implementation
 
 		VideoEncodingProperties encodingProperties;
 		std::mutex Processing;
+		std::mutex Copy;
+
 		StyleTransferEffectNotifier Notifier;
 		std::chrono::time_point<std::chrono::steady_clock> m_StartTime;
 		bool firstProcessFrameCall = true;
@@ -50,7 +56,7 @@ namespace winrt::StyleTransferEffectCpp::implementation
 		hstring InputImageDescription;
 		hstring OutputImageDescription;
 		int swapChainIndex = 0;
-		static const int swapChainEntryCount = 1;
+		static const int swapChainEntryCount = 10;
 		SwapChainEntry bindings[swapChainEntryCount];
 
 		void EvaluateComplete(VideoFrame);

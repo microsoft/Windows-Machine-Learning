@@ -11,6 +11,12 @@ using namespace winrt::Windows::Media;
 
 namespace winrt::StyleTransferEffectCpp::implementation
 {
+	struct SwapChainEntry {
+		LearningModelBinding binding;
+		Windows::Foundation::IAsyncOperation<LearningModelEvaluationResult> activetask;
+		SwapChainEntry() : binding(nullptr), activetask(nullptr) {}
+	};
+
 	struct StyleTransferEffect : StyleTransferEffectT<StyleTransferEffect>
 	{
 		StyleTransferEffect();
@@ -26,12 +32,12 @@ namespace winrt::StyleTransferEffectCpp::implementation
 		void ProcessFrame(ProcessVideoFrameContext);
 		void SetEncodingProperties(VideoEncodingProperties, IDirect3DDevice);
 		void SetProperties(IPropertySet);
+		void SubmitEval(int, VideoFrame, VideoFrame, VideoFrame);
 
 	private:
 		LearningModelSession Session;
 		LearningModelBinding Binding;
-		hstring InputImageDescription;
-		hstring OutputImageDescription;
+
 		VideoEncodingProperties encodingProperties;
 		std::mutex Processing;
 		StyleTransferEffectNotifier Notifier;
@@ -41,6 +47,13 @@ namespace winrt::StyleTransferEffectCpp::implementation
 		Windows::Foundation::IAsyncOperation<LearningModelEvaluationResult> evalStatus;
 		VideoFrame cachedOutput;
 		VideoFrame cachedOutputCopy;
+		hstring InputImageDescription;
+		hstring OutputImageDescription;
+		int swapChainIndex = 0;
+		static const int swapChainEntryCount = 1;
+		SwapChainEntry bindings[swapChainEntryCount];
+
+		void EvaluateComplete(VideoFrame);
 	};
 }
 

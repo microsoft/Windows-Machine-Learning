@@ -53,8 +53,63 @@ namespace winrt::StyleTransferEffectCpp::implementation
 		return std::wstring(ids[id].begin(), ids[id].end());
 	}
 
-	void StyleTransferEffect::ProcessFrame(ProcessVideoFrameContext context) {
+	void StyleTransferEffect::SubmitEval(int swapchaindex, VideoFrame input, VideoFrame output, VideoFrame temp) {
+		// Different way of waiting for a swapchain index to finish? 
+		// Or would it be just setting the output to be a cached frame? 
+		if (bindings[swapchaindex].activetask == nullptr
+			|| bindings[swapchaindex].activetask.Status() != Windows::Foundation::AsyncStatus::Started)
+		{
+			OutputDebugString(L"PF Start new Eval ");
+			std::wostringstream ss;
+			ss << swapchaindex;
+			OutputDebugString(ss.str().c_str());
+			OutputDebugString(L" | ");
 
+			// bind the input and the output buffers by name
+			bindings[swapchaindex].binding.Bind(InputImageDescription, input);
+			bindings[swapchaindex].binding.Bind(OutputImageDescription, outputTransformed);
+			// submit an eval and wait for it to finish submitting work
+			std::lock_guard<mutex> guard{ Processing };
+			bindings[swapchaindex].activetask = Session.EvaluateAsync(bindings[swapchaindex].binding, L"0");
+			bindings[swapchaindex].activetask.Completed([&](auto&& asyncInfo, winrt::Windows::Foundation::AsyncStatus const args) {
+				OutputDebugString(L"PF Eval completed | ");
+				//OutputDebugString(ss.str().c_str());
+				//OutputDebugString(L" | ");
+
+				VideoFrame output = asyncInfo.GetResults().Outputs().Lookup(OutputImageDescription).try_as<VideoFrame>();
+				OutputDebugString(L"PF Copy | ");
+				//OutputDebugString(ss.str().c_str());
+				//OutputDebugString(L" | ");
+				// second lock to protect shared resource of cachedOutputCopy
+				output.CopyToAsync(cachedOutputCopy);
+				{
+					cachedOutput = cachedOutputCopy;
+				}
+				OutputDebugString(L"PF End ");
+				//OutputDebugString(ss.str().c_str());
+				//OutputDebugString(L"\n");
+				});
+		}
+		if (temp != nullptr) {
+			OutputDebugString(L"\nStart CopyAsync | ");
+			temp.CopyToAsync(output).get(); // Make sure using reference, ie. shows up in context.OutputFrame()
+			OutputDebugString(L"Stop CopyAsync\n");
+		}
+		// return without waiting for the submit to finish, setup the completion handler
+	}
+
+	// Whenever an evaluate async is finished, call this function
+	void StyleTransferEffect::EvaluateComplete(VideoFrame evalFrame) {
+		OutputDebugString(L"PF Copy | ");
+		// second lock to protect shared resource of cachedOutputCopy
+		evalFrame.CopyToAsync(cachedOutputCopy);
+		{
+			cachedOutput = cachedOutputCopy;
+		}
+		OutputDebugString(L"PF End\n ");
+	}
+
+	void StyleTransferEffect::ProcessFrame(ProcessVideoFrameContext context) {
 		OutputDebugString(L"PF Start | ");
 		//OutputDebugString(index(thread().get_id()).c_str());
 		auto now = std::chrono::high_resolution_clock::now();
@@ -62,40 +117,11 @@ namespace winrt::StyleTransferEffectCpp::implementation
 		VideoFrame outputFrame = context.OutputFrame();
 		VideoFrame temp = cachedOutput;
 
-		OutputDebugString(L"PF Eval | ");
-		if (evalStatus == nullptr || evalStatus.Status() != Windows::Foundation::AsyncStatus::Started)
-		{
-			Binding.Bind(InputImageDescription, inputFrame);
-			Binding.Bind(OutputImageDescription, outputTransformed);
-			auto nowEval = std::chrono::high_resolution_clock::now();
-			std::lock_guard<mutex> guard{ Processing };
-			evalStatus = Session.EvaluateAsync(Binding, L"test");
-			evalStatus.Completed([&, nowEval](auto&& asyncInfo, winrt::Windows::Foundation::AsyncStatus const args) {
-				VideoFrame output = asyncInfo.GetResults().Outputs().Lookup(OutputImageDescription).try_as<VideoFrame>();
-				OutputDebugString(L"PF Copy | ");
-				output.CopyToAsync(cachedOutputCopy);
-				{
-					cachedOutput = cachedOutputCopy;
-				}
-				OutputDebugString(L"PF End\n ");
-				auto timePassedEval = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - nowEval);
-				std::wostringstream ss;
-				ss << (timePassedEval.count() / 1000.f);
-				Notifier.SetFrameRate(timePassedEval.count() / 1000.f);
-				OutputDebugString(L"\nEval Time : ");
-				OutputDebugString(ss.str().c_str());
-				});
+		SubmitEval(swapChainIndex, inputFrame, outputFrame, temp);
 
-		}
-		if (temp != nullptr) {
-			OutputDebugString(L"\nStart CopyAsync | ");
-			temp.CopyToAsync(context.OutputFrame()).get();
-			OutputDebugString(L"Stop CopyAsync\n");
-		}
-
+		swapChainIndex = (++swapChainIndex) % swapChainEntryCount; // move on to the next entry after each call to PF. 
 		auto timePassed = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - now);
 		//Notifier.SetFrameRate(1000.f / timePassed.count()); // Convert to FPS: milli to seconds, invert
-
 	}
 
 	void StyleTransferEffect::SetEncodingProperties(VideoEncodingProperties props, IDirect3DDevice device) {
@@ -124,5 +150,10 @@ namespace winrt::StyleTransferEffectCpp::implementation
 
 		InputImageDescription = L"inputImage";
 		OutputImageDescription = L"outputImage";
+
+		// Create set of bindings to cycle through
+		for (int i = 0; i < swapChainEntryCount; i++) {
+			bindings[swapChainIndex].binding = LearningModelBinding{ Session };
+		}
 	}
 }

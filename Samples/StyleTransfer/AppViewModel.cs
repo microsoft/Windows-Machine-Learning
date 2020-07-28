@@ -67,11 +67,8 @@ namespace StyleTransfer
 
         // Media capture properties
         public Windows.Media.Capture.MediaCapture _mediaCapture;
-        private List<MediaFrameSourceGroup> _mediaFrameSourceGroupList;
-        private MediaFrameSourceGroup _selectedMediaFrameSourceGroup;
         private bool isPreviewing;
         private DisplayRequest displayRequest = new DisplayRequest();
-        private int numFrames = 0;
 
         // Style transfer effect properties
         private LearningModel m_model = null;
@@ -104,7 +101,6 @@ namespace StyleTransfer
         {
             get { return _appModel; }
         }
-
         public float RenderFPS
         {
             get { return (float)Math.Round(_renderFPS, 2); }
@@ -385,7 +381,6 @@ namespace StyleTransfer
                 var settings = new MediaCaptureInitializationSettings
                 {
                     VideoDeviceId = device.Id,
-                    SourceGroup = _selectedMediaFrameSourceGroup,
                     PhotoCaptureSource = PhotoCaptureSource.Auto,
                     MemoryPreference = UseGpu ? MediaCaptureMemoryPreference.Auto : MediaCaptureMemoryPreference.Cpu,
                     StreamingCaptureMode = StreamingCaptureMode.Video,

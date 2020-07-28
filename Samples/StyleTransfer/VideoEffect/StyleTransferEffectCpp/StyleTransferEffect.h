@@ -14,11 +14,9 @@ namespace winrt::StyleTransferEffectCpp::implementation
 	struct SwapChainEntry {
 		LearningModelBinding binding;
 		Windows::Foundation::IAsyncOperation<LearningModelEvaluationResult> activetask;
-		VideoFrame transformOutput;
 		SwapChainEntry() :
 			binding(nullptr),
-			activetask(nullptr),
-			transformOutput(Windows::Graphics::Imaging::BitmapPixelFormat::Bgra8, 720, 720) {}
+			activetask(nullptr) {}
 	};
 
 	struct StyleTransferEffect : StyleTransferEffectT<StyleTransferEffect>
@@ -36,7 +34,7 @@ namespace winrt::StyleTransferEffectCpp::implementation
 		void ProcessFrame(ProcessVideoFrameContext);
 		void SetEncodingProperties(VideoEncodingProperties, IDirect3DDevice);
 		void SetProperties(IPropertySet);
-		void SubmitEval(int, VideoFrame, VideoFrame, VideoFrame);
+		void SubmitEval(int, VideoFrame, VideoFrame);
 
 	private:
 		LearningModelSession Session;
@@ -56,7 +54,7 @@ namespace winrt::StyleTransferEffectCpp::implementation
 		hstring InputImageDescription;
 		hstring OutputImageDescription;
 		int swapChainIndex = 0;
-		static const int swapChainEntryCount = 10;
+		static const int swapChainEntryCount = 5;
 		SwapChainEntry bindings[swapChainEntryCount];
 
 		void EvaluateComplete(VideoFrame);

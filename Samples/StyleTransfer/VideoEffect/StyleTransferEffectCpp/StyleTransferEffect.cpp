@@ -55,8 +55,7 @@ namespace winrt::StyleTransferEffectCpp::implementation
 			OutputDebugString(L"PF Start new Eval ");
 			std::wostringstream ss;
 			ss << swapchaindex;
-			auto idx = ss.str().c_str();
-			OutputDebugString(idx);
+			OutputDebugString(ss.str().c_str());
 			OutputDebugString(L" | ");
 
 			// bind the input and the output buffers by name
@@ -64,27 +63,28 @@ namespace winrt::StyleTransferEffectCpp::implementation
 			// submit an eval and wait for it to finish submitting work
 			std::lock_guard<mutex> guard{ Processing }; // Is this still happening inside of Complete? 
 			bindings[swapchaindex].activetask = Session.EvaluateAsync(bindings[swapchaindex].binding, ss.str().c_str());
-			bindings[swapchaindex].activetask.Completed([&](auto&& asyncInfo, winrt::Windows::Foundation::AsyncStatus const args) {
-				OutputDebugString(L"PF Eval completed | ");
+			bindings[swapchaindex].activetask.Completed([&, swapchaindex](auto&& asyncInfo, winrt::Windows::Foundation::AsyncStatus const args) {
+				OutputDebugString(L"PF Eval completed |");
 				VideoFrame evalOutput = asyncInfo.GetResults().Outputs().Lookup(OutputImageDescription).try_as<VideoFrame>();
 				// second lock to protect shared resource of cachedOutputCopy ? 
 				{
-					std::lock_guard<mutex> guard{ Copy };
+					//std::lock_guard<mutex> guard{ Copy };
 					OutputDebugString(L"PF Copy | ");
-					evalOutput.CopyToAsync(cachedOutputCopy).get();
+					evalOutput.CopyToAsync(bindings[swapchaindex].outputCache);
 				}
-				cachedOutput = cachedOutputCopy;
-
+				//cachedOutput = bindings[swapchaindex].outputCache;
+				finishedIdx = swapchaindex;
 				OutputDebugString(L"PF End ");
-				//OutputDebugString(ss.str().c_str());
-				//OutputDebugString(L"\n");
 				});
 		}
-		if (cachedOutput != nullptr) {
+		if (bindings[finishedIdx].outputCache != nullptr) {
+			std::wostringstream ss;
+			ss << finishedIdx;
 			std::lock_guard<mutex> guard{ Copy };
-			OutputDebugString(L"\nStart CopyAsync | ");
-			cachedOutput.CopyToAsync(output).get();
-			OutputDebugString(L"Stop CopyAsync\n");
+			OutputDebugString(L"\nStart CopyAsync ");
+			OutputDebugString(ss.str().c_str());
+			bindings[finishedIdx].outputCache.CopyToAsync(output).get();
+			OutputDebugString(L" | Stop CopyAsync\n");
 		}
 		// return without waiting for the submit to finish, setup the completion handler
 	}
@@ -97,6 +97,19 @@ namespace winrt::StyleTransferEffectCpp::implementation
 		VideoFrame outputFrame = context.OutputFrame();
 
 		SubmitEval(swapChainIndex, inputFrame, outputFrame);
+		// Go thorugh swapchain, find most recently completed entry
+		//context.OutputFrame() = bindings[swapChainIndex].outputCache;
+		/*for (int i = 0; i < swapChainEntryCount; i++) {
+			int index = (swapChainIndex - i) % swapChainEntryCount;
+			if (index < 0) index += swapChainEntryCount;
+			if (bindings[index].activetask != NULL) {
+				auto entry = bindings[index].activetask;
+				if (entry.Status() == Windows::Foundation::AsyncStatus::Completed) {
+					OutputDebugString(L"PF Find recent | ");
+					outputFrame = bindings[index].outputCache;
+				}
+			}
+		}*/
 
 		swapChainIndex = (++swapChainIndex) % swapChainEntryCount; // move on to the next entry after each call to PF. 
 		auto timePassed = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - now);

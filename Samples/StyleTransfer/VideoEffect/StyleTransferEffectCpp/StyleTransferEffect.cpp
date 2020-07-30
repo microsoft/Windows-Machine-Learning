@@ -18,7 +18,10 @@ namespace winrt::StyleTransferEffectCpp::implementation
 		Session(nullptr),
 		Binding(nullptr)
 	{
-
+		for (int i = 0; i < swapChainEntryCount; i++)
+		{
+			bindings.push_back(std::make_unique<SwapChainEntry>());
+		}
 	}
 
 	IVectorView<VideoEncodingProperties> StyleTransferEffect::SupportedEncodingProperties() {
@@ -38,19 +41,18 @@ namespace winrt::StyleTransferEffectCpp::implementation
 		OutputDebugString(L"Close\n");
 		if (Binding != nullptr) Binding.Clear();
 		if (Session != nullptr) Session.Close();
-		if (bindings != nullptr) {
-			for (int i = 0; i < swapChainEntryCount; i++) {
-				bindings[i].binding.Clear();
-			}
+		for (int i = 0; i < swapChainEntryCount; i++) {
+			bindings[i]->binding.Clear();
 		}
 	}
 
 	void StyleTransferEffect::SubmitEval(int swapchaindex, VideoFrame input, VideoFrame output) {
+		auto currentBinding = bindings[0].get();
 		//VideoFrame outputTransformed = cachedOutput;
 		// Different way of waiting for a swapchain index to finish? 
 		// Or would it be just setting the output to be a cached frame? 
-		if (bindings[swapchaindex].activetask == nullptr
-			|| bindings[swapchaindex].activetask.Status() != Windows::Foundation::AsyncStatus::Started)
+		if (currentBinding->activetask == nullptr
+			|| currentBinding->activetask.Status() != Windows::Foundation::AsyncStatus::Started)
 		{
 			OutputDebugString(L"PF Start new Eval ");
 			std::wostringstream ss;
@@ -59,31 +61,41 @@ namespace winrt::StyleTransferEffectCpp::implementation
 			OutputDebugString(L" | ");
 
 			// bind the input and the output buffers by name
-			bindings[swapchaindex].binding.Bind(InputImageDescription, input);
+			currentBinding->binding.Bind(InputImageDescription, input);
 			// submit an eval and wait for it to finish submitting work
-			std::lock_guard<mutex> guard{ Processing }; // Is this still happening inside of Complete? 
-			bindings[swapchaindex].activetask = Session.EvaluateAsync(bindings[swapchaindex].binding, ss.str().c_str());
-			bindings[swapchaindex].activetask.Completed([&, swapchaindex](auto&& asyncInfo, winrt::Windows::Foundation::AsyncStatus const args) {
+			{
+				std::lock_guard<mutex> guard{ Processing };
+				std::rotate(bindings.begin(), bindings.begin() + 1, bindings.end());
+				finishedIdx = (finishedIdx - 1 + swapChainEntryCount) % swapChainEntryCount;
+			}
+
+			currentBinding->activetask = Session.EvaluateAsync(currentBinding->binding, ss.str().c_str());
+			currentBinding->activetask.Completed([&, currentBinding](auto&& asyncInfo, winrt::Windows::Foundation::AsyncStatus const args) {
 				OutputDebugString(L"PF Eval completed |");
 				VideoFrame evalOutput = asyncInfo.GetResults().Outputs().Lookup(OutputImageDescription).try_as<VideoFrame>();
-				// second lock to protect shared resource of cachedOutputCopy ? 
+				int bindingIdx;
 				{
-					//std::lock_guard<mutex> guard{ Copy };
-					OutputDebugString(L"PF Copy | ");
-					evalOutput.CopyToAsync(bindings[swapchaindex].outputCache);
+					std::lock_guard<mutex> guard{ Processing };
+					auto binding = std::find_if(bindings.begin(), bindings.end(), [currentBinding](const auto& b) {return b.get() == currentBinding; });
+					bindingIdx = std::distance(bindings.begin(), binding);
+					finishedIdx = bindingIdx >= finishedIdx ? bindingIdx : finishedIdx;
 				}
-				//cachedOutput = bindings[swapchaindex].outputCache;
-				finishedIdx = swapchaindex;
+				if (bindingIdx >= finishedIdx)
+				{
+					OutputDebugString(L"PF Copy | ");
+					evalOutput.CopyToAsync(currentBinding->outputCache);
+				}
+
 				OutputDebugString(L"PF End ");
 				});
 		}
-		if (bindings[finishedIdx].outputCache != nullptr) {
+		if (bindings[finishedIdx]->outputCache != nullptr) {
 			std::wostringstream ss;
 			ss << finishedIdx;
-			std::lock_guard<mutex> guard{ Copy };
+			//std::lock_guard<mutex> guard{ Copy };
 			OutputDebugString(L"\nStart CopyAsync ");
 			OutputDebugString(ss.str().c_str());
-			bindings[finishedIdx].outputCache.CopyToAsync(output).get();
+			bindings[finishedIdx]->outputCache.CopyToAsync(output).get();
 			OutputDebugString(L" | Stop CopyAsync\n");
 		}
 		// return without waiting for the submit to finish, setup the completion handler
@@ -145,8 +157,8 @@ namespace winrt::StyleTransferEffectCpp::implementation
 
 		// Create set of bindings to cycle through
 		for (int i = 0; i < swapChainEntryCount; i++) {
-			bindings[i].binding = LearningModelBinding(Session);
-			bindings[i].binding.Bind(OutputImageDescription, VideoFrame(Windows::Graphics::Imaging::BitmapPixelFormat::Bgra8, 720, 720));
+			bindings[i]->binding = LearningModelBinding(Session);
+			bindings[i]->binding.Bind(OutputImageDescription, VideoFrame(Windows::Graphics::Imaging::BitmapPixelFormat::Bgra8, 720, 720));
 		}
 	}
 }

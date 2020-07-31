@@ -5,6 +5,8 @@ VisualStudioVersion = 16.0.30204.135
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StyleTransfer", "StyleTransfer.csproj", "{9CC66287-64B8-4321-B701-7E52F200A027}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "StyleTransferEffectCpp", "VideoEffect\StyleTransferEffectCpp\StyleTransferEffectCpp.vcxproj", "{05DFFB01-62C4-458C-BE13-7A97E8583E43}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|ARM = Debug|ARM
@@ -41,6 +43,22 @@ Global
 		{9CC66287-64B8-4321-B701-7E52F200A027}.Release|x86.ActiveCfg = Release|x86
 		{9CC66287-64B8-4321-B701-7E52F200A027}.Release|x86.Build.0 = Release|x86
 		{9CC66287-64B8-4321-B701-7E52F200A027}.Release|x86.Deploy.0 = Release|x86
+		{05DFFB01-62C4-458C-BE13-7A97E8583E43}.Debug|ARM.ActiveCfg = Debug|ARM
+		{05DFFB01-62C4-458C-BE13-7A97E8583E43}.Debug|ARM.Build.0 = Debug|ARM
+		{05DFFB01-62C4-458C-BE13-7A97E8583E43}.Debug|ARM64.ActiveCfg = Debug|ARM64
+		{05DFFB01-62C4-458C-BE13-7A97E8583E43}.Debug|ARM64.Build.0 = Debug|ARM64
+		{05DFFB01-62C4-458C-BE13-7A97E8583E43}.Debug|x64.ActiveCfg = Debug|x64
+		{05DFFB01-62C4-458C-BE13-7A97E8583E43}.Debug|x64.Build.0 = Debug|x64
+		{05DFFB01-62C4-458C-BE13-7A97E8583E43}.Debug|x86.ActiveCfg = Debug|Win32
+		{05DFFB01-62C4-458C-BE13-7A97E8583E43}.Debug|x86.Build.0 = Debug|Win32
+		{05DFFB01-62C4-458C-BE13-7A97E8583E43}.Release|ARM.ActiveCfg = Release|ARM
+		{05DFFB01-62C4-458C-BE13-7A97E8583E43}.Release|ARM.Build.0 = Release|ARM
+		{05DFFB01-62C4-458C-BE13-7A97E8583E43}.Release|ARM64.ActiveCfg = Release|ARM64
+		{05DFFB01-62C4-458C-BE13-7A97E8583E43}.Release|ARM64.Build.0 = Release|ARM64
+		{05DFFB01-62C4-458C-BE13-7A97E8583E43}.Release|x64.ActiveCfg = Release|x64
+		{05DFFB01-62C4-458C-BE13-7A97E8583E43}.Release|x64.Build.0 = Release|x64
+		{05DFFB01-62C4-458C-BE13-7A97E8583E43}.Release|x86.ActiveCfg = Release|Win32
+		{05DFFB01-62C4-458C-BE13-7A97E8583E43}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

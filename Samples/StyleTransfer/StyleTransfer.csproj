@@ -240,6 +240,12 @@
   <ItemGroup>
     <None Include="StyleTransfer_TemporaryKey.pfx" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="VideoEffect\StyleTransferEffectCpp\StyleTransferEffectCpp.vcxproj">
+      <Project>{05dffb01-62c4-458c-be13-7a97e8583e43}</Project>
+      <Name>StyleTransferEffectCpp</Name>
+    </ProjectReference>
+  </ItemGroup>
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '14.0' ">
     <VisualStudioVersion>14.0</VisualStudioVersion>
   </PropertyGroup>

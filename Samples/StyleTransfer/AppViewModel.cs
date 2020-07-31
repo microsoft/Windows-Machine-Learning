@@ -49,7 +49,7 @@ namespace StyleTransfer
             _saveEnabled = true;
             NotifyUser(true);
 
-            m_notifier = new StyleTransferEffectNotifier();
+            m_notifier = new StyleTransferEffectCpp.StyleTransferEffectNotifier();
             m_notifier.FrameRateUpdated += async (_, e) =>
             {
                 await DispatcherHelper.RunAsync(() =>

@@ -58,7 +58,6 @@ namespace winrt::StyleTransferEffectCpp::implementation
 		int swapChainIndex = 0;
 		static const int swapChainEntryCount = 5;
 		std::vector < std::unique_ptr<SwapChainEntry>> bindings;
-		//SwapChainEntry bindings[swapChainEntryCount];
 		int finishedIdx = 0;
 	};
 }

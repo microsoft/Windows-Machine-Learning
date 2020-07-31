@@ -41,9 +41,10 @@ namespace winrt::StyleTransferEffectCpp::implementation
 		OutputDebugString(L"Close\n");
 		if (Binding != nullptr) Binding.Clear();
 		if (Session != nullptr) Session.Close();
-		for (int i = 0; i < swapChainEntryCount; i++) {
-			bindings[i]->binding.Clear();
-		}
+		/*for (int i = 0; i < swapChainEntryCount; i++) {
+			if (bindings[i]->binding != nullptr)
+				bindings[i]->binding.Clear();
+		}*/
 	}
 
 	void StyleTransferEffect::SubmitEval(int swapchaindex, VideoFrame input, VideoFrame output) {
@@ -54,6 +55,7 @@ namespace winrt::StyleTransferEffectCpp::implementation
 		if (currentBinding->activetask == nullptr
 			|| currentBinding->activetask.Status() != Windows::Foundation::AsyncStatus::Started)
 		{
+			auto now = std::chrono::high_resolution_clock::now();
 			OutputDebugString(L"PF Start new Eval ");
 			std::wostringstream ss;
 			ss << swapchaindex;
@@ -70,22 +72,27 @@ namespace winrt::StyleTransferEffectCpp::implementation
 			}
 
 			currentBinding->activetask = Session.EvaluateAsync(currentBinding->binding, ss.str().c_str());
-			currentBinding->activetask.Completed([&, currentBinding](auto&& asyncInfo, winrt::Windows::Foundation::AsyncStatus const args) {
+			currentBinding->activetask.Completed([&, currentBinding, now](auto&& asyncInfo, winrt::Windows::Foundation::AsyncStatus const args) {
 				OutputDebugString(L"PF Eval completed |");
 				VideoFrame evalOutput = asyncInfo.GetResults().Outputs().Lookup(OutputImageDescription).try_as<VideoFrame>();
 				int bindingIdx;
+				bool finishedFrameUpdated;
 				{
 					std::lock_guard<mutex> guard{ Processing };
 					auto binding = std::find_if(bindings.begin(), bindings.end(), [currentBinding](const auto& b) {return b.get() == currentBinding; });
 					bindingIdx = std::distance(bindings.begin(), binding);
-					finishedIdx = bindingIdx >= finishedIdx ? bindingIdx : finishedIdx;
+					finishedFrameUpdated = bindingIdx >= finishedIdx;
+					finishedIdx = finishedFrameUpdated ? bindingIdx : finishedIdx;
+
 				}
-				if (bindingIdx >= finishedIdx)
+				if (finishedFrameUpdated)
 				{
 					OutputDebugString(L"PF Copy | ");
 					evalOutput.CopyToAsync(currentBinding->outputCache);
 				}
 
+				auto timePassed = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - now);
+				Notifier.SetFrameRate(1000.f / timePassed.count()); // Convert to FPS: milli to seconds, invert
 				OutputDebugString(L"PF End ");
 				});
 		}

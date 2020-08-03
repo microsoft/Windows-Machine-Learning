@@ -24,7 +24,6 @@ namespace winrt::StyleTransferEffectCpp::implementation
 	struct StyleTransferEffect : StyleTransferEffectT<StyleTransferEffect>
 	{
 		StyleTransferEffect();
-		VideoFrame outputTransformed;
 		IVectorView<VideoEncodingProperties> SupportedEncodingProperties();
 		bool TimeIndependent();
 		MediaMemoryTypes SupportedMemoryTypes();
@@ -39,20 +38,11 @@ namespace winrt::StyleTransferEffectCpp::implementation
 		void SubmitEval(VideoFrame, VideoFrame);
 
 	private:
-		LearningModelSession Session;
-		LearningModelBinding Binding;
-
 		VideoEncodingProperties encodingProperties;
 		std::mutex Processing;
-		std::mutex Copy;
-
 		StyleTransferEffectNotifier Notifier;
-		std::chrono::time_point<std::chrono::steady_clock> m_StartTime;
-		bool firstProcessFrameCall = true;
-		Windows::Graphics::Imaging::BitmapBounds copyBounds;
+		LearningModelSession Session;
 		Windows::Foundation::IAsyncOperation<LearningModelEvaluationResult> evalStatus;
-		VideoFrame cachedOutput;
-		VideoFrame cachedOutputCopy;
 		hstring InputImageDescription;
 		hstring OutputImageDescription;
 		int swapChainIndex = 0;

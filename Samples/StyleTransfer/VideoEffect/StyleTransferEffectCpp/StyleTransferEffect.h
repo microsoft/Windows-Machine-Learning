@@ -36,7 +36,7 @@ namespace winrt::StyleTransferEffectCpp::implementation
 		void ProcessFrame(ProcessVideoFrameContext);
 		void SetEncodingProperties(VideoEncodingProperties, IDirect3DDevice);
 		void SetProperties(IPropertySet);
-		void SubmitEval(int, VideoFrame, VideoFrame);
+		void SubmitEval(VideoFrame, VideoFrame);
 
 	private:
 		LearningModelSession Session;

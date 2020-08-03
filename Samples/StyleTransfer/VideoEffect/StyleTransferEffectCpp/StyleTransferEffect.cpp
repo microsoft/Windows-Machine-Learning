@@ -41,13 +41,18 @@ namespace winrt::StyleTransferEffectCpp::implementation
 		OutputDebugString(L"Close\n");
 		if (Binding != nullptr) Binding.Clear();
 		if (Session != nullptr) Session.Close();
-		/*for (int i = 0; i < swapChainEntryCount; i++) {
-			if (bindings[i]->binding != nullptr)
+		// Make sure evalAsyncs are done before clearing resources
+		for (int i = 0; i < swapChainEntryCount; i++) {
+			if (bindings[i]->activetask != nullptr &&
+				bindings[i]->binding != nullptr)
+			{
+				bindings[i]->activetask.get();
 				bindings[i]->binding.Clear();
-		}*/
+			}
+		}
 	}
 
-	void StyleTransferEffect::SubmitEval(int swapchaindex, VideoFrame input, VideoFrame output) {
+	void StyleTransferEffect::SubmitEval(VideoFrame input, VideoFrame output) {
 		auto currentBinding = bindings[0].get();
 		//VideoFrame outputTransformed = cachedOutput;
 		// Different way of waiting for a swapchain index to finish? 
@@ -58,7 +63,7 @@ namespace winrt::StyleTransferEffectCpp::implementation
 			auto now = std::chrono::high_resolution_clock::now();
 			OutputDebugString(L"PF Start new Eval ");
 			std::wostringstream ss;
-			ss << swapchaindex;
+			ss << swapChainIndex;
 			OutputDebugString(ss.str().c_str());
 			OutputDebugString(L" | ");
 
@@ -70,7 +75,6 @@ namespace winrt::StyleTransferEffectCpp::implementation
 				std::rotate(bindings.begin(), bindings.begin() + 1, bindings.end());
 				finishedIdx = (finishedIdx - 1 + swapChainEntryCount) % swapChainEntryCount;
 			}
-
 			currentBinding->activetask = Session.EvaluateAsync(currentBinding->binding, ss.str().c_str());
 			currentBinding->activetask.Completed([&, currentBinding, now](auto&& asyncInfo, winrt::Windows::Foundation::AsyncStatus const args) {
 				OutputDebugString(L"PF Eval completed |");
@@ -110,29 +114,13 @@ namespace winrt::StyleTransferEffectCpp::implementation
 
 	void StyleTransferEffect::ProcessFrame(ProcessVideoFrameContext context) {
 		OutputDebugString(L"PF Start | ");
-		//OutputDebugString(index(thread().get_id()).c_str());
 		auto now = std::chrono::high_resolution_clock::now();
 		VideoFrame inputFrame = context.InputFrame();
 		VideoFrame outputFrame = context.OutputFrame();
 
-		SubmitEval(swapChainIndex, inputFrame, outputFrame);
-		// Go thorugh swapchain, find most recently completed entry
-		//context.OutputFrame() = bindings[swapChainIndex].outputCache;
-		/*for (int i = 0; i < swapChainEntryCount; i++) {
-			int index = (swapChainIndex - i) % swapChainEntryCount;
-			if (index < 0) index += swapChainEntryCount;
-			if (bindings[index].activetask != NULL) {
-				auto entry = bindings[index].activetask;
-				if (entry.Status() == Windows::Foundation::AsyncStatus::Completed) {
-					OutputDebugString(L"PF Find recent | ");
-					outputFrame = bindings[index].outputCache;
-				}
-			}
-		}*/
+		SubmitEval(inputFrame, outputFrame);
 
 		swapChainIndex = (++swapChainIndex) % swapChainEntryCount; // move on to the next entry after each call to PF. 
-		auto timePassed = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - now);
-		//Notifier.SetFrameRate(1000.f / timePassed.count()); // Convert to FPS: milli to seconds, invert
 	}
 
 	void StyleTransferEffect::SetEncodingProperties(VideoEncodingProperties props, IDirect3DDevice device) {

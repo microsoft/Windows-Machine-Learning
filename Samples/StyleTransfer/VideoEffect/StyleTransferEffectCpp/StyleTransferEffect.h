@@ -11,11 +11,19 @@ using namespace winrt::Windows::Media;
 
 namespace winrt::StyleTransferEffectCpp::implementation
 {
+	struct SwapChainEntry {
+		LearningModelBinding binding;
+		Windows::Foundation::IAsyncOperation<LearningModelEvaluationResult> activetask;
+		VideoFrame outputCache;
+		SwapChainEntry() :
+			binding(nullptr),
+			activetask(nullptr),
+			outputCache(VideoFrame(Windows::Graphics::Imaging::BitmapPixelFormat::Bgra8, 720, 720)) {}
+	};
+
 	struct StyleTransferEffect : StyleTransferEffectT<StyleTransferEffect>
 	{
 		StyleTransferEffect();
-		VideoFrame outputTransformed;
-
 		IVectorView<VideoEncodingProperties> SupportedEncodingProperties();
 		bool TimeIndependent();
 		MediaMemoryTypes SupportedMemoryTypes();
@@ -27,17 +35,20 @@ namespace winrt::StyleTransferEffectCpp::implementation
 		void ProcessFrame(ProcessVideoFrameContext);
 		void SetEncodingProperties(VideoEncodingProperties, IDirect3DDevice);
 		void SetProperties(IPropertySet);
+		void SubmitEval(VideoFrame, VideoFrame);
 
 	private:
-		LearningModelSession Session;
-		LearningModelBinding Binding;
-		hstring InputImageDescription;
-		hstring OutputImageDescription;
 		VideoEncodingProperties encodingProperties;
 		std::mutex Processing;
 		StyleTransferEffectNotifier Notifier;
-		std::chrono::time_point<std::chrono::steady_clock> m_StartTime;
-		bool firstProcessFrameCall = true;
+		LearningModelSession Session;
+		Windows::Foundation::IAsyncOperation<LearningModelEvaluationResult> evalStatus;
+		hstring InputImageDescription;
+		hstring OutputImageDescription;
+		int swapChainIndex = 0;
+		static const int swapChainEntryCount = 5;
+		std::vector < std::unique_ptr<SwapChainEntry>> bindings;
+		int finishedIdx = 0;
 	};
 }
 

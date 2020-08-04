@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using Windows.Media.Core;
@@ -49,18 +48,27 @@ namespace StyleTransfer
             _saveEnabled = true;
             NotifyUser(true);
 
-            m_notifier = new StyleTransferEffectNotifier();
-            m_notifier.FrameRateUpdated += async (_, e) => await DispatcherHelper.RunAsync(() => RenderFPS = e);
-            _useGpu = true;
+            m_notifier = new StyleTransferEffectCpp.StyleTransferEffectNotifier();
+            m_notifier.FrameRateUpdated += async (_, e) =>
+            {
+                await DispatcherHelper.RunAsync(() =>
+                {
+                    RenderFPS = e;
+                });
+
+            };
+            _useGpu = false;
             isPreviewing = false;
         }
 
         // Media capture properties
         public Windows.Media.Capture.MediaCapture _mediaCapture;
-        private List<MediaFrameSourceGroup> _mediaFrameSourceGroupList;
-        private MediaFrameSourceGroup _selectedMediaFrameSourceGroup;
         private bool isPreviewing;
         private DisplayRequest displayRequest = new DisplayRequest();
+        DeviceInformationCollection devices;
+        System.Threading.Mutex Processing = new Mutex();
+        private float _renderFPS;
+        StyleTransferEffectCpp.StyleTransferEffectNotifier m_notifier;
 
         // Style transfer effect properties
         private LearningModel m_model = null;
@@ -69,15 +77,8 @@ namespace StyleTransfer
         private LearningModelBinding m_binding;
         private string m_inputImageDescription;
         private string m_outputImageDescription;
-        private IMediaExtension videoEffect;
-        private VideoEffectDefinition videoEffectDefinition;
         // Activatable Class ID of the video effect. 
         private String _videoEffectID = "StyleTransferEffectCpp.StyleTransferEffect";
-        System.Threading.Mutex Processing = new Mutex();
-        StyleTransferEffectCpp.StyleTransferEffectNotifier m_notifier;
-        private float _renderFPS;
-        DeviceInformationCollection devices;
-
 
         // Image style transfer properties
         uint m_inWidth, m_inHeight, m_outWidth, m_outHeight;
@@ -93,7 +94,6 @@ namespace StyleTransfer
         {
             get { return _appModel; }
         }
-
         public float RenderFPS
         {
             get { return (float)Math.Round(_renderFPS, 2); }
@@ -104,13 +104,9 @@ namespace StyleTransfer
         public float CaptureFPS
         {
             get
-            {
-                return _captureFPS;
-            }
+            { return _captureFPS; }
             set
-            {
-                _captureFPS = value; OnPropertyChanged();
-            }
+            { _captureFPS = value; OnPropertyChanged(); }
         }
         private bool _useGpu;
         public bool UseGpu
@@ -172,28 +168,26 @@ namespace StyleTransfer
         public async Task SetMediaSource(string src)
         {
             _appModel.InputMedia = src;
+            await CleanupCameraAsync();
+            CleanupInputImage();
 
             NotifyUser(true);
             SaveEnabled = true;
 
-            // Changes media source while keeping all other controls 
             switch (_appModel.InputMedia)
             {
                 case "LiveStream":
                     await StartLiveStream();
                     break;
                 case "AcquireImage":
-                    CleanupInputImage();
                     await StartAcquireImage();
                     break;
                 case "FilePick":
-                    CleanupInputImage();
                     await StartFilePick();
                     break;
-                case "Inking":
+                default:
                     break;
             }
-
             return;
         }
 
@@ -213,7 +207,7 @@ namespace StyleTransfer
                 case "FilePick":
                     await ChangeImage();
                     break;
-                case "Inking":
+                default:
                     break;
             }
         }
@@ -255,9 +249,6 @@ namespace StyleTransfer
                     var file = await StorageFile.GetFileFromApplicationUriAsync(new Uri($"ms-appx:///Assets/{_DefaultImageFileName}"));
                     _appModel.InputFrame = await ImageHelper.LoadVideoFrameFromStorageFileAsync(file);
                 }
-                else
-                {
-                }
                 await ChangeImage();
             }
             catch (Exception ex)
@@ -276,7 +267,6 @@ namespace StyleTransfer
                 var file = await StorageFile.GetFileFromApplicationUriAsync(new Uri($"ms-appx:///Assets/{_DefaultImageFileName}"));
                 _appModel.InputFrame = await ImageHelper.LoadVideoFrameFromStorageFileAsync(file);
             }
-
             await EvaluateVideoFrameAsync();
         }
 
@@ -374,7 +364,6 @@ namespace StyleTransfer
                 var settings = new MediaCaptureInitializationSettings
                 {
                     VideoDeviceId = device.Id,
-                    SourceGroup = _selectedMediaFrameSourceGroup,
                     PhotoCaptureSource = PhotoCaptureSource.Auto,
                     MemoryPreference = UseGpu ? MediaCaptureMemoryPreference.Auto : MediaCaptureMemoryPreference.Cpu,
                     StreamingCaptureMode = StreamingCaptureMode.Video,
@@ -389,11 +378,11 @@ namespace StyleTransfer
                 _appModel.OutputCaptureElement = capture;
 
                 var modelPath = Path.GetFullPath($"./Assets/{_appModel.ModelSource}.onnx");
-                videoEffectDefinition = new VideoEffectDefinition(_videoEffectID, new PropertySet() {
+                VideoEffectDefinition videoEffectDefinition = new VideoEffectDefinition(_videoEffectID, new PropertySet() {
                     {"ModelName", modelPath },
                     {"UseGpu", UseGpu },
                     { "Notifier", m_notifier} });
-                videoEffect = await _mediaCapture.AddVideoEffectAsync(videoEffectDefinition, MediaStreamType.VideoPreview);
+                IMediaExtension videoEffect = await _mediaCapture.AddVideoEffectAsync(videoEffectDefinition, MediaStreamType.VideoPreview);
 
                 var props = _mediaCapture.VideoDeviceController.GetMediaStreamProperties(MediaStreamType.VideoPreview) as VideoEncodingProperties;
                 CaptureFPS = props.FrameRate.Numerator / props.FrameRate.Denominator;
@@ -519,14 +508,22 @@ namespace StyleTransfer
         {
             try
             {
-                InputSoftwareBitmapSource?.Dispose();
-                OutputSoftwareBitmapSource?.Dispose();
-
-                InputSoftwareBitmapSource = new SoftwareBitmapSource();
-                OutputSoftwareBitmapSource = new SoftwareBitmapSource();
-
-                _appModel.OutputFrame?.Dispose();
+                if (InputSoftwareBitmapSource != null)
+                {
+                    InputSoftwareBitmapSource.Dispose();
+                    InputSoftwareBitmapSource = new SoftwareBitmapSource();
+                }
+                if (OutputSoftwareBitmapSource != null)
+                {
+                    OutputSoftwareBitmapSource.Dispose();
+                    OutputSoftwareBitmapSource = new SoftwareBitmapSource();
+                }
+                if (_appModel.OutputFrame != null)
+                {
+                    _appModel.OutputFrame.Dispose();
+                }
                 _appModel.OutputFrame = new VideoFrame(BitmapPixelFormat.Bgra8, (int)m_outWidth, (int)m_outHeight);
+
             }
             catch (Exception e)
             {

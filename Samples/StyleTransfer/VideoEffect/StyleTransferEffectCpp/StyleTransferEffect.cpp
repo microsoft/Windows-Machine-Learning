@@ -1,22 +1,29 @@
 ﻿#include "pch.h"
 #include "StyleTransferEffect.h"
 #include "StyleTransferEffect.g.cpp"
+#include <ppltasks.h>
+#include <sstream>
+
 using namespace std;
 using namespace winrt::Windows::Storage;
 using namespace winrt::Windows::Storage::Streams;
+using namespace concurrency;
 
 namespace winrt::StyleTransferEffectCpp::implementation
 {
-	StyleTransferEffect::StyleTransferEffect() : outputTransformed(VideoFrame(Windows::Graphics::Imaging::BitmapPixelFormat::Bgra8, 720, 720)),
-		Session(nullptr),
-		Binding(nullptr)
+	StyleTransferEffect::StyleTransferEffect() :
+		Session(nullptr)
 	{
+		for (int i = 0; i < swapChainEntryCount; i++)
+		{
+			bindings.push_back(std::make_unique<SwapChainEntry>());
+		}
 	}
 
 	IVectorView<VideoEncodingProperties> StyleTransferEffect::SupportedEncodingProperties() {
-		VideoEncodingProperties encodingProperties = VideoEncodingProperties();
-		encodingProperties.Subtype(L"ARGB32");
-		return single_threaded_vector(std::vector<VideoEncodingProperties>{encodingProperties}).GetView();
+		VideoEncodingProperties props = VideoEncodingProperties();
+		props.Subtype(L"ARGB32");
+		return single_threaded_vector(std::vector<VideoEncodingProperties>{props}).GetView();
 	}
 
 	bool StyleTransferEffect::TimeIndependent() { return true; }
@@ -24,46 +31,88 @@ namespace winrt::StyleTransferEffectCpp::implementation
 	bool StyleTransferEffect::IsReadOnly() { return false; }
 	void StyleTransferEffect::DiscardQueuedFrames() {}
 
-	void StyleTransferEffect::Close(MediaEffectClosedReason m) {
+	void StyleTransferEffect::Close(MediaEffectClosedReason) {
 		OutputDebugString(L"Close Begin | ");
 		std::lock_guard<mutex> guard{ Processing };
-		OutputDebugString(L"Close\n");
-		if (Binding != nullptr) Binding.Clear();
+		// Make sure evalAsyncs are done before clearing resources
+		for (int i = 0; i < swapChainEntryCount; i++) {
+			if (bindings[i]->activetask != nullptr &&
+				bindings[i]->binding != nullptr)
+			{
+				std::wostringstream ss;
+				ss << i;
+				OutputDebugString(ss.str().c_str());
+				bindings[i]->activetask.get();
+				bindings[i]->binding.Clear();
+			}
+		}
 		if (Session != nullptr) Session.Close();
-		outputTransformed.Close();
+		OutputDebugString(L"Close\n");
 	}
 
+	void StyleTransferEffect::SubmitEval(VideoFrame input, VideoFrame output) {
+		auto currentBinding = bindings[0].get();
+		if (currentBinding->activetask == nullptr
+			|| currentBinding->activetask.Status() != Windows::Foundation::AsyncStatus::Started)
+		{
+			auto now = std::chrono::high_resolution_clock::now();
+			OutputDebugString(L"PF Start new Eval ");
+			std::wostringstream ss;
+			ss << swapChainIndex;
+			OutputDebugString(ss.str().c_str());
+			OutputDebugString(L" | ");
+
+			currentBinding->binding.Bind(InputImageDescription, input);
+			// submit an eval and wait for it to finish submitting work
+			{
+				std::lock_guard<mutex> guard{ Processing };
+				std::rotate(bindings.begin(), bindings.begin() + 1, bindings.end());
+				finishedIdx = (finishedIdx - 1 + swapChainEntryCount) % swapChainEntryCount;
+				currentBinding->activetask = Session.EvaluateAsync(currentBinding->binding, ss.str().c_str());
+			}
+			currentBinding->activetask.Completed([&, currentBinding, now](auto&& asyncInfo, winrt::Windows::Foundation::AsyncStatus const) {
+				OutputDebugString(L"PF Eval completed |");
+				VideoFrame evalOutput = asyncInfo.GetResults().Outputs().Lookup(OutputImageDescription).try_as<VideoFrame>();
+				int bindingIdx;
+				bool finishedFrameUpdated;
+				{
+					std::lock_guard<mutex> guard{ Processing };
+					auto binding = std::find_if(bindings.begin(), bindings.end(), [currentBinding](const auto& b) {return b.get() == currentBinding; });
+					bindingIdx = std::distance(bindings.begin(), binding);
+					finishedFrameUpdated = bindingIdx >= finishedIdx;
+					finishedIdx = finishedFrameUpdated ? bindingIdx : finishedIdx;
+
+				}
+				if (finishedFrameUpdated)
+				{
+					OutputDebugString(L"PF Copy | ");
+					evalOutput.CopyToAsync(currentBinding->outputCache);
+				}
+
+				auto timePassed = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - now);
+				Notifier.SetFrameRate(1000.f / timePassed.count()); // Convert to FPS: milli to seconds, invert
+				OutputDebugString(L"PF End ");
+				});
+		}
+		if (bindings[finishedIdx]->outputCache != nullptr) {
+			std::wostringstream ss;
+			ss << finishedIdx;
+			OutputDebugString(L"\nStart CopyAsync ");
+			OutputDebugString(ss.str().c_str());
+			bindings[finishedIdx]->outputCache.CopyToAsync(output).get();
+			OutputDebugString(L" | Stop CopyAsync\n");
+		}
+		// return without waiting for the submit to finish, setup the completion handler
+	}
 
 	void StyleTransferEffect::ProcessFrame(ProcessVideoFrameContext context) {
-		std::lock_guard<mutex> guard{ Processing };
-		auto now = std::chrono::high_resolution_clock::now();
-		std::chrono::milliseconds timePassed;
-		// If the first time calling ProcessFrame, just start the timer 
-		if (firstProcessFrameCall) {
-			m_StartTime = now;
-			firstProcessFrameCall = false;
-		}
-		// On the second and any proceding process, 
-		else {
-			timePassed = std::chrono::duration_cast<std::chrono::milliseconds>(now - m_StartTime);
-			m_StartTime = now;
-			Notifier.SetFrameRate(1000.f / timePassed.count()); // Convert to FPS: milli to seconds, invert 
-		}
-
 		OutputDebugString(L"PF Start | ");
-
 		VideoFrame inputFrame = context.InputFrame();
 		VideoFrame outputFrame = context.OutputFrame();
 
-		OutputDebugString(L"PF Locked | ");
-		Binding.Bind(InputImageDescription, inputFrame);
-		Binding.Bind(OutputImageDescription, outputTransformed);
+		SubmitEval(inputFrame, outputFrame);
 
-		OutputDebugString(L"PF Eval | ");
-		Session.Evaluate(Binding, L"test");
-		outputTransformed.CopyToAsync(outputFrame).get();
-
-		OutputDebugString(L"PF End\n ");
+		swapChainIndex = (++swapChainIndex) % swapChainEntryCount; // move on to the next entry after each call to PF. 
 	}
 
 	void StyleTransferEffect::SetEncodingProperties(VideoEncodingProperties props, IDirect3DDevice device) {
@@ -88,9 +137,14 @@ namespace winrt::StyleTransferEffectCpp::implementation
 		LearningModel m_model = LearningModel::LoadFromFilePath(modelName);
 		LearningModelDeviceKind m_device = useGpu ? LearningModelDeviceKind::DirectX : LearningModelDeviceKind::Cpu;
 		Session = LearningModelSession{ m_model, LearningModelDevice(m_device) };
-		Binding = LearningModelBinding{ Session };
 
 		InputImageDescription = L"inputImage";
 		OutputImageDescription = L"outputImage";
+
+		// Create set of bindings to cycle through
+		for (int i = 0; i < swapChainEntryCount; i++) {
+			bindings[i]->binding = LearningModelBinding(Session);
+			bindings[i]->binding.Bind(OutputImageDescription, VideoFrame(Windows::Graphics::Imaging::BitmapPixelFormat::Bgra8, 720, 720));
+		}
 	}
 }

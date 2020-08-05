@@ -11,9 +11,10 @@ using namespace std;
 int main()
 {
     std::wstring modulePath = FileHelper::GetModulePath().c_str();
-    std::wstring modelPath = modulePath + L"yolov4.onnx";
-
+    std::wstring modelPath = modulePath + L"candy.onnx";
+    
     // load model with variadic inputs
+    printf("Loading modelfile '%ws' on the CPU\n", modelPath.c_str());
     auto model = LearningModel::LoadFromFilePath(modelPath);
     
     LearningModelDevice device(LearningModelDeviceKind::Default);
@@ -26,6 +27,7 @@ int main()
 
     LearningModelSession session = LearningModelSession(model, device, options);
 
+    printf("Binding...\n");
     // Load input that match the overriden dimension
     std::vector<VideoFrame> inputFrames = {};
     for (hstring imageName : imageNames) {

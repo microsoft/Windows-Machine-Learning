@@ -143,7 +143,7 @@ void PopulateLearningModelDeviceList(CommandLineArgs& args, std::vector<Learning
                             }
                         }
                         currAdapter = nullptr;
-                        free(driverDescription);
+                        delete driverDescription;
                     }
 
                     if (spAdapter == nullptr)
@@ -158,7 +158,7 @@ void PopulateLearningModelDeviceList(CommandLineArgs& args, std::vector<Learning
                     spAdapter->GetProperty(DXCoreAdapterProperty::DriverDescription, driverDescriptionSize,
                                            driverDescription);
                     printf("Using adapter : %s\n", driverDescription);
-                    free(driverDescription);
+                    delete driverDescription;
                     IUnknown* pAdapter = spAdapter.get();
                     com_ptr<IDXGIAdapter> spDxgiAdapter;
                     D3D_FEATURE_LEVEL d3dFeatureLevel = D3D_FEATURE_LEVEL_1_0_CORE;

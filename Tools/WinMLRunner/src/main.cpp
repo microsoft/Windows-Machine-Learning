@@ -53,6 +53,6 @@ int main(int argc, char *argv[])
     LearningModelSessionOptions sessionOptions;
     PopulateSessionOptions(sessionOptions);
     int returnCode = run(*commandLineArgs, profiler, deviceList, sessionOptions);
-    free(commandLineArgs);
+    delete commandLineArgs;
     return returnCode;
 }

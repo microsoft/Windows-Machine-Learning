@@ -65,7 +65,7 @@ namespace StyleTransfer
         {
             _appModel = new AppModel();
             SaveCommand = new RelayCommand(SaveOutput);
-            SetMediaSourceCommand = new RelayCommand<string>(async (x) => await SetMediaSource(x));
+            SetMediaSourceCommand = new RelayCommand<InputMediaType>(async (x) => await SetMediaSource(x));
             SetModelSourceCommand = new RelayCommand(async () => await SetModelSource());
             ChangeLiveStreamCommand = new RelayCommand(async () => await ChangeLiveStream());
 
@@ -130,9 +130,9 @@ namespace StyleTransfer
             set
             {
                 _useGpu = value;
-                if (_appModel.InputMedia == "LiveStream")
+                if (_appModel.InputMedia == InputMediaType.LiveStream)
                 {
-                    SetMediaSourceCommand.Execute("LiveStream");
+                    SetMediaSourceCommand.Execute(InputMediaType.LiveStream);
                 }
                 OnPropertyChanged();
             }
@@ -209,13 +209,13 @@ namespace StyleTransfer
         public async void SaveOutput()
         {
             Debug.WriteLine("UIButtonSaveImage_Click");
-            if (_appModel.InputMedia != "LiveStream")
+            if (_appModel.InputMedia != InputMediaType.LiveStream)
             {
                 await ImageHelper.SaveVideoFrameToFilePickedAsync(_appModel.OutputFrame);
             }
         }
 
-        public async Task SetMediaSource(string src)
+        public async Task SetMediaSource(InputMediaType src)
         {
             _appModel.InputMedia = src;
             await LoadModelAsync();
@@ -227,13 +227,13 @@ namespace StyleTransfer
 
             switch (_appModel.InputMedia)
             {
-                case "LiveStream":
+                case InputMediaType.LiveStream:
                     await StartLiveStream();
                     break;
-                case "AcquireImage":
+                case InputMediaType.AcquireImage:
                     await StartAcquireImage();
                     break;
-                case "FilePick":
+                case InputMediaType.FilePick:
                     await StartFilePick();
                     break;
                 default:
@@ -249,13 +249,13 @@ namespace StyleTransfer
 
             switch (_appModel.InputMedia)
             {
-                case "LiveStream":
+                case InputMediaType.LiveStream:
                     await ChangeLiveStream();
                     break;
-                case "AcquireImage":
+                case InputMediaType.AcquireImage:
                     await ChangeImage();
                     break;
-                case "FilePick":
+                case InputMediaType.FilePick:
                     await ChangeImage();
                     break;
                 default:

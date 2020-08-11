@@ -16,6 +16,12 @@ using Windows.UI.Xaml.Controls;
 
 namespace StyleTransfer
 {
+    enum InputMediaType
+    {
+        LiveStream,
+        AcquireImage,
+        FilePick
+    }
     class AppModel : INotifyPropertyChanged
     {
         public AppModel()
@@ -51,8 +57,8 @@ namespace StyleTransfer
         }
 
         // Type of input media to use
-        private string _inputMedia;
-        public string InputMedia
+        private InputMediaType _inputMedia;
+        public InputMediaType InputMedia
         {
             get { return _inputMedia; }
             set
@@ -137,7 +143,7 @@ namespace StyleTransfer
         {
             get
             {
-                return _inputMedia == "LiveStream";
+                return _inputMedia == InputMediaType.LiveStream;
             }
         }
 

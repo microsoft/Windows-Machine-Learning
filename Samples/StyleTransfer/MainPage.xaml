@@ -140,40 +140,36 @@
           <Button
               Name="UIButtonLiveStream"
               Command="{Binding SetMediaSourceCommand}"
-              CommandParameter="LiveStream"
               ToolTipService.ToolTip="Camera preview">
             <Button.Content>
               <SymbolIcon Symbol="Video" />
             </Button.Content>
+            <Button.CommandParameter>
+              <local:InputMediaType>LiveStream</local:InputMediaType>
+            </Button.CommandParameter>
           </Button>
           <Button
               Name="UIButtonAcquireImage"
               Command="{Binding SetMediaSourceCommand}"
-              CommandParameter="AcquireImage"
               ToolTipService.ToolTip="Take a photo">
             <Button.Content>
               <SymbolIcon Symbol="Camera" />
             </Button.Content>
+            <Button.CommandParameter>
+              <local:InputMediaType>AcquireImage</local:InputMediaType>
+            </Button.CommandParameter>
           </Button>
           <Button
               Name="UIButtonFilePick"
               Command="{Binding SetMediaSourceCommand}"
-              CommandParameter="FilePick"
               ToolTipService.ToolTip="Select an image from a file">
             <Button.Content>
               <SymbolIcon Symbol="OpenFile" />
             </Button.Content>
+            <Button.CommandParameter>
+              <local:InputMediaType>FilePick</local:InputMediaType>
+            </Button.CommandParameter>
           </Button>
-          <Button
-              Name="UIButtonInking"
-              Command="{Binding SetMediaSourceCommand}"
-              CommandParameter="Inking"
-              ToolTipService.ToolTip="Draw on a canvas">
-            <Button.Content>
-              <SymbolIcon Symbol="Edit" />
-            </Button.Content>
-          </Button>
-
         </StackPanel>
 
         <!--  Inference device  -->

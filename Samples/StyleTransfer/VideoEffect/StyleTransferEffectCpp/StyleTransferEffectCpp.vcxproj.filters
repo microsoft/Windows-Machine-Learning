@@ -30,6 +30,5 @@
   </ItemGroup>
   <ItemGroup>
     <Midl Include="StyleTransferEffect.idl" />
-    <Midl Include="StyleTransferEffectNotifier.idl" />
   </ItemGroup>
 </Project>

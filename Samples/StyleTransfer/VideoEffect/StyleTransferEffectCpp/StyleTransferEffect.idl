@@ -1,9 +1,16 @@
 namespace StyleTransferEffectCpp
 {
-	[default_interface]
-	runtimeclass StyleTransferEffect : Windows.Media.Effects.IBasicVideoEffect
-	{
-		StyleTransferEffect();
-		void SetProperties(Windows.Foundation.Collections.IPropertySet config);
-	}
+    [default_interface]
+    runtimeclass StyleTransferEffect : Windows.Media.Effects.IBasicVideoEffect
+    {
+        StyleTransferEffect();
+        void SetProperties(Windows.Foundation.Collections.IPropertySet config);
+    }
+
+    runtimeclass StyleTransferEffectNotifier
+    {
+        StyleTransferEffectNotifier();
+        void SetFrameRate(Single value);
+        event Windows.Foundation.EventHandler<Single> FrameRateUpdated;
+    }
 }

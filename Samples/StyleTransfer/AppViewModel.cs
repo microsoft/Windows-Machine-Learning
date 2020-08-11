@@ -35,6 +35,32 @@ namespace StyleTransfer
 {
     class AppViewModel : INotifyPropertyChanged
     {
+        // Media capture properties
+        public MediaCapture _mediaCapture;
+        private bool _isPreviewing;
+        private DisplayRequest _displayrequest = new DisplayRequest();
+        DeviceInformationCollection _devices;
+        private readonly object _processLock = new object();
+        StyleTransferEffectCpp.StyleTransferEffectNotifier _notifier;
+
+        // Style transfer effect properties
+        private LearningModel _learningModel = null;
+        private LearningModelDeviceKind _inferenceDeviceSelected = LearningModelDeviceKind.Default;
+        private LearningModelSession _session;
+        private LearningModelBinding _binding;
+        private string _inputImageDescription;
+        private string _outputImageDescription;
+        // Activatable Class ID of the video effect. 
+        private const string StyleTransferEffectId = "StyleTransferEffectCpp.StyleTransferEffect";
+
+        // Image style transfer properties
+        uint _inWidth, _inHeight, _outWidth, _outHeight;
+        private const string DefaultImageFileName = "Input.jpg";
+
+        // User notifiaction properties
+        private bool _succeed;
+        private readonly SolidColorBrush _successColor = new SolidColorBrush(Windows.UI.Colors.Green);
+        private readonly SolidColorBrush _failColor = new SolidColorBrush(Windows.UI.Colors.Red);
         public AppViewModel()
         {
             _appModel = new AppModel();
@@ -46,10 +72,9 @@ namespace StyleTransfer
             _inputSoftwareBitmapSource = new SoftwareBitmapSource();
             _outputSoftwareBitmapSource = new SoftwareBitmapSource();
             _saveEnabled = true;
-            NotifyUser(true);
 
-            m_notifier = new StyleTransferEffectCpp.StyleTransferEffectNotifier();
-            m_notifier.FrameRateUpdated += async (_, e) =>
+            _notifier = new StyleTransferEffectCpp.StyleTransferEffectNotifier();
+            _notifier.FrameRateUpdated += async (_, e) =>
             {
                 await DispatcherHelper.RunAsync(() =>
                 {
@@ -58,60 +83,50 @@ namespace StyleTransfer
 
             };
             _useGpu = false;
-            isPreviewing = false;
+            _isPreviewing = false;
+            NotifyUser(true);
         }
 
-        // Media capture properties
-        public Windows.Media.Capture.MediaCapture _mediaCapture;
-        private bool isPreviewing;
-        private DisplayRequest displayRequest = new DisplayRequest();
-        DeviceInformationCollection devices;
-        System.Threading.Mutex Processing = new Mutex();
-        private float _renderFPS;
-        StyleTransferEffectCpp.StyleTransferEffectNotifier m_notifier;
-
-        // Style transfer effect properties
-        private LearningModel m_model = null;
-        private LearningModelDeviceKind m_inferenceDeviceSelected = LearningModelDeviceKind.Default;
-        private LearningModelSession m_session;
-        private LearningModelBinding m_binding;
-        private string m_inputImageDescription;
-        private string m_outputImageDescription;
-        // Activatable Class ID of the video effect. 
-        private String _videoEffectID = "StyleTransferEffectCpp.StyleTransferEffect";
-
-        // Image style transfer properties
-        uint m_inWidth, m_inHeight, m_outWidth, m_outHeight;
-        private string _DefaultImageFileName = "Input.jpg";
-
-        // User notifiaction properties
-        private bool _succeed;
-        private SolidColorBrush _successColor = new SolidColorBrush(Windows.UI.Colors.Green);
-        private SolidColorBrush _failColor = new SolidColorBrush(Windows.UI.Colors.Red);
-
         private AppModel _appModel;
-        public AppModel CurrentApp
+        public AppModel AppModel
         {
             get { return _appModel; }
         }
+
+        private float _renderFPS;
         public float RenderFPS
         {
-            get { return (float)Math.Round(_renderFPS, 2); }
-            set { _renderFPS = value; OnPropertyChanged(); }
+            get
+            {
+                return (float)Math.Round(_renderFPS, 2);
+            }
+            set
+            {
+                _renderFPS = value;
+                OnPropertyChanged();
+            }
         }
 
         private float _captureFPS;
         public float CaptureFPS
         {
             get
-            { return _captureFPS; }
+            {
+                return _captureFPS;
+            }
             set
-            { _captureFPS = value; OnPropertyChanged(); }
+            {
+                _captureFPS = value;
+                OnPropertyChanged();
+            }
         }
         private bool _useGpu;
         public bool UseGpu
         {
-            get { return _useGpu; }
+            get
+            {
+                return _useGpu;
+            }
             set
             {
                 _useGpu = value;
@@ -125,32 +140,64 @@ namespace StyleTransfer
         private SoftwareBitmapSource _inputSoftwareBitmapSource;
         public SoftwareBitmapSource InputSoftwareBitmapSource
         {
-            get { return _inputSoftwareBitmapSource; }
-            set { _inputSoftwareBitmapSource = value; OnPropertyChanged(); }
+            get
+            {
+                return _inputSoftwareBitmapSource;
+            }
+            set
+            {
+                _inputSoftwareBitmapSource = value;
+                OnPropertyChanged();
+            }
         }
         private SoftwareBitmapSource _outputSoftwareBitmapSource;
         public SoftwareBitmapSource OutputSoftwareBitmapSource
         {
-            get { return _outputSoftwareBitmapSource; }
-            set { _outputSoftwareBitmapSource = value; OnPropertyChanged(); }
+            get
+            {
+                return _outputSoftwareBitmapSource;
+            }
+            set
+            {
+                _outputSoftwareBitmapSource = value;
+                OnPropertyChanged();
+            }
         }
         private bool _saveEnabled;
         public bool SaveEnabled
         {
-            get { return _saveEnabled; }
-            set { _saveEnabled = value; OnPropertyChanged(); }
+            get
+            {
+                return _saveEnabled;
+            }
+            set
+            {
+                _saveEnabled = value;
+                OnPropertyChanged();
+            }
         }
 
         public SolidColorBrush StatusBarColor
         {
-            get { return _succeed ? _successColor : _failColor; }
+            get
+            {
+                return _succeed ? _successColor : _failColor;
+            }
         }
 
-        private string _notifyMessage;
+        private string _statusMessage;
         public string StatusMessage
         {
-            get { return _notifyMessage; }
-            set { _notifyMessage = value; OnPropertyChanged(); OnPropertyChanged("StatusBarColor"); }
+            get
+            {
+                return _statusMessage;
+            }
+            set
+            {
+                _statusMessage = value;
+                OnPropertyChanged();
+                OnPropertyChanged("StatusBarColor");
+            }
         }
 
         // Command defintions
@@ -162,12 +209,16 @@ namespace StyleTransfer
         public async void SaveOutput()
         {
             Debug.WriteLine("UIButtonSaveImage_Click");
-            if (_appModel.InputMedia != "LiveStream") await ImageHelper.SaveVideoFrameToFilePickedAsync(_appModel.OutputFrame);
+            if (_appModel.InputMedia != "LiveStream")
+            {
+                await ImageHelper.SaveVideoFrameToFilePickedAsync(_appModel.OutputFrame);
+            }
         }
 
         public async Task SetMediaSource(string src)
         {
             _appModel.InputMedia = src;
+            await LoadModelAsync();
             await CleanupCameraAsync();
             CleanupInputImage();
 
@@ -246,7 +297,7 @@ namespace StyleTransfer
                 if (_appModel.InputFrame == null)
                 {
                     NotifyUser(false, "No valid image file selected, using default image instead.");
-                    var file = await StorageFile.GetFileFromApplicationUriAsync(new Uri($"ms-appx:///Assets/{_DefaultImageFileName}"));
+                    var file = await StorageFile.GetFileFromApplicationUriAsync(new Uri($"ms-appx:///Assets/{DefaultImageFileName}"));
                     _appModel.InputFrame = await ImageHelper.LoadVideoFrameFromStorageFileAsync(file);
                 }
                 await ChangeImage();
@@ -264,7 +315,7 @@ namespace StyleTransfer
             if (_appModel.InputFrame == null)
             {
                 NotifyUser(false, "No valid image file selected, using default image instead.");
-                var file = await StorageFile.GetFileFromApplicationUriAsync(new Uri($"ms-appx:///Assets/{_DefaultImageFileName}"));
+                var file = await StorageFile.GetFileFromApplicationUriAsync(new Uri($"ms-appx:///Assets/{DefaultImageFileName}"));
                 _appModel.InputFrame = await ImageHelper.LoadVideoFrameFromStorageFileAsync(file);
             }
             await EvaluateVideoFrameAsync();
@@ -277,17 +328,19 @@ namespace StyleTransfer
             if ((_appModel.InputFrame != null) &&
                 (_appModel.InputFrame.SoftwareBitmap != null || _appModel.InputFrame.Direct3DSurface != null))
             {
-                _appModel.InputFrame = await ImageHelper.CenterCropImageAsync(_appModel.InputFrame, m_inWidth, m_inHeight);
+                _appModel.InputFrame = await ImageHelper.CenterCropImageAsync(_appModel.InputFrame, _inWidth, _inHeight);
                 await InputSoftwareBitmapSource.SetBitmapAsync(_appModel.InputFrame.SoftwareBitmap);
 
                 // Lock so eval + binding not destroyed mid-evaluation
                 Debug.Write("Eval Begin | ");
-                Processing.WaitOne();
-                Debug.Write("Eval Lock | ");
-                m_binding.Bind(m_inputImageDescription, ImageFeatureValue.CreateFromVideoFrame(_appModel.InputFrame));
-                m_binding.Bind(m_outputImageDescription, ImageFeatureValue.CreateFromVideoFrame(_appModel.OutputFrame));
-                var results = m_session.Evaluate(m_binding, "test");
-                Processing.ReleaseMutex();
+                LearningModelEvaluationResult results;
+                lock (_processLock)
+                {
+                    Debug.Write("Eval Lock | ");
+                    _binding.Bind(_inputImageDescription, ImageFeatureValue.CreateFromVideoFrame(_appModel.InputFrame));
+                    _binding.Bind(_outputImageDescription, ImageFeatureValue.CreateFromVideoFrame(_appModel.OutputFrame));
+                    results = _session.Evaluate(_binding, "test");
+                }
                 Debug.Write("Eval Unlock\n");
 
                 // Parse Results
@@ -305,25 +358,25 @@ namespace StyleTransfer
             Debug.WriteLine("StartLiveStream");
             await CleanupCameraAsync();
 
-            if (devices == null)
+            if (_devices == null)
             {
                 try
                 {
-                    devices = await DeviceInformation.FindAllAsync(DeviceClass.VideoCapture);
+                    _devices = await DeviceInformation.FindAllAsync(DeviceClass.VideoCapture);
                 }
                 catch (Exception ex)
                 {
                     Debug.WriteLine(ex.Message);
-                    devices = null;
+                    _devices = null;
                 }
-                if ((devices == null) || (devices.Count == 0))
+                if ((_devices == null) || (_devices.Count == 0))
                 {
                     // No camera sources found
                     Debug.WriteLine("No cameras found");
                     NotifyUser(false, "No cameras found.");
                     return;
                 }
-                _appModel.CameraNamesList = devices.Select(device => device.Name);
+                _appModel.CameraNamesList = _devices.Select(device => device.Name);
                 return;
             }
             // If just above 0 you fool
@@ -345,7 +398,7 @@ namespace StyleTransfer
             SaveEnabled = false;
 
             // If webcam hasn't been initialized, bail.
-            if ((devices == null) || (devices.Count == 0))
+            if ((_devices == null) || (_devices.Count == 0))
                 return;
 
             try
@@ -359,7 +412,7 @@ namespace StyleTransfer
                     _appModel.SelectedCameraIndex = 0;
                     return;
                 }
-                var device = devices.ToList().ElementAt(_appModel.SelectedCameraIndex);
+                var device = _devices.ToList().ElementAt(_appModel.SelectedCameraIndex);
                 // Create MediaCapture and its settings
                 var settings = new MediaCaptureInitializationSettings
                 {
@@ -371,24 +424,24 @@ namespace StyleTransfer
                 };
                 _mediaCapture = new MediaCapture();
                 await _mediaCapture.InitializeAsync(settings);
-                displayRequest.RequestActive();
+                _displayrequest.RequestActive();
 
                 var capture = new CaptureElement();
                 capture.Source = _mediaCapture;
                 _appModel.OutputCaptureElement = capture;
 
                 var modelPath = Path.GetFullPath($"./Assets/{_appModel.ModelSource}.onnx");
-                VideoEffectDefinition videoEffectDefinition = new VideoEffectDefinition(_videoEffectID, new PropertySet() {
+                VideoEffectDefinition videoEffectDefinition = new VideoEffectDefinition(StyleTransferEffectId, new PropertySet() {
                     {"ModelName", modelPath },
                     {"UseGpu", UseGpu },
-                    { "Notifier", m_notifier} });
+                    { "Notifier", _notifier} });
                 IMediaExtension videoEffect = await _mediaCapture.AddVideoEffectAsync(videoEffectDefinition, MediaStreamType.VideoPreview);
 
                 var props = _mediaCapture.VideoDeviceController.GetMediaStreamProperties(MediaStreamType.VideoPreview) as VideoEncodingProperties;
                 CaptureFPS = props.FrameRate.Numerator / props.FrameRate.Denominator;
 
                 await _mediaCapture.StartPreviewAsync();
-                isPreviewing = true;
+                _isPreviewing = true;
             }
             catch (Exception ex)
             {
@@ -405,54 +458,57 @@ namespace StyleTransfer
         private async Task LoadModelAsync()
         {
             Debug.Write("LoadModelBegin | ");
-            Processing.WaitOne();
+
             Debug.Write("LoadModel Lock | ");
 
-            m_binding?.Clear();
-            m_session?.Dispose();
+            _binding?.Clear();
+            _session?.Dispose();
 
             StorageFile modelFile = await StorageFile.GetFileFromApplicationUriAsync(new Uri($"ms-appx:///Assets/{_appModel.ModelSource}.onnx"));
-            m_model = await LearningModel.LoadFromStorageFileAsync(modelFile);
+            _learningModel = await LearningModel.LoadFromStorageFileAsync(modelFile);
+            _inferenceDeviceSelected = UseGpu ? LearningModelDeviceKind.DirectX : LearningModelDeviceKind.Cpu;
 
-            m_inferenceDeviceSelected = UseGpu ? LearningModelDeviceKind.DirectX : LearningModelDeviceKind.Cpu;
-            m_session = new LearningModelSession(m_model, new LearningModelDevice(m_inferenceDeviceSelected));
-            m_binding = new LearningModelBinding(m_session);
+            // Lock so can't create a new session or binding while also being disposed
+            lock (_processLock)
+            {
+                _session = new LearningModelSession(_learningModel, new LearningModelDevice(_inferenceDeviceSelected));
+                _binding = new LearningModelBinding(_session);
+            }
 
             debugModelIO();
+            _inputImageDescription = _learningModel.InputFeatures.ToList().First().Name;
+            _outputImageDescription = _learningModel.OutputFeatures.ToList().First().Name;
 
-            m_inputImageDescription = m_model.InputFeatures.ToList().First().Name;
-            m_outputImageDescription = m_model.OutputFeatures.ToList().First().Name;
-            Processing.ReleaseMutex();
             Debug.Write("LoadModel Unlock\n");
         }
 
         public void debugModelIO()
         {
-            string m_inName, m_outName;
-            foreach (var inputF in m_model.InputFeatures)
+            string _inName, _outName;
+            foreach (var inputF in _learningModel.InputFeatures)
             {
                 Debug.WriteLine($"input | kind:{inputF.Kind}, name:{inputF.Name}, type:{inputF.GetType()}");
                 int i = 0;
                 ImageFeatureDescriptor imgDesc = inputF as ImageFeatureDescriptor;
                 TensorFeatureDescriptor tfDesc = inputF as TensorFeatureDescriptor;
-                m_inWidth = (uint)(imgDesc == null ? tfDesc.Shape[3] : imgDesc.Width);
-                m_inHeight = (uint)(imgDesc == null ? tfDesc.Shape[2] : imgDesc.Height);
-                m_inName = inputF.Name;
+                _inWidth = (uint)(imgDesc == null ? tfDesc.Shape[3] : imgDesc.Width);
+                _inHeight = (uint)(imgDesc == null ? tfDesc.Shape[2] : imgDesc.Height);
+                _inName = inputF.Name;
 
                 Debug.WriteLine($"N: {(imgDesc == null ? tfDesc.Shape[0] : 1)}, " +
                     $"Channel: {(imgDesc == null ? tfDesc.Shape[1].ToString() : imgDesc.BitmapPixelFormat.ToString())}, " +
                     $"Height:{(imgDesc == null ? tfDesc.Shape[2] : imgDesc.Height)}, " +
                     $"Width: {(imgDesc == null ? tfDesc.Shape[3] : imgDesc.Width)}");
             }
-            foreach (var outputF in m_model.OutputFeatures)
+            foreach (var outputF in _learningModel.OutputFeatures)
             {
                 Debug.WriteLine($"output | kind:{outputF.Kind}, name:{outputF.Name}, type:{outputF.GetType()}");
                 int i = 0;
                 ImageFeatureDescriptor imgDesc = outputF as ImageFeatureDescriptor;
                 TensorFeatureDescriptor tfDesc = outputF as TensorFeatureDescriptor;
-                m_outWidth = (uint)(imgDesc == null ? tfDesc.Shape[3] : imgDesc.Width);
-                m_outHeight = (uint)(imgDesc == null ? tfDesc.Shape[2] : imgDesc.Height);
-                m_outName = outputF.Name;
+                _outWidth = (uint)(imgDesc == null ? tfDesc.Shape[3] : imgDesc.Width);
+                _outHeight = (uint)(imgDesc == null ? tfDesc.Shape[2] : imgDesc.Height);
+                _outName = outputF.Name;
 
                 Debug.WriteLine($"N: {(imgDesc == null ? tfDesc.Shape[0] : 1)}, " +
                    $"Channel: {(imgDesc == null ? tfDesc.Shape[1].ToString() : imgDesc.BitmapPixelFormat.ToString())}, " +
@@ -470,7 +526,7 @@ namespace StyleTransfer
                 // Clean up the media capture
                 if (_mediaCapture != null)
                 {
-                    if (isPreviewing)
+                    if (_isPreviewing)
                     {
                         try
                         {
@@ -483,15 +539,15 @@ namespace StyleTransfer
                         CaptureElement cap = new CaptureElement();
                         cap.Source = null;
                         _appModel.OutputCaptureElement = cap;
-                        if (isPreviewing)
+                        if (_isPreviewing)
                         {
-                            displayRequest.RequestRelease();
+                            _displayrequest.RequestRelease();
                         }
 
                         MediaCapture m = _mediaCapture;
                         _mediaCapture = null;
                         m.Dispose();
-                        isPreviewing = false;
+                        _isPreviewing = false;
                     });
                 }
 
@@ -522,7 +578,7 @@ namespace StyleTransfer
                 {
                     _appModel.OutputFrame.Dispose();
                 }
-                _appModel.OutputFrame = new VideoFrame(BitmapPixelFormat.Bgra8, (int)m_outWidth, (int)m_outHeight);
+                _appModel.OutputFrame = new VideoFrame(BitmapPixelFormat.Bgra8, (int)_outWidth, (int)_outHeight);
 
             }
             catch (Exception e)

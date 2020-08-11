@@ -38,20 +38,11 @@ namespace StyleTransfer
     {
 
         private AppViewModel _viewModel;
-        public readonly List<string> modelFileNames = new List<string>
-        {   "candy",
-            "mosaic",
-            "la_muse",
-            "udnie"
-        };
-        public int dummyFPS = 0;
-        DisplayRequest displayRequest = new DisplayRequest();
 
         public MainPage()
         {
             this.InitializeComponent();
-            _viewModel = new AppViewModel();
-            this.DataContext = _viewModel;
+            this.DataContext = new AppViewModel();
         }
     }
 

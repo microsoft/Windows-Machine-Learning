@@ -25,6 +25,19 @@ namespace StyleTransfer
             this._outputCaptureElement = new CaptureElement();
         }
 
+        public List<String> ModelFileNames
+        {
+            get
+            {
+                return new List<string>
+                {   "candy",
+                    "mosaic",
+                    "la_muse",
+                    "udnie"
+                };
+            }
+        }
+
         // Name of the style transfer model to apply to input media
         private string _modelSource;
         public string ModelSource
@@ -81,10 +94,15 @@ namespace StyleTransfer
         {
             get
             {
-                if (_outputCaptureElement == null) _outputCaptureElement = new CaptureElement();
+                if (_outputCaptureElement == null)
+                    _outputCaptureElement = new CaptureElement();
                 return _outputCaptureElement;
             }
-            set { _outputCaptureElement = value; OnPropertyChanged(); }
+            set
+            {
+                _outputCaptureElement = value;
+                OnPropertyChanged();
+            }
         }
 
         // MediaSource for the input media

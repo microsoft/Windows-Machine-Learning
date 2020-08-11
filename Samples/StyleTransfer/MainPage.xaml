@@ -113,8 +113,8 @@
             Grid.Column="1"
             Margin="5,0,5,0"
             HorizontalAlignment="Center"
-            ItemsSource="{x:Bind modelFileNames}"
-            SelectedItem="{Binding CurrentApp.ModelSource, Mode=TwoWay}">
+            ItemsSource="{Binding AppModel.ModelFileNames}"
+            SelectedItem="{Binding AppModel.ModelSource, Mode=TwoWay}">
           <ListBox.ItemsPanel>
             <ItemsPanelTemplate>
               <VirtualizingStackPanel Orientation="Horizontal" />
@@ -227,7 +227,7 @@
             Name="PreviewControl"
             Width="720"
             Height="720"
-            Content="{Binding CurrentApp.OutputCaptureElement}" />
+            Content="{Binding AppModel.OutputCaptureElement}" />
 
         <!--  Input image preview  -->
         <Image
@@ -254,7 +254,7 @@
               AreTransportControlsEnabled="False"
               AutoPlay="True"
               Canvas.ZIndex="-1"
-              Source="{Binding CurrentApp.OutputMediaCapture}"
+              Source="{Binding AppModel.OutputMediaCapture}"
               Stretch="Uniform"
               Visibility="Visible" />!-->
 
@@ -281,13 +281,13 @@
           HorizontalAlignment="Left"
           VerticalAlignment="Bottom"
           Orientation="vertical"
-          Visibility="{Binding CurrentApp.StreamingControlsVisible, Converter={StaticResource BoolToVis}, Mode=OneWay}">
+          Visibility="{Binding AppModel.StreamingControlsVisible, Converter={StaticResource BoolToVis}, Mode=OneWay}">
         <TextBlock Style="{StaticResource TextBlockStyling}" Text="Camera: " />
         <ComboBox
             Name="UICmbCamera"
             Foreground="White"
-            ItemsSource="{Binding CurrentApp.CameraNamesList}"
-            SelectedIndex="{Binding CurrentApp.SelectedCameraIndex, Mode=TwoWay}">
+            ItemsSource="{Binding AppModel.CameraNamesList}"
+            SelectedIndex="{Binding AppModel.SelectedCameraIndex, Mode=TwoWay}">
           <i:Interaction.Behaviors>
             <core:EventTriggerBehavior EventName="SelectionChanged">
               <core:InvokeCommandAction Command="{Binding ChangeLiveStreamCommand}" />
@@ -318,7 +318,7 @@
           <TextBlock
               RelativePanel.AlignHorizontalCenterWithPanel="True"
               RelativePanel.AlignVerticalCenterWithPanel="True"
-              Visibility="{Binding CurrentApp.StreamingControlsVisible, Converter={StaticResource BoolToVis}, Mode=OneWay}">
+              Visibility="{Binding AppModel.StreamingControlsVisible, Converter={StaticResource BoolToVis}, Mode=OneWay}">
             <Run x:Uid="TxtCapture" FontWeight="Bold" />
             <Run Text="{Binding CaptureFPS}" />
             <Run x:Uid="TxtRender" FontWeight="Bold" />

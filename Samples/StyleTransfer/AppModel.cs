@@ -18,6 +18,7 @@ namespace StyleTransfer
 {
     enum InputMediaType
     {
+        None,
         LiveStream,
         AcquireImage,
         FilePick

@@ -64,8 +64,10 @@ namespace StyleTransfer
         public AppViewModel()
         {
             _appModel = new AppModel();
+            _appModel.PropertyChanged += _appModel_PropertyChanged;
+
             SaveCommand = new RelayCommand(SaveOutput);
-            SetMediaSourceCommand = new RelayCommand<InputMediaType>(async (x) => await SetMediaSource(x));
+            SetMediaSourceCommand = new RelayCommand<InputMediaType>((x) => _appModel.InputMedia = x);
             SetModelSourceCommand = new RelayCommand(async () => await SetModelSource());
             ChangeLiveStreamCommand = new RelayCommand(async () => await ChangeLiveStream());
 
@@ -82,7 +84,7 @@ namespace StyleTransfer
                 });
 
             };
-            _useGpu = false;
+            UseGpu = false;
             _isPreviewing = false;
             NotifyUser(true);
         }
@@ -90,7 +92,10 @@ namespace StyleTransfer
         private AppModel _appModel;
         public AppModel AppModel
         {
-            get { return _appModel; }
+            get
+            {
+                return _appModel;
+            }
         }
 
         private float _renderFPS;
@@ -120,23 +125,7 @@ namespace StyleTransfer
                 OnPropertyChanged();
             }
         }
-        private bool _useGpu;
-        public bool UseGpu
-        {
-            get
-            {
-                return _useGpu;
-            }
-            set
-            {
-                _useGpu = value;
-                if (_appModel.InputMedia == InputMediaType.LiveStream)
-                {
-                    SetMediaSourceCommand.Execute(InputMediaType.LiveStream);
-                }
-                OnPropertyChanged();
-            }
-        }
+
         private SoftwareBitmapSource _inputSoftwareBitmapSource;
         public SoftwareBitmapSource InputSoftwareBitmapSource
         {
@@ -199,12 +188,38 @@ namespace StyleTransfer
                 OnPropertyChanged("StatusBarColor");
             }
         }
-
+        private bool _useGpu;
+        public bool UseGpu
+        {
+            get
+            {
+                return _useGpu;
+            }
+            set
+            {
+                _useGpu = value;
+                if (_appModel.InputMedia == InputMediaType.LiveStream)
+                {
+                    SetMediaSourceCommand.Execute(InputMediaType.LiveStream);
+                }
+                OnPropertyChanged();
+            }
+        }
         // Command defintions
         public ICommand SaveCommand { get; set; }
         public ICommand SetMediaSourceCommand { get; set; }
         public ICommand ChangeLiveStreamCommand { get; set; }
         public ICommand SetModelSourceCommand { get; set; }
+
+        private async void _appModel_PropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            Debug.WriteLine(e.PropertyName);
+            if (e.PropertyName == "InputMedia"
+                )
+            {
+                await SetMediaSource();
+            }
+        }
 
         public async void SaveOutput()
         {
@@ -215,9 +230,8 @@ namespace StyleTransfer
             }
         }
 
-        public async Task SetMediaSource(InputMediaType src)
+        public async Task SetMediaSource()
         {
-            _appModel.InputMedia = src;
             await LoadModelAsync();
             await CleanupCameraAsync();
             CleanupInputImage();

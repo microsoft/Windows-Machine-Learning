@@ -214,8 +214,7 @@ namespace StyleTransfer
         private async void _appModel_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
             Debug.WriteLine(e.PropertyName);
-            if (e.PropertyName == "InputMedia"
-                )
+            if (e.PropertyName == "InputMedia")
             {
                 await SetMediaSource();
             }

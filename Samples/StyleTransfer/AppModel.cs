@@ -70,8 +70,6 @@ namespace StyleTransfer
             }
         }
 
-
-
         // Input VideoFrame when processing images
         private VideoFrame _inputFrame;
         public VideoFrame InputFrame

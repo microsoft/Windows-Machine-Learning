@@ -46,7 +46,7 @@ namespace winrt::StyleTransferEffectCpp::implementation
         hstring InputImageDescription;
         hstring OutputImageDescription;
         int swapChainIndex = 0;
-        static const int swapChainEntryCount = 5;
+        int swapChainEntryCount = 5;
         std::vector < std::unique_ptr<SwapChainEntry>> bindings;
         int finishedFrameIndex = 0;
     };

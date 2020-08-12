@@ -86,6 +86,7 @@ namespace StyleTransfer
             };
             UseGpu = false;
             _isPreviewing = false;
+            NumThreads = 5;
             NotifyUser(true);
         }
 
@@ -97,7 +98,26 @@ namespace StyleTransfer
                 return _appModel;
             }
         }
-
+        private int _numThreads;
+        public int NumThreads
+        {
+            get
+            {
+                return _numThreads;
+            }
+            set
+            {
+                _numThreads = value;
+                OnPropertyChanged();
+            }
+        }
+        public int MaxThreads
+        {
+            get
+            {
+                return 10;
+            }
+        }
         private float _renderFPS;
         public float RenderFPS
         {
@@ -447,7 +467,8 @@ namespace StyleTransfer
                 VideoEffectDefinition videoEffectDefinition = new VideoEffectDefinition(StyleTransferEffectId, new PropertySet() {
                     {"ModelName", modelPath },
                     {"UseGpu", UseGpu },
-                    { "Notifier", _notifier} });
+                    { "Notifier", _notifier},
+                    { "NumThreads", NumThreads} });
                 IMediaExtension videoEffect = await _mediaCapture.AddVideoEffectAsync(videoEffectDefinition, MediaStreamType.VideoPreview);
 
                 var props = _mediaCapture.VideoDeviceController.GetMediaStreamProperties(MediaStreamType.VideoPreview) as VideoEncodingProperties;

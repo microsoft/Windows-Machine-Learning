@@ -238,8 +238,9 @@
     <None Include="StyleTransfer_TemporaryKey.pfx" />
   </ItemGroup>
   <ItemGroup>
-    <Reference Include="StyleTransferEffectCpp">
-      <HintPath>..\..\..\..\..\Windows-Machine-Learning\Samples\StyleTransfer\VideoEffect\StyleTransferEffectCpp\x64\Debug\StyleTransferEffectCpp\StyleTransferEffectCpp.winmd</HintPath>
+    <Reference Include="StyleTransferEffectCpp, Version=255.255.255.255, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>VideoEffect\StyleTransferEffectCpp\x64\Debug\StyleTransferEffectCpp\StyleTransferEffectCpp.winmd</HintPath>
     </Reference>
   </ItemGroup>
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '14.0' ">

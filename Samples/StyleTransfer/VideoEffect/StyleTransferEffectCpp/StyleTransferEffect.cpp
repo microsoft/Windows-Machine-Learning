@@ -14,10 +14,6 @@ namespace winrt::StyleTransferEffectCpp::implementation
     StyleTransferEffect::StyleTransferEffect() :
         Session(nullptr)
     {
-        for (int i = 0; i < swapChainEntryCount; i++)
-        {
-            bindings.push_back(std::make_unique<SwapChainEntry>());
-        }
     }
 
     IVectorView<VideoEncodingProperties> StyleTransferEffect::SupportedEncodingProperties() {
@@ -57,16 +53,16 @@ namespace winrt::StyleTransferEffectCpp::implementation
             OutputDebugString(L"PF Start new Eval ");
             OutputDebugString(std::to_wstring(swapChainIndex).c_str());
             OutputDebugString(L" | ");
-            currentBinding->binding.Bind(InputImageDescription, input);
             // submit an eval and wait for it to finish submitting work
             {
                 std::lock_guard<mutex> guard{ Processing };
+                currentBinding->binding.Bind(InputImageDescription, input);
                 std::rotate(bindings.begin(), bindings.begin() + 1, bindings.end());
                 finishedFrameIndex = (finishedFrameIndex - 1 + swapChainEntryCount) % swapChainEntryCount;
-                currentBinding->activetask = Session.EvaluateAsync(
-                    currentBinding->binding,
-                    std::to_wstring(swapChainIndex).c_str());
             }
+            currentBinding->activetask = Session.EvaluateAsync(
+                currentBinding->binding,
+                std::to_wstring(swapChainIndex).c_str());
             currentBinding->activetask.Completed([&, currentBinding, now](auto&& asyncInfo, winrt::Windows::Foundation::AsyncStatus const) {
                 OutputDebugString(L"PF Eval completed |");
                 VideoFrame evalOutput = asyncInfo.GetResults()
@@ -102,7 +98,11 @@ namespace winrt::StyleTransferEffectCpp::implementation
         if (bindings[finishedFrameIndex]->outputCache != nullptr) {
             OutputDebugString(L"\nStart CopyAsync ");
             OutputDebugString(std::to_wstring(finishedFrameIndex).c_str());
-            bindings[finishedFrameIndex]->outputCache.CopyToAsync(output).get();
+            {
+                // Lock so that don't have multiple sources copying to output at once
+                std::lock_guard<mutex> guard{ Processing };
+                bindings[finishedFrameIndex]->outputCache.CopyToAsync(output).get();
+            }
             OutputDebugString(L" | Stop CopyAsync\n");
         }
         // return without waiting for the submit to finish, setup the completion handler
@@ -159,6 +159,19 @@ namespace winrt::StyleTransferEffectCpp::implementation
         {
             winrt::throw_hresult(E_FAIL);
         }
+
+        val = configuration.TryLookup(L"NumThreads");
+        if (val)
+        {
+            swapChainEntryCount = unbox_value<int>(val);
+        }
+        else
+        {
+            winrt::throw_hresult(E_FAIL);
+        }
+
+        OutputDebugString(L"Num Threads: ");
+        OutputDebugString(std::to_wstring(swapChainEntryCount).c_str());
         LearningModel _model = LearningModel::LoadFromFilePath(modelName);
         LearningModelDeviceKind _device = useGpu ? LearningModelDeviceKind::DirectX
             : LearningModelDeviceKind::Cpu;
@@ -169,6 +182,7 @@ namespace winrt::StyleTransferEffectCpp::implementation
 
         // Create set of bindings to cycle through
         for (int i = 0; i < swapChainEntryCount; i++) {
+            bindings.push_back(std::make_unique<SwapChainEntry>());
             bindings[i]->binding = LearningModelBinding(Session);
             bindings[i]->binding.Bind(OutputImageDescription,
                 VideoFrame(Windows::Graphics::Imaging::BitmapPixelFormat::Bgra8, 720, 720));

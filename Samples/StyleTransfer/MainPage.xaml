@@ -17,233 +17,234 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
-  <Page.Resources>
-    <local:BooleanToVisibilityConverter x:Key="BoolToVis" />
-    <SolidColorBrush
-        x:Key="TranslucentBlackBrush"
-        Opacity="0.3"
-        Color="Black" />
-    <Style x:Key="TextBlockStyling" TargetType="TextBlock">
-      <Setter Property="Foreground" Value="Black" />
-    </Style>
-  </Page.Resources>
+    <Page.Resources>
+        <local:BooleanToVisibilityConverter x:Key="BoolToVis" />
+        <local:InvertBooleanToVisibilityConverter x:Key="InvertBoolToVis" />
+        <SolidColorBrush
+            x:Key="TranslucentBlackBrush"
+            Opacity="0.3"
+            Color="Black" />
+        <Style x:Key="TextBlockStyling" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="Black" />
+        </Style>
+    </Page.Resources>
 
 
-  <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
-    <Grid>
-      <Grid.RowDefinitions>
-        <RowDefinition Height="100" />
-        <RowDefinition Height="300*" />
-        <RowDefinition Height="30" />
-      </Grid.RowDefinitions>
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="100" />
+                <RowDefinition Height="300*" />
+                <RowDefinition Height="30" />
+            </Grid.RowDefinitions>
 
-      <!--  Input control panel  -->
-      <Grid
-          Name="InputControlGrid"
-          Padding="10,0,10,0"
-          HorizontalAlignment="Center">
-        <Grid.ColumnDefinitions>
-          <ColumnDefinition Width="Auto" />
-          <ColumnDefinition Width="Auto" />
-          <ColumnDefinition Width="Auto" />
-        </Grid.ColumnDefinitions>
-        <Grid.RowDefinitions>
-          <RowDefinition Height="Auto" />
-          <RowDefinition Height="Auto" />
-          <RowDefinition Height="Auto" />
-        </Grid.RowDefinitions>
+            <!--  Input control panel  -->
+            <Grid
+                Name="InputControlGrid"
+                Padding="10,0,10,0"
+                HorizontalAlignment="Center">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
 
-        <!--  Input control labels  -->
-        <TextBlock
-            x:Uid="TxtInputMedia"
-            Grid.Row="0"
-            Grid.Column="0"
-            HorizontalAlignment="Center"
-            FontSize="16" />
-        <TextBlock
-            x:Uid="TxtInputStyle"
-            Grid.Row="0"
-            Grid.Column="1"
-            HorizontalAlignment="Center"
-            FontSize="16" />
-        <TextBlock
-            x:Uid="TxtInputDevice"
-            Grid.Row="0"
-            Grid.Column="2"
-            HorizontalAlignment="Center"
-            FontSize="16" />
+                <!--  Input control labels  -->
+                <TextBlock
+                    x:Uid="TxtInputMedia"
+                    Grid.Row="0"
+                    Grid.Column="0"
+                    HorizontalAlignment="Center"
+                    FontSize="16" />
+                <TextBlock
+                    x:Uid="TxtInputStyle"
+                    Grid.Row="0"
+                    Grid.Column="1"
+                    HorizontalAlignment="Center"
+                    FontSize="16" />
+                <TextBlock
+                    x:Uid="TxtInputDevice"
+                    Grid.Row="0"
+                    Grid.Column="2"
+                    HorizontalAlignment="Center"
+                    FontSize="16" />
 
-        <!--  Input control descriptions  -->
-        <TextBlock
-            x:Uid="TxtInputMediaDescription"
-            Grid.Row="2"
-            Grid.Column="0"
-            Width="{Binding ActualWidth, ElementName=InputMediaList}"
-            Margin="5,0,5,0"
-            HorizontalAlignment="Center"
-            VerticalAlignment="Top"
-            FontSize="10"
-            TextWrapping="WrapWholeWords" />
-        <TextBlock
-            x:Uid="TxtInputStyleDescription"
-            Grid.Row="2"
-            Grid.Column="1"
-            Width="{Binding ActualWidth, ElementName=UIStyleList}"
-            Margin="5,0,5,0"
-            HorizontalAlignment="Center"
-            VerticalAlignment="Top"
-            FontSize="10"
-            TextWrapping="WrapWholeWords" />
-        <TextBlock
-            x:Uid="TxtInputDeviceDescription"
-            Grid.Row="2"
-            Grid.Column="2"
-            Width="{Binding ActualWidth, ElementName=UIToggleInferenceDevice}"
-            Margin="5,0,5,0"
-            HorizontalAlignment="Center"
-            VerticalAlignment="Top"
-            FontSize="10"
-            TextWrapping="WrapWholeWords" />
+                <!--  Input control descriptions  -->
+                <TextBlock
+                    x:Uid="TxtInputMediaDescription"
+                    Grid.Row="2"
+                    Grid.Column="0"
+                    Width="{Binding ActualWidth, ElementName=InputMediaList}"
+                    Margin="5,0,5,0"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Top"
+                    FontSize="10"
+                    TextWrapping="WrapWholeWords" />
+                <TextBlock
+                    x:Uid="TxtInputStyleDescription"
+                    Grid.Row="2"
+                    Grid.Column="1"
+                    Width="{Binding ActualWidth, ElementName=UIStyleList}"
+                    Margin="5,0,5,0"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Top"
+                    FontSize="10"
+                    TextWrapping="WrapWholeWords" />
+                <TextBlock
+                    x:Uid="TxtInputDeviceDescription"
+                    Grid.Row="2"
+                    Grid.Column="2"
+                    Width="{Binding ActualWidth, ElementName=UIToggleInferenceDevice}"
+                    Margin="5,0,5,0"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Top"
+                    FontSize="10"
+                    TextWrapping="WrapWholeWords" />
 
-        <!--  Input models  -->
-        <ListBox
-            Name="UIStyleList"
-            Grid.Row="1"
-            Grid.Column="1"
-            Margin="5,0,5,0"
-            HorizontalAlignment="Center"
-            ItemsSource="{Binding AppModel.ModelFileNames}"
-            SelectedItem="{Binding AppModel.ModelSource, Mode=TwoWay}">
-          <ListBox.ItemsPanel>
-            <ItemsPanelTemplate>
-              <VirtualizingStackPanel Orientation="Horizontal" />
-            </ItemsPanelTemplate>
-          </ListBox.ItemsPanel>
-          <i:Interaction.Behaviors>
-            <core:EventTriggerBehavior EventName="SelectionChanged">
-              <core:InvokeCommandAction Command="{Binding SetModelSourceCommand}" />
-            </core:EventTriggerBehavior>
-          </i:Interaction.Behaviors>
-        </ListBox>
+                <!--  Input models  -->
+                <ListBox
+                    Name="UIStyleList"
+                    Grid.Row="1"
+                    Grid.Column="1"
+                    Margin="5,0,5,0"
+                    HorizontalAlignment="Center"
+                    ItemsSource="{Binding AppModel.ModelFileNames}"
+                    SelectedItem="{Binding AppModel.ModelSource, Mode=TwoWay}">
+                    <ListBox.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <VirtualizingStackPanel Orientation="Horizontal" />
+                        </ItemsPanelTemplate>
+                    </ListBox.ItemsPanel>
+                    <i:Interaction.Behaviors>
+                        <core:EventTriggerBehavior EventName="SelectionChanged">
+                            <core:InvokeCommandAction Command="{Binding SetModelSourceCommand}" />
+                        </core:EventTriggerBehavior>
+                    </i:Interaction.Behaviors>
+                </ListBox>
 
-        <!--  Input media  -->
-        <StackPanel
-            Name="InputMediaList"
-            Grid.Row="1"
-            Grid.Column="0"
-            Height="{Binding ActualHeight, ElementName=UIStyleList}"
-            HorizontalAlignment="Center"
-            VerticalAlignment="Top"
-            Orientation="Horizontal">
+                <!--  Input media  -->
+                <StackPanel
+                    Name="InputMediaList"
+                    Grid.Row="1"
+                    Grid.Column="0"
+                    Height="{Binding ActualHeight, ElementName=UIStyleList}"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Top"
+                    Orientation="Horizontal">
 
-          <Button
-              Name="UIButtonLiveStream"
-              Command="{Binding SetMediaSourceCommand}"
-              ToolTipService.ToolTip="Camera preview">
-            <Button.Content>
-              <SymbolIcon Symbol="Video" />
-            </Button.Content>
-            <Button.CommandParameter>
-              <local:InputMediaType>LiveStream</local:InputMediaType>
-            </Button.CommandParameter>
-          </Button>
-          <Button
-              Name="UIButtonAcquireImage"
-              Command="{Binding SetMediaSourceCommand}"
-              ToolTipService.ToolTip="Take a photo">
-            <Button.Content>
-              <SymbolIcon Symbol="Camera" />
-            </Button.Content>
-            <Button.CommandParameter>
-              <local:InputMediaType>AcquireImage</local:InputMediaType>
-            </Button.CommandParameter>
-          </Button>
-          <Button
-              Name="UIButtonFilePick"
-              Command="{Binding SetMediaSourceCommand}"
-              ToolTipService.ToolTip="Select an image from a file">
-            <Button.Content>
-              <SymbolIcon Symbol="OpenFile" />
-            </Button.Content>
-            <Button.CommandParameter>
-              <local:InputMediaType>FilePick</local:InputMediaType>
-            </Button.CommandParameter>
-          </Button>
-        </StackPanel>
+                    <Button
+                        Name="UIButtonLiveStream"
+                        Command="{Binding SetMediaSourceCommand}"
+                        ToolTipService.ToolTip="Camera preview">
+                        <Button.Content>
+                            <SymbolIcon Symbol="Video" />
+                        </Button.Content>
+                        <Button.CommandParameter>
+                            <local:InputMediaType>LiveStream</local:InputMediaType>
+                        </Button.CommandParameter>
+                    </Button>
+                    <Button
+                        Name="UIButtonAcquireImage"
+                        Command="{Binding SetMediaSourceCommand}"
+                        ToolTipService.ToolTip="Take a photo">
+                        <Button.Content>
+                            <SymbolIcon Symbol="Camera" />
+                        </Button.Content>
+                        <Button.CommandParameter>
+                            <local:InputMediaType>AcquireImage</local:InputMediaType>
+                        </Button.CommandParameter>
+                    </Button>
+                    <Button
+                        Name="UIButtonFilePick"
+                        Command="{Binding SetMediaSourceCommand}"
+                        ToolTipService.ToolTip="Select an image from a file">
+                        <Button.Content>
+                            <SymbolIcon Symbol="OpenFile" />
+                        </Button.Content>
+                        <Button.CommandParameter>
+                            <local:InputMediaType>FilePick</local:InputMediaType>
+                        </Button.CommandParameter>
+                    </Button>
+                </StackPanel>
 
-        <!--  Inference device  -->
-        <ToggleSwitch
-            Name="UIToggleInferenceDevice"
-            Grid.Row="1"
-            Grid.Column="2"
-            Width="100"
-            HorizontalAlignment="Center"
-            VerticalAlignment="Top"
-            HorizontalContentAlignment="Center"
-            IsOn="{Binding UseGpu, Mode=TwoWay}"
-            OffContent="CPU"
-            OnContent="GPU" />
-      </Grid>
+                <!--  Inference device  -->
+                <ToggleSwitch
+                    Name="UIToggleInferenceDevice"
+                    Grid.Row="1"
+                    Grid.Column="2"
+                    Width="100"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Top"
+                    HorizontalContentAlignment="Center"
+                    IsOn="{Binding UseGpu, Mode=TwoWay}"
+                    OffContent="CPU"
+                    OnContent="GPU" />
+            </Grid>
 
-      <!--  Input/output media display grid  -->
-      <Grid Grid.Row="1">
-        <Grid.ColumnDefinitions>
-          <ColumnDefinition Width="200*" />
-          <ColumnDefinition Width="200*" />
-        </Grid.ColumnDefinitions>
+            <!--  Input/output media display grid  -->
+            <Grid Grid.Row="1">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="200*" />
+                    <ColumnDefinition Width="200*" />
+                </Grid.ColumnDefinitions>
 
-        <!--  Inking canvas  -->
-        <Viewbox Stretch="Uniform">
-          <StackPanel
-              Name="UIInkControls"
-              Grid.Column="0"
-              Visibility="Collapsed">
-            <InkToolbar VerticalAlignment="Top" TargetInkCanvas="{x:Bind UIInkCanvasInput}" />
-            <Viewbox
-                MaxWidth="720"
-                MaxHeight="720"
-                Stretch="Uniform">
-              <Grid BorderBrush="Black" BorderThickness="1">
-                <Grid
-                    Name="UIInkGrid"
-                    MinWidth="200"
-                    MinHeight="200"
+                <!--  Inking canvas  -->
+                <Viewbox Stretch="Uniform">
+                    <StackPanel
+                        Name="UIInkControls"
+                        Grid.Column="0"
+                        Visibility="Collapsed">
+                        <InkToolbar VerticalAlignment="Top" TargetInkCanvas="{x:Bind UIInkCanvasInput}" />
+                        <Viewbox
+                            MaxWidth="720"
+                            MaxHeight="720"
+                            Stretch="Uniform">
+                            <Grid BorderBrush="Black" BorderThickness="1">
+                                <Grid
+                                    Name="UIInkGrid"
+                                    MinWidth="200"
+                                    MinHeight="200"
+                                    MaxWidth="720"
+                                    MaxHeight="720"
+                                    Background="White">
+                                    <InkCanvas Name="UIInkCanvasInput" />
+                                </Grid>
+                            </Grid>
+                        </Viewbox>
+                    </StackPanel>
+                </Viewbox>
+
+                <ContentControl
+                    Name="PreviewControl"
+                    Width="720"
+                    Height="720"
+                    Content="{Binding AppModel.OutputCaptureElement}" />
+
+                <!--  Input image preview  -->
+                <Image
+                    Name="UIInputImage"
+                    Grid.Column="0"
                     MaxWidth="720"
                     MaxHeight="720"
-                    Background="White">
-                  <InkCanvas Name="UIInkCanvasInput" />
-                </Grid>
-              </Grid>
-            </Viewbox>
-          </StackPanel>
-        </Viewbox>
+                    Source="{Binding InputSoftwareBitmapSource}"
+                    Stretch="Uniform" />
 
-        <ContentControl
-            Name="PreviewControl"
-            Width="720"
-            Height="720"
-            Content="{Binding AppModel.OutputCaptureElement}" />
+                <!--  Output image panel  -->
+                <Grid Grid.Column="1" VerticalAlignment="Stretch">
+                    <Image
+                        Name="UIResultImage"
+                        MaxWidth="720"
+                        MaxHeight="720"
+                        Source="{Binding OutputSoftwareBitmapSource}"
+                        Stretch="Uniform" />
 
-        <!--  Input image preview  -->
-        <Image
-            Name="UIInputImage"
-            Grid.Column="0"
-            MaxWidth="720"
-            MaxHeight="720"
-            Source="{Binding InputSoftwareBitmapSource}"
-            Stretch="Uniform" />
-
-        <!--  Output image panel  -->
-        <Grid Grid.Column="1" VerticalAlignment="Stretch">
-          <Image
-              Name="UIResultImage"
-              MaxWidth="720"
-              MaxHeight="720"
-              Source="{Binding OutputSoftwareBitmapSource}"
-              Stretch="Uniform" />
-
-          <!--<MediaPlayerElement
+                    <!--<MediaPlayerElement
               Name="UIOutputMediaPlayerElement"
               MaxWidth="720"
               MaxHeight="720"
@@ -254,76 +255,85 @@
               Stretch="Uniform"
               Visibility="Visible" />!-->
 
-          <Button
-              Name="UIButtonSaveImage"
-              HorizontalAlignment="Right"
-              VerticalAlignment="Bottom"
-              Background="#FF939393"
-              Command="{Binding SaveCommand}"
-              IsEnabled="true"
-              ToolTipService.ToolTip="Save the image result to a file"
-              Visibility="{Binding SaveEnabled, Converter={StaticResource BoolToVis}, Mode=OneWay}">
-            <Button.Content>
-              <SymbolIcon Symbol="Save" />
-            </Button.Content>
-          </Button>
-        </Grid>
-      </Grid>
+                    <Button
+                        Name="UIButtonSaveImage"
+                        HorizontalAlignment="Right"
+                        VerticalAlignment="Bottom"
+                        Background="#FF939393"
+                        Command="{Binding SaveCommand}"
+                        IsEnabled="true"
+                        ToolTipService.ToolTip="Save the image result to a file"
+                        Visibility="{Binding SaveEnabled, Converter={StaticResource BoolToVis}, Mode=OneWay}">
+                        <Button.Content>
+                            <SymbolIcon Symbol="Save" />
+                        </Button.Content>
+                    </Button>
+                    <Slider
+                        Width="200"
+                        HorizontalAlignment="Right"
+                        VerticalAlignment="Bottom"
+                        Maximum="{Binding MaxThreads}"
+                        Minimum="1"
+                        ToolTipService.ToolTip="Select number of swapchain entries, then restart the stream."
+                        Visibility="{Binding SaveEnabled, Converter={StaticResource InvertBoolToVis}, Mode=OneWay}"
+                        Value="{Binding NumThreads, Mode=TwoWay}" />
+                </Grid>
+            </Grid>
 
-      <!--  Camera selection controls  -->
-      <StackPanel
-          Name="UICameraSelectionControls"
-          Grid.Row="1"
-          HorizontalAlignment="Left"
-          VerticalAlignment="Bottom"
-          Orientation="vertical"
-          Visibility="{Binding AppModel.StreamingControlsVisible, Converter={StaticResource BoolToVis}, Mode=OneWay}">
-        <TextBlock Style="{StaticResource TextBlockStyling}" Text="Camera: " />
-        <ComboBox
-            Name="UICmbCamera"
-            Foreground="White"
-            ItemsSource="{Binding AppModel.CameraNamesList}"
-            SelectedIndex="{Binding AppModel.SelectedCameraIndex, Mode=TwoWay}">
-          <i:Interaction.Behaviors>
-            <core:EventTriggerBehavior EventName="SelectionChanged">
-              <core:InvokeCommandAction Command="{Binding ChangeLiveStreamCommand}" />
-            </core:EventTriggerBehavior>
-          </i:Interaction.Behaviors>
-          <ComboBox.Background>
-            <SolidColorBrush Opacity="0.3" Color="Black" />
-          </ComboBox.Background>
-        </ComboBox>
-        <!-- TODO: Add back in once have preview stream
+            <!--  Camera selection controls  -->
+            <StackPanel
+                Name="UICameraSelectionControls"
+                Grid.Row="1"
+                HorizontalAlignment="Left"
+                VerticalAlignment="Bottom"
+                Orientation="vertical"
+                Visibility="{Binding AppModel.StreamingControlsVisible, Converter={StaticResource BoolToVis}, Mode=OneWay}">
+                <TextBlock Style="{StaticResource TextBlockStyling}" Text="Camera: " />
+                <ComboBox
+                    Name="UICmbCamera"
+                    Foreground="White"
+                    ItemsSource="{Binding AppModel.CameraNamesList}"
+                    SelectedIndex="{Binding AppModel.SelectedCameraIndex, Mode=TwoWay}">
+                    <i:Interaction.Behaviors>
+                        <core:EventTriggerBehavior EventName="SelectionChanged">
+                            <core:InvokeCommandAction Command="{Binding ChangeLiveStreamCommand}" />
+                        </core:EventTriggerBehavior>
+                    </i:Interaction.Behaviors>
+                    <ComboBox.Background>
+                        <SolidColorBrush Opacity="0.3" Color="Black" />
+                    </ComboBox.Background>
+                </ComboBox>
+                <!-- TODO: Add back in once have preview stream
                   <TextBlock Style="{StaticResource TextBlockStyling}" Text="Preview resolution: " />
                   <TextBlock
                       Name="UITxtBlockPreviewProperties"
                       Style="{StaticResource TextBlockStyling}"
                       Text="0x0" />
                 !-->
-      </StackPanel>
+            </StackPanel>
 
-      <Border
-          x:Name="UIStatusBorder"
-          Grid.Row="2"
-          Background="{Binding StatusBarColor}">
-        <RelativePanel>
-          <TextBlock
-              RelativePanel.AlignVerticalCenterWithPanel="True"
-              Text="{Binding StatusMessage}"
-              TextAlignment="Center" />
-          <TextBlock
-              RelativePanel.AlignHorizontalCenterWithPanel="True"
-              RelativePanel.AlignVerticalCenterWithPanel="True"
-              Visibility="{Binding AppModel.StreamingControlsVisible, Converter={StaticResource BoolToVis}, Mode=OneWay}">
-            <Run x:Uid="TxtCapture" FontWeight="Bold" />
-            <Run Text="{Binding CaptureFPS}" />
-            <Run x:Uid="TxtRender" FontWeight="Bold" />
-            <Run FontWeight="Normal" Text="{Binding RenderFPS}" />
-          </TextBlock>
-        </RelativePanel>
-      </Border>
+            <Border
+                x:Name="UIStatusBorder"
+                Grid.Row="2"
+                Background="{Binding StatusBarColor}">
+                <RelativePanel>
+                    <TextBlock
+                        RelativePanel.AlignVerticalCenterWithPanel="True"
+                        Text="{Binding StatusMessage}"
+                        TextAlignment="Center" />
+                    <TextBlock
+                        RelativePanel.AlignHorizontalCenterWithPanel="True"
+                        RelativePanel.AlignVerticalCenterWithPanel="True"
+                        Visibility="{Binding AppModel.StreamingControlsVisible, Converter={StaticResource BoolToVis}, Mode=OneWay}">
+                        <Run x:Uid="TxtCapture" FontWeight="Bold" />
+                        <Run Text="{Binding CaptureFPS}" />
+                        <Run x:Uid="TxtRender" FontWeight="Bold" />
+                        <Run FontWeight="Normal" Text="{Binding RenderFPS}" />
+                    </TextBlock>
+                </RelativePanel>
+            </Border>
+
+        </Grid>
 
     </Grid>
-
-  </Grid>
 </Page>

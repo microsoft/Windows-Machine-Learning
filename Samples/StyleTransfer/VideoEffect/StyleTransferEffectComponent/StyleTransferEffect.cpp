@@ -9,7 +9,7 @@ using namespace winrt::Windows::Storage;
 using namespace winrt::Windows::Storage::Streams;
 using namespace concurrency;
 
-namespace winrt::StyleTransferEffectCpp::implementation
+namespace winrt::StyleTransferEffectComponent::implementation
 {
     StyleTransferEffect::StyleTransferEffect() :
         Session(nullptr)

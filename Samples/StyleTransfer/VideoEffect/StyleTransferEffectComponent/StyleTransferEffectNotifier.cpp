@@ -3,7 +3,7 @@
 #include "StyleTransferEffectNotifier.g.cpp"
 
 
-namespace winrt::StyleTransferEffectCpp::implementation
+namespace winrt::StyleTransferEffectComponent::implementation
 {
     void StyleTransferEffectNotifier::SetFrameRate(float value)
     {

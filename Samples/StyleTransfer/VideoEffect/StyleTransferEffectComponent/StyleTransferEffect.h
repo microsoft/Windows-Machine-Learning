@@ -9,7 +9,7 @@ using namespace winrt::Windows::Foundation::Collections;
 using namespace winrt::Microsoft::AI::MachineLearning;
 using namespace winrt::Windows::Media;
 
-namespace winrt::StyleTransferEffectCpp::implementation
+namespace winrt::StyleTransferEffectComponent::implementation
 {
     struct SwapChainEntry {
         LearningModelBinding binding;
@@ -52,7 +52,7 @@ namespace winrt::StyleTransferEffectCpp::implementation
     };
 }
 
-namespace winrt::StyleTransferEffectCpp::factory_implementation
+namespace winrt::StyleTransferEffectComponent::factory_implementation
 {
     struct StyleTransferEffect : StyleTransferEffectT<StyleTransferEffect, implementation::StyleTransferEffect>
     {

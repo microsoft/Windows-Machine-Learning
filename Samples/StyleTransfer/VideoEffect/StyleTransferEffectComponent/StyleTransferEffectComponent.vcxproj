@@ -8,8 +8,8 @@
     <CppWinRTGenerateWindowsMetadata>true</CppWinRTGenerateWindowsMetadata>
     <MinimalCoreWin>true</MinimalCoreWin>
     <ProjectGuid>{05dffb01-62c4-458c-be13-7a97e8583e43}</ProjectGuid>
-    <ProjectName>StyleTransferEffectCpp</ProjectName>
-    <RootNamespace>StyleTransferEffectCpp</RootNamespace>
+    <ProjectName>StyleTransferEffectComponent</ProjectName>
+    <RootNamespace>StyleTransferEffectComponent</RootNamespace>
     <DefaultLanguage>en-US</DefaultLanguage>
     <MinimumVisualStudioVersion>14.0</MinimumVisualStudioVersion>
     <AppContainerApplication>true</AppContainerApplication>
@@ -100,7 +100,7 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateWindowsMetadata>false</GenerateWindowsMetadata>
-      <ModuleDefinitionFile>StyleTransferEffectCpp.def</ModuleDefinitionFile>
+      <ModuleDefinitionFile>StyleTransferEffectComponent.def</ModuleDefinitionFile>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)'=='Debug'">
@@ -140,7 +140,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
-    <None Include="StyleTransferEffectCpp.def" />
+    <None Include="StyleTransferEffectComponent.def" />
   </ItemGroup>
   <ItemGroup>
     <None Include="PropertySheet.props" />

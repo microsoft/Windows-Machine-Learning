@@ -27,7 +27,7 @@ using Windows.System.Display;
 using Windows.UI.Core;
 using GalaSoft.MvvmLight.Threading;
 using System.Threading;
-using StyleTransferEffectCpp;
+using StyleTransferEffectComponent;
 using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.Devices.Enumeration;
 
@@ -41,7 +41,7 @@ namespace StyleTransfer
         private DisplayRequest _displayrequest = new DisplayRequest();
         DeviceInformationCollection _devices;
         private readonly object _processLock = new object();
-        StyleTransferEffectCpp.StyleTransferEffectNotifier _notifier;
+        StyleTransferEffectComponent.StyleTransferEffectNotifier _notifier;
 
         // Style transfer effect properties
         private LearningModel _learningModel = null;
@@ -51,7 +51,7 @@ namespace StyleTransfer
         private string _inputImageDescription;
         private string _outputImageDescription;
         // Activatable Class ID of the video effect. 
-        private const string StyleTransferEffectId = "StyleTransferEffectCpp.StyleTransferEffect";
+        private const string StyleTransferEffectId = "StyleTransferEffectComponent.StyleTransferEffect";
 
         // Image style transfer properties
         uint _inWidth, _inHeight, _outWidth, _outHeight;
@@ -75,7 +75,7 @@ namespace StyleTransfer
             _outputSoftwareBitmapSource = new SoftwareBitmapSource();
             _saveEnabled = true;
 
-            _notifier = new StyleTransferEffectCpp.StyleTransferEffectNotifier();
+            _notifier = new StyleTransferEffectComponent.StyleTransferEffectNotifier();
             _notifier.FrameRateUpdated += async (_, e) =>
             {
                 await DispatcherHelper.RunAsync(() =>

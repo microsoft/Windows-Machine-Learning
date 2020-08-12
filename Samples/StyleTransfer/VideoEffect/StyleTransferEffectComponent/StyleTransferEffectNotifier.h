@@ -1,7 +1,7 @@
 #pragma once
 #include "StyleTransferEffectNotifier.g.h"
 
-namespace winrt::StyleTransferEffectCpp::implementation
+namespace winrt::StyleTransferEffectComponent::implementation
 {
     struct StyleTransferEffectNotifier : StyleTransferEffectNotifierT<StyleTransferEffectNotifier>
     {
@@ -15,7 +15,7 @@ namespace winrt::StyleTransferEffectCpp::implementation
     };
 }
 
-namespace winrt::StyleTransferEffectCpp::factory_implementation
+namespace winrt::StyleTransferEffectComponent::factory_implementation
 {
     struct StyleTransferEffectNotifier : StyleTransferEffectNotifierT<StyleTransferEffectNotifier, implementation::StyleTransferEffectNotifier>
     {

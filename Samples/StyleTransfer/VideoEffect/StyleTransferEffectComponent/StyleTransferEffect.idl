@@ -1,4 +1,4 @@
-namespace StyleTransferEffectCpp
+namespace StyleTransferEffectComponent
 {
     [default_interface]
     runtimeclass StyleTransferEffect : Windows.Media.Effects.IBasicVideoEffect

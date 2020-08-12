@@ -19,7 +19,7 @@
     <ClInclude Include="StyleTransferEffectNotifier.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="StyleTransferEffectCpp.def" />
+    <None Include="StyleTransferEffectComponent.def" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>

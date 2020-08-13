@@ -57,9 +57,9 @@ namespace winrt::StyleTransferEffectComponent::implementation
             {
                 std::lock_guard<mutex> guard{ Processing };
                 currentBinding->binding.Bind(InputImageDescription, input);
-                std::rotate(bindings.begin(), bindings.begin() + 1, bindings.end());
-                finishedFrameIndex = (finishedFrameIndex - 1 + swapChainEntryCount) % swapChainEntryCount;
             }
+            std::rotate(bindings.begin(), bindings.begin() + 1, bindings.end());
+            finishedFrameIndex = (finishedFrameIndex - 1 + swapChainEntryCount) % swapChainEntryCount;
             currentBinding->activetask = Session.EvaluateAsync(
                 currentBinding->binding,
                 std::to_wstring(swapChainIndex).c_str());

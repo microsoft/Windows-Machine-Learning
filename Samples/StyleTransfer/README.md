@@ -22,6 +22,7 @@ To learn more about creating custom video effects, see [this walkthrough](https:
     Open the Visual Studio (.sln) file.
 9. In the Solution Explorer, right-click on the References tab and select "Add Reference..." 
 10. Click Browse and navigate to the .winmd file you built in the previous section (eg. StyleTransferEffectCpp/x64/Debug/StyleTransferEffectCpp.winmd). Click OK. 
+11. In the solution explorer, select the **package.appxmanifest** file. Select the the **Visual Assets** tab and select **Assets\logo.png**. Set the destination to **Assets**, generate all assets and scale options, and hit generate.
 11. You should now be able to run the sample app!
 
 ## Requirements

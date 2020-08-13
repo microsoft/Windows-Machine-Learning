@@ -98,6 +98,7 @@ namespace StyleTransfer
                 return _appModel;
             }
         }
+
         private int _numThreads;
         public int NumThreads
         {
@@ -118,6 +119,7 @@ namespace StyleTransfer
                 return 10;
             }
         }
+
         private float _renderFPS;
         public float RenderFPS
         {
@@ -159,6 +161,7 @@ namespace StyleTransfer
                 OnPropertyChanged();
             }
         }
+
         private SoftwareBitmapSource _outputSoftwareBitmapSource;
         public SoftwareBitmapSource OutputSoftwareBitmapSource
         {
@@ -172,6 +175,7 @@ namespace StyleTransfer
                 OnPropertyChanged();
             }
         }
+
         private bool _saveEnabled;
         public bool SaveEnabled
         {
@@ -208,6 +212,7 @@ namespace StyleTransfer
                 OnPropertyChanged("StatusBarColor");
             }
         }
+
         private bool _useGpu;
         public bool UseGpu
         {
@@ -225,6 +230,7 @@ namespace StyleTransfer
                 OnPropertyChanged();
             }
         }
+
         // Command defintions
         public ICommand SaveCommand { get; set; }
         public ICommand SetMediaSourceCommand { get; set; }

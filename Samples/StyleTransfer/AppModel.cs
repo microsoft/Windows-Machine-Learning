@@ -93,6 +93,7 @@ namespace StyleTransfer
                 OnPropertyChanged();
             }
         }
+
         // MediaSource for transformed media
         private CaptureElement _outputCaptureElement;
         public CaptureElement OutputCaptureElement
@@ -145,7 +146,6 @@ namespace StyleTransfer
                 return _inputMedia == InputMediaType.LiveStream;
             }
         }
-
 
         public event PropertyChangedEventHandler PropertyChanged;
         private void OnPropertyChanged([CallerMemberName] string propertyName = null)

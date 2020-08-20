@@ -14,7 +14,7 @@ fn main() -> winrt::Result<()> {
 
     let binding = LearningModelBinding::create_from_session(&session)?;
 
-    let file = StorageFile::get_file_from_path_async("./kitten_224.png")?.get()?;
+    let file = StorageFile::get_file_from_path_async("D:\\samples\\Samples\\RustSqueezenet\\target\\debug\\kitten_224.png")?.get()?;
     let stream = file.open_async(FileAccessMode::Read)?.get()?;
     let decoder = BitmapDecoder::create_async(&stream)?.get()?;
     let software_bitmap = decoder.get_software_bitmap_async()?.get()?;
@@ -38,8 +38,7 @@ fn print_results(results: windows::foundation::collections::IVectorView<f32>) ->
         let result = (results.get_at(i)?, i);
         sorted_results.push(result);
     }
-    sorted_results.sort_by(|a, b| a.0.partial_cmp(&b.0).unwrap());
-    sorted_results.reverse();
+    sorted_results.sort_by(|a, b| b.0.partial_cmp(&a.0).unwrap());
     
     // Display the result
     for i in 0..3 {

@@ -1,6 +1,6 @@
 [submodule "Tools/WinML-Dashboard/deps/Netron"]
 	path = Tools/WinMLDashboard/deps/Netron
 	url = https://github.com/lutzroeder/Netron.git
-[submodule ".\\Samples\\RustSqueezenet\\winrt-rs"]
-	path = .\\Samples\\RustSqueezenet\\winrt-rs
+[submodule "Samples/RustSqueezenet/winrt-rs"]
+	path = Samples/RustSqueezenet/winrt-rs
 	url = https://github.com/microsoft/winrt-rs.git

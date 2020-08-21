@@ -30,6 +30,7 @@ fn main() -> winrt::Result<()> {
     Ok(())
 }
 
+// Print the evaluation results.
 fn print_results(results: windows::foundation::collections::IVectorView<f32>) -> winrt::Result<()> {
     let labels = load_labels()?;
     let mut sorted_results : std::vec::Vec<(f32,u32)> = Vec::new();
@@ -39,24 +40,26 @@ fn print_results(results: windows::foundation::collections::IVectorView<f32>) ->
     }
     sorted_results.sort_by(|a, b| b.0.partial_cmp(&a.0).unwrap());
     
-    // Display the result
+    // Display the top results
     for i in 0..3 {
         println!("  {} {}", labels[sorted_results[i].1 as usize], sorted_results[i].0)
     }
     Ok(())
 }
 
+// Return the path of the current directory of the executable
 fn get_current_dir() -> winrt::Result<String> {
     use std::io::Error;
     use std::env;
     let current_exe = match env::current_exe() {
         Ok(val) => val,
-        Err(_err) => return Err(winrt::Error::new(winrt::ErrorCode(Error::last_os_error().raw_os_error().unwrap() as u32), "Failed to get current working directory of executable.")),
+        Err(_err) => return Err(winrt::Error::new(winrt::ErrorCode(Error::last_os_error().raw_os_error().unwrap() as u32), "Failed to get current directory of executable.")),
     };
     let current_dir = current_exe.parent().unwrap();
     Ok(current_dir.display().to_string())
 }
 
+// Load all the SqueezeNet labeels and return in a vector of Strings.
 fn load_labels() -> winrt::Result<std::vec::Vec<String>> {
     use std::fs::File;
     use std::io::{prelude::*, BufReader};
@@ -83,6 +86,7 @@ fn load_labels() -> winrt::Result<std::vec::Vec<String>> {
     Ok(labels)
 }
 
+// load image file given a path and return Videoframe
 fn load_image_file(image_file_path: String) -> winrt::Result<windows::media::VideoFrame> {
     use windows::graphics::imaging::*;
     use windows::media::*;

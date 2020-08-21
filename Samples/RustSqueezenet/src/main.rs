@@ -1,4 +1,14 @@
 include!(concat!(env!("OUT_DIR"), "/winrt.rs"));
+
+macro_rules! handle_io_error_as_winrt_error {
+    ($expression:expr, $error_message:expr) => {
+        match $expression {
+            Ok(val) => val,
+            Err(_err) => return Err(winrt::Error::new(winrt::ErrorCode(Error::last_os_error().raw_os_error().unwrap() as u32), $error_message)),
+        }
+    }
+}
+
 fn main() -> winrt::Result<()> {
     use microsoft::ai::machine_learning::*;
     use winrt::ComInterface;
@@ -49,34 +59,25 @@ fn print_results(results: windows::foundation::collections::IVectorView<f32>) ->
 
 // Return the path of the current directory of the executable
 fn get_current_dir() -> winrt::Result<String> {
-    use std::io::Error;
     use std::env;
-    let current_exe = match env::current_exe() {
-        Ok(val) => val,
-        Err(_err) => return Err(winrt::Error::new(winrt::ErrorCode(Error::last_os_error().raw_os_error().unwrap() as u32), "Failed to get current directory of executable.")),
-    };
+    use std::io::Error;
+    let current_exe = handle_io_error_as_winrt_error!(env::current_exe(), "Failed to get current directory of executable.");
     let current_dir = current_exe.parent().unwrap();
     Ok(current_dir.display().to_string())
 }
 
 // Load all the SqueezeNet labeels and return in a vector of Strings.
 fn load_labels() -> winrt::Result<std::vec::Vec<String>> {
+    use std::io::Error;
     use std::fs::File;
     use std::io::{prelude::*, BufReader};
-    use std::io::Error;
 
     let mut labels : std::vec::Vec<String> = Vec::new();
     let labels_file_path = get_current_dir()? + "\\Labels.txt";
-    let file = match File::open(labels_file_path) {
-        Ok(val) => val,
-        Err(_err) => return Err(winrt::Error::new(winrt::ErrorCode(Error::last_os_error().raw_os_error().unwrap() as u32), "Failed to load labels.")),
-    };
+    let file = handle_io_error_as_winrt_error!(File::open(labels_file_path), "Failed to load labels.");
     let reader = BufReader::new(file);
     for line in reader.lines() {
-        let line_str = match line {
-                Ok(val)=> val,
-                Err(_err) => return Err(winrt::Error::new(winrt::ErrorCode(Error::last_os_error().raw_os_error().unwrap() as u32), "Failed to read lines.")),
-        };
+        let line_str = handle_io_error_as_winrt_error!(line,"Failed to read lines.");
         let mut tokenized_line: Vec<&str> = line_str.split(',').collect();
         let index = tokenized_line[0].parse::<usize>().unwrap();
         labels.resize(index+1, "".to_string());

@@ -9,13 +9,12 @@ Note: SqueezeNet was trained to work with image sizes of 224x224, so you must pr
   - ```cargo install --git https://github.com/microsoft/winrt-rs cargo-winrt```
 
 ## Build and Run the sample
-1. If you downloaded the samples ZIP, be sure to unzip the entire archive, not just the folder with the sample you want to build.
-2. This project requires Rust 1.46 which isn't release yet. Rust beta features need to be enabled by running the following commands through command prompt in this current project directory after installation of Rustup :
+1. This project requires Rust 1.46, which is currently in Beta. Rust release dates can be found [here](https://forge.rust-lang.org/). Rust Beta features can be enabled by running the following commands through command prompt in this current project directory after installation of Rustup :
     - ``` rustup install beta ```
     - ``` rustup override set beta ```
-3. Build the sample with this command: ``` cargo winrt build ```
-4. Copy collateral into target folder (models and input images) by running ```copy_collateral.bat``` file through the command prompt.
-5. Run the sample by running this command through the command prompt. ``` cargo winrt run ```
+2. Install the WinRT nuget dependencies with this command: ``` cargo winrt install ```
+3. Build the project by running ```cargo build``` for debug and ```cargo build --release``` for release.
+4. Run the sample by running this command through the command prompt. ``` cargo winrt run ```
     - Another option would be to run the executable directly. Should be ```<git enlistment>\Samples\RustSqueezeNet\target\debug\rust_squeezenet.exe```
 
 ## Sample output

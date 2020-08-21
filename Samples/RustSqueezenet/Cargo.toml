@@ -6,6 +6,7 @@ edition = "2018"
 
 [dependencies]
 winrt = { path = "./winrt-rs" }
+# NOTE: winrt_macros is needed as a dependency because Rust 1.46 is needed and hasn't been released yet.
 winrt_macros = { git = "https://github.com/microsoft/winrt-rs",  version = "0.7.2" }
 
 [build-dependencies]

@@ -18,7 +18,6 @@ Note: SqueezeNet was trained to work with image sizes of 224x224, so you must pr
   4. When the extension has finished installing, re-open Visual Studio.
 
 ## Build the sample
-
 1. If you download the samples ZIP, be sure to unzip the entire archive, not just the folder with the sample you want to build.
 2. Start Microsoft Visual Studio 2017 and select **File > Open > Project/Solution**.
 3. Starting in the folder where you unzipped the samples, go to the **Samples** subfolder, then the subfolder for this specific sample (**SqueezeNetObjectDetection\Desktop\cpp**). Double-click the Visual Studio solution file (.sln).

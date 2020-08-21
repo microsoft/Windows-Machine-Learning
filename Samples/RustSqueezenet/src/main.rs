@@ -12,7 +12,7 @@ fn main() -> winrt::Result<()> {
     println!("Creating session");
     let session = LearningModelSession::create_from_model_on_device(learning_model, device)?;
 
-    let image_file_path = get_current_dir()? + "\\fish.png";
+    let image_file_path = get_current_dir()? + "\\kitten_224.png";
     println!("Loading image file {}", image_file_path);
     let input_image_videoframe = load_image_file(image_file_path)?;
     let input_image_feature_value = ImageFeatureValue::create_from_video_frame(input_image_videoframe)?;
@@ -25,6 +25,7 @@ fn main() -> winrt::Result<()> {
     let result_lookup = results.outputs()?.lookup("softmaxout_1")?;
     let result_itensor_float : ITensorFloat = result_lookup.try_query()?;
     let result_vector_view = result_itensor_float.get_as_vector_view()?;
+    println!("Results:");
     print_results(result_vector_view)?;
     Ok(())
 }
@@ -40,7 +41,7 @@ fn print_results(results: windows::foundation::collections::IVectorView<f32>) ->
     
     // Display the result
     for i in 0..3 {
-        println!("{} {}", labels[sorted_results[i].1 as usize], sorted_results[i].0)
+        println!("  {} {}", labels[sorted_results[i].1 as usize], sorted_results[i].0)
     }
     Ok(())
 }

@@ -12,6 +12,7 @@ winrt_macros = { git = "https://github.com/microsoft/winrt-rs",  version = "0.7.
 [build-dependencies]
 winrt = { path = "./winrt-rs" }
 
+# Nuget packages
 [package.metadata.winrt.dependencies]
 "Microsoft.Windows.SDK.Contracts" = "10.0.19041.1"
-"Microsoft.AI.MachineLearning" = "1.3.0"
+"Microsoft.AI.MachineLearning" = "1.4.0"

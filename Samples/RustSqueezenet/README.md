@@ -14,7 +14,7 @@ Note: SqueezeNet was trained to work with image sizes of 224x224, so you must pr
     - ``` rustup install beta ```
     - ``` rustup override set beta ```
 3. Build the sample with this command: ``` cargo winrt build ```
-4. Copy collateral into target folder (models and input images) by running "copy_collateral.bat" file through the command prompt.
+4. Copy collateral into target folder (models and input images) by running ```copy_collateral.bat``` file through the command prompt.
 5. Run the sample by running this command through the command prompt. ``` cargo winrt run ```
     - Another option would be to run the executable directly. Should be ```<git enlistment>\Samples\RustSqueezeNet\target\debug\rust_squeezenet.exe```
 

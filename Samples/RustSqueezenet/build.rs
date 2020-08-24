@@ -13,13 +13,13 @@ fn copy_resources() {
     let profile = std::env::var("PROFILE").unwrap();
     if profile == "debug" {
         copy_file!("..\\..\\SharedContent\\media\\fish.png",".\\target\\debug\\fish.png");
-        copy_file!("..\\..\\SharedContent\\media\\fish.png",".\\target\\debug\\kitten_224.png");
+        copy_file!("..\\..\\SharedContent\\media\\kitten_224.png",".\\target\\debug\\kitten_224.png");
         copy_file!("..\\..\\SharedContent\\models\\SqueezeNet.onnx",".\\target\\debug\\SqueezeNet.onnx");
         copy_file!("..\\SqueezeNetObjectDetection\\Desktop\\cpp\\Labels.txt",".\\target\\debug\\Labels.txt");
     }
     else if profile == "release" {
         copy_file!("..\\..\\SharedContent\\media\\fish.png",".\\target\\release\\fish.png");
-        copy_file!("..\\..\\SharedContent\\media\\fish.png",".\\target\\release\\kitten_224.png");
+        copy_file!("..\\..\\SharedContent\\media\\kitten_224.png",".\\target\\release\\kitten_224.png");
         copy_file!("..\\..\\SharedContent\\models\\SqueezeNet.onnx",".\\target\\release\\SqueezeNet.onnx");
         copy_file!("..\\SqueezeNetObjectDetection\\Desktop\\cpp\\Labels.txt",".\\target\\release\\Labels.txt");
     }

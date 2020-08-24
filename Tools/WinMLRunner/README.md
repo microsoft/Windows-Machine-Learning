@@ -271,7 +271,7 @@ First Iteration Performance (load, bind, session creation, and evaluate):
  ```
 logman start winml -ets -o winmllog.etl -nb 128 640 -bs 128
 logman update trace  winml -p {BCAD6AEE-C08D-4F66-828C-4C43461A033D} 0xffffffffffffffff 0xff -ets         
-WinMLRunner.exe -model C:\Repos\Windows-Machine-Learning\SharedContent\models\SqueezeNet.onnx -debug
+WinMLRunner.exe -model C:\Repos\Windows-Machine-Learning\SharedContent\models\SqueezeNet.onnx -DebugEvaluate
 logman stop winml -ets
  ```
 The winmllog.etl file will appear in the same directory as the WinMLRunner.exe. 

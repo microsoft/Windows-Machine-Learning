@@ -1,12 +1,3 @@
-winrt::build!(
-    dependencies
-        nuget: Microsoft.Windows.SDK.Contracts
-        nuget: Microsoft.AI.MachineLearning
-    types
-        microsoft::ai::machine_learning::*
-        windows::graphics::imaging::*
-);
-
 macro_rules! copy_file {
     ($file:expr, $destination:expr) => {
         match fs::copy($file,
@@ -35,6 +26,10 @@ fn copy_resources() {
 }
 
 fn main() {
-    build();
+    winrt::build!(
+        types
+            microsoft::ai::machine_learning::*
+            windows::graphics::imaging::*
+    );
     copy_resources();
 }

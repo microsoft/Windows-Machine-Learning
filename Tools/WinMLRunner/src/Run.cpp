@@ -7,6 +7,7 @@
 #include <Windows.Graphics.DirectX.Direct3D11.interop.h>
 #include "Scenarios.h"
 #include <winrt/Windows.Foundation.Metadata.h>
+
 using namespace winrt::Windows::Graphics::DirectX::Direct3D11;
 using namespace winrt::Windows::Foundation::Metadata;
 std::vector<ILearningModelFeatureValue> GenerateInputFeatures(const LearningModel& model, const CommandLineArgs& args,

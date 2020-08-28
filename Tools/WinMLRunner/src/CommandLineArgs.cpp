@@ -8,8 +8,6 @@
 #include <codecvt>
 #include "Filehelper.h"
 
-using namespace Windows::AI::MachineLearning;
-
 void CommandLineArgs::PrintUsage()
 {
     std::cout << "WinML Runner" << std::endl;

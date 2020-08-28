@@ -22,8 +22,6 @@
 #include <cassert>
 #include <fstream>
 #include <dxgi1_6.h>
-#include "TypeHelper.h"
-#include "TimerHelper.h"
 #include "DirectXPackedVector.h"
 
 #ifndef BLOCK_DXCORE

@@ -11,7 +11,7 @@
 #include <Windows.Graphics.DirectX.Direct3D11.interop.h>
 #include <filesystem>
 #include <queue>
-
+#include "TimerHelper.h"
 #if defined(_AMD64_)
 // PIX markers only work on amd64
 #include <DXProgrammableCapture.h>

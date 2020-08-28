@@ -7,7 +7,6 @@
 #include <filesystem>
 #include <codecvt>
 #include "Filehelper.h"
-
 void CommandLineArgs::PrintUsage()
 {
     std::cout << "WinML Runner" << std::endl;

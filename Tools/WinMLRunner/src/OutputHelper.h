@@ -1,10 +1,9 @@
 #if defined(_AMD64_)
 // PIX markers only work on amd64
 #include <DXProgrammableCapture.h>
+#endif
 #include "TimerHelper.h"
 #include "LearningModelDeviceHelper.h"
-#endif
-
 // Stores performance information and handles output to the command line and CSV files.
 class OutputHelper
 {
@@ -60,8 +59,9 @@ public:
     static void ProcessTensorResult(const CommandLineArgs& args, const void* buffer, const uint32_t uCapacity,
                                     std::vector<std::pair<float, int>>& maxValues, std::ofstream& fout, unsigned int k);
     // PIX markers only work on amd64
+#if defined(_AMD64_)
     com_ptr<IDXGraphicsAnalysis>& GetGraphicsAnalysis() { return m_graphicsAnalysis; }
-
+#endif
 private:
     std::vector<double> m_clockLoadTimes;
     std::vector<double> m_clockBindTimes;

@@ -44,7 +44,9 @@
     <ClCompile Include="src/dllload.cpp" />
     <ClCompile Include="src/Filehelper.cpp" />
     <ClCompile Include="src/Run.cpp" />
+    <ClCompile Include="src\BindingUtilities.cpp" />
     <ClCompile Include="src\LearningModelDeviceHelper.cpp" />
+    <ClCompile Include="src\OutputHelper.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

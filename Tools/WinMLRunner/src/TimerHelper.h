@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Common.h"
-#include <windows.h>
 #include <cmath>
 #ifndef DISABLE_GPU_COUNTERS
 #include <Pdh.h>

@@ -1,7 +1,7 @@
 #pragma once
 #include "Common.h"
 
-using namespace winrt::Windows::AI::MachineLearning;
+using namespace winrt::Microsoft::AI::MachineLearning;
 using namespace winrt::Windows::Graphics::DirectX;
 using namespace winrt::Windows::Graphics::Imaging;
 

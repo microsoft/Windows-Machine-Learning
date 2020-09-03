@@ -7,7 +7,7 @@
 #include "ThreadPool.h"
 
 using namespace winrt;
-using namespace winrt::Windows::AI::MachineLearning;
+using namespace winrt::Microsoft::AI::MachineLearning;
 
 void load_model(const std::wstring& path, bool print_info)
 {

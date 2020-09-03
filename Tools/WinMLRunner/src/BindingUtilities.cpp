@@ -11,7 +11,7 @@
 using namespace winrt::Windows::Media;
 using namespace winrt::Windows::Storage;
 using namespace winrt::Windows::Storage::Streams;
-using namespace winrt::Windows::AI::MachineLearning;
+using namespace winrt::Microsoft::AI::MachineLearning;
 using namespace winrt::Windows::Foundation::Collections;
 using namespace winrt::Windows::Graphics::DirectX;
 using namespace winrt::Windows::Graphics::Imaging;
@@ -603,7 +603,7 @@ namespace BindingUtilities
                     HANDLE directEvent = CreateEvent(nullptr, FALSE, FALSE, nullptr);
 
                     // Create Fence
-                    Microsoft::WRL::ComPtr<ID3D12Fence> spDirectFence = nullptr;
+                    ::Microsoft::WRL::ComPtr<ID3D12Fence> spDirectFence = nullptr;
                     THROW_IF_FAILED(pD3D12Device->CreateFence(0, D3D12_FENCE_FLAG_NONE,
                                                               IID_PPV_ARGS(spDirectFence.ReleaseAndGetAddressOf())));
                     // Adds fence to queue

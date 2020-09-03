@@ -4,9 +4,6 @@
     <ClCompile Include="src/CommandLineArgs.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src/dllload.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="src/Filehelper.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>

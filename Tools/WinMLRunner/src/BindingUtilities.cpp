@@ -1,4 +1,3 @@
-﻿#pragma once
 #include "d3dx12.h"
 #include <random>
 #include <time.h>

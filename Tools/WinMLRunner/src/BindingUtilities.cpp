@@ -11,7 +11,11 @@
 using namespace winrt::Windows::Media;
 using namespace winrt::Windows::Storage;
 using namespace winrt::Windows::Storage::Streams;
+#ifdef USE_WINML_NUGET
 using namespace winrt::Microsoft::AI::MachineLearning;
+#else
+using namespace winrt::Windows::AI::MachineLearning;
+#endif
 using namespace winrt::Windows::Foundation::Collections;
 using namespace winrt::Windows::Graphics::DirectX;
 using namespace winrt::Windows::Graphics::Imaging;

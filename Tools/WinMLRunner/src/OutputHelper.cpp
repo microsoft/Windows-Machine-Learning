@@ -15,7 +15,11 @@
 #include "LearningModelDeviceHelper.h"
 #include "OutputHelper.h"
 
+#ifdef USE_WINML_NUGET
 using namespace winrt::Microsoft::AI::MachineLearning;
+#else
+using namespace winrt::Windows::AI::MachineLearning;
+#endif
 using namespace winrt::Windows::Storage::Streams;
 using namespace ::Windows::Graphics::DirectX::Direct3D11;
 using namespace winrt::Windows::Graphics::DirectX::Direct3D11;

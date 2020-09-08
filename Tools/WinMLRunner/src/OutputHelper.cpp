@@ -1,4 +1,3 @@
-#pragma once
 #include "Common.h"
 #include "CommandLineArgs.h"
 #include <fstream>

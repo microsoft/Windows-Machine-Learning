@@ -286,9 +286,8 @@ tracerpt.exe winmllog.etl -o logdump.csv -of CSV
 2. Windows Performance Analyzer (from Visual Studio)
  * Launch Windows Performance Analyzer and open the winmllog.etl.
 
-## Dynamic DLL Loading
-
-If you want to run WinMLRunner with another version of WinML (e.g. comparing the performance with an older version or testing a newer version), simply place the `windows.ai.machinelearning.dll` and `directml.dll` files in the same folder as WinMLRunner.exe. WinMLRunner will look for for these DLLs first and fall back to `C:/Windows/System32` if it doesn't find them.
+## Using Microsoft.AI.Machinelearning Nuget
+WinMLRunner can be built to use WinML's nuget package : Microsoft.AI.Machinelearning Nuget. Simply build with the target configuration "Debug_Nuget" or "Release_Nuget". MicrosoftMLRunner.exe will be created and will use ```Microsoft.AI.MachineLearning.dll``` in the immediate directory of the executuble instead of loading ```Windows.AI.MachineLearning.dll``` from System32. MicrosoftMLRunner is useful to compare performance with an older version or testing a newer version of WinML's nuget. For more information, please reference [Microsoft.AI.MachineLearning nuget page](https://www.nuget.org/packages/Microsoft.AI.MachineLearning).
 
 ## Known issues
 

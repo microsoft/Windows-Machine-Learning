@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="packages\Microsoft.Windows.CppWinRT.2.0.200729.8\build\native\Microsoft.Windows.CppWinRT.props" Condition="Exists('packages\Microsoft.Windows.CppWinRT.2.0.200729.8\build\native\Microsoft.Windows.CppWinRT.props')" />
   <Import Project="packages\Microsoft.AI.MachineLearning.1.4.0\build\native\Microsoft.AI.MachineLearning.props" Condition="Exists('packages\Microsoft.AI.MachineLearning.1.4.0\build\native\Microsoft.AI.MachineLearning.props')" />
+  <Import Project="packages\Microsoft.Windows.CppWinRT.2.0.200729.8\build\native\Microsoft.Windows.CppWinRT.props" Condition="Exists('packages\Microsoft.Windows.CppWinRT.2.0.200729.8\build\native\Microsoft.Windows.CppWinRT.props')" />
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug_Nuget|Win32">
       <Configuration>Debug_Nuget</Configuration>
@@ -198,8 +198,7 @@
       <PrecompiledHeaderOutputFile />
       <LanguageStandard>stdcpp17</LanguageStandard>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
-      <AdditionalIncludeDirectories>
-      </AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -224,8 +223,7 @@
       </PrecompiledHeaderOutputFile>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
-      <AdditionalIncludeDirectories>
-      </AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -245,8 +243,7 @@
       <PrecompiledHeaderFile />
       <PrecompiledHeaderOutputFile />
       <LanguageStandard>stdcpp17</LanguageStandard>
-      <AdditionalIncludeDirectories>
-      </AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -266,8 +263,7 @@
       <PrecompiledHeaderOutputFile>
       </PrecompiledHeaderOutputFile>
       <LanguageStandard>stdcpp17</LanguageStandard>
-      <AdditionalIncludeDirectories>
-      </AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -285,8 +281,7 @@
       <LanguageStandard>stdcpp17</LanguageStandard>
       <PrecompiledHeaderFile />
       <PrecompiledHeaderOutputFile />
-      <AdditionalIncludeDirectories>
-      </AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -306,8 +301,7 @@
       </PrecompiledHeaderFile>
       <PrecompiledHeaderOutputFile>
       </PrecompiledHeaderOutputFile>
-      <AdditionalIncludeDirectories>
-      </AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -328,8 +322,7 @@
       <PrecompiledHeaderFile />
       <PrecompiledHeaderOutputFile />
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
-      <AdditionalIncludeDirectories>
-      </AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -354,8 +347,7 @@
       <PrecompiledHeaderOutputFile>
       </PrecompiledHeaderOutputFile>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
-      <AdditionalIncludeDirectories>
-      </AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -366,16 +358,16 @@
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
-    <Import Project="packages\Microsoft.AI.MachineLearning.1.4.0\build\native\Microsoft.AI.MachineLearning.targets" Condition="Exists('packages\Microsoft.AI.MachineLearning.1.4.0\build\native\Microsoft.AI.MachineLearning.targets')" />
     <Import Project="packages\Microsoft.Windows.CppWinRT.2.0.200729.8\build\native\Microsoft.Windows.CppWinRT.targets" Condition="Exists('packages\Microsoft.Windows.CppWinRT.2.0.200729.8\build\native\Microsoft.Windows.CppWinRT.targets')" />
+    <Import Project="packages\Microsoft.AI.MachineLearning.1.4.0\build\native\Microsoft.AI.MachineLearning.targets" Condition="Exists('packages\Microsoft.AI.MachineLearning.1.4.0\build\native\Microsoft.AI.MachineLearning.targets')" />
   </ImportGroup>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
-    <Error Condition="!Exists('packages\Microsoft.AI.MachineLearning.1.4.0\build\native\Microsoft.AI.MachineLearning.props')" Text="$([System.String]::Format('$(ErrorText)', 'packages\Microsoft.AI.MachineLearning.1.4.0\build\native\Microsoft.AI.MachineLearning.props'))" />
-    <Error Condition="!Exists('packages\Microsoft.AI.MachineLearning.1.4.0\build\native\Microsoft.AI.MachineLearning.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\Microsoft.AI.MachineLearning.1.4.0\build\native\Microsoft.AI.MachineLearning.targets'))" />
     <Error Condition="!Exists('packages\Microsoft.Windows.CppWinRT.2.0.200729.8\build\native\Microsoft.Windows.CppWinRT.props')" Text="$([System.String]::Format('$(ErrorText)', 'packages\Microsoft.Windows.CppWinRT.2.0.200729.8\build\native\Microsoft.Windows.CppWinRT.props'))" />
     <Error Condition="!Exists('packages\Microsoft.Windows.CppWinRT.2.0.200729.8\build\native\Microsoft.Windows.CppWinRT.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\Microsoft.Windows.CppWinRT.2.0.200729.8\build\native\Microsoft.Windows.CppWinRT.targets'))" />
+    <Error Condition="!Exists('packages\Microsoft.AI.MachineLearning.1.4.0\build\native\Microsoft.AI.MachineLearning.props')" Text="$([System.String]::Format('$(ErrorText)', 'packages\Microsoft.AI.MachineLearning.1.4.0\build\native\Microsoft.AI.MachineLearning.props'))" />
+    <Error Condition="!Exists('packages\Microsoft.AI.MachineLearning.1.4.0\build\native\Microsoft.AI.MachineLearning.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\Microsoft.AI.MachineLearning.1.4.0\build\native\Microsoft.AI.MachineLearning.targets'))" />
   </Target>
 </Project>

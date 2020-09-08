@@ -2,7 +2,11 @@
 #include "d3dx12.h"
 #include <random>
 #include <time.h>
+#ifdef USE_WINML_NUGET
+#include "Microsoft.AI.Machinelearning.Native.h"
+#else
 #include "Windows.AI.Machinelearning.Native.h"
+#endif
 #include "MemoryBuffer.h"
 #include "TypeHelper.h"
 #include "CommandLineArgs.h"

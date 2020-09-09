@@ -1,7 +1,11 @@
 #pragma once
 #include "Common.h"
 
+#ifdef USE_WINML_NUGET
+using namespace winrt::Microsoft::AI::MachineLearning;
+#else
 using namespace winrt::Windows::AI::MachineLearning;
+#endif
 using namespace winrt::Windows::Graphics::DirectX;
 using namespace winrt::Windows::Graphics::Imaging;
 

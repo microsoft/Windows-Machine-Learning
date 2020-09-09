@@ -1,12 +1,12 @@
-#include "LearningModelDeviceHelper.h"
-#include "TypeHelper.h"
-#include "Common.h"
 #include "d3d11.h"
 #include "d3dx12.h"
+#include "LearningModelDeviceHelper.h"
+#include "Common.h"
 #include <Windows.Graphics.DirectX.Direct3D11.interop.h>
 #include "Windows.AI.MachineLearning.Native.h"
 #include <codecvt>
 #include "OutputHelper.h"
+#include "TypeHelper.h"
 using namespace winrt::Windows::Graphics::DirectX::Direct3D11;
 
 #ifdef DXCORE_SUPPORTED_BUILD

@@ -7,17 +7,26 @@
 #include <filesystem>
 #include <codecvt>
 #include "Filehelper.h"
-
-using namespace Windows::AI::MachineLearning;
-
 void CommandLineArgs::PrintUsage()
 {
+#ifdef USE_WINML_NUGET
+    std::cout << "MicrosoftML Runner" << std::endl;
+#else
     std::cout << "WinML Runner" << std::endl;
+#endif
     std::cout << " ---------------------------------------------------------------" << std::endl;
-    std::cout << "WinmlRunner.exe <-model | -folder> <fully qualified path> [options]" << std::endl;
+#ifdef USE_WINML_NUGET
+    std::cout << "MicrosoftMLRunner.exe <-model | -folder> <fully qualified path> [options]" << std::endl;
+#else
+    std::cout << "WinMLRunner.exe <-model | -folder> <fully qualified path> [options]" << std::endl;
+#endif
     std::cout << std::endl;
     std::cout << "options: " << std::endl;
+#ifdef USE_WINML_NUGET
+    std::cout << "  -version: prints the version information for this build of MicrosoftMLRunner.exe" << std::endl;
+#else
     std::cout << "  -version: prints the version information for this build of WinMLRunner.exe" << std::endl;
+#endif
     std::cout << "  -CPU : run model on default CPU" << std::endl;
     std::cout << "  -GPU : run model on default GPU" << std::endl;
     std::cout << "  -GPUHighPerformance : run model on GPU with highest performance" << std::endl;
@@ -242,7 +251,12 @@ CommandLineArgs::CommandLineArgs(const std::vector<std::wstring>& args)
             if (!IsDebuggerPresent())
             {
                 throw hresult_invalid_argument(
-                    L"-DebugEvaluate flag should only be used when WinMLRunner is under a user-mode debugger!");
+#ifdef USE_WINML_NUGET
+                    L"-DebugEvaluate flag should only be used when MicrosoftMLRunner is under a user-mode debugger!"
+#else
+                    L"-DebugEvaluate flag should only be used when WinMLRunner is under a user-mode debugger!"
+#endif
+                );
             }
             ToggleEvaluationDebugOutput(true);
         }
@@ -471,8 +485,11 @@ void CommandLineArgs::SetupOutputDirectories(const std::wstring& sBaseOutputPath
         if (m_perfOutputPath.empty())
         {
             if (sPerfOutputPath.empty())
+#ifdef USE_WINML_NUGET
+                PerfOutputPath = L"MicrosoftMLRunner[" + oss.str() + L"].csv";
+#else
                 PerfOutputPath = L"WinMLRunner[" + oss.str() + L"].csv";
-
+#endif
             PerfOutputPath = BaseOutputPath / PerfOutputPath;
             m_perfOutputPath = PerfOutputPath.c_str();
         }

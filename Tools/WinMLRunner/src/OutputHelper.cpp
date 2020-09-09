@@ -51,7 +51,7 @@ void OutputHelper::PrintEvaluatingInfo(uint32_t iteration, DeviceType deviceType
             status.c_str());
 }
 
-void OutputHelper::PrintModelInfo(std::wstring modelPath, LearningModel model) const
+void OutputHelper::PrintModelInfo(const std::wstring& modelPath, const LearningModel& model) const
 {
     std::cout << "=================================================================" << std::endl;
     std::wcout << "Name: " << model.Name().c_str() << std::endl;
@@ -478,7 +478,7 @@ bool OutputHelper::doesDescriptorContainFP16(const ILearningModelFeatureDescript
     }
 }
 
-bool OutputHelper::doesModelContainFP16(const LearningModel model)
+bool OutputHelper::doesModelContainFP16(const LearningModel& model)
 {
     for (auto&& inputFeature : model.InputFeatures())
     {

@@ -29,7 +29,7 @@ public:
     void PrintEvaluatingInfo(uint32_t iteration, DeviceType deviceType, InputBindingType inputBindingType,
                              InputDataType inputDataType, DeviceCreationLocation deviceCreationLocation,
                              const std::string& status) const;
-    void PrintModelInfo(std::wstring modelPath, LearningModel model) const;
+    void PrintModelInfo(const std::wstring& modelPath, const LearningModel& model) const;
     void PrintFeatureDescriptorInfo(const ILearningModelFeatureDescriptor& descriptor) const;
     void PrintHardwareInfo() const;
     void PrintResults(const Profiler<WINML_MODEL_TEST_PERF>& profiler, uint32_t numIterations, DeviceType deviceType,
@@ -54,7 +54,7 @@ public:
     static void PrintLearningModelDevice(const LearningModelDeviceWithMetadata& device);
     static std::wstring FeatureDescriptorToString(const ILearningModelFeatureDescriptor& descriptor);
     static bool doesDescriptorContainFP16(const ILearningModelFeatureDescriptor& descriptor);
-    static bool doesModelContainFP16(const LearningModel model);
+    static bool doesModelContainFP16(const LearningModel& model);
     template <typename T>
     static void ProcessTensorResult(const CommandLineArgs& args, const void* buffer, const uint32_t uCapacity,
                                     std::vector<std::pair<float, int>>& maxValues, std::ofstream& fout, unsigned int k);

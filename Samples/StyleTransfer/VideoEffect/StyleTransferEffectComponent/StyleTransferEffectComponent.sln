@@ -1,9 +1,13 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.30204.135
+# Visual Studio 15
+VisualStudioVersion = 15.0.28307.1209
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "StyleTransferEffectComponent", "StyleTransferEffectComponent.vcxproj", "{05DFFB01-62C4-458C-BE13-7A97E8583E43}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SampleSharedLib", "..\..\..\SampleSharedLib\SampleSharedLib\SampleSharedLib.vcxproj", "{12103A5B-677A-4286-83D2-54EAB9010C16}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DrawSoftwareBiitmapFromText", "C:\Users\Ryan\source\repos\DrawSoftwareBiitmapFromText\DrawSoftwareBiitmapFromText\DrawSoftwareBiitmapFromText.vcxproj", "{9646A886-DAD1-4874-A2B8-03839B66D053}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,6 +37,30 @@ Global
 		{05DFFB01-62C4-458C-BE13-7A97E8583E43}.Release|x64.Build.0 = Release|x64
 		{05DFFB01-62C4-458C-BE13-7A97E8583E43}.Release|x86.ActiveCfg = Release|Win32
 		{05DFFB01-62C4-458C-BE13-7A97E8583E43}.Release|x86.Build.0 = Release|Win32
+		{12103A5B-677A-4286-83D2-54EAB9010C16}.Debug|ARM.ActiveCfg = Debug|Win32
+		{12103A5B-677A-4286-83D2-54EAB9010C16}.Debug|ARM64.ActiveCfg = Debug|Win32
+		{12103A5B-677A-4286-83D2-54EAB9010C16}.Debug|x64.ActiveCfg = Debug|x64
+		{12103A5B-677A-4286-83D2-54EAB9010C16}.Debug|x64.Build.0 = Debug|x64
+		{12103A5B-677A-4286-83D2-54EAB9010C16}.Debug|x86.ActiveCfg = Debug|Win32
+		{12103A5B-677A-4286-83D2-54EAB9010C16}.Debug|x86.Build.0 = Debug|Win32
+		{12103A5B-677A-4286-83D2-54EAB9010C16}.Release|ARM.ActiveCfg = Release|Win32
+		{12103A5B-677A-4286-83D2-54EAB9010C16}.Release|ARM64.ActiveCfg = Release|Win32
+		{12103A5B-677A-4286-83D2-54EAB9010C16}.Release|x64.ActiveCfg = Release|x64
+		{12103A5B-677A-4286-83D2-54EAB9010C16}.Release|x64.Build.0 = Release|x64
+		{12103A5B-677A-4286-83D2-54EAB9010C16}.Release|x86.ActiveCfg = Release|Win32
+		{12103A5B-677A-4286-83D2-54EAB9010C16}.Release|x86.Build.0 = Release|Win32
+		{9646A886-DAD1-4874-A2B8-03839B66D053}.Debug|ARM.ActiveCfg = Debug|Win32
+		{9646A886-DAD1-4874-A2B8-03839B66D053}.Debug|ARM64.ActiveCfg = Debug|Win32
+		{9646A886-DAD1-4874-A2B8-03839B66D053}.Debug|x64.ActiveCfg = Debug|x64
+		{9646A886-DAD1-4874-A2B8-03839B66D053}.Debug|x64.Build.0 = Debug|x64
+		{9646A886-DAD1-4874-A2B8-03839B66D053}.Debug|x86.ActiveCfg = Debug|Win32
+		{9646A886-DAD1-4874-A2B8-03839B66D053}.Debug|x86.Build.0 = Debug|Win32
+		{9646A886-DAD1-4874-A2B8-03839B66D053}.Release|ARM.ActiveCfg = Release|Win32
+		{9646A886-DAD1-4874-A2B8-03839B66D053}.Release|ARM64.ActiveCfg = Release|Win32
+		{9646A886-DAD1-4874-A2B8-03839B66D053}.Release|x64.ActiveCfg = Release|x64
+		{9646A886-DAD1-4874-A2B8-03839B66D053}.Release|x64.Build.0 = Release|x64
+		{9646A886-DAD1-4874-A2B8-03839B66D053}.Release|x86.ActiveCfg = Release|Win32
+		{9646A886-DAD1-4874-A2B8-03839B66D053}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -112,10 +112,12 @@
   <ItemDefinitionGroup Condition="'$(Configuration)'=='Release'">
     <ClCompile>
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release|x64'">D:\samples\Samples\SampleSharedLib\SampleSharedLib\;C:\Users\Ryan\source\repos\DrawSoftwareBitmap\DrawSoftwareBitmap\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalDependencies Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Shell32.lib;Gdi32.lib;User32.lib;WindowsApp.lib;%(AdditionalDependencies);"D:\samples\Samples\StyleTransfer\VideoEffect\StyleTransferEffectComponent\x64\Release\SampleSharedLib.lib";D:\samples\Samples\StyleTransfer\VideoEffect\StyleTransferEffectComponent\x64\Release\DrawSoftwareBiitmapFromText.lib</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>

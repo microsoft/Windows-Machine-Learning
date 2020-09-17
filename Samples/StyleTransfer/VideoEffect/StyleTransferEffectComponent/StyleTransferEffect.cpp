@@ -3,10 +3,13 @@
 #include "StyleTransferEffect.g.cpp"
 #include <ppltasks.h>
 #include <sstream>
-
+#include "FileHelper.h"
+#include "winrt/Windows.Graphics.Imaging.h"
+#include "DrawSoftwareBitmap.h"
 using namespace std;
 using namespace winrt::Windows::Storage;
 using namespace winrt::Windows::Storage::Streams;
+using namespace winrt::Windows::Graphics::Imaging;
 using namespace concurrency;
 
 namespace winrt::StyleTransferEffectComponent::implementation
@@ -43,6 +46,40 @@ namespace winrt::StyleTransferEffectComponent::implementation
         if (Session != nullptr) Session.Close();
         OutputDebugString(L"Close\n");
     }
+    vector<string> labels;
+    VideoFrame PrintResults(IVectorView<float> results)
+    {
+        // load the labels
+        auto modulePath = FileHelper::GetModulePath();
+        std::string labelsFilePath =
+            std::string(modulePath.begin(), modulePath.end()) + "\\Assets\\Labels.txt";
+        labels = FileHelper::LoadLabels(labelsFilePath);
+
+        vector<pair<float, uint32_t>> sortedResults;
+        for (uint32_t i = 0; i < results.Size(); i++) {
+            pair<float, uint32_t> curr;
+            curr.first = results.GetAt(i);
+            curr.second = i;
+            sortedResults.push_back(curr);
+        }
+        std::sort(sortedResults.begin(), sortedResults.end(),
+            [](pair<float, uint32_t> const &a, pair<float, uint32_t> const &b) { return a.first > b.first; });
+
+        std::string display = "";
+        // Display the result
+        for (int i = 0; i < 3; i++)
+        {
+            pair<float, uint32_t> curr = sortedResults.at(i);
+            display += labels[curr.second];
+            display += "\n   with confidence of\n   ";
+            display += std::to_string(curr.first);
+            display += "\n";
+        }
+        SoftwareBitmap bitmap = SoftwareBitmap(BitmapPixelFormat::Rgba8, 224, 224);
+        WriteSoftwareBitmap(bitmap, display);
+        VideoFrame frame = VideoFrame::CreateWithSoftwareBitmap(bitmap);
+        return frame;
+    }
 
     void StyleTransferEffect::SubmitEval(VideoFrame input, VideoFrame output) {
         auto currentBinding = bindings[0].get();
@@ -65,10 +102,12 @@ namespace winrt::StyleTransferEffectComponent::implementation
                 std::to_wstring(swapChainIndex).c_str());
             currentBinding->activetask.Completed([&, currentBinding, now](auto&& asyncInfo, winrt::Windows::Foundation::AsyncStatus const) {
                 OutputDebugString(L"PF Eval completed |");
-                VideoFrame evalOutput = asyncInfo.GetResults()
+                auto resultTensor = asyncInfo.GetResults()
                     .Outputs()
-                    .Lookup(OutputImageDescription)
-                    .try_as<VideoFrame>();
+                    .Lookup(OutputImageDescription).as<TensorFloat>();
+                auto resultVector = resultTensor.GetAsVectorView();
+                
+                VideoFrame evalOutput = PrintResults(resultVector);
                 int bindingIdx;
                 bool finishedFrameUpdated;
                 {
@@ -177,15 +216,23 @@ namespace winrt::StyleTransferEffectComponent::implementation
             : LearningModelDeviceKind::Cpu;
         Session = LearningModelSession{ _model, LearningModelDevice(_device) };
 
-        InputImageDescription = L"inputImage";
-        OutputImageDescription = L"outputImage";
+        InputImageDescription = L"data_0";
+        OutputImageDescription = L"softmaxout_1";
 
+        /*
         // Create set of bindings to cycle through
         for (int i = 0; i < swapChainEntryCount; i++) {
             bindings.push_back(std::make_unique<SwapChainEntry>());
             bindings[i]->binding = LearningModelBinding(Session);
             bindings[i]->binding.Bind(OutputImageDescription,
-                VideoFrame(Windows::Graphics::Imaging::BitmapPixelFormat::Bgra8, 720, 720));
+                VideoFrame(Windows::Graphics::Imaging::BitmapPixelFormat::Bgra8, 224, 224));
+        }
+        */
+        for (int i = 0; i < swapChainEntryCount; i++) {
+            bindings.push_back(std::make_unique<SwapChainEntry>());
+            bindings[i]->binding = LearningModelBinding(Session);
+            bindings[i]->binding.Bind(OutputImageDescription,
+                TensorFloat::Create({1,1000,1,1}));
         }
     }
 }

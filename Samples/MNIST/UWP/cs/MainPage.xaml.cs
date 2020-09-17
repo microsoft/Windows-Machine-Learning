@@ -6,7 +6,11 @@ using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.Storage;
 using Windows.UI.Xaml.Media.Imaging;
+#if USE_WINML_NUGET
+using Microsoft.AI.MachineLearning;
+#else
 using Windows.AI.MachineLearning;
+#endif
 using Windows.Media;
 using Windows.Storage.Streams;
 using System.Threading.Tasks;

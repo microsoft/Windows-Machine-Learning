@@ -1,5 +1,5 @@
 coremltools_windows==2.0b1
-winmltools==1.5.1
+onnxmltools==1.7.0
 h5py==2.8.0
 tensorflow==1.12.2
 Keras==2.2.4

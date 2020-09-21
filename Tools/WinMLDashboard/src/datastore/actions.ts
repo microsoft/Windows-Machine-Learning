@@ -2,7 +2,6 @@ import { DebugFormat, IMetadataProps, IProperties } from './state';
 
 export const SET_SHOWLEFT = 'SET_SHOWLEFT';
 export const SET_SHOWRIGHT = 'SET_SHOWRIGHT';
-export const SET_QUANTIZATIONOPTION = 'SET_QUANTIZATIONOPTION';
 export const SET_FILE = 'SET_FILE';
 export const SET_DEBUG_NODES = 'SET_DEBUG_NODES';
 export const SET_INPUTS = 'SET_INPUTS';
@@ -33,6 +32,5 @@ export interface IAction {
 
     metadataProps: IMetadataProps,
     properties: IProperties,
-    quantizationOption: string,
     selectedNode: string,
 }

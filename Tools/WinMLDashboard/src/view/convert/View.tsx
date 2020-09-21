@@ -13,7 +13,7 @@ import Select from 'react-select';
 import { winmlDataFolder } from '../../native/appData';
 
 import Collapsible from '../../components/Collapsible';
-import { setFile, setQuantizationOption, setSaveFileName } from '../../datastore/actionCreators';
+import { setFile, setSaveFileName } from '../../datastore/actionCreators';
 import IState from '../../datastore/state';
 import { packagedFile } from '../../native/appData';
 import { fileFromPath, showNativeOpenDialog, showNativeSaveDialog } from '../../native/dialog';
@@ -42,7 +42,6 @@ interface IComponentProperties {
     // Redux properties
     file: File,
     setFile: typeof setFile,
-    setQuantizationOption: typeof setQuantizationOption,
     setSaveFileName: typeof setSaveFileName,
 }
 
@@ -53,7 +52,6 @@ interface IComponentState {
     error?: Error | string,
     framework: string,
     outputNames: string,
-    quantizationOption: ISelectOpition,
     source?: string,
 }
 
@@ -70,7 +68,6 @@ class ConvertView extends React.Component<IComponentProperties, IComponentState>
             error, 
             framework: '',
             outputNames: '',
-            quantizationOption:  {value: 'none', label: 'None'},
         };
         log.info("Convert view is created.");
     }
@@ -225,11 +222,6 @@ class ConvertView extends React.Component<IComponentProperties, IComponentState>
             { value: '1.3', label: '1.3 (opset V8)' },
             { value: '1.5', label: '1.5 (opset V10)' },
         ]
-        const QuantizationOptions = [
-            { value: 'none', label: 'None' },
-            { value: 'RS5', label: 'Type1'},
-            { value: '19H1', label: 'Type2'},
-        ]
         return (
             <div className="ModelConvert">
                 <div className='DisplayFlex'>
@@ -251,18 +243,6 @@ class ConvertView extends React.Component<IComponentProperties, IComponentState>
                         onChange={this.setONNXVersion}
                         options={ONNXVersionOptions}
                     />
-                    <label className='label-center-align'>
-                        Quantization
-                        <img onClick={this.openReadMe} src={packagedFile('questionmark.png')}
-                        onMouseOver = {this.hover}
-                        onMouseOut = {this.unhover}
-                        title="WinMLTools provides quantization feature to reduce the memory footprint of the model." height="16px"/>: 
-                    </label>
-                    <Select className='QuantizationOptions'
-                        value={this.newOption(this.state.quantizationOption.label)}
-                        onChange={this.setQuantization}
-                        options={QuantizationOptions}
-                    />
                 </div>
                 <br />
                 <div className={this.state.framework === 'TensorFlow' ? ' ' : 'hidden'}>
@@ -271,22 +251,11 @@ class ConvertView extends React.Component<IComponentProperties, IComponentState>
                         <TextField id='outputNames' className='outputNames' placeholder='output:0 output:1' value={this.state.outputNames}  onChanged={this.setOutputNames} />
                     </div>
                 </div>
-                <DefaultButton id='ConvertButton' text='Convert' disabled={!this.state.source || (!this.state.framework && this.state.quantizationOption.value === 'none')} onClick={this.convert}/>
+                <DefaultButton id='ConvertButton' text='Convert' disabled={!this.state.source || !this.state.framework} onClick={this.convert}/>
             </div>
         );
     }
     
-    private hover = (event: React.MouseEvent<HTMLImageElement>) => {
-        event.currentTarget.setAttribute('src', packagedFile('questionmark2.png'))
-    }
-
-    private unhover = (event: React.MouseEvent<HTMLImageElement>) => {
-        event.currentTarget.setAttribute('src', packagedFile('questionmark.png'))
-    }
-    private openReadMe = () => {
-        const tpnUrl = 'https://github.com/Microsoft/Windows-Machine-Learning/tree/master/Tools/WinMLDashboard#converting-models';
-        require('electron').shell.openExternal(tpnUrl);
-    }
     private newOption = (framework: string):ISelectOpition => {
         return {
             label: framework,
@@ -303,10 +272,6 @@ class ConvertView extends React.Component<IComponentProperties, IComponentState>
 
     private setFramework = (framework: ISelectOpition) => {
         this.setState({framework: framework.value})
-    }
-
-    private setQuantization = (quantizationOption: ISelectOpition) => {
-        this.setState({quantizationOption})
     }
 
     private setSource = (source?: string) => {
@@ -355,7 +320,6 @@ class ConvertView extends React.Component<IComponentProperties, IComponentState>
             await python([packagedFile('convert.py'), this.state.source!, 
                                                     this.state.framework, 
                                                     this.state.ONNXVersion.value,
-                                                    this.state.quantizationOption.value,
                                                     this.state.outputNames, 
                                                     packagedFile('tempConvertResult.onnx')], {}, this.outputListener);
         } catch (e) {
@@ -385,7 +349,6 @@ class ConvertView extends React.Component<IComponentProperties, IComponentState>
         
         this.setState({ currentStep: Step.Idle, source: undefined, console:"Converted successfully!! \n Saved to" + destination + "\n ONNX file loaded."});
         // TODO Show dialog (https://developer.microsoft.com/en-us/fabric#/components/dialog) asking whether we should open the converted model
-        this.props.setQuantizationOption(this.state.quantizationOption.value)
         this.props.setFile(fileFromPath(destination));
         this.props.setSaveFileName(destination);
     }
@@ -397,7 +360,6 @@ const mapStateToProps = (state: IState) => ({
 
 const mapDispatchToProps = {
     setFile,
-    setQuantizationOption,
     setSaveFileName,
 }
 

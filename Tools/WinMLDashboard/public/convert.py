@@ -1,6 +1,5 @@
 import argparse
 from pathlib import Path
-import winmltools
 import onnxmltools
 
 def parse_args():
@@ -80,9 +79,7 @@ def libSVM_converter(args):
     return onnx_model
 
 def convert_tensorflow_file(filename, opset, output_names):
-    import winmltools
     import tensorflow
-    import tf2onnx
     from tensorflow.core.framework import graph_pb2
     from tensorflow.python.tools import freeze_graph
     import onnx

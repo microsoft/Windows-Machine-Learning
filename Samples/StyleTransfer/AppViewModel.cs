@@ -31,7 +31,6 @@ using StyleTransferEffectComponent;
 using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.Devices.Enumeration;
 using Microsoft.Graphics.Canvas;
-using FrameSourceHelper_UWP;
 
 namespace StyleTransfer
 {
@@ -63,11 +62,6 @@ namespace StyleTransfer
         private bool _succeed;
         private readonly SolidColorBrush _successColor = new SolidColorBrush(Windows.UI.Colors.Green);
         private readonly SolidColorBrush _failColor = new SolidColorBrush(Windows.UI.Colors.Red);
-
-        // Locks
-        private SemaphoreSlim m_lock = new SemaphoreSlim(1);
-        private MediaPlayerFrameSource m_frameSource = null;
-
         public AppViewModel()
         {
             _appModel = new AppModel();
@@ -369,64 +363,33 @@ namespace StyleTransfer
 
         private async Task GetStream(StorageFile videoPath)
         {
-            await m_lock.WaitAsync();
+            MediaPlayer mediaPlayer = new MediaPlayer()
             {
-                // Clean up previous frame source
-                if (m_frameSource != null)
-                {
-                    m_frameSource.FrameArrived -= FrameSource_FrameAvailable;
-                    var disposableFrameSource = m_frameSource as IDisposable;
-                    if (disposableFrameSource != null)
-                    {
-                        // Lock disposal based on frame source consumers
-                        disposableFrameSource.Dispose();
-                    }
-                }
-
-                // Create new frame source and register a callback if the source fails along the way
-                m_frameSource = await MediaPlayerFrameSource.CreateFromStorageFileAsyncTask(videoPath);
-
-
-            }
-            m_lock.Release();
-
-            // If we obtained a valid frame source, start it
-            if (m_frameSource != null)
-            {
-                m_frameSource.FrameArrived += FrameSource_FrameAvailable;
-                await m_frameSource.StartAsync();
-            }
+                Source = MediaSource.CreateFromStorageFile(videoPath)
+            };
+            mediaPlayer.VideoFrameAvailable += mediaPlayer_VideoFrameAvailable;
+            mediaPlayer.IsVideoFrameServerEnabled = true;
+            mediaPlayer.Play();
         }
 
-        private void FrameSource_FrameAvailable(object sender, VideoFrame frame)
+        private async void mediaPlayer_VideoFrameAvailable(MediaPlayer sender, object args)
         {
-            // Locking behavior, so only one skill execution happens at a time
-            if (m_lock.Wait(0))
+            CanvasDevice canvasDevice = CanvasDevice.GetSharedDevice();
+            await Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, async () =>
             {
-#pragma warning disable CS4014
-                // Purposely don't await this: want handler to exit ASAP
-                // so that realtime capture doesn't wait for completion.
-                // Instead, we unlock only when processing finishes ensuring that
-                // only one execution is active at a time, dropping frames or
-                // aborting skill runs as necessary
-                Task.Run(async () =>
+                SoftwareBitmap softwareBitmapImg;
+                SoftwareBitmap frameServerDest = new SoftwareBitmap(BitmapPixelFormat.Rgba8, 100, 100, BitmapAlphaMode.Premultiplied);
+
+                using (CanvasBitmap canvasBitmap = CanvasBitmap.CreateFromSoftwareBitmap(canvasDevice, frameServerDest))
                 {
-                    try
-                    {
-                        // Evaluate()
-                        // _appModel.InputFrame = frame;
-                        EvaluateVideoFrameAsync_2(frame);
-                    }
-                    finally
-                    {
-                        m_lock.Release();
-                    }
-                });
-#pragma warning restore CS4014
-            }
+                    sender.CopyFrameToVideoSurface(canvasBitmap);
+
+                    softwareBitmapImg = await SoftwareBitmap.CreateCopyFromSurfaceAsync(canvasBitmap);
+
+                }
+                //await Evaluate(softwareBitmapImg);
+            });
         }
-
-
         public async Task ChangeImage()
         {
             // Make sure have an input image, use default otherwise
@@ -471,12 +434,6 @@ namespace StyleTransfer
                 await OutputSoftwareBitmapSource.SetBitmapAsync(_appModel.InputFrame.SoftwareBitmap);
             }
         }
-
-        private async Task EvaluateVideoFrameAsync_2(VideoFrame frame)
-        {
-            await OutputSoftwareBitmapSource.SetBitmapAsync(frame.SoftwareBitmap);
-        }
-
         public async Task StartLiveStream()
         {
             Debug.WriteLine("StartLiveStream");

@@ -378,7 +378,7 @@ namespace StyleTransfer
             await DispatcherHelper.RunAsync(async () =>
             {
                 SoftwareBitmap softwareBitmapImg;
-                SoftwareBitmap frameServerDest = new SoftwareBitmap(BitmapPixelFormat.Rgba8, 100, 100, BitmapAlphaMode.Premultiplied);
+                SoftwareBitmap frameServerDest = new SoftwareBitmap(BitmapPixelFormat.Bgra8, 100, 100, BitmapAlphaMode.Premultiplied);
 
                 using (CanvasBitmap canvasBitmap = CanvasBitmap.CreateFromSoftwareBitmap(canvasDevice, frameServerDest))
                 {
@@ -387,10 +387,10 @@ namespace StyleTransfer
                     softwareBitmapImg = await SoftwareBitmap.CreateCopyFromSurfaceAsync(canvasBitmap);
 
                 }
-                VideoFrame temp = VideoFrame.CreateWithSoftwareBitmap(softwareBitmapImg);
-                _appModel.InputFrame = temp;
-                await EvaluateVideoFrameAsync();
-                //await Evaluate(softwareBitmapImg);
+
+            SoftwareBitmap softwarebitmap = SoftwareBitmap.Convert(softwareBitmapImg, BitmapPixelFormat.Bgra8, BitmapAlphaMode.Ignore);
+            _appModel.InputFrame = VideoFrame.CreateWithSoftwareBitmap(softwarebitmap);
+            await EvaluateVideoFrameAsync_2();
             });
         }
         public async Task ChangeImage()
@@ -403,6 +403,11 @@ namespace StyleTransfer
                 _appModel.InputFrame = await ImageHelper.LoadVideoFrameFromStorageFileAsync(file);
             }
             await EvaluateVideoFrameAsync();
+        }
+
+        private async Task EvaluateVideoFrameAsync_2()
+        {
+            await OutputSoftwareBitmapSource.SetBitmapAsync(_appModel.InputFrame.SoftwareBitmap);
         }
 
         private async Task EvaluateVideoFrameAsync()

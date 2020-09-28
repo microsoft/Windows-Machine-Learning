@@ -21,7 +21,8 @@ namespace StyleTransfer
         None,
         LiveStream,
         AcquireImage,
-        FilePick
+        FilePick,
+        VideoPick
     }
     class AppModel : INotifyPropertyChanged
     {

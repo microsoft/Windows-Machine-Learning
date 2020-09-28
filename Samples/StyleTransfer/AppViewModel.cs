@@ -30,6 +30,8 @@ using System.Threading;
 using StyleTransferEffectComponent;
 using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.Devices.Enumeration;
+using Microsoft.Graphics.Canvas;
+using FrameSourceHelper_UWP;
 
 namespace StyleTransfer
 {
@@ -61,6 +63,11 @@ namespace StyleTransfer
         private bool _succeed;
         private readonly SolidColorBrush _successColor = new SolidColorBrush(Windows.UI.Colors.Green);
         private readonly SolidColorBrush _failColor = new SolidColorBrush(Windows.UI.Colors.Red);
+
+        // Locks
+        private SemaphoreSlim m_lock = new SemaphoreSlim(1);
+        private MediaPlayerFrameSource m_frameSource = null;
+
         public AppViewModel()
         {
             _appModel = new AppModel();
@@ -275,6 +282,9 @@ namespace StyleTransfer
                 case InputMediaType.FilePick:
                     await StartFilePick();
                     break;
+                case InputMediaType.VideoPick:
+                    await StartVideoPick();
+                    break;
                 default:
                     break;
             }
@@ -295,6 +305,9 @@ namespace StyleTransfer
                     await ChangeImage();
                     break;
                 case InputMediaType.FilePick:
+                    await ChangeImage();
+                    break;
+                case InputMediaType.VideoPick:
                     await ChangeImage();
                     break;
                 default:
@@ -348,6 +361,72 @@ namespace StyleTransfer
             }
         }
 
+        public async Task StartVideoPick()
+        {
+            StorageFile videoPath = await ImageHelper.GetSelectedStorageFile();
+            await GetStream(videoPath);
+        }
+
+        private async Task GetStream(StorageFile videoPath)
+        {
+            await m_lock.WaitAsync();
+            {
+                // Clean up previous frame source
+                if (m_frameSource != null)
+                {
+                    m_frameSource.FrameArrived -= FrameSource_FrameAvailable;
+                    var disposableFrameSource = m_frameSource as IDisposable;
+                    if (disposableFrameSource != null)
+                    {
+                        // Lock disposal based on frame source consumers
+                        disposableFrameSource.Dispose();
+                    }
+                }
+
+                // Create new frame source and register a callback if the source fails along the way
+                m_frameSource = await MediaPlayerFrameSource.CreateFromStorageFileAsyncTask(videoPath);
+
+
+            }
+            m_lock.Release();
+
+            // If we obtained a valid frame source, start it
+            if (m_frameSource != null)
+            {
+                m_frameSource.FrameArrived += FrameSource_FrameAvailable;
+                await m_frameSource.StartAsync();
+            }
+        }
+
+        private void FrameSource_FrameAvailable(object sender, VideoFrame frame)
+        {
+            // Locking behavior, so only one skill execution happens at a time
+            if (m_lock.Wait(0))
+            {
+#pragma warning disable CS4014
+                // Purposely don't await this: want handler to exit ASAP
+                // so that realtime capture doesn't wait for completion.
+                // Instead, we unlock only when processing finishes ensuring that
+                // only one execution is active at a time, dropping frames or
+                // aborting skill runs as necessary
+                Task.Run(async () =>
+                {
+                    try
+                    {
+                        // Evaluate()
+                        // _appModel.InputFrame = frame;
+                        EvaluateVideoFrameAsync_2(frame);
+                    }
+                    finally
+                    {
+                        m_lock.Release();
+                    }
+                });
+#pragma warning restore CS4014
+            }
+        }
+
+
         public async Task ChangeImage()
         {
             // Make sure have an input image, use default otherwise
@@ -389,9 +468,15 @@ namespace StyleTransfer
                     Debug.WriteLine($"{output.Key} : {output.Value} -> {output.Value.GetType()}");
                 }
 
-                await OutputSoftwareBitmapSource.SetBitmapAsync(_appModel.OutputFrame.SoftwareBitmap);
+                await OutputSoftwareBitmapSource.SetBitmapAsync(_appModel.InputFrame.SoftwareBitmap);
             }
         }
+
+        private async Task EvaluateVideoFrameAsync_2(VideoFrame frame)
+        {
+            await OutputSoftwareBitmapSource.SetBitmapAsync(frame.SoftwareBitmap);
+        }
+
         public async Task StartLiveStream()
         {
             Debug.WriteLine("StartLiveStream");
@@ -528,7 +613,9 @@ namespace StyleTransfer
             foreach (var inputF in _learningModel.InputFeatures)
             {
                 Debug.WriteLine($"input | kind:{inputF.Kind}, name:{inputF.Name}, type:{inputF.GetType()}");
+#pragma warning disable CS0219 // The variable 'i' is assigned but its value is never used
                 int i = 0;
+#pragma warning restore CS0219 // The variable 'i' is assigned but its value is never used
                 ImageFeatureDescriptor imgDesc = inputF as ImageFeatureDescriptor;
                 TensorFeatureDescriptor tfDesc = inputF as TensorFeatureDescriptor;
                 _inWidth = (uint)(imgDesc == null ? tfDesc.Shape[3] : imgDesc.Width);
@@ -543,7 +630,9 @@ namespace StyleTransfer
             foreach (var outputF in _learningModel.OutputFeatures)
             {
                 Debug.WriteLine($"output | kind:{outputF.Kind}, name:{outputF.Name}, type:{outputF.GetType()}");
+#pragma warning disable CS0219 // The variable 'i' is assigned but its value is never used
                 int i = 0;
+#pragma warning restore CS0219 // The variable 'i' is assigned but its value is never used
                 ImageFeatureDescriptor imgDesc = outputF as ImageFeatureDescriptor;
                 TensorFeatureDescriptor tfDesc = outputF as TensorFeatureDescriptor;
                 _outWidth = (uint)(imgDesc == null ? tfDesc.Shape[3] : imgDesc.Width);

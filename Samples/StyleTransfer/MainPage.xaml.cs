@@ -37,7 +37,9 @@ namespace StyleTransfer
     public sealed partial class MainPage : Page
     {
 
+#pragma warning disable CS0169 // The field 'MainPage._viewModel' is never used
         private AppViewModel _viewModel;
+#pragma warning restore CS0169 // The field 'MainPage._viewModel' is never used
 
         public MainPage()
         {

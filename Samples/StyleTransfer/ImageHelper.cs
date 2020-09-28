@@ -144,6 +144,31 @@ namespace StyleTransfer
         }
 
         /// <summary>
+        /// Launch file picker for user to select a picture file and return a VideoFrame
+        /// </summary>
+        /// <returns>VideoFrame instanciated from the selected image file</returns>
+        public static IAsyncOperation<StorageFile> GetSelectedStorageFile()
+        {
+            return AsyncInfo.Run(async (token) =>
+            {
+                // Trigger file picker to select an image file
+                FileOpenPicker fileOpenPicker = new FileOpenPicker();
+                fileOpenPicker.SuggestedStartLocation = PickerLocationId.PicturesLibrary;
+                fileOpenPicker.FileTypeFilter.Add(".mp4");
+                fileOpenPicker.FileTypeFilter.Add(".mkv");
+                fileOpenPicker.ViewMode = PickerViewMode.Thumbnail;
+                StorageFile selectedStorageFile = await fileOpenPicker.PickSingleFileAsync();
+
+                if (selectedStorageFile == null)
+                {
+                    return null;
+                }
+
+                return selectedStorageFile;
+            });
+        }
+
+        /// <summary>
         /// Decode image from a StorageFile and return a VideoFrame
         /// </summary>
         /// <param name="file"></param>

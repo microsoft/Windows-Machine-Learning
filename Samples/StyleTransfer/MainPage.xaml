@@ -171,6 +171,17 @@
                             <local:InputMediaType>FilePick</local:InputMediaType>
                         </Button.CommandParameter>
                     </Button>
+                    <Button
+                        Name="UIButtonVideoFilePick"
+                        Command="{Binding SetMediaSourceCommand}"
+                        ToolTipService.ToolTip="Select an video from a file">
+                        <Button.Content>
+                            <SymbolIcon Symbol="OpenFile" />
+                        </Button.Content>
+                        <Button.CommandParameter>
+                            <local:InputMediaType>VideoPick</local:InputMediaType>
+                        </Button.CommandParameter>
+                    </Button>
                 </StackPanel>
 
                 <!--  Inference device  -->

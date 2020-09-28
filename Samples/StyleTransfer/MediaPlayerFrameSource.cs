@@ -7,7 +7,10 @@ using Windows.Media;
 using Windows.Media.Core;
 using Windows.Media.Playback;
 using Windows.Storage;
-
+using Microsoft.Graphics.Canvas;
+using Windows.Graphics.Imaging;
+using GalaSoft.MvvmLight.Threading;
+using Windows.Media;
 namespace FrameSourceHelper_UWP
 {
     /// <summary>
@@ -113,10 +116,27 @@ namespace FrameSourceHelper_UWP
         /// <param name="args"></param>
         private async void MediaPlayer_VideoFrameAvailable(MediaPlayer sender, object args)
         {
-            m_mediaPlayer.CopyFrameToVideoSurface(m_videoFrame.Direct3DSurface);
+            // m_mediaPlayer.CopyFrameToVideoSurface(m_videoFrame.Direct3DSurface);
             
-            m_videoFrame.SystemRelativeTime = m_mediaPlayer.PlaybackSession.Position;
-            FrameArrived?.Invoke(this, m_videoFrame);
+            // m_videoFrame.SystemRelativeTime = m_mediaPlayer.PlaybackSession.Position;
+            // FrameArrived?.Invoke(this, m_videoFrame);
+            CanvasDevice canvasDevice = CanvasDevice.GetSharedDevice();
+            await DispatcherHelper.RunAsync(async () =>
+            {
+                SoftwareBitmap softwareBitmapImg;
+                SoftwareBitmap frameServerDest = new SoftwareBitmap(BitmapPixelFormat.Rgba8, 100, 100, BitmapAlphaMode.Premultiplied);
+
+                using (CanvasBitmap canvasBitmap = CanvasBitmap.CreateFromSoftwareBitmap(canvasDevice, frameServerDest))
+                {
+                    sender.CopyFrameToVideoSurface(canvasBitmap);
+
+                    softwareBitmapImg = await SoftwareBitmap.CreateCopyFromSurfaceAsync(canvasBitmap);
+
+                }
+                m_videoFrame = VideoFrame.CreateWithSoftwareBitmap(softwareBitmapImg);
+                m_videoFrame.SystemRelativeTime = m_mediaPlayer.PlaybackSession.Position;
+                FrameArrived?.Invoke(this, m_videoFrame);
+            });
         }
 
         /// <summary>

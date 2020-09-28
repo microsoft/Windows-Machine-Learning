@@ -375,7 +375,7 @@ namespace StyleTransfer
         private async void mediaPlayer_VideoFrameAvailable(MediaPlayer sender, object args)
         {
             CanvasDevice canvasDevice = CanvasDevice.GetSharedDevice();
-            await Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, async () =>
+            await DispatcherHelper.RunAsync(async () =>
             {
                 SoftwareBitmap softwareBitmapImg;
                 SoftwareBitmap frameServerDest = new SoftwareBitmap(BitmapPixelFormat.Rgba8, 100, 100, BitmapAlphaMode.Premultiplied);
@@ -387,6 +387,9 @@ namespace StyleTransfer
                     softwareBitmapImg = await SoftwareBitmap.CreateCopyFromSurfaceAsync(canvasBitmap);
 
                 }
+                VideoFrame temp = VideoFrame.CreateWithSoftwareBitmap(softwareBitmapImg);
+                _appModel.InputFrame = temp;
+                await EvaluateVideoFrameAsync();
                 //await Evaluate(softwareBitmapImg);
             });
         }
@@ -431,8 +434,9 @@ namespace StyleTransfer
                     Debug.WriteLine($"{output.Key} : {output.Value} -> {output.Value.GetType()}");
                 }
 
-                await OutputSoftwareBitmapSource.SetBitmapAsync(_appModel.InputFrame.SoftwareBitmap);
+                
             }
+            await OutputSoftwareBitmapSource.SetBitmapAsync(_appModel.InputFrame.SoftwareBitmap);
         }
         public async Task StartLiveStream()
         {

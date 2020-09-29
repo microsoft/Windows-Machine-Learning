@@ -90,7 +90,7 @@ def convert_tensorflow_file(filename, opset, output_names):
         graph_def.ParseFromString(file.read())
     g = tf.import_graph_def(graph_def, name='')
     with tf.Session(graph=g) as sess:
-        converted_model = onnxmltools.convert_tensorflow(sess.graph, opset, continue_on_error=True, verbose=True, output_names=output_names)
+        converted_model = onnxmltools.convert_tensorflow(sess.graph, target_opset=opset, output_names=output_names)
         onnx.checker.check_model(converted_model)
     return converted_model
 

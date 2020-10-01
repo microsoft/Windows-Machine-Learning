@@ -39,46 +39,55 @@ def coreml_converter(args):
     # When imported, CoreML tools checks for the current version of Keras and TF and prints warnings if they are
     # outside its expected range. We don't want it to import these packages (since they are big and take seconds to
     # load) and we don't want to clutter the console with unrelated Keras warnings when converting from CoreML.
+
+        
     import sys
     sys.modules['keras'] = None
     import coremltools
+    from onnxmltools.convert import convert_coreml as _convert_coreml
     source_model = coremltools.utils.load_spec(args.source)
-    onnx_model = onnxmltools.convert_coreml(source_model, get_opset(args.ONNXVersion), args.name)
+    onnx_model = _convert_coreml(source_model, name=args.name, target_opset=get_opset(args.ONNXVersion))
     return onnx_model
 
 
 def keras_converter(args):
+    from onnxmltools.convert import convert_keras as _convert_keras
     from keras.models import load_model
     source_model = load_model(args.source)
-    destination_extension = get_extension(args.destination)
-    onnx_model = onnxmltools.convert_keras(source_model, get_opset(args.ONNXVersion))
+    onnx_model = _convert_keras(source_model, name = args.name, target_opset=get_opset(args.ONNXVersion))
     return onnx_model
 
 def scikit_learn_converter(args):
     from sklearn.externals import joblib
     source_model = joblib.load(args.source) 
     from onnxmltools.convert.common.data_types import FloatTensorType
-    onnx_model = onnxmltools.convert_sklearn(source_model, get_opset(args.ONNXVersion),
-                                  initial_types=[('input', FloatTensorType(source_model.coef_.shape))])
+    from onnxmltools.convert import convert_sklearn as _convert_sklearn
+
+    onnx_model = _convert_sklearn(source_model, initial_types=[('input', FloatTensorType(source_model.coef_.shape))],
+                                  target_opset=get_opset(args.ONNXVersion))
     return onnx_model
 
 def xgboost_converter(args):
     from sklearn.externals import joblib
     source_model = joblib.load(args.source)
+    from onnxmltools.convert import convert_xgboost as _convert_xgboost
     from onnxmltools.convert.common.data_types import FloatTensorType
-    onnx_model = onnxmltools.convert_xgboost(source_model, get_opset(args.ONNXVersion),
-                                initial_types=[('input', FloatTensorType(shape=[1, 'None']))])
+    onnx_model = _convert_xgboost(source_model,initial_types=[('input', FloatTensorType(shape=[1, 'None']))],
+                                  target_opset=get_opset(args.ONNXVersion))
     return onnx_model
 
 def libSVM_converter(args):
-    import svmutil
-    source_model = svmutil.svm_load_model(args.source)
+    # not using target_opset for libsvm convert since the converter is only generating operators in ai.onnx.ml domain
+    # but just passing in target_opset for consistency
+    from libsvm.svmutil import svm_load_model as _svm_load_model
+    source_model = _svm_load_model(args.source)
+    from onnxmltools.convert import convert_libsvm as _convert_libsvm
     from onnxmltools.convert.common.data_types import FloatTensorType
-    onnx_model = onnxmltools.convert_libsvm(source_model, get_opset(args.ONNXVersion),
-                                initial_types=[('input', FloatTensorType([1, 'None']))])
+    onnx_model = _convert_libsvm(source_model, initial_types=[('input', FloatTensorType([1, 'None']))],
+                                 target_opset=get_opset(args.ONNXVersion))
     return onnx_model
 
-def convert_tensorflow_file(filename, opset, output_names):
+def convert_tensorflow_file(filename, opset, input_names, output_names):
     import tensorflow
     from tensorflow.core.framework import graph_pb2
     from tensorflow.python.tools import freeze_graph
@@ -88,10 +97,8 @@ def convert_tensorflow_file(filename, opset, output_names):
     graph_def = graph_pb2.GraphDef()
     with open(filename, 'rb') as file:
         graph_def.ParseFromString(file.read())
-    g = tf.import_graph_def(graph_def, name='')
-    with tf.Session(graph=g) as sess:
-        converted_model = onnxmltools.convert_tensorflow(sess.graph, target_opset=opset, output_names=output_names)
-        onnx.checker.check_model(converted_model)
+    converted_model = onnxmltools.convert_tensorflow(graph_def, target_opset=opset, input_names=[], output_names=output_names)
+    onnx.checker.check_model(converted_model)
     return converted_model
 
 def tensorFlow_converter(args):

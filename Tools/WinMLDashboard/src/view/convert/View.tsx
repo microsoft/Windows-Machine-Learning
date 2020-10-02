@@ -347,7 +347,7 @@ class ConvertView extends React.Component<IComponentProperties, IComponentState>
         }
         this.deleteCacheFile(packagedFile('tempConvertResult.onnx'));
         
-        this.setState({ currentStep: Step.Idle, source: undefined, console:"Converted successfully!! \n Saved to" + destination + "\n ONNX file loaded."});
+        this.setState({ currentStep: Step.Idle, source: undefined, console:"Converted successfully!! \n Saved to " + destination + "\n ONNX file loaded."});
         // TODO Show dialog (https://developer.microsoft.com/en-us/fabric#/components/dialog) asking whether we should open the converted model
         this.props.setFile(fileFromPath(destination));
         this.props.setSaveFileName(destination);

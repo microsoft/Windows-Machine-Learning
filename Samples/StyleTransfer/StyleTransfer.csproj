@@ -131,6 +131,7 @@
     <Compile Include="AppModel.cs" />
     <Compile Include="AppViewModel.cs" />
     <Compile Include="BooleanToVisibilityConverter.cs" />
+    <Compile Include="ObjectTrackerRenderer.cs" />
     <Compile Include="MediaPlayerFrameSource.cs" />
     <Compile Include="ImageHelper.cs" />
     <Compile Include="MainPage.xaml.cs">
@@ -237,6 +238,7 @@
     <Content Include="Assets\la_muse.onnx" />
     <Content Include="Assets\mosaic.onnx" />
     <Content Include="Assets\udnie.onnx" />
+    <Content Include="Assets\SqueezeNet.onnx" />
     <PRIResource Include="Strings\en-US\Resources.resw" />
   </ItemGroup>
   <ItemGroup>

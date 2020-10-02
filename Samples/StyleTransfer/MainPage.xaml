@@ -238,14 +238,21 @@
                     Content="{Binding AppModel.OutputCaptureElement}" />
 
                 <!--  Input image preview  -->
-                <Image
-                    Name="UIInputImage"
-                    Grid.Column="0"
-                    MaxWidth="720"
-                    MaxHeight="720"
-                    Source="{Binding InputSoftwareBitmapSource}"
-                    Stretch="Uniform" />
-
+                <Grid Grid.Column="0" VerticalAlignment="Stretch">
+                    <Image
+                        Name="UIInputImage"
+                        Canvas.ZIndex="-1"
+                        VerticalAlignment="Top"
+                        HorizontalAlignment="Left"
+                        Grid.Column="0"
+                        MaxWidth="720"
+                        MaxHeight="720"
+                        Source="{Binding InputSoftwareBitmapSource}"
+                        Stretch="Uniform" />
+                    <Canvas Canvas.ZIndex="0" HorizontalAlignment="Left" VerticalAlignment="Top">
+                        <ContentPresenter Content="{Binding UIOverlayCanvas}" />
+                    </Canvas>
+                </Grid>
                 <!--  Output image panel  -->
                 <Grid Grid.Column="1" VerticalAlignment="Stretch">
                     <Image
@@ -289,6 +296,7 @@
                         Visibility="{Binding SaveEnabled, Converter={StaticResource InvertBoolToVis}, Mode=OneWay}"
                         Value="{Binding NumThreads, Mode=TwoWay}" />
                 </Grid>
+                
             </Grid>
 
             <!--  Camera selection controls  -->

@@ -32,6 +32,9 @@ using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.Devices.Enumeration;
 using Microsoft.Graphics.Canvas;
 using FrameSourceHelper_UWP;
+using ObjectDetectorSkillSample;
+using Windows.UI.Xaml;
+using Windows.Foundation;
 
 namespace StyleTransfer
 {
@@ -67,6 +70,14 @@ namespace StyleTransfer
         // Locks
         private SemaphoreSlim m_lock = new SemaphoreSlim(1);
         private MediaPlayerFrameSource m_frameSource = null;
+        private VideoFrame m_renderTargetFrame = null;
+        private uint m_frameCounter = 0;
+        private uint m_maxNumberTrackers = 5;
+        private uint m_maxTrackerHistoryLength = 20;
+        private uint m_detectorEvalInterval = 150;
+        private BoundingBoxRenderer m_renderer = null;
+        private List<DetectionResult> m_detections = null;
+
 
         public AppViewModel()
         {
@@ -80,6 +91,9 @@ namespace StyleTransfer
 
             _inputSoftwareBitmapSource = new SoftwareBitmapSource();
             _outputSoftwareBitmapSource = new SoftwareBitmapSource();
+            _UIOverlayCanvas = new Canvas();
+            _UIOverlayCanvas.Width = 200;
+            _UIOverlayCanvas.Height = 200;
             _saveEnabled = true;
 
             _notifier = new StyleTransferEffectComponent.StyleTransferEffectNotifier();
@@ -95,6 +109,10 @@ namespace StyleTransfer
             _isPreviewing = false;
             NumThreads = 5;
             NotifyUser(true);
+            // Initialize helper class used to render the skill results on screen
+            m_renderer = new BoundingBoxRenderer(UIOverlayCanvas);
+            m_detections = new List<DetectionResult>();
+
         }
 
         private AppModel _appModel;
@@ -179,6 +197,20 @@ namespace StyleTransfer
             set
             {
                 _outputSoftwareBitmapSource = value;
+                OnPropertyChanged();
+            }
+        }
+
+        private Canvas _UIOverlayCanvas;
+        public Canvas UIOverlayCanvas
+        {
+            get
+            {
+                return _UIOverlayCanvas;
+            }
+            set
+            {
+                _UIOverlayCanvas = value;
                 OnPropertyChanged();
             }
         }
@@ -364,6 +396,7 @@ namespace StyleTransfer
         public async Task StartVideoPick()
         {
             StorageFile videoPath = await ImageHelper.GetSelectedStorageFile();
+            
             await GetStream(videoPath);
         }
 
@@ -384,8 +417,14 @@ namespace StyleTransfer
                 }
 
                 // Create new frame source and register a callback if the source fails along the way
-                m_frameSource = await MediaPlayerFrameSource.CreateFromStorageFileAsyncTask(videoPath);
-
+                m_frameSource = await MediaPlayerFrameSource.CreateFromStorageFileAsyncTask(
+                    videoPath,
+                    (sender, message) =>
+                    {
+                        NotifyUser(false, message);
+                    });
+                // Clear existing trackers
+                m_frameCounter = 0;
 
             }
             m_lock.Release();
@@ -415,7 +454,11 @@ namespace StyleTransfer
                     {
                         // Evaluate()
                         // _appModel.InputFrame = frame;
-                        EvaluateVideoFrameAsync_2(frame);
+                        await DisplayFrameAndResultAsync(frame);
+                    }
+                    catch (Exception ex)
+                    {
+                        NotifyUser(false, ex.Message);
                     }
                     finally
                     {
@@ -425,7 +468,108 @@ namespace StyleTransfer
 #pragma warning restore CS4014
             }
         }
+        private async Task DisplayFrameAndResultAsync(VideoFrame frame)
+        {
+            await DispatcherHelper.RunAsync(async () =>
+            {
+                m_detections.Clear();
+                try
+                {
+                    SoftwareBitmap targetSoftwareBitmap = frame.SoftwareBitmap;
 
+                    // If we receive a Direct3DSurface-backed VideoFrame, convert to a SoftwareBitmap in a format that can be rendered via the UI element
+                    if (targetSoftwareBitmap == null)
+                    {
+                        if (m_renderTargetFrame == null)
+                        {
+                            m_renderTargetFrame = new VideoFrame(BitmapPixelFormat.Bgra8, frame.Direct3DSurface.Description.Width, frame.Direct3DSurface.Description.Height, BitmapAlphaMode.Ignore);
+                        }
+
+                        // Leverage the VideoFrame.CopyToAsync() method that can convert the input Direct3DSurface-backed VideoFrame to a SoftwareBitmap-backed VideoFrame
+                        await frame.CopyToAsync(m_renderTargetFrame);
+                        targetSoftwareBitmap = m_renderTargetFrame.SoftwareBitmap;
+                    }
+                    // Else, if we receive a SoftwareBitmap-backed VideoFrame, if its format cannot already be rendered via the UI element, convert it accordingly
+                    else
+                    {
+                        if (targetSoftwareBitmap.BitmapPixelFormat != BitmapPixelFormat.Bgra8 || targetSoftwareBitmap.BitmapAlphaMode != BitmapAlphaMode.Ignore)
+                        {
+                            if (m_renderTargetFrame == null)
+                            {
+                                m_renderTargetFrame = new VideoFrame(BitmapPixelFormat.Bgra8, targetSoftwareBitmap.PixelWidth, targetSoftwareBitmap.PixelHeight, BitmapAlphaMode.Ignore);
+                            }
+
+                            // Leverage the VideoFrame.CopyToAsync() method that can convert the input SoftwareBitmap-backed VideoFrame to a different format
+                            await frame.CopyToAsync(m_renderTargetFrame);
+                            targetSoftwareBitmap = m_renderTargetFrame.SoftwareBitmap;
+                        }
+                    }
+                    // await m_processedBitmapSource.SetBitmapAsync(targetSoftwareBitmap);
+                    _appModel.InputFrame = VideoFrame.CreateWithSoftwareBitmap(targetSoftwareBitmap);
+                    await InputSoftwareBitmapSource.SetBitmapAsync(targetSoftwareBitmap);
+
+                    // Lock so eval + binding not destroyed mid-evaluation
+                    Debug.Write("Eval Begin | ");
+                    LearningModelEvaluationResult results;
+                    lock (_processLock)
+                    {
+                        Debug.Write("Eval Lock | ");
+                        _binding.Bind(_inputImageDescription, ImageFeatureValue.CreateFromVideoFrame(_appModel.InputFrame));
+                        // _binding.Bind(_outputImageDescription, ImageFeatureValue.CreateFromVideoFrame(_appModel.OutputFrame));
+                        results = _session.Evaluate(_binding, "test");
+                    }
+                    var resultTensor = results.Outputs[_outputImageDescription] as TensorFloat;
+                    var resultVector = resultTensor.GetAsVectorView();
+                    var resultShape = resultTensor.Shape;
+                    for (int i = 0; i < resultShape.Count; i++)
+                    {
+                        Debug.Write($"{resultShape.ElementAt(i)}\n");
+                    }
+                    for (int i = 0; i < resultVector.Count; i++)
+                    {
+                        Debug.Write($"{resultVector.ElementAt(i)}");
+                    }
+                    Debug.Write("Eval Unlock\n");
+                    
+                    // Parse Results
+                    IReadOnlyDictionary<string, object> outputs = results.Outputs;
+                    foreach (var output in outputs)
+                    {
+                        Debug.WriteLine($"{output.Key} : {output.Value} -> {output.Value.GetType()}");
+                    }
+
+                    for (int i =0; i< 10; ++i)
+                    {
+                        Rect clampedRect = new Rect(0, 0, 200, 200);
+                        DetectionResult tempTrackResult = new DetectionResult()
+                        {
+                            label = "people",
+                            bbox = clampedRect,
+                        };
+                        m_detections.Add(tempTrackResult);
+                        clampedRect = new Rect(1, 1, 200, 200);
+                        tempTrackResult = new DetectionResult()
+                        {
+                            label = "people",
+                            bbox = clampedRect,
+                        };
+                        m_detections.Add(tempTrackResult);
+                    }
+                    // await OutputSoftwareBitmapSource.SetBitmapAsync(_appModel.OutputFrame.SoftwareBitmap);
+                    //m_renderer.ClearCanvas();
+                    m_renderer.Render(m_detections);
+                }
+                catch (TaskCanceledException)
+                {
+                    // no-op: we expect this exception when we change media sources
+                    // and can safely ignore/continue
+                }
+                catch (Exception ex)
+                {
+                    NotifyUser(false, $"Exception while rendering results: {ex.Message}");
+                }
+            });
+        }
 
         public async Task ChangeImage()
         {

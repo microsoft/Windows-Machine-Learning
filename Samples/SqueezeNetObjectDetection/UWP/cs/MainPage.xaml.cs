@@ -207,6 +207,7 @@ namespace SqueezeNetObjectDetection
 
                     // retrieve results from evaluation
                     var resultTensor = results.Outputs["softmaxout_1"] as TensorFloat;
+                    
                     var resultVector = resultTensor.GetAsVectorView();
 
                     // Find the top 3 probabilities

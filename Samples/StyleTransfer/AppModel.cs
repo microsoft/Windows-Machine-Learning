@@ -28,7 +28,7 @@ namespace StyleTransfer
     {
         public AppModel()
         {
-            this._modelSource = "candy";
+            this._modelSource = "SqueezeNet";
             this._selectedCameraIndex = 0;
             this._outputCaptureElement = new CaptureElement();
         }
@@ -38,10 +38,8 @@ namespace StyleTransfer
             get
             {
                 return new List<string>
-                {   "candy",
-                    "mosaic",
-                    "la_muse",
-                    "udnie"
+                {
+                    "SqueezeNet"
                 };
             }
         }

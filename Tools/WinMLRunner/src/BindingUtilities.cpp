@@ -388,8 +388,12 @@ namespace BindingUtilities
         uint32_t pos = 0;
         std::string line;
         float_t* pData = (float_t*)inputBufferDesc.elements;
+        uint32_t expectedPos = (inputBufferDesc.totalSizeInBytes * inputBufferDesc.numChannelsPerElement) /
+                               inputBufferDesc.elementStrideInBytes;
         while (std::getline(fileStream, line, ','))
         {
+            if (pos > expectedPos)
+                throw hresult_invalid_argument(L"Too many elements in CSV file to fit in input of what model expects!");
             *pData = std::stof(line);
             ++pData;
 
@@ -399,8 +403,7 @@ namespace BindingUtilities
         }
 
         // Check to see if csv didn't fill in entire buffer and throw or fill with zeros?
-        if (pos != (inputBufferDesc.totalSizeInBytes * inputBufferDesc.numChannelsPerElement) /
-                       inputBufferDesc.elementStrideInBytes)
+        if (pos != expectedPos)
         {
             throw hresult_invalid_argument(L"CSV input size/shape is different from what model expects!");
         }

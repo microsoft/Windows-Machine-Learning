@@ -28,7 +28,7 @@ namespace StyleTransfer
     {
         public AppModel()
         {
-            this._modelSource = "SqueezeNet";
+            this._modelSource = "yolov4_coco_nchw_opset10";
             this._selectedCameraIndex = 0;
             this._outputCaptureElement = new CaptureElement();
         }
@@ -39,7 +39,7 @@ namespace StyleTransfer
             {
                 return new List<string>
                 {
-                    "SqueezeNet"
+                    "yolov4_coco_nchw_opset10"
                 };
             }
         }

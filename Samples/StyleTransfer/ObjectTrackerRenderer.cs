@@ -17,6 +17,7 @@ namespace ObjectDetectorSkillSample
     {
         public string label;
         public Rect bbox;
+        public double prob;
     }
 
     /// <summary>

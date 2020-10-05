@@ -76,9 +76,105 @@ namespace StyleTransfer
         private uint m_maxTrackerHistoryLength = 20;
         private uint m_detectorEvalInterval = 150;
         private BoundingBoxRenderer m_renderer = null;
-        private List<DetectionResult> m_detections = null;
 
+        string[] labels = new string[80]
+        {
+            "person",
+            "bicycle",
+            "car",
+            "motorbike",
+            "aeroplane",
+            "bus",
+            "train",
+            "truck",
+            "boat",
+            "traffic light",
+            "fire hydrant",
+            "stop sign",
+            "parking meter",
+            "bench",
+            "bird",
+            "cat",
+            "dog",
+            "horse",
+            "sheep",
+            "cow",
+            "elephant",
+            "bear",
+            "zebra",
+            "giraffe",
+            "backpack",
+            "umbrella",
+            "handbag",
+            "tie",
+            "suitcase",
+            "frisbee",
+            "skis",
+            "snowboard",
+            "sports ball",
+            "kite",
+            "baseball bat",
+            "baseball glove",
+            "skateboard",
+            "surfboard",
+            "tennis racket",
+            "bottle",
+            "wine glass",
+            "cup",
+            "fork",
+            "knife",
+            "spoon",
+            "bowl",
+            "banana",
+            "apple",
+            "sandwich",
+            "orange",
+            "broccoli",
+            "carrot",
+            "hot dog",
+            "pizza",
+            "donut",
+            "cake",
+            "chair",
+            "sofa",
+            "potted plant",
+            "bed",
+            "dining table",
+            "toilet",
+            "tvmonitor",
+            "laptop",
+            "mouse",
+            "remote",
+            "keyboard",
+            "cell phone",
+            "microwave",
+            "oven",
+            "toaster",
+            "sink",
+            "refrigerator",
+            "book",
+            "clock",
+            "vase",
+            "scissors",
+            "teddy bear",
+            "hair drier",
+            "toothbrush"
+        };
 
+        class Comparer : IComparer<DetectionResult>
+        {
+            public int Compare(DetectionResult x, DetectionResult y)
+            {
+                if (x.prob > y.prob)
+                {
+                    return 0;
+                }
+                else
+                {
+                    return 1;
+                }
+            }
+        }
         public AppViewModel()
         {
             _appModel = new AppModel();
@@ -92,8 +188,8 @@ namespace StyleTransfer
             _inputSoftwareBitmapSource = new SoftwareBitmapSource();
             _outputSoftwareBitmapSource = new SoftwareBitmapSource();
             _UIOverlayCanvas = new Canvas();
-            _UIOverlayCanvas.Width = 200;
-            _UIOverlayCanvas.Height = 200;
+            _UIOverlayCanvas.Width = 1280;
+            _UIOverlayCanvas.Height = 920;
             _saveEnabled = true;
 
             _notifier = new StyleTransferEffectComponent.StyleTransferEffectNotifier();
@@ -111,7 +207,7 @@ namespace StyleTransfer
             NotifyUser(true);
             // Initialize helper class used to render the skill results on screen
             m_renderer = new BoundingBoxRenderer(UIOverlayCanvas);
-            m_detections = new List<DetectionResult>();
+            // m_detections = new List<DetectionResult>();
 
         }
 
@@ -454,7 +550,8 @@ namespace StyleTransfer
                     {
                         // Evaluate()
                         // _appModel.InputFrame = frame;
-                        await DisplayFrameAndResultAsync(frame);
+                        IReadOnlyList<DetectionResult> detectedObjects = DetectObjectsAsync(frame);
+                        await DisplayFrameAndResultAsync(frame, detectedObjects);
                     }
                     catch (Exception ex)
                     {
@@ -468,11 +565,77 @@ namespace StyleTransfer
 #pragma warning restore CS4014
             }
         }
-        private async Task DisplayFrameAndResultAsync(VideoFrame frame)
+
+        private IReadOnlyList<DetectionResult> DetectObjectsAsync(VideoFrame frame)
+        {
+
+            LearningModelEvaluationResult results;
+            lock (_processLock)
+            {
+                _binding.Bind(_inputImageDescription, ImageFeatureValue.CreateFromVideoFrame(frame));
+                // _binding.Bind(_outputImageDescription, ImageFeatureValue.CreateFromVideoFrame(_appModel.OutputFrame));
+                results = _session.Evaluate(_binding, "test");
+            }
+            return ParseOutput(results);
+        }
+
+        private List<DetectionResult> ParseOutput(LearningModelEvaluationResult results)
+        {
+            List<DetectionResult> detections = new List<DetectionResult>();
+            var resultTensor = results.Outputs[_outputImageDescription] as TensorFloat;
+            var resultVector = resultTensor.GetAsVectorView();
+            var resultShape = resultTensor.Shape;
+
+            for (int i = 0; i < resultVector.Count / 84; i++)
+            {
+                Debug.Write($"{i}\n");
+                if (resultVector.ElementAt(84 * i) < 0 ||
+                    resultVector.ElementAt(84 * i + 1) < 0 ||
+                    resultVector.ElementAt(84 * i + 2) < 0 ||
+                    resultVector.ElementAt(84 * i + 3) < 0)
+                {
+                    continue;
+                }
+                //Rect clampedRect = new Rect(
+                //    new Point(resultVector.ElementAt(84 * i), resultVector.ElementAt(84 * i + 1)),
+                //    new Point(resultVector.ElementAt(84 * i + 2), resultVector.ElementAt(84 * i + 3)));
+                Rect clampedRect = new Rect();
+                clampedRect.X = resultVector.ElementAt(84 * i);
+                clampedRect.Y = resultVector.ElementAt(84 * i + 1);
+                clampedRect.Width = resultVector.ElementAt(84 * i + 2);
+                clampedRect.Height = resultVector.ElementAt(84 * i + 3);
+
+                float max_prob = 0;
+                int max_index = -1;
+                for (int j = 0; j < 80; ++j)
+                {
+                    if (resultVector.ElementAt(84 * i + 4 + j) > max_prob)
+                    {
+                        max_prob = resultVector.ElementAt(84 * i + 4 + j);
+                        max_index = j;
+                    }
+                }
+                if (max_index != 0 && max_index != 6)
+                {
+                    continue;
+                }
+                Debug.Write($"{i} : {labels[max_index]}\n");
+                detections.Add(new DetectionResult()
+                {
+                    label = labels[max_index],
+                    bbox = clampedRect,
+                    prob = max_prob
+                });
+
+            }
+            Comparer cp = new Comparer();
+            detections.Sort(cp);
+            return detections;
+        }
+        private async Task DisplayFrameAndResultAsync(VideoFrame frame, IReadOnlyList<DetectionResult> detectedObjects)
         {
             await DispatcherHelper.RunAsync(async () =>
             {
-                m_detections.Clear();
                 try
                 {
                     SoftwareBitmap targetSoftwareBitmap = frame.SoftwareBitmap;
@@ -509,55 +672,26 @@ namespace StyleTransfer
                     await InputSoftwareBitmapSource.SetBitmapAsync(targetSoftwareBitmap);
 
                     // Lock so eval + binding not destroyed mid-evaluation
-                    Debug.Write("Eval Begin | ");
-                    LearningModelEvaluationResult results;
-                    lock (_processLock)
-                    {
-                        Debug.Write("Eval Lock | ");
-                        _binding.Bind(_inputImageDescription, ImageFeatureValue.CreateFromVideoFrame(_appModel.InputFrame));
-                        // _binding.Bind(_outputImageDescription, ImageFeatureValue.CreateFromVideoFrame(_appModel.OutputFrame));
-                        results = _session.Evaluate(_binding, "test");
-                    }
-                    var resultTensor = results.Outputs[_outputImageDescription] as TensorFloat;
-                    var resultVector = resultTensor.GetAsVectorView();
-                    var resultShape = resultTensor.Shape;
-                    for (int i = 0; i < resultShape.Count; i++)
-                    {
-                        Debug.Write($"{resultShape.ElementAt(i)}\n");
-                    }
-                    for (int i = 0; i < resultVector.Count; i++)
-                    {
-                        Debug.Write($"{resultVector.ElementAt(i)}");
-                    }
-                    Debug.Write("Eval Unlock\n");
+                    //Debug.Write("Eval Begin | ");
+                    //LearningModelEvaluationResult results;
+                    //lock (_processLock)
+                    //{
+                    //    Debug.Write("Eval Lock | ");
+                    //    _binding.Bind(_inputImageDescription, ImageFeatureValue.CreateFromVideoFrame(_appModel.InputFrame));
+                    //    // _binding.Bind(_outputImageDescription, ImageFeatureValue.CreateFromVideoFrame(_appModel.OutputFrame));
+                    //    results = _session.Evaluate(_binding, "test");
+                    //}
+                    //Debug.Write("Eval Unlock\n");
                     
                     // Parse Results
-                    IReadOnlyDictionary<string, object> outputs = results.Outputs;
-                    foreach (var output in outputs)
-                    {
-                        Debug.WriteLine($"{output.Key} : {output.Value} -> {output.Value.GetType()}");
-                    }
-
-                    for (int i =0; i< 10; ++i)
-                    {
-                        Rect clampedRect = new Rect(0, 0, 200, 200);
-                        DetectionResult tempTrackResult = new DetectionResult()
-                        {
-                            label = "people",
-                            bbox = clampedRect,
-                        };
-                        m_detections.Add(tempTrackResult);
-                        clampedRect = new Rect(1, 1, 200, 200);
-                        tempTrackResult = new DetectionResult()
-                        {
-                            label = "people",
-                            bbox = clampedRect,
-                        };
-                        m_detections.Add(tempTrackResult);
-                    }
+                    //IReadOnlyDictionary<string, object> outputs = results.Outputs;
+                    //foreach (var output in outputs)
+                    //{
+                    //    Debug.WriteLine($"{output.Key} : {output.Value} -> {output.Value.GetType()}");
+                    //}
                     // await OutputSoftwareBitmapSource.SetBitmapAsync(_appModel.OutputFrame.SoftwareBitmap);
                     //m_renderer.ClearCanvas();
-                    m_renderer.Render(m_detections);
+                    m_renderer.Render(detectedObjects);
                 }
                 catch (TaskCanceledException)
                 {
@@ -753,7 +887,7 @@ namespace StyleTransfer
 
         public void debugModelIO()
         {
-            string _inName, _outName;
+            string _inName; // _outName;
             foreach (var inputF in _learningModel.InputFeatures)
             {
                 Debug.WriteLine($"input | kind:{inputF.Kind}, name:{inputF.Name}, type:{inputF.GetType()}");
@@ -771,23 +905,23 @@ namespace StyleTransfer
                     $"Height:{(imgDesc == null ? tfDesc.Shape[2] : imgDesc.Height)}, " +
                     $"Width: {(imgDesc == null ? tfDesc.Shape[3] : imgDesc.Width)}");
             }
-            foreach (var outputF in _learningModel.OutputFeatures)
-            {
-                Debug.WriteLine($"output | kind:{outputF.Kind}, name:{outputF.Name}, type:{outputF.GetType()}");
-#pragma warning disable CS0219 // The variable 'i' is assigned but its value is never used
-                int i = 0;
-#pragma warning restore CS0219 // The variable 'i' is assigned but its value is never used
-                ImageFeatureDescriptor imgDesc = outputF as ImageFeatureDescriptor;
-                TensorFeatureDescriptor tfDesc = outputF as TensorFeatureDescriptor;
-                _outWidth = (uint)(imgDesc == null ? tfDesc.Shape[3] : imgDesc.Width);
-                _outHeight = (uint)(imgDesc == null ? tfDesc.Shape[2] : imgDesc.Height);
-                _outName = outputF.Name;
+//            foreach (var outputF in _learningModel.OutputFeatures)
+//            {
+//                Debug.WriteLine($"output | kind:{outputF.Kind}, name:{outputF.Name}, type:{outputF.GetType()}");
+//#pragma warning disable CS0219 // The variable 'i' is assigned but its value is never used
+//                int i = 0;
+//#pragma warning restore CS0219 // The variable 'i' is assigned but its value is never used
+//                ImageFeatureDescriptor imgDesc = outputF as ImageFeatureDescriptor;
+//                TensorFeatureDescriptor tfDesc = outputF as TensorFeatureDescriptor;
+//                _outWidth = (uint)(imgDesc == null ? tfDesc.Shape[3] : imgDesc.Width);
+//                _outHeight = (uint)(imgDesc == null ? tfDesc.Shape[2] : imgDesc.Height);
+//                _outName = outputF.Name;
 
-                Debug.WriteLine($"N: {(imgDesc == null ? tfDesc.Shape[0] : 1)}, " +
-                   $"Channel: {(imgDesc == null ? tfDesc.Shape[1].ToString() : imgDesc.BitmapPixelFormat.ToString())}, " +
-                   $"Height:{(imgDesc == null ? tfDesc.Shape[2] : imgDesc.Height)}, " +
-                   $"Width: {(imgDesc == null ? tfDesc.Shape[3] : imgDesc.Width)}");
-            }
+//                Debug.WriteLine($"N: {(imgDesc == null ? tfDesc.Shape[0] : 1)}, " +
+//                   $"Channel: {(imgDesc == null ? tfDesc.Shape[1].ToString() : imgDesc.BitmapPixelFormat.ToString())}, " +
+//                   $"Height:{(imgDesc == null ? tfDesc.Shape[2] : imgDesc.Height)}, " +
+//                   $"Width: {(imgDesc == null ? tfDesc.Shape[3] : imgDesc.Width)}");
+//            }
         }
 
         private async Task CleanupCameraAsync()

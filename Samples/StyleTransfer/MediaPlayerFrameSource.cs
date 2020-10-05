@@ -125,7 +125,7 @@ namespace FrameSourceHelper_UWP
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="args"></param>
-        private async void MediaPlayer_VideoFrameAvailable(MediaPlayer sender, object args)
+        private void MediaPlayer_VideoFrameAvailable(MediaPlayer sender, object args)
         {
             m_mediaPlayer.CopyFrameToVideoSurface(m_videoFrame.Direct3DSurface);
 

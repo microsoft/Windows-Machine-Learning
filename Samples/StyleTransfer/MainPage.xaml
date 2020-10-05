@@ -242,14 +242,13 @@
                     <Image
                         Name="UIInputImage"
                         Canvas.ZIndex="-1"
-                        VerticalAlignment="Top"
-                        HorizontalAlignment="Left"
+                        VerticalAlignment="Center"
                         Grid.Column="0"
                         MaxWidth="720"
                         MaxHeight="720"
                         Source="{Binding InputSoftwareBitmapSource}"
                         Stretch="Uniform" />
-                    <Canvas Canvas.ZIndex="0" HorizontalAlignment="Left" VerticalAlignment="Top">
+                    <Canvas Canvas.ZIndex="0" HorizontalAlignment="Center" VerticalAlignment="Center">
                         <ContentPresenter Content="{Binding UIOverlayCanvas}" />
                     </Canvas>
                 </Grid>

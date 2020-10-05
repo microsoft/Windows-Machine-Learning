@@ -239,6 +239,7 @@
     <Content Include="Assets\mosaic.onnx" />
     <Content Include="Assets\udnie.onnx" />
     <Content Include="Assets\SqueezeNet.onnx" />
+    <Content Include="Assets\yolov4_coco_nchw_opset10.onnx" />
     <PRIResource Include="Strings\en-US\Resources.resw" />
   </ItemGroup>
   <ItemGroup>

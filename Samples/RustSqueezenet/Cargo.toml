@@ -1,0 +1,21 @@
+[package]
+name = "rust_squeezenet"
+version = "0.1.0"
+authors = ["Microsoft"]
+edition = "2018"
+
+[build]
+target-dir = "target"
+
+[dependencies]
+winrt = { path = "./winrt-rs" }
+# NOTE: winrt_macros is needed as a dependency because Rust 1.46 is needed and hasn't been released yet.
+winrt_macros = { git = "https://github.com/microsoft/winrt-rs",  version = "0.7.2" }
+
+[build-dependencies]
+winrt = { path = "./winrt-rs" }
+
+# Nuget packages
+[package.metadata.winrt.dependencies]
+"Microsoft.Windows.SDK.Contracts" = "10.0.19041.1"
+"Microsoft.AI.MachineLearning" = "1.4.0"

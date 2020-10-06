@@ -5,6 +5,20 @@
 #include <codecvt>
 using namespace std;
 
+void PopulateSessionOptions(LearningModelSessionOptions& sessionOptions)
+{
+    // Batch Size Override as 1
+    try
+    {
+        sessionOptions.BatchSizeOverride(1);
+    }
+    catch (...)
+    {
+        printf("Batch size override couldn't be set.\n");
+        throw;
+    }
+}
+
 int main(int argc, char *argv[])
 {
     std::wstring_convert<std::codecvt_utf8<wchar_t>, wchar_t> converter;
@@ -36,7 +50,9 @@ int main(int argc, char *argv[])
         wprintf(error.message().c_str());
         return error.code();
     }
-    int returnCode = run(*commandLineArgs, profiler, deviceList);
-    free(commandLineArgs);
+    LearningModelSessionOptions sessionOptions;
+    PopulateSessionOptions(sessionOptions);
+    int returnCode = run(*commandLineArgs, profiler, deviceList, sessionOptions);
+    delete commandLineArgs;
     return returnCode;
 }

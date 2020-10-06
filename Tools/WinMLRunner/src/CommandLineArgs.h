@@ -1,6 +1,7 @@
 #pragma once
 #include "Common.h"
-
+#include <winrt/Windows.Graphics.Imaging.h>
+#include "TypeHelper.h"
 enum TensorizeFuncs
 {
     Identity = 0,

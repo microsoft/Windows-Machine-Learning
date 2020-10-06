@@ -4,9 +4,6 @@
     <ClCompile Include="src/CommandLineArgs.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src/dllload.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="src/Filehelper.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -14,6 +11,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\LearningModelDeviceHelper.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\BindingUtilities.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\OutputHelper.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -53,5 +56,8 @@
     <Filter Include="Source Files">
       <UniqueIdentifier>{50101483-1f70-4657-bdeb-edbb6b1d0aaf}</UniqueIdentifier>
     </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
   </ItemGroup>
 </Project>

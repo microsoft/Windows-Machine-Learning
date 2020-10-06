@@ -83,6 +83,9 @@ Run a model on the CPU and GPU separately, and by binding the input to the CPU a
 Run a model on the CPU with the input bound to the GPU and loaded as an RGB image:
 > WinMLRunner.exe -model c:\\data\\SqueezeNet.onnx -CPU -GPUBoundInput -RGB
 
+## Using Microsoft.AI.Machinelearning NuGet
+WinMLRunner can be built to use WinML's NuGet package : Microsoft.AI.Machinelearning NuGet. Simply build with the target configuration "Debug_NuGet" or "Release_NuGet". MicrosoftMLRunner.exe will be created and will use ```Microsoft.AI.MachineLearning.dll``` in the immediate directory of the executuble instead of loading ```Windows.AI.MachineLearning.dll``` from System32. MicrosoftMLRunner is useful to compare performance with an older version or testing a newer version of WinML's NuGet. For more information, please reference [Microsoft.AI.MachineLearning NuGet page](https://www.nuget.org/packages/Microsoft.AI.MachineLearning).
+
 ## Default output
 
 **Running a good model:**
@@ -271,7 +274,7 @@ First Iteration Performance (load, bind, session creation, and evaluate):
  ```
 logman start winml -ets -o winmllog.etl -nb 128 640 -bs 128
 logman update trace  winml -p {BCAD6AEE-C08D-4F66-828C-4C43461A033D} 0xffffffffffffffff 0xff -ets         
-WinMLRunner.exe -model C:\Repos\Windows-Machine-Learning\SharedContent\models\SqueezeNet.onnx -debug
+WinMLRunner.exe -model C:\Repos\Windows-Machine-Learning\SharedContent\models\SqueezeNet.onnx -DebugEvaluate
 logman stop winml -ets
  ```
 The winmllog.etl file will appear in the same directory as the WinMLRunner.exe. 
@@ -285,10 +288,6 @@ tracerpt.exe winmllog.etl -o logdump.csv -of CSV
 
 2. Windows Performance Analyzer (from Visual Studio)
  * Launch Windows Performance Analyzer and open the winmllog.etl.
-
-## Dynamic DLL Loading
-
-If you want to run WinMLRunner with another version of WinML (e.g. comparing the performance with an older version or testing a newer version), simply place the `windows.ai.machinelearning.dll` and `directml.dll` files in the same folder as WinMLRunner.exe. WinMLRunner will look for for these DLLs first and fall back to `C:/Windows/System32` if it doesn't find them.
 
 ## Known issues
 

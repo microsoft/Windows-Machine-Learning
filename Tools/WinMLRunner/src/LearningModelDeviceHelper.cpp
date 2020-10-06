@@ -1,12 +1,12 @@
-#include "LearningModelDeviceHelper.h"
-#include "TypeHelper.h"
-#include "Common.h"
 #include "d3d11.h"
 #include "d3dx12.h"
+#include "LearningModelDeviceHelper.h"
+#include "Common.h"
 #include <Windows.Graphics.DirectX.Direct3D11.interop.h>
 #include "Windows.AI.MachineLearning.Native.h"
 #include <codecvt>
 #include "OutputHelper.h"
+#include "TypeHelper.h"
 using namespace winrt::Windows::Graphics::DirectX::Direct3D11;
 
 #ifdef DXCORE_SUPPORTED_BUILD
@@ -143,7 +143,7 @@ void PopulateLearningModelDeviceList(CommandLineArgs& args, std::vector<Learning
                             }
                         }
                         currAdapter = nullptr;
-                        free(driverDescription);
+                        delete driverDescription;
                     }
 
                     if (spAdapter == nullptr)
@@ -158,7 +158,7 @@ void PopulateLearningModelDeviceList(CommandLineArgs& args, std::vector<Learning
                     spAdapter->GetProperty(DXCoreAdapterProperty::DriverDescription, driverDescriptionSize,
                                            driverDescription);
                     printf("Using adapter : %s\n", driverDescription);
-                    free(driverDescription);
+                    delete driverDescription;
                     IUnknown* pAdapter = spAdapter.get();
                     com_ptr<IDXGIAdapter> spDxgiAdapter;
                     D3D_FEATURE_LEVEL d3dFeatureLevel = D3D_FEATURE_LEVEL_1_0_CORE;

@@ -7,6 +7,7 @@
 #include <Windows.Graphics.DirectX.Direct3D11.interop.h>
 #include "Scenarios.h"
 #include <winrt/Windows.Foundation.Metadata.h>
+
 using namespace winrt::Windows::Graphics::DirectX::Direct3D11;
 using namespace winrt::Windows::Foundation::Metadata;
 std::vector<ILearningModelFeatureValue> GenerateInputFeatures(const LearningModel& model, const CommandLineArgs& args,
@@ -124,33 +125,18 @@ HRESULT LoadModel(LearningModel& model, const std::wstring& path, bool capturePe
     return S_OK;
 }
 
-void PopulateSessionOptions(LearningModelSessionOptions& sessionOptions)
-{
-    // Batch Size Override as 1
-    try
-    {
-        sessionOptions.BatchSizeOverride(1);
-    }
-    catch (...)
-    {
-        printf("Batch size override couldn't be set.\n");
-        throw;
-    }
-}
-
 void CreateSessionConsideringSupportForSessionOptions(LearningModelSession& session,
                                                       LearningModel& model,
                                                       Profiler<WINML_MODEL_TEST_PERF>& profiler,
                                                       CommandLineArgs& args,
-                                                      const LearningModelDeviceWithMetadata& learningModelDevice)
+                                                      const LearningModelDeviceWithMetadata& learningModelDevice,
+                                                      const LearningModelSessionOptions& sessionOptions)
 {
     auto statics = get_activation_factory<ApiInformation, IApiInformationStatics>();
     bool isSessionOptionsTypePresent = isSessionOptionsTypePresent =
         statics.IsTypePresent(L"Windows.AI.MachineLearning.LearningModelSessionOptions");
     if (isSessionOptionsTypePresent)
     {
-        LearningModelSessionOptions sessionOptions;
-        PopulateSessionOptions(sessionOptions);
         if (args.IsPerformanceCapture())
         {
             WINML_PROFILING_START(profiler, WINML_MODEL_TEST_PERF::CREATE_SESSION);
@@ -175,8 +161,13 @@ void CreateSessionConsideringSupportForSessionOptions(LearningModelSession& sess
     }
 }
 
-HRESULT CreateSession(LearningModelSession& session, LearningModel& model, const LearningModelDeviceWithMetadata& learningModelDevice,
-                      CommandLineArgs& args, OutputHelper& output, Profiler<WINML_MODEL_TEST_PERF>& profiler)
+HRESULT CreateSession(LearningModelSession& session,
+                      LearningModel& model,
+                      const LearningModelDeviceWithMetadata& learningModelDevice,
+                      CommandLineArgs& args,
+                      OutputHelper& output,
+                      Profiler<WINML_MODEL_TEST_PERF>& profiler,
+                      const LearningModelSessionOptions& sessionOptions)
 {
     if (model == nullptr)
     {
@@ -184,7 +175,7 @@ HRESULT CreateSession(LearningModelSession& session, LearningModel& model, const
     }
     try
     {
-        CreateSessionConsideringSupportForSessionOptions(session, model, profiler, args, learningModelDevice);
+        CreateSessionConsideringSupportForSessionOptions(session, model, profiler, args, learningModelDevice, sessionOptions);
     }
     catch (hresult_error hr)
     {
@@ -535,7 +526,8 @@ void RunConfiguration(CommandLineArgs& args, OutputHelper& output, LearningModel
 }
 int run(CommandLineArgs& args,
         Profiler<WINML_MODEL_TEST_PERF>& profiler,
-        const std::vector<LearningModelDeviceWithMetadata>& deviceList) try
+        const std::vector<LearningModelDeviceWithMetadata>& deviceList,
+        const LearningModelSessionOptions& sessionOptions) try
 {
     // Initialize COM in a multi-threaded environment.
     winrt::init_apartment();
@@ -600,7 +592,7 @@ int run(CommandLineArgs& args,
                             sessionCreationIteration < args.NumSessionCreationIterations();
                             sessionCreationIteration++)
                         {
-                            lastHr = CreateSession(session, model, learningModelDevice,args, output, profiler);
+                            lastHr = CreateSession(session, model, learningModelDevice,args, output, profiler, sessionOptions);
                             if (FAILED(lastHr))
                             {
                                 continue;

@@ -40,7 +40,6 @@ export interface IProperties {
 interface IComponentProperties {
     file: File,
     properties: IProperties,
-    quantizationOption: string,
     setFile: typeof setFile,
 }
 
@@ -148,7 +147,6 @@ class RunView extends React.Component<IComponentProperties, IComponentState> {
 
     private getView = () => {
         const osInfo = require('os').release()
-        log.info("run " + this.props.quantizationOption)
         let opset:number = 7
         if(this.props.properties !== undefined && this.props.properties['opsetImport.ai.onnx'] !== undefined) {
             opset = parseInt(this.props.properties['opsetImport.ai.onnx'], 10);
@@ -419,7 +417,6 @@ class RunView extends React.Component<IComponentProperties, IComponentState> {
 const mapStateToProps = (state: IState) => ({
     file: state.file,
     properties: state.properties,
-    quantizationOption: state.quantizationOption
 });
 
 const mapDispatchToProps = {

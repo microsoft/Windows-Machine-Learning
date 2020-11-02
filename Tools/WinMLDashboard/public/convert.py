@@ -44,46 +44,46 @@ def coreml_converter(args):
     import sys
     sys.modules['keras'] = None
     import coremltools
-    from onnxmltools.convert import convert_coreml as _convert_coreml
+    from onnxmltools.convert import convert_coreml
     source_model = coremltools.utils.load_spec(args.source)
-    onnx_model = _convert_coreml(source_model, name=args.name, target_opset=get_opset(args.ONNXVersion))
+    onnx_model = convert_coreml(source_model, name=args.name, target_opset=get_opset(args.ONNXVersion))
     return onnx_model
 
 
 def keras_converter(args):
-    from onnxmltools.convert import convert_keras as _convert_keras
+    from onnxmltools.convert import convert_keras
     from keras.models import load_model
     source_model = load_model(args.source)
-    onnx_model = _convert_keras(source_model, name = args.name, target_opset=get_opset(args.ONNXVersion))
+    onnx_model = convert_keras(source_model, name = args.name, target_opset=get_opset(args.ONNXVersion))
     return onnx_model
 
 def scikit_learn_converter(args):
     from sklearn.externals import joblib
     source_model = joblib.load(args.source) 
     from onnxmltools.convert.common.data_types import FloatTensorType
-    from onnxmltools.convert import convert_sklearn as _convert_sklearn
+    from onnxmltools.convert import convert_sklearn
 
-    onnx_model = _convert_sklearn(source_model, initial_types=[('input', FloatTensorType(source_model.coef_.shape))],
+    onnx_model = convert_sklearn(source_model, initial_types=[('input', FloatTensorType(source_model.coef_.shape))],
                                   target_opset=get_opset(args.ONNXVersion))
     return onnx_model
 
 def xgboost_converter(args):
     from sklearn.externals import joblib
     source_model = joblib.load(args.source)
-    from onnxmltools.convert import convert_xgboost as _convert_xgboost
+    from onnxmltools.convert import convert_xgboost
     from onnxmltools.convert.common.data_types import FloatTensorType
-    onnx_model = _convert_xgboost(source_model,initial_types=[('input', FloatTensorType(shape=[1, 'None']))],
+    onnx_model = convert_xgboost(source_model,initial_types=[('input', FloatTensorType(shape=[1, 'None']))],
                                   target_opset=get_opset(args.ONNXVersion))
     return onnx_model
 
 def libSVM_converter(args):
     # not using target_opset for libsvm convert since the converter is only generating operators in ai.onnx.ml domain
     # but just passing in target_opset for consistency
-    from libsvm.svmutil import svm_load_model as _svm_load_model
-    source_model = _svm_load_model(args.source)
-    from onnxmltools.convert import convert_libsvm as _convert_libsvm
+    from libsvm.svmutil import svm_load_model
+    source_model = svm_load_model(args.source)
+    from onnxmltools.convert import convert_libsvm
     from onnxmltools.convert.common.data_types import FloatTensorType
-    onnx_model = _convert_libsvm(source_model, initial_types=[('input', FloatTensorType([1, 'None']))],
+    onnx_model = convert_libsvm(source_model, initial_types=[('input', FloatTensorType([1, 'None']))],
                                  target_opset=get_opset(args.ONNXVersion))
     return onnx_model
 

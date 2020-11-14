@@ -29,16 +29,14 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
-    <None Include="..\..\..\SharedContent\models\candy.onnx">
-      <Filter>Resource Files</Filter>
-    </None>
   </ItemGroup>
   <ItemGroup>
-    <Image Include="..\..\..\SharedContent\media\fish.png">
+    <CopyFileToFolders Include="..\..\..\SharedContent\models\candy.onnx" />
+    <CopyFileToFolders Include="..\..\..\SharedContent\media\fish.png">
       <Filter>Resource Files</Filter>
-    </Image>
-    <Image Include="..\..\..\SharedContent\media\kitten_224.png">
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\..\..\SharedContent\media\kitten_224.png">
       <Filter>Resource Files</Filter>
-    </Image>
+    </CopyFileToFolders>
   </ItemGroup>
 </Project>

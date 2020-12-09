@@ -7,6 +7,8 @@
 #include <filesystem>
 #include <codecvt>
 #include "Filehelper.h"
+#include "debugapi.h"
+
 void CommandLineArgs::PrintUsage()
 {
 #ifdef USE_WINML_NUGET
@@ -382,6 +384,14 @@ CommandLineArgs::CommandLineArgs(const std::vector<std::wstring>& args)
         {
             CheckNextArgument(args, i);
             SetGarbageDataMaxValue(std::stoul(args[++i].c_str()));
+        }
+        else if ((_wcsicmp(args[i].c_str(), L"-WaitForDebugger") == 0))
+        {
+            while (!IsDebuggerPresent())
+            {
+                Sleep(100);
+            }
+            __debugbreak();
         }
         else
         {

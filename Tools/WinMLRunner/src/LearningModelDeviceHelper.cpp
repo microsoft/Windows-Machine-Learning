@@ -7,6 +7,7 @@
 #include "Windows.AI.MachineLearning.Native.h"
 #include <codecvt>
 #include "OutputHelper.h"
+#include "windows.ai.machinelearning.native.internal.h"
 using namespace winrt::Windows::Graphics::DirectX::Direct3D11;
 
 #ifdef DXCORE_SUPPORTED_BUILD
@@ -227,6 +228,10 @@ void PopulateLearningModelDeviceList(CommandLineArgs& args, std::vector<Learning
                                              deviceCreationLocation 
                     };
                     OutputHelper::PrintLearningModelDevice(learningModelDeviceWithMetadata);
+                    if (deviceType != DeviceType::CPU && args.IsMetacommandsDisabled())
+                    {
+                        learningModelDeviceWithMetadata.LearningModelDevice.as<IMetacommandsController>()->SetMetacommandsEnabled(false);
+                    }
                     deviceList.push_back(learningModelDeviceWithMetadata);
                 }
             }

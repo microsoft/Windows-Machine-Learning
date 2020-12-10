@@ -42,7 +42,11 @@ public:
     bool IsOutputPerf() const { return m_perfOutput; }
     bool IsSaveTensor() const { return m_saveTensor; }
     bool IsTimeLimitIterations() const { return m_timeLimitIterations; }
-    BitmapInterpolationMode AutoScaleInterpMode() const { return m_autoScaleInterpMode; }
+    bool IsMetacommandsDisabled() const { return m_metacommandsDisabled; }
+    BitmapInterpolationMode AutoScaleInterpMode() const
+    {
+        return m_autoScaleInterpMode;
+    }
 
     const std::vector<std::wstring>& ImagePaths() const { return m_imagePaths; }
     const std::vector<ILearningModelFeatureValue>& ProvidedInputFeatureValues() const
@@ -185,6 +189,7 @@ private:
     BitmapInterpolationMode m_autoScaleInterpMode = BitmapInterpolationMode::Cubic;
     bool m_saveTensor = false;
     bool m_timeLimitIterations = false;
+    bool m_metacommandsDisabled = false;
     std::wstring m_saveTensorMode = L"First";
     ::TensorizeArgs m_tensorizeArgs;
 

@@ -3,6 +3,7 @@
 #include "Common.h"
 #include <iostream>
 #include <codecvt>
+#include "winrt\base.h"
 using namespace std;
 
 void PopulateSessionOptions(LearningModelSessionOptions& sessionOptions)

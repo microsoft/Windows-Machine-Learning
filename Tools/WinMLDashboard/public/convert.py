@@ -87,7 +87,7 @@ def libSVM_converter(args):
                                  target_opset=get_opset(args.ONNXVersion))
     return onnx_model
 
-def convert_tensorflow_file(filename, opset, input_names, output_names):
+def convert_tensorflow_file(filename, opset, output_names):
     import tensorflow
     from tensorflow.core.framework import graph_pb2
     from tensorflow.python.tools import freeze_graph

@@ -30,7 +30,7 @@ import Collapsible from '../../components/Collapsible';
 
 import log from 'electron-log';
 
-const winmlRunnerPath = packagedFile('WinMLRunner.exe');
+const MicrosoftMLRunnerPath = packagedFile('MicrosoftMLRunner.exe');
 const debugRunnerPath = packagedFile('DebugRunner.exe');
 
 export interface IProperties {
@@ -345,7 +345,7 @@ class RunView extends React.Component<IComponentProperties, IComponentState> {
 
     private execModelRunner = async() => {
         log.info("start to run " + this.state.model);
-        let runPath = winmlRunnerPath;
+        let runPath = MicrosoftMLRunnerPath;
         let procParameters = this.state.parameters;
         const debug = this.state.capture === Capture.Debug
         // serialize debug onnx model

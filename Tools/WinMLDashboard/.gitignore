@@ -40,9 +40,12 @@ public/*
 !public/EditorView.png
 !public/DebugView.png
 !public/DebugPngs.png
+!public/directml.dll
 !public/progress_bar.gif
-!public/WinMLRunner.exe
 !public/libsvm-3.22-cp36-cp36m-win_amd64.whl
+!public/MicrosoftMLRunner.exe
+!public/Microsoft.AI.MachineLearning.dll
+!public/onnxruntime.dll
 !public/questionmark.png
 !public/questionmark2.png
 

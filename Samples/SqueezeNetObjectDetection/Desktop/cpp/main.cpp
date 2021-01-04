@@ -3,7 +3,8 @@
 
 #include "pch.h"
 #include "FileHelper.h"
-
+#include <iostream>
+#include <numeric>
 using namespace winrt;
 using namespace Windows::Foundation;
 using namespace Windows::Foundation::Collections;
@@ -80,11 +81,22 @@ int main(int argc, char* argv[])
 
     // now run the model
     printf("Running the model...\n");
-    ticks = GetTickCount();
-    auto results = session.Evaluate(binding, L"RunId");
-    ticks = GetTickCount() - ticks;
-    printf("model run took %d ticks\n", ticks);
-
+    std::vector<long long> timeTakenList;
+    LearningModelEvaluationResult results = nullptr;
+    for (int i = 0; i < 100; i++) {
+        Sleep(100);
+        auto start = std::chrono::high_resolution_clock::now();
+        results = session.Evaluate(binding, L"RunId");
+        auto elapsed = std::chrono::high_resolution_clock::now() - start;
+        long long microseconds = std::chrono::duration_cast<std::chrono::microseconds>(elapsed).count();
+        std::cout << "Microseconds : " << microseconds << std::endl;
+        if(i!=0)
+            timeTakenList.push_back(microseconds);
+    }
+    std::sort(timeTakenList.begin(), timeTakenList.end());
+    std::cout << "min (microseconds) : " << timeTakenList[0]<< endl;
+    std::cout << "max (microseconds) : " << *(timeTakenList.end()-1) << endl;
+    std::cout << "avg (microseconds) : " << std::accumulate(timeTakenList.begin(), timeTakenList.end(), 0) / timeTakenList.size()<< endl;
     // get the output
     auto resultTensor = results.Outputs().Lookup(L"softmaxout_1").as<TensorFloat>();
     auto resultVector = resultTensor.GetAsVectorView();

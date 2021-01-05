@@ -2,7 +2,7 @@ coremltools_windows==2.0b1
 onnxmltools==1.7.0
 onnxconverter-common==1.7.0
 h5py==2.8.0
-tensorflow==1.12.2
+tensorflow==2.4.0
 tf2onnx==1.7.2
 Keras==2.2.4
 Keras-Applications==1.0.6

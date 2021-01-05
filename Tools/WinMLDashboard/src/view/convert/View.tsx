@@ -221,6 +221,9 @@ class ConvertView extends React.Component<IComponentProperties, IComponentState>
             { value: '1.2', label: '1.2 (opset V7)' },
             { value: '1.3', label: '1.3 (opset V8)' },
             { value: '1.5', label: '1.5 (opset V10)' },
+            { value: '1.6', label: '1.6 (opset V11)' },
+            { value: '1.7', label: '1.7 (opset V12)' },
+            { value: '1.8', label: '1.8 (opset V13)' },
         ]
         return (
             <div className="ModelConvert">

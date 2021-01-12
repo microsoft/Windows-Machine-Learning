@@ -16,6 +16,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SqueezeNetObjectDetectionNC
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SampleSharedLib", "..\SampleSharedLib\SampleSharedLib\SampleSharedLib.vcxproj", "{12103A5B-677A-4286-83D2-54EAB9010C16}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SqueezeNetObjectDetectionCPPNonWinRT", "Desktop\cpp\SqueezeNetObjectDetectionCPPNonWinRT\SqueezeNetObjectDetectionCPPNonWinRT.vcxproj", "{73B73100-4B52-4073-A4AA-289158526A19}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -112,6 +114,18 @@ Global
 		{12103A5B-677A-4286-83D2-54EAB9010C16}.Release|x64.Build.0 = Release|x64
 		{12103A5B-677A-4286-83D2-54EAB9010C16}.Release|x86.ActiveCfg = Release|Win32
 		{12103A5B-677A-4286-83D2-54EAB9010C16}.Release|x86.Build.0 = Release|Win32
+		{73B73100-4B52-4073-A4AA-289158526A19}.Debug|Any CPU.ActiveCfg = Debug|Win32
+		{73B73100-4B52-4073-A4AA-289158526A19}.Debug|ARM.ActiveCfg = Debug|Win32
+		{73B73100-4B52-4073-A4AA-289158526A19}.Debug|x64.ActiveCfg = Debug|x64
+		{73B73100-4B52-4073-A4AA-289158526A19}.Debug|x64.Build.0 = Debug|x64
+		{73B73100-4B52-4073-A4AA-289158526A19}.Debug|x86.ActiveCfg = Debug|Win32
+		{73B73100-4B52-4073-A4AA-289158526A19}.Debug|x86.Build.0 = Debug|Win32
+		{73B73100-4B52-4073-A4AA-289158526A19}.Release|Any CPU.ActiveCfg = Release|Win32
+		{73B73100-4B52-4073-A4AA-289158526A19}.Release|ARM.ActiveCfg = Release|Win32
+		{73B73100-4B52-4073-A4AA-289158526A19}.Release|x64.ActiveCfg = Release|x64
+		{73B73100-4B52-4073-A4AA-289158526A19}.Release|x64.Build.0 = Release|x64
+		{73B73100-4B52-4073-A4AA-289158526A19}.Release|x86.ActiveCfg = Release|Win32
+		{73B73100-4B52-4073-A4AA-289158526A19}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -5,7 +5,6 @@
 #include "abi/Microsoft.AI.MachineLearning.h"
 #include "raw/microsoft.ai.machinelearning.h"
 #include "raw/microsoft.ai.machinelearning.gpu.h"
-#include <numeric>
 #include "Filehelper.h"
 namespace ml = Microsoft::AI::MachineLearning;
 

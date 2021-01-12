@@ -1,5 +1,3 @@
-// SqueezeNetObjectDetectionCPPNonWinRT.cpp : This file contains the 'main' function. Program execution begins and ends there.
-//
 #include "../pch.h"
 #include "Microsoft.AI.MachineLearning.Native.h"
 #include "abi/Microsoft.AI.MachineLearning.h"

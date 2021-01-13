@@ -1,7 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="..\..\..\packages\Microsoft.AI.MachineLearning.1.6.0\build\native\Microsoft.AI.MachineLearning.props" Condition="Exists('..\..\..\packages\Microsoft.AI.MachineLearning.1.6.0\build\native\Microsoft.AI.MachineLearning.props')" />
-  <Import Project="..\..\..\packages\Microsoft.AI.DirectML.1.4.0\build\Microsoft.AI.DirectML.props" Condition="Exists('..\..\..\packages\Microsoft.AI.DirectML.1.4.0\build\Microsoft.AI.DirectML.props')" />
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
       <Configuration>Debug</Configuration>
@@ -93,7 +91,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <LanguageStandard>stdcpp17</LanguageStandard>
+      <LanguageStandard>stdcpp14</LanguageStandard>
       <AdditionalIncludeDirectories>..\..\..\..\SampleSharedLib\SampleSharedLib;$(MSBuildThisFileDirectory)../../build/native/include/;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
@@ -112,6 +110,7 @@
       <PreprocessorDefinitions>_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING;WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>..\..\..\..\SampleSharedLib\SampleSharedLib;$(MSBuildThisFileDirectory)../../build/native/include/;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp14</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -131,6 +130,7 @@
       <PreprocessorDefinitions>_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING;WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>..\..\..\..\SampleSharedLib\SampleSharedLib;$(MSBuildThisFileDirectory)../../build/native/include/;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp14</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -152,6 +152,7 @@
       <PreprocessorDefinitions>_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>..\..\..\..\SampleSharedLib\SampleSharedLib;$(MSBuildThisFileDirectory)../../build/native/include/;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp14</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -165,25 +166,10 @@
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="packages.config" />
-  </ItemGroup>
-  <ItemGroup>
     <ProjectReference Include="..\..\..\..\SampleSharedLib\SampleSharedLib\SampleSharedLib.vcxproj">
       <Project>{12103a5b-677a-4286-83d2-54eab9010c16}</Project>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
-  <ImportGroup Label="ExtensionTargets">
-    <Import Project="..\..\..\packages\Microsoft.AI.DirectML.1.4.0\build\Microsoft.AI.DirectML.targets" Condition="Exists('..\..\..\packages\Microsoft.AI.DirectML.1.4.0\build\Microsoft.AI.DirectML.targets')" />
-    <Import Project="..\..\..\packages\Microsoft.AI.MachineLearning.1.6.0\build\native\Microsoft.AI.MachineLearning.targets" Condition="Exists('..\..\..\packages\Microsoft.AI.MachineLearning.1.6.0\build\native\Microsoft.AI.MachineLearning.targets')" />
-  </ImportGroup>
-  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
-    <PropertyGroup>
-      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
-    </PropertyGroup>
-    <Error Condition="!Exists('..\..\..\packages\Microsoft.AI.DirectML.1.4.0\build\Microsoft.AI.DirectML.props')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\packages\Microsoft.AI.DirectML.1.4.0\build\Microsoft.AI.DirectML.props'))" />
-    <Error Condition="!Exists('..\..\..\packages\Microsoft.AI.DirectML.1.4.0\build\Microsoft.AI.DirectML.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\packages\Microsoft.AI.DirectML.1.4.0\build\Microsoft.AI.DirectML.targets'))" />
-    <Error Condition="!Exists('..\..\..\packages\Microsoft.AI.MachineLearning.1.6.0\build\native\Microsoft.AI.MachineLearning.props')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\packages\Microsoft.AI.MachineLearning.1.6.0\build\native\Microsoft.AI.MachineLearning.props'))" />
-    <Error Condition="!Exists('..\..\..\packages\Microsoft.AI.MachineLearning.1.6.0\build\native\Microsoft.AI.MachineLearning.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\packages\Microsoft.AI.MachineLearning.1.6.0\build\native\Microsoft.AI.MachineLearning.targets'))" />
-  </Target>
+  <ImportGroup Label="ExtensionTargets" />
 </Project>

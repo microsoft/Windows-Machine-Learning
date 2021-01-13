@@ -16,7 +16,7 @@ namespace Microsoft { namespace AI { namespace MachineLearning {
 }}} // namespace Microsoft::AI::MachineLearning
 
 
-#include "winml_microsoft.h"
+#include "winml_windows.h"
 
 namespace Microsoft { namespace AI { namespace MachineLearning { namespace Details {
     using learning_model = WinMLLearningModel;
@@ -122,14 +122,6 @@ struct learning_model_binding
         T* p_data, size_t data_size)
     {
         return m_binding.bind_as_reference<T>(feature_name, feature_name_size, p_shape, shape_size, p_data, data_size);
-    }
-
-    template <typename T = float>
-    int32_t bind_as_references(
-        const wchar_t* feature_name, size_t feature_name_size,
-        T** p_data, size_t* data_sizes,
-        size_t num_buffers) {
-      return m_binding.bind_as_references<T>(feature_name, feature_name_size, p_data, data_sizes, num_buffers);
     }
 
     template <typename T>

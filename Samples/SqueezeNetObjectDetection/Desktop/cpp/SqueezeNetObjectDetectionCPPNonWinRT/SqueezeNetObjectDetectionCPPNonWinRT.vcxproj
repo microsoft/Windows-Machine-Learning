@@ -23,7 +23,7 @@
     <ProjectGuid>{73B73100-4B52-4073-A4AA-289158526A19}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>SqueezeNetObjectDetectionCPPNonWinRT</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.21257.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.19041.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">

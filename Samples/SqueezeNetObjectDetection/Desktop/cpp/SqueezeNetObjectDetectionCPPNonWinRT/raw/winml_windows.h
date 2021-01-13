@@ -30,7 +30,7 @@ struct float16 {
 	uint16_t value;
 };
 
-namespace Microsoft { namespace AI { namespace MachineLearning { namespace Details {
+namespace Windows { namespace AI { namespace MachineLearning { namespace Details {
 
 class WinMLLearningModel;
 class WinMLLearningModelBinding;

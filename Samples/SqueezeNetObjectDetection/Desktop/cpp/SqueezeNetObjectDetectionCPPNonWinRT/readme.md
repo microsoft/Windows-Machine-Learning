@@ -1,0 +1,1 @@
+This sample shows how to use Windows Machine Learning without the use of winrt. The winml_windows.h header exposes a wrapper API on top of the Windows ABI header interfaces for WinML.

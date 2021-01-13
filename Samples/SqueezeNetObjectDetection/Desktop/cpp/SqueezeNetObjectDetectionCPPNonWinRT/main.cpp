@@ -2,12 +2,13 @@
 #include <utility>
 #include "Windows.AI.MachineLearning.Native.h"
 #include "Windows.AI.MachineLearning.h"
-#include "raw/microsoft.ai.machinelearning.h"
+#include "raw/windows.ai.machinelearning.h"
+#include "raw/windows.ai.machinelearning.gpu.h"
 #include <string>
 #include <vector>
 #include <numeric>
 
-namespace ml = Microsoft::AI::MachineLearning;
+namespace ml = Windows::AI::MachineLearning;
 
 EXTERN_C IMAGE_DOS_HEADER __ImageBase;
 std::wstring GetModulePath() {

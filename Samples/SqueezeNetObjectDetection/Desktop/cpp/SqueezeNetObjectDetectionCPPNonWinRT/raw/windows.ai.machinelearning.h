@@ -1,7 +1,7 @@
 #pragma once
 
-#ifndef MICROSOFT_AI_MACHINELEARNING_H_
-#define MICROSOFT_AI_MACHINELEARNING_H_
+#ifndef WINDOWS_AI_MACHINELEARNING_H_
+#define WINDOWS_AI_MACHINELEARNING_H_
 
 #define ML_FAIL_FAST_IF(condition)  \
     do {                            \
@@ -11,22 +11,22 @@
         }                           \
     } while(0)
 
-namespace Microsoft { namespace AI { namespace MachineLearning {
+namespace Windows { namespace AI { namespace MachineLearning {
     using tensor_shape_type = int64_t;
-}}} // namespace Microsoft::AI::MachineLearning
+}}} // namespace Windows::AI::MachineLearning
 
 
 #include "winml_windows.h"
 
-namespace Microsoft { namespace AI { namespace MachineLearning { namespace Details {
+namespace Windows { namespace AI { namespace MachineLearning { namespace Details {
     using learning_model = WinMLLearningModel;
     using learning_model_device = WinMLLearningModelDevice;
     using learning_model_session = WinMLLearningModelSession;
     using learning_model_binding = WinMLLearningModelBinding;
     using learning_model_results = WinMLLearningModelResults;
-}}}} // namespace Microsoft::AI::MachineLearning::Details
+}}}} // namespace Windows::AI::MachineLearning::Details
 
-namespace Microsoft { namespace AI { namespace MachineLearning {
+namespace Windows { namespace AI { namespace MachineLearning {
 
 struct learning_model
 {
@@ -150,6 +150,6 @@ learning_model_results learning_model_session::evaluate(learning_model_binding& 
     return Details::learning_model_results(m_session.evaluate(binding.m_binding));
 }
 
-}}} // namespace Microsoft::AI::MachineLearning::Details
+}}} // namespace Windows::AI::MachineLearning::Details
 
-#endif // MICROSOFT_AI_MACHINELEARNING_H_
+#endif // Windows_AI_MACHINELEARNING_H_

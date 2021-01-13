@@ -8,7 +8,7 @@
 #include <wrl/client.h>
 
 
-namespace Microsoft { namespace AI { namespace MachineLearning { namespace Details {
+namespace Windows { namespace AI { namespace MachineLearning { namespace Details {
 
 template <typename T>
 struct weak_single_threaded_iterable
@@ -116,6 +116,6 @@ public:
     };
 };
 
-}}}} // namespace Microsoft::AI::MachineLearning::Details
+}}}} // namespace Windows::AI::MachineLearning::Details
 
 #endif // WEAK_SINGLE_THREADED_ITERABLE_H_

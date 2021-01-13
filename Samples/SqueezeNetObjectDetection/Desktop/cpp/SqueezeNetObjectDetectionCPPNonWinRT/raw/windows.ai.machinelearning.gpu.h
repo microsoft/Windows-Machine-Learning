@@ -3,9 +3,9 @@
 #ifndef MICROSOFT_AI_MACHINELEARNING_GPU_H_
 #define MICROSOFT_AI_MACHINELEARNING_GPU_H_
 
-#include "microsoft.ai.machinelearning.h"
+#include "windows.ai.machinelearning.h"
 
-namespace Microsoft { namespace AI { namespace MachineLearning { namespace gpu {
+namespace Windows { namespace AI { namespace MachineLearning { namespace gpu {
 
 enum directx_device_kind { directx, directx_high_power, directx_min_power };
 
@@ -53,6 +53,6 @@ private:
     }
 };
 
-}}}} // namespace Microsoft::AI::MachineLearning::gpu
+}}}} // namespace Windows::AI::MachineLearning::gpu
 
-#endif // MICROSOFT_AI_MACHINELEARNING_GPU_H
+#endif //Windows_AI_MACHINELEARNING_GPU_H

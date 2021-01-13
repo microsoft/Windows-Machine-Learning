@@ -10,7 +10,7 @@
 #include <windows.storage.streams.h>
 #include <robuffer.h>
 
-namespace Microsoft { namespace AI { namespace MachineLearning { namespace Details {
+namespace Windows { namespace AI { namespace MachineLearning { namespace Details {
 
 template <typename T>
 struct weak_buffer

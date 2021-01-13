@@ -64,6 +64,6 @@ public:
     }
 };
 
-}}}} // namespace Microsoft::AI::MachineLearning::Details
+}}}} // namespace Windows::AI::MachineLearning::Details
 
 #endif // WEAK_BUFFER_H

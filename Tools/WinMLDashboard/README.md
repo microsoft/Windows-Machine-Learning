@@ -112,6 +112,7 @@ Alternatively, you can build the app from source following the instructions belo
 
 2. `cd Tools/WinMLDashboard`
 3. Run `Git submodule update --init --recursive` to update Netron.
+4. Run `yarn lock-netron-deps` to execute necessary modifications to Netron dependency versions.
 4. Run `yarn` to download dependencies. 
 5. Then, run `yarn electron-prod` to build and start the desktop application, which will launch the Dashboard.
 

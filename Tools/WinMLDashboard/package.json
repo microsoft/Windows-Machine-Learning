@@ -18,7 +18,8 @@
     "build-cpp": "msbuild src/cpp/DebugRunner.sln",
     "nuget-restore-cpp": "nuget restore src/cpp/DebugRunner.sln",
     "electron-dev": "electron . http://localhost:3000",
-    "electron-prod": "yarn nuget-restore-cpp && yarn build-cpp && yarn build-electron && electron ."
+    "electron-prod": "yarn nuget-restore-cpp && yarn build-cpp && yarn build-electron && electron .",
+    "lock-netron-deps": "cd deps/Netron && yarn upgrade d3@5.16.0"
   },
   "build": {
     "appId": "com.microsoft.dashboard.winml",

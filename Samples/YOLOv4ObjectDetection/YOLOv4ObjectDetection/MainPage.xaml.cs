@@ -23,8 +23,6 @@ using Windows.UI.Xaml.Media.Imaging;
 using Windows.UI.Xaml.Navigation;
 using Windows.UI.Xaml.Shapes;
 
-// The Blank Page item template is documented at https://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
-
 namespace YOLOv4ObjectDetection
 {
 
@@ -189,6 +187,7 @@ namespace YOLOv4ObjectDetection
             return x / (1.0f + x);
         }
 
+        // Compute Intersection over Union(IOU)
         private float ComputeIOU(DetectionResult DRa, DetectionResult DRb)
         {
             float ay1 = DRa.bbox[0];
@@ -222,6 +221,8 @@ namespace YOLOv4ObjectDetection
             return iou;
         }
 
+        // Non-maximum Suppression(NMS), a technique which filters the proposals 
+        // based on Intersection over Union(IOU)
         private List<DetectionResult> NMS(IReadOnlyList<DetectionResult> detections, 
             float IOU_threshold = 0.45f, 
             float score_threshold=0.3f)
@@ -245,6 +246,7 @@ namespace YOLOv4ObjectDetection
             return final_detections;
         }
 
+        // parse the result from WinML evaluation results to self defined object struct
         private List<DetectionResult> ParseResult(float[] results)
         {
             int c_values = 84;
@@ -283,6 +285,8 @@ namespace YOLOv4ObjectDetection
             }
             return detections;
         }
+
+        // draw bounding boxes on the output frame based on evaluation result
         private async Task DrawBoxes(float[] results, VideoFrame frame)
         {
             List<DetectionResult> detections = ParseResult(results);

@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.27703.2026
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.31019.35
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{262852C6-CD72-467D-83FE-5EEB1973A190}") = "SqueezeNetObjectDetectionJS", "UWP\js\SqueezeNetObjectDetectionJS.jsproj", "{2CF5F1AA-BF69-498C-8B74-04137B2F67F3}"
 EndProject
@@ -15,6 +15,8 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SqueezeNetObjectDetectionNC", "NETCore\cs\SqueezeNetObjectDetectionNC.csproj", "{D20A1934-366E-4055-AFFB-3F592FC5744A}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SampleSharedLib", "..\SampleSharedLib\SampleSharedLib\SampleSharedLib.vcxproj", "{12103A5B-677A-4286-83D2-54EAB9010C16}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SqueezeNetObjectDetectionNET5", "NET5\SqueezeNetObjectDetectionNET5.csproj", "{C475A99E-5976-4C5C-941F-1CE3E71F035C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -112,6 +114,22 @@ Global
 		{12103A5B-677A-4286-83D2-54EAB9010C16}.Release|x64.Build.0 = Release|x64
 		{12103A5B-677A-4286-83D2-54EAB9010C16}.Release|x86.ActiveCfg = Release|Win32
 		{12103A5B-677A-4286-83D2-54EAB9010C16}.Release|x86.Build.0 = Release|Win32
+		{C475A99E-5976-4C5C-941F-1CE3E71F035C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C475A99E-5976-4C5C-941F-1CE3E71F035C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C475A99E-5976-4C5C-941F-1CE3E71F035C}.Debug|ARM.ActiveCfg = Debug|Any CPU
+		{C475A99E-5976-4C5C-941F-1CE3E71F035C}.Debug|ARM.Build.0 = Debug|Any CPU
+		{C475A99E-5976-4C5C-941F-1CE3E71F035C}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{C475A99E-5976-4C5C-941F-1CE3E71F035C}.Debug|x64.Build.0 = Debug|Any CPU
+		{C475A99E-5976-4C5C-941F-1CE3E71F035C}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{C475A99E-5976-4C5C-941F-1CE3E71F035C}.Debug|x86.Build.0 = Debug|Any CPU
+		{C475A99E-5976-4C5C-941F-1CE3E71F035C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C475A99E-5976-4C5C-941F-1CE3E71F035C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C475A99E-5976-4C5C-941F-1CE3E71F035C}.Release|ARM.ActiveCfg = Release|Any CPU
+		{C475A99E-5976-4C5C-941F-1CE3E71F035C}.Release|ARM.Build.0 = Release|Any CPU
+		{C475A99E-5976-4C5C-941F-1CE3E71F035C}.Release|x64.ActiveCfg = Release|Any CPU
+		{C475A99E-5976-4C5C-941F-1CE3E71F035C}.Release|x64.Build.0 = Release|Any CPU
+		{C475A99E-5976-4C5C-941F-1CE3E71F035C}.Release|x86.ActiveCfg = Release|Any CPU
+		{C475A99E-5976-4C5C-941F-1CE3E71F035C}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

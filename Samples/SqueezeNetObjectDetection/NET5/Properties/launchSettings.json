@@ -1,0 +1,9 @@
+{
+  "profiles": {
+    "SqueezeNetObjectDetectionNET5": {
+      "commandName": "Project",
+      "commandLineArgs": "SqueezeNet.onnx kitten_224.png cpu",
+      "workingDirectory": "$(OutDir)"
+    }
+  }
+}

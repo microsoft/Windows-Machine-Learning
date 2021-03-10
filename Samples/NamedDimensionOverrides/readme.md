@@ -6,7 +6,7 @@ This sample demonstrates how to override named dimensions to concrete values usi
 
 ## Requirements
 
-- [Visual Studio 2017 - 15.4 or higher](https://developer.microsoft.com/en-us/windows/downloads)
+- [Visual Studio 2019](https://developer.microsoft.com/en-us/windows/downloads)
 - [Windows 10 - Build 18362 or higher](https://www.microsoft.com/en-us/software-download/windowsinsiderpreviewiso)
 - [Windows SDK - Build 18362 or higher](https://www.microsoft.com/en-us/software-download/windowsinsiderpreviewSDK)
 - Visual Studio Extension for C++/WinRT

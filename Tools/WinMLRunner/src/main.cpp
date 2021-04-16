@@ -1,11 +1,13 @@
 #include "CommandLineArgs.h"
 #include "Run.h"
 #include "Common.h"
+#include "Windows.AI.MachineLearning.Native.h"
 #include <iostream>
 #include <codecvt>
+#include <thread>
 using namespace std;
 
-void PopulateSessionOptions(LearningModelSessionOptions& sessionOptions)
+void PopulateSessionOptions(LearningModelSessionOptions& sessionOptions, const CommandLineArgs& args)
 {
     // Batch Size Override as 1
     try
@@ -16,6 +18,41 @@ void PopulateSessionOptions(LearningModelSessionOptions& sessionOptions)
     {
         printf("Batch size override couldn't be set.\n");
         throw;
+    }
+
+    if (args.CPUThrottle())
+    {
+        // calculate the number of processor cores
+        // adapted from https://docs.microsoft.com/en-us/windows/win32/api/sysinfoapi/nf-sysinfoapi-getlogicalprocessorinformation
+        DWORD byteOffset = 0;
+        DWORD processorCoreCount = 0;
+        PSYSTEM_LOGICAL_PROCESSOR_INFORMATION buffer = NULL;
+        PSYSTEM_LOGICAL_PROCESSOR_INFORMATION ptr = NULL;
+        DWORD returnLength = 0;
+        bool done = false;
+
+        // have to call it twice, once to get the length and once to fill the buffer
+        GetLogicalProcessorInformation(buffer, &returnLength);
+        buffer = new SYSTEM_LOGICAL_PROCESSOR_INFORMATION[returnLength];
+        GetLogicalProcessorInformation(buffer, &returnLength);
+
+        ptr = buffer;
+        while (byteOffset + sizeof(SYSTEM_LOGICAL_PROCESSOR_INFORMATION) <= returnLength)
+        {
+            if (ptr->Relationship == RelationProcessorCore)
+            {
+                processorCoreCount++;
+            }
+            byteOffset += sizeof(SYSTEM_LOGICAL_PROCESSOR_INFORMATION);
+            ptr++;
+        }
+
+        // Set the number of intra op threads to half of processor cores.
+        uint32_t desiredThreads = processorCoreCount / 2;
+        auto nativeOptions = sessionOptions.as<ILearningModelSessionOptionsNative>();
+        nativeOptions->SetIntraOpNumThreadsOverride(desiredThreads);
+
+        delete[] buffer;
     }
 }
 
@@ -51,7 +88,7 @@ int main(int argc, char *argv[])
         return error.code();
     }
     LearningModelSessionOptions sessionOptions;
-    PopulateSessionOptions(sessionOptions);
+    PopulateSessionOptions(sessionOptions, *commandLineArgs);
     int returnCode = run(*commandLineArgs, profiler, deviceList, sessionOptions);
     delete commandLineArgs;
     return returnCode;

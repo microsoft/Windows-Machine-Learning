@@ -592,7 +592,7 @@ int run(CommandLineArgs& args,
                             sessionCreationIteration < args.NumSessionCreationIterations();
                             sessionCreationIteration++)
                         {
-                            lastHr = CreateSession(session, model, learningModelDevice,args, output, profiler, sessionOptions);
+                            lastHr = CreateSession(session, model, learningModelDevice, args, output, profiler, sessionOptions);
                             if (FAILED(lastHr))
                             {
                                 continue;

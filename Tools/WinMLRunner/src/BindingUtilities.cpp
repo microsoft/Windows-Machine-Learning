@@ -564,17 +564,22 @@ namespace BindingUtilities
                 D3D12CreateDevice(nullptr, D3D_FEATURE_LEVEL::D3D_FEATURE_LEVEL_11_0, __uuidof(ID3D12Device),
                                   reinterpret_cast<void**>(&pD3D12Device));
 
+                auto heapProperties = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT);
+                auto resourceDesc = CD3DX12_RESOURCE_DESC::Buffer(actualSizeInBytes, D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS);
                 pD3D12Device->CreateCommittedResource(
-                    &CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT), D3D12_HEAP_FLAG_NONE,
-                    &CD3DX12_RESOURCE_DESC::Buffer(actualSizeInBytes, D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS),
+                    &heapProperties, D3D12_HEAP_FLAG_NONE,
+                    &resourceDesc,
                     D3D12_RESOURCE_STATE_COMMON, nullptr, __uuidof(ID3D12Resource), pGPUResource.put_void());
+
                 if (!args.IsGarbageInput())
                 {
                     com_ptr<ID3D12Resource> imageUploadHeap;
                     // Create the GPU upload buffer.
+                    auto heapProperties2 = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD);
+                    auto resourceDesc2 = CD3DX12_RESOURCE_DESC::Buffer(actualSizeInBytes);
                     pD3D12Device->CreateCommittedResource(
-                        &CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD), D3D12_HEAP_FLAG_NONE,
-                        &CD3DX12_RESOURCE_DESC::Buffer(actualSizeInBytes), D3D12_RESOURCE_STATE_GENERIC_READ, nullptr,
+                        &heapProperties2, D3D12_HEAP_FLAG_NONE,
+                        &resourceDesc2, D3D12_RESOURCE_STATE_GENERIC_READ, nullptr,
                         __uuidof(ID3D12Resource), imageUploadHeap.put_void());
 
                     // create the command queue.

@@ -86,6 +86,8 @@ void CommandLineArgs::PrintUsage()
               << std::endl;
     std::cout << "  -ThreadInterval <milliseconds>: interval time between two thread creations in milliseconds"
               << std::endl;
+    std::cout << "  -CPUThrottle: throttle CPU usage for lower power consumption" 
+              << std::endl;
 }
 
 void CheckAPICall(int return_value)
@@ -392,6 +394,20 @@ CommandLineArgs::CommandLineArgs(const std::vector<std::wstring>& args)
                 Sleep(100);
             }
             __debugbreak();
+        }
+        else if (_wcsicmp(args[i].c_str(), L"-CPUThrottle") == 0)
+        {
+            m_cpuThrottle = true;
+
+            PROCESS_POWER_THROTTLING_STATE PowerThrottling;
+            RtlZeroMemory(&PowerThrottling, sizeof(PowerThrottling));
+
+            PowerThrottling.Version = PROCESS_POWER_THROTTLING_CURRENT_VERSION;
+            PowerThrottling.ControlMask = PROCESS_POWER_THROTTLING_EXECUTION_SPEED;
+            PowerThrottling.StateMask = PROCESS_POWER_THROTTLING_EXECUTION_SPEED;
+
+            SetProcessInformation(GetCurrentProcess(), ProcessPowerThrottling, &PowerThrottling,
+                                  sizeof(PowerThrottling));
         }
         else
         {

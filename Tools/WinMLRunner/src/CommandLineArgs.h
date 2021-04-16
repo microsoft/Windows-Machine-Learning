@@ -111,6 +111,7 @@ public:
     uint32_t TopK() const { return m_topK; }
     uint32_t GarbageDataMaxValue() const { return m_garbageDataMaxValue; }
     bool IsGarbageDataRange() const { return m_garbageDataMaxValue != 0; }
+    bool CPUThrottle() const { return m_cpuThrottle; }
 
     void ToggleCPU(bool useCPU) { m_useCPU = useCPU; }
     void ToggleGPU(bool useGPU) { m_useGPU = useGPU; }
@@ -186,6 +187,7 @@ private:
     BitmapInterpolationMode m_autoScaleInterpMode = BitmapInterpolationMode::Cubic;
     bool m_saveTensor = false;
     bool m_timeLimitIterations = false;
+    bool m_cpuThrottle = false;
     std::wstring m_saveTensorMode = L"First";
     ::TensorizeArgs m_tensorizeArgs;
 

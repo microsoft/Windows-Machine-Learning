@@ -1,3 +1,5 @@
+#define _SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING
+
 #include "d3d11.h"
 #include "d3dx12.h"
 #include "LearningModelDeviceHelper.h"
@@ -8,6 +10,7 @@
 #include "OutputHelper.h"
 #include "TypeHelper.h"
 using namespace winrt::Windows::Graphics::DirectX::Direct3D11;
+
 
 #ifdef DXCORE_SUPPORTED_BUILD
 HRESULT CreateDXGIFactory2SEH(void** dxgiFactory)

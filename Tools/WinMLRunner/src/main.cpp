@@ -47,8 +47,8 @@ void PopulateSessionOptions(LearningModelSessionOptions& sessionOptions, const C
             ptr++;
         }
 
-        // Set the number of intra op threads to half of processor cores.
-        uint32_t desiredThreads = processorCoreCount / 2;
+        // Set the number of intra op threads to half of processor cores with a max of 4.
+        uint32_t desiredThreads = max(processorCoreCount / 2, 4);
         auto nativeOptions = sessionOptions.as<ILearningModelSessionOptionsNative>();
         nativeOptions->SetIntraOpNumThreadsOverride(desiredThreads);
 

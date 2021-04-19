@@ -52,11 +52,7 @@
     <ProjectGuid>{C174D45D-C189-475B-B1A7-494939EE7491}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>WinMLRunnerScenarios</RootNamespace>
-<<<<<<< HEAD
-    <WindowsTargetPlatformVersion>10.0.20334.0</WindowsTargetPlatformVersion>
-=======
     <WindowsTargetPlatformVersion>10.0.19041.0</WindowsTargetPlatformVersion>
->>>>>>> master
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">

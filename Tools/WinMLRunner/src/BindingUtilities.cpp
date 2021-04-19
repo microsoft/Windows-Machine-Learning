@@ -572,6 +572,9 @@ namespace BindingUtilities
                 if (!args.IsGarbageInput())
                 {
                     com_ptr<ID3D12Resource> imageUploadHeap;
+                    heapType = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD);
+                    resourceDesc =
+                        CD3DX12_RESOURCE_DESC::Buffer(actualSizeInBytes);
                     // Create the GPU upload buffer.
                     pD3D12Device->CreateCommittedResource(&heapType, D3D12_HEAP_FLAG_NONE, &resourceDesc,
                                                           D3D12_RESOURCE_STATE_GENERIC_READ, nullptr,

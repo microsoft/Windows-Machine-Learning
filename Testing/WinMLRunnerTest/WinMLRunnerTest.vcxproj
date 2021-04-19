@@ -39,11 +39,7 @@
     <ProjectGuid>{E9D4AC92-8295-4FB4-BF7D-3FAF74B564E8}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>WinMLRunnerTest</RootNamespace>
-<<<<<<< HEAD
-    <WindowsTargetPlatformVersion>10.0.20334.0</WindowsTargetPlatformVersion>
-=======
     <WindowsTargetPlatformVersion>10.0.19041.0</WindowsTargetPlatformVersion>
->>>>>>> master
     <ProjectSubType>NativeUnitTestProject</ProjectSubType>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />

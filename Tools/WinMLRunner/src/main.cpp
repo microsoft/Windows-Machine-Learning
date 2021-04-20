@@ -22,37 +22,41 @@ void PopulateSessionOptions(LearningModelSessionOptions& sessionOptions, const C
 
     if (args.CPUThrottle())
     {
-        // calculate the number of processor cores
-        // adapted from https://docs.microsoft.com/en-us/windows/win32/api/sysinfoapi/nf-sysinfoapi-getlogicalprocessorinformation
-        DWORD byteOffset = 0;
-        DWORD processorCoreCount = 0;
-        PSYSTEM_LOGICAL_PROCESSOR_INFORMATION buffer = NULL;
-        PSYSTEM_LOGICAL_PROCESSOR_INFORMATION ptr = NULL;
-        DWORD returnLength = 0;
-        bool done = false;
-
-        // have to call it twice, once to get the length and once to fill the buffer
-        GetLogicalProcessorInformation(buffer, &returnLength);
-        buffer = new SYSTEM_LOGICAL_PROCESSOR_INFORMATION[returnLength];
-        GetLogicalProcessorInformation(buffer, &returnLength);
-
-        ptr = buffer;
-        while (byteOffset + sizeof(SYSTEM_LOGICAL_PROCESSOR_INFORMATION) <= returnLength)
+        // API to set number of threads is only available in Co+ builds
+        auto nativeOptions = sessionOptions.try_as<ILearningModelSessionOptionsNative>();
+        if (nativeOptions != nullptr)
         {
-            if (ptr->Relationship == RelationProcessorCore)
+            // calculate the number of processor cores
+            // adapted from https://docs.microsoft.com/en-us/windows/win32/api/sysinfoapi/nf-sysinfoapi-getlogicalprocessorinformation
+            DWORD byteOffset = 0;
+            DWORD processorCoreCount = 0;
+            PSYSTEM_LOGICAL_PROCESSOR_INFORMATION buffer = NULL;
+            PSYSTEM_LOGICAL_PROCESSOR_INFORMATION ptr = NULL;
+            DWORD returnLength = 0;
+            bool done = false;
+
+            // have to call it twice, once to get the length and once to fill the buffer
+            GetLogicalProcessorInformation(buffer, &returnLength);
+            buffer = new SYSTEM_LOGICAL_PROCESSOR_INFORMATION[returnLength];
+            GetLogicalProcessorInformation(buffer, &returnLength);
+
+            ptr = buffer;
+            while (byteOffset + sizeof(SYSTEM_LOGICAL_PROCESSOR_INFORMATION) <= returnLength)
             {
-                processorCoreCount++;
+                if (ptr->Relationship == RelationProcessorCore)
+                {
+                    processorCoreCount++;
+                }
+                byteOffset += sizeof(SYSTEM_LOGICAL_PROCESSOR_INFORMATION);
+                ptr++;
             }
-            byteOffset += sizeof(SYSTEM_LOGICAL_PROCESSOR_INFORMATION);
-            ptr++;
+
+            // Set the number of intra op threads to half of processor cores with a max of 4.
+            uint32_t desiredThreads = max(processorCoreCount / 2, 4);
+            nativeOptions->SetIntraOpNumThreadsOverride(desiredThreads);
+
+            delete[] buffer;
         }
-
-        // Set the number of intra op threads to half of processor cores with a max of 4.
-        uint32_t desiredThreads = max(processorCoreCount / 2, 4);
-        auto nativeOptions = sessionOptions.as<ILearningModelSessionOptionsNative>();
-        nativeOptions->SetIntraOpNumThreadsOverride(desiredThreads);
-
-        delete[] buffer;
     }
 }
 

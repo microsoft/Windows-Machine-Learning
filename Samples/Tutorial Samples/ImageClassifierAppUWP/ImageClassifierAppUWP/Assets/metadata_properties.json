@@ -1,0 +1,22 @@
+{
+    "CustomVision.Metadata.AdditionalModelInfo": null,
+    "CustomVision.Metadata.Version": "1.1",
+    "CustomVision.Postprocess.Method": "ClassificationMultiLabel",
+    "CustomVision.Postprocess.Yolo.Biases": "[]",
+    "CustomVision.Postprocess.Yolo.NmsThreshold": "0.0",
+    "CustomVision.Preprocess.CropHeight": "0",
+    "CustomVision.Preprocess.CropMethod": "FullImageShorterSide",
+    "CustomVision.Preprocess.CropWidth": "0",
+    "CustomVision.Preprocess.MaxDimension": "0",
+    "CustomVision.Preprocess.MaxScale": "0",
+    "CustomVision.Preprocess.MinDimension": "0",
+    "CustomVision.Preprocess.MinScale": "0",
+    "CustomVision.Preprocess.NormalizeMean": "[0.0, 0.0, 0.0]",
+    "CustomVision.Preprocess.NormalizeStd": "[1.0, 1.0, 1.0]",
+    "CustomVision.Preprocess.ResizeMethod": "ByShorterSideAlign32",
+    "CustomVision.Preprocess.TargetHeight": "224.0",
+    "CustomVision.Preprocess.TargetWidth": "224.0",
+    "Image.BitmapPixelFormat": "Rgb8",
+    "Image.ColorSpaceGamma": "SRGB",
+    "Image.NominalPixelRange": "Normalized_0_1"
+}

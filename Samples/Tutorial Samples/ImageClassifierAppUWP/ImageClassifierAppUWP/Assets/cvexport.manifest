@@ -1,0 +1,13 @@
+{
+  "DomainType": "Classification",
+  "Platform": "ONNX",
+  "Flavor": null,
+  "ExporterVersion": "2.0",
+  "ExportedDate": "2020-12-10T22:14:11.3648679Z",
+  "IterationId": "db1c7d4e-f21f-4eed-9777-2eddfc6192cb",
+  "ModelFileName": "model.onnx",
+  "LabelFileName": "labels.txt",
+  "MetadataPropsFileName": "metadata_properties.json",
+  "ModelFileSHA1": "d78085b1ee9a9f360535cedd9b41c049b3d62ea7",
+  "SchemaVersion": "1.0"
+}

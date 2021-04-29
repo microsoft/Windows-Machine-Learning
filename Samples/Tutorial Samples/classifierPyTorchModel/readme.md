@@ -21,7 +21,7 @@ To use Pytorch on Windows, you must have Python 3.x installed. Python 2.x is not
 
 ## Prerequisites for Windows ML app deployment
 
-To deploy this app for follow the associated tutorial, you'll need the following:
+To deploy this app or follow the associated tutorial, you'll need the following:
 
 *	Windows 10 version 1809 (build 17763) or higher. You can check your build version number by running `winver` via the Run command `(Windows logo key + R)`.
 *	Windows SDK for build 17763 or higher. [You can get the SDK here.](https://developer.microsoft.com/windows/downloads/windows-10-sdk/)

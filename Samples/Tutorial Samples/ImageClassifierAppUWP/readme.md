@@ -3,6 +3,7 @@
 This sample represents the finished state of a tutorial presented in the Windows ML developer documentation.
 
 The tutorial shows how to train a neural network model to classify images of food using Azure Custom Vision service, export the model to ONNX format, and deploy the model in a Windows Machine Learning application running locally on Windows device. No previous expertise in machine learning is required! We will guide you step by step through the process. 
+
 ## Scenario
 
 In this tutorial, we'll create a machine learning food classification application that runs on Windows devices. The model will be trained to recognize certain types of patterns to classify an image of food, and when given an image will return a classification tag and the associated percentage confidence value of that classification.

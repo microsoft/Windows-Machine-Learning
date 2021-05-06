@@ -5,7 +5,7 @@
 | WinML Dashboard | [![Build Status](https://microsoft.visualstudio.com/WindowsAI/_apis/build/status/WinML/WinMLTools/WinML%20Dashboard%20CI%20Build%20(Github)?branchName=master)](https://microsoft.visualstudio.com/WindowsAI/_build/latest?definitionId=39375&branchName=master) |
 
 
-# Windows ML
+# Windows Machine Learning
 
 Welcome to the Windows ML repo! Windows ML allows you to use trained machine learning models in your Windows apps (C#, C++, Javascript). The Windows ML inference engine evaluates trained models locally on Windows devices. Hardware optimizations for CPU and GPU additionally enable high performance for quick evaluation results.
 

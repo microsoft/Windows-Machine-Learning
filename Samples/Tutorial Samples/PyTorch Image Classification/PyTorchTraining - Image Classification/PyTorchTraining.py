@@ -42,7 +42,6 @@ print("The number of images in a test set is: ", len(test_loader)*batch_size)
 print(" ")
 
 print("The number of batches per epoch is: ", len(train_loader))
-
 classes = ('plane', 'car', 'bird', 'cat', 'deer', 'dog', 'frog', 'horse', 'ship', 'truck')
 
 
@@ -78,7 +77,6 @@ class Network(nn.Module):
 
 # Instantiate a neural network model 
 model = Network()
-print(model)
 
 # Define the loss function with Classification Cross-Entropy loss and an optimizer with Adam optimizer
 loss_fn = nn.CrossEntropyLoss()
@@ -241,11 +239,11 @@ def testClassess():
 if __name__ == "__main__":
     
     # Let's build our model
-    #train(5)
+    train(5)
     print('Finished Training')
 
     # Test which classes performed well
-    #testModelAccuracy()
+    testAccuracy()
     
     # Let's load the model we just created and test the accuracy per label
     model = Network()
@@ -258,7 +256,7 @@ if __name__ == "__main__":
     testClassess()
 
     # Conversion to ONNX
-    #Convert_ONNX()
+    Convert_ONNX()
         
 
      

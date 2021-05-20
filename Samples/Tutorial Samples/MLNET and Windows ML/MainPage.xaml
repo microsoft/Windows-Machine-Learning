@@ -1,0 +1,47 @@
+﻿<Page
+    x:Class="classifierMLNETModel.MainPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:classifierMLNETModel"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+        <StackPanel Margin="1,0,-1,0">
+            <TextBlock x:Name="Menu" 
+                       FontWeight="Bold" 
+                       TextWrapping="Wrap"
+                       Margin="10,0,0,0"
+                       Text="Image Classification"/>
+            <TextBlock Name="space" />
+            <Button Name="recognizeButton"
+                    Content="Pick Image"
+                    Click="OpenFileButton_Click" 
+                    Width="110"
+                    Height="40"
+                    IsEnabled="True" 
+                    HorizontalAlignment="Left"/>
+            <TextBlock Name="space3" />
+            <Button Name="Output"
+                    Content="Result is:"
+                    Width="110"
+                    Height="40"
+                    IsEnabled="True" 
+                    HorizontalAlignment="Left" 
+                    VerticalAlignment="Top">
+            </Button>
+            <!--Dispaly the Result-->
+            <TextBlock Name="displayOutput" 
+                       FontWeight="Bold" 
+                       TextWrapping="Wrap"
+                       Margin="25,0,0,0"
+                       Text="" Width="1471" />
+            <TextBlock Name="space2" />
+            <!--Image preview -->
+            <Image Name="UIPreviewImage" Stretch="Uniform" MaxWidth="300" MaxHeight="300"/>
+        </StackPanel>
+    </Grid>
+</Page>

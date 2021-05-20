@@ -1,6 +1,6 @@
 # Readme
 
-This sample represents the finished state of a tutorial presented in the Windows ML developer documentation.
+This sample represents the finished state of an image classifier, as part of a tutorial presented in the Windows ML developer documentation.
 
 The tutorial shows how to train an image classification neural network model using PyTorch, export the model to the ONNX format, and deploy it in a Windows Machine Learning application running locally on your Windows device.  
 
@@ -30,4 +30,4 @@ To deploy this app or follow the associated tutorial, you'll need the following:
 *	You'll also need to [enable Developer Mode on your PC](https://docs.microsoft.com/windows/apps/get-started/enable-your-device-for-development)
 
 > [!NOTE]
-> Windows ML APIs are built into the latest versions of Windows 10 (1809 or higher) and Windows Server 2019. If your target platform is older versions of Windows, you can [port your WinML app to the redistributable NuGet package (Windows 8.1 or higher)](../port-app-to-nuget.md). 
+> Windows ML APIs are built into the latest versions of Windows 10 (1809 or higher) and Windows Server 2019. If your target platform is older versions of Windows, you can [port your WinML app to the redistributable NuGet package (Windows 8.1 or higher)](https://docs.microsoft.com/windows/ai/windows-ml/port-app-to-nuget). 

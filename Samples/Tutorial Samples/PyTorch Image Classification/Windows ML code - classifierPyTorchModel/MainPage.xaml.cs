@@ -130,7 +130,7 @@ namespace classifierPyTorch
                 ImageFeatureValue imageTensor = ImageFeatureValue.CreateFromVideoFrame(inputImage);
                 image.modelInput = imageTensor;
             }
-            catch (Exception e)
+            catch (Exception)
             {
             }
         }

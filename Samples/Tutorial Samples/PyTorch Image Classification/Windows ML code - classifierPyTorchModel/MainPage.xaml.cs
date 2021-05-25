@@ -50,7 +50,7 @@ namespace classifierPyTorch
         private async Task loadModel()
         {
             // Get an access the ONNX model and save it in memory. 
-            StorageFile modelFile = await StorageFile.GetFileFromApplicationUriAsync(new Uri($"ms-appx:///Assets/ONNX.onnx"));
+            StorageFile modelFile = await StorageFile.GetFileFromApplicationUriAsync(new Uri($"ms-appx:///Assets/ImageClassifier.onnx"));
             // Instantiate the model. 
             modelGen = await ImageClassifierModel.CreateFromStreamAsync(modelFile);
         }

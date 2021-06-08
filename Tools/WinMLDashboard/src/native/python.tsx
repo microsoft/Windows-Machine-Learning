@@ -88,6 +88,10 @@ python36.zip
 # Uncomment to run site.main() automatically
 import site`;
 
+// The module's directory isn't being added to Python's path in the embedded distribution, so we do it manually in sitecustomize
+const sitecustomize = `import sys
+sys.path.insert(0, '')`
+
 export async function downloadPython() {
     if (process.platform !== 'win32') {
         throw Error('Unsupported platform');
@@ -97,6 +101,7 @@ export async function downloadPython() {
             const data = await downloadBinaryFile('https://www.python.org/ftp/python/3.6.6/python-3.6.6-embed-amd64.zip') as Buffer;
             await unzip(data, localPython);
             fs.writeFileSync(path.join(localPython, 'python36._pth'), pythonPth);
+            fs.writeFileSync(path.join(localPython, 'sitecustomize.py'), sitecustomize);
         } catch (err) {
             reject(err);
         }
@@ -170,7 +175,6 @@ export async function pip(command: string[], listener?: IOutputListener) {
     if (getLocalPython() === embeddedPythonBinary) {
         options = { cwd: os.tmpdir() };  // without this workaround, pip downloads packages to whatever the current working directory is
     }
-    python(['-m', 'easy_install', 'termcolor'], options, listener);
     return python(['-m', 'pip', ...command], options, listener);
 }
 

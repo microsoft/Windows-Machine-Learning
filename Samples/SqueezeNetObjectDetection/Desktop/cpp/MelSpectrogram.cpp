@@ -41,7 +41,6 @@ static auto ReadFileWaveform(const char *filename, size_t sample_rate) {
     return signal;
 }
 
-
 template <typename T>
 static auto MakePureFrequency(float frequency_in_hertz, size_t signal_size, size_t sample_rate) {
     float amplitude = 4;

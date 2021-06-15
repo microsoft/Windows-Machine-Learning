@@ -4,10 +4,13 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="pch.cpp" />
     <ClCompile Include="MelSpectrogram.cpp" />
+    <ClCompile Include="WavReader.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
     <ClInclude Include="MelSpectrogram.h" />
+    <ClInclude Include="WavReader.h" />
+    <ClInclude Include="AudioFile.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="SharedContent">

@@ -17,8 +17,6 @@ using namespace Windows::Graphics::Imaging;
 using namespace Windows::Storage;
 using namespace std;
 
-
-
 // globals
 vector<string> labels;
 string labelsFileName("labels.txt");
@@ -43,55 +41,79 @@ wstring GetModelPath()
 // usage: SqueezeNet [imagefile] [cpu|directx]
 int main(int argc, char* argv[])
 {
+    // did they pass in the args 
+    if (ParseArgs(argc, argv) == false)
+    {
+        printf("Usage: %s [soundfile] [cpu|directx]", argv[0]);
+        return -1;
+    }
+
     printf("Melspec on 3 tone signal \n");
 
-    MelSpectrogram ms;
-
     size_t batch_size = 1;
-    size_t signal_size = 40;
-    size_t window_size = 5;
-    size_t dft_size = 3;
-    size_t hop_size = 1;
-    size_t n_mel_bins = 32;
-    size_t sampling_rate = 4000;
+    size_t sample_rate = 8192;
+    float signal_duration_in_seconds = 5.f;
+    size_t signal_size = static_cast<size_t>(sample_rate * signal_duration_in_seconds);
+    size_t dft_size = 256;
+    size_t hop_size = 128;
+    size_t window_size = 256;
+    size_t n_mel_bins = 1024;
+
+    MelSpectrogram::MelSpectrogramOnThreeToneSignal(batch_size, signal_size, window_size, dft_size,
+        hop_size, n_mel_bins, sample_rate);
+    printf("Printed 3 tone signal melspectrogram");
 
 
-    ms.MelSpectrogramOnThreeToneSignal(batch_size, signal_size, window_size, dft_size,
-        hop_size, n_mel_bins, sampling_rate);
+    printf("Melspec on 1 second recording \n");
+
+    batch_size = 1;
+    sample_rate = 8192;
+    signal_duration_in_seconds = 1.f;
+     dft_size = 256;
+     hop_size = 3;
+     window_size = 256;
+     n_mel_bins = 1024;
+
+    MelSpectrogram::MelSpectrogramOnFile(argv[1], batch_size, window_size, dft_size,
+        hop_size, n_mel_bins, sample_rate);
+    printf("Printed spectrogram for file selected");
+
     printf("done");
   
 }
 
 
 
-//bool ParseArgs(int argc, char* argv[])
-//{
-//    if (argc < 2)
-//    {
-//        return false;
-//    }
-//    // get the image file
-//    imagePath = hstring(wstring_to_utf8().from_bytes(argv[1]));
-//    // did they pass a third arg?
-//    if (argc >= 3)
-//    {
-//        deviceName = argv[2];
-//        if (deviceName == "cpu")
-//        {
-//            deviceKind = LearningModelDeviceKind::Cpu;
-//        }
-//        else if (deviceName == "directx")
-//        {
-//            deviceKind = LearningModelDeviceKind::DirectX;
-//        }
-//        else
-//        {
-//            deviceName = "default";
-//            deviceKind = LearningModelDeviceKind::Default;
-//        }
-//    }
-//    return true;
-//}
+bool ParseArgs(int argc, char* argv[])
+{
+    if (argc < 2)
+    {
+        return false;
+    }
+    // get the image file
+    imagePath = hstring(wstring_to_utf8().from_bytes(argv[1]));
+    // did they pass a third arg?
+    if (argc >= 3)
+    {
+        deviceName = argv[2];
+        if (deviceName == "cpu")
+        {
+            deviceKind = LearningModelDeviceKind::Cpu;
+        }
+        else if (deviceName == "directx")
+        {
+            deviceKind = LearningModelDeviceKind::DirectX;
+        }
+        else
+        {
+            deviceName = "default";
+            deviceKind = LearningModelDeviceKind::Default;
+        }
+    }
+    return true;
+}
+
+
 //
 //ColorManagementMode GetColorManagementMode(const LearningModel& model)
 //{

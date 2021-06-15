@@ -3,6 +3,13 @@
 #include "FileHelper.h"
 #include <winrt/Microsoft.AI.MachineLearning.Experimental.h>
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <sndfile.h>
+
+#include "AudioFile.h"
+
+
 
 using namespace winrt;
 
@@ -15,6 +22,24 @@ using Operator = LearningModelOperator;
 #define SIZET(x) static_cast<size_t>(x)
 #define INT32(x) static_cast<int32_t>(x)
 
+
+//template <typename T>
+static auto ReadFileWaveform(const char *filename, size_t sample_rate) {
+    
+    AudioFile<double> audioFile;
+    audioFile.load(filename);
+    float amplitude = 5000;
+    size_t channel = 0;
+    size_t numSamples = audioFile.getNumSamplesPerChannel();
+    std::vector<float> signal(numSamples);
+
+    for (size_t i = 0; i < numSamples; i++)
+    {
+     signal[i] = audioFile.samples[channel][i] * amplitude ;
+    }
+
+    return signal;
+}
 
 
 template <typename T>
@@ -93,6 +118,7 @@ static void WindowFunction(const wchar_t* window_operator_name, TensorKind kind)
 
     // Check results
     printf("Output\n");
+
     if (kind == TensorKind::Float) {
         auto y_tensor = result.Outputs().Lookup(L"Output").as<TensorFloat>();
         auto y_ivv = y_tensor.GetAsVectorView();
@@ -185,6 +211,7 @@ static void STFT(size_t batch_size, size_t signal_size, size_t dft_size,
 
     printf("\n");
 }
+
 static void ModelBuilding_MelWeightMatrix() {
     std::vector<int64_t> output_shape = { INT64(9), INT64(8) };
     auto builder =
@@ -227,12 +254,12 @@ void MelSpectrogram::MelSpectrogramOnThreeToneSignal(
 
     auto builder =
         LearningModelBuilder::Create(13)
-        .Inputs().Add(LearningModelBuilder::CreateTensorFeatureDescriptor(L"Input.TimeSignal", L"One-dimensional audio waveform", TensorKind::Float, signal_shape))
-        .Outputs().Add(LearningModelBuilder::CreateTensorFeatureDescriptor(L"Output.MelSpectrogram", L"Output description", TensorKind::Float, mel_spectrogram_shape))
-        .Operators().Add(Operator(L"HannWindow")
+        .Inputs().Add(LearningModelBuilder::CreateTensorFeatureDescriptor(L"Input.TimeSignal", TensorKind::Float, signal_shape))
+        .Outputs().Add(LearningModelBuilder::CreateTensorFeatureDescriptor(L"Output.MelSpectrogram", TensorKind::Float, mel_spectrogram_shape))
+        .Operators().Add(Operator(L"HannWindow", MS_EXPERIMENTAL_DOMAIN)
             .SetConstant(L"size", TensorInt64Bit::CreateFromArray({}, { INT64(window_size) }))
             .SetOutput(L"output", L"hann_window"))
-        .Operators().Add(Operator(L"STFT")
+        .Operators().Add(Operator(L"STFT", MS_EXPERIMENTAL_DOMAIN)
             .SetName(L"STFT_NAMED_NODE")
             .SetInput(L"signal", L"Input.TimeSignal")
             .SetInput(L"window", L"hann_window")
@@ -248,7 +275,7 @@ void MelSpectrogram::MelSpectrogramOnThreeToneSignal(
             .SetInput(L"A", L"magnitude_squared")
             .SetConstant(L"B", TensorFloat::CreateFromArray({}, { static_cast<float>(dft_size) }))
             .SetOutput(L"C", L"power_frames"))
-        .Operators().Add(Operator(L"MelWeightMatrix")
+        .Operators().Add(Operator(L"MelWeightMatrix", MS_EXPERIMENTAL_DOMAIN)
             .SetConstant(L"num_mel_bins", TensorInt64Bit::CreateFromArray({}, { INT64(n_mel_bins) }))
             .SetConstant(L"dft_length", TensorInt64Bit::CreateFromArray({}, { INT64(dft_size) }))
             .SetConstant(L"sample_rate", TensorInt64Bit::CreateFromArray({}, { INT64(sampling_rate) }))
@@ -272,8 +299,10 @@ void MelSpectrogram::MelSpectrogramOnThreeToneSignal(
     LearningModelSession session(model);
     LearningModelBinding binding(session);
 
-    // Bind input
+    // Create 3 tones for input
     auto signal = MakeThreeTones<float>(signal_size, sampling_rate);
+
+    // Bind input
     binding.Bind(L"Input.TimeSignal", TensorFloat::CreateFromArray(signal_shape, signal));
 
     // Bind output
@@ -292,7 +321,7 @@ void MelSpectrogram::MelSpectrogramOnThreeToneSignal(
     printf("Evaluate Took: %f\n", evaluate_duration_in_microseconds.count());
 
     // Check the output video frame object by saving output image to disk
-    std::wstring out_name = L"mel_spectrogram.jpg";
+    std::wstring out_name = L"mel_spectrogram_3tones.jpg";
 
     // Save the output
     std::wstring modulePath = FileHelper::GetModulePath();
@@ -308,4 +337,101 @@ void MelSpectrogram::MelSpectrogramOnThreeToneSignal(
     printf("\n");
 }
 
+void MelSpectrogram::MelSpectrogramOnFile(const char *filename,
+    size_t batch_size, size_t window_size, size_t dft_size,
+    size_t hop_size, size_t n_mel_bins, size_t sampling_rate){
+    
+    // Import file
+    auto signal = ReadFileWaveform(filename, sampling_rate);
+    size_t signal_size = signal.size();
 
+    auto n_dfts = static_cast<size_t>(1 + floor((signal_size - dft_size) / hop_size));
+    auto onesided_dft_size = (dft_size >> 1) + 1;
+    std::vector<int64_t> signal_shape = { INT64(batch_size), INT64(signal_size) };
+    std::vector<int64_t> mel_spectrogram_shape = { INT64(batch_size), 1, INT64(n_dfts), INT64(n_mel_bins) };
+
+    auto builder =
+        LearningModelBuilder::Create(13)
+        .Inputs().Add(LearningModelBuilder::CreateTensorFeatureDescriptor(L"Input.TimeSignal", TensorKind::Float, signal_shape))
+        .Outputs().Add(LearningModelBuilder::CreateTensorFeatureDescriptor(L"Output.MelSpectrogram", TensorKind::Float, mel_spectrogram_shape))
+        .Operators().Add(Operator(L"HannWindow", MS_EXPERIMENTAL_DOMAIN)
+            .SetConstant(L"size", TensorInt64Bit::CreateFromArray({}, { INT64(window_size) }))
+            .SetOutput(L"output", L"hann_window"))
+        .Operators().Add(Operator(L"STFT", MS_EXPERIMENTAL_DOMAIN)
+            .SetName(L"STFT_NAMED_NODE")
+            .SetInput(L"signal", L"Input.TimeSignal")
+            .SetInput(L"window", L"hann_window")
+            .SetConstant(L"frame_length", TensorInt64Bit::CreateFromArray({}, { INT64(dft_size) }))
+            .SetConstant(L"frame_step", TensorInt64Bit::CreateFromArray({}, { INT64(hop_size) }))
+            .SetOutput(L"output", L"stft_output"))
+        .Operators().Add(Operator(L"ReduceSumSquare")
+            .SetInput(L"data", L"stft_output")
+            .SetAttribute(L"axes", TensorInt64Bit::CreateFromArray({ 1 }, { 3 }))
+            .SetAttribute(L"keepdims", TensorInt64Bit::CreateFromArray({}, { 0 }))
+            .SetOutput(L"reduced", L"magnitude_squared"))
+        .Operators().Add(Operator(L"Div")
+            .SetInput(L"A", L"magnitude_squared")
+            .SetConstant(L"B", TensorFloat::CreateFromArray({}, { static_cast<float>(dft_size) }))
+            .SetOutput(L"C", L"power_frames"))
+        .Operators().Add(Operator(L"MelWeightMatrix", MS_EXPERIMENTAL_DOMAIN)
+            .SetConstant(L"num_mel_bins", TensorInt64Bit::CreateFromArray({}, { INT64(n_mel_bins) }))
+            .SetConstant(L"dft_length", TensorInt64Bit::CreateFromArray({}, { INT64(dft_size) }))
+            .SetConstant(L"sample_rate", TensorInt64Bit::CreateFromArray({}, { INT64(sampling_rate) }))
+            .SetConstant(L"lower_edge_hertz", TensorFloat::CreateFromArray({}, { 0 }))
+            .SetConstant(L"upper_edge_hertz", TensorFloat::CreateFromArray({}, { sampling_rate / 2.f }))
+            .SetOutput(L"output", L"mel_weight_matrix"))
+        .Operators().Add(Operator(L"Reshape")
+            .SetInput(L"data", L"power_frames")
+            .SetConstant(L"shape", TensorInt64Bit::CreateFromArray({ 2 }, { INT64(batch_size * n_dfts), INT64(onesided_dft_size) }))
+            .SetOutput(L"reshaped", L"reshaped_output"))
+        .Operators().Add(Operator(L"MatMul")
+            .SetInput(L"A", L"reshaped_output")
+            .SetInput(L"B", L"mel_weight_matrix")
+            .SetOutput(L"Y", L"mel_spectrogram"))
+        .Operators().Add(Operator(L"Reshape")
+            .SetInput(L"data", L"mel_spectrogram")
+            .SetConstant(L"shape", TensorInt64Bit::CreateFromArray({ 4 }, mel_spectrogram_shape))
+            .SetOutput(L"reshaped", L"Output.MelSpectrogram"));
+        /*.Operators().Add(Operator(L"Transpose")
+            .SetInput(L"data", L"reshaped_mel_spectrogram")
+            .SetOutput(L"transposed", L"Output.MelSpectrogram"));*/
+    auto model = builder.CreateModel();
+
+    LearningModelSession session(model);
+    LearningModelBinding binding(session);
+
+    // Bind input
+    binding.Bind(L"Input.TimeSignal", TensorFloat::CreateFromArray(signal_shape, signal));
+
+    // Bind output
+    auto output_image =
+        winrt::Windows::Media::VideoFrame(
+            winrt::Windows::Graphics::Imaging::BitmapPixelFormat::Bgra8,
+            INT32(n_mel_bins),
+            INT32(n_dfts)
+            );
+    binding.Bind(L"Output.MelSpectrogram", output_image);
+
+    // Evaluate
+    auto start = std::chrono::high_resolution_clock::now();
+    auto result = session.Evaluate(binding, L"");
+    auto end = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double, std::micro> evaluate_duration_in_microseconds = end - start;
+    printf("Evaluate Took: %f\n", evaluate_duration_in_microseconds.count());
+
+    // Check the output video frame object by saving output image to disk
+    std::wstring out_name = L"mel_spectrogram_file.jpg";
+
+    // Save the output
+    std::wstring modulePath = FileHelper::GetModulePath();
+    winrt::Windows::Storage::StorageFolder folder = winrt::Windows::Storage::StorageFolder::GetFolderFromPathAsync(modulePath).get();
+    winrt::Windows::Storage::StorageFile file = folder.CreateFileAsync(out_name, winrt::Windows::Storage::CreationCollisionOption::ReplaceExisting).get();
+    winrt::Windows::Storage::Streams::IRandomAccessStream write_stream = file.OpenAsync(winrt::Windows::Storage::FileAccessMode::ReadWrite).get();
+    winrt::Windows::Graphics::Imaging::BitmapEncoder encoder = winrt::Windows::Graphics::Imaging::BitmapEncoder::CreateAsync(winrt::Windows::Graphics::Imaging::BitmapEncoder::JpegEncoderId(), write_stream).get();
+    encoder.SetSoftwareBitmap(output_image.SoftwareBitmap());
+    encoder.FlushAsync().get();
+
+    // Save the model
+    builder.Save(L"spectrogram.onnx");
+    printf("\n");
+}

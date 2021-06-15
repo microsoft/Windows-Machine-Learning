@@ -23,19 +23,26 @@ using Operator = LearningModelOperator;
 #define INT32(x) static_cast<int32_t>(x)
 
 
-//template <typename T>
-static auto ReadFileWaveform(const char *filename, size_t sample_rate) {
-    
+
+
+static auto ReadFileWaveform(const char* filename, size_t sample_rate, size_t amplitude) {
+
     AudioFile<double> audioFile;
     audioFile.load(filename);
-    float amplitude = 5000;
+    size_t amp = amplitude;
+
+    if (amp <= 0) {
+        printf("Invalid amplitude for file reading. Set to default of 5000.");
+        amp = 5000;
+    }
+
     size_t channel = 0;
     size_t numSamples = audioFile.getNumSamplesPerChannel();
     std::vector<float> signal(numSamples);
 
     for (size_t i = 0; i < numSamples; i++)
     {
-     signal[i] = audioFile.samples[channel][i] * amplitude ;
+        signal[i] = audioFile.samples[channel][i] * amplitude;
     }
 
     return signal;
@@ -338,10 +345,10 @@ void MelSpectrogram::MelSpectrogramOnThreeToneSignal(
 
 void MelSpectrogram::MelSpectrogramOnFile(const char *filename,
     size_t batch_size, size_t window_size, size_t dft_size,
-    size_t hop_size, size_t n_mel_bins, size_t sampling_rate){
+    size_t hop_size, size_t n_mel_bins, size_t sampling_rate, size_t amplitude){
     
     // Import file
-    auto signal = ReadFileWaveform(filename, sampling_rate);
+    auto signal = ReadFileWaveform(filename, sampling_rate, amplitude);
     size_t signal_size = signal.size();
 
     auto n_dfts = static_cast<size_t>(1 + floor((signal_size - dft_size) / hop_size));

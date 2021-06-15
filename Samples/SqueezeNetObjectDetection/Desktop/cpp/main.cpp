@@ -44,7 +44,7 @@ int main(int argc, char* argv[])
     // did they pass in the args 
     if (ParseArgs(argc, argv) == false)
     {
-        printf("Usage: %s [soundfile] [cpu|directx]", argv[0]);
+        printf("Usage: %s soundfile [amplitude]", argv[0]);
         return -1;
     }
 
@@ -58,6 +58,7 @@ int main(int argc, char* argv[])
     size_t hop_size = 128;
     size_t window_size = 256;
     size_t n_mel_bins = 1024;
+    
 
     MelSpectrogram::MelSpectrogramOnThreeToneSignal(batch_size, signal_size, window_size, dft_size,
         hop_size, n_mel_bins, sample_rate);
@@ -73,9 +74,10 @@ int main(int argc, char* argv[])
      hop_size = 3;
      window_size = 256;
      n_mel_bins = 1024;
+     size_t amplitude = atoi(argv[2]);
 
     MelSpectrogram::MelSpectrogramOnFile(argv[1], batch_size, window_size, dft_size,
-        hop_size, n_mel_bins, sample_rate);
+        hop_size, n_mel_bins, sample_rate, amplitude);
     printf("Printed spectrogram for file selected");
 
     printf("done");

@@ -7,9 +7,10 @@ using System.Threading.Tasks;
 
 namespace AudioPreprocessing.Model
 {
-    public class MelSpectrogramModel
-    {
+    public class PreprocessModel
+    { 
         private List<string> repositoryData;
+        private string melSpecPath;
         public string ImportantInfo
         {
             get
@@ -17,10 +18,18 @@ namespace AudioPreprocessing.Model
                 return ConcatenateData(repositoryData);
             }
         }
+        public string MelSpecPath
+        {
+            get
+            {
+                return melSpecPath;
+            }
+        }
 
-        public MelSpectrogramModel()
+        public PreprocessModel()
         {
             repositoryData = GetData();
+            melSpecPath = "C:/Users/t-janedu/source/repos/Windows-Machine-Learning/Samples/AudioPreprocessing/AudioPreprocessing/tmp/mel_spectrogram_file.jpg";
         }
 
         /// <summary>
@@ -46,5 +55,8 @@ namespace AudioPreprocessing.Model
             string importantInfo = dataList.ElementAt(0) + ", " + dataList.ElementAt(1) + "!";
             return importantInfo;
         }
+
+
+
     }
 }

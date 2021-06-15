@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -11,17 +12,18 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
+using Microsoft.Win32;
 
 namespace AudioPreprocessing.View
 {
     /// <summary>
     /// Interaction logic for MelSpectrogramView.xaml
     /// </summary>
-    public partial class MelSpectrogramView : Window
+    public partial class PreprocessView : Window
     {
-        public MelSpectrogramView()
+        public PreprocessView()
         {
-            InitializeComponent();
         }
+
     }
 }

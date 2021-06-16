@@ -8,13 +8,13 @@
         xmlns:local="clr-namespace:AudioPreprocessing.View"
         xmlns:vm="clr-namespace:AudioPreprocessing.ViewModel"
         mc:Ignorable="d"
-        Title="PreprocessingView" Height="500" Width="800">
+        Title="PreprocessingView" Height="800" Width="1300">
     <Window.DataContext>
         <vm:PreprocessViewModel/>
     </Window.DataContext>
     <StackPanel Margin="0,0,0,0" 
             Background="White" Orientation="Vertical">
-        <Label x:Name="label" FontSize="30" Content="Hello World" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+        <Label x:Name="label" FontSize="30" Content="Hello world!" HorizontalAlignment="Center" VerticalAlignment="Center"/>
         <WrapPanel HorizontalAlignment="Center" DockPanel.Dock="Top" Margin="0,0,0,10">
             <Button Name="ShowFilePickerButton" Command="{Binding OpenFileCommand}" Content="Open file" />
         </WrapPanel>

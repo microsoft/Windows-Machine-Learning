@@ -39,10 +39,6 @@ namespace AudioPreprocessing.ViewModel
 
         public event PropertyChangedEventHandler PropertyChanged;
 
-        /// <summary>
-        /// Raises OnPropertychangedEvent when property changes
-        /// </summary>
-        /// <param name="name">String representing the property name</param>
         protected void OnPropertyChanged([CallerMemberName] string name = null)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));

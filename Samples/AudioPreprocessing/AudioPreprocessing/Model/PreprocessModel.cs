@@ -9,8 +9,10 @@ namespace AudioPreprocessing.Model
 {
     public class PreprocessModel
     { 
-        private string melSpecPath;
- 
+        public PreprocessModel()
+        {
+            MelSpecPath = "../tmp/mel_spectrogram_file.jpg";
+        }
         public string MelSpecPath { get; set; }
     }
 }

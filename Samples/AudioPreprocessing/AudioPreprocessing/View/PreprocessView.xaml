@@ -18,7 +18,9 @@
         <WrapPanel HorizontalAlignment="Center" DockPanel.Dock="Top" Margin="0,0,0,10">
             <Button Name="ShowFilePickerButton" Command="{Binding OpenFileCommand}" Content="Open file" />
         </WrapPanel>
-
+        <WrapPanel HorizontalAlignment="Center" DockPanel.Dock="Top" Margin="0,0,0,10">
+            <TextBlock Name="ImagePath" Text="{Binding MelSpecPath}"  />
+        </WrapPanel>
         <WrapPanel HorizontalAlignment="Center" DockPanel.Dock="Top" Margin="0,0,0,10">
             <Image Source="{Binding MelSpecPath}" HorizontalAlignment="Left" 
         Margin="0,0,0,0" Name="image1" Stretch="Fill" Height="500" Width="800" />

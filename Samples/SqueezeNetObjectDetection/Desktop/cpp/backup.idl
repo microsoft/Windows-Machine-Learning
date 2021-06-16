@@ -1,9 +1,0 @@
-namespace SqueezeNetObjectDetection
-{
-    [default_interface]
-    runtimeclass backup : Windows.UI.Xaml.Controls.Page
-    {
-        backup();
-        Int32 MyProperty;
-    }
-}

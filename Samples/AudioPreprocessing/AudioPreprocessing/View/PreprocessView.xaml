@@ -4,7 +4,6 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:md="https://github.com/fantasticfiasco/mvvm-dialogs"
-        md:DialogServiceViews.IsRegistered="True"   
         xmlns:local="clr-namespace:AudioPreprocessing.View"
         xmlns:vm="clr-namespace:AudioPreprocessing.ViewModel"
         mc:Ignorable="d"
@@ -19,12 +18,21 @@
             <Button Name="ShowFilePickerButton" Command="{Binding OpenFileCommand}" Content="Open file" />
         </WrapPanel>
         <WrapPanel HorizontalAlignment="Center" DockPanel.Dock="Top" Margin="0,0,0,10">
-            <TextBlock Name="ImagePath" Text="{Binding MelSpecPath}"  />
+            <TextBlock Name="WavFilePath" Text="{Binding AudioPath}"  />
         </WrapPanel>
         <WrapPanel HorizontalAlignment="Center" DockPanel.Dock="Top" Margin="0,0,0,10">
-            <Image Source="{Binding MelSpecPath}" HorizontalAlignment="Left" 
-        Margin="0,0,0,0" Name="image1" Stretch="Fill" Height="500" Width="800" />
+            <TextBlock Name="ImagePath" Text="{Binding ImagePath}"  />
         </WrapPanel>
-        
+        <StackPanel Margin="0,0,0,0" HorizontalAlignment="Center"
+            Background="White" Orientation="Horizontal">
+            <WrapPanel HorizontalAlignment="Center" DockPanel.Dock="Top" Margin="0,0,0,10">
+                <Image Source="{Binding AudioPath}" 
+        Margin="0,0,0,0" Name="image1" Stretch="Fill" Height="500" Width="500" />
+            </WrapPanel>
+            <WrapPanel HorizontalAlignment="Center" DockPanel.Dock="Top" Margin="0,0,0,10">
+                    <Image Source="{Binding MelSpecPath}"  
+        Margin="0,0,0,0" Name="image2" Stretch="Fill" Height="500" Width="500" />
+                </WrapPanel>
+        </StackPanel>
     </StackPanel>
 </Window>

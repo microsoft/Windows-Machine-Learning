@@ -15,18 +15,24 @@ namespace AudioPreprocessing.ViewModel
     public class PreprocessViewModel : INotifyPropertyChanged
 
     {
-        private string melSpecPath;
+        private string audioPath;
+        private string imagePath;
 
         public PreprocessViewModel()
         {
             PreprocessModel preprocessModel = new PreprocessModel();
-            melSpecPath = preprocessModel.AudioPath;
+            audioPath = preprocessModel.AudioPath;
         }
 
-        public string MelSpecPath
+        public string AudioPath
         {
-            get { return melSpecPath; }
-            set { melSpecPath = value; OnPropertyChanged(); }
+            get { return audioPath; }
+            set { audioPath = value; OnPropertyChanged(); }
+        }
+        public string ImagePath
+        {
+            get { return imagePath; }
+            set { imagePath = value; OnPropertyChanged(); }
         }
 
         public ICommand OpenFileCommand => new RelayCommand(OpenFile);
@@ -39,7 +45,9 @@ namespace AudioPreprocessing.ViewModel
 
             if (openFileDialog.ShowDialog() == true)
             {
-                MelSpecPath = openFileDialog.FileName;
+                PreprocessModel melSpec = new PreprocessModel();
+                AudioPath = openFileDialog.FileName;
+                ImagePath = melSpec.GenerateMelSpectrogram(AudioPath);
             }
         }
 

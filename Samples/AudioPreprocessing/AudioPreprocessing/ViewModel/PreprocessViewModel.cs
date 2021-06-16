@@ -7,20 +7,20 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using AudioPreprocessing.Model;
-
+using Microsoft.Win32;
 
 namespace AudioPreprocessing.ViewModel
 {
     // Implements INotifyPropertyChanged interface to support bindings
     public class PreprocessViewModel : INotifyPropertyChanged
-    
+
     {
         private string melSpecPath;
 
         public PreprocessViewModel()
         {
-            PreprocessModel helloWorldModel = new PreprocessModel();
-            melSpecPath = helloWorldModel.MelSpecPath;
+            PreprocessModel preprocessModel = new PreprocessModel();
+            melSpecPath = preprocessModel.AudioPath;
         }
 
         public string MelSpecPath
@@ -29,12 +29,18 @@ namespace AudioPreprocessing.ViewModel
             set { melSpecPath = value; OnPropertyChanged(); }
         }
 
-        public ICommand OpenFileCommand { get; }
+        public ICommand OpenFileCommand => new RelayCommand(OpenFile);
 
-        private void OpenFile()
+        private void OpenFile(object commandParameter)
         {
-            //Logic for opening files
-            Console.WriteLine("Open File");
+            var openFileDialog = new OpenFileDialog();
+            openFileDialog.Title = "Choose an Audio File";
+            openFileDialog.Filter = "sound files (*.wav)|*.wav|All files (*.*)|*.*";
+
+            if (openFileDialog.ShowDialog() == true)
+            {
+                MelSpecPath = openFileDialog.FileName;
+            }
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
@@ -44,7 +50,7 @@ namespace AudioPreprocessing.ViewModel
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
         }
 
-        
+
     }
 
 }

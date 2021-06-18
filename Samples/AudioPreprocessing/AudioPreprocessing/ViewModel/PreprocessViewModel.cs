@@ -22,6 +22,7 @@ namespace AudioPreprocessing.ViewModel
         {
             PreprocessModel preprocessModel = new PreprocessModel();
             audioPath = preprocessModel.AudioPath;
+            imagePath = preprocessModel.MelSpecImagePath;
         }
 
         public string AudioPath

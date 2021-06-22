@@ -1,10 +1,6 @@
 ﻿using NAudio.Wave;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Microsoft.AI.MachineLearning.Experimental;
 using Microsoft.AI.MachineLearning;
 using Windows.Media;
@@ -12,6 +8,15 @@ using Windows.Graphics.Imaging;
 
 using Operator = Microsoft.AI.MachineLearning.Experimental.LearningModelOperator;
 using System.Diagnostics;
+using Windows.Storage.Streams;
+using System.Windows.Media;
+using Windows.Storage;
+using System.Reflection;
+using System.Drawing;
+using System.IO;
+using System.Threading.Tasks;
+using System.Drawing.Imaging;
+using System.Windows.Media.Imaging;
 
 namespace AudioPreprocessing.Model
 {
@@ -23,16 +28,16 @@ namespace AudioPreprocessing.Model
 
         public string MelSpecImagePath { get; set; }
 
+        public ImageSource MelSpecStream { get; }
 
         public PreprocessModel()
         {
-            AudioPath = "../tmp/mel_spectrogram_file.jpg";
-            MelSpecImagePath = "../tmp/mel_spectrogram_file.jpg";
+            AudioPath = "..\\tmp\\mel_spectrogram_file.jpg";
+            MelSpecImagePath = "..\\tmp\\mel_spectrogram_file.jpg";
 
         }
-        public string GenerateMelSpectrogram(string audioPath)
+        public ImageSource GenerateMelSpectrogram(string audioPath)
         {
-            string imagePath = "";
             var signal = GetSignalFromFile(audioPath);
             int batchSize = 1;
             int signalSize = signal.Count;
@@ -41,12 +46,45 @@ namespace AudioPreprocessing.Model
             int hopSize = 3;
             int nMelBins = 1024;
             int samplingRate = 8192;
-            var image = GetMelpsectrogramFromSignal(signal, batchSize, signalSize, windowSize, dftSize,
-                    hopSize, nMelBins, samplingRate);
-            imagePath = "Length of signal: " + signal.Count.ToString();
 
-            MelSpecImagePath = imagePath;
-            return MelSpecImagePath;
+            var rawSoftwareBitmap = GetMelpsectrogramFromSignal(signal, batchSize, signalSize, windowSize, dftSize,
+                    hopSize, nMelBins, samplingRate);
+
+            var bitmap = SoftwareToBitmap(rawSoftwareBitmap).Result;
+            //Bitmap bitmap = new Bitmap("C:\\Users\\t-janedu\\source\\repos\\Windows-Machine-Learning\\Samples\\AudioPreprocessing\\AudioPreprocessing\\tmp\\mel_spectrogram_3tones.jpg");
+            var imageSource = BitmapToImageSource(bitmap);
+
+            return imageSource;    
+        }
+        private async Task<Bitmap> SoftwareToBitmap(SoftwareBitmap softwareBitmap)
+        {
+            Bitmap bmp;
+            using (var stream = new InMemoryRandomAccessStream())
+            {
+                var encoder = await Windows.Graphics.Imaging.BitmapEncoder.CreateAsync(
+                    Windows.Graphics.Imaging.BitmapEncoder.BmpEncoderId, stream);
+                // Set the software bitmap
+                encoder.SetSoftwareBitmap(softwareBitmap);
+                Console.WriteLine(stream.Size);
+                await encoder.FlushAsync();
+                bmp = new Bitmap(stream.AsStream());
+                return bmp;
+            }
+        }
+
+        private BitmapImage BitmapToImageSource(Bitmap bitmap)
+        {
+            using (MemoryStream memory = new MemoryStream())
+            {
+                bitmap.Save(memory, ImageFormat.Bmp);
+                memory.Position = 0;
+                BitmapImage bitmapimage = new BitmapImage();
+                bitmapimage.BeginInit();
+                bitmapimage.StreamSource = memory;
+                bitmapimage.CacheOption = BitmapCacheOption.OnLoad;
+                bitmapimage.EndInit();
+                return bitmapimage;
+            }
         }
 
         private List<float> Resample(List<float> signal, int oldSampleRate, int newSampleRate)
@@ -61,7 +99,7 @@ namespace AudioPreprocessing.Model
         }
 
 
-        private List<float> GetSignalFromFile(string filename, int sampleRate = 8000, int amplitude = 10000)
+        private List<float> GetSignalFromFile(string filename, int sampleRate = 8000, int amplitude = 5000)
         {
             List<float> signal = new List<float>();
             int rawSampleRate;
@@ -69,20 +107,23 @@ namespace AudioPreprocessing.Model
             {
                 rawSampleRate = reader.WaveFormat.SampleRate;
                 float[] buffer = new float[rawSampleRate];
-                int read;
-                read = reader.Read(buffer, 0, buffer.Length);
+                int read = reader.Read(buffer, 0, buffer.Length);
                 while (read > 0)
                 {
-                    signal.AddRange(buffer);
+                    foreach (float b in buffer)
+                    {
+                        signal.Add(b * amplitude);
+                    }
                     read = reader.Read(buffer, 0, buffer.Length);
-                } 
+                }
             }
             Console.WriteLine($"Num samples in file: {signal.Count}");
-            var newSignal = Resample(signal, rawSampleRate, sampleRate);
+            var newSignal = signal;
+            //var newSignal = Resample(signal, rawSampleRate, sampleRate);
             Console.WriteLine($"Simple resamplein file: {signal.Count}");
             return newSignal;
         }
-
+        
         static SoftwareBitmap GetMelpsectrogramFromSignal(List<float> signal,
             int batchSize, int signalSize, int windowSize, int dftSize,
             int hopSize, int nMelBins, int samplingRate)
@@ -97,14 +138,14 @@ namespace AudioPreprocessing.Model
                 .Inputs.Add(LearningModelBuilder.CreateTensorFeatureDescriptor("Input.TimeSignal", TensorKind.Float, signalShape))
                 .Outputs.Add(LearningModelBuilder.CreateTensorFeatureDescriptor("Output.MelSpectrogram", TensorKind.Float, melSpectrogramShape))
               .Operators.Add(new Operator("HannWindow", MS_EXPERIMENTAL_DOMAIN)
-                .SetConstant("size", TensorInt64Bit.CreateFromArray(new List<long>(), new long[windowSize]))
+                .SetConstant("size", TensorInt64Bit.CreateFromArray(new List<long>(), new long[] { windowSize }))
                 .SetOutput("output", "hann_window"))
               .Operators.Add(new Operator("STFT", MS_EXPERIMENTAL_DOMAIN)
                 .SetName("STFT_NAMED_NODE")
                 .SetInput("signal", "Input.TimeSignal")
                 .SetInput("window", "hann_window")
-                .SetConstant("frame_length", TensorInt64Bit.CreateFromArray(new List<long>(), new long[dftSize]))
-                .SetConstant("frame_step", TensorInt64Bit.CreateFromArray(new List<long>(), new long[hopSize]))
+                .SetConstant("frame_length", TensorInt64Bit.CreateFromArray(new List<long>(), new long[] { dftSize }))
+                .SetConstant("frame_step", TensorInt64Bit.CreateFromArray(new List<long>(), new long[] { hopSize }))
                 .SetOutput("output", "stft_output"))
               .Operators.Add(new Operator("ReduceSumSquare")
                 .SetInput("data", "stft_output")
@@ -116,9 +157,9 @@ namespace AudioPreprocessing.Model
                 .SetConstant("B", TensorFloat.CreateFromArray(new List<long>(), new float[] { dftSize }))
                 .SetOutput("C", "power_frames"))
               .Operators.Add(new Operator("MelWeightMatrix", MS_EXPERIMENTAL_DOMAIN)
-                .SetConstant("num_mel_bins", TensorInt64Bit.CreateFromArray(new List<long>(), new long[nMelBins]))
-                .SetConstant("dft_length", TensorInt64Bit.CreateFromArray(new List<long>(), new long[dftSize]))
-                .SetConstant("sample_rate", TensorInt64Bit.CreateFromArray(new List<long>(), new long[samplingRate]))
+                .SetConstant("num_mel_bins", TensorInt64Bit.CreateFromArray(new List<long>(), new long[] { nMelBins }))
+                .SetConstant("dft_length", TensorInt64Bit.CreateFromArray(new List<long>(), new long[] { dftSize }))
+                .SetConstant("sample_rate", TensorInt64Bit.CreateFromArray(new List<long>(), new long[] { samplingRate }))
                 .SetConstant("lower_edge_hertz", TensorFloat.CreateFromArray(new List<long>(), new float[] { 0 }))
                 .SetConstant("upper_edge_hertz", TensorFloat.CreateFromArray(new List<long>(), new float[] { (float)(samplingRate / 2.0) }))
                 .SetOutput("output", "mel_weight_matrix"))
@@ -147,6 +188,11 @@ namespace AudioPreprocessing.Model
                 BitmapPixelFormat.Bgra8,
                 nMelBins,
                 nDfts);
+            //var outputImage = new Bitmap(
+            //    nMelBins,
+            //    nDfts);
+
+
             binding.Bind("Output.MelSpectrogram", outputImage);
 
             // Evaluate
@@ -155,24 +201,25 @@ namespace AudioPreprocessing.Model
             sw.Stop();
             Console.WriteLine("Evaluate Took: %f\n", sw.ElapsedMilliseconds);
 
+            //return outputImage.SoftwareBitmap;
             return outputImage.SoftwareBitmap;
 
-            //// Check the output video frame object by saving output image to disk
-            //string imageName = "mel_spectrogram.jpg";
+            // check the output video frame object by saving output image to disk
+            //string imagename = "mel_spectrogram.jpg";
 
-            //// Save the output
+            //// save the output
 
-            ////std.wstring modulePath = FileHelpers.GetModulePath();
-            ////winrt.Windows.Storage.StorageFolder folder = winrt.Windows.Storage.StorageFolder.GetFolderFromPathAsync(modulePath).get();
-            ////winrt.Windows.Storage.StorageFile file = folder.CreateFileAsync(out_name, winrt.Windows.Storage.CreationCollisionOption.ReplaceExisting).get();
-            ////winrt.Windows.Storage.Streams.IRandomAccessStream write_stream = file.OpenAsync(winrt.Windows.Storage.FileAccessMode.ReadWrite).get();
-            ////winrt.Windows.Graphics.Imaging.BitmapEncoder encoder = winrt.Windows.Graphics.Imaging.BitmapEncoder.CreateAsync(winrt.Windows.Graphics.Imaging.BitmapEncoder.JpegEncoderId(), write_stream).get();
-            //encoder.SetSoftwareBitmap(outputImage.SoftwareBitmap);
-            //encoder.FlushAsync().get();
+            //string modulepath = filehelpers.getmodulepath();
+            //winrt.windows.storage.storagefolder folder = winrt.windows.storage.storagefolder.getfolderfrompathasync(modulepath).get();
+            //winrt.windows.storage.storagefile file = folder.createfileasync(out_name, winrt.windows.storage.creationcollisionoption.replaceexisting).get();
+            //winrt.windows.storage.streams.irandomaccessstream write_stream = file.openasync(winrt.windows.storage.fileaccessmode.readwrite).get();
+            //winrt.windows.graphics.imaging.bitmapencoder encoder = winrt.windows.graphics.imaging.bitmapencoder.createasync(winrt.windows.graphics.imaging.bitmapencoder.jpegencoderid(), write_stream).get();
+            //encoder.setsoftwarebitmap(outputimage.softwarebitmap);
+            //encoder.flushasync().get();
 
-            //// Save the model
-            //builder.Save("spectrogram.onnx");
-            //return "TODO: replace with image path? done melspectrogram generation";
+            // save the model
+            //builder.save("spectrogram.onnx");
+            //return "todo: replace with image path? done melspectrogram generation";
         }
 
         static void ModelBuilding_MelWeightMatrix()
@@ -188,12 +235,12 @@ namespace AudioPreprocessing.Model
                     .SetConstant("lower_edge_hertz", TensorFloat.CreateFromArray(new List<long>(), new float[] { 0 }))
                     .SetConstant("upper_edge_hertz", TensorFloat.CreateFromArray(new List<long>(), new float[] { (float)(8192 / 2.0) }))
                     .SetOutput("output", "Output.MelWeightMatrix"));
-            
+
             var model = builder.CreateModel();
             LearningModelSession session = new LearningModelSession(model);
             LearningModelBinding binding = new LearningModelBinding(session);
             var result = session.Evaluate(binding, "");
-            
+
             Console.WriteLine("\n");
             Console.WriteLine("Output.MelWeightMatrix\n");
         }
@@ -211,7 +258,7 @@ namespace AudioPreprocessing.Model
             };
             var dft_length = TensorInt64Bit.CreateFromArray(new List<long>(), new long[] { dft_size });
 
-            var builder =LearningModelBuilder.Create(13)
+            var builder = LearningModelBuilder.Create(13)
                 .Inputs.Add(LearningModelBuilder.CreateTensorFeatureDescriptor("Input.TimeSignal", TensorKind.Float, input_shape))
                 .Outputs.Add(LearningModelBuilder.CreateTensorFeatureDescriptor("Output.STFT", TensorKind.Float, output_shape))
                 .Outputs.Add(LearningModelBuilder.CreateTensorFeatureDescriptor("Output.HannWindow", TensorKind.Float, new long[] { dft_size }))

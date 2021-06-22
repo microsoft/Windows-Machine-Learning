@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "AudioPreprocessing": {
+      "commandName": "Project",
+      "nativeDebugging": true
+    }
+  }
+}

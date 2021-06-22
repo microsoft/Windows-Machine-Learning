@@ -6,6 +6,7 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Input;
+using System.Windows.Media;
 using AudioPreprocessing.Model;
 using Microsoft.Win32;
 
@@ -17,12 +18,14 @@ namespace AudioPreprocessing.ViewModel
     {
         private string audioPath;
         private string imagePath;
+        private ImageSource melSpectrogramImage;
 
         public PreprocessViewModel()
         {
             PreprocessModel preprocessModel = new PreprocessModel();
             audioPath = preprocessModel.AudioPath;
             imagePath = preprocessModel.MelSpecImagePath;
+            melSpectrogramImage = null;
         }
 
         public string AudioPath
@@ -34,6 +37,12 @@ namespace AudioPreprocessing.ViewModel
         {
             get { return imagePath; }
             set { imagePath = value; OnPropertyChanged(); }
+        }
+
+        public ImageSource MelSpectrogramImage
+        {
+            get { return melSpectrogramImage; }
+            set { melSpectrogramImage = value; OnPropertyChanged(); }
         }
 
         public ICommand OpenFileCommand => new RelayCommand(OpenFile);
@@ -48,7 +57,8 @@ namespace AudioPreprocessing.ViewModel
             {
                 PreprocessModel melSpec = new PreprocessModel();
                 AudioPath = openFileDialog.FileName;
-                ImagePath = melSpec.GenerateMelSpectrogram(AudioPath);
+                //ImagePath = melSpec.GenerateMelSpectrogram(AudioPath);
+                MelSpectrogramImage = melSpec.GenerateMelSpectrogram(AudioPath);
             }
         }
 

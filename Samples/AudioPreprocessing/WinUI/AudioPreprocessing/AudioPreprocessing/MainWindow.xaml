@@ -28,7 +28,7 @@
         <StackPanel Margin="0,0,0,0" HorizontalAlignment="Center"
             Background="White" Orientation="Horizontal">
             <Image Source="{x:Bind ViewModel.MelSpectrogramImageSource }"  
-            Margin="0,0,0,0" Name="image1" Stretch="Fill" Height="500" Width="500" />
+            Margin="0,0,0,0" Name="image1" Stretch="Fill" Height="100" Width="200" />
             <!--<Image Source="{x:Bind ViewModel.ImagePath}"  
             Margin="0,0,0,0" Name="image2" Stretch="Fill" Height="500" Width="500" />-->
             <Image Margin="0,0,0,0" Name="spectrogram" Stretch="Fill" Height="500" Width="500" />

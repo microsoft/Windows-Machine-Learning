@@ -16,6 +16,8 @@ using Windows.Foundation.Collections;
 using AudioPreprocessing.ViewModel;
 using System.Windows.Forms;
 using Windows.Graphics.Imaging;
+using Windows.UI.Core;
+using Windows.Storage;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -34,16 +36,46 @@ namespace AudioPreprocessing
         }
 
         public PreprocessViewModel ViewModel { get; set; }
-        private async void OnOpenClick(object sender, RoutedEventArgs e)
+        private void OnOpenClick(object sender, RoutedEventArgs e)
         {
-            WavFilePath.Text = ViewModel.AudioPath;
 
-           
-            var softwareBitmap = ViewModel.ProcessFile();
-            
+            var openFileDialog = new OpenFileDialog();
+            openFileDialog.Title = "Choose an Audio File";
+            openFileDialog.Filter = "sound files (*.wav)|*.wav|All files (*.*)|*.*";
+
+            if (openFileDialog.ShowDialog() != DialogResult.OK)
+            {
+                return;
+            }
+
+            var file = StorageFile.GetFileFromPathAsync(openFileDialog.FileName).GetAwaiter().GetResult();
+            SoftwareBitmap softwareBitmap;
+
+            using (Windows.Storage.Streams.IRandomAccessStream stream =  file.OpenAsync(FileAccessMode.Read).GetAwaiter().GetResult())
+            {
+                // Create the decoder from the stream
+                BitmapDecoder decoder =  BitmapDecoder.CreateAsync(stream).GetAwaiter().GetResult();
+
+                // Get the SoftwareBitmap representation of the file
+                softwareBitmap =  decoder.GetSoftwareBitmapAsync().GetAwaiter().GetResult();
+            }
+
+            //var softwareBitmap = ViewModel.ProcessFile();
+            //var softwareBitmap = new SoftwareBitmap(BitmapPixelFormat.Bgra8, 100, 200, BitmapAlphaMode.Premultiplied);
+
+            if (softwareBitmap.BitmapPixelFormat != BitmapPixelFormat.Bgra8 ||
+                softwareBitmap.BitmapAlphaMode != BitmapAlphaMode.Premultiplied)
+            {
+                softwareBitmap = SoftwareBitmap.Convert(softwareBitmap, BitmapPixelFormat.Bgra8, BitmapAlphaMode.Premultiplied);
+            }
+
+            WavFilePath.Text = ViewModel.AudioPath;
             var source = new SoftwareBitmapSource();
-            await source.SetBitmapAsync(softwareBitmap);
-            spectrogram.Source = source;
+
+            //Dispatcher.RunAsync(CoreDispatcherPriority.Normal,  async () => { 
+            //source.SetBitmapAsync(softwareBitmap);
+            //spectrogram.Source = source;
+            //});
         }
 
     }

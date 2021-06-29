@@ -118,6 +118,21 @@ namespace AudioPreprocessing.ViewModel
             return melSpectrogramImage;
         }
 
+        public SoftwareBitmap ProcessFile2()
+        {
+            PreprocessModel melSpec = new PreprocessModel();
+            var openFileDialog = new OpenFileDialog();
+            openFileDialog.Title = "Choose an Audio File";
+            openFileDialog.Filter = "sound files (*.wav)|*.wav|All files (*.*)|*.*";
+
+            if (openFileDialog.ShowDialog() == DialogResult.OK)
+            {
+                AudioPath = openFileDialog.FileName;
+                melSpectrogramImage = melSpec.GenerateMelSpectrogram(AudioPath);
+            }
+            return melSpectrogramImage;
+        }
+
         public ICommand SaveFileCommand => new AsyncRelayCommand(p => SaveFile());
 
         private async Task SaveFile()

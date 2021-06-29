@@ -46,14 +46,13 @@ namespace AudioPreprocessing.Model
             int hopSize = 3;
             int nMelBins = 1024;
             int samplingRate = 8192;
+            //Bitmap bitmap = new Bitmap("C:\\Users\\t-janedu\\source\\repos\\Windows-Machine-Learning\\Samples\\AudioPreprocessing\\AudioPreprocessing\\tmp\\mel_spectrogram_3tones.jpg");
+
 
             var rawSoftwareBitmap = GetMelpsectrogramFromSignal(signal, batchSize, signalSize, windowSize, dftSize,
                     hopSize, nMelBins, samplingRate);
-
-            var bitmap = SoftwareToBitmap(rawSoftwareBitmap).Result;
-            //Bitmap bitmap = new Bitmap("C:\\Users\\t-janedu\\source\\repos\\Windows-Machine-Learning\\Samples\\AudioPreprocessing\\AudioPreprocessing\\tmp\\mel_spectrogram_3tones.jpg");
+            var bitmap = SoftwareToBitmap(rawSoftwareBitmap).Result;            
             var imageSource = BitmapToImageSource(bitmap);
-
             return imageSource;    
         }
         private async Task<Bitmap> SoftwareToBitmap(SoftwareBitmap softwareBitmap)
@@ -62,7 +61,7 @@ namespace AudioPreprocessing.Model
             using (var stream = new InMemoryRandomAccessStream())
             {
                 var encoder = await Windows.Graphics.Imaging.BitmapEncoder.CreateAsync(
-                    Windows.Graphics.Imaging.BitmapEncoder.BmpEncoderId, stream);
+                    Windows.Graphics.Imaging.BitmapEncoder.PngEncoderId, stream);
                 // Set the software bitmap
                 encoder.SetSoftwareBitmap(softwareBitmap);
                 Console.WriteLine(stream.Size);

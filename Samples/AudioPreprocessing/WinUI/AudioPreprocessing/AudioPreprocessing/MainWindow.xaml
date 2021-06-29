@@ -12,10 +12,14 @@
     mc:Ignorable="d">
 
     <StackPanel Margin="0,0,0,0" Background="White" Orientation="Vertical">
-        <Button Name="ShowFilePickerButton" Command="{x:Bind ViewModel.OpenFileCommand}" Content="Open file" HorizontalAlignment="Center"
+        <Button Name="ShowFilePickerButton" Content="Open file" HorizontalAlignment="Center" Click = "OnOpenClick"
             VerticalAlignment="Center" />
-        <TextBlock Name="WavFilePath" Text="{x:Bind ViewModel.AudioPath}" HorizontalAlignment="Center"
+        <!--<Button Name="ShowFilePickerButton" Command="{x:Bind ViewModel.OpenFileCommand}" Content="Open file" HorizontalAlignment="Center"
+            VerticalAlignment="Center" />-->
+        <TextBlock Name="WavFilePath" HorizontalAlignment="Center"
             VerticalAlignment="Center"  />
+        <!--<TextBlock Name="WavFilePath" Text="{x:Bind ViewModel.AudioPath}" HorizontalAlignment="Center"
+            VerticalAlignment="Center"  />-->
         <Button Name="SaveFilebutton" Command="{x:Bind ViewModel.SaveFileCommand}" Content="Save file" HorizontalAlignment="Center"
             VerticalAlignment="Center" />
         <TextBlock Name="ImagePath" Text="{x:Bind ViewModel.ImagePath}" HorizontalAlignment="Center"
@@ -25,8 +29,9 @@
             Background="White" Orientation="Horizontal">
             <Image Source="{x:Bind ViewModel.MelSpectrogramImageSource }"  
             Margin="0,0,0,0" Name="image1" Stretch="Fill" Height="500" Width="500" />
-            <Image Source="{x:Bind ViewModel.ImagePath}"  
-            Margin="0,0,0,0" Name="image2" Stretch="Fill" Height="500" Width="500" />
+            <!--<Image Source="{x:Bind ViewModel.ImagePath}"  
+            Margin="0,0,0,0" Name="image2" Stretch="Fill" Height="500" Width="500" />-->
+            <Image Margin="0,0,0,0" Name="spectrogram" Stretch="Fill" Height="500" Width="500" />
         </StackPanel>
     </StackPanel>
 </Window>

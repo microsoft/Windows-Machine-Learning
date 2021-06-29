@@ -88,9 +88,9 @@ namespace AudioPreprocessing.ViewModel
         }
 
 
-        public ICommand OpenFileCommand => new AsyncRelayCommand(p => OpenFile());
+        //public ICommand OpenFileCommand => new AsyncRelayCommand(p => OpenFile());
 
-        private async Task OpenFile()
+        private async Task<string> OpenFile()
         {
             var openFileDialog = new OpenFileDialog();
             openFileDialog.Title = "Choose an Audio File";
@@ -98,16 +98,24 @@ namespace AudioPreprocessing.ViewModel
 
             if (openFileDialog.ShowDialog() == DialogResult.OK)
             {
-                //PreprocessModel melSpec = new PreprocessModel();
-                //AudioPath = openFileDialog.FileName;
-                //    melSpectrogramImage = melSpec.GenerateMelSpectrogram(AudioPath);
-
-                //    //Microsoft.UI.Xaml.Window.Current.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, 
-                //    //    async() => { await MelSpectrogramImageSource.SetBitmapAsync(melSpectrogramImage); }
-                //    //);
-                //    //await MelSpectrogramImageSource.SetBitmapAsync(melSpectrogramImage);
+                AudioPath = openFileDialog.FileName;
             }
-            return;
+            return AudioPath;
+        }
+
+        public SoftwareBitmap ProcessFile()
+        {
+            PreprocessModel melSpec = new PreprocessModel();
+            var openFileDialog = new OpenFileDialog();
+            openFileDialog.Title = "Choose an Audio File";
+            openFileDialog.Filter = "sound files (*.wav)|*.wav|All files (*.*)|*.*";
+
+            if (openFileDialog.ShowDialog() == DialogResult.OK)
+            {
+                AudioPath = openFileDialog.FileName;
+                melSpectrogramImage = melSpec.GenerateMelSpectrogram(AudioPath);
+            }
+            return melSpectrogramImage;
         }
 
         public ICommand SaveFileCommand => new AsyncRelayCommand(p => SaveFile());

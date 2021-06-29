@@ -18,6 +18,9 @@ using System.Windows.Forms;
 using Windows.Graphics.Imaging;
 using Windows.UI.Core;
 using Windows.Storage;
+using System.Runtime.InteropServices;
+using Windows.Storage.Pickers;
+using WinRT;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -35,29 +38,42 @@ namespace AudioPreprocessing
             this.ViewModel = new PreprocessViewModel();
         }
 
+        [ComImport, System.Runtime.InteropServices.Guid("3E68D4BD-7135-4D10-8018-9FB6D9F33FA1"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+        public interface IInitializeWithWindow
+        {
+            void Initialize([In] IntPtr hwnd);
+        }
+
+        [DllImport("user32.dll", ExactSpelling = true, CharSet = CharSet.Auto, PreserveSig = true, SetLastError = false)]
+        public static extern IntPtr GetActiveWindow();
         public PreprocessViewModel ViewModel { get; set; }
-        private void OnOpenClick(object sender, RoutedEventArgs e)
+        private async void OnOpenClick(object sender, RoutedEventArgs e)
         {
 
-            var openFileDialog = new OpenFileDialog();
-            openFileDialog.Title = "Choose an Audio File";
-            openFileDialog.Filter = "sound files (*.wav)|*.wav|All files (*.*)|*.*";
+            // Open a text file.
+            FileOpenPicker open = new FileOpenPicker();
+            open.SuggestedStartLocation = PickerLocationId.DocumentsLibrary;
+            open.FileTypeFilter.Add(".wav");
 
-            if (openFileDialog.ShowDialog() != DialogResult.OK)
+            // When running on win32, FileOpenPicker needs to know the top-level hwnd via IInitializeWithWindow::Initialize.
+            if (Window.Current == null)
             {
-                return;
+                IInitializeWithWindow initializeWithWindowWrapper = open.As<IInitializeWithWindow>();
+                IntPtr hwnd = GetActiveWindow();
+                initializeWithWindowWrapper.Initialize(hwnd);
             }
 
-            var file = StorageFile.GetFileFromPathAsync(openFileDialog.FileName).GetAwaiter().GetResult();
+            StorageFile file = await open.PickSingleFileAsync();
+
             SoftwareBitmap softwareBitmap;
 
-            using (Windows.Storage.Streams.IRandomAccessStream stream =  file.OpenAsync(FileAccessMode.Read).GetAwaiter().GetResult())
+            using (Windows.Storage.Streams.IRandomAccessStream stream = file.OpenAsync(FileAccessMode.Read).GetAwaiter().GetResult())
             {
                 // Create the decoder from the stream
-                BitmapDecoder decoder =  BitmapDecoder.CreateAsync(stream).GetAwaiter().GetResult();
+                BitmapDecoder decoder = BitmapDecoder.CreateAsync(stream).GetAwaiter().GetResult();
 
                 // Get the SoftwareBitmap representation of the file
-                softwareBitmap =  decoder.GetSoftwareBitmapAsync().GetAwaiter().GetResult();
+                softwareBitmap = decoder.GetSoftwareBitmapAsync().GetAwaiter().GetResult();
             }
 
             //var softwareBitmap = ViewModel.ProcessFile();

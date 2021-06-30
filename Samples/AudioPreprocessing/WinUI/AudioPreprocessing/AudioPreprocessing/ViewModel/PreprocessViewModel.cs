@@ -1,12 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.IO;
-using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Text;
 using System.Threading.Tasks;
-using System.Windows.Forms;
 using System.Windows.Input;
 using AudioPreprocessing.Model;
 using Microsoft.UI.Xaml.Media.Imaging;
@@ -14,11 +10,9 @@ using Windows.Graphics.Imaging;
 using Windows.Storage;
 using Windows.Storage.Pickers;
 using Windows.Storage.Streams;
-using Windows.UI.Core;
 
 namespace AudioPreprocessing.ViewModel
 {
-    // Implements INotifyPropertyChanged interface to support bindings
     public class PreprocessViewModel : INotifyPropertyChanged
 
     {
@@ -38,10 +32,6 @@ namespace AudioPreprocessing.ViewModel
             PreprocessModel preprocessModel = new PreprocessModel();
             audioPath = preprocessModel.AudioPath;
             imagePath = preprocessModel.MelSpecImagePath;
-            test = "Hello World";
-            //melSpectrogramImage = GetSampleBitmap().Result;
-            MelSpectrogramImageSource = new SoftwareBitmapSource();
-            //MelSpectrogramImageSource.SetBitmapAsync(melSpectrogramImage).GetResults();
         }
 
         public async Task<SoftwareBitmap> GetSampleBitmap()
@@ -81,57 +71,6 @@ namespace AudioPreprocessing.ViewModel
             set { imagePath = value; OnPropertyChanged(); }
         }
 
-        public SoftwareBitmapSource MelSpectrogramImageSource
-        {
-            get { return melSpectrogramImageSource; }
-            set { melSpectrogramImageSource = value; OnPropertyChanged(); }
-        }
-
-
-        //public ICommand OpenFileCommand => new AsyncRelayCommand(p => OpenFile());
-
-        private async Task<string> OpenFile()
-        {
-            var openFileDialog = new OpenFileDialog();
-            openFileDialog.Title = "Choose an Audio File";
-            openFileDialog.Filter = "sound files (*.wav)|*.wav|All files (*.*)|*.*";
-
-            if (openFileDialog.ShowDialog() == DialogResult.OK)
-            {
-                AudioPath = openFileDialog.FileName;
-            }
-            return AudioPath;
-        }
-
-        public SoftwareBitmap ProcessFile()
-        {
-            PreprocessModel melSpec = new PreprocessModel();
-            var openFileDialog = new OpenFileDialog();
-            openFileDialog.Title = "Choose an Audio File";
-            openFileDialog.Filter = "sound files (*.wav)|*.wav|All files (*.*)|*.*";
-
-            if (openFileDialog.ShowDialog() == DialogResult.OK)
-            {
-                AudioPath = openFileDialog.FileName;
-                melSpectrogramImage = melSpec.GenerateMelSpectrogram(AudioPath);
-            }
-            return melSpectrogramImage;
-        }
-
-        public SoftwareBitmap ProcessFile2()
-        {
-            PreprocessModel melSpec = new PreprocessModel();
-            var openFileDialog = new OpenFileDialog();
-            openFileDialog.Title = "Choose an Audio File";
-            openFileDialog.Filter = "sound files (*.wav)|*.wav|All files (*.*)|*.*";
-
-            if (openFileDialog.ShowDialog() == DialogResult.OK)
-            {
-                AudioPath = openFileDialog.FileName;
-                melSpectrogramImage = melSpec.GenerateMelSpectrogram(AudioPath);
-            }
-            return melSpectrogramImage;
-        }
 
         public ICommand SaveFileCommand => new AsyncRelayCommand(p => SaveFile());
 

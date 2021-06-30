@@ -8,14 +8,6 @@ using Windows.Graphics.Imaging;
 
 using Operator = Microsoft.AI.MachineLearning.Experimental.LearningModelOperator;
 using System.Diagnostics;
-using Windows.Storage.Streams;
-using Windows.Storage;
-using System.Reflection;
-using System.Drawing;
-using System.IO;
-using System.Threading.Tasks;
-using System.Drawing.Imaging;
-
 
 namespace AudioPreprocessing.Model
 {
@@ -26,8 +18,6 @@ namespace AudioPreprocessing.Model
         public string AudioPath { get; set; }
 
         public string MelSpecImagePath { get; set; }
-
-        //public ImageSource MelSpecStream { get; }
 
         public PreprocessModel()
         {
@@ -164,25 +154,7 @@ namespace AudioPreprocessing.Model
             sw.Stop();
             Console.WriteLine("Evaluate Took: %f\n", sw.ElapsedMilliseconds);
 
-            //return outputImage.SoftwareBitmap;
             return outputImage.SoftwareBitmap;
-
-            // check the output video frame object by saving output image to disk
-            //string imagename = "mel_spectrogram.jpg";
-
-            //// save the output
-
-            //string modulepath = filehelpers.getmodulepath();
-            //winrt.windows.storage.storagefolder folder = winrt.windows.storage.storagefolder.getfolderfrompathasync(modulepath).get();
-            //winrt.windows.storage.storagefile file = folder.createfileasync(out_name, winrt.windows.storage.creationcollisionoption.replaceexisting).get();
-            //winrt.windows.storage.streams.irandomaccessstream write_stream = file.openasync(winrt.windows.storage.fileaccessmode.readwrite).get();
-            //winrt.windows.graphics.imaging.bitmapencoder encoder = winrt.windows.graphics.imaging.bitmapencoder.createasync(winrt.windows.graphics.imaging.bitmapencoder.jpegencoderid(), write_stream).get();
-            //encoder.setsoftwarebitmap(outputimage.softwarebitmap);
-            //encoder.flushasync().get();
-
-            // save the model
-            //builder.save("spectrogram.onnx");
-            //return "todo: replace with image path? done melspectrogram generation";
         }
 
         static void ModelBuilding_MelWeightMatrix()

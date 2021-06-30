@@ -118,7 +118,6 @@ namespace AudioPreprocessing.Model
                 nMelBins,
                 nDFT);
 
-
             binding.Bind("Output.MelSpectrogram", outputImage);
 
             // Evaluate

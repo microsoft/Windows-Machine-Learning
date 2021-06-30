@@ -23,9 +23,7 @@ namespace AudioPreprocessing.Model
         {
             var signalEnumerable = GetSignalFromFile(audioPath);
             IList<float> signal = signalEnumerable.Cast<float>().ToList();
-
             var rawSoftwareBitmap = GetMelspectrogramFromSignal(signal);
-
             return rawSoftwareBitmap;
         }
 

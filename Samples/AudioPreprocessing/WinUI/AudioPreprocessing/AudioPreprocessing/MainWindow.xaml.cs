@@ -37,7 +37,7 @@ namespace AudioPreprocessing
         public PreprocessViewModel ViewModel { get; set; }
         private async void OnOpenClick(object sender, RoutedEventArgs e)
         {
-            string wavPath = await GetFile();
+            string wavPath = await GetFilePath();
             PreprocessModel melSpectrogram = new PreprocessModel();
             var softwareBitmap = melSpectrogram.GenerateMelSpectrogram(wavPath);
 
@@ -58,7 +58,7 @@ namespace AudioPreprocessing
             spectrogram.Source = source;
         }
 
-        private async Task<string> GetFile()
+        private async Task<string> GetFilePath()
         { 
             FileOpenPicker openPicker = new FileOpenPicker();
             openPicker.ViewMode = PickerViewMode.Thumbnail;

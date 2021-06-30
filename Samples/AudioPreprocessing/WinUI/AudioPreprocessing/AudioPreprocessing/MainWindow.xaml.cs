@@ -36,8 +36,7 @@ namespace AudioPreprocessing
         public PreprocessViewModel ViewModel { get; set; }
         private async void OnOpenClick(object sender, RoutedEventArgs e)
         {
-
-            // Open a text file.
+            //Open a .wav file.
             FileOpenPicker openPicker = new FileOpenPicker();
             openPicker.ViewMode = PickerViewMode.Thumbnail;
             openPicker.FileTypeFilter.Add(".wav");

@@ -1,5 +1,4 @@
 ﻿using AudioPreprocessing.Model;
-using Microsoft.UI.Xaml.Media.Imaging;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;

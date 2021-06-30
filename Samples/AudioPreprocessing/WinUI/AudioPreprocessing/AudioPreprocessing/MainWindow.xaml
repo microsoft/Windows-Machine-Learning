@@ -23,7 +23,7 @@
 
         <StackPanel Margin="0,0,0,0" HorizontalAlignment="Center"
             Background="White" Orientation="Horizontal">
-            <Image Margin="0,0,0,0" Name="spectrogram" Stretch="Fill" Height="500" Width="500" />
+            <Image Name="spectrogram" Stretch="Fill" Height="500" Width="500" />
         </StackPanel>
     </StackPanel>
 </Window>

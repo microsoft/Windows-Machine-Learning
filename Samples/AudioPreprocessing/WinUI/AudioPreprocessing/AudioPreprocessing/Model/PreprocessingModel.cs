@@ -29,6 +29,10 @@ namespace AudioPreprocessing.Model
 
         private IEnumerable<float> GetSignalFromFile(string filename)
         {
+            if (!filename.EndsWith(".wav"))
+            {
+                throw new ArgumentException( String.Format("{0} is not a valid .wav file."));
+            }
             using (var reader = new AudioFileReader(filename))
             {
                 var nSamples = reader.Length / sizeof(float);

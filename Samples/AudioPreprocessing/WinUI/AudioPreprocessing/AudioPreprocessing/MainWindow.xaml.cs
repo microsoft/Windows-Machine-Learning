@@ -3,6 +3,7 @@ using AudioPreprocessing.ViewModel;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Media.Imaging;
 using System;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 using Windows.Graphics.Imaging;
 using Windows.Storage;
@@ -45,14 +46,14 @@ namespace AudioPreprocessing
             if (Window.Current == null)
             {
                 var picker_unknown = Marshal.GetComInterfaceForObject(openPicker, typeof(IInitializeWithWindow));
-                IInitializeWithWindow initializeWithWindowWrapper = Marshal.GetTypedObjectForIUnknown(picker_unknown, typeof(IInitializeWithWindow)) as IInitializeWithWindow;
+                var initializeWithWindowWrapper = Marshal.GetTypedObjectForIUnknown(picker_unknown, typeof(IInitializeWithWindow)) as IInitializeWithWindow;
                 IntPtr hwnd = GetActiveWindow();
                 initializeWithWindowWrapper.Initialize(hwnd);
             }
 
             StorageFile file = await openPicker.PickSingleFileAsync();
-            PreprocessModel melspec = new PreprocessModel();
-            var softwareBitmap = melspec.GenerateMelSpectrogram(file.Path);
+            PreprocessModel melSpectrogram = new PreprocessModel();
+            var softwareBitmap = melSpectrogram.GenerateMelSpectrogram(file.Path);
 
             ViewModel.AudioPath = file.Path;
             ViewModel.MelSpectrogramImage = softwareBitmap;

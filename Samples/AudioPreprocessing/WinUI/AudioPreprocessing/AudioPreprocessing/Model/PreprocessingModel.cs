@@ -158,10 +158,10 @@ namespace AudioPreprocessing.Model
 
         static void ModelBuilding_MelWeightMatrix()
         {
-            long[] output_shape = { 9, 8 };
+            long[] outputShape = { 9, 8 };
             var builder =
                 LearningModelBuilder.Create(13)
-                .Outputs.Add(LearningModelBuilder.CreateTensorFeatureDescriptor("Output.MelWeightMatrix", TensorKind.Float, output_shape))
+                .Outputs.Add(LearningModelBuilder.CreateTensorFeatureDescriptor("Output.MelWeightMatrix", TensorKind.Float, outputShape))
                 .Operators.Add(new Operator("MelWeightMatrix", MicrosoftExperimentalDomain)
                     .SetConstant("num_mel_bins", TensorInt64Bit.CreateFromArray(new List<long>(), new long[] { 8 }))
                     .SetConstant("dft_length", TensorInt64Bit.CreateFromArray(new List<long>(), new long[] { 16 }))
@@ -179,32 +179,32 @@ namespace AudioPreprocessing.Model
             Console.WriteLine("Output.MelWeightMatrix\n");
         }
 
-        static void STFT(int batch_size, int signal_size, int dft_size,
-            int hop_size, int sample_rate, bool is_onesided = false)
+        static void STFT(int batchSize, int signalSize, int dftSize,
+            int hopSize, int sampleRate, bool isOnesided = false)
         {
-            var n_dfts = 1 + (signal_size - dft_size) / hop_size;
-            var input_shape = new long[] { 1, signal_size };
+            var n_dfts = 1 + (signalSize - dftSize) / hopSize;
+            var input_shape = new long[] { 1, signalSize };
             var output_shape = new long[] {
-                batch_size,
+                batchSize,
                 n_dfts,
-                is_onesided ? (dft_size >> 1 + 1) : dft_size,
+                isOnesided ? (dftSize >> 1 + 1) : dftSize,
                 2
             };
-            var dft_length = TensorInt64Bit.CreateFromArray(new List<long>(), new long[] { dft_size });
+            var dft_length = TensorInt64Bit.CreateFromArray(new List<long>(), new long[] { dftSize });
 
             var builder = LearningModelBuilder.Create(13)
                 .Inputs.Add(LearningModelBuilder.CreateTensorFeatureDescriptor("Input.TimeSignal", TensorKind.Float, input_shape))
                 .Outputs.Add(LearningModelBuilder.CreateTensorFeatureDescriptor("Output.STFT", TensorKind.Float, output_shape))
-                .Outputs.Add(LearningModelBuilder.CreateTensorFeatureDescriptor("Output.HannWindow", TensorKind.Float, new long[] { dft_size }))
+                .Outputs.Add(LearningModelBuilder.CreateTensorFeatureDescriptor("Output.HannWindow", TensorKind.Float, new long[] { dftSize }))
                 .Operators.Add(new Operator("HannWindow", MicrosoftExperimentalDomain)
                     .SetConstant("size", dft_length)
                     .SetOutput("output", "Output.HannWindow"))
                 .Operators.Add(new Operator("STFT", MicrosoftExperimentalDomain)
-                    .SetAttribute("onesided", TensorInt64Bit.CreateFromArray(new List<long>(), new long[] { is_onesided ? 1 : 0 }))
+                    .SetAttribute("onesided", TensorInt64Bit.CreateFromArray(new List<long>(), new long[] { isOnesided ? 1 : 0 }))
                     .SetInput("signal", "Input.TimeSignal")
                     .SetInput("window", "Output.HannWindow")
                     .SetConstant("frame_length", dft_length)
-                    .SetConstant("frame_step", TensorInt64Bit.CreateFromArray(new List<long>(), new long[] { hop_size }))
+                    .SetConstant("frame_step", TensorInt64Bit.CreateFromArray(new List<long>(), new long[] { hopSize }))
                     .SetOutput("output", "Output.STFT"));
 
             var model = builder.CreateModel();
@@ -253,6 +253,4 @@ namespace AudioPreprocessing.Model
             WindowFunction("HannWindow", TensorKind.Double);
         }
     }
-
-
 }

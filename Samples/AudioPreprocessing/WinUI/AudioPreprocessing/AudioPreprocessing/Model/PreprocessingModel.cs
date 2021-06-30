@@ -23,6 +23,9 @@ namespace AudioPreprocessing.Model
         {
             var signalEnumerable = GetSignalFromFile(audioPath);
             IList<float> signal = signalEnumerable.Cast<float>().ToList();
+            int amplitude = 5000;
+            signal = (IList<float>)ScaleWithAmplitude(signal, amplitude);
+
             int batchSize = 1;
             int signalSize = signal.Count;
             int windowSize = 256;
@@ -36,19 +39,25 @@ namespace AudioPreprocessing.Model
             return rawSoftwareBitmap;
         }
 
-        private IEnumerable<float> GetSignalFromFile(string filename, int amplitude = 5000)
+        private IEnumerable<float> GetSignalFromFile(string filename)
         {
             using (var reader = new AudioFileReader(filename))
             {
-                float[] signal = new float[reader.Length / sizeof(float)];
-                int read = reader.Read(signal, 0, signal.Length);
- 
-                for (int i = 0; i < signal.Length; i++)
-                {
-                    signal[i] = signal[i] * amplitude;
-                }
-                return signal;
+                var nSamples = reader.Length / sizeof(float);
+                var signal = Array.CreateInstance(typeof(float), nSamples);
+                var read = reader.Read(signal as float[], 0, signal.Length);
+                return (IEnumerable<float>)signal;
             }
+        }
+
+        private IEnumerable<float> ScaleWithAmplitude(IEnumerable<float> signal, int amplitude)
+        {
+            IList<float> scaled = (IList<float>)signal;
+            for (int i = 0; i < scaled.Count; i++)
+            {
+                scaled[i] = scaled[i] * amplitude;
+            }
+            return scaled;
         }
 
         static SoftwareBitmap GetMelspectrogramFromSignal(IEnumerable<float> rawSignal,
@@ -56,11 +65,11 @@ namespace AudioPreprocessing.Model
             int hopSize, int nMelBins, int samplingRate)
         {
             float[] signal = rawSignal.Cast<float>().ToArray();
-            var nDfts = 1 + (signalSize - dftSize) / hopSize;
+            var nDFT = 1 + (signalSize - dftSize) / hopSize;
             var onesidedDftSize = (dftSize >> 1) + 1;
 
             long[] signalShape = { batchSize, signalSize };
-            long[] melSpectrogramShape = { batchSize, 1, nDfts, nMelBins };
+            long[] melSpectrogramShape = { batchSize, 1, nDFT, nMelBins };
 
             var builder = LearningModelBuilder.Create(13)
                 .Inputs.Add(LearningModelBuilder.CreateTensorFeatureDescriptor("Input.TimeSignal", TensorKind.Float, signalShape))
@@ -95,7 +104,7 @@ namespace AudioPreprocessing.Model
                 .SetOutput("output", "mel_weight_matrix"))
               .Operators.Add(new Operator("Reshape")
                 .SetInput("data", "power_frames")
-                .SetConstant("shape", TensorInt64Bit.CreateFromArray(new List<long>() { 2 }, new long[] { batchSize * nDfts, onesidedDftSize }))
+                .SetConstant("shape", TensorInt64Bit.CreateFromArray(new List<long>() { 2 }, new long[] { batchSize * nDFT, onesidedDftSize }))
                 .SetOutput("reshaped", "reshaped_output"))
               .Operators.Add(new Operator("MatMul")
                 .SetInput("A", "reshaped_output")
@@ -117,7 +126,7 @@ namespace AudioPreprocessing.Model
             var outputImage = new VideoFrame(
                 BitmapPixelFormat.Bgra8,
                 nMelBins,
-                nDfts);
+                nDFT);
 
 
             binding.Bind("Output.MelSpectrogram", outputImage);
@@ -129,103 +138,6 @@ namespace AudioPreprocessing.Model
             Console.WriteLine("Evaluate Took: %f\n", sw.ElapsedMilliseconds);
 
             return outputImage.SoftwareBitmap;
-        }
-
-        static void ModelBuilding_MelWeightMatrix()
-        {
-            long[] outputShape = { 9, 8 };
-            var builder =
-                LearningModelBuilder.Create(13)
-                .Outputs.Add(LearningModelBuilder.CreateTensorFeatureDescriptor("Output.MelWeightMatrix", TensorKind.Float, outputShape))
-                .Operators.Add(new Operator("MelWeightMatrix", MicrosoftExperimentalDomain)
-                    .SetConstant("num_mel_bins", TensorInt64Bit.CreateFromArray(new List<long>(), new long[] { 8 }))
-                    .SetConstant("dft_length", TensorInt64Bit.CreateFromArray(new List<long>(), new long[] { 16 }))
-                    .SetConstant("sample_rate", TensorInt64Bit.CreateFromArray(new List<long>(), new long[] { 8192 }))
-                    .SetConstant("lower_edge_hertz", TensorFloat.CreateFromArray(new List<long>(), new float[] { 0 }))
-                    .SetConstant("upper_edge_hertz", TensorFloat.CreateFromArray(new List<long>(), new float[] { (float)(8192 / 2.0) }))
-                    .SetOutput("output", "Output.MelWeightMatrix"));
-
-            var model = builder.CreateModel();
-            LearningModelSession session = new LearningModelSession(model);
-            LearningModelBinding binding = new LearningModelBinding(session);
-            var result = session.Evaluate(binding, "");
-
-            Console.WriteLine("\n");
-            Console.WriteLine("Output.MelWeightMatrix\n");
-        }
-
-        static void STFT(int batchSize, int signalSize, int dftSize,
-            int hopSize, int sampleRate, bool isOnesided = false)
-        {
-            var n_dfts = 1 + (signalSize - dftSize) / hopSize;
-            var input_shape = new long[] { 1, signalSize };
-            var output_shape = new long[] {
-                batchSize,
-                n_dfts,
-                isOnesided ? (dftSize >> 1 + 1) : dftSize,
-                2
-            };
-            var dft_length = TensorInt64Bit.CreateFromArray(new List<long>(), new long[] { dftSize });
-
-            var builder = LearningModelBuilder.Create(13)
-                .Inputs.Add(LearningModelBuilder.CreateTensorFeatureDescriptor("Input.TimeSignal", TensorKind.Float, input_shape))
-                .Outputs.Add(LearningModelBuilder.CreateTensorFeatureDescriptor("Output.STFT", TensorKind.Float, output_shape))
-                .Outputs.Add(LearningModelBuilder.CreateTensorFeatureDescriptor("Output.HannWindow", TensorKind.Float, new long[] { dftSize }))
-                .Operators.Add(new Operator("HannWindow", MicrosoftExperimentalDomain)
-                    .SetConstant("size", dft_length)
-                    .SetOutput("output", "Output.HannWindow"))
-                .Operators.Add(new Operator("STFT", MicrosoftExperimentalDomain)
-                    .SetAttribute("onesided", TensorInt64Bit.CreateFromArray(new List<long>(), new long[] { isOnesided ? 1 : 0 }))
-                    .SetInput("signal", "Input.TimeSignal")
-                    .SetInput("window", "Output.HannWindow")
-                    .SetConstant("frame_length", dft_length)
-                    .SetConstant("frame_step", TensorInt64Bit.CreateFromArray(new List<long>(), new long[] { hopSize }))
-                    .SetOutput("output", "Output.STFT"));
-
-            var model = builder.CreateModel();
-
-            LearningModelSession session = new LearningModelSession(model);
-            LearningModelBinding binding = new LearningModelBinding(session);
-
-            var result = session.Evaluate(binding, "");
-        }
-
-        static void WindowFunction(string windowOperatorName, TensorKind kind)
-        {
-            long[] scalarShape = new long[] { };
-            long[] outputShape = new long[] { 32 };
-            var doubleDataType = TensorInt64Bit.CreateFromArray(new List<long>() { }, new long[] { 11 });
-
-            var windowOperator =
-                new Operator(windowOperatorName, MicrosoftExperimentalDomain)
-                .SetInput("size", "Input")
-                .SetOutput("output", "Output");
-
-            if (kind == TensorKind.Double)
-            {
-                windowOperator.SetAttribute("output_datatype", doubleDataType);
-            }
-
-            var model =
-                LearningModelBuilder.Create(13)
-                .Inputs.Add(LearningModelBuilder.CreateTensorFeatureDescriptor("Input", TensorKind.Int64, scalarShape))
-                .Outputs.Add(LearningModelBuilder.CreateTensorFeatureDescriptor("Output", kind, outputShape))
-                .Operators.Add(windowOperator)
-                .CreateModel();
-
-            LearningModelSession session = new LearningModelSession(model);
-            LearningModelBinding binding = new LearningModelBinding(session);
-
-            binding.Bind("Input", TensorInt64Bit.CreateFromArray(scalarShape, new long[] { 32 }));
-
-            // Evaluate
-            var result = session.Evaluate(binding, "");
-        }
-
-        static void ModelBuilding_HannWindow()
-        {
-            WindowFunction("HannWindow", TensorKind.Float);
-            WindowFunction("HannWindow", TensorKind.Double);
         }
     }
 }

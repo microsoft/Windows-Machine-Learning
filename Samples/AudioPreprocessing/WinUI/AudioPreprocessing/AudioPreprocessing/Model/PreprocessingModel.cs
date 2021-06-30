@@ -4,6 +4,7 @@ using NAudio.Wave;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using Windows.Graphics.Imaging;
 using Windows.Media;
 using Operator = Microsoft.AI.MachineLearning.Experimental.LearningModelOperator;
@@ -18,15 +19,10 @@ namespace AudioPreprocessing.Model
 
         public string MelSpecImagePath { get; set; }
 
-        public PreprocessModel()
-        {
-            AudioPath = "..\\tmp\\mel_spectrogram_file.jpg";
-            MelSpecImagePath = "..\\tmp\\mel_spectrogram_file.jpg";
-        }
-
         public SoftwareBitmap GenerateMelSpectrogram(string audioPath)
         {
-            var signal = GetSignalFromFile(audioPath);
+            var signalEnumerable = GetSignalFromFile(audioPath);
+            IList<float> signal = signalEnumerable.Cast<float>().ToList();
             int batchSize = 1;
             int signalSize = signal.Count;
             int windowSize = 256;
@@ -40,35 +36,36 @@ namespace AudioPreprocessing.Model
             return rawSoftwareBitmap;
         }
 
-        private List<float> GetSignalFromFile(string filename, int sampleRate = 8000, int amplitude = 5000)
+        private IEnumerable<float> GetSignalFromFile(string filename, int amplitude = 5000)
         {
-            List<float> signal = new List<float>();
-            int rawSampleRate;
             using (var reader = new AudioFileReader(filename))
             {
-                rawSampleRate = reader.WaveFormat.SampleRate;
+                int rawSampleRate = reader.WaveFormat.SampleRate;
+                float[] signal = new float[reader.Length];
                 float[] buffer = new float[rawSampleRate];
                 int read = reader.Read(buffer, 0, buffer.Length);
+                int bufferCount = 0;
                 while (read > 0)
                 {
-                    foreach (float b in buffer)
+                    for (int i = 0; i < buffer.Length; i++)
                     {
-                        signal.Add(b * amplitude);
+                        signal[bufferCount * buffer.Length + i] = (buffer[i] * amplitude);
                     }
+                    bufferCount += 1;
                     read = reader.Read(buffer, 0, buffer.Length);
                 }
+
+                float[] croppedSignal = new float[bufferCount * buffer.Length];
+                Array.Copy(signal, croppedSignal, bufferCount * buffer.Length);
+                return croppedSignal;
             }
-            Console.WriteLine($"Num samples in file: {signal.Count}");
-            var newSignal = signal;
-            //var newSignal = Resample(signal, rawSampleRate, sampleRate);
-            Console.WriteLine($"Simple resamplein file: {signal.Count}");
-            return newSignal;
         }
 
-        static SoftwareBitmap GetMelspectrogramFromSignal(List<float> signal,
+        static SoftwareBitmap GetMelspectrogramFromSignal(IEnumerable<float> rawSignal,
             int batchSize, int signalSize, int windowSize, int dftSize,
             int hopSize, int nMelBins, int samplingRate)
         {
+            float[] signal = rawSignal.Cast<float>().ToArray();
             var nDfts = 1 + (signalSize - dftSize) / hopSize;
             var onesidedDftSize = (dftSize >> 1) + 1;
 
@@ -124,7 +121,7 @@ namespace AudioPreprocessing.Model
             LearningModelSession session = new LearningModelSession(model);
             LearningModelBinding binding = new LearningModelBinding(session);
 
-            binding.Bind("Input.TimeSignal", TensorFloat.CreateFromArray(signalShape, signal.ToArray()));
+            binding.Bind("Input.TimeSignal", TensorFloat.CreateFromArray(signalShape, signal));
 
             // Bind output
             var outputImage = new VideoFrame(

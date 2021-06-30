@@ -30,8 +30,9 @@ namespace AudioPreprocessing
         public static extern IntPtr GetActiveWindow();
         public MainWindow()
         {
-            this.InitializeComponent();
-            this.ViewModel = new PreprocessViewModel();
+            InitializeComponent();
+            ViewModel = new PreprocessViewModel();
+            spectrogram.Source = new SoftwareBitmapSource();
         }
 
         public PreprocessViewModel ViewModel { get; set; }
@@ -53,9 +54,8 @@ namespace AudioPreprocessing
             }
 
             WavFilePath.Text = ViewModel.AudioPath;
-            var source = new SoftwareBitmapSource();
-            await source.SetBitmapAsync(softwareBitmap);
-            spectrogram.Source = source;
+
+            await ((SoftwareBitmapSource)spectrogram.Source).SetBitmapAsync(softwareBitmap);
         }
 
         private async Task<string> GetFilePath()

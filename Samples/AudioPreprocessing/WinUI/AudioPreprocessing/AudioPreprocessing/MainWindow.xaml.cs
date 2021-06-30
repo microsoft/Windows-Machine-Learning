@@ -47,6 +47,7 @@ namespace AudioPreprocessing
             {
                 var picker_unknown = Marshal.GetComInterfaceForObject(openPicker, typeof(IInitializeWithWindow));
                 var initializeWithWindowWrapper = Marshal.GetTypedObjectForIUnknown(picker_unknown, typeof(IInitializeWithWindow)) as IInitializeWithWindow;
+                Debug.Assert(initializeWithWindowWrapper != null);
                 IntPtr hwnd = GetActiveWindow();
                 initializeWithWindowWrapper.Initialize(hwnd);
             }

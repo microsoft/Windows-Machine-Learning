@@ -59,12 +59,13 @@ namespace AudioPreprocessing
             ViewModel.AudioPath = file.Path;
             ViewModel.MelSpectrogramImage = softwareBitmap;
 
+            //Image control only accepts BGRA8 encoding and Premultiplied/no alpha channel. This checks and converts
+            //the SoftwareBitmap we want to bind.
             if (softwareBitmap.BitmapPixelFormat != BitmapPixelFormat.Bgra8 ||
                 softwareBitmap.BitmapAlphaMode != BitmapAlphaMode.Premultiplied)
             {
                 softwareBitmap = SoftwareBitmap.Convert(softwareBitmap, BitmapPixelFormat.Bgra8, BitmapAlphaMode.Premultiplied);
             }
-
 
             WavFilePath.Text = file.Path;
             var source = new SoftwareBitmapSource();

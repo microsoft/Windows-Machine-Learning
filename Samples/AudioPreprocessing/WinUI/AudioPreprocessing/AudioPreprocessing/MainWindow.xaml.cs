@@ -5,6 +5,7 @@ using Microsoft.UI.Xaml.Media.Imaging;
 using System;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
+using System.Threading.Tasks;
 using Windows.Graphics.Imaging;
 using Windows.Storage;
 using Windows.Storage.Pickers;
@@ -36,7 +37,29 @@ namespace AudioPreprocessing
         public PreprocessViewModel ViewModel { get; set; }
         private async void OnOpenClick(object sender, RoutedEventArgs e)
         {
-            //Open a .wav file.
+            string wavPath = await GetFile();
+            PreprocessModel melSpectrogram = new PreprocessModel();
+            var softwareBitmap = melSpectrogram.GenerateMelSpectrogram(wavPath);
+
+            ViewModel.AudioPath = wavPath;
+            ViewModel.MelSpectrogramImage = softwareBitmap;
+
+            //Image control only accepts BGRA8 encoding and Premultiplied/no alpha channel. This checks and converts
+            //the SoftwareBitmap we want to bind.
+            if (softwareBitmap.BitmapPixelFormat != BitmapPixelFormat.Bgra8 ||
+                softwareBitmap.BitmapAlphaMode != BitmapAlphaMode.Premultiplied)
+            {
+                softwareBitmap = SoftwareBitmap.Convert(softwareBitmap, BitmapPixelFormat.Bgra8, BitmapAlphaMode.Premultiplied);
+            }
+
+            WavFilePath.Text = ViewModel.AudioPath;
+            var source = new SoftwareBitmapSource();
+            await source.SetBitmapAsync(softwareBitmap);
+            spectrogram.Source = source;
+        }
+
+        private async Task<string> GetFile()
+        { 
             FileOpenPicker openPicker = new FileOpenPicker();
             openPicker.ViewMode = PickerViewMode.Thumbnail;
             openPicker.FileTypeFilter.Add(".wav");
@@ -52,24 +75,7 @@ namespace AudioPreprocessing
             }
 
             StorageFile file = await openPicker.PickSingleFileAsync();
-            PreprocessModel melSpectrogram = new PreprocessModel();
-            var softwareBitmap = melSpectrogram.GenerateMelSpectrogram(file.Path);
-
-            ViewModel.AudioPath = file.Path;
-            ViewModel.MelSpectrogramImage = softwareBitmap;
-
-            //Image control only accepts BGRA8 encoding and Premultiplied/no alpha channel. This checks and converts
-            //the SoftwareBitmap we want to bind.
-            if (softwareBitmap.BitmapPixelFormat != BitmapPixelFormat.Bgra8 ||
-                softwareBitmap.BitmapAlphaMode != BitmapAlphaMode.Premultiplied)
-            {
-                softwareBitmap = SoftwareBitmap.Convert(softwareBitmap, BitmapPixelFormat.Bgra8, BitmapAlphaMode.Premultiplied);
-            }
-
-            WavFilePath.Text = file.Path;
-            var source = new SoftwareBitmapSource();
-            await source.SetBitmapAsync(softwareBitmap);
-            spectrogram.Source = source;
+            return file.Path;
         }
     }
 }

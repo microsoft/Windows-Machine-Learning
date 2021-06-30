@@ -23,18 +23,8 @@ namespace AudioPreprocessing.Model
         {
             var signalEnumerable = GetSignalFromFile(audioPath);
             IList<float> signal = signalEnumerable.Cast<float>().ToList();
-            int amplitude = 5000;
-            signal = (IList<float>)ScaleWithAmplitude(signal, amplitude);
 
-            int batchSize = 1;
-            int signalSize = signal.Count;
-            int windowSize = 256;
-            int dftSize = 256;
-            int hopSize = 3;
-            int nMelBins = 1024;
-            int samplingRate = 8192;
-            var rawSoftwareBitmap = GetMelspectrogramFromSignal(signal, batchSize, signalSize, windowSize, dftSize,
-                hopSize, nMelBins, samplingRate);
+            var rawSoftwareBitmap = GetMelspectrogramFromSignal(signal);
 
             return rawSoftwareBitmap;
         }
@@ -50,21 +40,20 @@ namespace AudioPreprocessing.Model
             }
         }
 
-        private IEnumerable<float> ScaleWithAmplitude(IEnumerable<float> signal, int amplitude)
-        {
-            IList<float> scaled = (IList<float>)signal;
-            for (int i = 0; i < scaled.Count; i++)
-            {
-                scaled[i] = scaled[i] * amplitude;
-            }
-            return scaled;
-        }
-
-        static SoftwareBitmap GetMelspectrogramFromSignal(IEnumerable<float> rawSignal,
-            int batchSize, int signalSize, int windowSize, int dftSize,
-            int hopSize, int nMelBins, int samplingRate)
+        static SoftwareBitmap GetMelspectrogramFromSignal(
+            IEnumerable<float> rawSignal,
+            int batchSize = 1,
+            int windowSize = 256,
+            int dftSize = 256,
+            int hopSize = 3,
+            int nMelBins = 1024,
+            int samplingRate = 8192,
+            int amplitude = 5000
+            )
         {
             float[] signal = rawSignal.Cast<float>().ToArray();
+            for (int i = 0; i < signal.Length; i++) signal[i] = signal[i] * amplitude;
+            int signalSize = signal.Length;
             var nDFT = 1 + (signalSize - dftSize) / hopSize;
             var onesidedDftSize = (dftSize >> 1) + 1;
 

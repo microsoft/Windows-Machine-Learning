@@ -50,7 +50,10 @@ namespace AudioPreprocessing.Model
             )
         {
             float[] signal = rawSignal.Cast<float>().ToArray();
+
+            //Scale the signal by a given amplitude 
             for (int i = 0; i < signal.Length; i++) signal[i] = signal[i] * amplitude;
+
             int signalSize = signal.Length;
             var nDFT = 1 + (signalSize - dftSize) / hopSize;
             var onesidedDftSize = (dftSize >> 1) + 1;

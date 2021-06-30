@@ -40,24 +40,14 @@ namespace AudioPreprocessing.Model
         {
             using (var reader = new AudioFileReader(filename))
             {
-                int rawSampleRate = reader.WaveFormat.SampleRate;
-                float[] signal = new float[reader.Length];
-                float[] buffer = new float[rawSampleRate];
-                int read = reader.Read(buffer, 0, buffer.Length);
-                int bufferCount = 0;
-                while (read > 0)
+                float[] signal = new float[reader.Length / sizeof(float)];
+                int read = reader.Read(signal, 0, signal.Length);
+ 
+                for (int i = 0; i < signal.Length; i++)
                 {
-                    for (int i = 0; i < buffer.Length; i++)
-                    {
-                        signal[bufferCount * buffer.Length + i] = (buffer[i] * amplitude);
-                    }
-                    bufferCount += 1;
-                    read = reader.Read(buffer, 0, buffer.Length);
+                    signal[i] = signal[i] * amplitude;
                 }
-
-                float[] croppedSignal = new float[bufferCount * buffer.Length];
-                Array.Copy(signal, croppedSignal, bufferCount * buffer.Length);
-                return croppedSignal;
+                return signal;
             }
         }
 

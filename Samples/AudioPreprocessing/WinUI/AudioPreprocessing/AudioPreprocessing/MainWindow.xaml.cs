@@ -1,12 +1,12 @@
-﻿using Microsoft.UI.Xaml;
+﻿using AudioPreprocessing.Model;
+using AudioPreprocessing.ViewModel;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Media.Imaging;
 using System;
-using AudioPreprocessing.ViewModel;
+using System.Runtime.InteropServices;
 using Windows.Graphics.Imaging;
 using Windows.Storage;
-using System.Runtime.InteropServices;
 using Windows.Storage.Pickers;
-using AudioPreprocessing.Model;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.

@@ -1,13 +1,12 @@
-﻿using NAudio.Wave;
+﻿using Microsoft.AI.MachineLearning;
+using Microsoft.AI.MachineLearning.Experimental;
+using NAudio.Wave;
 using System;
 using System.Collections.Generic;
-using Microsoft.AI.MachineLearning.Experimental;
-using Microsoft.AI.MachineLearning;
-using Windows.Media;
-using Windows.Graphics.Imaging;
-
-using Operator = Microsoft.AI.MachineLearning.Experimental.LearningModelOperator;
 using System.Diagnostics;
+using Windows.Graphics.Imaging;
+using Windows.Media;
+using Operator = Microsoft.AI.MachineLearning.Experimental.LearningModelOperator;
 
 namespace AudioPreprocessing.Model
 {

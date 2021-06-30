@@ -40,18 +40,6 @@ namespace AudioPreprocessing.Model
             return rawSoftwareBitmap;
         }
 
-        private List<float> Resample(List<float> signal, int oldSampleRate, int newSampleRate)
-        {
-            int nStep = oldSampleRate / newSampleRate;
-            var result = new List<float>();
-            for (int i = 0; i < signal.Count; i += nStep)
-            {
-                result.Add(signal[i]);
-            }
-            return result;
-        }
-
-
         private List<float> GetSignalFromFile(string filename, int sampleRate = 8000, int amplitude = 5000)
         {
             List<float> signal = new List<float>();

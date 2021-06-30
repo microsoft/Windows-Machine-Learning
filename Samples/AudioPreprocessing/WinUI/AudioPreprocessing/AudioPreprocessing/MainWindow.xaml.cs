@@ -54,11 +54,15 @@ namespace AudioPreprocessing
             PreprocessModel melspec = new PreprocessModel();
             var softwareBitmap = melspec.GenerateMelSpectrogram(file.Path);
 
+            ViewModel.AudioPath = file.Path;
+            ViewModel.MelSpectrogramImage = softwareBitmap;
+
             if (softwareBitmap.BitmapPixelFormat != BitmapPixelFormat.Bgra8 ||
                 softwareBitmap.BitmapAlphaMode != BitmapAlphaMode.Premultiplied)
             {
                 softwareBitmap = SoftwareBitmap.Convert(softwareBitmap, BitmapPixelFormat.Bgra8, BitmapAlphaMode.Premultiplied);
             }
+
 
             WavFilePath.Text = file.Path;
             var source = new SoftwareBitmapSource();

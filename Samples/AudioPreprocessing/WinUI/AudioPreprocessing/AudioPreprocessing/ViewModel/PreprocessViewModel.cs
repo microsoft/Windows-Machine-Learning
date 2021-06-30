@@ -18,15 +18,8 @@ namespace AudioPreprocessing.ViewModel
     {
         private string audioPath;
         private string imagePath;
-        private string test;
-        private SoftwareBitmapSource melSpectrogramImageSource;
         private SoftwareBitmap melSpectrogramImage;
 
-        public string Test
-        {
-            get { return test; }
-            set { test = value; OnPropertyChanged(); }
-        }
         public PreprocessViewModel()
         {
             PreprocessModel preprocessModel = new PreprocessModel();
@@ -71,6 +64,11 @@ namespace AudioPreprocessing.ViewModel
             set { imagePath = value; OnPropertyChanged(); }
         }
 
+        public SoftwareBitmap MelSpectrogramImage
+        {
+            get { return melSpectrogramImage; }
+            set { melSpectrogramImage = value; OnPropertyChanged(); }
+        }
 
         public ICommand SaveFileCommand => new AsyncRelayCommand(p => SaveFile());
 

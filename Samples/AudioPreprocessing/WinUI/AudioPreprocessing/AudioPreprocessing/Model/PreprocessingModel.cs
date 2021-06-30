@@ -12,7 +12,7 @@ namespace AudioPreprocessing.Model
 {
     public class PreprocessModel
     {
-        const string MS_EXPERIMENTAL_DOMAIN = "com.microsoft.experimental";
+        const string MicrosoftExperimentalDomain = "com.microsoft.experimental";
 
         public string AudioPath { get; set; }
 
@@ -91,11 +91,11 @@ namespace AudioPreprocessing.Model
                 .Inputs.Add(LearningModelBuilder.CreateTensorFeatureDescriptor("Input.TimeSignal", TensorKind.Float, signalShape))
                 .Outputs.Add(LearningModelBuilder.CreateTensorFeatureDescriptor("Output.MelSpectrogram", TensorKind.Float, melSpectrogramShape));
             builder
-              .Operators.Add(new Operator("HannWindow", MS_EXPERIMENTAL_DOMAIN)
+              .Operators.Add(new Operator("HannWindow", MicrosoftExperimentalDomain)
                 .SetConstant("size", TensorInt64Bit.CreateFromArray(new List<long>(), new long[] { windowSize }))
                 .SetOutput("output", "hann_window"));
             builder
-              .Operators.Add(new Operator("STFT", MS_EXPERIMENTAL_DOMAIN)
+              .Operators.Add(new Operator("STFT", MicrosoftExperimentalDomain)
                 .SetName("STFT_NAMED_NODE")
                 .SetInput("signal", "Input.TimeSignal")
                 .SetInput("window", "hann_window")
@@ -111,7 +111,7 @@ namespace AudioPreprocessing.Model
                 .SetInput("A", "magnitude_squared")
                 .SetConstant("B", TensorFloat.CreateFromArray(new List<long>(), new float[] { dftSize }))
                 .SetOutput("C", "power_frames"))
-              .Operators.Add(new Operator("MelWeightMatrix", MS_EXPERIMENTAL_DOMAIN)
+              .Operators.Add(new Operator("MelWeightMatrix", MicrosoftExperimentalDomain)
                 .SetConstant("num_mel_bins", TensorInt64Bit.CreateFromArray(new List<long>(), new long[] { nMelBins }))
                 .SetConstant("dft_length", TensorInt64Bit.CreateFromArray(new List<long>(), new long[] { dftSize }))
                 .SetConstant("sample_rate", TensorInt64Bit.CreateFromArray(new List<long>(), new long[] { samplingRate }))
@@ -162,7 +162,7 @@ namespace AudioPreprocessing.Model
             var builder =
                 LearningModelBuilder.Create(13)
                 .Outputs.Add(LearningModelBuilder.CreateTensorFeatureDescriptor("Output.MelWeightMatrix", TensorKind.Float, output_shape))
-                .Operators.Add(new Operator("MelWeightMatrix", MS_EXPERIMENTAL_DOMAIN)
+                .Operators.Add(new Operator("MelWeightMatrix", MicrosoftExperimentalDomain)
                     .SetConstant("num_mel_bins", TensorInt64Bit.CreateFromArray(new List<long>(), new long[] { 8 }))
                     .SetConstant("dft_length", TensorInt64Bit.CreateFromArray(new List<long>(), new long[] { 16 }))
                     .SetConstant("sample_rate", TensorInt64Bit.CreateFromArray(new List<long>(), new long[] { 8192 }))
@@ -196,10 +196,10 @@ namespace AudioPreprocessing.Model
                 .Inputs.Add(LearningModelBuilder.CreateTensorFeatureDescriptor("Input.TimeSignal", TensorKind.Float, input_shape))
                 .Outputs.Add(LearningModelBuilder.CreateTensorFeatureDescriptor("Output.STFT", TensorKind.Float, output_shape))
                 .Outputs.Add(LearningModelBuilder.CreateTensorFeatureDescriptor("Output.HannWindow", TensorKind.Float, new long[] { dft_size }))
-                .Operators.Add(new Operator("HannWindow", MS_EXPERIMENTAL_DOMAIN)
+                .Operators.Add(new Operator("HannWindow", MicrosoftExperimentalDomain)
                     .SetConstant("size", dft_length)
                     .SetOutput("output", "Output.HannWindow"))
-                .Operators.Add(new Operator("STFT", MS_EXPERIMENTAL_DOMAIN)
+                .Operators.Add(new Operator("STFT", MicrosoftExperimentalDomain)
                     .SetAttribute("onesided", TensorInt64Bit.CreateFromArray(new List<long>(), new long[] { is_onesided ? 1 : 0 }))
                     .SetInput("signal", "Input.TimeSignal")
                     .SetInput("window", "Output.HannWindow")
@@ -215,33 +215,33 @@ namespace AudioPreprocessing.Model
             var result = session.Evaluate(binding, "");
         }
 
-        static void WindowFunction(string window_operator_name, TensorKind kind)
+        static void WindowFunction(string windowOperatorName, TensorKind kind)
         {
-            long[] scalar_shape = new long[] { };
-            long[] output_shape = new long[] { 32 };
-            var double_data_type = TensorInt64Bit.CreateFromArray(new List<long>() { }, new long[] { 11 });
+            long[] scalarShape = new long[] { };
+            long[] outputShape = new long[] { 32 };
+            var doubleDataType = TensorInt64Bit.CreateFromArray(new List<long>() { }, new long[] { 11 });
 
-            var window_operator =
-                new Operator(window_operator_name, MS_EXPERIMENTAL_DOMAIN)
+            var windowOperator =
+                new Operator(windowOperatorName, MicrosoftExperimentalDomain)
                 .SetInput("size", "Input")
                 .SetOutput("output", "Output");
 
             if (kind == TensorKind.Double)
             {
-                window_operator.SetAttribute("output_datatype", double_data_type);
+                windowOperator.SetAttribute("output_datatype", doubleDataType);
             }
 
             var model =
                 LearningModelBuilder.Create(13)
-                .Inputs.Add(LearningModelBuilder.CreateTensorFeatureDescriptor("Input", TensorKind.Int64, scalar_shape))
-                .Outputs.Add(LearningModelBuilder.CreateTensorFeatureDescriptor("Output", kind, output_shape))
-                .Operators.Add(window_operator)
+                .Inputs.Add(LearningModelBuilder.CreateTensorFeatureDescriptor("Input", TensorKind.Int64, scalarShape))
+                .Outputs.Add(LearningModelBuilder.CreateTensorFeatureDescriptor("Output", kind, outputShape))
+                .Operators.Add(windowOperator)
                 .CreateModel();
 
             LearningModelSession session = new LearningModelSession(model);
             LearningModelBinding binding = new LearningModelBinding(session);
 
-            binding.Bind("Input", TensorInt64Bit.CreateFromArray(scalar_shape, new long[] { 32 }));
+            binding.Bind("Input", TensorInt64Bit.CreateFromArray(scalarShape, new long[] { 32 }));
 
             // Evaluate
             var result = session.Evaluate(binding, "");

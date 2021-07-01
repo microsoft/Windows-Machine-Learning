@@ -21,8 +21,7 @@ namespace AudioPreprocessing.Model
 
         public SoftwareBitmap GenerateMelSpectrogram(string audioPath)
         {
-            var signalEnumerable = GetSignalFromFile(audioPath);
-            IList<float> signal = signalEnumerable.Cast<float>().ToList();
+            var signal = GetSignalFromFile(audioPath);
             var rawSoftwareBitmap = GetMelspectrogramFromSignal(signal);
             return rawSoftwareBitmap;
         }

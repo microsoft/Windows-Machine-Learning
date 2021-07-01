@@ -3,7 +3,6 @@ using AudioPreprocessing.ViewModel;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Media.Imaging;
 using System;
-using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Windows.Graphics.Imaging;
@@ -68,8 +67,7 @@ namespace AudioPreprocessing
             if (Window.Current == null)
             {
                 var picker_unknown = Marshal.GetComInterfaceForObject(openPicker, typeof(IInitializeWithWindow));
-                var initializeWithWindowWrapper = Marshal.GetTypedObjectForIUnknown(picker_unknown, typeof(IInitializeWithWindow)) as IInitializeWithWindow;
-                Debug.Assert(initializeWithWindowWrapper != null);
+                var initializeWithWindowWrapper = (IInitializeWithWindow)Marshal.GetTypedObjectForIUnknown(picker_unknown, typeof(IInitializeWithWindow));
                 IntPtr hwnd = GetActiveWindow();
                 initializeWithWindowWrapper.Initialize(hwnd);
             }

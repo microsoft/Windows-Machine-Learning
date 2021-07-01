@@ -111,6 +111,7 @@ namespace AudioPreprocessing.Model
             LearningModelSession session = new LearningModelSession(model);
             LearningModelBinding binding = new LearningModelBinding(session);
 
+            // Bind input
             binding.Bind("Input.TimeSignal", TensorFloat.CreateFromArray(signalShape, signal));
 
             // Bind output

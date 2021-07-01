@@ -52,7 +52,7 @@ namespace AudioPreprocessing.Model
             int amplitude = 5000
             )
         {
-            float[] signal = rawSignal.Cast<float>().ToArray();
+            float[] signal = rawSignal.ToArray();
 
             //Scale the signal by a given amplitude 
             for (int i = 0; i < signal.Length; i++) signal[i] = signal[i] * amplitude;

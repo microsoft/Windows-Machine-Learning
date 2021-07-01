@@ -1,0 +1,29 @@
+﻿<Window
+    x:Class="AudioPreprocessing.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:AudioPreprocessing"
+    xmlns:sys="using:System"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:vm="clr-namespace:AudioPreprocessing.ViewModel"
+    xmlns:model="using:AudioPreprocessing.Model"
+    xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
+    mc:Ignorable="d">
+
+    <StackPanel Margin="0,0,0,0" Background="White" Orientation="Vertical">
+        <Button Name="ShowFilePickerButton" Content="Open file" HorizontalAlignment="Center" Click = "OnOpenClick"
+            VerticalAlignment="Center" />
+        <TextBlock Name="WavFilePath" HorizontalAlignment="Center"
+            VerticalAlignment="Center"  />
+        <Button Name="SaveFilebutton" Command="{x:Bind ViewModel.SaveFileCommand}" Content="Save file" HorizontalAlignment="Center"
+            VerticalAlignment="Center" />
+        <TextBlock Name="ImagePath" Text="{x:Bind ViewModel.ImagePath}" HorizontalAlignment="Center"
+            VerticalAlignment="Center" />
+
+        <StackPanel Margin="0,0,0,0" HorizontalAlignment="Center"
+            Background="White" Orientation="Horizontal">
+            <Image Name="spectrogram" Stretch="Fill" Height="500" Width="500" />
+        </StackPanel>
+    </StackPanel>
+</Window>

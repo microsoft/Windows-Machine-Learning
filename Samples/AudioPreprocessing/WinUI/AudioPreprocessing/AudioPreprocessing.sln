@@ -1,0 +1,57 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.31402.337
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{C7167F0D-BC9F-4E6E-AFE1-012C56B48DB5}") = "AudioPreprocessing (Package)", "AudioPreprocessing (Package)\AudioPreprocessing (Package).wapproj", "{63416965-49FB-446F-B1AC-3E5BFDD2CA46}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AudioPreprocessing", "AudioPreprocessing\AudioPreprocessing.csproj", "{F88D01CD-9805-41CC-B479-32CB81B4E14B}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|arm64 = Debug|arm64
+		Debug|x64 = Debug|x64
+		Debug|x86 = Debug|x86
+		Release|arm64 = Release|arm64
+		Release|x64 = Release|x64
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{63416965-49FB-446F-B1AC-3E5BFDD2CA46}.Debug|arm64.ActiveCfg = Debug|arm64
+		{63416965-49FB-446F-B1AC-3E5BFDD2CA46}.Debug|arm64.Build.0 = Debug|arm64
+		{63416965-49FB-446F-B1AC-3E5BFDD2CA46}.Debug|arm64.Deploy.0 = Debug|arm64
+		{63416965-49FB-446F-B1AC-3E5BFDD2CA46}.Debug|x64.ActiveCfg = Debug|x64
+		{63416965-49FB-446F-B1AC-3E5BFDD2CA46}.Debug|x64.Build.0 = Debug|x64
+		{63416965-49FB-446F-B1AC-3E5BFDD2CA46}.Debug|x64.Deploy.0 = Debug|x64
+		{63416965-49FB-446F-B1AC-3E5BFDD2CA46}.Debug|x86.ActiveCfg = Debug|x86
+		{63416965-49FB-446F-B1AC-3E5BFDD2CA46}.Debug|x86.Build.0 = Debug|x86
+		{63416965-49FB-446F-B1AC-3E5BFDD2CA46}.Debug|x86.Deploy.0 = Debug|x86
+		{63416965-49FB-446F-B1AC-3E5BFDD2CA46}.Release|arm64.ActiveCfg = Release|arm64
+		{63416965-49FB-446F-B1AC-3E5BFDD2CA46}.Release|arm64.Build.0 = Release|arm64
+		{63416965-49FB-446F-B1AC-3E5BFDD2CA46}.Release|arm64.Deploy.0 = Release|arm64
+		{63416965-49FB-446F-B1AC-3E5BFDD2CA46}.Release|x64.ActiveCfg = Release|x64
+		{63416965-49FB-446F-B1AC-3E5BFDD2CA46}.Release|x64.Build.0 = Release|x64
+		{63416965-49FB-446F-B1AC-3E5BFDD2CA46}.Release|x64.Deploy.0 = Release|x64
+		{63416965-49FB-446F-B1AC-3E5BFDD2CA46}.Release|x86.ActiveCfg = Release|x86
+		{63416965-49FB-446F-B1AC-3E5BFDD2CA46}.Release|x86.Build.0 = Release|x86
+		{63416965-49FB-446F-B1AC-3E5BFDD2CA46}.Release|x86.Deploy.0 = Release|x86
+		{F88D01CD-9805-41CC-B479-32CB81B4E14B}.Debug|arm64.ActiveCfg = Debug|arm64
+		{F88D01CD-9805-41CC-B479-32CB81B4E14B}.Debug|arm64.Build.0 = Debug|arm64
+		{F88D01CD-9805-41CC-B479-32CB81B4E14B}.Debug|x64.ActiveCfg = Debug|x64
+		{F88D01CD-9805-41CC-B479-32CB81B4E14B}.Debug|x64.Build.0 = Debug|x64
+		{F88D01CD-9805-41CC-B479-32CB81B4E14B}.Debug|x86.ActiveCfg = Debug|x86
+		{F88D01CD-9805-41CC-B479-32CB81B4E14B}.Debug|x86.Build.0 = Debug|x86
+		{F88D01CD-9805-41CC-B479-32CB81B4E14B}.Release|arm64.ActiveCfg = Release|arm64
+		{F88D01CD-9805-41CC-B479-32CB81B4E14B}.Release|arm64.Build.0 = Release|arm64
+		{F88D01CD-9805-41CC-B479-32CB81B4E14B}.Release|x64.ActiveCfg = Release|x64
+		{F88D01CD-9805-41CC-B479-32CB81B4E14B}.Release|x64.Build.0 = Release|x64
+		{F88D01CD-9805-41CC-B479-32CB81B4E14B}.Release|x86.ActiveCfg = Release|x86
+		{F88D01CD-9805-41CC-B479-32CB81B4E14B}.Release|x86.Build.0 = Release|x86
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {7F595A54-A910-480E-9DA5-45C398BF2D2A}
+	EndGlobalSection
+EndGlobal

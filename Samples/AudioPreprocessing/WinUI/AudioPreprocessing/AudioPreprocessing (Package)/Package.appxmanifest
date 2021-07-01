@@ -13,7 +13,7 @@
 
   <Properties>
     <DisplayName>AudioPreprocessing (Package)</DisplayName>
-    <PublisherDisplayName>t-janedu</PublisherDisplayName>
+    <PublisherDisplayName>winml</PublisherDisplayName>
     <Logo>Images\StoreLogo.png</Logo>
   </Properties>
 

@@ -28,7 +28,7 @@ namespace AudioPreprocessing.ViewModel
 
         public async Task<SoftwareBitmap> GetSampleBitmap()
         {
-            SoftwareBitmap softwareBitmap;
+
             FileOpenPicker fileOpenPicker = new FileOpenPicker();
             fileOpenPicker.SuggestedStartLocation = PickerLocationId.PicturesLibrary;
             fileOpenPicker.FileTypeFilter.Add(".jpg");
@@ -47,9 +47,8 @@ namespace AudioPreprocessing.ViewModel
                 BitmapDecoder decoder = await BitmapDecoder.CreateAsync(stream);
 
                 // Get the SoftwareBitmap representation of the file
-                softwareBitmap = await decoder.GetSoftwareBitmapAsync();
+                return await decoder.GetSoftwareBitmapAsync();
             }
-            return softwareBitmap;
         }
 
         public string AudioPath
@@ -86,8 +85,6 @@ namespace AudioPreprocessing.ViewModel
                 return;
             }
             else { SaveSoftwareBitmapToFile(melSpectrogramImage, outputFile); }
-
-
         }
 
         private async void SaveSoftwareBitmapToFile(SoftwareBitmap softwareBitmap, StorageFile outputFile)
@@ -130,8 +127,6 @@ namespace AudioPreprocessing.ViewModel
                 {
                     await encoder.FlushAsync();
                 }
-
-
             }
         }
 
@@ -142,8 +137,6 @@ namespace AudioPreprocessing.ViewModel
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
         }
 
-
     }
-
 }
 

@@ -65,13 +65,11 @@ namespace AudioPreprocessing.Model
             long[] melSpectrogramShape = { batchSize, 1, nDFT, nMelBins };
 
             var builder = LearningModelBuilder.Create(13)
-                .Inputs.Add(LearningModelBuilder.CreateTensorFeatureDescriptor("Input.TimeSignal", TensorKind.Float, signalShape))
-                .Outputs.Add(LearningModelBuilder.CreateTensorFeatureDescriptor("Output.MelSpectrogram", TensorKind.Float, melSpectrogramShape));
-            builder
+              .Inputs.Add(LearningModelBuilder.CreateTensorFeatureDescriptor("Input.TimeSignal", TensorKind.Float, signalShape))
+              .Outputs.Add(LearningModelBuilder.CreateTensorFeatureDescriptor("Output.MelSpectrogram", TensorKind.Float, melSpectrogramShape))
               .Operators.Add(new Operator("HannWindow", MicrosoftExperimentalDomain)
                 .SetConstant("size", TensorInt64Bit.CreateFromArray(new List<long>(), new long[] { windowSize }))
-                .SetOutput("output", "hann_window"));
-            builder
+                .SetOutput("output", "hann_window"))
               .Operators.Add(new Operator("STFT", MicrosoftExperimentalDomain)
                 .SetName("STFT_NAMED_NODE")
                 .SetInput("signal", "Input.TimeSignal")

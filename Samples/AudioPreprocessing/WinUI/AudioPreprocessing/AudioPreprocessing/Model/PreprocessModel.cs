@@ -130,5 +130,34 @@ namespace AudioPreprocessing.Model
 
             return outputImage.SoftwareBitmap;
         }
+
+        static SoftwareBitmap ColorizeMelspectrogram(SoftwareBitmap bwSpectrogram)
+        {
+            //softwareBitmap = new SoftwareBitmap(BitmapPixelFormat.Bgra8, 100, 100, BitmapAlphaMode.Premultiplied);
+
+            using (BitmapBuffer buffer = bwSpectrogram.LockBuffer(BitmapBufferAccessMode.Write))
+            {
+                using (var reference = buffer.CreateReference())
+                {
+                    uint capacity;
+                    ((IMemoryBufferByteAccess)reference).GetBuffer(out byte* dataInBytes, out capacity);
+
+                    // Fill-in the BGRA plane
+                    BitmapPlaneDescription bufferLayout = buffer.GetPlaneDescription(0);
+                    for (int i = 0; i < bufferLayout.Height; i++)
+                    {
+                        for (int j = 0; j < bufferLayout.Width; j++)
+                        {
+
+                            byte value = (byte)((float)j / bufferLayout.Width * 255);
+                            dataInBytes[bufferLayout.StartIndex + bufferLayout.Stride * i + 4 * j + 0] = value;
+                            dataInBytes[bufferLayout.StartIndex + bufferLayout.Stride * i + 4 * j + 1] = value;
+                            dataInBytes[bufferLayout.StartIndex + bufferLayout.Stride * i + 4 * j + 2] = value;
+                            dataInBytes[bufferLayout.StartIndex + bufferLayout.Stride * i + 4 * j + 3] = (byte)255;
+                        }
+                    }
+                }
+            }
+        }
     }
 }

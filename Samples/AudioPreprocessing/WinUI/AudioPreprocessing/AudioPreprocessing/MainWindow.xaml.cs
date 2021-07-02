@@ -39,7 +39,7 @@ namespace AudioPreprocessing
         {
             string wavPath = await GetFilePath();
             PreprocessModel melSpectrogram = new PreprocessModel();
-            var softwareBitmap = melSpectrogram.GenerateMelSpectrogram(wavPath);
+            var softwareBitmap = melSpectrogram.GenerateMelSpectrogram(wavPath, true);
 
             ViewModel.AudioPath = wavPath;
             ViewModel.MelSpectrogramImage = softwareBitmap;

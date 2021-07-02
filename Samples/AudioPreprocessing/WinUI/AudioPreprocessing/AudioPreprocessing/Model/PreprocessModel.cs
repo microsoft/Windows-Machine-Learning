@@ -5,12 +5,22 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.InteropServices;
 using Windows.Graphics.Imaging;
 using Windows.Media;
+using WinRT;
 using Operator = Microsoft.AI.MachineLearning.Experimental.LearningModelOperator;
 
 namespace AudioPreprocessing.Model
 {
+    [ComImport]
+    [Guid("5B0D3235-4DBA-4D44-865E-8F1D0E4FD04D")]
+    [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+    unsafe interface IMemoryBufferByteAccess
+    {
+        // Used to edit a SoftwareBitmap for color
+        void GetBuffer(out byte* buffer, out uint capacity);
+    }
     public class PreprocessModel
     {
         const string MicrosoftExperimentalDomain = "com.microsoft.experimental";
@@ -19,18 +29,19 @@ namespace AudioPreprocessing.Model
 
         public string MelSpecImagePath { get; set; }
 
-        public SoftwareBitmap GenerateMelSpectrogram(string audioPath)
+        public SoftwareBitmap GenerateMelSpectrogram(string audioPath, bool color = false)
         {
             var signal = GetSignalFromFile(audioPath);
-            var rawSoftwareBitmap = GetMelspectrogramFromSignal(signal);
-            return rawSoftwareBitmap;
+            var softwareBitmap = GetMelspectrogramFromSignal(signal);
+            if (color) softwareBitmap = ColorizeMelspectrogram(softwareBitmap);
+            return softwareBitmap;
         }
 
         private IEnumerable<float> GetSignalFromFile(string filename)
         {
             if (!filename.EndsWith(".wav"))
             {
-                throw new ArgumentException( String.Format("{0} is not a valid .wav file."));
+                throw new ArgumentException(String.Format("{0} is not a valid .wav file."));
             }
             using (var reader = new AudioFileReader(filename))
             {
@@ -131,33 +142,34 @@ namespace AudioPreprocessing.Model
             return outputImage.SoftwareBitmap;
         }
 
-        static SoftwareBitmap ColorizeMelspectrogram(SoftwareBitmap bwSpectrogram)
+        static unsafe SoftwareBitmap ColorizeMelspectrogram(SoftwareBitmap bwSpectrogram)
         {
-            //softwareBitmap = new SoftwareBitmap(BitmapPixelFormat.Bgra8, 100, 100, BitmapAlphaMode.Premultiplied);
-
             using (BitmapBuffer buffer = bwSpectrogram.LockBuffer(BitmapBufferAccessMode.Write))
             {
-                using (var reference = buffer.CreateReference())
+                using var reference = buffer.CreateReference();
+                IMemoryBufferByteAccess memoryBuffer = reference.As<IMemoryBufferByteAccess>();
+                memoryBuffer.GetBuffer(out byte* dataInBytes, out uint capacity);
+
+                // Edit the BGRA Plane
+                BitmapPlaneDescription bufferLayout = buffer.GetPlaneDescription(0);
+                for (int i = 0; i < bufferLayout.Height; i++)
                 {
-                    uint capacity;
-                    ((IMemoryBufferByteAccess)reference).GetBuffer(out byte* dataInBytes, out capacity);
-
-                    // Fill-in the BGRA plane
-                    BitmapPlaneDescription bufferLayout = buffer.GetPlaneDescription(0);
-                    for (int i = 0; i < bufferLayout.Height; i++)
+                    for (int j = 0; j < bufferLayout.Width; j++)
                     {
-                        for (int j = 0; j < bufferLayout.Width; j++)
-                        {
-
-                            byte value = (byte)((float)j / bufferLayout.Width * 255);
-                            dataInBytes[bufferLayout.StartIndex + bufferLayout.Stride * i + 4 * j + 0] = value;
-                            dataInBytes[bufferLayout.StartIndex + bufferLayout.Stride * i + 4 * j + 1] = value;
-                            dataInBytes[bufferLayout.StartIndex + bufferLayout.Stride * i + 4 * j + 2] = value;
-                            dataInBytes[bufferLayout.StartIndex + bufferLayout.Stride * i + 4 * j + 3] = (byte)255;
-                        }
+                        int pixel = bufferLayout.StartIndex + bufferLayout.Stride * i + 4 * j;
+                        //Lines below can be tweaked for different custom color filters 
+                        //Blue
+                        dataInBytes[pixel + 0] = (byte)((255 - dataInBytes[pixel + 0]) / 2);
+                        //Green
+                        dataInBytes[pixel + 1] = (byte)(dataInBytes[pixel + 1] / 2);
+                        //Red
+                        //dataInBytes[pixel + 2] = (byte)(dataInBytes[pixel + 2]);
+                        //Alpha - must leave each pixel at max 
+                        dataInBytes[bufferLayout.StartIndex + bufferLayout.Stride * i + 4 * j + 3] = (byte)255;
                     }
                 }
             }
+            return bwSpectrogram;
         }
     }
 }

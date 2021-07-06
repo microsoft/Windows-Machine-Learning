@@ -9,6 +9,8 @@ using Windows.Graphics.Imaging;
 using Windows.Media;
 using Windows.Storage;
 using Windows.Storage.Pickers;
+using System.Text.RegularExpressions;
+
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -63,6 +65,12 @@ namespace AudioPreprocessing
 
             StorageFile file = await openPicker.PickSingleFileAsync();
             return file.Path;
+        }
+
+        private static readonly Regex _regex = new Regex("[^0-9.-]+"); //regex that matches disallowed text
+        private static bool IsTextAllowed(string text)
+        {
+            return !_regex.IsMatch(text);
         }
     }
 }

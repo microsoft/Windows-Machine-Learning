@@ -74,9 +74,9 @@ namespace AudioPreprocessing.ViewModel
             MelSpectrogramImage = preprocessModel.GenerateMelSpectrogram(wavPath);
             if (colorize)
             {
-                // Use computational graph to colorize image, if box is checked
+                // Use computational graph to colorize image
                 //MelSpectrogramImage = PreprocessModel.ColorizeWithComputationalGraph(MelSpectrogramImage);
-                // Use bitmap editing, pixel by pixel, to colorize image, if box is checked. In place editing.
+                // Use bitmap editing, pixel by pixel, to colorize image
                 PreprocessModel.ColorizeWithBitmapEditing(MelSpectrogramImage);
             }
             AudioPath = wavPath;

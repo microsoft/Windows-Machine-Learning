@@ -1,5 +1,6 @@
 ﻿using Microsoft.AI.MachineLearning;
 using Microsoft.AI.MachineLearning.Experimental;
+using Model;
 using NAudio.Wave;
 using System;
 using System.Collections.Generic;
@@ -29,11 +30,12 @@ namespace AudioPreprocessing.Model
 
         public string MelSpecImagePath { get; set; }
 
+        public ModelSetting MelSpecSettings { get; set; }
+
         public SoftwareBitmap GenerateMelSpectrogram(string audioPath)
         {
             var signal = GetSignalFromFile(audioPath);
             var softwareBitmap = GetMelspectrogramFromSignal(signal);
-            //if (color) softwareBitmap = ColorizeWithBitmapEditing(softwareBitmap);
             return softwareBitmap;
         }
 

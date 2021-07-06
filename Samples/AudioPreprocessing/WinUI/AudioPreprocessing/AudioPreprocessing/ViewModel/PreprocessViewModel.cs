@@ -97,13 +97,6 @@ namespace AudioPreprocessing.ViewModel
                 // Set the software bitmap
                 encoder.SetSoftwareBitmap(softwareBitmap);
 
-                // Set additional encoding parameters, if needed
-                encoder.BitmapTransform.ScaledWidth = 320;
-                encoder.BitmapTransform.ScaledHeight = 240;
-                encoder.BitmapTransform.Rotation = Windows.Graphics.Imaging.BitmapRotation.Clockwise90Degrees;
-                encoder.BitmapTransform.InterpolationMode = BitmapInterpolationMode.Fant;
-                encoder.IsThumbnailGenerated = true;
-
                 try
                 {
                     await encoder.FlushAsync();

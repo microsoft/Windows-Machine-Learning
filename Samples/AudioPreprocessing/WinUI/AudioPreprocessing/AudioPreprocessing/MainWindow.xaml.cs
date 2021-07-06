@@ -6,6 +6,7 @@ using System;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Windows.Graphics.Imaging;
+using Windows.Media;
 using Windows.Storage;
 using Windows.Storage.Pickers;
 
@@ -40,6 +41,7 @@ namespace AudioPreprocessing
             string wavPath = await GetFilePath();
             PreprocessModel melSpectrogram = new PreprocessModel();
             var softwareBitmap = melSpectrogram.GenerateMelSpectrogram(wavPath, ColorMelSpectrogramCheckBox.IsChecked ?? false);
+            //PreprocessModel.Colorize(VideoFrame.CreateWithSoftwareBitmap(softwareBitmap), 0.5f, 0.3f);
 
             ViewModel.AudioPath = wavPath;
             ViewModel.MelSpectrogramImage = softwareBitmap;

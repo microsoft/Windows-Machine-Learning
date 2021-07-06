@@ -33,7 +33,7 @@ namespace AudioPreprocessing.Model
         {
             var signal = GetSignalFromFile(audioPath);
             var softwareBitmap = GetMelspectrogramFromSignal(signal);
-            if (color) softwareBitmap = ColorizeMelspectrogram(softwareBitmap);
+            if (color) softwareBitmap = ColorizeWithBitmapEditing(softwareBitmap);
             return softwareBitmap;
         }
 
@@ -152,16 +152,18 @@ namespace AudioPreprocessing.Model
             return outputImage.SoftwareBitmap;
         }
 
-        public static void Colorize(Windows.Media.VideoFrame image, float saturation, float value)
+        public static SoftwareBitmap ColorizeWithComputationalGraph(Windows.Media.VideoFrame image, float saturation, float value)
         {
             long width = image.SoftwareBitmap.PixelWidth;
             long height = image.SoftwareBitmap.PixelHeight;
-            long channels = image.SoftwareBitmap.BitmapPixelFormat == Windows.Graphics.Imaging.BitmapPixelFormat.Bgra8 ? 4 : 1;
+            long channels = image.SoftwareBitmap.BitmapPixelFormat == Windows.Graphics.Imaging.BitmapPixelFormat.Bgra8 ? 3 : 1;
 
             long batch_size = 1;
 
-            var c = saturation * value;
-            var m = value - saturation;
+            var saturation_value = saturation * value;
+            var saturation_value_difference = value - saturation;
+
+            Stopwatch stopWatch = new Stopwatch();
 
 
             var builder = LearningModelBuilder.Create(13)
@@ -173,14 +175,15 @@ namespace AudioPreprocessing.Model
                                 .SetConstant("ends", TensorInt64Bit.CreateFromIterable(new long[] { 4 }, new long[] { long.MaxValue, 1, long.MaxValue, long.MaxValue }))
                                 .SetConstant("axes", TensorInt64Bit.CreateFromIterable(new long[] { 4 }, new long[] { 0, 1, 2, 3 }))
                                 .SetConstant("steps", TensorInt64Bit.CreateFromIterable(new long[] { 4 }, new long[] { 1, 1, 1, 1 }))
-                                .SetOutput("output", "hue"))
+                                .SetOutput("output", "Hue"))
                 .Operators.Add(new LearningModelOperator("Div")
-                                .SetInput("A", "hue")
+                                .SetInput("A", "Hue")
                                 .SetConstant("B", TensorFloat.CreateFromIterable(new long[] { 1 }, new float[] { 60 }))
                                 .SetOutput("C", "div_output"))
                 .Operators.Add(new LearningModelOperator("Mod")
                                 .SetInput("A", "div_output")
                                 .SetConstant("B", TensorFloat.CreateFromIterable(new long[] { 1 }, new float[] { 2 }))
+                                .SetAttribute("fmod", TensorInt64Bit.CreateFromIterable(new long[] { }, new long[] { 1 }))
                                 .SetOutput("C", "mod_output"))
                 .Operators.Add(new LearningModelOperator("Sub")
                                 .SetInput("A", "mod_output")
@@ -195,69 +198,283 @@ namespace AudioPreprocessing.Model
                                 .SetOutput("C", "sub2_output"))
                 .Operators.Add(new LearningModelOperator("Mul")
                                 .SetInput("A", "sub2_output")
-                                .SetConstant("B", TensorFloat.CreateFromIterable(new long[] { 1 }, new float[] { c }))
-                                .SetOutput("C", "mul1_output"))
-                // generate 6 masks
+                                .SetConstant("B", TensorFloat.CreateFromIterable(new long[] { 1 }, new float[] { saturation_value }))
+                                .SetOutput("C", "X"))
+                // LESS THAN MASKS
                 .Operators.Add(new LearningModelOperator("Less")
-                                .SetInput("A", "hue")
+                                .SetInput("A", "Hue")
                                 .SetConstant("B", TensorFloat.CreateFromIterable(new long[] { 1 }, new float[] { 60 }))
-                                .SetOutput("C", "mask1"))
+                                .SetOutput("C", "lt60_mask_b"))
+                .Operators.Add(new LearningModelOperator("Cast")
+                                .SetInput("input", "lt60_mask_b")
+                                .SetAttribute("to", TensorInt32Bit.CreateFromIterable(new long[] { }, new int[] { 1 }))
+                                .SetOutput("output", "lt60_mask"))
+                .Operators.Add(new LearningModelOperator("Less")
+                                .SetInput("A", "Hue")
+                                .SetConstant("B", TensorFloat.CreateFromIterable(new long[] { 1 }, new float[] { 120 }))
+                                .SetOutput("C", "lt120_mask_b"))
+                .Operators.Add(new LearningModelOperator("Cast")
+                                .SetInput("input", "lt120_mask_b")
+                                .SetAttribute("to", TensorInt32Bit.CreateFromIterable(new long[] { }, new int[] { 1 }))
+                                .SetOutput("output", "lt120_mask"))
 
-                .Operators.Add(new LearningModelOperator("GreaterOrEqual")
-                                .SetInput("A", "hue")
-                                .SetConstant("B", TensorFloat.CreateFromIterable(new long[] { 1 }, new float[] { 60 }))
-                                .SetOutput("C", "greater2_output"))
                 .Operators.Add(new LearningModelOperator("Less")
-                                .SetInput("A", "hue")
-                                .SetConstant("B", TensorFloat.CreateFromIterable(new long[] { 1 }, new float[] { 120 }))
-                                .SetOutput("C", "less2_output"))
-                .Operators.Add(new LearningModelOperator("Less")
-                                .SetInput("A", "hue")
-                                .SetConstant("B", TensorFloat.CreateFromIterable(new long[] { 1 }, new float[] { 120 }))
-                                .SetOutput("C", "less2_output"))
-
-                .Operators.Add(new LearningModelOperator("GreaterOrEqual")
-                                .SetInput("A", "hue")
-                                .SetConstant("B", TensorFloat.CreateFromIterable(new long[] { 1 }, new float[] { 120 }))
-                                .SetOutput("C", "greater3_output"))
-                .Operators.Add(new LearningModelOperator("Less")
-                                .SetInput("A", "hue")
+                                .SetInput("A", "Hue")
                                 .SetConstant("B", TensorFloat.CreateFromIterable(new long[] { 1 }, new float[] { 180 }))
-                                .SetOutput("C", "less3_output"))
+                                .SetOutput("C", "lt180_mask_b"))
+                .Operators.Add(new LearningModelOperator("Cast")
+                                .SetInput("input", "lt180_mask_b")
+                                .SetAttribute("to", TensorInt32Bit.CreateFromIterable(new long[] { }, new int[] { 1 }))
+                                .SetOutput("output", "lt180_mask"))
 
-                .Operators.Add(new LearningModelOperator("GreaterOrEqual")
-                                .SetInput("A", "hue")
-                                .SetConstant("B", TensorFloat.CreateFromIterable(new long[] { 1 }, new float[] { 180 }))
-                                .SetOutput("C", "greater4_output"))
                 .Operators.Add(new LearningModelOperator("Less")
-                                .SetInput("A", "hue")
+                                .SetInput("A", "Hue")
                                 .SetConstant("B", TensorFloat.CreateFromIterable(new long[] { 1 }, new float[] { 240 }))
-                                .SetOutput("C", "less4_output"))
+                                .SetOutput("C", "lt240_mask_b"))
+                .Operators.Add(new LearningModelOperator("Cast")
+                                .SetInput("input", "lt240_mask_b")
+                                .SetAttribute("to", TensorInt32Bit.CreateFromIterable(new long[] { }, new int[] { 1 }))
+                                .SetOutput("output", "lt240_mask"))
 
-                .Operators.Add(new LearningModelOperator("GreaterOrEqual")
-                                .SetInput("A", "hue")
-                                .SetConstant("B", TensorFloat.CreateFromIterable(new long[] { 1 }, new float[] { 180 }))
-                                .SetOutput("C", "greater4_output"))
                 .Operators.Add(new LearningModelOperator("Less")
-                                .SetInput("A", "hue")
-                                .SetConstant("B", TensorFloat.CreateFromIterable(new long[] { 1 }, new float[] { 240 }))
-                                .SetOutput("C", "less4_output"))
-
-                .Operators.Add(new LearningModelOperator("GreaterOrEqual")
-                                .SetInput("A", "hue")
+                                .SetInput("A", "Hue")
                                 .SetConstant("B", TensorFloat.CreateFromIterable(new long[] { 1 }, new float[] { 300 }))
-                                .SetOutput("C", "mask6"))
-                ;
+                                .SetOutput("C", "lt300_mask_b"))
+                .Operators.Add(new LearningModelOperator("Cast")
+                                .SetInput("input", "lt300_mask_b")
+                                .SetAttribute("to", TensorInt32Bit.CreateFromIterable(new long[] { }, new int[] { 1 }))
+                                .SetOutput("output", "lt300_mask"))
+                // GREATER THAN MASKS
+                .Operators.Add(new LearningModelOperator("Greater")
+                                .SetInput("A", "Hue")
+                                .SetConstant("B", TensorFloat.CreateFromIterable(new long[] { 1 }, new float[] { 60 }))
+                                .SetOutput("C", "gt60_mask_b"))
+                .Operators.Add(new LearningModelOperator("Cast")
+                                .SetInput("input", "gt60_mask_b")
+                                .SetAttribute("to", TensorInt32Bit.CreateFromIterable(new long[] { }, new int[] { 1 }))
+                                .SetOutput("output", "gt60_mask"))
 
-            builder.Save(@"C:\Users\t-janedu\source\repos\Windows-Machine-Learning\Samples\AudioPreprocessing\WinUI\AudioPreprocessing\AudioPreprocessing\tmp\colorize_me.onnx");
+                .Operators.Add(new LearningModelOperator("Greater")
+                                .SetInput("A", "Hue")
+                                .SetConstant("B", TensorFloat.CreateFromIterable(new long[] { 1 }, new float[] { 120 }))
+                                .SetOutput("C", "gt120_mask_b"))
+                .Operators.Add(new LearningModelOperator("Cast")
+                                .SetInput("input", "gt120_mask_b")
+                                .SetAttribute("to", TensorInt32Bit.CreateFromIterable(new long[] { }, new int[] { 1 }))
+                                .SetOutput("output", "gt120_mask"))
 
+                .Operators.Add(new LearningModelOperator("Greater")
+                                .SetInput("A", "Hue")
+                                .SetConstant("B", TensorFloat.CreateFromIterable(new long[] { 1 }, new float[] { 180 }))
+                                .SetOutput("C", "gt180_mask_b"))
+                .Operators.Add(new LearningModelOperator("Cast")
+                                .SetInput("input", "gt180_mask_b")
+                                .SetAttribute("to", TensorInt32Bit.CreateFromIterable(new long[] { }, new int[] { 1 }))
+                                .SetOutput("output", "gt180_mask"))
+
+                .Operators.Add(new LearningModelOperator("Greater")
+                                .SetInput("A", "Hue")
+                                .SetConstant("B", TensorFloat.CreateFromIterable(new long[] { 1 }, new float[] { 240 }))
+                                .SetOutput("C", "gt240_mask_b"))
+                .Operators.Add(new LearningModelOperator("Cast")
+                                .SetInput("input", "gt240_mask_b")
+                                .SetAttribute("to", TensorInt32Bit.CreateFromIterable(new long[] { }, new int[] { 1 }))
+                                .SetOutput("output", "gt240_mask"))
+
+                .Operators.Add(new LearningModelOperator("Greater")
+                                .SetInput("A", "Hue")
+                                .SetConstant("B", TensorFloat.CreateFromIterable(new long[] { 1 }, new float[] { 300 }))
+                                .SetOutput("C", "gt300_mask_b"))
+                .Operators.Add(new LearningModelOperator("Cast")
+                                .SetInput("input", "gt300_mask_b")
+                                .SetAttribute("to", TensorInt32Bit.CreateFromIterable(new long[] { }, new int[] { 1 }))
+                                .SetOutput("output", "gt300_mask"))
+
+                // CASE 0 => 60
+                .Operators.Add(new LearningModelOperator("Mul")
+                                .SetInput("A", "lt60_mask")
+                                .SetConstant("B", TensorFloat.CreateFromIterable(new long[] { 1 }, new float[] { saturation_value }))
+                                .SetOutput("C", "0_to_60_R"))
+                .Operators.Add(new LearningModelOperator("Mul")
+                                .SetInput("A", "lt60_mask")
+                                .SetInput("B", "X")
+                                .SetOutput("C", "0_to_60_G"))
+                // CASE 60 => 120
+                .Operators.Add(new LearningModelOperator("And")
+                                .SetInput("A", "gt60_mask_b")
+                                .SetInput("B", "lt120_mask_b")
+                                .SetOutput("C", "60_to_120_mask_b"))
+                .Operators.Add(new LearningModelOperator("Cast")
+                                .SetInput("input", "60_to_120_mask_b")
+                                .SetAttribute("to", TensorInt32Bit.CreateFromIterable(new long[] { }, new int[] { 1 }))
+                                .SetOutput("output", "60_to_120_mask"))
+
+                .Operators.Add(new LearningModelOperator("Mul")
+                                .SetInput("A", "60_to_120_mask")
+                                .SetInput("B", "X")
+                                .SetOutput("C", "60_to_120_R"))
+                .Operators.Add(new LearningModelOperator("Mul")
+                                .SetInput("A", "60_to_120_mask")
+                                .SetConstant("B", TensorFloat.CreateFromIterable(new long[] { 1 }, new float[] { saturation_value }))
+                                .SetOutput("C", "60_to_120_G"))
+
+                // CASE 120 => 180
+                .Operators.Add(new LearningModelOperator("And")
+                                .SetInput("A", "gt120_mask_b")
+                                .SetInput("B", "lt180_mask_b")
+                                .SetOutput("C", "120_to_180_mask_b"))
+                .Operators.Add(new LearningModelOperator("Cast")
+                                .SetInput("input", "120_to_180_mask_b")
+                                .SetAttribute("to", TensorInt32Bit.CreateFromIterable(new long[] { }, new int[] { 1 }))
+                                .SetOutput("output", "120_to_180_mask"))
+
+                .Operators.Add(new LearningModelOperator("Mul")
+                                .SetInput("A", "120_to_180_mask")
+                                .SetConstant("B", TensorFloat.CreateFromIterable(new long[] { 1 }, new float[] { saturation_value }))
+                                .SetOutput("C", "120_to_180_G"))
+                .Operators.Add(new LearningModelOperator("Mul")
+                                .SetInput("A", "120_to_180_mask")
+                                .SetInput("B", "X")
+                                .SetOutput("C", "120_to_180_B"))
+                // CASE 180 => 240
+                .Operators.Add(new LearningModelOperator("And")
+                                .SetInput("A", "gt180_mask_b")
+                                .SetInput("B", "lt240_mask_b")
+                                .SetOutput("C", "180_to_240_mask_b"))
+                .Operators.Add(new LearningModelOperator("Cast")
+                                .SetInput("input", "180_to_240_mask_b")
+                                .SetAttribute("to", TensorInt32Bit.CreateFromIterable(new long[] { }, new int[] { 1 }))
+                                .SetOutput("output", "180_to_240_mask"))
+
+                .Operators.Add(new LearningModelOperator("Mul")
+                                .SetInput("A", "180_to_240_mask")
+                                .SetInput("B", "X")
+                                .SetOutput("C", "180_to_240_G"))
+                .Operators.Add(new LearningModelOperator("Mul")
+                                .SetInput("A", "180_to_240_mask")
+                                .SetConstant("B", TensorFloat.CreateFromIterable(new long[] { 1 }, new float[] { saturation_value }))
+                                .SetOutput("C", "180_to_240_B"))
+                // CASE 240 => 300
+                .Operators.Add(new LearningModelOperator("And")
+                                .SetInput("A", "gt240_mask_b")
+                                .SetInput("B", "lt300_mask_b")
+                                .SetOutput("C", "240_to_300_mask_b"))
+                .Operators.Add(new LearningModelOperator("Cast")
+                                .SetInput("input", "240_to_300_mask_b")
+                                .SetAttribute("to", TensorInt32Bit.CreateFromIterable(new long[] { }, new int[] { 1 }))
+                                .SetOutput("output", "240_to_300_mask"))
+
+                .Operators.Add(new LearningModelOperator("Mul")
+                                .SetInput("A", "240_to_300_mask")
+                                .SetInput("B", "X")
+                                .SetOutput("C", "240_to_300_R"))
+                .Operators.Add(new LearningModelOperator("Mul")
+                                .SetInput("A", "240_to_300_mask")
+                                .SetConstant("B", TensorFloat.CreateFromIterable(new long[] { 1 }, new float[] { saturation_value }))
+                                .SetOutput("C", "240_to_300_B"))
+                // CASE 300 => 360
+                .Operators.Add(new LearningModelOperator("Mul")
+                                .SetInput("A", "gt300_mask")
+                                .SetConstant("B", TensorFloat.CreateFromIterable(new long[] { 1 }, new float[] { saturation_value }))
+                                .SetOutput("C", "300_to_360_R"))
+                .Operators.Add(new LearningModelOperator("Mul")
+                                .SetInput("A", "gt300_mask")
+                                .SetInput("B", "X")
+                                .SetOutput("C", "300_to_360_B"))
+                // SUM UP R
+                .Operators.Add(new LearningModelOperator("Add")
+                                .SetInput("A", "300_to_360_R")
+                                .SetInput("B", "240_to_300_R")
+                                .SetOutput("C", "red1"))
+                .Operators.Add(new LearningModelOperator("Add")
+                                .SetInput("A", "red1")
+                                .SetInput("B", "60_to_120_R")
+                                .SetOutput("C", "red2"))
+                .Operators.Add(new LearningModelOperator("Add")
+                                .SetInput("A", "red2")
+                                .SetInput("B", "0_to_60_R")
+                                .SetOutput("C", "red"))
+
+                // SUM UP G
+                .Operators.Add(new LearningModelOperator("Add")
+                                .SetInput("A", "180_to_240_G")
+                                .SetInput("B", "120_to_180_G")
+                                .SetOutput("C", "green1"))
+                .Operators.Add(new LearningModelOperator("Add")
+                                .SetInput("A", "green1")
+                                .SetInput("B", "60_to_120_G")
+                                .SetOutput("C", "green2"))
+                .Operators.Add(new LearningModelOperator("Add")
+                                .SetInput("A", "green2")
+                                .SetInput("B", "0_to_60_G")
+                                .SetOutput("C", "green"))
+                // SUM UP B
+                .Operators.Add(new LearningModelOperator("Add")
+                                .SetInput("A", "120_to_180_B")
+                                .SetInput("B", "180_to_240_B")
+                                .SetOutput("C", "blue1"))
+                .Operators.Add(new LearningModelOperator("Add")
+                                .SetInput("A", "blue1")
+                                .SetInput("B", "240_to_300_B")
+                                .SetOutput("C", "blue2"))
+                .Operators.Add(new LearningModelOperator("Add")
+                                .SetInput("A", "blue2")
+                                .SetInput("B", "300_to_360_B")
+                                .SetOutput("C", "blue"))
+
+                // Create Output
+                .Operators.Add(new LearningModelOperator("SequenceConstruct")
+                                .SetInput("inputs", "red")
+                                .SetOutput("output_sequence", "sequence_1"))
+                .Operators.Add(new LearningModelOperator("SequenceInsert")
+                                .SetInput("input_sequence", "sequence_1")
+                                .SetInput("tensor", "green")
+                                .SetOutput("output_sequence", "sequence_2"))
+                .Operators.Add(new LearningModelOperator("SequenceInsert")
+                                .SetInput("input_sequence", "sequence_2")
+                                .SetInput("tensor", "blue")
+                                .SetOutput("output_sequence", "sequence_image"))
+                .Operators.Add(new LearningModelOperator("ConcatFromSequence")
+                                .SetInput("input_sequence", "sequence_image")
+                                .SetAttribute("axis", TensorInt64Bit.CreateFromIterable(new long[] { 1 }, new long[] { 1 }))
+                                .SetOutput("concat_result", "concat_output"))
+
+                .Operators.Add(new LearningModelOperator("Add")
+                                .SetInput("A", "concat_output")
+                                .SetConstant("B", TensorFloat.CreateFromIterable(new long[] { 1 }, new float[] { saturation_value_difference }))
+                                .SetOutput("C", "0_1_offset"))
+
+                .Operators.Add(new LearningModelOperator("Mul")
+                                .SetInput("A", "0_1_offset")
+                                .SetConstant("B", TensorFloat.CreateFromIterable(new long[] { 1 }, new float[] { 255 }))
+                                .SetOutput("C", "Output"));
+            ;
+            builder.Save("colorize_me.onnx");
+
+            var output_image = new VideoFrame(Windows.Graphics.Imaging.BitmapPixelFormat.Bgra8, (int)width, (int)height);
+
+            stopWatch.Start();
             var model = builder.CreateModel();
-            var session = new LearningModelSession(model);
+            var device = new LearningModelDevice(LearningModelDeviceKind.Default);
+            var session = new LearningModelSession(model, device);
             var binding = new LearningModelBinding(session);
+
+            binding.Bind("Input", image);
+            binding.Bind("Output", output_image);
+
+            session.Evaluate(binding, "");
+            stopWatch.Stop();
+
+            TimeSpan ts = stopWatch.Elapsed;
+            // Format and display the TimeSpan value.
+            string elapsedTime = String.Format("{0:00}:{1:00}:{2:00}.{3:00}",
+                ts.Hours, ts.Minutes, ts.Seconds,
+                ts.Milliseconds / 10);
+            Console.WriteLine("RunTime " + elapsedTime);
+            return output_image.SoftwareBitmap;
         }
 
-
-        static unsafe SoftwareBitmap ColorizeMelspectrogram(SoftwareBitmap bwSpectrogram)
+        private static unsafe SoftwareBitmap ColorizeWithBitmapEditing(SoftwareBitmap bwSpectrogram)
         {
             using (BitmapBuffer buffer = bwSpectrogram.LockBuffer(BitmapBufferAccessMode.Write))
             {

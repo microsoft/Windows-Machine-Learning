@@ -24,7 +24,8 @@
                    HorizontalAlignment="Center" VerticalAlignment="Center"  />
 
         <StackPanel HorizontalAlignment="Center" Background="White" Orientation="Horizontal">
-            <Image Name="spectrogram" Stretch="Fill" Height="500" Width="500" />
+            <Image Name="spectrogramComputational" Stretch="Fill" Height="500" Width="300" />
+            <Image Name="spectrogramBitmapEdited" Stretch="Fill" Height="500" Width="300" />
         </StackPanel>
     </StackPanel>
 </Window>

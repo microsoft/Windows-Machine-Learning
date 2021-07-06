@@ -32,7 +32,8 @@ namespace AudioPreprocessing
         {
             InitializeComponent();
             ViewModel = new PreprocessViewModel();
-            spectrogram.Source = new SoftwareBitmapSource();
+            spectrogramComputational.Source = new SoftwareBitmapSource();
+            spectrogramBitmapEdited.Source = new SoftwareBitmapSource();
         }
 
         public PreprocessViewModel ViewModel { get; set; }
@@ -40,9 +41,19 @@ namespace AudioPreprocessing
         {
             string wavPath = await GetFilePath();
             PreprocessModel melSpectrogram = new PreprocessModel();
-            var softwareBitmap = melSpectrogram.GenerateMelSpectrogram(wavPath, ColorMelSpectrogramCheckBox.IsChecked ?? false);
-            //PreprocessModel.Colorize(VideoFrame.CreateWithSoftwareBitmap(softwareBitmap), 0.5f, 0.3f);
-
+            bool colorize = ColorMelSpectrogramCheckBox.IsChecked ?? false;
+            // Use bitmap editing, pixel by pixel, to colorize image, if box is checked
+            SoftwareBitmap softwareBitmap = melSpectrogram.GenerateMelSpectrogram(wavPath, colorize);
+            // Use computational graph to colorize image, if box is checked
+            SoftwareBitmap computationalSoftwareBitmap;
+            if (colorize)
+            {
+                computationalSoftwareBitmap = PreprocessModel.ColorizeWithComputationalGraph(VideoFrame.CreateWithSoftwareBitmap(softwareBitmap), 0.7f, 0.5f);
+            }
+            else
+            {
+                computationalSoftwareBitmap = softwareBitmap;
+            }
             ViewModel.AudioPath = wavPath;
             ViewModel.MelSpectrogramImage = softwareBitmap;
 
@@ -56,7 +67,8 @@ namespace AudioPreprocessing
 
             WavFilePath.Text = ViewModel.AudioPath;
 
-            await ((SoftwareBitmapSource)spectrogram.Source).SetBitmapAsync(softwareBitmap);
+            await ((SoftwareBitmapSource)spectrogramComputational.Source).SetBitmapAsync(softwareBitmap);
+            await ((SoftwareBitmapSource)spectrogramBitmapEdited.Source).SetBitmapAsync(computationalSoftwareBitmap);
         }
 
         private async Task<string> GetFilePath()

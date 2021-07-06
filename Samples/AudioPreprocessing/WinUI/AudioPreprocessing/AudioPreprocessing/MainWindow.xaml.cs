@@ -5,8 +5,6 @@ using Microsoft.UI.Xaml.Media.Imaging;
 using System;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
-using Windows.Graphics.Imaging;
-using Windows.Media;
 using Windows.Storage;
 using Windows.Storage.Pickers;
 using System.Text.RegularExpressions;
@@ -41,15 +39,25 @@ namespace AudioPreprocessing
         private async void OnOpenClick(object sender, RoutedEventArgs e)
         {
             string wavPath = await GetFilePath();
+            var melSpecSettings = new ModelSetting(
+                ColorMelSpectrogramCheckBox.IsChecked ?? false,
+                (int)BatchSize.Value,
+                (int)WindowSize.Value,
+                (int)DFTSize.Value,
+                (int)HopSize.Value,
+                (int)NMelBins.Value,
+                (int)SampleRate.Value,
+                (int)Amplitude.Value
+                );
 
-            ViewModel.GenerateMelSpectrograms(wavPath, ColorMelSpectrogramCheckBox.IsChecked ?? false);
+            ViewModel.GenerateMelSpectrograms(wavPath, melSpecSettings);
             WavFilePath.Text = ViewModel.AudioPath;
 
             await ((SoftwareBitmapSource)spectrogram.Source).SetBitmapAsync(ViewModel.MelSpectrogramImage);
         }
 
         private async Task<string> GetFilePath()
-        { 
+        {
             FileOpenPicker openPicker = new FileOpenPicker();
             openPicker.ViewMode = PickerViewMode.Thumbnail;
             openPicker.FileTypeFilter.Add(".wav");

@@ -2,10 +2,11 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Model
+namespace AudioPreprocessing.Model
 {
     public class ModelSetting
     {
+        public bool Colored { get; set; }
         public int BatchSize { get; set; }
         public int WindowSize { get; set; }
         public int DFTSize { get; set; }
@@ -14,15 +15,25 @@ namespace Model
         public int SampleRate { get; set; }
         public int Amplitude { get; set; }
 
-        ModelSetting()
+        public ModelSetting(
+            bool colored = true,
+            int batchSize = 1,
+            int windowSize = 256,
+            int dftSize = 256,
+            int hopSize = 3,
+            int nMelBins = 1024,
+            int sampleRate = 8192,
+            int amplitude = 5000
+            )
         {
-            BatchSize = 1;
-            WindowSize = 256;
-            DFTSize = 256;
-            HopSize = 3;
-            NMelBins = 1024;
-            SampleRate = 8192;
-            Amplitude = 5000;
+            Colored = colored;
+            BatchSize = batchSize;
+            WindowSize = windowSize;
+            DFTSize = dftSize;
+            HopSize = hopSize;
+            NMelBins = nMelBins;
+            SampleRate = sampleRate;
+            Amplitude = amplitude;
         }
     }
 }

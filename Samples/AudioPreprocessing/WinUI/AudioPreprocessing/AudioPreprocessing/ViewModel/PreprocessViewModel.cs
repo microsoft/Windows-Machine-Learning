@@ -23,7 +23,7 @@ namespace AudioPreprocessing.ViewModel
 
         public PreprocessViewModel()
         {
-            preprocessModel = new PreprocessModel();
+            preprocessModel = new PreprocessModel(new ModelSetting());
             audioPath = preprocessModel.AudioPath;
             imagePath = preprocessModel.MelSpecImagePath;
         }
@@ -69,8 +69,10 @@ namespace AudioPreprocessing.ViewModel
             set { melSpectrogramImage = value; OnPropertyChanged(); }
         }
 
-        public void GenerateMelSpectrograms(string wavPath, bool colorize)
+        public void GenerateMelSpectrograms(string wavPath, ModelSetting settings)
         {
+            bool colorize = settings.Colored;
+            preprocessModel = new PreprocessModel(settings);
             MelSpectrogramImage = preprocessModel.GenerateMelSpectrogram(wavPath);
             if (colorize)
             {

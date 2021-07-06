@@ -1,6 +1,5 @@
 ﻿using Microsoft.AI.MachineLearning;
 using Microsoft.AI.MachineLearning.Experimental;
-using Model;
 using NAudio.Wave;
 using System;
 using System.Collections.Generic;
@@ -30,7 +29,12 @@ namespace AudioPreprocessing.Model
 
         public string MelSpecImagePath { get; set; }
 
-        public ModelSetting MelSpecSettings { get; set; }
+        private static ModelSetting melSpecSettings { get; set; } = new ModelSetting();
+
+        public PreprocessModel(ModelSetting settings)
+        {
+            melSpecSettings = settings;
+        }
 
         public SoftwareBitmap GenerateMelSpectrogram(string audioPath)
         {
@@ -54,17 +58,17 @@ namespace AudioPreprocessing.Model
             }
         }
 
-        static SoftwareBitmap GetMelspectrogramFromSignal(
-            IEnumerable<float> rawSignal,
-            int batchSize = 1,
-            int windowSize = 256,
-            int dftSize = 256,
-            int hopSize = 3,
-            int nMelBins = 1024,
-            int samplingRate = 8192,
-            int amplitude = 5000
-            )
+        static SoftwareBitmap GetMelspectrogramFromSignal(IEnumerable<float> rawSignal)
         {
+            int batchSize = melSpecSettings.BatchSize;
+            int windowSize = melSpecSettings.WindowSize;
+            int dftSize = melSpecSettings.DFTSize;
+            int hopSize = melSpecSettings.HopSize;
+            int nMelBins = melSpecSettings.NMelBins;
+            int samplingRate = melSpecSettings.SampleRate;
+            int amplitude = melSpecSettings.Amplitude;
+
+
             float[] signal = rawSignal.ToArray();
 
             //Scale the signal by a given amplitude 
@@ -119,15 +123,6 @@ namespace AudioPreprocessing.Model
                 .SetConstant("shape", TensorInt64Bit.CreateFromArray(new List<long>() { 4 }, melSpectrogramShape))
                 .SetOutput("reshaped", "Output.MelSpectrogram"))
               ;
-
-            ////colouring with LearningModelBuilder
-            //builder.Operators.Add(new Operator("Slice")
-            //    .SetInput("data", "bw_mel_spectrogram")
-            //    .SetConstant("starts", TensorInt64Bit.CreateFromArray(new List<long>() { 3 }, new long[] { 0, 0, 0 }))
-            //    .SetInput("ends", TensorInt64Bit.CreateFromArray(new List<long>() { 3 }, new long[] { 0, , 0 }))
-            //    .SetConstant("shape", TensorInt64Bit.CreateFromArray(new List<long>() { 4 }, melSpectrogramShape))
-            //    .SetOutput("reshaped", "hue"))
-            //;
 
             var model = builder.CreateModel();
 

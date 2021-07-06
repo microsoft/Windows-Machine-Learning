@@ -17,24 +17,24 @@
             <CheckBox x:Name = "ColorMelSpectrogramCheckBox"  Content = "Check to render Mel Spectrogram with color" HorizontalAlignment="Center"/>
            
             <VariableSizedWrapGrid Orientation="Horizontal" MaximumRowsOrColumns ="6" HorizontalAlignment="Center">
-                <NumberBox Name="BatchSize" Header="Batch Size" PlaceholderText="1" 
+                <NumberBox Name="BatchSize" Header="Batch Size" Value="1" PlaceholderText="1" 
                            VariableSizedWrapGrid.ColumnSpan="2"/>
-                <NumberBox Name="WindowSize" Header="Window Size" PlaceholderText="256"
+                <NumberBox Name="WindowSize" Header="Window Size" Value="256" PlaceholderText="256"
                            VariableSizedWrapGrid.ColumnSpan="2"/>
-                <NumberBox Name="DFTSize" Header="DFT Size" PlaceholderText="256" 
+                <NumberBox Name="DFTSize" Header="DFT Size" Value="256" PlaceholderText="256" 
                            VariableSizedWrapGrid.ColumnSpan="2"/>
-                <NumberBox Name="HopSize" Header="Hop Size" PlaceholderText="3" 
+                <NumberBox Name="HopSize" Header="Hop Size" Value="3" PlaceholderText="3" 
                            VariableSizedWrapGrid.ColumnSpan="2"/>
-                <NumberBox Name="NMelBins" Header="Number of Mel Bins" PlaceholderText="1024" 
+                <NumberBox Name="NMelBins" Header="Number of Mel Bins" Value="1024" PlaceholderText="1024" 
                            VariableSizedWrapGrid.ColumnSpan="3"/>
-                <NumberBox Name="SampleRate" Header="Sample Rate" PlaceholderText="8192" 
+                <NumberBox Name="SampleRate" Header="Sample Rate" Value="8192" PlaceholderText="8192" 
                            VariableSizedWrapGrid.ColumnSpan="2"/>
-                <NumberBox Name="Amplitude" Header="Amplitude" PlaceholderText="5000" 
+                <NumberBox Name="Amplitude" Header="Amplitude" Value="5000" PlaceholderText="5000" 
                            VariableSizedWrapGrid.ColumnSpan="2"/>
             </VariableSizedWrapGrid>
 
-            <Button Name="SaveFilebutton" Command="{x:Bind ViewModel.SaveFileCommand}" Content="Save file" 
-                HorizontalAlignment="Center" VerticalAlignment="Center" />
+            <!--<Button Name="SaveFilebutton" Command="{x:Bind ViewModel.SaveFileCommand}" Content="Save file" 
+                HorizontalAlignment="Center" VerticalAlignment="Center" />-->
             <TextBlock Name="ImagePath" Text="{x:Bind ViewModel.ImagePath}" 
                    HorizontalAlignment="Center" VerticalAlignment="Center"  />
 

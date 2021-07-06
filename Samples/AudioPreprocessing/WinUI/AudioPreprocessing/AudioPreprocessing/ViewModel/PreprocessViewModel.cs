@@ -6,6 +6,7 @@ using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using Windows.Graphics.Imaging;
+using Windows.Media;
 using Windows.Storage;
 using Windows.Storage.Pickers;
 using Windows.Storage.Streams;
@@ -17,11 +18,12 @@ namespace AudioPreprocessing.ViewModel
     {
         private string audioPath;
         private string imagePath;
+        private PreprocessModel preprocessModel;
         private SoftwareBitmap melSpectrogramImage;
 
         public PreprocessViewModel()
         {
-            PreprocessModel preprocessModel = new PreprocessModel();
+            preprocessModel = new PreprocessModel();
             audioPath = preprocessModel.AudioPath;
             imagePath = preprocessModel.MelSpecImagePath;
         }
@@ -61,12 +63,33 @@ namespace AudioPreprocessing.ViewModel
             get { return imagePath; }
             set { imagePath = value; OnPropertyChanged(); }
         }
-
         public SoftwareBitmap MelSpectrogramImage
         {
             get { return melSpectrogramImage; }
             set { melSpectrogramImage = value; OnPropertyChanged(); }
         }
+
+        public void GenerateMelSpectrograms(string wavPath, bool colorize)
+        {
+            MelSpectrogramImage = preprocessModel.GenerateMelSpectrogram(wavPath);
+            if (colorize)
+            {
+                // Use computational graph to colorize image, if box is checked
+                //MelSpectrogramImage = PreprocessModel.ColorizeWithComputationalGraph(MelSpectrogramImage);
+                // Use bitmap editing, pixel by pixel, to colorize image, if box is checked. In place editing.
+                PreprocessModel.ColorizeWithBitmapEditing(MelSpectrogramImage);
+            }
+            AudioPath = wavPath;
+
+            //Image control only accepts BGRA8 encoding and Premultiplied/no alpha channel. This checks and converts
+            //the SoftwareBitmap we want to bind.
+            if (MelSpectrogramImage.BitmapPixelFormat != BitmapPixelFormat.Bgra8 ||
+                MelSpectrogramImage.BitmapAlphaMode != BitmapAlphaMode.Premultiplied)
+            {
+                MelSpectrogramImage = SoftwareBitmap.Convert(MelSpectrogramImage, BitmapPixelFormat.Bgra8, BitmapAlphaMode.Premultiplied);
+            }
+        }
+
 
         public ICommand SaveFileCommand => new AsyncRelayCommand(p => SaveFile());
 

@@ -32,43 +32,18 @@ namespace AudioPreprocessing
         {
             InitializeComponent();
             ViewModel = new PreprocessViewModel();
-            spectrogramComputational.Source = new SoftwareBitmapSource();
-            spectrogramBitmapEdited.Source = new SoftwareBitmapSource();
+            spectrogram.Source = new SoftwareBitmapSource();
         }
 
         public PreprocessViewModel ViewModel { get; set; }
         private async void OnOpenClick(object sender, RoutedEventArgs e)
         {
             string wavPath = await GetFilePath();
-            PreprocessModel melSpectrogram = new PreprocessModel();
-            bool colorize = ColorMelSpectrogramCheckBox.IsChecked ?? false;
-            // Use bitmap editing, pixel by pixel, to colorize image, if box is checked
-            SoftwareBitmap softwareBitmap = melSpectrogram.GenerateMelSpectrogram(wavPath, colorize);
-            // Use computational graph to colorize image, if box is checked
-            SoftwareBitmap computationalSoftwareBitmap;
-            if (colorize)
-            {
-                computationalSoftwareBitmap = PreprocessModel.ColorizeWithComputationalGraph(VideoFrame.CreateWithSoftwareBitmap(softwareBitmap), 0.7f, 0.5f);
-            }
-            else
-            {
-                computationalSoftwareBitmap = softwareBitmap;
-            }
-            ViewModel.AudioPath = wavPath;
-            ViewModel.MelSpectrogramImage = softwareBitmap;
 
-            //Image control only accepts BGRA8 encoding and Premultiplied/no alpha channel. This checks and converts
-            //the SoftwareBitmap we want to bind.
-            if (softwareBitmap.BitmapPixelFormat != BitmapPixelFormat.Bgra8 ||
-                softwareBitmap.BitmapAlphaMode != BitmapAlphaMode.Premultiplied)
-            {
-                softwareBitmap = SoftwareBitmap.Convert(softwareBitmap, BitmapPixelFormat.Bgra8, BitmapAlphaMode.Premultiplied);
-            }
-
+            ViewModel.GenerateMelSpectrograms(wavPath, ColorMelSpectrogramCheckBox.IsChecked ?? false);
             WavFilePath.Text = ViewModel.AudioPath;
 
-            await ((SoftwareBitmapSource)spectrogramComputational.Source).SetBitmapAsync(softwareBitmap);
-            await ((SoftwareBitmapSource)spectrogramBitmapEdited.Source).SetBitmapAsync(computationalSoftwareBitmap);
+            await ((SoftwareBitmapSource)spectrogram.Source).SetBitmapAsync(ViewModel.MelSpectrogramImage);
         }
 
         private async Task<string> GetFilePath()

@@ -29,11 +29,11 @@ namespace AudioPreprocessing.Model
 
         public string MelSpecImagePath { get; set; }
 
-        public SoftwareBitmap GenerateMelSpectrogram(string audioPath, bool color = false)
+        public SoftwareBitmap GenerateMelSpectrogram(string audioPath)
         {
             var signal = GetSignalFromFile(audioPath);
             var softwareBitmap = GetMelspectrogramFromSignal(signal);
-            if (color) softwareBitmap = ColorizeWithBitmapEditing(softwareBitmap);
+            //if (color) softwareBitmap = ColorizeWithBitmapEditing(softwareBitmap);
             return softwareBitmap;
         }
 
@@ -152,11 +152,11 @@ namespace AudioPreprocessing.Model
             return outputImage.SoftwareBitmap;
         }
 
-        public static SoftwareBitmap ColorizeWithComputationalGraph(Windows.Media.VideoFrame image, float saturation, float value)
+        public static SoftwareBitmap ColorizeWithComputationalGraph(SoftwareBitmap image, float saturation = 0.7f, float value = 0.5f)
         {
-            long width = image.SoftwareBitmap.PixelWidth;
-            long height = image.SoftwareBitmap.PixelHeight;
-            long channels = image.SoftwareBitmap.BitmapPixelFormat == Windows.Graphics.Imaging.BitmapPixelFormat.Bgra8 ? 3 : 1;
+            long width = image.PixelWidth;
+            long height = image.PixelHeight;
+            long channels = image.BitmapPixelFormat == Windows.Graphics.Imaging.BitmapPixelFormat.Bgra8 ? 3 : 1;
 
             long batch_size = 1;
 
@@ -459,7 +459,7 @@ namespace AudioPreprocessing.Model
             var session = new LearningModelSession(model, device);
             var binding = new LearningModelBinding(session);
 
-            binding.Bind("Input", image);
+            binding.Bind("Input", VideoFrame.CreateWithSoftwareBitmap(image));
             binding.Bind("Output", output_image);
 
             session.Evaluate(binding, "");
@@ -474,7 +474,7 @@ namespace AudioPreprocessing.Model
             return output_image.SoftwareBitmap;
         }
 
-        private static unsafe SoftwareBitmap ColorizeWithBitmapEditing(SoftwareBitmap bwSpectrogram)
+        public static unsafe void ColorizeWithBitmapEditing(SoftwareBitmap bwSpectrogram, float value = 0.5f, float saturation = 0.7f)
         {
             using (BitmapBuffer buffer = bwSpectrogram.LockBuffer(BitmapBufferAccessMode.Write))
             {
@@ -483,8 +483,6 @@ namespace AudioPreprocessing.Model
                 memoryBuffer.GetBuffer(out byte* dataInBytes, out uint capacity);
 
                 //HSV conversion constants
-                float value = 0.5f;
-                float saturation = 0.7f;
                 byte c = (byte)(value * saturation * 255);
                 byte m = (byte)((value - saturation) * 255);
 
@@ -497,7 +495,7 @@ namespace AudioPreprocessing.Model
                         int pixel = bufferLayout.StartIndex + bufferLayout.Stride * i + 4 * j;
                         int hue = dataInBytes[pixel];
                         byte x = (byte)(c * (1 - Math.Abs((hue / 60) / 2 - 1)));
-                        
+
                         int b = pixel + 0;
                         int g = pixel + 1;
                         int r = pixel + 2;
@@ -513,7 +511,7 @@ namespace AudioPreprocessing.Model
                                 dataInBytes[r] = x;
                                 dataInBytes[g] = c;
                                 dataInBytes[b] = 0;
-                                break;                                
+                                break;
                             case int n when (120 <= n && n < 180):
                                 dataInBytes[r] = 0;
                                 dataInBytes[g] = c;
@@ -523,7 +521,7 @@ namespace AudioPreprocessing.Model
                                 dataInBytes[r] = 0;
                                 dataInBytes[g] = x;
                                 dataInBytes[b] = c;
-                                break;                                
+                                break;
                             case int n when (240 <= n && n < 300):
                                 dataInBytes[r] = x;
                                 dataInBytes[g] = 0;
@@ -541,7 +539,6 @@ namespace AudioPreprocessing.Model
                     }
                 }
             }
-            return bwSpectrogram;
         }
     }
 }

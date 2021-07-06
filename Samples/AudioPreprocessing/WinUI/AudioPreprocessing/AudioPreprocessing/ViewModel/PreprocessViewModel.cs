@@ -6,7 +6,6 @@ using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using Windows.Graphics.Imaging;
-using Windows.Media;
 using Windows.Storage;
 using Windows.Storage.Pickers;
 using Windows.Storage.Streams;

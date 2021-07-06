@@ -10,7 +10,7 @@
     xmlns:model="using:AudioPreprocessing.Model"
     xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
     mc:Ignorable="d">
-    <StackPanel Background="White" Orientation="Horizontal">
+    <StackPanel Background="White" Orientation="Horizontal" HorizontalAlignment="Center">
         <StackPanel Background="White" Orientation="Vertical" Margin="10,10,10,10">
             <Button Name="ShowFilePickerButton" Content="Open file" HorizontalAlignment="Center" Click = "OnOpenClick"
         VerticalAlignment="Center" />
@@ -33,11 +33,8 @@
                            VariableSizedWrapGrid.ColumnSpan="2"/>
             </VariableSizedWrapGrid>
 
-            <!--<Button Name="SaveFilebutton" Command="{x:Bind ViewModel.SaveFileCommand}" Content="Save file" 
-                HorizontalAlignment="Center" VerticalAlignment="Center" />-->
             <TextBlock Name="ImagePath" Text="{x:Bind ViewModel.ImagePath}" 
                    HorizontalAlignment="Center" VerticalAlignment="Center"  />
-
 
         </StackPanel>
         <StackPanel HorizontalAlignment="Center" Background="White" Orientation="Vertical">

@@ -1,0 +1,169 @@
+﻿<Page
+    x:Class="WinMLSamplesGallery.Samples.ImageClassifier"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:WinMLSamplesGallery"
+    xmlns:local_controls="using:WinMLSamplesGallery.Controls"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+    <Page.Resources>
+        <DataTemplate x:Key="ImageTemplate" x:DataType="local_controls:Thumbnail">
+            <Image Stretch="UniformToFill" Source="{x:Bind ImageUri}" Width="200" Height="150" />
+        </DataTemplate>
+
+        <DataTemplate x:Name="InferenceResultsTemplate" x:DataType="local_controls:Prediction">
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Width="420"
+                    FontSize="14"
+                    Foreground="Black"
+                    Padding="0,1,1,1"
+                    Typography.Capitals="AllSmallCaps"
+                    Typography.StylisticSet4="True"
+                    TextTrimming="CharacterEllipsis">
+                    <Run Text="[" /> 
+                    <Run Text="{Binding Index}" /> 
+                    <Run Text="] " /> 
+                    <Run Text="{Binding Name}" /> 
+                </TextBlock>
+                <TextBlock Width="120"
+                    FontSize="14"
+                    Foreground="Black"
+                    Padding="0,1,1,1"
+                    Typography.Capitals="AllSmallCaps"
+                    Typography.StylisticSet4="True"> 
+                    <Run Text="p =" /> 
+                    <Run Text="{Binding Probability}" /> 
+                </TextBlock>
+            </StackPanel>
+        </DataTemplate>
+
+        <DataTemplate x:Name="AllModelsTemplate" x:DataType="local:Link">
+            <Grid Background="#e6e6e6" BorderBrush="#12bef6" BorderThickness="1">
+                <TextBlock FontSize="14" Text="{x:Bind Title}"
+                            Typography.Capitals="AllSmallCaps"
+                            Typography.StylisticSet4="True"
+                            VerticalAlignment="Top"
+                            Padding="10,2,10,2"
+                            MinWidth="136"
+                            />
+            </Grid>
+        </DataTemplate>
+    </Page.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <local_controls:SampleHeader
+            Grid.Row="0"
+            Title="Image Classifier"
+            Description="This collection of models take images as input, then classifies the major objects in the images into 1000 object categories such as keyboard, mouse, pencil, and many animals." />
+        <ScrollViewer 
+            Grid.Row="1"
+            ZoomMode="Disabled"
+            IsVerticalScrollChainingEnabled="True"
+            HorizontalScrollMode="Enabled" HorizontalScrollBarVisibility="Disabled"
+            VerticalScrollMode="Enabled" VerticalScrollBarVisibility="Visible">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="360" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+
+                <StackPanel Grid.Row="0" Orientation="Horizontal" Padding="5,10,0,0">
+                    <StackPanel Orientation="Vertical">
+                        <Button FontFamily="Segoe MDL2 Assets" Content="&#xE1A5;" Width="200" Height="50" HorizontalAlignment="Left" Click="OpenButton_Clicked" />
+                        <GridView
+                            x:Name="BasicGridView"
+                            ItemTemplate="{StaticResource ImageTemplate}"
+                            IsItemClickEnabled="True"
+                            SelectionChanged="SampleInputsGridView_SelectionChanged"
+                            SelectionMode="Single"
+                            Padding="0,6,0,0"
+                            HorizontalAlignment="Center">
+                            <GridView.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <StackPanel Orientation="Vertical" />
+                                </ItemsPanelTemplate>
+                            </GridView.ItemsPanel>
+                            <GridView.Items>
+                                <local_controls:Thumbnail ImageUri="ms-appx:///InputData/hummingbird.jpg" />
+                                <local_controls:Thumbnail ImageUri="ms-appx:///InputData/kitten.png" />
+                            </GridView.Items>
+                        </GridView>
+                    </StackPanel>
+
+                    <Grid Background="LightGray" HorizontalAlignment="Left" Height="360" Width="360" VerticalAlignment="Top">
+                        <TextBlock TextWrapping="WrapWholeWords" Text="Choose an Image or Open a file..." HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        <Image x:Name="InputImage" Stretch="UniformToFill" Height="360" HorizontalAlignment="Center"/>
+                    </Grid>
+                </StackPanel>
+
+                <GridView Grid.Row="1" x:Name="AllModelsGrid" ItemTemplate="{StaticResource AllModelsTemplate}" SelectionMode="Extended"
+                          SelectedIndex="0"
+                          Padding="5,10,0,0"
+                          Width="600"
+                          HorizontalAlignment="Left"
+                          SelectionChanged="AllModelsGrid_SelectionChanged">
+                    <GridView.ItemContainerStyle>
+                        <Style TargetType="GridViewItem">
+                            <Setter Property="MinWidth" Value="0"/>
+                            <Setter Property="MinHeight" Value="0"/>
+                        </Style>
+                    </GridView.ItemContainerStyle>
+
+                    <GridView.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <ItemsWrapGrid x:Name="MaxItemsWrapGrid" Orientation="Horizontal"/>
+                        </ItemsPanelTemplate>
+                    </GridView.ItemsPanel>
+
+                    <GridView.Items>
+                        <local:Link Icon="&#xE155;" Tag="SqueezeNet" Title="SqueezeNet" />
+                        <local:Link Icon="&#xE155;" Tag="MobileNet" Title="MobileNet" />
+                        <!--<local:Link Icon="&#xE155;" Tag="ResNet" Title="ResNet" />-->
+                        <!--<local:Link Icon="&#xE155;" Tag="VGG" Title="VGG" />-->
+                        <!--<local:Link Icon="&#xE155;" Tag="AlexNet" Title="AlexNet" />-->
+                        <local:Link Icon="&#xE155;" Tag="GoogleNet" Title="GoogleNet" />
+                        <!--<local:Link Icon="&#xE155;" Tag="CaffeNet" Title="CaffeNet" />-->
+                        <!--<local:Link Icon="&#xE155;" Tag="RCNN_ILSVRC13" Title="RCNN_ILSVRC13" />-->
+                        <local:Link Icon="&#xE155;" Tag="DenseNet121" Title="DenseNet-121" />
+                        <local:Link Icon="&#xE155;" Tag="Inception_V1" Title="Inception_V1" />
+                        <local:Link Icon="&#xE155;" Tag="Inception_V2" Title="Inception_V2" />
+                        <local:Link Icon="&#xE155;" Tag="ShuffleNet_V1" Title="ShuffleNet_V1" />
+                        <local:Link Icon="&#xE155;" Tag="ShuffleNet_V2" Title="ShuffleNet_V2" />
+                        <!--<local:Link Icon="&#xE155;" Tag="ZFNet512" Title="ZFNet-512" />-->
+                        <!--<local:Link Icon="&#xE155;" Tag="EfficientNetLite4" Title="EfficientNet-Lite4" />-->
+                    </GridView.Items>
+                </GridView>
+                
+                <ListView Grid.Row="2"
+                          x:Name="InferenceResults"
+                          HorizontalAlignment="Stretch"
+                          Padding="5,3,0,0"
+                          ItemTemplate="{StaticResource InferenceResultsTemplate}"
+                          IsItemClickEnabled="False"
+                          SingleSelectionFollowsFocus="False">
+                    <ListView.ItemContainerStyle>
+                        <Style TargetType="ListViewItem">
+                            <Setter Property="Margin" Value="1,1,1,1"/>
+                            <Setter Property="MinHeight" Value="0"/>
+                        </Style>
+                    </ListView.ItemContainerStyle>
+
+                    <ListView.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <ItemsWrapGrid x:Name="MaxItemsWrapGrid" Orientation="Vertical" HorizontalAlignment="Stretch"/>
+                        </ItemsPanelTemplate>
+                    </ListView.ItemsPanel>
+                </ListView>
+            </Grid>
+        </ScrollViewer>
+    </Grid>
+</Page>

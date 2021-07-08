@@ -17,12 +17,12 @@ namespace AudioPreprocessing.ViewModel
     {
         private string audioPath;
         private string imagePath;
-        private PreprocessModel preprocessModel;
+        private MelSpectrogramModel preprocessModel;
         private SoftwareBitmap melSpectrogramImage;
 
         public PreprocessViewModel()
         {
-            preprocessModel = new PreprocessModel(new ModelSetting());
+            preprocessModel = new MelSpectrogramModel(new ModelSetting());
             audioPath = preprocessModel.AudioPath;
             imagePath = preprocessModel.MelSpecImagePath;
         }
@@ -71,14 +71,14 @@ namespace AudioPreprocessing.ViewModel
         public void GenerateMelSpectrograms(string wavPath, ModelSetting settings)
         {
             bool colorize = settings.Colored;
-            preprocessModel = new PreprocessModel(settings);
+            preprocessModel = new MelSpectrogramModel(settings);
             MelSpectrogramImage = preprocessModel.GenerateMelSpectrogram(wavPath);
             if (colorize)
             {
                 // Use computational graph to colorize image
                 //MelSpectrogramImage = PreprocessModel.ColorizeWithComputationalGraph(MelSpectrogramImage);
                 // Use bitmap editing, pixel by pixel, to colorize image
-                PreprocessModel.ColorizeWithBitmapEditing(MelSpectrogramImage);
+                MelSpectrogramModel.ColorizeWithBitmapEditing(MelSpectrogramImage);
             }
             AudioPath = wavPath;
 

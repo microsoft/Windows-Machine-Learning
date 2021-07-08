@@ -21,7 +21,7 @@ namespace AudioPreprocessing.Model
         // Used to edit a SoftwareBitmap for color
         void GetBuffer(out byte* buffer, out uint capacity);
     }
-    public class PreprocessModel
+    public class MelSpectrogramModel
     {
         const string MicrosoftExperimentalDomain = "com.microsoft.experimental";
 
@@ -29,21 +29,24 @@ namespace AudioPreprocessing.Model
 
         public string MelSpecImagePath { get; set; }
 
-        private static ModelSetting melSpecSettings { get; set; } = new ModelSetting();
+        private ModelSetting melSpecSettings { get; set; } = new ModelSetting();
 
-        public PreprocessModel(ModelSetting settings)
+        private IEnumerable<float> signal { get; set; }
+
+        public MelSpectrogramModel(ModelSetting settings)
         {
             melSpecSettings = settings;
         }
 
         public SoftwareBitmap GenerateMelSpectrogram(string audioPath)
         {
-            var signal = GetSignalFromFile(audioPath);
-            var softwareBitmap = GetMelspectrogramFromSignal(signal);
+            GetSignalFromFile(audioPath);
+            ResampleSignal();
+            var softwareBitmap = GetMelspectrogramFromSignal();
             return softwareBitmap;
         }
 
-        private IEnumerable<float> GetSignalFromFile(string filename)
+        private void GetSignalFromFile(string filename)
         {
             if (!filename.EndsWith(".wav"))
             {
@@ -54,11 +57,63 @@ namespace AudioPreprocessing.Model
                 var nSamples = reader.Length / sizeof(float);
                 var signal = Array.CreateInstance(typeof(float), nSamples);
                 var read = reader.Read(signal as float[], 0, signal.Length);
-                return (IEnumerable<float>)signal;
+                melSpecSettings.SourceSampleRate = reader.WaveFormat.SampleRate;
+                this.signal = (IEnumerable<float>)signal;
             }
         }
 
-        static SoftwareBitmap GetMelspectrogramFromSignal(IEnumerable<float> rawSignal)
+        public void ResampleSignal()
+        {
+            //rawsamplerate
+            float[] signal = this.signal.ToArray();
+
+            int oldSampleRate = melSpecSettings.SourceSampleRate;
+            int newSampleRate = melSpecSettings.SampleRate;
+            int batchSize = melSpecSettings.BatchSize;
+            int downsizeFactor = oldSampleRate / newSampleRate;
+            int oldSignalSize = signal.Length;
+            int newSignalSize = oldSignalSize / downsizeFactor;
+
+            long[] filterSize = new long[] { 1, downsizeFactor };
+            float[] filter = new float[downsizeFactor];
+            for (int i = 0; i < downsizeFactor; i++) filter[i] = 1 / downsizeFactor;
+
+            long[] inputShape = { batchSize, oldSignalSize };
+            long[] outputShape = { batchSize, newSignalSize };
+
+            var builder = LearningModelBuilder.Create(13)
+              .Inputs.Add(LearningModelBuilder.CreateTensorFeatureDescriptor("Input.RawSignal", TensorKind.Float, inputShape))
+              .Outputs.Add(LearningModelBuilder.CreateTensorFeatureDescriptor("Output.Resampled", TensorKind.Float, outputShape))
+
+              .Operators.Add(new Operator("Conv")
+                .SetAttribute("strides", TensorInt64Bit.CreateFromArray(new List<long>() { 2 }, new long[] { 1, downsizeFactor }))
+                .SetInput("X", "Input.RawSignal")
+                .SetConstant("T", TensorFloat.CreateFromArray(new List<long>() { batchSize, 1, 1, downsizeFactor }, filter))
+                .SetOutput("Y", "Output.Resampled"))
+              ;
+            var model = builder.CreateModel();
+
+            LearningModelSession session = new LearningModelSession(model);
+            LearningModelBinding binding = new LearningModelBinding(session);
+
+            // Bind input
+            binding.Bind("Input.TimeSignal", TensorFloat.CreateFromArray(inputShape, signal));
+
+            // Evaluate
+            var sw = Stopwatch.StartNew();
+            var result = session.Evaluate(binding, "");
+            sw.Stop();
+            Console.WriteLine("Evaluate Took: %f\n", sw.ElapsedMilliseconds);
+
+            var obj = new Object();
+            //var resampledSignal = TensorFloat.CreateFromArray(new List<long>() { batchSize, 1, 1, downsizeFactor }, new float[] { })
+            result.Outputs.TryGetValue("Output.Resampled", out obj);
+            var resampledSignal = TensorFloat.CreateFromArray(new List<long>() { batchSize, 1, 1, downsizeFactor }, (float[])obj);
+
+            this.signal = resampledSignal.GetAsVectorView();
+        }
+   
+        public SoftwareBitmap GetMelspectrogramFromSignal()
         {
             int batchSize = melSpecSettings.BatchSize;
             int windowSize = melSpecSettings.WindowSize;
@@ -68,8 +123,7 @@ namespace AudioPreprocessing.Model
             int samplingRate = melSpecSettings.SampleRate;
             int amplitude = melSpecSettings.Amplitude;
 
-
-            float[] signal = rawSignal.ToArray();
+            float[] signal = this.signal.ToArray();
 
             //Scale the signal by a given amplitude 
             for (int i = 0; i < signal.Length; i++) signal[i] = signal[i] * amplitude;

@@ -12,6 +12,7 @@ namespace AudioPreprocessing.Model
         public int DFTSize { get; set; }
         public int HopSize { get; set; }
         public int NMelBins { get; set; }
+        public int SourceSampleRate { get; set; }
         public int SampleRate { get; set; }
         public int Amplitude { get; set; }
 
@@ -32,6 +33,7 @@ namespace AudioPreprocessing.Model
             DFTSize = dftSize;
             HopSize = hopSize;
             NMelBins = nMelBins;
+            SourceSampleRate = sampleRate;
             SampleRate = sampleRate;
             Amplitude = amplitude;
         }

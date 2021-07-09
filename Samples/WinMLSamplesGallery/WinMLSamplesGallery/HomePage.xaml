@@ -77,8 +77,8 @@
                 </GridView.ItemsPanel>
 
                 <GridView.Items>
-                    <local:Link Title="All Samples" Icon="&#xE155;" Tag="AllSamples">
-                        <local:Link.Description>A samples gallery that demonstrates inference using Windows Machine Learning. Each sample demos the behavior of a model used in a compelling scenario with various calling patterns.</local:Link.Description>
+                    <local:Link Title="Image Classifier" Icon="&#xE155;" Tag="ImageClassifier">
+                        <local:Link.Description>Pick an image and classify the scene into 1000 categories such as keyboard, mouse, pencil, and many animals.</local:Link.Description>
                     </local:Link>
                 </GridView.Items>
                 </GridView>

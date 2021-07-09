@@ -55,43 +55,43 @@ namespace WinMLSamplesGallery.Samples
         private void Initialize()
         {
             modelDictionary_ = new Dictionary<Model, string>{
-                { Model.SqueezeNet,       "ms-appx:///Models/squeezenet1.1-7.onnx" },
-                { Model.MobileNet,        "ms-appx:///Models/mobilenetv2-7.onnx" },
-                { Model.ResNet,           null},
-                { Model.VGG,              null},
-                { Model.AlexNet,          "ms-appx:///Models/bvlcalexnet-8.onnx"}, // large
-                { Model.GoogleNet,        "ms-appx:///Models/googlenet-9.onnx"},
-                { Model.CaffeNet,         null}, // large
-                { Model.RCNN_ILSVRC13,    "ms-appx:///Models/rcnn-ilsvrc13-9.onnx"},
-                { Model.DenseNet121,      "ms-appx:///Models/densenet-9.onnx"},
-                { Model.Inception_V1,     "ms-appx:///Models/inception-v1-9.onnx"},
-                { Model.Inception_V2,     "ms-appx:///Models/inception-v2-9.onnx"},
-                { Model.ShuffleNet_V1,    "ms-appx:///Models/shufflenet-9.onnx"},
-                { Model.ShuffleNet_V2,    "ms-appx:///Models/shufflenet-v2-10.onnx"},
-                { Model.ZFNet512,         null}, // large
-                { Model.EfficientNetLite4,"ms-appx:///Models/efficientnet-lite4-11.onnx"},
+                { Model.SqueezeNet,        "ms-appx:///Models/squeezenet1.1-7.onnx" },
+                { Model.MobileNet,         "ms-appx:///Models/mobilenetv2-7.onnx" },
+                { Model.ResNet,            null}, // too big, to build from souce binplace the file into the package
+                { Model.VGG,               null}, // too big, to build from souce binplace the file into the package
+                { Model.AlexNet,           null}, // too big, to build from souce binplace the file into the package
+                { Model.GoogleNet,         "ms-appx:///Models/googlenet-9.onnx"},
+                { Model.CaffeNet,          null}, // too big, to build from souce binplace the file into the package
+                { Model.RCNN_ILSVRC13,     null}, // too big, to build from souce binplace the file into the package
+                { Model.DenseNet121,       "ms-appx:///Models/densenet-9.onnx"},
+                { Model.Inception_V1,      "ms-appx:///Models/inception-v1-9.onnx"},
+                { Model.Inception_V2,      "ms-appx:///Models/inception-v2-9.onnx"},
+                { Model.ShuffleNet_V1,     "ms-appx:///Models/shufflenet-9.onnx"},
+                { Model.ShuffleNet_V2,     "ms-appx:///Models/shufflenet-v2-10.onnx"},
+                { Model.ZFNet512,          null}, // too big, to build from souce binplace the file into the package
+                { Model.EfficientNetLite4, "ms-appx:///Models/efficientnet-lite4-11.onnx"},
             };
 
             postProcessorDictionary_ = new Dictionary<Model, Func<LearningModel>>{
-                { Model.SqueezeNet,        () => TensorizationModels.SoftMaxThenTopK(TopK, BatchSize, NumLabels) },
-                { Model.MobileNet,         () => TensorizationModels.SoftMaxThenTopK(TopK, BatchSize, NumLabels) },
-                { Model.ResNet,            () => TensorizationModels.SoftMaxThenTopK(TopK, BatchSize, NumLabels) },
-                { Model.VGG,               () => TensorizationModels.SoftMaxThenTopK(TopK, BatchSize, NumLabels) },
-                { Model.AlexNet,           () => TensorizationModels.TopK(TopK, BatchSize, NumLabels) },
-                { Model.GoogleNet,         () => TensorizationModels.TopK(TopK, BatchSize, NumLabels) },
-                { Model.CaffeNet,          () => TensorizationModels.TopK(TopK, BatchSize, NumLabels) },
-                { Model.RCNN_ILSVRC13,     () => TensorizationModels.TopK(TopK, BatchSize, NumLabels) },
+                { Model.SqueezeNet,        () => TensorizationModels.SoftMaxThenTopK(TopK) },
+                { Model.MobileNet,         () => TensorizationModels.SoftMaxThenTopK(TopK) },
+                { Model.ResNet,            () => TensorizationModels.SoftMaxThenTopK(TopK) },
+                { Model.VGG,               () => TensorizationModels.SoftMaxThenTopK(TopK) },
+                { Model.AlexNet,           () => TensorizationModels.TopK(TopK) },
+                { Model.GoogleNet,         () => TensorizationModels.TopK(TopK) },
+                { Model.CaffeNet,          () => TensorizationModels.TopK(TopK) },
+                { Model.RCNN_ILSVRC13,     () => TensorizationModels.TopK(TopK) },
                 { Model.DenseNet121,       () => TensorizationModels.ReshapeThenSoftmaxThenTopK(
                                                                                     new long[] { BatchSize, NumLabels, 1, 1 },
                                                                                     TopK,
                                                                                     BatchSize,
                                                                                     NumLabels) },
-                { Model.Inception_V1,      () => TensorizationModels.TopK(TopK, BatchSize, NumLabels) },
-                { Model.Inception_V2,      () => TensorizationModels.TopK(TopK, BatchSize, NumLabels) },
-                { Model.ShuffleNet_V1,     () => TensorizationModels.TopK(TopK, BatchSize, NumLabels) },
-                { Model.ShuffleNet_V2,     () => TensorizationModels.SoftMaxThenTopK(TopK, BatchSize, NumLabels) },
-                { Model.ZFNet512,          () => TensorizationModels.TopK(TopK, BatchSize, NumLabels) },
-                { Model.EfficientNetLite4, () => TensorizationModels.SoftMaxThenTopK(TopK, BatchSize, NumLabels) },
+                { Model.Inception_V1,      () => TensorizationModels.TopK(TopK) },
+                { Model.Inception_V2,      () => TensorizationModels.TopK(TopK) },
+                { Model.ShuffleNet_V1,     () => TensorizationModels.TopK(TopK) },
+                { Model.ShuffleNet_V2,     () => TensorizationModels.SoftMaxThenTopK(TopK) },
+                { Model.ZFNet512,          () => TensorizationModels.TopK(TopK) },
+                { Model.EfficientNetLite4, () => TensorizationModels.SoftMaxThenTopK(TopK) },
             };
 
             preProcessorDictionary_ = new Dictionary<Model, Func<LearningModel>>{
@@ -109,7 +109,7 @@ namespace WinMLSamplesGallery.Samples
                                                         new float[] { 0.485f, 0.456f, 0.406f },
                                                         new float[] { 0.229f, 0.224f, 0.225f}) },
                 { Model.AlexNet,           null }, // No preprocessing required
-                { Model.GoogleNet,         null }, // ????
+                { Model.GoogleNet,         null },
                 { Model.CaffeNet,          null }, // No preprocessing required
                 { Model.RCNN_ILSVRC13,     null }, // No preprocessing required
                 { Model.DenseNet121,       () => TensorizationModels.Normalize0_1ThenZScore(
@@ -117,7 +117,7 @@ namespace WinMLSamplesGallery.Samples
                                                         new float[] { 0.485f, 0.456f, 0.406f },
                                                         new float[] { 0.229f, 0.224f, 0.225f}) },
                 { Model.Inception_V1,      null }, // No preprocessing required
-                { Model.Inception_V2,      null }, // ???? Same as GOOGLENET
+                { Model.Inception_V2,      null }, // ????
                 { Model.ShuffleNet_V1,     () => TensorizationModels.Normalize0_1ThenZScore(
                                                         224, 224, 4,
                                                         new float[] { 0.485f, 0.456f, 0.406f },
@@ -127,7 +127,7 @@ namespace WinMLSamplesGallery.Samples
                                                         new float[] { 0.485f, 0.456f, 0.406f },
                                                         new float[] { 0.229f, 0.224f, 0.225f}) },
                 { Model.ZFNet512,          null }, // No preprocessing required
-                { Model.EfficientNetLite4, null }, //[-1 1 Normalization]
+                { Model.EfficientNetLite4, () => TensorizationModels.NormalizeMinusOneToOneThenTransposeNHWC() },
             };
 
             InitializeWindowsMachineLearning(currentModel_);
@@ -170,6 +170,9 @@ namespace WinMLSamplesGallery.Samples
             {
                 var preProcessedResults = Evaluate(preProcessingSession_, input);
                 preProcessedOutput = preProcessedResults.Outputs.First().Value;
+                var preProcessedOutputTF = preProcessedOutput as TensorFloat;
+                var shape = preProcessedOutputTF.Shape;
+                System.Diagnostics.Debug.WriteLine("shape = {0}, {1}, {2}, {3}", shape[0], shape[1], shape[2], shape[3]);
             }
 
             // Inference

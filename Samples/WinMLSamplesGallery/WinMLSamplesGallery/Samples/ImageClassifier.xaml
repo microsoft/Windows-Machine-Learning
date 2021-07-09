@@ -139,7 +139,7 @@
                         <local:Link Icon="&#xE155;" Tag="ShuffleNet_V1" Title="ShuffleNet_V1" />
                         <local:Link Icon="&#xE155;" Tag="ShuffleNet_V2" Title="ShuffleNet_V2" />
                         <!--<local:Link Icon="&#xE155;" Tag="ZFNet512" Title="ZFNet-512" />-->
-                        <!--<local:Link Icon="&#xE155;" Tag="EfficientNetLite4" Title="EfficientNet-Lite4" />-->
+                        <local:Link Icon="&#xE155;" Tag="EfficientNetLite4" Title="EfficientNet-Lite4" />
                     </GridView.Items>
                 </GridView>
                 

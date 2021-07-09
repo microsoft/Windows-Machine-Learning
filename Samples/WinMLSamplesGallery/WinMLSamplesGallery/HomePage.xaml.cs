@@ -64,11 +64,11 @@ namespace WinMLSamplesGallery
             var model = link.Tag;
             switch (model)
             {
-                case Model.AllSamples:
+                case Model.ImageClassifier:
                     // Only navigate if the selected page isn't currently loaded.
-                    if (!Type.Equals(Frame.CurrentSourcePageType, typeof(AllSamples)))
+                    if (!Type.Equals(Frame.CurrentSourcePageType, typeof(Samples.ImageClassifier)))
                     {
-                        Frame.Navigate(typeof(AllSamples), null, null);
+                        Frame.Navigate(typeof(Samples.ImageClassifier), null, null);
                     }
                     break;
             }

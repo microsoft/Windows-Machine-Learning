@@ -4,6 +4,3 @@
 [submodule "Samples/RustSqueezenet/winrt-rs"]
 	path = Samples/RustSqueezenet/winrt-rs
 	url = https://github.com/microsoft/winrt-rs.git
-[submodule "External/models"]
-	path = External/models
-	url = https://github.com/onnx/models.git

@@ -23,13 +23,6 @@
     <None Remove="InputData\ilsvrc2013.txt" />
     <None Remove="InputData\kitten.png" />
     <None Remove="InputData\sysnet.txt" />
-    <None Remove="LargeModels\bvlcalexnet-9.onnx" />
-    <None Remove="LargeModels\caffenet-9.onnx" />
-    <None Remove="LargeModels\rcnn-ilsvrc13-9.onnx" />
-    <None Remove="LargeModels\resnet50-caffe2-v1-9.onnx" />
-    <None Remove="LargeModels\vgg19-7.onnx" />
-    <None Remove="LargeModels\vgg19-bn-7.onnx" />
-    <None Remove="LargeModels\zfnet512-9.onnx" />
     <None Remove="Models\densenet-9.onnx" />
     <None Remove="Models\efficientnet-lite4-11.onnx" />
     <None Remove="Models\googlenet-9.onnx" />
@@ -50,14 +43,6 @@
     <Content Include="InputData\ilsvrc2013.txt" />
     <Content Include="InputData\kitten.png" />
     <Content Include="InputData\sysnet.txt" />
-    <Content Include="LargeModels\rcnn-ilsvrc13-9.onnx">
-      <Link>LargeModels\rcnn-ilsvrc13-9.onnx</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="LargeModels\resnet50-caffe2-v1-9.onnx">
-      <Link>LargeModels\resnet50-caffe2-v1-9.onnx</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
     <Content Include="Models\densenet-9.onnx">
       <Link>Models\densenet-9.onnx</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -94,27 +79,6 @@
       <Link>Models\squeezenet1.1-7.onnx</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-
-    <Content Include="LargeModels\bvlcalexnet-9.onnx">
-      <Link>LargeModels\bvlcalexnet-9.onnx</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="LargeModels\caffenet-9.onnx">
-      <Link>LargeModels\caffenet-9.onnx</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="LargeModels\vgg19-7.onnx">
-      <Link>LargeModels\vgg19-7.onnx</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="LargeModels\vgg19-bn-7.onnx">
-      <Link>LargeModels\vgg19-bn-7.onnx</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="LargeModels\zfnet512-9.onnx">
-      <Link>LargeModels\zfnet512-9.onnx</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
   </ItemGroup>
 
   <ItemGroup>
@@ -131,6 +95,37 @@
     <Resource Include="Original-LightBlue.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Resource>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="LargeModels\bvlcalexnet-9.onnx">
+      <Link>LargeModels\bvlcalexnet-9.onnx</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="LargeModels\caffenet-9.onnx">
+      <Link>LargeModels\caffenet-9.onnx</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="LargeModels\rcnn-ilsvrc13-9.onnx">
+      <Link>LargeModels\rcnn-ilsvrc13-9.onnx</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="LargeModels\resnet50-caffe2-v1-9.onnx">
+      <Link>LargeModels\resnet50-caffe2-v1-9.onnx</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="LargeModels\vgg19-7.onnx">
+      <Link>LargeModels\vgg19-7.onnx</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="LargeModels\vgg19-bn-7.onnx">
+      <Link>LargeModels\vgg19-bn-7.onnx</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="LargeModels\zfnet512-9.onnx">
+      <Link>LargeModels\zfnet512-9.onnx</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
   <ItemGroup>

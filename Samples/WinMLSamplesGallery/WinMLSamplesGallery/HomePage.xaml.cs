@@ -22,6 +22,7 @@ namespace WinMLSamplesGallery
     {
         AllSamples = 0,
         ImageClassifier,
+        NoModel,
         MobileNet,
         ResNet,
         SqueezeNet,

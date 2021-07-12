@@ -34,7 +34,8 @@ namespace WinMLSamplesGallery.Samples
         private LearningModelSession postProcessingSession_;
 
         private StorageFile currentImage_ = null;
-        Model currentModel_ = Model.SqueezeNet;
+        Model currentModel_ = Model.NoModel;
+        Model loadedModel_ = Model.NoModel;
         const long BatchSize = 1;
         const long TopK = 10;
         const long NumLabels = 1000;
@@ -152,35 +153,41 @@ namespace WinMLSamplesGallery.Samples
 
         private void InitializeWindowsMachineLearning(Model model)
         {
-            var modelPath = modelDictionary_[model];
-            inferenceSession_ = CreateLearningModelSession(modelPath);
+            if (currentModel_ != loadedModel_)
+            {
+                var modelPath = modelDictionary_[model];
+                inferenceSession_ = CreateLearningModelSession(modelPath);
 
-            var preProcessor = preProcessorDictionary_[model];
-            if (preProcessor != null)
-            {
-                preProcessingSession_ = CreateLearningModelSession(preProcessor());
-            }
-            else
-            {
-                preProcessingSession_ = null;
-            }
+                var preProcessor = preProcessorDictionary_[model];
+                if (preProcessor != null)
+                {
+                    preProcessingSession_ = CreateLearningModelSession(preProcessor());
+                }
+                else
+                {
+                    preProcessingSession_ = null;
+                }
 
-            var postProcessor = postProcessorDictionary_[model];
-            if (postProcessor != null)
-            {
-                postProcessingSession_ = CreateLearningModelSession(postProcessor());
-            }
-            else
-            {
-                postProcessingSession_ = null;
-            }
+                var postProcessor = postProcessorDictionary_[model];
+                if (postProcessor != null)
+                {
+                    postProcessingSession_ = CreateLearningModelSession(postProcessor());
+                }
+                else
+                {
+                    postProcessingSession_ = null;
+                }
 
-            if (currentModel_ == Model.RCNN_ILSVRC13)
-            {
-                labels_ = ilsvrc2013Labels_;
-            }
-            else {
-                labels_ = imagenetLabels_;
+                if (currentModel_ == Model.RCNN_ILSVRC13)
+                {
+                    labels_ = ilsvrc2013Labels_;
+                }
+                else
+                {
+                    labels_ = imagenetLabels_;
+                }
+
+                loadedModel_ = currentModel_;
             }
         }
 
@@ -249,7 +256,10 @@ namespace WinMLSamplesGallery.Samples
         private static LearningModelSession CreateLearningModelSession(LearningModel model)
         {
             var device = new LearningModelDevice(LearningModelDeviceKind.DirectXHighPerformance);
-            var session = new LearningModelSession(model, device);
+            var options = new LearningModelSessionOptions() {
+                CloseModelOnSessionCreation = true              // Close the model to prevent extra memory usage
+            };
+            var session = new LearningModelSession(model, device, options);
             return session;
         }
 

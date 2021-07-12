@@ -38,7 +38,6 @@
     <None Remove="Video.xaml" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="InputData\fish.png" />
     <Content Include="InputData\hummingbird.jpg" />
     <Content Include="InputData\ilsvrc2013.txt" />
     <Content Include="InputData\kitten.png" />

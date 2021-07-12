@@ -109,8 +109,7 @@
                           SelectedIndex="0"
                           Padding="5,10,0,0"
                           Width="600"
-                          HorizontalAlignment="Left"
-                          SelectionChanged="AllModelsGrid_SelectionChanged">
+                          HorizontalAlignment="Left">
                     <GridView.ItemContainerStyle>
                         <Style TargetType="GridViewItem">
                             <Setter Property="MinWidth" Value="0"/>

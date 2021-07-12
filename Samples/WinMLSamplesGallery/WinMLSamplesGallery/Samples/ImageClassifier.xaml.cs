@@ -48,87 +48,104 @@ namespace WinMLSamplesGallery.Samples
 
         public ImageClassifier()
         {
-            imagenetLabels_ = LoadLabels("ms-appx:///InputData/sysnet.txt");
-            ilsvrc2013Labels_ = LoadLabels("ms-appx:///InputData/ilsvrc2013.txt");
-
-            Initialize();
-
             this.InitializeComponent();
+
+            AllModelsGrid.SelectedItem = null;
+            AllModelsGrid.SelectionChanged += AllModelsGrid_SelectionChanged;
         }
 
-        private void Initialize()
+        private void EnsureInit()
         {
-            modelDictionary_ = new Dictionary<Model, string>{
-                { Model.SqueezeNet,        "ms-appx:///Models/squeezenet1.1-7.onnx" },
-                { Model.MobileNet,         "ms-appx:///Models/mobilenetv2-7.onnx" },
-                { Model.GoogleNet,         "ms-appx:///Models/googlenet-9.onnx"},
-                { Model.DenseNet121,       "ms-appx:///Models/densenet-9.onnx"},
-                { Model.Inception_V1,      "ms-appx:///Models/inception-v1-9.onnx"},
-                { Model.Inception_V2,      "ms-appx:///Models/inception-v2-9.onnx"},
-                { Model.ShuffleNet_V1,     "ms-appx:///Models/shufflenet-9.onnx"},
-                { Model.ShuffleNet_V2,     "ms-appx:///Models/shufflenet-v2-10.onnx"},
-                { Model.EfficientNetLite4, "ms-appx:///Models/efficientnet-lite4-11.onnx"},
-                // Large Models
-                { Model.AlexNet,           "ms-appx:///LargeModels/bvlcalexnet-9.onnx"},
-                { Model.CaffeNet,          "ms-appx:///LargeModels/caffenet-9.onnx"},
-                { Model.RCNN_ILSVRC13,     "ms-appx:///LargeModels/rcnn-ilsvrc13-9.onnx"},
-                { Model.ResNet,            "ms-appx:///LargeModels/resnet50-caffe2-v1-9.onnx"},
-                { Model.VGG,               "ms-appx:///LargeModels/vgg19-7.onnx"},
-                { Model.ZFNet512,          "ms-appx:///LargeModels/zfnet512-9.onnx"},
-            };
+            if (imagenetLabels_ == null)
+            {
+                imagenetLabels_ = LoadLabels("ms-appx:///InputData/sysnet.txt");
+            }
 
-            postProcessorDictionary_ = new Dictionary<Model, Func<LearningModel>>{
-                { Model.SqueezeNet,        () => TensorizationModels.SoftMaxThenTopK(TopK) },
-                { Model.MobileNet,         () => TensorizationModels.SoftMaxThenTopK(TopK) },
-                { Model.GoogleNet,         () => TensorizationModels.TopK(TopK) },
-                { Model.DenseNet121,       () => TensorizationModels.ReshapeThenSoftmaxThenTopK(new long[] { BatchSize, NumLabels, 1, 1 },
-                                                                                                TopK,
-                                                                                                BatchSize,
-                                                                                                NumLabels) },
-                { Model.Inception_V1,      () => TensorizationModels.TopK(TopK) },
-                { Model.Inception_V2,      () => TensorizationModels.TopK(TopK) },
-                { Model.ShuffleNet_V1,     () => TensorizationModels.TopK(TopK) },
-                { Model.ShuffleNet_V2,     () => TensorizationModels.SoftMaxThenTopK(TopK) },
-                { Model.EfficientNetLite4, () => TensorizationModels.SoftMaxThenTopK(TopK) },
-                // Large Models
-                { Model.AlexNet,           () => TensorizationModels.TopK(TopK) },
-                { Model.CaffeNet,          () => TensorizationModels.TopK(TopK) },
-                { Model.RCNN_ILSVRC13,     () => TensorizationModels.TopK(TopK) },
-                { Model.ResNet,            () => TensorizationModels.SoftMaxThenTopK(TopK) },
-                { Model.VGG,               () => TensorizationModels.SoftMaxThenTopK(TopK) },
-                { Model.ZFNet512,          () => TensorizationModels.TopK(TopK) },
-            };
+            if (ilsvrc2013Labels_ == null)
+            {
+                ilsvrc2013Labels_ = LoadLabels("ms-appx:///InputData/ilsvrc2013.txt");
+            }
 
-            preProcessorDictionary_ = new Dictionary<Model, Func<LearningModel>>{
-                { Model.SqueezeNet,        null }, // No preprocessing required
-                { Model.MobileNet,         () => TensorizationModels.Normalize0_1ThenZScore(224, 224, 4,
-                                                                                            new float[] { 0.485f, 0.456f, 0.406f },
-                                                                                            new float[] { 0.229f, 0.224f, 0.225f}) },
-                { Model.GoogleNet,         null },
-                { Model.DenseNet121,       () => TensorizationModels.Normalize0_1ThenZScore(224, 224, 4,
-                                                                                            new float[] { 0.485f, 0.456f, 0.406f },
-                                                                                            new float[] { 0.229f, 0.224f, 0.225f}) },
-                { Model.Inception_V1,      null }, // No preprocessing required
-                { Model.Inception_V2,      null }, // ????
-                { Model.ShuffleNet_V1,     () => TensorizationModels.Normalize0_1ThenZScore(224, 224, 4,
-                                                                                            new float[] { 0.485f, 0.456f, 0.406f },
-                                                                                            new float[] { 0.229f, 0.224f, 0.225f}) },
-                { Model.ShuffleNet_V2,     () => TensorizationModels.Normalize0_1ThenZScore(224, 224, 4,
-                                                                                            new float[] { 0.485f, 0.456f, 0.406f },
-                                                                                            new float[] { 0.229f, 0.224f, 0.225f}) },
-                { Model.EfficientNetLite4, () => TensorizationModels.NormalizeMinusOneToOneThenTransposeNHWC() },
-                // Large Models
-                { Model.AlexNet,           null }, // No preprocessing required
-                { Model.CaffeNet,          null }, // No preprocessing required
-                { Model.RCNN_ILSVRC13,     null }, // No preprocessing required
-                { Model.ResNet,            () => TensorizationModels.Normalize0_1ThenZScore(224, 224, 4,
-                                                                                            new float[] { 0.485f, 0.456f, 0.406f },
-                                                                                            new float[] { 0.229f, 0.224f, 0.225f}) },
-                { Model.VGG,               () => TensorizationModels.Normalize0_1ThenZScore(224, 224, 4,
-                                                                                            new float[] { 0.485f, 0.456f, 0.406f },
-                                                                                            new float[] { 0.229f, 0.224f, 0.225f}) },
-                { Model.ZFNet512,          null }, // No preprocessing required
-            };
+            if (modelDictionary_ == null)
+            {
+                modelDictionary_ = new Dictionary<Model, string>{
+                    { Model.SqueezeNet,        "ms-appx:///Models/squeezenet1.1-7.onnx" },
+                    { Model.MobileNet,         "ms-appx:///Models/mobilenetv2-7.onnx" },
+                    { Model.GoogleNet,         "ms-appx:///Models/googlenet-9.onnx"},
+                    { Model.DenseNet121,       "ms-appx:///Models/densenet-9.onnx"},
+                    { Model.Inception_V1,      "ms-appx:///Models/inception-v1-9.onnx"},
+                    { Model.Inception_V2,      "ms-appx:///Models/inception-v2-9.onnx"},
+                    { Model.ShuffleNet_V1,     "ms-appx:///Models/shufflenet-9.onnx"},
+                    { Model.ShuffleNet_V2,     "ms-appx:///Models/shufflenet-v2-10.onnx"},
+                    { Model.EfficientNetLite4, "ms-appx:///Models/efficientnet-lite4-11.onnx"},
+                    // Large Models
+                    { Model.AlexNet,           "ms-appx:///LargeModels/bvlcalexnet-9.onnx"},
+                    { Model.CaffeNet,          "ms-appx:///LargeModels/caffenet-9.onnx"},
+                    { Model.RCNN_ILSVRC13,     "ms-appx:///LargeModels/rcnn-ilsvrc13-9.onnx"},
+                    { Model.ResNet,            "ms-appx:///LargeModels/resnet50-caffe2-v1-9.onnx"},
+                    { Model.VGG,               "ms-appx:///LargeModels/vgg19-7.onnx"},
+                    { Model.ZFNet512,          "ms-appx:///LargeModels/zfnet512-9.onnx"},
+                };
+            }
+
+            if (postProcessorDictionary_ == null)
+            {
+                postProcessorDictionary_ = new Dictionary<Model, Func<LearningModel>>{
+                    { Model.SqueezeNet,        () => TensorizationModels.SoftMaxThenTopK(TopK) },
+                    { Model.MobileNet,         () => TensorizationModels.SoftMaxThenTopK(TopK) },
+                    { Model.GoogleNet,         () => TensorizationModels.TopK(TopK) },
+                    { Model.DenseNet121,       () => TensorizationModels.ReshapeThenSoftmaxThenTopK(new long[] { BatchSize, NumLabels, 1, 1 },
+                                                                                                    TopK,
+                                                                                                    BatchSize,
+                                                                                                    NumLabels) },
+                    { Model.Inception_V1,      () => TensorizationModels.TopK(TopK) },
+                    { Model.Inception_V2,      () => TensorizationModels.TopK(TopK) },
+                    { Model.ShuffleNet_V1,     () => TensorizationModels.TopK(TopK) },
+                    { Model.ShuffleNet_V2,     () => TensorizationModels.SoftMaxThenTopK(TopK) },
+                    { Model.EfficientNetLite4, () => TensorizationModels.SoftMaxThenTopK(TopK) },
+                    // Large Models
+                    { Model.AlexNet,           () => TensorizationModels.TopK(TopK) },
+                    { Model.CaffeNet,          () => TensorizationModels.TopK(TopK) },
+                    { Model.RCNN_ILSVRC13,     () => TensorizationModels.TopK(TopK) },
+                    { Model.ResNet,            () => TensorizationModels.SoftMaxThenTopK(TopK) },
+                    { Model.VGG,               () => TensorizationModels.SoftMaxThenTopK(TopK) },
+                    { Model.ZFNet512,          () => TensorizationModels.TopK(TopK) },
+                };
+            }
+
+            if (preProcessorDictionary_ == null)
+            {
+                preProcessorDictionary_ = new Dictionary<Model, Func<LearningModel>>{
+                    { Model.SqueezeNet,        null }, // No preprocessing required
+                    { Model.MobileNet,         () => TensorizationModels.Normalize0_1ThenZScore(224, 224, 4,
+                                                                                                new float[] { 0.485f, 0.456f, 0.406f },
+                                                                                                new float[] { 0.229f, 0.224f, 0.225f}) },
+                    { Model.GoogleNet,         null },
+                    { Model.DenseNet121,       () => TensorizationModels.Normalize0_1ThenZScore(224, 224, 4,
+                                                                                                new float[] { 0.485f, 0.456f, 0.406f },
+                                                                                                new float[] { 0.229f, 0.224f, 0.225f}) },
+                    { Model.Inception_V1,      null }, // No preprocessing required
+                    { Model.Inception_V2,      null }, // ????
+                    { Model.ShuffleNet_V1,     () => TensorizationModels.Normalize0_1ThenZScore(224, 224, 4,
+                                                                                                new float[] { 0.485f, 0.456f, 0.406f },
+                                                                                                new float[] { 0.229f, 0.224f, 0.225f}) },
+                    { Model.ShuffleNet_V2,     () => TensorizationModels.Normalize0_1ThenZScore(224, 224, 4,
+                                                                                                new float[] { 0.485f, 0.456f, 0.406f },
+                                                                                                new float[] { 0.229f, 0.224f, 0.225f}) },
+                    { Model.EfficientNetLite4, () => TensorizationModels.NormalizeMinusOneToOneThenTransposeNHWC() },
+                    // Large Models
+                    { Model.AlexNet,           null }, // No preprocessing required
+                    { Model.CaffeNet,          null }, // No preprocessing required
+                    { Model.RCNN_ILSVRC13,     null }, // No preprocessing required
+                    { Model.ResNet,            () => TensorizationModels.Normalize0_1ThenZScore(224, 224, 4,
+                                                                                                new float[] { 0.485f, 0.456f, 0.406f },
+                                                                                                new float[] { 0.229f, 0.224f, 0.225f}) },
+                    { Model.VGG,               () => TensorizationModels.Normalize0_1ThenZScore(224, 224, 4,
+                                                                                                new float[] { 0.485f, 0.456f, 0.406f },
+                                                                                                new float[] { 0.229f, 0.224f, 0.225f}) },
+                    { Model.ZFNet512,          null }, // No preprocessing required
+                };
+            }
 
             InitializeWindowsMachineLearning(currentModel_);
         }
@@ -290,7 +307,6 @@ namespace WinMLSamplesGallery.Samples
             var gridView = sender as GridView;
             var link = gridView.SelectedItem as WinMLSamplesGallery.Link;
             currentModel_ = link.Tag;
-            InitializeWindowsMachineLearning(currentModel_);
             TryPerformInference();
         }
 
@@ -298,11 +314,21 @@ namespace WinMLSamplesGallery.Samples
         {
             if (currentImage_ != null)
             {
-                var softwareBitmap = CreateSoftwareBitmapFromStorageFile(currentImage_);
-                RenderImageInMainPanel(softwareBitmap);
+                if (AllModelsGrid.SelectedItem == null)
+                {
+                    AllModelsGrid.SelectRange(new Microsoft.UI.Xaml.Data.ItemIndexRange(0, 1));
+                }
+                else
+                {
+                    EnsureInit();
 
-                var (labels, probabilities) = Classify(softwareBitmap);
-                RenderInferenceResults(labels, probabilities);
+                    var softwareBitmap = CreateSoftwareBitmapFromStorageFile(currentImage_);
+                    RenderImageInMainPanel(softwareBitmap);
+
+                    var (labels, probabilities) = Classify(softwareBitmap);
+                    RenderInferenceResults(labels, probabilities);
+
+                }
             }
         }
 

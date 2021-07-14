@@ -20,6 +20,32 @@ namespace WinMLSamplesGallery.Samples
         void Initialize([In] IntPtr hwnd);
     }
 
+    public enum Classifier
+    {
+        NotSet = 0,
+        MobileNet,
+        ResNet,
+        SqueezeNet,
+        VGG,
+        AlexNet,
+        GoogleNet,
+        CaffeNet,
+        RCNN_ILSVRC13,
+        DenseNet121,
+        Inception_V1,
+        Inception_V2,
+        ShuffleNet_V1,
+        ShuffleNet_V2,
+        ZFNet512,
+        EfficientNetLite4,
+    }
+
+    public sealed class ClassifierViewModel
+    {
+        public string Title { get; set; }
+        public Classifier Tag { get; set; }
+    }
+
     /// <summary>
     /// An empty page that can be used on its own or navigated to within a Frame.
     /// </summary>
@@ -33,16 +59,15 @@ namespace WinMLSamplesGallery.Samples
         private LearningModelSession preProcessingSession_;
         private LearningModelSession postProcessingSession_;
 
-        private StorageFile currentImage_ = null;
-        Model currentModel_ = Model.NoModel;
-        Model loadedModel_ = Model.NoModel;
+        private SoftwareBitmap currentImage_ = null;
+        Classifier currentModel_ = Classifier.NotSet;
+        Classifier loadedModel_ = Classifier.NotSet;
         const long BatchSize = 1;
         const long TopK = 10;
-        const long NumLabels = 1000;
 
-        private Dictionary<Model, string> modelDictionary_;
-        private Dictionary<Model, Func<LearningModel>> postProcessorDictionary_;
-        private Dictionary<Model, Func<LearningModel>> preProcessorDictionary_;
+        private Dictionary<Classifier, string> modelDictionary_;
+        private Dictionary<Classifier, Func<LearningModel>> postProcessorDictionary_;
+        private Dictionary<Classifier, Func<LearningModel>> preProcessorDictionary_;
 
         private static Dictionary<long, string> imagenetLabels_;
         private static Dictionary<long, string> ilsvrc2013Labels_;
@@ -69,89 +94,89 @@ namespace WinMLSamplesGallery.Samples
 
             if (modelDictionary_ == null)
             {
-                modelDictionary_ = new Dictionary<Model, string>{
-                    { Model.SqueezeNet,        "ms-appx:///Models/squeezenet1.1-7.onnx" },
-                    { Model.MobileNet,         "ms-appx:///Models/mobilenetv2-7.onnx" },
-                    { Model.GoogleNet,         "ms-appx:///Models/googlenet-9.onnx"},
-                    { Model.DenseNet121,       "ms-appx:///Models/densenet-9.onnx"},
-                    { Model.Inception_V1,      "ms-appx:///Models/inception-v1-9.onnx"},
-                    { Model.Inception_V2,      "ms-appx:///Models/inception-v2-9.onnx"},
-                    { Model.ShuffleNet_V1,     "ms-appx:///Models/shufflenet-9.onnx"},
-                    { Model.ShuffleNet_V2,     "ms-appx:///Models/shufflenet-v2-10.onnx"},
-                    { Model.EfficientNetLite4, "ms-appx:///Models/efficientnet-lite4-11.onnx"},
+                modelDictionary_ = new Dictionary<Classifier, string>{
+                    { Classifier.SqueezeNet,        "ms-appx:///Models/squeezenet1.1-7.onnx" },
+                    { Classifier.MobileNet,         "ms-appx:///Models/mobilenetv2-7.onnx" },
+                    { Classifier.GoogleNet,         "ms-appx:///Models/googlenet-9.onnx"},
+                    { Classifier.DenseNet121,       "ms-appx:///Models/densenet-9.onnx"},
+                    { Classifier.Inception_V1,      "ms-appx:///Models/inception-v1-9.onnx"},
+                    { Classifier.Inception_V2,      "ms-appx:///Models/inception-v2-9.onnx"},
+                    { Classifier.ShuffleNet_V1,     "ms-appx:///Models/shufflenet-9.onnx"},
+                    { Classifier.ShuffleNet_V2,     "ms-appx:///Models/shufflenet-v2-10.onnx"},
+                    { Classifier.EfficientNetLite4, "ms-appx:///Models/efficientnet-lite4-11.onnx"},
                     // Large Models
-                    { Model.AlexNet,           "ms-appx:///LargeModels/bvlcalexnet-9.onnx"},
-                    { Model.CaffeNet,          "ms-appx:///LargeModels/caffenet-9.onnx"},
-                    { Model.RCNN_ILSVRC13,     "ms-appx:///LargeModels/rcnn-ilsvrc13-9.onnx"},
-                    { Model.ResNet,            "ms-appx:///LargeModels/resnet50-caffe2-v1-9.onnx"},
-                    { Model.VGG,               "ms-appx:///LargeModels/vgg19-7.onnx"},
-                    { Model.ZFNet512,          "ms-appx:///LargeModels/zfnet512-9.onnx"},
+                    { Classifier.AlexNet,           "ms-appx:///LargeModels/bvlcalexnet-9.onnx"},
+                    { Classifier.CaffeNet,          "ms-appx:///LargeModels/caffenet-9.onnx"},
+                    { Classifier.RCNN_ILSVRC13,     "ms-appx:///LargeModels/rcnn-ilsvrc13-9.onnx"},
+                    { Classifier.ResNet,            "ms-appx:///LargeModels/resnet50-caffe2-v1-9.onnx"},
+                    { Classifier.VGG,               "ms-appx:///LargeModels/vgg19-7.onnx"},
+                    { Classifier.ZFNet512,          "ms-appx:///LargeModels/zfnet512-9.onnx"},
                 };
             }
 
             if (postProcessorDictionary_ == null)
             {
-                postProcessorDictionary_ = new Dictionary<Model, Func<LearningModel>>{
-                    { Model.SqueezeNet,        () => TensorizationModels.SoftMaxThenTopK(TopK) },
-                    { Model.MobileNet,         () => TensorizationModels.SoftMaxThenTopK(TopK) },
-                    { Model.GoogleNet,         () => TensorizationModels.TopK(TopK) },
-                    { Model.DenseNet121,       () => TensorizationModels.ReshapeThenSoftmaxThenTopK(new long[] { BatchSize, NumLabels, 1, 1 },
+                postProcessorDictionary_ = new Dictionary<Classifier, Func<LearningModel>>{
+                    { Classifier.SqueezeNet,        () => TensorizationModels.SoftMaxThenTopK(TopK) },
+                    { Classifier.MobileNet,         () => TensorizationModels.SoftMaxThenTopK(TopK) },
+                    { Classifier.GoogleNet,         () => TensorizationModels.TopK(TopK) },
+                    { Classifier.DenseNet121,       () => TensorizationModels.ReshapeThenSoftmaxThenTopK(new long[] { BatchSize, imagenetLabels_.Count, 1, 1 },
                                                                                                     TopK,
                                                                                                     BatchSize,
-                                                                                                    NumLabels) },
-                    { Model.Inception_V1,      () => TensorizationModels.TopK(TopK) },
-                    { Model.Inception_V2,      () => TensorizationModels.TopK(TopK) },
-                    { Model.ShuffleNet_V1,     () => TensorizationModels.TopK(TopK) },
-                    { Model.ShuffleNet_V2,     () => TensorizationModels.SoftMaxThenTopK(TopK) },
-                    { Model.EfficientNetLite4, () => TensorizationModels.SoftMaxThenTopK(TopK) },
+                                                                                                    imagenetLabels_.Count) },
+                    { Classifier.Inception_V1,      () => TensorizationModels.TopK(TopK) },
+                    { Classifier.Inception_V2,      () => TensorizationModels.TopK(TopK) },
+                    { Classifier.ShuffleNet_V1,     () => TensorizationModels.TopK(TopK) },
+                    { Classifier.ShuffleNet_V2,     () => TensorizationModels.SoftMaxThenTopK(TopK) },
+                    { Classifier.EfficientNetLite4, () => TensorizationModels.SoftMaxThenTopK(TopK) },
                     // Large Models
-                    { Model.AlexNet,           () => TensorizationModels.TopK(TopK) },
-                    { Model.CaffeNet,          () => TensorizationModels.TopK(TopK) },
-                    { Model.RCNN_ILSVRC13,     () => TensorizationModels.TopK(TopK) },
-                    { Model.ResNet,            () => TensorizationModels.SoftMaxThenTopK(TopK) },
-                    { Model.VGG,               () => TensorizationModels.SoftMaxThenTopK(TopK) },
-                    { Model.ZFNet512,          () => TensorizationModels.TopK(TopK) },
+                    { Classifier.AlexNet,           () => TensorizationModels.TopK(TopK) },
+                    { Classifier.CaffeNet,          () => TensorizationModels.TopK(TopK) },
+                    { Classifier.RCNN_ILSVRC13,     () => TensorizationModels.TopK(TopK) },
+                    { Classifier.ResNet,            () => TensorizationModels.SoftMaxThenTopK(TopK) },
+                    { Classifier.VGG,               () => TensorizationModels.SoftMaxThenTopK(TopK) },
+                    { Classifier.ZFNet512,          () => TensorizationModels.TopK(TopK) },
                 };
             }
 
             if (preProcessorDictionary_ == null)
             {
-                preProcessorDictionary_ = new Dictionary<Model, Func<LearningModel>>{
-                    { Model.SqueezeNet,        null }, // No preprocessing required
-                    { Model.MobileNet,         () => TensorizationModels.Normalize0_1ThenZScore(224, 224, 4,
+                preProcessorDictionary_ = new Dictionary<Classifier, Func<LearningModel>>{
+                    { Classifier.SqueezeNet,        null }, // No preprocessing required
+                    { Classifier.MobileNet,         () => TensorizationModels.Normalize0_1ThenZScore(224, 224, 4,
                                                                                                 new float[] { 0.485f, 0.456f, 0.406f },
                                                                                                 new float[] { 0.229f, 0.224f, 0.225f}) },
-                    { Model.GoogleNet,         null },
-                    { Model.DenseNet121,       () => TensorizationModels.Normalize0_1ThenZScore(224, 224, 4,
+                    { Classifier.GoogleNet,         null },
+                    { Classifier.DenseNet121,       () => TensorizationModels.Normalize0_1ThenZScore(224, 224, 4,
                                                                                                 new float[] { 0.485f, 0.456f, 0.406f },
                                                                                                 new float[] { 0.229f, 0.224f, 0.225f}) },
-                    { Model.Inception_V1,      null }, // No preprocessing required
-                    { Model.Inception_V2,      null }, // ????
-                    { Model.ShuffleNet_V1,     () => TensorizationModels.Normalize0_1ThenZScore(224, 224, 4,
+                    { Classifier.Inception_V1,      null }, // No preprocessing required
+                    { Classifier.Inception_V2,      null }, // ????
+                    { Classifier.ShuffleNet_V1,     () => TensorizationModels.Normalize0_1ThenZScore(224, 224, 4,
                                                                                                 new float[] { 0.485f, 0.456f, 0.406f },
                                                                                                 new float[] { 0.229f, 0.224f, 0.225f}) },
-                    { Model.ShuffleNet_V2,     () => TensorizationModels.Normalize0_1ThenZScore(224, 224, 4,
+                    { Classifier.ShuffleNet_V2,     () => TensorizationModels.Normalize0_1ThenZScore(224, 224, 4,
                                                                                                 new float[] { 0.485f, 0.456f, 0.406f },
                                                                                                 new float[] { 0.229f, 0.224f, 0.225f}) },
-                    { Model.EfficientNetLite4, () => TensorizationModels.NormalizeMinusOneToOneThenTransposeNHWC() },
+                    { Classifier.EfficientNetLite4, () => TensorizationModels.NormalizeMinusOneToOneThenTransposeNHWC() },
                     // Large Models
-                    { Model.AlexNet,           null }, // No preprocessing required
-                    { Model.CaffeNet,          null }, // No preprocessing required
-                    { Model.RCNN_ILSVRC13,     null }, // No preprocessing required
-                    { Model.ResNet,            () => TensorizationModels.Normalize0_1ThenZScore(224, 224, 4,
+                    { Classifier.AlexNet,           null }, // No preprocessing required
+                    { Classifier.CaffeNet,          null }, // No preprocessing required
+                    { Classifier.RCNN_ILSVRC13,     null }, // No preprocessing required
+                    { Classifier.ResNet,            () => TensorizationModels.Normalize0_1ThenZScore(224, 224, 4,
                                                                                                 new float[] { 0.485f, 0.456f, 0.406f },
                                                                                                 new float[] { 0.229f, 0.224f, 0.225f}) },
-                    { Model.VGG,               () => TensorizationModels.Normalize0_1ThenZScore(224, 224, 4,
+                    { Classifier.VGG,               () => TensorizationModels.Normalize0_1ThenZScore(224, 224, 4,
                                                                                                 new float[] { 0.485f, 0.456f, 0.406f },
                                                                                                 new float[] { 0.229f, 0.224f, 0.225f}) },
-                    { Model.ZFNet512,          null }, // No preprocessing required
+                    { Classifier.ZFNet512,          null }, // No preprocessing required
                 };
             }
 
             InitializeWindowsMachineLearning(currentModel_);
         }
 
-        private void InitializeWindowsMachineLearning(Model model)
+        private void InitializeWindowsMachineLearning(Classifier model)
         {
             if (currentModel_ != loadedModel_)
             {
@@ -178,7 +203,7 @@ namespace WinMLSamplesGallery.Samples
                     postProcessingSession_ = null;
                 }
 
-                if (currentModel_ == Model.RCNN_ILSVRC13)
+                if (currentModel_ == Classifier.RCNN_ILSVRC13)
                 {
                     labels_ = ilsvrc2013Labels_;
                 }
@@ -194,9 +219,14 @@ namespace WinMLSamplesGallery.Samples
 #pragma warning disable CA1416 // Validate platform compatibility
         private (IEnumerable<string>, IReadOnlyList<float>) Classify(SoftwareBitmap softwareBitmap)
         {
+            PerformanceMetricsMonitor.ClearLog();
+
+            long start, stop;
+
             var input = (object)VideoFrame.CreateWithSoftwareBitmap(softwareBitmap);
 
             // PreProcess
+            start = HighResolutionClock.UtcNow();
             object preProcessedOutput = input;
             if (preProcessingSession_ != null)
             {
@@ -206,14 +236,18 @@ namespace WinMLSamplesGallery.Samples
                 var shape = preProcessedOutputTF.Shape;
                 System.Diagnostics.Debug.WriteLine("shape = {0}, {1}, {2}, {3}", shape[0], shape[1], shape[2], shape[3]);
             }
+            stop = HighResolutionClock.UtcNow();
+            var preprocessDuration = HighResolutionClock.DurationInMs(start, stop);
 
             // Inference
+            start = HighResolutionClock.UtcNow();
             var inferenceResults = Evaluate(inferenceSession_, preProcessedOutput);
             var inferenceOutput = inferenceResults.Outputs.First().Value as TensorFloat;
-            System.Diagnostics.Debug.Assert(inferenceOutput.Shape[0] == BatchSize);
-            System.Diagnostics.Debug.Assert(inferenceOutput.Shape[1] == NumLabels);
+            stop = HighResolutionClock.UtcNow();
+            var inferenceDuration = HighResolutionClock.DurationInMs(start, stop);
 
             // PostProcess
+            start = HighResolutionClock.UtcNow();
             var postProcessedOutputs = Evaluate(postProcessingSession_, inferenceOutput);
             var topKValues = postProcessedOutputs.Outputs["TopKValues"] as TensorFloat;
             var topKIndices = postProcessedOutputs.Outputs["TopKIndices"] as TensorInt64Bit;
@@ -222,18 +256,24 @@ namespace WinMLSamplesGallery.Samples
             var probabilities = topKValues.GetAsVectorView();
             var indices = topKIndices.GetAsVectorView();
             var labels = indices.Select((index) => labels_[index]);
+            stop = HighResolutionClock.UtcNow();
+            var postProcessDuration = HighResolutionClock.DurationInMs(start, stop);
+
+            PerformanceMetricsMonitor.Log("Pre-process", preprocessDuration);
+            PerformanceMetricsMonitor.Log("Inference", inferenceDuration);
+            PerformanceMetricsMonitor.Log("Post-process", postProcessDuration);
 
             return (labels, probabilities);
         }
 
-        private static LearningModelEvaluationResult Evaluate(LearningModelSession session, object input, TensorFloat output = null)
+        private static LearningModelEvaluationResult Evaluate(LearningModelSession session, object input)
         {
             // Create the binding
             var binding = new LearningModelBinding(session);
 
             // Create an emoty output, that will keep the output resources on the GPU
             // It will be chained into a the post processing on the GPU as well
-            output = output ?? TensorFloat.Create();
+            var output = TensorFloat.Create();
 
             // Bind inputs and outputs
             // For squeezenet these evaluate to "data", and "squeezenet0_flatten0_reshape0"
@@ -246,16 +286,20 @@ namespace WinMLSamplesGallery.Samples
             return session.Evaluate(binding, "");
         }
 
-        private static LearningModelSession CreateLearningModelSession(string modelPath)
+        private LearningModelSession CreateLearningModelSession(string modelPath)
         {
             var model = CreateLearningModel(modelPath);
             var session =  CreateLearningModelSession(model);
             return session;
         }
 
-        private static LearningModelSession CreateLearningModelSession(LearningModel model)
+        private LearningModelSession CreateLearningModelSession(LearningModel model)
         {
-            var device = new LearningModelDevice(LearningModelDeviceKind.DirectXHighPerformance);
+            var kind =
+                (DeviceComboBox.SelectedIndex == 0) ?
+                    LearningModelDeviceKind.Cpu :
+                    LearningModelDeviceKind.DirectXHighPerformance;
+            var device = new LearningModelDevice(kind);
             var options = new LearningModelSessionOptions() {
                 CloseModelOnSessionCreation = true              // Close the model to prevent extra memory usage
             };
@@ -294,7 +338,7 @@ namespace WinMLSamplesGallery.Samples
             var file = PickFile();
             if (file != null)
             {
-                currentImage_ = file;
+                currentImage_ = CreateSoftwareBitmapFromStorageFile(file);
                 BasicGridView.SelectedItem = null;
                 TryPerformInference();
             }
@@ -307,7 +351,8 @@ namespace WinMLSamplesGallery.Samples
             if (thumbnail != null)
             {
                 var image = thumbnail.ImageUri;
-                currentImage_ = StorageFile.GetFileFromApplicationUriAsync(new Uri(image)).GetAwaiter().GetResult();
+                var file = StorageFile.GetFileFromApplicationUriAsync(new Uri(image)).GetAwaiter().GetResult();
+                currentImage_ = CreateSoftwareBitmapFromStorageFile(file);
                 TryPerformInference();
             }
         }
@@ -315,7 +360,7 @@ namespace WinMLSamplesGallery.Samples
         private void AllModelsGrid_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             var gridView = sender as GridView;
-            var link = gridView.SelectedItem as WinMLSamplesGallery.Link;
+            var link = gridView.SelectedItem as WinMLSamplesGallery.Samples.ClassifierViewModel;
             currentModel_ = link.Tag;
             TryPerformInference();
         }
@@ -332,10 +377,9 @@ namespace WinMLSamplesGallery.Samples
                 {
                     EnsureInit();
 
-                    var softwareBitmap = CreateSoftwareBitmapFromStorageFile(currentImage_);
-                    RenderImageInMainPanel(softwareBitmap);
+                    RenderImageInMainPanel(currentImage_);
 
-                    var (labels, probabilities) = Classify(softwareBitmap);
+                    var (labels, probabilities) = Classify(currentImage_);
                     RenderInferenceResults(labels, probabilities);
 
                 }
@@ -401,6 +445,11 @@ namespace WinMLSamplesGallery.Samples
             var stream = file.OpenAsync(FileAccessMode.Read).GetAwaiter().GetResult();
             var decoder = BitmapDecoder.CreateAsync(stream).GetAwaiter().GetResult();
             return decoder.GetSoftwareBitmapAsync().GetAwaiter().GetResult();
+        }
+
+        private void DeviceComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            TryPerformInference();
         }
     }
 }

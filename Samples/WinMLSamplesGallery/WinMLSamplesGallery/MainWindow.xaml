@@ -24,8 +24,6 @@
                 <NavigationViewItem Icon="Library" Content="Image" Tag="image" />
                 <NavigationViewItem Icon="Library" Content="Video" Tag="video" />
                 <NavigationViewItem Icon="Library" Content="Audio" Tag="audio" />
-                <NavigationViewItem Icon="Library" Content="Batching" Tag="batching" />
-                <NavigationViewItem Icon="Library" Content="Security" Tag="security" />
                 <NavigationViewItemSeparator />
                 <NavigationViewItem Icon="Library" Content="Benchmark" Tag="benchmark" />
             </NavigationView.MenuItems>

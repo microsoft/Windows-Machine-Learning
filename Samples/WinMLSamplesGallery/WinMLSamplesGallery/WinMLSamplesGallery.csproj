@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>net5.0-windows10.0.18362.0</TargetFramework>
@@ -8,14 +8,35 @@
     <Platforms>x86;x64;arm64</Platforms>
     <RuntimeIdentifiers>win10-x86;win10-x64;win10-arm64</RuntimeIdentifiers>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|arm64'">
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|arm64'">
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x86'">
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x86'">
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Remove="Samples\ImageClassifier - Copy.xaml.cs" />
+  </ItemGroup>
   <ItemGroup>
     <Content Remove="assets\hummingbird - Copy.jpg" />
   </ItemGroup>
   <ItemGroup>
     <None Remove="AllSamples.xaml" />
     <None Remove="Audio.xaml" />
-    <None Remove="Batching.xaml" />
     <None Remove="Benchmark.xaml" />
+    <None Remove="Controls\PerformanceMonitor.xaml" />
     <None Remove="Controls\SampleHeader.xaml" />
     <None Remove="HomePage.xaml" />
     <None Remove="Image.xaml" />
@@ -23,25 +44,34 @@
     <None Remove="InputData\ilsvrc2013.txt" />
     <None Remove="InputData\kitten.png" />
     <None Remove="InputData\sysnet.txt" />
+    <None Remove="Models\candy.onnx" />
     <None Remove="Models\densenet-9.onnx" />
     <None Remove="Models\efficientnet-lite4-11.onnx" />
     <None Remove="Models\googlenet-9.onnx" />
     <None Remove="Models\inception-v1-9.onnx" />
     <None Remove="Models\inception-v2-9.onnx" />
+    <None Remove="Models\la_muse.onnx" />
     <None Remove="Models\mobilenetv2-7.onnx" />
+    <None Remove="Models\mosaic.onnx" />
     <None Remove="Models\shufflenet-9.onnx" />
     <None Remove="Models\shufflenet-v2-10.onnx" />
     <None Remove="Models\squeezenet1.1-7.onnx" />
+    <None Remove="Models\udnie.onnx" />
     <None Remove="Original-LightBlue.png" />
     <None Remove="Samples\ImageClassifier.xaml" />
-    <None Remove="Security.xaml" />
+    <None Remove="Samples\ImageEffects.xaml" />
     <None Remove="Video.xaml" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="InputData\hummingbird.jpg" />
+    <Content Include="InputData\hummingbird.jpg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="InputData\ilsvrc2013.txt" />
-    <Content Include="InputData\kitten.png" />
+    <Content Include="InputData\kitten.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="InputData\sysnet.txt" />
+    <Content Include="Models\candy.onnx" />
     <Content Include="Models\densenet-9.onnx">
       <Link>Models\densenet-9.onnx</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -62,10 +92,12 @@
       <Link>Models\inception-v2-9.onnx</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="Models\la_muse.onnx" />
     <Content Include="Models\mobilenetv2-7.onnx">
       <Link>Models\mobilenetv2-7.onnx</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="Models\mosaic.onnx" />
     <Content Include="Models\shufflenet-9.onnx">
       <Link>Models\shufflenet-9.onnx</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -78,15 +110,18 @@
       <Link>Models\squeezenet1.1-7.onnx</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="Models\udnie.onnx" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AI.MachineLearning" Version="1.8.0" />
+    <PackageReference Include="Microsoft.AI.MachineLearning" Version="1.8.1" />
+    <PackageReference Include="Microsoft.Windows.CsWinRT" Version="1.3.1" />
     <PackageReference Include="Microsoft.WinUI" Version="3.0.0-preview4.210210.4" />
     <Manifest Include="$(ApplicationManifest)" />
   </ItemGroup>
 
   <ItemGroup>
+    <None Include="Samples\ImageEffects.xaml.cs" />
     <None Include="Samples\ImageClassifier.xaml.cs" />
   </ItemGroup>
 
@@ -131,17 +166,13 @@
     <Page Update="AllSamples.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
-  </ItemGroup>
-
-  <ItemGroup>
-    <Page Update="Security.xaml">
-      <Generator>MSBuild:Compile</Generator>
+    <Page Update="Controls\PerformanceMonitor.xaml">
+      <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
+      <SubType>Designer</SubType>
     </Page>
-  </ItemGroup>
-
-  <ItemGroup>
-    <Page Update="Batching.xaml">
-      <Generator>MSBuild:Compile</Generator>
+    <Page Update="Samples\ImageEffects.xaml">
+      <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
+      <SubType>Designer</SubType>
     </Page>
   </ItemGroup>
 

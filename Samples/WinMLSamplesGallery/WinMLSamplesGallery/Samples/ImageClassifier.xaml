@@ -4,6 +4,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:WinMLSamplesGallery"
     xmlns:local_controls="using:WinMLSamplesGallery.Controls"
+    xmlns:local_samples="using:WinMLSamplesGallery.Samples"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
@@ -41,7 +42,7 @@
             </StackPanel>
         </DataTemplate>
 
-        <DataTemplate x:Name="AllModelsTemplate" x:DataType="local:Link">
+        <DataTemplate x:Name="AllModelsTemplate" x:DataType="local_samples:ClassifierViewModel">
             <Grid Background="#e6e6e6" BorderBrush="#12bef6" BorderThickness="1">
                 <TextBlock FontSize="14" Text="{x:Bind Title}"
                             Typography.Capitals="AllSmallCaps"
@@ -78,7 +79,16 @@
 
                 <StackPanel Grid.Row="0" Orientation="Horizontal" Padding="5,10,0,0">
                     <StackPanel Orientation="Vertical">
-                        <Button FontFamily="Segoe MDL2 Assets" Content="&#xE1A5;" Width="200" Height="50" HorizontalAlignment="Left" Click="OpenButton_Clicked" />
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
+                            <Button FontFamily="Segoe MDL2 Assets" Content="&#xE1A5;" Width="97" Height="50" HorizontalAlignment="Left" Click="OpenButton_Clicked" />
+                            <Grid Padding="5,0,0,0">
+                                <ComboBox x:Name="DeviceComboBox" SelectedIndex="0" Background="LightGray" PlaceholderText="Device" Height="50" Width="97"
+                                          SelectionChanged="DeviceComboBox_SelectionChanged">
+                                    <TextBlock Text="CPU" FontSize="18" Typography.Capitals="AllSmallCaps" Typography.StylisticSet4="True"/>
+                                    <TextBlock Text="DML" FontSize="18" Typography.Capitals="AllSmallCaps" Typography.StylisticSet4="True"/>
+                                </ComboBox>
+                            </Grid>
+                        </StackPanel>
                         <GridView
                             x:Name="BasicGridView"
                             ItemTemplate="{StaticResource ImageTemplate}"
@@ -103,6 +113,7 @@
                         <TextBlock TextWrapping="WrapWholeWords" Text="Choose an Image or Open a file..." HorizontalAlignment="Center" VerticalAlignment="Center" />
                         <Image x:Name="InputImage" Stretch="UniformToFill" Height="360" HorizontalAlignment="Center"/>
                     </Grid>
+                    <local_controls:PerformanceMonitor x:Name="PerformanceMetricsMonitor"/>
                 </StackPanel>
 
                 <GridView Grid.Row="1" x:Name="AllModelsGrid" ItemTemplate="{StaticResource AllModelsTemplate}" SelectionMode="Extended"
@@ -124,27 +135,27 @@
                     </GridView.ItemsPanel>
 
                     <GridView.Items>
-                        <local:Link Icon="&#xE155;" Tag="SqueezeNet" Title="SqueezeNet" />
-                        <local:Link Icon="&#xE155;" Tag="MobileNet" Title="MobileNet" />
-                        <local:Link Icon="&#xE155;" Tag="GoogleNet" Title="GoogleNet" />
-                        <local:Link Icon="&#xE155;" Tag="DenseNet121" Title="DenseNet-121" />
-                        <local:Link Icon="&#xE155;" Tag="Inception_V1" Title="Inception_V1" />
-                        <local:Link Icon="&#xE155;" Tag="Inception_V2" Title="Inception_V2" />
-                        <local:Link Icon="&#xE155;" Tag="ShuffleNet_V1" Title="ShuffleNet_V1" />
-                        <local:Link Icon="&#xE155;" Tag="ShuffleNet_V2" Title="ShuffleNet_V2" />
-                        <local:Link Icon="&#xE155;" Tag="EfficientNetLite4" Title="EfficientNet-Lite4" />
+                        <local_samples:ClassifierViewModel Tag="SqueezeNet" Title="SqueezeNet" />
+                        <local_samples:ClassifierViewModel Tag="MobileNet" Title="MobileNet" />
+                        <local_samples:ClassifierViewModel Tag="GoogleNet" Title="GoogleNet" />
+                        <local_samples:ClassifierViewModel Tag="DenseNet121" Title="DenseNet-121" />
+                        <local_samples:ClassifierViewModel Tag="Inception_V1" Title="Inception_V1" />
+                        <local_samples:ClassifierViewModel Tag="Inception_V2" Title="Inception_V2" />
+                        <local_samples:ClassifierViewModel Tag="ShuffleNet_V1" Title="ShuffleNet_V1" />
+                        <local_samples:ClassifierViewModel Tag="ShuffleNet_V2" Title="ShuffleNet_V2" />
+                        <local_samples:ClassifierViewModel Tag="EfficientNetLite4" Title="EfficientNet-Lite4" />
                         
                         <!--
-                        <local:Link Icon="&#xE155;" Tag="RCNN_ILSVRC13" Title="RCNN_ILSVRC13" />
-                        <local:Link Icon="&#xE155;" Tag="ResNet" Title="ResNet" />
-                        <local:Link Icon="&#xE155;" Tag="VGG" Title="VGG" />
-                        <local:Link Icon="&#xE155;" Tag="AlexNet" Title="AlexNet" />
-                        <local:Link Icon="&#xE155;" Tag="CaffeNet" Title="CaffeNet" />
-                        <local:Link Icon="&#xE155;" Tag="ZFNet512" Title="ZFNet-512" />
+                        <local_samples:ModelLink Tag="RCNN_ILSVRC13" Title="RCNN_ILSVRC13" />
+                        <local_samples:ModelLink Tag="ResNet" Title="ResNet" />
+                        <local_samples:ModelLink Tag="VGG" Title="VGG" />
+                        <local_samples:ModelLink Tag="AlexNet" Title="AlexNet" />
+                        <local_samples:ModelLink Tag="CaffeNet" Title="CaffeNet" />
+                        <local_samples:ModelLink Tag="ZFNet512" Title="ZFNet-512" />
                         -->
                     </GridView.Items>
                 </GridView>
-                
+
                 <ListView Grid.Row="2"
                           x:Name="InferenceResults"
                           HorizontalAlignment="Stretch"

@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "WinMLSamplesGallery": {
+      "commandName": "Project",
+      "nativeDebugging": true
+    }
+  }
+}

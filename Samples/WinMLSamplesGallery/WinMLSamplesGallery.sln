@@ -5,18 +5,21 @@ VisualStudioVersion = 16.0.31112.23
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{C7167F0D-BC9F-4E6E-AFE1-012C56B48DB5}") = "WinMLSamplesGallery (Package)", "WinMLSamplesGallery (Package)\WinMLSamplesGallery (Package).wapproj", "{DEA7791F-55CF-4ED5-BC99-3870997B1242}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WinMLSamplesGallery", "WinMLSamplesGallery\WinMLSamplesGallery.csproj", "{37DBE3F7-0DB2-4A96-954F-219294A757E1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WinMLSamplesGallery", "WinMLSamplesGallery\WinMLSamplesGallery.csproj", "{37DBE3F7-0DB2-4A96-954F-219294A757E1}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|ARM = Debug|ARM
 		Debug|arm64 = Debug|arm64
 		Debug|x64 = Debug|x64
 		Debug|x86 = Debug|x86
+		Release|ARM = Release|ARM
 		Release|arm64 = Release|arm64
 		Release|x64 = Release|x64
 		Release|x86 = Release|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{DEA7791F-55CF-4ED5-BC99-3870997B1242}.Debug|ARM.ActiveCfg = Debug|x86
 		{DEA7791F-55CF-4ED5-BC99-3870997B1242}.Debug|arm64.ActiveCfg = Debug|arm64
 		{DEA7791F-55CF-4ED5-BC99-3870997B1242}.Debug|arm64.Build.0 = Debug|arm64
 		{DEA7791F-55CF-4ED5-BC99-3870997B1242}.Debug|arm64.Deploy.0 = Debug|arm64
@@ -26,6 +29,7 @@ Global
 		{DEA7791F-55CF-4ED5-BC99-3870997B1242}.Debug|x86.ActiveCfg = Debug|x86
 		{DEA7791F-55CF-4ED5-BC99-3870997B1242}.Debug|x86.Build.0 = Debug|x86
 		{DEA7791F-55CF-4ED5-BC99-3870997B1242}.Debug|x86.Deploy.0 = Debug|x86
+		{DEA7791F-55CF-4ED5-BC99-3870997B1242}.Release|ARM.ActiveCfg = Release|x86
 		{DEA7791F-55CF-4ED5-BC99-3870997B1242}.Release|arm64.ActiveCfg = Release|arm64
 		{DEA7791F-55CF-4ED5-BC99-3870997B1242}.Release|arm64.Build.0 = Release|arm64
 		{DEA7791F-55CF-4ED5-BC99-3870997B1242}.Release|arm64.Deploy.0 = Release|arm64
@@ -35,12 +39,14 @@ Global
 		{DEA7791F-55CF-4ED5-BC99-3870997B1242}.Release|x86.ActiveCfg = Release|x86
 		{DEA7791F-55CF-4ED5-BC99-3870997B1242}.Release|x86.Build.0 = Release|x86
 		{DEA7791F-55CF-4ED5-BC99-3870997B1242}.Release|x86.Deploy.0 = Release|x86
+		{37DBE3F7-0DB2-4A96-954F-219294A757E1}.Debug|ARM.ActiveCfg = Debug|x86
 		{37DBE3F7-0DB2-4A96-954F-219294A757E1}.Debug|arm64.ActiveCfg = Debug|arm64
 		{37DBE3F7-0DB2-4A96-954F-219294A757E1}.Debug|arm64.Build.0 = Debug|arm64
 		{37DBE3F7-0DB2-4A96-954F-219294A757E1}.Debug|x64.ActiveCfg = Debug|x64
 		{37DBE3F7-0DB2-4A96-954F-219294A757E1}.Debug|x64.Build.0 = Debug|x64
 		{37DBE3F7-0DB2-4A96-954F-219294A757E1}.Debug|x86.ActiveCfg = Debug|x86
 		{37DBE3F7-0DB2-4A96-954F-219294A757E1}.Debug|x86.Build.0 = Debug|x86
+		{37DBE3F7-0DB2-4A96-954F-219294A757E1}.Release|ARM.ActiveCfg = Release|x86
 		{37DBE3F7-0DB2-4A96-954F-219294A757E1}.Release|arm64.ActiveCfg = Release|arm64
 		{37DBE3F7-0DB2-4A96-954F-219294A757E1}.Release|arm64.Build.0 = Release|arm64
 		{37DBE3F7-0DB2-4A96-954F-219294A757E1}.Release|x64.ActiveCfg = Release|x64

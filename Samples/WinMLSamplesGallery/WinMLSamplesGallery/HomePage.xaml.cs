@@ -18,26 +18,10 @@ using Windows.Foundation.Collections;
 
 namespace WinMLSamplesGallery
 {
-    public enum Model
+    public enum PageId
     {
         AllSamples = 0,
         ImageClassifier,
-        NoModel,
-        MobileNet,
-        ResNet,
-        SqueezeNet,
-        VGG,
-        AlexNet,
-        GoogleNet,
-        CaffeNet,
-        RCNN_ILSVRC13,
-        DenseNet121,
-        Inception_V1,
-        Inception_V2,
-        ShuffleNet_V1,
-        ShuffleNet_V2,
-        ZFNet512,
-        EfficientNetLite4,
     }
 
     public sealed class Link
@@ -45,7 +29,7 @@ namespace WinMLSamplesGallery
         public string Title { get; set; }
         public string Description { get; set; }
         public string Icon { get; set; }
-        public Model Tag { get; set; }
+        public PageId Tag { get; set; }
     }
 
     /// <summary>
@@ -65,7 +49,7 @@ namespace WinMLSamplesGallery
             var model = link.Tag;
             switch (model)
             {
-                case Model.ImageClassifier:
+                case PageId.ImageClassifier:
                     // Only navigate if the selected page isn't currently loaded.
                     if (!Type.Equals(Frame.CurrentSourcePageType, typeof(Samples.ImageClassifier)))
                     {

@@ -35,7 +35,7 @@ namespace WinMLSamplesGallery
             var model = link.Tag;
             switch (model)
             {
-                case Model.ImageClassifier:
+                case PageId.ImageClassifier:
                     // Only navigate if the selected page isn't currently loaded.
                     if (!Type.Equals(Frame.CurrentSourcePageType, typeof(Samples.ImageClassifier)))
                     {

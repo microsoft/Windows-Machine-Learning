@@ -4,6 +4,7 @@ using NAudio.Wave;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using Windows.Graphics.Imaging;
@@ -74,30 +75,27 @@ namespace AudioPreprocessing.Model
             int oldSignalSize = signal.Length;
             int newSignalSize = oldSignalSize / downsizeFactor;
 
-            long[] filterSize = new long[] { 1, downsizeFactor };
             float[] filter = new float[downsizeFactor];
-            for (int i = 0; i < downsizeFactor; i++) filter[i] = 1 / downsizeFactor;
+            for (int i = 0; i < downsizeFactor; i++) filter[i] = 1.0f / downsizeFactor;
 
-            long[] inputShape = { batchSize, oldSignalSize };
-            long[] outputShape = { batchSize, newSignalSize };
+            long[] inputShape = { batchSize, 1, 1, oldSignalSize };
+            long[] outputShape = { batchSize, 1, 1, newSignalSize };
 
             var builder = LearningModelBuilder.Create(13)
               .Inputs.Add(LearningModelBuilder.CreateTensorFeatureDescriptor("Input.RawSignal", TensorKind.Float, inputShape))
               .Outputs.Add(LearningModelBuilder.CreateTensorFeatureDescriptor("Output.Resampled", TensorKind.Float, outputShape))
-
               .Operators.Add(new Operator("Conv")
                 .SetAttribute("strides", TensorInt64Bit.CreateFromArray(new List<long>() { 2 }, new long[] { 1, downsizeFactor }))
                 .SetInput("X", "Input.RawSignal")
-                .SetConstant("T", TensorFloat.CreateFromArray(new List<long>() { batchSize, 1, 1, downsizeFactor }, filter))
+                .SetConstant("W", TensorFloat.CreateFromArray(new List<long>() { batchSize, 1, 1, downsizeFactor }, filter))
                 .SetOutput("Y", "Output.Resampled"))
               ;
             var model = builder.CreateModel();
-
             LearningModelSession session = new LearningModelSession(model);
             LearningModelBinding binding = new LearningModelBinding(session);
 
             // Bind input
-            binding.Bind("Input.TimeSignal", TensorFloat.CreateFromArray(inputShape, signal));
+            binding.Bind("Input.RawSignal", TensorFloat.CreateFromArray(inputShape, signal));
 
             // Evaluate
             var sw = Stopwatch.StartNew();
@@ -106,13 +104,12 @@ namespace AudioPreprocessing.Model
             Console.WriteLine("Evaluate Took: %f\n", sw.ElapsedMilliseconds);
 
             var obj = new Object();
-            //var resampledSignal = TensorFloat.CreateFromArray(new List<long>() { batchSize, 1, 1, downsizeFactor }, new float[] { })
             result.Outputs.TryGetValue("Output.Resampled", out obj);
-            var resampledSignal = TensorFloat.CreateFromArray(new List<long>() { batchSize, 1, 1, downsizeFactor }, (float[])obj);
+            var resampledSignal = (TensorFloat)obj;
 
             this.signal = resampledSignal.GetAsVectorView();
         }
-   
+
         public SoftwareBitmap GetMelspectrogramFromSignal()
         {
             int batchSize = melSpecSettings.BatchSize;
@@ -134,10 +131,46 @@ namespace AudioPreprocessing.Model
 
             long[] signalShape = { batchSize, signalSize };
             long[] melSpectrogramShape = { batchSize, 1, nDFT, nMelBins };
+            long[] outputShape = { batchSize, 1, nMelBins, nDFT };
+            long[] stftShape = { batchSize, nDFT, onesidedDftSize, 1 };
+
+            for (int i = 0; i < signal.Length; i++) signal[i] = (float)1.0;
+
+            var builder2 = LearningModelBuilder.Create(13)
+             .Outputs.Add(LearningModelBuilder.CreateTensorFeatureDescriptor("mel_weight_matrix", TensorKind.Float, stftShape))
+             .Operators.Add(new Operator("MelWeightMatrix", MicrosoftExperimentalDomain)
+                .SetConstant("num_mel_bins", TensorInt64Bit.CreateFromArray(new List<long>(), new long[] { nMelBins }))
+                .SetConstant("dft_length", TensorInt64Bit.CreateFromArray(new List<long>(), new long[] { dftSize }))
+                .SetConstant("sample_rate", TensorInt64Bit.CreateFromArray(new List<long>(), new long[] { samplingRate }))
+                .SetConstant("lower_edge_hertz", TensorFloat.CreateFromArray(new List<long>(), new float[] { 0 }))
+                .SetConstant("upper_edge_hertz", TensorFloat.CreateFromArray(new List<long>(), new float[] { (float)(samplingRate / 2.0) }))
+                .SetOutput("output", "mel_weight_matrix"));
+
+            var builder3 = LearningModelBuilder.Create(13)
+             .Inputs.Add(LearningModelBuilder.CreateTensorFeatureDescriptor("Input.TimeSignal", TensorKind.Float, signalShape))
+             .Outputs.Add(LearningModelBuilder.CreateTensorFeatureDescriptor("hann_window", TensorKind.Float,  new long[] { 10 } ))
+             .Outputs.Add(LearningModelBuilder.CreateTensorFeatureDescriptor("Output", TensorKind.Float, stftShape))
+             .Operators.Add(new Operator("HannWindow", MicrosoftExperimentalDomain)
+               .SetConstant("size", TensorInt64Bit.CreateFromArray(new List<long>(), new long[] { windowSize }))
+               .SetOutput("output", "hann_window"))
+             .Operators.Add(new Operator("STFT", MicrosoftExperimentalDomain)
+                .SetName("STFT_NAMED_NODE")
+                .SetInput("signal", "Input.TimeSignal")
+                //.SetInput("window", "hann_window")
+                .SetConstant("frame_length", TensorInt64Bit.CreateFromArray(new List<long>(), new long[] { dftSize }))
+                .SetConstant("frame_step", TensorInt64Bit.CreateFromArray(new List<long>(), new long[] { hopSize }))
+                .SetOutput("output", "stft_output"))
+             .Operators.Add(new LearningModelOperator("Slice")
+                .SetInput("data", "stft_output")
+                .SetConstant("starts", TensorInt64Bit.CreateFromIterable(new long[] { 4 }, new long[] { 0, 0, 0, 0 }))
+                .SetConstant("ends", TensorInt64Bit.CreateFromIterable(new long[] { 4 }, new long[] { long.MaxValue, long.MaxValue, long.MaxValue, 1 }))
+                .SetOutput("output", "Output"));
 
             var builder = LearningModelBuilder.Create(13)
               .Inputs.Add(LearningModelBuilder.CreateTensorFeatureDescriptor("Input.TimeSignal", TensorKind.Float, signalShape))
-              .Outputs.Add(LearningModelBuilder.CreateTensorFeatureDescriptor("Output.MelSpectrogram", TensorKind.Float, melSpectrogramShape))
+              .Outputs.Add(LearningModelBuilder.CreateTensorFeatureDescriptor("Output.MelSpectrogram", TensorKind.Float, outputShape))
+              .Outputs.Add(LearningModelBuilder.CreateTensorFeatureDescriptor("power_frames", TensorKind.Float, stftShape))
+              .Outputs.Add(LearningModelBuilder.CreateTensorFeatureDescriptor("magnitude_squared", TensorKind.Float, stftShape))
               .Operators.Add(new Operator("HannWindow", MicrosoftExperimentalDomain)
                 .SetConstant("size", TensorInt64Bit.CreateFromArray(new List<long>(), new long[] { windowSize }))
                 .SetOutput("output", "hann_window"))
@@ -175,9 +208,24 @@ namespace AudioPreprocessing.Model
               .Operators.Add(new Operator("Reshape")
                 .SetInput("data", "mel_spectrogram")
                 .SetConstant("shape", TensorInt64Bit.CreateFromArray(new List<long>() { 4 }, melSpectrogramShape))
-                .SetOutput("reshaped", "Output.MelSpectrogram"))
+                .SetOutput("reshaped", "reshaped"))
+              .Operators.Add(new Operator("Slice")
+                .SetInput("data", "reshaped")
+                .SetConstant("starts", TensorInt64Bit.CreateFromArray(new List<long>() { 4 }, new long[] { 0, 0, 0, -1 }))
+                .SetConstant("ends", TensorInt64Bit.CreateFromArray(new List<long>() { 4 }, new long[] { long.MaxValue, long.MaxValue, long.MaxValue, long.MinValue }))
+                .SetConstant("axes", TensorInt64Bit.CreateFromArray(new List<long>() { 4 }, new long[] { 0, 1, 2, 3 }))
+                .SetConstant("steps", TensorInt64Bit.CreateFromArray(new List<long>() { 4 }, new long[] { 1, 1, 1, -1 }))
+                .SetOutput("output", "Output.MelSpectrogram"))
+              //.Operators.Add(new Operator("Reshape")
+              //  .SetInput("data", "flipped")
+              //  .SetConstant("shape", TensorInt64Bit.CreateFromArray(new List<long>() { 4 }, melSpectrogramShape))
+              //  .SetOutput("reshaped", "flipped2"))
+              //.Operators.Add(new Operator("Transpose")
+              //  .SetInput("data", "flipped")
+              //  .SetAttribute("perm", TensorInt64Bit.CreateFromArray(new List<long>() { 4 }, new long[] { 0, 1, 3, 2 }))
+              //  .SetOutput("transposed", "Output.MelSpectrogram"))
               ;
-
+            builder.Save(@"C:\Users\t-janedu\source\repos\Windows-Machine-Learning\Samples\AudioPreprocessing\WinUI\AudioPreprocessing\AudioPreprocessing\tmp\stft_debug.onnx");
             var model = builder.CreateModel();
 
             LearningModelSession session = new LearningModelSession(model);
@@ -189,18 +237,42 @@ namespace AudioPreprocessing.Model
             // Bind output
             var outputImage = new VideoFrame(
                 BitmapPixelFormat.Bgra8,
-                nMelBins,
-                nDFT);
+                nDFT,
+                nMelBins);
 
-            binding.Bind("Output.MelSpectrogram", outputImage);
+            var outputTensor = TensorInt64Bit.CreateFromArray(new List<long>() { 4 }, new long[] { 0, 1, 3, 2 });
+
+            //binding.Bind("Output.MelSpectrogram", outputImage);
+            //binding.Bind("Output.MelSpectrogram", outputTensor);
+
 
             // Evaluate
             var sw = Stopwatch.StartNew();
             var result = session.Evaluate(binding, "");
+
             sw.Stop();
             Console.WriteLine("Evaluate Took: %f\n", sw.ElapsedMilliseconds);
 
+            var tmp = (TensorFloat)result.Outputs["magnitude_squared"];
+
+            var ms = tmp.GetAsVectorView();
+            writeCSV(@"C:\Users\t-janedu\source\repos\Windows-Machine-Learning\Samples\AudioPreprocessing\WinUI\AudioPreprocessing\AudioPreprocessing\tmp\ones_mag_squared.csv",
+                ms, onesidedDftSize, nDFT);
+
             return outputImage.SoftwareBitmap;
+        }
+
+        private void writeCSV(string filename, IEnumerable<float> data, int width, int height)
+        {
+            using (var file = File.CreateText(filename))
+            {
+                for (int i = 0; i < height; i++)
+                {
+                    var offset = i * width;
+                    data.Skip(offset);
+                    file.WriteLine(string.Join(",", data.Skip(offset).Take(width)));
+                }
+            }
         }
 
         public static SoftwareBitmap ColorizeWithComputationalGraph(SoftwareBitmap image, float saturation = 0.7f, float value = 0.5f)

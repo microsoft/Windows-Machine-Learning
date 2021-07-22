@@ -19,17 +19,17 @@
             <VariableSizedWrapGrid Orientation="Horizontal" MaximumRowsOrColumns ="6" HorizontalAlignment="Center">
                 <NumberBox Name="BatchSize" Header="Batch Size" Value="1" PlaceholderText="1" 
                            VariableSizedWrapGrid.ColumnSpan="2"/>
-                <NumberBox Name="WindowSize" Header="Window Size" Value="256" PlaceholderText="256"
+                <NumberBox Name="WindowSize" Header="Window Size" Value="400" PlaceholderText="256"
                            VariableSizedWrapGrid.ColumnSpan="2"/>
-                <NumberBox Name="DFTSize" Header="DFT Size" Value="256" PlaceholderText="256" 
+                <NumberBox Name="DFTSize" Header="DFT Size" Value="400" PlaceholderText="256" 
                            VariableSizedWrapGrid.ColumnSpan="2"/>
-                <NumberBox Name="HopSize" Header="Hop Size" Value="3" PlaceholderText="3" 
+                <NumberBox Name="HopSize" Header="Hop Size" Value="200" PlaceholderText="3" 
                            VariableSizedWrapGrid.ColumnSpan="2"/>
-                <NumberBox Name="NMelBins" Header="Number of Mel Bins" Value="1024" PlaceholderText="1024" 
+                <NumberBox Name="NMelBins" Header="Number of Mel Bins" Value="128" PlaceholderText="128" 
                            VariableSizedWrapGrid.ColumnSpan="3"/>
-                <NumberBox Name="SampleRate" Header="Sample Rate" Value="8192" PlaceholderText="8192" 
+                <NumberBox Name="SampleRate" Header="Sample Rate" Value="8000" PlaceholderText="8192" 
                            VariableSizedWrapGrid.ColumnSpan="2"/>
-                <NumberBox Name="Amplitude" Header="Amplitude" Value="5000" PlaceholderText="5000" 
+                <NumberBox Name="Amplitude" Header="Amplitude" Value="1" PlaceholderText="1" 
                            VariableSizedWrapGrid.ColumnSpan="2"/>
             </VariableSizedWrapGrid>
 

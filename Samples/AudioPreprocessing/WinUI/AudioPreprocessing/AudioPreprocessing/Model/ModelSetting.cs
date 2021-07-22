@@ -23,7 +23,7 @@ namespace AudioPreprocessing.Model
             int dftSize = 256,
             int hopSize = 3,
             int nMelBins = 1024,
-            int sampleRate = 8192,
+            int sampleRate = 8000,
             int amplitude = 5000
             )
         {

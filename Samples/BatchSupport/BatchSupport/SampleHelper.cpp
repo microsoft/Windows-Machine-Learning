@@ -9,7 +9,7 @@ using namespace winrt;
 #ifdef USE_WINML_NUGET
 using namespace Microsoft::AI::MachineLearning;
 #else
-using namespace Windows::AI::MachineLearning;
+using namespace winrt::Windows::AI::MachineLearning;
 #endif
 using namespace winrt::Windows::Foundation;
 using namespace winrt::Windows::Foundation::Collections;

@@ -17,19 +17,19 @@
             <CheckBox x:Name = "ColorMelSpectrogramCheckBox"  Content = "Check to render Mel Spectrogram with color" HorizontalAlignment="Center"/>
            
             <VariableSizedWrapGrid Orientation="Horizontal" MaximumRowsOrColumns ="6" HorizontalAlignment="Center">
-                <NumberBox Name="BatchSize" Header="Batch Size" Value="1" PlaceholderText="1" 
+                <NumberBox Name="BatchSize" Header="Batch Size" Value="1"
                            VariableSizedWrapGrid.ColumnSpan="2"/>
-                <NumberBox Name="WindowSize" Header="Window Size" Value="400" PlaceholderText="256"
+                <NumberBox Name="WindowSize" Header="Window Size" Value="400" 
                            VariableSizedWrapGrid.ColumnSpan="2"/>
-                <NumberBox Name="DFTSize" Header="DFT Size" Value="400" PlaceholderText="256" 
+                <NumberBox Name="DFTSize" Header="DFT Size" Value="400" 
                            VariableSizedWrapGrid.ColumnSpan="2"/>
-                <NumberBox Name="HopSize" Header="Hop Size" Value="200" PlaceholderText="3" 
+                <NumberBox Name="HopSize" Header="Hop Size" Value="200" 
                            VariableSizedWrapGrid.ColumnSpan="2"/>
-                <NumberBox Name="NMelBins" Header="Number of Mel Bins" Value="128" PlaceholderText="128" 
+                <NumberBox Name="NMelBins" Header="Number of Mel Bins" Value="128" 
                            VariableSizedWrapGrid.ColumnSpan="3"/>
-                <NumberBox Name="SampleRate" Header="Sample Rate" Value="8000" PlaceholderText="8192" 
+                <NumberBox Name="SampleRate" Header="Sample Rate" Value="8000" 
                            VariableSizedWrapGrid.ColumnSpan="2"/>
-                <NumberBox Name="Amplitude" Header="Amplitude" Value="1" PlaceholderText="1" 
+                <NumberBox Name="Amplitude" Header="Amplitude" Value="5000"  
                            VariableSizedWrapGrid.ColumnSpan="2"/>
             </VariableSizedWrapGrid>
 

@@ -4,7 +4,11 @@
 using namespace winrt;
 using namespace Windows::Foundation;
 using namespace Windows::Foundation::Collections;
+#ifdef USE_WINML_NUGET
+using namespace Microsoft::AI::MachineLearning;
+#else
 using namespace Windows::AI::MachineLearning;
+#endif
 using namespace Windows::Media;
 using namespace Windows::Graphics::Imaging;
 using namespace Windows::Storage;

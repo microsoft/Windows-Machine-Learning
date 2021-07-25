@@ -22,6 +22,10 @@ namespace WinMLSamplesGallery
     {
         AllSamples = 0,
         ImageClassifier,
+<<<<<<< HEAD
+=======
+        ImageEffects,
+>>>>>>> 6034e348e756cccf255ec23416c86d0c02a85847
     }
 
     public sealed class Link
@@ -54,6 +58,13 @@ namespace WinMLSamplesGallery
                     if (!Type.Equals(Frame.CurrentSourcePageType, typeof(Samples.ImageClassifier)))
                     {
                         Frame.Navigate(typeof(Samples.ImageClassifier), null, null);
+                    }
+                    break;
+                case PageId.ImageEffects:
+                    // Only navigate if the selected page isn't currently loaded.
+                    if (!Type.Equals(Frame.CurrentSourcePageType, typeof(Samples.ImageEffects)))
+                    {
+                        Frame.Navigate(typeof(Samples.ImageEffects), null, null);
                     }
                     break;
             }

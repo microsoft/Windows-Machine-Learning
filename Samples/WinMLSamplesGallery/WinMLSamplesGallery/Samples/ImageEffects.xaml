@@ -1,0 +1,414 @@
+﻿<Page
+    x:Class="WinMLSamplesGallery.Samples.ImageEffects"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:WinMLSamplesGallery"
+    xmlns:local_controls="using:WinMLSamplesGallery.Controls"
+    xmlns:local_samples="using:WinMLSamplesGallery.Samples"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+    <Page.Resources>
+        <DataTemplate x:Key="ImageTemplate" x:DataType="local_controls:Thumbnail">
+            <Image Stretch="UniformToFill" Source="{x:Bind ImageUri}" Width="200" Height="150" />
+        </DataTemplate>
+
+        <DataTemplate x:Name="EffectTemplate" x:DataType="local_samples:EffectViewModel">
+            <Grid Height="70" Width="130" Background="#e6e6e6" BorderThickness="4" Padding="10,5,10,1">
+                <StackPanel Orientation="Vertical" VerticalAlignment="Top" Padding="5,1,5,1">
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                        <TextBlock FontFamily="Segoe MDL2 Assets" Text="{x:Bind Icon}" FontSize="30" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#919191" Padding="0,0,5,0"/>
+                        <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE710;" FontSize="12" Foreground="#919191" />
+                        <TextBlock FontFamily="Segoe MDL2 Assets" Text="{x:Bind ModeIcon}" FontSize="20" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#919191" Padding="5,0,0,0"/>
+                    </StackPanel>
+                    <TextBlock FontSize="12" Text="{x:Bind Title}" Foreground="#12bef6" HorizontalAlignment="Center"
+                               Typography.Capitals="AllSmallCaps" Typography.StylisticSet4="True"
+                               VerticalAlignment="Top" TextWrapping="WrapWholeWords" TextAlignment="Center" />
+                </StackPanel>
+            </Grid>
+        </DataTemplate>
+
+        <DataTemplate x:Name="BlurEffectTemplate" x:DataType="local_samples:EffectViewModel">
+            <Grid Height="70" Width="130" Background="#e6e6e6" BorderThickness="4" Padding="10,5,10,1">
+                <StackPanel Orientation="Vertical" VerticalAlignment="Top" Padding="5,5,5,1">
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                        <TextBlock FontFamily="Segoe MDL2 Assets" Text="{x:Bind Icon}" FontSize="30" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#919191" Padding="0,0,5,0"/>
+                        <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE947;" FontSize="12" Foreground="#919191" />
+                        <TextBlock FontFamily="Segoe MDL2 Assets" Text="{x:Bind Icon}" FontSize="30" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#919191" Padding="5,0,0,0"/>
+                    </StackPanel>
+                    <TextBlock FontSize="12" Text="{x:Bind Title}" Foreground="#12bef6" HorizontalAlignment="Center"
+                               Typography.Capitals="AllSmallCaps" Typography.StylisticSet4="True"
+                               VerticalAlignment="Top" TextWrapping="WrapWholeWords" TextAlignment="Center" />
+                </StackPanel>
+            </Grid>
+        </DataTemplate>
+
+        <DataTemplate x:Name="PixelSwizzleTemplate" x:DataType="local_samples:PixelSwizzleViewModel">
+            <Grid Height="60" Width="120" Background="#e6e6e6" BorderThickness="4" Padding="10,5,10,1">
+
+                <StackPanel Orientation="Vertical" VerticalAlignment="Top" Padding="5,1,5,1">
+                    <TextBlock FontSize="12" Text="{x:Bind Title}" Foreground="#12bef6"
+                               HorizontalAlignment="Center"
+                                   Typography.Capitals="AllSmallCaps"
+                                   Typography.StylisticSet4="True"
+                                   VerticalAlignment="Top"
+                                    TextWrapping="WrapWholeWords"
+                               TextAlignment="Center"
+                                   />
+                    <StackPanel Orientation="Horizontal">
+                        <Rectangle Width="10" Height="10" Fill="Gray" />
+                        <Rectangle Width="10" Height="10" Fill="DarkGray" />
+                        <Rectangle Width="10" Height="10" Fill="Black" />
+                        <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE9AC;"/>
+                        <Rectangle Width="10" Height="10">
+                            <Rectangle.Fill>
+                                <SolidColorBrush Color="{x:Bind First}"/>
+                            </Rectangle.Fill>
+                        </Rectangle>
+                        <Rectangle Width="10" Height="10">
+                            <Rectangle.Fill>
+                                <SolidColorBrush Color="{x:Bind Second}"/>
+                            </Rectangle.Fill>
+                        </Rectangle>
+                        <Rectangle Width="10" Height="10">
+                            <Rectangle.Fill>
+                                <SolidColorBrush Color="{x:Bind Third}"/>
+                            </Rectangle.Fill>
+                        </Rectangle>
+                    </StackPanel>
+                </StackPanel>
+            </Grid>
+        </DataTemplate>
+
+        <DataTemplate x:Name="OrientationEffectTemplate" x:DataType="local_samples:OrientationViewModel">
+            <Grid Height="95" Width="130" Background="#e6e6e6" BorderThickness="4" Padding="10,5,10,1">
+                <StackPanel Orientation="Vertical" VerticalAlignment="Top" Padding="5,1,5,1" Margin="5">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xEB9F;" FontSize="30" HorizontalAlignment="Center" Foreground="#919191" Padding="0,0,0,0" />
+                        <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE9AC;"/>
+                        <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xEB9F;" FontSize="30" HorizontalAlignment="Center" Foreground="#919191" Padding="0,0,0,0"
+                                   RenderTransformOrigin=".5,.5" RenderTransform="{x:Bind Orientation}" />
+                    </StackPanel>
+                    <TextBlock FontSize="12" Text="{x:Bind Title}" Foreground="#12bef6"
+                               Padding="0,5,0,0"
+                               HorizontalAlignment="Center"
+                               Typography.Capitals="AllSmallCaps"
+                               Typography.StylisticSet4="True"
+                               VerticalAlignment="Top"
+                               TextWrapping="WrapWholeWords"
+                               TextAlignment="Center"
+                                   />
+                </StackPanel>
+            </Grid>
+        </DataTemplate>
+    </Page.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <local_controls:SampleHeader
+            Grid.Row="0"
+            Title="Image Effects"
+            Description="Pick an image and apply a variety of effects powered by Windows AI MachineLearning like Blur, Sharpen, Contrast, and many more." />
+        <ScrollViewer 
+            Grid.Row="1"
+            ZoomMode="Disabled"
+            IsVerticalScrollChainingEnabled="True"
+            HorizontalScrollMode="Enabled" HorizontalScrollBarVisibility="Disabled"
+            VerticalScrollMode="Enabled" VerticalScrollBarVisibility="Visible">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+
+                <StackPanel Grid.Row="0" Orientation="Horizontal" Padding="5,10,0,0">
+                    <StackPanel Orientation="Vertical">
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
+                            <Button FontFamily="Segoe MDL2 Assets" Content="&#xE1A5;" Width="97" Height="50" HorizontalAlignment="Left" Click="OpenButton_Clicked" />
+                            <Grid Padding="5,0,0,0">
+                                <ComboBox x:Name="DeviceComboBox" SelectedIndex="0" Background="LightGray" PlaceholderText="Device" Height="50" Width="97"
+                                          SelectionChanged="DeviceComboBox_SelectionChanged">
+                                    <TextBlock Text="CPU" FontSize="18" Typography.Capitals="AllSmallCaps" Typography.StylisticSet4="True"/>
+                                    <TextBlock Text="DML" FontSize="18" Typography.Capitals="AllSmallCaps" Typography.StylisticSet4="True"/>
+                                </ComboBox>
+                            </Grid>
+                        </StackPanel>
+                        <GridView
+                            x:Name="BasicGridView"
+                            ItemTemplate="{StaticResource ImageTemplate}"
+                            IsItemClickEnabled="True"
+                            SelectionChanged="SampleInputsGridView_SelectionChanged"
+                            SelectionMode="Single"
+                            Padding="0,6,0,0"
+                            HorizontalAlignment="Left">
+                            <GridView.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <StackPanel Orientation="Vertical" />
+                                </ItemsPanelTemplate>
+                            </GridView.ItemsPanel>
+                            <GridView.Items>
+                                <local_controls:Thumbnail ImageUri="ms-appx:///InputData/kitten.png" />
+                            </GridView.Items>
+                        </GridView>
+
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Padding="0,2,0,0">
+                            <Grid Padding="0,0,5,5">
+                                <ToggleSplitButton x:Name="ResizeToggleSplitButton" VerticalAlignment="Top" Height="46" Width="97" IsCheckedChanged="IsCheckedChanged" ToolTipService.ToolTip="Resize Image" >
+                                    <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xF617;"/>
+                                    <ToggleSplitButton.Flyout>
+                                        <Flyout Placement="Bottom">
+                                            <StackPanel Orientation="Vertical">
+                                                <TextBlock Text="Resize Image"
+                                                           FontSize="18"
+                                                           Foreground="#12bef6"
+                                                           Typography.Capitals="AllSmallCaps"
+                                                           Typography.StylisticSet4="True"
+                                                           Padding="0,0,0,5"
+                                                           FontFamily="Segoe UI Light"
+                                                           />
+                                                <GridView x:Name="ResizePicker"
+                                                      ItemTemplate="{StaticResource EffectTemplate}"
+                                                      SelectionChanged="ResizePicker_SelectionChanged"
+                                                      SingleSelectionFollowsFocus="True">
+                                                    <GridView.ItemsPanel>
+                                                        <ItemsPanelTemplate>
+                                                            <ItemsWrapGrid x:Name="MaxItemsWrapGrid" Orientation="Horizontal" MaximumRowsOrColumns="3"/>
+                                                        </ItemsPanelTemplate>
+                                                    </GridView.ItemsPanel>
+                                                    <GridView.ItemContainerStyle>
+                                                        <Style TargetType="GridViewItem">
+                                                            <Setter Property="MinWidth" Value="0"/>
+                                                            <Setter Property="MinHeight" Value="0"/>
+                                                        </Style>
+                                                    </GridView.ItemContainerStyle>
+                                                    <GridView.Items>
+                                                        <local_samples:EffectViewModel Title="Cubic Fill"   Icon="&#xE799;" ModeIcon="&#xF128;" Tag="ResizeCubicFill" />
+                                                        <local_samples:EffectViewModel Title="Linear Fill"  Icon="&#xE799;" ModeIcon="&#xF7AF;" Tag="ResizeLinearFill" />
+                                                        <local_samples:EffectViewModel Title="Nearest Fill" Icon="&#xE799;" ModeIcon="&#xEC26;" Tag="ResizeNearestFill" />
+                                                        <local_samples:EffectViewModel Title="Cubic Fit"    Icon="&#xE9A6;" ModeIcon="&#xF128;" Tag="ResizeCubicFit" />
+                                                        <local_samples:EffectViewModel Title="Linear Fit"   Icon="&#xE9A6;" ModeIcon="&#xF7AF;" Tag="ResizeLinearFit" />
+                                                        <local_samples:EffectViewModel Title="Nearest Fit"  Icon="&#xE9A6;" ModeIcon="&#xEC26;" Tag="ResizeNearestFit" />
+                                                    </GridView.Items>
+                                                </GridView>
+                                            </StackPanel>
+                                        </Flyout>
+                                    </ToggleSplitButton.Flyout>
+                                </ToggleSplitButton>
+                            </Grid>
+                            <Grid Padding="0,0,5,5">
+                                <ToggleSplitButton x:Name="OrientationToggleSplitButton" VerticalAlignment="Top" Height="46" Width="97" IsCheckedChanged="IsCheckedChanged" ToolTipService.ToolTip="Orientation">
+                                    <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE8B4;"/>
+                                    <ToggleSplitButton.Flyout>
+                                        <Flyout Placement="Bottom">
+                                            <StackPanel Orientation="Vertical">
+                                                <TextBlock Text="Change Orientation"
+                                                           FontSize="18"
+                                                           Foreground="#12bef6"
+                                                           Typography.Capitals="AllSmallCaps"
+                                                           Typography.StylisticSet4="True"
+                                                           Padding="0,0,0,5"
+                                                           FontFamily="Segoe UI Light"
+                                                           />
+                                                <GridView x:Name="OrientationPicker"
+                                                          ItemTemplate="{StaticResource OrientationEffectTemplate}"
+                                                          SelectionChanged="OrientationPicker_SelectionChanged">
+                                                    <GridView.ItemsPanel>
+                                                        <ItemsPanelTemplate>
+                                                            <ItemsWrapGrid x:Name="MaxItemsWrapGrid" Orientation="Horizontal" MaximumRowsOrColumns="2"/>
+                                                        </ItemsPanelTemplate>
+                                                    </GridView.ItemsPanel>
+                                                    <GridView.Items>
+                                                        <local_samples:OrientationViewModel Title="Flip Horizontal" Tag="MirrorHorizontal">
+                                                            <local_samples:OrientationViewModel.Orientation>
+                                                                <ScaleTransform ScaleX="-1" ScaleY="1" />
+                                                            </local_samples:OrientationViewModel.Orientation>
+                                                        </local_samples:OrientationViewModel>
+                                                        <local_samples:OrientationViewModel Title="Flip Vertical" Tag="MirrorVertical">
+                                                            <local_samples:OrientationViewModel.Orientation>
+                                                                <ScaleTransform ScaleX="1" ScaleY="-1" />
+                                                            </local_samples:OrientationViewModel.Orientation>
+                                                        </local_samples:OrientationViewModel>
+                                                        <local_samples:OrientationViewModel Title="Rotate Right 90" Tag="RotateRight90">
+                                                            <local_samples:OrientationViewModel.Orientation>
+                                                                <RotateTransform Angle="90" />
+                                                            </local_samples:OrientationViewModel.Orientation>
+                                                        </local_samples:OrientationViewModel>
+                                                        <local_samples:OrientationViewModel Title="Rotate Left 90" Tag="RotateLeft90">
+                                                            <local_samples:OrientationViewModel.Orientation>
+                                                                <RotateTransform Angle="-90" />
+                                                            </local_samples:OrientationViewModel.Orientation>
+                                                        </local_samples:OrientationViewModel>
+                                                    </GridView.Items>
+                                                </GridView>
+                                            </StackPanel>
+                                        </Flyout>
+                                    </ToggleSplitButton.Flyout>
+                                </ToggleSplitButton>
+                            </Grid>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" >
+                            <Grid Padding="0,0,5,5">
+                                <ToggleSplitButton x:Name="PixelSwizzleToggleSplitButton" VerticalAlignment="Top" Height="46" Width="97" IsCheckedChanged="IsCheckedChanged" ToolTipService.ToolTip="Pixel Swizzle" >
+                                    <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE8B1;"/>
+                                    <ToggleSplitButton.Flyout>
+                                        <Flyout Placement="Bottom">
+
+                                            <StackPanel Orientation="Vertical">
+                                                <TextBlock Text="Pixel Swizzle Image"
+                                                           FontSize="18"
+                                                           Foreground="#12bef6"
+                                                           Typography.Capitals="AllSmallCaps"
+                                                           Typography.StylisticSet4="True"
+                                                           Padding="0,0,0,5"
+                                                           FontFamily="Segoe UI Light"
+                                                           />
+                                                <GridView x:Name="PixelSwizzlePicker"
+                                                      ItemTemplate="{StaticResource PixelSwizzleTemplate}"
+                                                      SelectionChanged="PixelSwizzlePicker_SelectionChanged"
+                                                      SingleSelectionFollowsFocus="True">
+                                                    <GridView.ItemsPanel>
+                                                        <ItemsPanelTemplate>
+                                                            <ItemsWrapGrid x:Name="MaxItemsWrapGrid" Orientation="Horizontal" MaximumRowsOrColumns="3"/>
+                                                        </ItemsPanelTemplate>
+                                                    </GridView.ItemsPanel>
+                                                    <GridView.Items>
+                                                        <local_samples:PixelSwizzleViewModel Title="rgb...bgr" First="Black" Second="DarkGray" Third="Gray" Tag="PixelSwizzle_123_321" />
+                                                        <local_samples:PixelSwizzleViewModel Title="rgb...brg" First="Black" Second="Gray" Third="DarkGray" Tag="PixelSwizzle_123_312" />
+                                                        <local_samples:PixelSwizzleViewModel Title="rgb...grb" First="DarkGray" Second="Gray" Third="Black" Tag="PixelSwizzle_123_213" />
+                                                        <local_samples:PixelSwizzleViewModel Title="rgb...gbr" First="DarkGray" Second="Black" Third="Gray" Tag="PixelSwizzle_123_231" />
+                                                        <local_samples:PixelSwizzleViewModel Title="rgb...rbg" First="Gray" Second="Black" Third="DarkGray" Tag="PixelSwizzle_123_132" />
+                                                    </GridView.Items>
+                                                </GridView>
+                                            </StackPanel>
+                                        </Flyout>
+                                    </ToggleSplitButton.Flyout>
+                                </ToggleSplitButton>
+                            </Grid>
+                            <Grid Padding="0,0,5,5">
+                                <ToggleSplitButton x:Name="BlurSharpenToggleSplitButton" VerticalAlignment="Top" Height="46" Width="97" IsCheckedChanged="IsCheckedChanged" ToolTipService.ToolTip="Blur or Sharpen" >
+                                    <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE7B3;"/>
+                                    <ToggleSplitButton.Flyout>
+                                        <Flyout Placement="Bottom">
+
+                                            <StackPanel Orientation="Vertical">
+                                                <TextBlock Text="Blur/Sharpen"
+                                                           FontSize="18"
+                                                           Foreground="#12bef6"
+                                                           Typography.Capitals="AllSmallCaps"
+                                                           Typography.StylisticSet4="True"
+                                                           Padding="0,0,0,5"
+                                                           FontFamily="Segoe UI Light"
+                                                           />
+                                                <GridView x:Name="BlurSharpenPicker"
+                                                      ItemTemplate="{StaticResource BlurEffectTemplate}"
+                                                      SelectionChanged="BlurSharpenPicker_SelectionChanged"
+                                                      SingleSelectionFollowsFocus="True">
+                                                    <GridView.ItemsPanel>
+                                                        <ItemsPanelTemplate>
+                                                            <ItemsWrapGrid x:Name="MaxItemsWrapGrid" Orientation="Horizontal" MaximumRowsOrColumns="3"/>
+                                                        </ItemsPanelTemplate>
+                                                    </GridView.ItemsPanel>
+                                                    <GridView.Items>
+                                                        <local_samples:EffectViewModel Title="3x3 kernel" Icon="&#xF148;" Tag="Blur3x3" />
+                                                        <local_samples:EffectViewModel Title="5x5 kernel" Icon="&#xF14A;" Tag="Blur5x5" />
+                                                        <local_samples:EffectViewModel Title="7x7 kernel" Icon="&#xF14C;" Tag="Blur7x7" />
+                                                    </GridView.Items>
+                                                </GridView>
+                                            </StackPanel>
+                                        </Flyout>
+                                    </ToggleSplitButton.Flyout>
+                                </ToggleSplitButton>
+                            </Grid>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" >
+                            <Grid Padding="0,0,5,5">
+                                <ToggleSplitButton x:Name="ContrastToggleSplitButton" VerticalAlignment="Top" Height="46" Width="97" IsCheckedChanged="IsCheckedChanged" ToolTipService.ToolTip="Brightness and Contrast" >
+                                    <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE793;"/>
+                                    <ToggleSplitButton.Flyout>
+                                        <Flyout Placement="Bottom">
+                                            <StackPanel Orientation="Vertical">
+                                                <TextBlock Text="Brightness and Contrast"
+                                                           FontSize="18"
+                                                           Foreground="#12bef6"
+                                                           Typography.Capitals="AllSmallCaps"
+                                                           Typography.StylisticSet4="True"
+                                                           Padding="0,0,0,5"
+                                                           FontFamily="Segoe UI Light"
+                                                           />
+                                                <TextBlock Text="Slope"
+                                                           FontSize="12"
+                                                           Foreground="Black"
+                                                           Typography.Capitals="AllSmallCaps"
+                                                           Typography.StylisticSet4="True"
+                                                           Padding="0,0,0,5"
+                                                           FontFamily="Segoe UI Light"
+                                                           />
+                                                <Slider x:Name="ContrastMaxSlider" StepFrequency=".01" TickFrequency=".1" Minimum="0" Maximum="1" TickPlacement="Outside" ValueChanged="ContrastMaxSlider_ValueChanged" />
+                                                <TextBlock Text="Intercept"
+                                                           FontSize="12"
+                                                           Foreground="Black"
+                                                           Typography.Capitals="AllSmallCaps"
+                                                           Typography.StylisticSet4="True"
+                                                           Padding="0,0,0,5"
+                                                           FontFamily="Segoe UI Light"
+                                                           />
+                                                <Slider x:Name="ContrastMinSlider" StepFrequency=".01" TickFrequency=".1" Minimum="0" Maximum="1" TickPlacement="Outside" ValueChanged="ContrastMinSlider_ValueChanged" />
+                                            </StackPanel>
+                                        </Flyout>
+                                    </ToggleSplitButton.Flyout>
+                                </ToggleSplitButton>
+                            </Grid>
+                            <Grid Padding="0,0,5,5">
+                                <ToggleSplitButton x:Name="ArtisticEffectsToggleSplitButton" VerticalAlignment="Top" Height="46" Width="97" IsCheckedChanged="IsCheckedChanged" ToolTipService.ToolTip="Artistic Effects" >
+                                    <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE790;"/>
+                                    <ToggleSplitButton.Flyout>
+                                        <Flyout Placement="Bottom">
+                                            <StackPanel Orientation="Vertical">
+                                                <TextBlock Text="Artistic Effects"
+                                                           FontSize="18"
+                                                           Foreground="#12bef6"
+                                                           Typography.Capitals="AllSmallCaps"
+                                                           Typography.StylisticSet4="True"
+                                                           Padding="0,0,0,5"
+                                                           FontFamily="Segoe UI Light"
+                                                           />
+                                                <GridView x:Name="ArtisticEffectsPicker"
+                                                      ItemTemplate="{StaticResource EffectTemplate}"
+                                                      SelectionChanged="ArtisticEffectsPicker_SelectionChanged"
+                                                      SingleSelectionFollowsFocus="True">
+                                                    <GridView.ItemsPanel>
+                                                        <ItemsPanelTemplate>
+                                                            <ItemsWrapGrid x:Name="MaxItemsWrapGrid" Orientation="Horizontal" MaximumRowsOrColumns="3"/>
+                                                        </ItemsPanelTemplate>
+                                                    </GridView.ItemsPanel>
+                                                    <GridView.Items>
+                                                        <local_samples:EffectViewModel Title="Sobel Filter" Icon="&#xE71F;" Tag="Sobel" />
+                                                    </GridView.Items>
+                                                </GridView>
+                                            </StackPanel>
+                                        </Flyout>
+                                    </ToggleSplitButton.Flyout>
+                                </ToggleSplitButton>
+                            </Grid>
+                        </StackPanel>
+                    </StackPanel>
+                    <Grid Width="360" Height="360" HorizontalAlignment="Left" VerticalAlignment="Top">
+                        <Image x:Name="InputImage" Stretch="None" Width="224" Height="224" VerticalAlignment="Top" HorizontalAlignment="Left">
+                            <Image.RenderTransform>
+                                <ScaleTransform ScaleX="1.607142" ScaleY="1.607142" />
+                            </Image.RenderTransform>
+                        </Image>
+                    </Grid>
+                    <local_controls:PerformanceMonitor x:Name="PerformanceMetricsMonitor"/>
+                </StackPanel>
+            </Grid>
+        </ScrollViewer>
+    </Grid>
+</Page>

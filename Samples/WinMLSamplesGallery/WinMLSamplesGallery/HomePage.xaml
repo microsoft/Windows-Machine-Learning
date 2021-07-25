@@ -76,11 +76,14 @@
                     </ItemsPanelTemplate>
                 </GridView.ItemsPanel>
 
-                <GridView.Items>
-                    <local:Link Title="Image Classifier" Icon="&#xE155;" Tag="ImageClassifier">
-                        <local:Link.Description>Pick an image and classify the scene into 1000 categories such as keyboard, mouse, pencil, and many animals.</local:Link.Description>
-                    </local:Link>
-                </GridView.Items>
+                    <GridView.Items>
+                        <local:Link Title="Image Classifier" Icon="&#xE155;" Tag="ImageClassifier">
+                            <local:Link.Description>Pick an image and classify the scene into 1000 categories such as keyboard, mouse, pencil, and many animals.</local:Link.Description>
+                        </local:Link>
+                        <local:Link Title="Image Effects" Icon="&#xE155;" Tag="ImageEffects">
+                            <local:Link.Description>Pick an image and apply a variety of effects powered by Windows AI MachineLearning like Blur, Sharpen, Contrast, and many more.</local:Link.Description>
+                        </local:Link>
+                    </GridView.Items>
                 </GridView>
             </StackPanel>
         </ScrollViewer>

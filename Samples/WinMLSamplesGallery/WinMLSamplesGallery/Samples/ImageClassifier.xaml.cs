@@ -59,7 +59,7 @@ namespace WinMLSamplesGallery.Samples
         private LearningModelSession preProcessingSession_;
         private LearningModelSession postProcessingSession_;
 
-        private StorageFile currentImage_ = null;
+        private SoftwareBitmap currentImage_ = null;
         Classifier currentModel_ = Classifier.NotSet;
         Classifier loadedModel_ = Classifier.NotSet;
         const long BatchSize = 1;
@@ -219,9 +219,14 @@ namespace WinMLSamplesGallery.Samples
 #pragma warning disable CA1416 // Validate platform compatibility
         private (IEnumerable<string>, IReadOnlyList<float>) Classify(SoftwareBitmap softwareBitmap)
         {
+            PerformanceMetricsMonitor.ClearLog();
+
+            long start, stop;
+
             var input = (object)VideoFrame.CreateWithSoftwareBitmap(softwareBitmap);
 
             // PreProcess
+            start = HighResolutionClock.UtcNow();
             object preProcessedOutput = input;
             if (preProcessingSession_ != null)
             {
@@ -231,12 +236,18 @@ namespace WinMLSamplesGallery.Samples
                 var shape = preProcessedOutputTF.Shape;
                 System.Diagnostics.Debug.WriteLine("shape = {0}, {1}, {2}, {3}", shape[0], shape[1], shape[2], shape[3]);
             }
+            stop = HighResolutionClock.UtcNow();
+            var preprocessDuration = HighResolutionClock.DurationInMs(start, stop);
 
             // Inference
+            start = HighResolutionClock.UtcNow();
             var inferenceResults = Evaluate(inferenceSession_, preProcessedOutput);
             var inferenceOutput = inferenceResults.Outputs.First().Value as TensorFloat;
+            stop = HighResolutionClock.UtcNow();
+            var inferenceDuration = HighResolutionClock.DurationInMs(start, stop);
 
             // PostProcess
+            start = HighResolutionClock.UtcNow();
             var postProcessedOutputs = Evaluate(postProcessingSession_, inferenceOutput);
             var topKValues = postProcessedOutputs.Outputs["TopKValues"] as TensorFloat;
             var topKIndices = postProcessedOutputs.Outputs["TopKIndices"] as TensorInt64Bit;
@@ -245,18 +256,24 @@ namespace WinMLSamplesGallery.Samples
             var probabilities = topKValues.GetAsVectorView();
             var indices = topKIndices.GetAsVectorView();
             var labels = indices.Select((index) => labels_[index]);
+            stop = HighResolutionClock.UtcNow();
+            var postProcessDuration = HighResolutionClock.DurationInMs(start, stop);
+
+            PerformanceMetricsMonitor.Log("Pre-process", preprocessDuration);
+            PerformanceMetricsMonitor.Log("Inference", inferenceDuration);
+            PerformanceMetricsMonitor.Log("Post-process", postProcessDuration);
 
             return (labels, probabilities);
         }
 
-        private static LearningModelEvaluationResult Evaluate(LearningModelSession session, object input, TensorFloat output = null)
+        private static LearningModelEvaluationResult Evaluate(LearningModelSession session, object input)
         {
             // Create the binding
             var binding = new LearningModelBinding(session);
 
             // Create an emoty output, that will keep the output resources on the GPU
             // It will be chained into a the post processing on the GPU as well
-            output = output ?? TensorFloat.Create();
+            var output = TensorFloat.Create();
 
             // Bind inputs and outputs
             // For squeezenet these evaluate to "data", and "squeezenet0_flatten0_reshape0"
@@ -269,16 +286,20 @@ namespace WinMLSamplesGallery.Samples
             return session.Evaluate(binding, "");
         }
 
-        private static LearningModelSession CreateLearningModelSession(string modelPath)
+        private LearningModelSession CreateLearningModelSession(string modelPath)
         {
             var model = CreateLearningModel(modelPath);
             var session =  CreateLearningModelSession(model);
             return session;
         }
 
-        private static LearningModelSession CreateLearningModelSession(LearningModel model)
+        private LearningModelSession CreateLearningModelSession(LearningModel model)
         {
-            var device = new LearningModelDevice(LearningModelDeviceKind.DirectXHighPerformance);
+            var kind =
+                (DeviceComboBox.SelectedIndex == 0) ?
+                    LearningModelDeviceKind.Cpu :
+                    LearningModelDeviceKind.DirectXHighPerformance;
+            var device = new LearningModelDevice(kind);
             var options = new LearningModelSessionOptions() {
                 CloseModelOnSessionCreation = true              // Close the model to prevent extra memory usage
             };
@@ -317,7 +338,7 @@ namespace WinMLSamplesGallery.Samples
             var file = PickFile();
             if (file != null)
             {
-                currentImage_ = file;
+                currentImage_ = CreateSoftwareBitmapFromStorageFile(file);
                 BasicGridView.SelectedItem = null;
                 TryPerformInference();
             }
@@ -330,7 +351,8 @@ namespace WinMLSamplesGallery.Samples
             if (thumbnail != null)
             {
                 var image = thumbnail.ImageUri;
-                currentImage_ = StorageFile.GetFileFromApplicationUriAsync(new Uri(image)).GetAwaiter().GetResult();
+                var file = StorageFile.GetFileFromApplicationUriAsync(new Uri(image)).GetAwaiter().GetResult();
+                currentImage_ = CreateSoftwareBitmapFromStorageFile(file);
                 TryPerformInference();
             }
         }
@@ -355,10 +377,9 @@ namespace WinMLSamplesGallery.Samples
                 {
                     EnsureInit();
 
-                    var softwareBitmap = CreateSoftwareBitmapFromStorageFile(currentImage_);
-                    RenderImageInMainPanel(softwareBitmap);
+                    RenderImageInMainPanel(currentImage_);
 
-                    var (labels, probabilities) = Classify(softwareBitmap);
+                    var (labels, probabilities) = Classify(currentImage_);
                     RenderInferenceResults(labels, probabilities);
 
                 }
@@ -424,6 +445,11 @@ namespace WinMLSamplesGallery.Samples
             var stream = file.OpenAsync(FileAccessMode.Read).GetAwaiter().GetResult();
             var decoder = BitmapDecoder.CreateAsync(stream).GetAwaiter().GetResult();
             return decoder.GetSoftwareBitmapAsync().GetAwaiter().GetResult();
+        }
+
+        private void DeviceComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            TryPerformInference();
         }
     }
 }

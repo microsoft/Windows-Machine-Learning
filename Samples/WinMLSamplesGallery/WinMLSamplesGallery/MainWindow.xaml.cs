@@ -27,11 +27,9 @@ namespace WinMLSamplesGallery
         {
             ("all_samples", typeof(AllSamples)),
             ("audio", typeof(Audio)),
-            ("batching", typeof(Batching)),
             ("benchmark", typeof(Benchmark)),
             ("home", typeof(HomePage)),
             ("image", typeof(Image)),
-            ("security", typeof(Security)),
             ("video", typeof(Video)),
         };
 

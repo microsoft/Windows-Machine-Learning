@@ -79,7 +79,16 @@
 
                 <StackPanel Grid.Row="0" Orientation="Horizontal" Padding="5,10,0,0">
                     <StackPanel Orientation="Vertical">
-                        <Button FontFamily="Segoe MDL2 Assets" Content="&#xE1A5;" Width="200" Height="50" HorizontalAlignment="Left" Click="OpenButton_Clicked" />
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
+                            <Button FontFamily="Segoe MDL2 Assets" Content="&#xE1A5;" Width="97" Height="50" HorizontalAlignment="Left" Click="OpenButton_Clicked" />
+                            <Grid Padding="5,0,0,0">
+                                <ComboBox x:Name="DeviceComboBox" SelectedIndex="0" Background="LightGray" PlaceholderText="Device" Height="50" Width="97"
+                                          SelectionChanged="DeviceComboBox_SelectionChanged">
+                                    <TextBlock Text="CPU" FontSize="18" Typography.Capitals="AllSmallCaps" Typography.StylisticSet4="True"/>
+                                    <TextBlock Text="DML" FontSize="18" Typography.Capitals="AllSmallCaps" Typography.StylisticSet4="True"/>
+                                </ComboBox>
+                            </Grid>
+                        </StackPanel>
                         <GridView
                             x:Name="BasicGridView"
                             ItemTemplate="{StaticResource ImageTemplate}"
@@ -104,6 +113,7 @@
                         <TextBlock TextWrapping="WrapWholeWords" Text="Choose an Image or Open a file..." HorizontalAlignment="Center" VerticalAlignment="Center" />
                         <Image x:Name="InputImage" Stretch="UniformToFill" Height="360" HorizontalAlignment="Center"/>
                     </Grid>
+                    <local_controls:PerformanceMonitor x:Name="PerformanceMetricsMonitor"/>
                 </StackPanel>
 
                 <GridView Grid.Row="1" x:Name="AllModelsGrid" ItemTemplate="{StaticResource AllModelsTemplate}" SelectionMode="Extended"
@@ -145,7 +155,7 @@
                         -->
                     </GridView.Items>
                 </GridView>
-                
+
                 <ListView Grid.Row="2"
                           x:Name="InferenceResults"
                           HorizontalAlignment="Stretch"

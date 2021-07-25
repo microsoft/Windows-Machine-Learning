@@ -71,6 +71,9 @@
                         <local:Link Title="Image Classifier" Icon="&#xE155;" Tag="ImageClassifier">
                             <local:Link.Description>SqueezeNet models perform image classification - they take images as input and classify the major object in the image into a set of pre-defined classes.</local:Link.Description>
                         </local:Link>
+                        <local:Link Title="Image Effects" Icon="&#xE155;" Tag="ImageEffects">
+                            <local:Link.Description>Pick an image and apply a variety of effects powered by Windows AI MachineLearning like Blur, Sharpen, Contrast, and many more.</local:Link.Description>
+                        </local:Link>
                     </GridView.Items>
                 </GridView>
             </StackPanel>

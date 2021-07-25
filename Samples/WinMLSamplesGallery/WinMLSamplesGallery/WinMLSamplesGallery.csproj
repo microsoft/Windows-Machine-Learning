@@ -71,7 +71,6 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="InputData\sysnet.txt" />
-    <Content Include="Models\candy.onnx" />
     <Content Include="Models\densenet-9.onnx">
       <Link>Models\densenet-9.onnx</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -92,12 +91,10 @@
       <Link>Models\inception-v2-9.onnx</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Models\la_muse.onnx" />
     <Content Include="Models\mobilenetv2-7.onnx">
       <Link>Models\mobilenetv2-7.onnx</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Models\mosaic.onnx" />
     <Content Include="Models\shufflenet-9.onnx">
       <Link>Models\shufflenet-9.onnx</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -110,7 +107,6 @@
       <Link>Models\squeezenet1.1-7.onnx</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Models\udnie.onnx" />
   </ItemGroup>
 
   <ItemGroup>

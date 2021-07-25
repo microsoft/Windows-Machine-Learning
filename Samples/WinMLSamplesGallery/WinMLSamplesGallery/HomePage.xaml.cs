@@ -22,10 +22,7 @@ namespace WinMLSamplesGallery
     {
         AllSamples = 0,
         ImageClassifier,
-<<<<<<< HEAD
-=======
         ImageEffects,
->>>>>>> 6034e348e756cccf255ec23416c86d0c02a85847
     }
 
     public sealed class Link

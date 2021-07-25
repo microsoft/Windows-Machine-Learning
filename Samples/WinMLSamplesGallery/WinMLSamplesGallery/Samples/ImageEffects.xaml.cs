@@ -617,7 +617,7 @@ namespace WinMLSamplesGallery.Samples
         private void BlurSharpenPicker_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             CompleteFlyoutSelection(BlurSharpenToggleSplitButton, false);
-            ApplyEffects(false);
+            ApplyEffects();
         }
 
 

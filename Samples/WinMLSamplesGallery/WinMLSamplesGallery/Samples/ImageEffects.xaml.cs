@@ -8,6 +8,8 @@ using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.WindowsRuntime;
+using Windows.Foundation;
+using Windows.Foundation.Collections;
 using Windows.Graphics.Imaging;
 using Windows.Media;
 using Windows.Storage;
@@ -463,8 +465,8 @@ namespace WinMLSamplesGallery.Samples
             string outputName = session.Model.OutputFeatures[0].Name;
             binding.Bind(inputName, input);
 
-            var outputBindProperties = new Windows.Foundation.Collections.PropertySet();
-            outputBindProperties.Add("SuppressCpuCopyback", "True");
+            var outputBindProperties = new PropertySet();
+            outputBindProperties.Add("DisableTensorCpuSync", PropertyValue.CreateBoolean(true));
             binding.Bind(outputName, output, outputBindProperties);
 
             // Evaluate
@@ -505,8 +507,8 @@ namespace WinMLSamplesGallery.Samples
             binding.Bind("Slope", TensorFloat.CreateFromArray(new long[] { 1 }, new float[] { (float)slope }));
             binding.Bind("YIntercept", TensorFloat.CreateFromArray(new long[] { 1 }, new float[] { (float)yintercept }));
 
-            var outputBindProperties = new Windows.Foundation.Collections.PropertySet();
-            outputBindProperties.Add("SuppressCpuCopyback", "True");
+            var outputBindProperties = new PropertySet();
+            outputBindProperties.Add("DisableTensorCpuSync", PropertyValue.CreateBoolean(true));
             binding.Bind("Output", output, outputBindProperties);
 
             EvaluateInternal(contrastEffectSession_, binding);

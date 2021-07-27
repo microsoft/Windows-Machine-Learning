@@ -108,7 +108,7 @@ namespace WinMLSamplesGallery.Samples
                 1, 2, 1, 0, 0, 0, -1, -2, -1,
             };
 
-            var builder = LearningModelBuilder.Create(13)
+            var builder = LearningModelBuilder.Create(11)
                                 .Inputs.Add(LearningModelBuilder.CreateTensorFeatureDescriptor("InputX", TensorKind.Float, new long[] { -1, 3, -1, -1 }))
                                 .Outputs.Add(LearningModelBuilder.CreateTensorFeatureDescriptor("OutputX", TensorKind.Float, new long[] { -1, 3, -1, -1 }))
                                 .Operators.Add(new LearningModelOperator("Conv")
@@ -296,7 +296,7 @@ namespace WinMLSamplesGallery.Samples
                 K(1, second), K(2, second), K(3, second),
                 K(1, third),  K(2, third),  K(3, third)
             };
-            var builder = LearningModelBuilder.Create(13)
+            var builder = LearningModelBuilder.Create(11)
                                 .Inputs.Add(LearningModelBuilder.CreateTensorFeatureDescriptor("Input", TensorKind.Float, new long[] { -1, 3, -1, -1 }))
                                 .Outputs.Add(LearningModelBuilder.CreateTensorFeatureDescriptor("Output", TensorKind.Float, new long[] { -1, 3, -1, -1 }))
                                  .Operators.Add(new LearningModelOperator("Conv")
@@ -424,7 +424,6 @@ namespace WinMLSamplesGallery.Samples
                                             .SetConstant("starts", TensorInt64Bit.CreateFromIterable(new long[] { 4 }, new long[] { 0, 0, 0, 0 }))
                                             .SetConstant("ends", TensorInt64Bit.CreateFromIterable(new long[] { 4 }, new long[] { n, c-1, h, w }))
                                             .SetOutput("output", "Output"));
-
             return builder.CreateModel();
         }
 

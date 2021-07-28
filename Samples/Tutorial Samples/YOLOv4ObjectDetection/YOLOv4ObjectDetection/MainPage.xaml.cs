@@ -135,16 +135,15 @@ namespace YOLOv4ObjectDetection
         }
 
         // draw bounding boxes on the output frame based on evaluation result
-        private async Task DrawBoxes(List<Model.DetectionResult> detetions, VideoFrame frame)
+        private async Task DrawBoxes(List<Model.DetectionResult> detections, VideoFrame frame)
         {
-
             this.OverlayCanvas.Children.Clear();
-            for (int i=0; i < detetions.Count; ++i)
+            for (int i=0; i < detections.Count; ++i)
             {
-                int top = (int)(detetions[i].bbox[0] * WebCam.Height);
-                int left = (int)(detetions[i].bbox[1] * WebCam.Width);
-                int bottom = (int)(detetions[i].bbox[2] * WebCam.Height);
-                int right = (int)(detetions[i].bbox[3] * WebCam.Width);
+                int top = (int)(detections[i].bbox[0] * WebCam.Height);
+                int left = (int)(detections[i].bbox[1] * WebCam.Width);
+                int bottom = (int)(detections[i].bbox[2] * WebCam.Height);
+                int right = (int)(detections[i].bbox[3] * WebCam.Width);
 
                 var brush = new ImageBrush();
                 var bitmap_source = new SoftwareBitmapSource();
@@ -176,14 +175,14 @@ namespace YOLOv4ObjectDetection
                 textBlock.Foreground = foregroundColorBrush;
                 textBlock.FontSize = 18;
 
-                textBlock.Text = detetions[i].label;
+                textBlock.Text = detections[i].label;
                 // Hide
                 textBlock.Visibility = Visibility.Collapsed;
                 border.Background = backgroundColorBrush;
                 border.Child = textBlock;
 
-                Canvas.SetLeft(border, detetions[i].bbox[1] * 416 + 2);
-                Canvas.SetTop(border, detetions[i].bbox[0] * 416 + 2);
+                Canvas.SetLeft(border, detections[i].bbox[1] * 416 + 2);
+                Canvas.SetTop(border, detections[i].bbox[0] * 416 + 2);
                 textBlock.Visibility = Visibility.Visible;
                 // Add to canvas
                 this.OverlayCanvas.Children.Add(border);

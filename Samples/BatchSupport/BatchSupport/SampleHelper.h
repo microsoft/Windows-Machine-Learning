@@ -13,7 +13,11 @@ namespace SampleHelper
     winrt::Windows::Graphics::Imaging::SoftwareBitmap softwareBitmap);
 
   // Create input Tensorfloats with 3 images.
+  #ifdef USE_WINML_NUGET
+  winrt::Microsoft::AI::MachineLearning::TensorFloat CreateInputTensorFloat();
+  #else
   winrt::Windows::AI::MachineLearning::TensorFloat CreateInputTensorFloat();
+  #endif
 
   // Create input VideoFrames with 3 images
   winrt::Windows::Foundation::Collections::IVector<winrt::Windows::Media::VideoFrame> CreateVideoFrames();

@@ -6,7 +6,11 @@
 
 #define CHECK_HRESULT winrt::check_hresult
 using namespace winrt;
+#ifdef USE_WINML_NUGET
+using namespace Microsoft::AI::MachineLearning;
+#else
 using namespace winrt::Windows::AI::MachineLearning;
+#endif
 using namespace winrt::Windows::Foundation;
 using namespace winrt::Windows::Foundation::Collections;
 using namespace winrt::Windows::Media;

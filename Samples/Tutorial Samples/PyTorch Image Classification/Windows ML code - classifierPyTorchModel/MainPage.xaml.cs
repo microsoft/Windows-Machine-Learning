@@ -159,6 +159,7 @@ namespace classifierPyTorch
                 if (elementProbability > probability)
                 {
                     index = i;
+                    probability = elementProbability;
                 }
                 System.Diagnostics.Debug.WriteLine(i+" "+ elementProbability);
             }

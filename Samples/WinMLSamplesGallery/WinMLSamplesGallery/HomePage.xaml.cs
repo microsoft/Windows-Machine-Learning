@@ -23,6 +23,7 @@ namespace WinMLSamplesGallery
         AllSamples = 0,
         ImageClassifier,
         ImageEffects,
+        BatchedInference
     }
 
     public sealed class Link
@@ -58,6 +59,13 @@ namespace WinMLSamplesGallery
                     }
                     break;
                 case PageId.ImageEffects:
+                    // Only navigate if the selected page isn't currently loaded.
+                    if (!Type.Equals(Frame.CurrentSourcePageType, typeof(Samples.ImageEffects)))
+                    {
+                        Frame.Navigate(typeof(Samples.ImageEffects), null, null);
+                    }
+                    break;
+                case PageId.BatchedInference:
                     // Only navigate if the selected page isn't currently loaded.
                     if (!Type.Equals(Frame.CurrentSourcePageType, typeof(Samples.ImageEffects)))
                     {

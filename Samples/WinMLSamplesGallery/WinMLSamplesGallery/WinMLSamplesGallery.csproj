@@ -30,6 +30,9 @@
     <Compile Remove="Samples\ImageClassifier - Copy.xaml.cs" />
   </ItemGroup>
   <ItemGroup>
+	<Compile Remove="Samples\BatchedInference - Copy.xaml.cs" />
+  </ItemGroup>
+  <ItemGroup>
     <Content Remove="assets\hummingbird - Copy.jpg" />
   </ItemGroup>
   <ItemGroup>
@@ -212,6 +215,12 @@
     <Page Update="Samples\ImageClassifier.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
+  </ItemGroup>
+
+  <ItemGroup>
+	<Page Update="Samples\ImageClassifier.xaml">
+		<Generator>MSBuild:Compile</Generator>
+	</Page>
   </ItemGroup>
 
   <Target Name="DownloadContentFiles" BeforeTargets="BeforeBuild">

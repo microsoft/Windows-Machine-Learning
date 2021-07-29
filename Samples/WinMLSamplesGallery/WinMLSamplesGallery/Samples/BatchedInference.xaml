@@ -47,10 +47,10 @@
                                     <TextBlock Text="GPU" FontSize="18" Typography.Capitals="AllSmallCaps" Typography.StylisticSet4="True"/>
                                 </ComboBox>
                             </Grid>
+                            <Button Width="97" Height="50" HorizontalAlignment="Left">Start Inference</Button>
                         </StackPanel>
                     </StackPanel>
                 </StackPanel>
-
             </Grid>
         </ScrollViewer>
     </Grid>

@@ -12,46 +12,25 @@
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
     <Page.Resources>
-        <DataTemplate x:Key="ImageTemplate" x:DataType="local_controls:Thumbnail">
-            <Image Stretch="UniformToFill" Source="{x:Bind ImageUri}" Width="200" Height="150" />
-        </DataTemplate>
 
-        <DataTemplate x:Name="InferenceResultsTemplate" x:DataType="local_controls:Prediction">
-            <StackPanel Orientation="Horizontal">
-                <TextBlock Width="420"
-                    FontSize="14"
-                    Foreground="Black"
-                    Padding="0,1,1,1"
-                    Typography.Capitals="AllSmallCaps"
-                    Typography.StylisticSet4="True"
-                    TextTrimming="CharacterEllipsis">
-                    <Run Text="[" /> 
-                    <Run Text="{Binding Index}" /> 
-                    <Run Text="] " /> 
-                    <Run Text="{Binding Name}" />
-                </TextBlock>
-                <TextBlock Width="120"
-                    FontSize="14"
-                    Foreground="Black"
-                    Padding="0,1,1,1"
-                    Typography.Capitals="AllSmallCaps"
-                    Typography.StylisticSet4="True"> 
-                    <Run Text="p =" /> 
-                    <Run Text="{Binding Probability}" />
-                </TextBlock>
-            </StackPanel>
-        </DataTemplate>
-
-        <DataTemplate x:Name="AllModelsTemplate" x:DataType="local_samples:ClassifierViewModel">
-            <Grid Background="#e6e6e6" BorderBrush="#12bef6" BorderThickness="1">
-                <TextBlock FontSize="14" Text="{x:Bind Title}"
-                            Typography.Capitals="AllSmallCaps"
-                            Typography.StylisticSet4="True"
-                            VerticalAlignment="Top"
-                            Padding="10,2,10,2"
-                            MinWidth="136"
-                            />
-            </Grid>
-        </DataTemplate>
     </Page.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <local_controls:SampleHeader
+            Grid.Row="0"
+            Title="Batched Inference"
+            Description="Perform inference on multiple inputs at once to increase performance." />
+        <ScrollViewer 
+            Grid.Row="1"
+            ZoomMode="Disabled"
+            IsVerticalScrollChainingEnabled="True"
+            HorizontalScrollMode="Enabled" HorizontalScrollBarVisibility="Disabled"
+            VerticalScrollMode="Enabled" VerticalScrollBarVisibility="Visible">
+
+        </ScrollViewer>
+    </Grid>
 </Page>

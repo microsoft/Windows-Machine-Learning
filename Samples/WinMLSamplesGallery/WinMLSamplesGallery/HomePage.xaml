@@ -83,6 +83,9 @@
                         <local:Link Title="Image Effects" Icon="&#xE155;" Tag="ImageEffects">
                             <local:Link.Description>Pick an image and apply a variety of effects powered by Windows AI MachineLearning like Blur, Sharpen, Contrast, and many more.</local:Link.Description>
                         </local:Link>
+                        <local:Link Title="Batched Inference" Icon="&#xE155;" Tag="BatchedInference">
+                            <local:Link.Description>Perform inference on multiple inputs at once to increase performance.</local:Link.Description>
+                        </local:Link>
                     </GridView.Items>
                 </GridView>
             </StackPanel>

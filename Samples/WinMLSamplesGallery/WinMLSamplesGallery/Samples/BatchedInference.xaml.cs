@@ -26,5 +26,6 @@ namespace WinMLSamplesGallery.Samples
             this.InitializeComponent();
         }
 
+
     }
 }

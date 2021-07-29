@@ -199,6 +199,7 @@ namespace YOLOv4ObjectDetection
                     Interval = TimeSpan.FromMilliseconds(30)
                 };
                 _timer.Tick += OnTimerTick;
+                _timer.Start();
             }
         }
 

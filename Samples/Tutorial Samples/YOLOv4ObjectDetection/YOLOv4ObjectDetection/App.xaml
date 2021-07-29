@@ -2,6 +2,7 @@
     x:Class="YOLOv4ObjectDetection.App"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:local="using:YOLOv4ObjectDetection">
+    xmlns:local="using:YOLOv4ObjectDetection"
+    RequestedTheme="Dark">
 
 </Application>

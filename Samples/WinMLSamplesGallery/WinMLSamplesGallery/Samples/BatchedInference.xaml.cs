@@ -188,6 +188,7 @@ namespace WinMLSamplesGallery.Samples
             {
                 EnsureInit();
                 var (labels, probabilities) = Classify(selected_image_);
+                RenderInferenceResults(labels, probabilities);
             }
         }
 
@@ -280,6 +281,22 @@ namespace WinMLSamplesGallery.Samples
 
         private void DeviceComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
+        }
+
+        private void RenderInferenceResults(IEnumerable<string> labels, IReadOnlyList<float> probabilities)
+        {
+            var indices = Enumerable.Range(1, probabilities.Count);
+            var zippedResults = indices.Zip(labels.Zip(probabilities));
+            var results = zippedResults.Select(
+                (zippedResult) =>
+                    new Controls.Prediction
+                    {
+                        Index = zippedResult.First,
+                        Name = zippedResult.Second.First.Trim(new char[] { ',' }),
+                        Probability = zippedResult.Second.Second.ToString("E4")
+                    });
+            InferenceResults.ItemsSource = results;
+            InferenceResults.SelectedIndex = 0;
         }
 
     }

@@ -15,6 +15,33 @@
         <DataTemplate x:Key="ImageTemplate" x:DataType="local_controls:Thumbnail">
             <Image Stretch="UniformToFill" Source="{x:Bind ImageUri}" Width="200" Height="150" />
         </DataTemplate>
+
+        <DataTemplate x:Name="InferenceResultsTemplate" x:DataType="local_controls:Prediction">
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Width="420"
+                    FontSize="14"
+                    Foreground="Black"
+                    Padding="0,1,1,1"
+                    Typography.Capitals="AllSmallCaps"
+                    Typography.StylisticSet4="True"
+                    TextTrimming="CharacterEllipsis">
+                    <Run Text="[" /> 
+                    <Run Text="{Binding Index}" /> 
+                    <Run Text="] " /> 
+                    <Run Text="{Binding Name}" />
+                </TextBlock>
+                <TextBlock Width="120"
+                    FontSize="14"
+                    Foreground="Black"
+                    Padding="0,1,1,1"
+                    Typography.Capitals="AllSmallCaps"
+                    Typography.StylisticSet4="True"> 
+                    <Run Text="p =" /> 
+                    <Run Text="{Binding Probability}" />
+                </TextBlock>
+            </StackPanel>
+        </DataTemplate>
+
     </Page.Resources>
 
     <Grid>
@@ -54,8 +81,6 @@
                             <local_controls:PerformanceMonitor x:Name="PerformanceMetricsMonitor"/>
                         </StackPanel>
                     </StackPanel>
-                </StackPanel>
-                <StackPanel>
                     <GridView
                             x:Name="BasicGridView"
                             ItemTemplate="{StaticResource ImageTemplate}"
@@ -73,6 +98,27 @@
                         </GridView.Items>
                     </GridView>
                 </StackPanel>
+
+                <ListView Grid.Row="2"
+                          x:Name="InferenceResults"
+                          HorizontalAlignment="Stretch"
+                          Padding="5,3,0,0"
+                          ItemTemplate="{StaticResource InferenceResultsTemplate}"
+                          IsItemClickEnabled="False"
+                          SingleSelectionFollowsFocus="False">
+                    <ListView.ItemContainerStyle>
+                        <Style TargetType="ListViewItem">
+                            <Setter Property="Margin" Value="1,1,1,1"/>
+                            <Setter Property="MinHeight" Value="0"/>
+                        </Style>
+                    </ListView.ItemContainerStyle>
+
+                    <ListView.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <ItemsWrapGrid x:Name="MaxItemsWrapGrid" Orientation="Vertical" HorizontalAlignment="Stretch"/>
+                        </ItemsPanelTemplate>
+                    </ListView.ItemsPanel>
+                </ListView>
             </Grid>
         </ScrollViewer>
     </Grid>

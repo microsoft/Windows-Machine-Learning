@@ -12,7 +12,9 @@
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
     <Page.Resources>
-
+        <DataTemplate x:Key="ImageTemplate" x:DataType="local_controls:Thumbnail">
+            <Image Stretch="UniformToFill" Source="{x:Bind ImageUri}" Width="200" Height="150" />
+        </DataTemplate>
     </Page.Resources>
 
     <Grid>
@@ -47,9 +49,28 @@
                                     <TextBlock Text="GPU" FontSize="18" Typography.Capitals="AllSmallCaps" Typography.StylisticSet4="True"/>
                                 </ComboBox>
                             </Grid>
-                            <Button Width="97" Height="50" HorizontalAlignment="Left">Start Inference</Button>
+                            <Button Height="50" HorizontalAlignment="Left" Click="StartInference">Start Inference</Button>
+                            <local_controls:PerformanceMonitor x:Name="PerformanceMetricsMonitor"/>
                         </StackPanel>
                     </StackPanel>
+                </StackPanel>
+                <StackPanel>
+                    <GridView
+                            x:Name="BasicGridView"
+                            ItemTemplate="{StaticResource ImageTemplate}"
+                            IsItemClickEnabled="True"
+                            SelectionMode="Single"
+                            Padding="0,6,0,0"
+                            HorizontalAlignment="Center">
+                        <GridView.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <StackPanel Orientation="Vertical" />
+                            </ItemsPanelTemplate>
+                        </GridView.ItemsPanel>
+                        <GridView.Items>
+                            <local_controls:Thumbnail ImageUri="ms-appx:///InputData/hummingbird.jpg" />
+                        </GridView.Items>
+                    </GridView>
                 </StackPanel>
             </Grid>
         </ScrollViewer>

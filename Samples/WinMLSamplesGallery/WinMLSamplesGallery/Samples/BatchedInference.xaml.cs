@@ -29,7 +29,8 @@ namespace WinMLSamplesGallery.Samples
         private LearningModelSession postProcessingSession_;
 
         private SoftwareBitmap selected_image_ = null;
-        Classifier model_ = Classifier.SqueezeNet;
+        Classifier currentModel_ = Classifier.SqueezeNet;
+        Classifier loadedModel_ = Classifier.NotSet;
         const long BatchSize = 1;
         const long TopK = 10;
 
@@ -124,24 +125,29 @@ namespace WinMLSamplesGallery.Samples
                 };
             }
 
-            InitializeWindowsMachineLearning();
+            InitializeWindowsMachineLearning(currentModel_);
         }
 
-        private void InitializeWindowsMachineLearning()
+        private void InitializeWindowsMachineLearning(Classifier model)
         {
-            var modelPath = modelDictionary_[model_];
-            inferenceSession_ = CreateLearningModelSession(modelPath);
-            preProcessingSession_ = null;
-            Func<LearningModel> postProcessor = () => TensorizationModels.SoftMaxThenTopK(TopK);
-            postProcessingSession_ = CreateLearningModelSession(postProcessor());
-           
-            if (model_ == Classifier.RCNN_ILSVRC13)
+            if (currentModel_ != loadedModel_)
             {
-                labels_ = ilsvrc2013Labels_;
-            }
-            else
-            {
-                labels_ = imagenetLabels_;
+                var modelPath = modelDictionary_[model];
+                inferenceSession_ = CreateLearningModelSession(modelPath);
+                preProcessingSession_ = null;
+                Func<LearningModel> postProcessor = () => TensorizationModels.SoftMaxThenTopK(TopK);
+                postProcessingSession_ = CreateLearningModelSession(postProcessor());
+
+                if (currentModel_ == Classifier.RCNN_ILSVRC13)
+                {
+                    labels_ = ilsvrc2013Labels_;
+                }
+                else
+                {
+                    labels_ = imagenetLabels_;
+                }
+
+                loadedModel_ = currentModel_;
             }
         }
 
@@ -180,8 +186,8 @@ namespace WinMLSamplesGallery.Samples
             selected_image_ = CreateSoftwareBitmapFromStorageFile(file);
             if (selected_image_ != null)
             {
+                EnsureInit();
                 var (labels, probabilities) = Classify(selected_image_);
-                System.Diagnostics.Debug.WriteLine("Finished Inference!");
             }
         }
 
@@ -270,6 +276,10 @@ namespace WinMLSamplesGallery.Samples
 
             // Evaluate
             return session.Evaluate(binding, "");
+        }
+
+        private void DeviceComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
         }
 
     }

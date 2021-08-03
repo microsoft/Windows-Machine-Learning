@@ -44,7 +44,8 @@
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
                             <Button FontFamily="Segoe MDL2 Assets" Content="&#xE1A5;" Width="97" Height="50" HorizontalAlignment="Left" Click="OpenButton_Clicked" />
                             <Grid Padding="5,0,0,0">
-                                <ComboBox x:Name="DeviceComboBox" SelectedIndex="0" Background="LightGray" PlaceholderText="Device" Height="50" Width="97">
+                                <ComboBox x:Name="DeviceComboBox" SelectedIndex="0" Background="LightGray" PlaceholderText="Device" Height="50" Width="97"
+                                          SelectionChanged="DeviceComboBox_SelectionChanged">
                                     <TextBlock Text="CPU" FontSize="18" Typography.Capitals="AllSmallCaps" Typography.StylisticSet4="True"/>
                                     <TextBlock Text="GPU" FontSize="18" Typography.Capitals="AllSmallCaps" Typography.StylisticSet4="True"/>
                                 </ComboBox>

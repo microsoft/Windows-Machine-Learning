@@ -287,6 +287,8 @@ namespace WinMLSamplesGallery.Samples
         {
             var indices = Enumerable.Range(1, probabilities.Count);
             var zippedResults = indices.Zip(labels.Zip(probabilities));
+            System.Diagnostics.Debug.WriteLine(zippedResults.First());
+/*            IEnumerable<(int First,(string First, float Second) Second)> topLabel = zippedResults.First()*/;
             var results = zippedResults.Select(
                 (zippedResult) =>
                     new Controls.Prediction

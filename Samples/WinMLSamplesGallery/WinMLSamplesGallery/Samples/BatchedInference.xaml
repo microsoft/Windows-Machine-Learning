@@ -13,7 +13,7 @@
 
     <Page.Resources>
         <DataTemplate x:Key="ImageTemplate" x:DataType="local_controls:Thumbnail">
-            <Image Stretch="UniformToFill" Source="{x:Bind ImageUri}" Width="200" Height="150" />
+            <Image Source="{x:Bind ImageUri}" Width="200" />
         </DataTemplate>
 
         <DataTemplate x:Name="InferenceResultsTemplate" x:DataType="local_controls:Prediction">
@@ -61,7 +61,7 @@
             VerticalScrollMode="Enabled" VerticalScrollBarVisibility="Visible">
             <Grid>
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="360" />
+                    <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="*" />
                 </Grid.RowDefinitions>
@@ -81,23 +81,24 @@
                             <local_controls:PerformanceMonitor x:Name="PerformanceMetricsMonitor"/>
                         </StackPanel>
                     </StackPanel>
-                    <GridView
-                            x:Name="BasicGridView"
-                            ItemTemplate="{StaticResource ImageTemplate}"
-                            IsItemClickEnabled="True"
-                            SelectionMode="Single"
-                            Padding="0,6,0,0"
-                            HorizontalAlignment="Center">
-                        <GridView.ItemsPanel>
-                            <ItemsPanelTemplate>
-                                <StackPanel Orientation="Vertical" />
-                            </ItemsPanelTemplate>
-                        </GridView.ItemsPanel>
-                        <GridView.Items>
-                            <local_controls:Thumbnail ImageUri="ms-appx:///InputData/hummingbird.jpg" />
-                        </GridView.Items>
-                    </GridView>
                 </StackPanel>
+
+                <GridView Grid.Row="1"
+                        x:Name="BasicGridView"
+                        ItemTemplate="{StaticResource ImageTemplate}"
+                        SelectionMode="Single"
+                        Padding="0,6,0,0">
+                    <GridView.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <StackPanel Orientation="Horizontal" />
+                        </ItemsPanelTemplate>
+                    </GridView.ItemsPanel>
+                    <GridView.Items>
+                        <local_controls:Thumbnail ImageUri="ms-appx:///InputData/hummingbird.jpg" />
+                        <local_controls:Thumbnail ImageUri="ms-appx:///InputData/kitten.png" />
+                        <local_controls:Thumbnail ImageUri="ms-appx:///InputData/fish.png" />
+                    </GridView.Items>
+                </GridView>
 
                 <ListView Grid.Row="2"
                           x:Name="InferenceResults"

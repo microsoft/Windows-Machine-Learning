@@ -43,7 +43,6 @@
     <None Remove="Controls\SampleHeader.xaml" />
     <None Remove="HomePage.xaml" />
     <None Remove="Image.xaml" />
-    <None Remove="InputData\fish.png" />
     <None Remove="InputData\ilsvrc2013.txt" />
     <None Remove="InputData\kitten.png" />
     <None Remove="InputData\sysnet.txt" />

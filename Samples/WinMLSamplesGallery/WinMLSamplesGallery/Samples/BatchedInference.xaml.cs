@@ -35,7 +35,6 @@ namespace WinMLSamplesGallery.Samples
         private LearningModelSession preProcessingSession_;
         private LearningModelSession postProcessingSession_;
 
-        private SoftwareBitmap selected_image_ = null;
         Classifier currentModel_ = Classifier.SqueezeNet;
         Classifier loadedModel_ = Classifier.NotSet;
         const long BatchSize = 1;
@@ -88,20 +87,6 @@ namespace WinMLSamplesGallery.Samples
             var stream = file.OpenAsync(FileAccessMode.Read).GetAwaiter().GetResult();
             var decoder = BitmapDecoder.CreateAsync(stream).GetAwaiter().GetResult();
             return decoder.GetSoftwareBitmapAsync().GetAwaiter().GetResult();
-        }
-
-        private void SelectImage(object sender, SelectionChangedEventArgs e)
-        {
-            Console.WriteLine("CHANGED CHANGED CHANGED");
-            var gridView = sender as GridView;
-            var thumbnail = gridView.SelectedItem as WinMLSamplesGallery.Controls.Thumbnail;
-            if (thumbnail != null)
-            {
-                var image = thumbnail.ImageUri;
-                var file = StorageFile.GetFileFromApplicationUriAsync(new Uri(image)).GetAwaiter().GetResult();
-                selected_image_ = CreateSoftwareBitmapFromStorageFile(file);
-                StartInference(sender, e);
-            }
         }
 
         private void EnsureInit()
@@ -189,14 +174,16 @@ namespace WinMLSamplesGallery.Samples
 
         private void StartInference(object sender, RoutedEventArgs e)
         {
-            var file = StorageFile.GetFileFromApplicationUriAsync(new Uri("ms-appx:///InputData/hummingbird.jpg")).GetAwaiter().GetResult();
-            selected_image_ = CreateSoftwareBitmapFromStorageFile(file);
-            if (selected_image_ != null)
-            {
-                EnsureInit();
-                var (label, times) = Classify(selected_image_);
-                RenderInferenceResults(label, times);
-            }
+            var birdFile = StorageFile.GetFileFromApplicationUriAsync(new Uri("ms-appx:///InputData/hummingbird.jpg")).GetAwaiter().GetResult();
+            var catFile = StorageFile.GetFileFromApplicationUriAsync(new Uri("ms-appx:///InputData/kitten.png")).GetAwaiter().GetResult();
+            var fishFile = StorageFile.GetFileFromApplicationUriAsync(new Uri("ms-appx:///InputData/fish.png")).GetAwaiter().GetResult();
+            var birdImage = CreateSoftwareBitmapFromStorageFile(birdFile);
+            var catImage = CreateSoftwareBitmapFromStorageFile(catFile);
+            var fishImage = CreateSoftwareBitmapFromStorageFile(fishFile);
+            var images = new List<SoftwareBitmap> { birdImage, catImage, fishImage };
+            EnsureInit();
+            var results = Classify(images);
+            RenderInferenceResults(results);
         }
 
         private static Dictionary<long, string> LoadLabels(string csvFile)
@@ -217,61 +204,62 @@ namespace WinMLSamplesGallery.Samples
             return labels;
         }
 
-        private (string, List<float>) Classify(SoftwareBitmap softwareBitmap)
+        private List<InferenceResult> Classify(List<SoftwareBitmap> images)
         {
-            /*PerformanceMetricsMonitor.ClearLog();*/
+            var results = new List<InferenceResult>();
 
-            long start, stop;
+            images.ForEach(delegate (SoftwareBitmap image) {
 
-            var input = (object)VideoFrame.CreateWithSoftwareBitmap(softwareBitmap);
+                long start, stop;
+                var input = (object)VideoFrame.CreateWithSoftwareBitmap(image);
 
-            // PreProcess
-            start = HighResolutionClock.UtcNow();
-            object preProcessedOutput = input;
-            if (preProcessingSession_ != null)
-            {
-                var preProcessedResults = Evaluate(preProcessingSession_, input);
-                preProcessedOutput = preProcessedResults.Outputs.First().Value;
-                var preProcessedOutputTF = preProcessedOutput as TensorFloat;
-                var shape = preProcessedOutputTF.Shape;
-                System.Diagnostics.Debug.WriteLine("shape = {0}, {1}, {2}, {3}", shape[0], shape[1], shape[2], shape[3]);
-            }
-            stop = HighResolutionClock.UtcNow();
-            var preprocessDuration = HighResolutionClock.DurationInMs(start, stop);
+                // PreProcess
+                start = HighResolutionClock.UtcNow();
+                object preProcessedOutput = input;
+                if (preProcessingSession_ != null)
+                {
+                    var preProcessedResults = Evaluate(preProcessingSession_, input);
+                    preProcessedOutput = preProcessedResults.Outputs.First().Value;
+                    var preProcessedOutputTF = preProcessedOutput as TensorFloat;
+                    var shape = preProcessedOutputTF.Shape;
+                    System.Diagnostics.Debug.WriteLine("shape = {0}, {1}, {2}, {3}", shape[0], shape[1], shape[2], shape[3]);
+                }
+                stop = HighResolutionClock.UtcNow();
+                var preprocessDuration = HighResolutionClock.DurationInMs(start, stop);
 
-            // Inference
-            start = HighResolutionClock.UtcNow();
-            var inferenceResults = Evaluate(inferenceSession_, preProcessedOutput);
-            var inferenceOutput = inferenceResults.Outputs.First().Value as TensorFloat;
-            stop = HighResolutionClock.UtcNow();
-            var inferenceDuration = HighResolutionClock.DurationInMs(start, stop);
+                // Inference
+                start = HighResolutionClock.UtcNow();
+                var inferenceResults = Evaluate(inferenceSession_, preProcessedOutput);
+                var inferenceOutput = inferenceResults.Outputs.First().Value as TensorFloat;
+                stop = HighResolutionClock.UtcNow();
+                var inferenceDuration = HighResolutionClock.DurationInMs(start, stop);
 
-            // PostProcess
-            start = HighResolutionClock.UtcNow();
-            var postProcessedOutputs = Evaluate(postProcessingSession_, inferenceOutput);
-            var topKValues = postProcessedOutputs.Outputs["TopKValues"] as TensorFloat;
-            var topKIndices = postProcessedOutputs.Outputs["TopKIndices"] as TensorInt64Bit;
+                // PostProcess
+                start = HighResolutionClock.UtcNow();
+                var postProcessedOutputs = Evaluate(postProcessingSession_, inferenceOutput);
+                var topKValues = postProcessedOutputs.Outputs["TopKValues"] as TensorFloat;
+                var topKIndices = postProcessedOutputs.Outputs["TopKIndices"] as TensorInt64Bit;
 
-            // Return results
-            var probabilities = topKValues.GetAsVectorView();
-            var indices = topKIndices.GetAsVectorView();
-            var labels = indices.Select((index) => labels_[index]);
-            var most_confident_label = labels.First();
-            stop = HighResolutionClock.UtcNow();
-            var postProcessDuration = HighResolutionClock.DurationInMs(start, stop);
+                // Return results
+                var probabilities = topKValues.GetAsVectorView();
+                var indices = topKIndices.GetAsVectorView();
+                var labels = indices.Select((index) => labels_[index]);
+                var most_confident_label = labels.First();
+                stop = HighResolutionClock.UtcNow();
+                var postProcessDuration = HighResolutionClock.DurationInMs(start, stop);
 
-            /*            PerformanceMetricsMonitor.Log("Pre-process", preprocessDuration);
-                        PerformanceMetricsMonitor.Log("Inference", inferenceDuration);
-                        PerformanceMetricsMonitor.Log("Post-process", postProcessDuration);*/
+                var result = new InferenceResult
+                {
+                    Label = most_confident_label,
+                    PreprocessTime = preprocessDuration.ToString(),
+                    InferenceTime = inferenceDuration.ToString(),
+                    PostprocessTime = postProcessDuration.ToString()
+                };
 
-            var times = new List<float>()
-            {
-                preprocessDuration,
-                inferenceDuration,
-                postProcessDuration
-            };
+                results.Add(result);
+            });
 
-            return (most_confident_label, times);
+            return results;
         }
 
         private static LearningModelEvaluationResult Evaluate(LearningModelSession session, object input)
@@ -298,57 +286,15 @@ namespace WinMLSamplesGallery.Samples
         {
         }
 
-        private void RenderInferenceResults(string label, List<float> times)
+        private void RenderInferenceResults(List<InferenceResult> results)
         {
-/*            var indices = Enumerable.Range(1,1); // Only get the most confident prediction
-            var zippedResults = indices.Zip(labels.Zip(probabilities));*/
-  
-/*            IEnumerable<(int First,(string First, float Second) Second)> topLabel = zippedResults.First()*/;
-            /*            var results = zippedResults.Select(
-                            (zippedResult) =>
-                                new Controls.Prediction
-                                {
-                                    Index = zippedResult.First,
-                                    Name = zippedResult.Second.First.Trim(new char[] { ',' }),
-                                    Probability = zippedResult.Second.Second.ToString("E4")
-                                });*/
-            /*            var results = zippedResults.Select(
-                            (zippedResult) =>
-                                new InferenceResult
-                                {
-                                    Label = zippedResult.Second.First.Trim(new char[] { ',' }),
-                                    PreprocessTime = "0.02",
-                                    InferenceTime = "0.04",
-                                    PostprocessTime = "0.08"
-                                });
-
-                        var secondResult = new InferenceResult();
-                        secondResult.Label = "Fish";
-                        secondResult.PreprocessTime = "20";
-                        secondResult.InferenceTime = "15";
-                        secondResult.PostprocessTime = "50";
-                        results = results.Append(secondResult);
-                        System.Diagnostics.Debug.WriteLine("results");
-                        System.Diagnostics.Debug.WriteLine(results);
-                        System.Diagnostics.Debug.WriteLine(results.ElementAt(0));
-                        System.Diagnostics.Debug.WriteLine(results.ElementAt(1));*/
-
             var tableHeader = new InferenceResult {
                 Label = "Label",
                 PreprocessTime = "Preprocess Time (ms)",
                 InferenceTime = "Inference Time (ms)",
                 PostprocessTime = "Postprocess Time (ms)"
             };
-            var result = new InferenceResult
-            {
-                Label = label,
-                PreprocessTime = times[0].ToString(),
-                InferenceTime = times[1].ToString(),
-                PostprocessTime = times[2].ToString()
-            };
-            var results = new List<InferenceResult>();
-            results.Add(tableHeader);
-            results.Add(result);
+            results.Insert(0, tableHeader);
             InferenceResults.ItemsSource = results;
             InferenceResults.SelectedIndex = 0;
         }

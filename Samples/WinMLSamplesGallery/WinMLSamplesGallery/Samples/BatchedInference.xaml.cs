@@ -14,6 +14,13 @@ using Microsoft.UI.Xaml.Media.Imaging;
 
 namespace WinMLSamplesGallery.Samples
 {
+    public sealed class InferenceResult
+    {
+        public string Label { get; set; }
+        public string PreprocessTime { get; set; }
+        public string InferenceTime { get; set; }
+        public string PostprocessTime { get; set; }
+    }
 
     /// <summary>
     /// An empty page that can be used on its own or navigated to within a Frame.

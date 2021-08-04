@@ -30,6 +30,44 @@
             </StackPanel>
         </DataTemplate>
 
+        <DataTemplate x:Key="InferenceResultsRow" x:DataType="local_samples:InferenceResult">
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Width="150"
+                    FontSize="14"
+                    Foreground="Black"
+                    Padding="1,1,1,1"
+                    Typography.Capitals="AllSmallCaps"
+                    Typography.StylisticSet4="True"
+                    TextTrimming="CharacterEllipsis">
+                    <Run Text="{Binding Label}" />
+                </TextBlock>
+                <TextBlock Width="150"
+                    FontSize="14"
+                    Foreground="Black"
+                    Padding="1,1,1,1"
+                    Typography.Capitals="AllSmallCaps"
+                    Typography.StylisticSet4="True"> 
+                    <Run Text="{Binding PreprocessTime}" />
+                </TextBlock>
+                <TextBlock Width="150"
+                    FontSize="14"
+                    Foreground="Black"
+                    Padding="1,1,1,1"
+                    Typography.Capitals="AllSmallCaps"
+                    Typography.StylisticSet4="True"> 
+                    <Run Text="{Binding InferenceTime}" />
+                </TextBlock>
+                <TextBlock Width="150"
+                    FontSize="14"
+                    Foreground="Black"
+                    Padding="1,1,1,1"
+                    Typography.Capitals="AllSmallCaps"
+                    Typography.StylisticSet4="True"> 
+                    <Run Text="{Binding PostprocessTime}" />
+                </TextBlock>
+            </StackPanel>
+        </DataTemplate>
+
     </Page.Resources>
 
     <Grid>
@@ -66,7 +104,6 @@
                                 </ComboBox>
                             </Grid>
                             <Button Height="50" HorizontalAlignment="Left" Click="StartInference">Start Inference</Button>
-                            <local_controls:PerformanceMonitor x:Name="PerformanceMetricsMonitor"/>
                         </StackPanel>
                     </StackPanel>
                 </StackPanel>
@@ -107,6 +144,37 @@
                             <ItemsWrapGrid x:Name="MaxItemsWrapGrid" Orientation="Vertical" HorizontalAlignment="Stretch"/>
                         </ItemsPanelTemplate>
                     </ListView.ItemsPanel>
+                </ListView>
+
+                <StackPanel Grid.Row="3" HorizontalAlignment="Center">
+                    <local_controls:PerformanceMonitor x:Name="PerformanceMetricsMonitor"/>
+                </StackPanel>
+
+                <ListView Grid.Row="5"
+                    x:Name="InferenceResultsTableHeader"
+                    HorizontalAlignment="Left"
+                    Padding="5,3,0,0"
+                    ItemTemplate="{StaticResource InferenceResultsRow}"
+                    IsItemClickEnabled="False"
+                    SingleSelectionFollowsFocus="False"
+                    SelectedIndex="0">
+                    <ListView.ItemContainerStyle>
+                        <Style TargetType="ListViewItem">
+                            <Setter Property="MinHeight" Value="0"/>
+                        </Style>
+                    </ListView.ItemContainerStyle>
+                    <ListView.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <ItemsWrapGrid x:Name="MaxItemsWrapGrid" Orientation="Vertical"/>
+                        </ItemsPanelTemplate>
+                    </ListView.ItemsPanel>
+                    <ListView.Items>
+                        <local_samples:InferenceResult
+                            Label="Label"
+                            PreprocessTime="Preprocess Time"
+                            InferenceTime="Inference Time"
+                            PostprocessTime="Postprocess Time" />
+                    </ListView.Items>
                 </ListView>
             </Grid>
         </ScrollViewer>

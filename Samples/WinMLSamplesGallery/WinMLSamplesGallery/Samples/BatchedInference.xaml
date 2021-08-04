@@ -91,7 +91,6 @@
                             </Grid>
                             <Button Height="50" HorizontalAlignment="Left" Click="StartInference">Start Inference</Button>
                         </StackPanel>
-                        <local_controls:PerformanceMonitor x:Name="PerformanceMetricsMonitor"/>
                     </StackPanel>
                 </StackPanel>
 

@@ -18,26 +18,14 @@
 
         <DataTemplate x:Name="InferenceResultsTemplate" x:DataType="local_controls:Prediction">
             <StackPanel Orientation="Horizontal">
-                <TextBlock Width="420"
+                <TextBlock
                     FontSize="14"
                     Foreground="Black"
                     Padding="0,1,1,1"
                     Typography.Capitals="AllSmallCaps"
                     Typography.StylisticSet4="True"
                     TextTrimming="CharacterEllipsis">
-                    <Run Text="[" /> 
-                    <Run Text="{Binding Index}" /> 
-                    <Run Text="] " /> 
                     <Run Text="{Binding Name}" />
-                </TextBlock>
-                <TextBlock Width="120"
-                    FontSize="14"
-                    Foreground="Black"
-                    Padding="0,1,1,1"
-                    Typography.Capitals="AllSmallCaps"
-                    Typography.StylisticSet4="True"> 
-                    <Run Text="p =" /> 
-                    <Run Text="{Binding Probability}" />
                 </TextBlock>
             </StackPanel>
         </DataTemplate>

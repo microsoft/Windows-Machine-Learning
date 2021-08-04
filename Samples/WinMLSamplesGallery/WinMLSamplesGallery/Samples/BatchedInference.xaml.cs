@@ -285,7 +285,7 @@ namespace WinMLSamplesGallery.Samples
 
         private void RenderInferenceResults(IEnumerable<string> labels, IReadOnlyList<float> probabilities)
         {
-            var indices = Enumerable.Range(1, probabilities.Count);
+            var indices = Enumerable.Range(1,1);
             var zippedResults = indices.Zip(labels.Zip(probabilities));
             System.Diagnostics.Debug.WriteLine(zippedResults.First());
 /*            IEnumerable<(int First,(string First, float Second) Second)> topLabel = zippedResults.First()*/;

@@ -335,6 +335,7 @@ namespace WinMLSamplesGallery.Samples
             InferenceResults.ItemsSource = individualResults;
             InferenceResults.SelectedIndex = 0;
             TotalInferenceResults.ItemsSource = totalMetricTimes;
+            TotalInferenceResults.SelectedIndex = 0;
         }
 
     }

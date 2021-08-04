@@ -54,6 +54,28 @@
             </StackPanel>
         </DataTemplate>
 
+        <DataTemplate x:Name="TotalInferenceResultsRow" x:DataType="local_samples:TotalMetricTime">
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Width="150"
+                    FontSize="14"
+                    Foreground="Black"
+                    Padding="1,1,1,1"
+                    Typography.Capitals="AllSmallCaps"
+                    Typography.StylisticSet4="True"
+                    TextTrimming="CharacterEllipsis">
+                    <Run Text="{Binding Metric}" />
+                </TextBlock>
+                <TextBlock Width="100"
+                    FontSize="14"
+                    Foreground="Black"
+                    Padding="1,1,1,1"
+                    Typography.Capitals="AllSmallCaps"
+                    Typography.StylisticSet4="True"> 
+                    <Run Text="{Binding TotalTime}" />
+                </TextBlock>
+            </StackPanel>
+        </DataTemplate>
+
     </Page.Resources>
 
     <Grid>
@@ -116,6 +138,26 @@
                     HorizontalAlignment="Left"
                     Padding="5,3,0,0"
                     ItemTemplate="{StaticResource InferenceResultsRow}"
+                    IsItemClickEnabled="False"
+                    SingleSelectionFollowsFocus="False"
+                    SelectedIndex="0">
+                    <ListView.ItemContainerStyle>
+                        <Style TargetType="ListViewItem">
+                            <Setter Property="MinHeight" Value="0"/>
+                        </Style>
+                    </ListView.ItemContainerStyle>
+                    <ListView.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <ItemsWrapGrid x:Name="MaxItemsWrapGrid" Orientation="Vertical"/>
+                        </ItemsPanelTemplate>
+                    </ListView.ItemsPanel>
+                </ListView>
+
+                <ListView Grid.Row="3"
+                    x:Name="TotalInferenceResults"
+                    HorizontalAlignment="Right"
+                    Padding="5,3,50,5"
+                    ItemTemplate="{StaticResource TotalInferenceResultsRow}"
                     IsItemClickEnabled="False"
                     SingleSelectionFollowsFocus="False"
                     SelectedIndex="0">

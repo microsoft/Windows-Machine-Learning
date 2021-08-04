@@ -22,6 +22,12 @@ namespace WinMLSamplesGallery.Samples
         public string PostprocessTime { get; set; }
     }
 
+    public sealed class TotalMetricTime
+    {
+        public string Metric { get; set; }
+        public string TotalTime { get; set; }
+    }
+
     /// <summary>
     /// An empty page that can be used on its own or navigated to within a Frame.
     /// </summary>
@@ -182,8 +188,8 @@ namespace WinMLSamplesGallery.Samples
             var fishImage = CreateSoftwareBitmapFromStorageFile(fishFile);
             var images = new List<SoftwareBitmap> { birdImage, catImage, fishImage };
             EnsureInit();
-            var results = Classify(images);
-            RenderInferenceResults(results);
+            var (individualResults, totalMetricTimes) = Classify(images);
+            RenderInferenceResults(individualResults, totalMetricTimes);
         }
 
         private static Dictionary<long, string> LoadLabels(string csvFile)
@@ -204,9 +210,13 @@ namespace WinMLSamplesGallery.Samples
             return labels;
         }
 
-        private List<InferenceResult> Classify(List<SoftwareBitmap> images)
+        private (List<InferenceResult>, List<TotalMetricTime>) Classify(List<SoftwareBitmap> images)
         {
-            var results = new List<InferenceResult>();
+            var individualResults = new List<InferenceResult>();
+            var totalMetricTimes = new List<TotalMetricTime>();
+            float totalPreprocessTime = 0;
+            float totalInferenceTime = 0;
+            float totalPostprocessTime = 0;
 
             images.ForEach(delegate (SoftwareBitmap image) {
 
@@ -256,10 +266,29 @@ namespace WinMLSamplesGallery.Samples
                     PostprocessTime = postProcessDuration.ToString()
                 };
 
-                results.Add(result);
+                individualResults.Add(result);
+                totalPreprocessTime += preprocessDuration;
+                totalInferenceTime += inferenceDuration;
+                totalPostprocessTime += postProcessDuration;
             });
 
-            return results;
+            totalMetricTimes.Add(new TotalMetricTime
+            {
+                Metric = "Total Preprocess Time",
+                TotalTime = totalPreprocessTime.ToString()
+            });
+            totalMetricTimes.Add(new TotalMetricTime
+            {
+                Metric = "Total Inference Time",
+                TotalTime = totalInferenceTime.ToString()
+            });
+            totalMetricTimes.Add(new TotalMetricTime
+            {
+                Metric = "Total Postprocess Time",
+                TotalTime = totalPostprocessTime.ToString()
+            });
+
+            return (individualResults, totalMetricTimes);
         }
 
         private static LearningModelEvaluationResult Evaluate(LearningModelSession session, object input)
@@ -286,17 +315,26 @@ namespace WinMLSamplesGallery.Samples
         {
         }
 
-        private void RenderInferenceResults(List<InferenceResult> results)
+        private void RenderInferenceResults(List<InferenceResult> individualResults,
+            List<TotalMetricTime> totalMetricTimes)
         {
-            var tableHeader = new InferenceResult {
+            var individualResultsHeader = new InferenceResult {
                 Label = "Label",
                 PreprocessTime = "Preprocess Time (ms)",
                 InferenceTime = "Inference Time (ms)",
                 PostprocessTime = "Postprocess Time (ms)"
             };
-            results.Insert(0, tableHeader);
-            InferenceResults.ItemsSource = results;
+            individualResults.Insert(0, individualResultsHeader);
+            var totalMetricTimesHeader = new TotalMetricTime
+            {
+                Metric = "Metric",
+                TotalTime = "TotalTime"
+            };
+            totalMetricTimes.Insert(0, totalMetricTimesHeader);
+
+            InferenceResults.ItemsSource = individualResults;
             InferenceResults.SelectedIndex = 0;
+            TotalInferenceResults.ItemsSource = totalMetricTimes;
         }
 
     }

@@ -16,20 +16,6 @@
             <Image Source="{x:Bind ImageUri}" Width="200" />
         </DataTemplate>
 
-        <DataTemplate x:Name="InferenceResultsTemplate" x:DataType="local_controls:Prediction">
-            <StackPanel Orientation="Horizontal">
-                <TextBlock
-                    FontSize="14"
-                    Foreground="Black"
-                    Padding="0,1,1,1"
-                    Typography.Capitals="AllSmallCaps"
-                    Typography.StylisticSet4="True"
-                    TextTrimming="CharacterEllipsis">
-                    <Run Text="{Binding Name}" />
-                </TextBlock>
-            </StackPanel>
-        </DataTemplate>
-
         <DataTemplate x:Key="InferenceResultsRow" x:DataType="local_samples:InferenceResult">
             <StackPanel Orientation="Horizontal">
                 <TextBlock Width="150"
@@ -105,6 +91,7 @@
                             </Grid>
                             <Button Height="50" HorizontalAlignment="Left" Click="StartInference">Start Inference</Button>
                         </StackPanel>
+                        <local_controls:PerformanceMonitor x:Name="PerformanceMetricsMonitor"/>
                     </StackPanel>
                 </StackPanel>
 
@@ -126,32 +113,7 @@
                 </GridView>
 
                 <ListView Grid.Row="2"
-                          x:Name="InferenceResults"
-                          HorizontalAlignment="Stretch"
-                          Padding="5,3,0,0"
-                          ItemTemplate="{StaticResource InferenceResultsTemplate}"
-                          IsItemClickEnabled="False"
-                          SingleSelectionFollowsFocus="False">
-                    <ListView.ItemContainerStyle>
-                        <Style TargetType="ListViewItem">
-                            <Setter Property="Margin" Value="1,1,1,1"/>
-                            <Setter Property="MinHeight" Value="0"/>
-                        </Style>
-                    </ListView.ItemContainerStyle>
-
-                    <ListView.ItemsPanel>
-                        <ItemsPanelTemplate>
-                            <ItemsWrapGrid x:Name="MaxItemsWrapGrid" Orientation="Vertical" HorizontalAlignment="Stretch"/>
-                        </ItemsPanelTemplate>
-                    </ListView.ItemsPanel>
-                </ListView>
-
-                <StackPanel Grid.Row="3" HorizontalAlignment="Center">
-                    <local_controls:PerformanceMonitor x:Name="PerformanceMetricsMonitor"/>
-                </StackPanel>
-
-                <ListView Grid.Row="5"
-                    x:Name="InferenceResultsTableHeader"
+                    x:Name="InferenceResults"
                     HorizontalAlignment="Left"
                     Padding="5,3,0,0"
                     ItemTemplate="{StaticResource InferenceResultsRow}"
@@ -168,13 +130,6 @@
                             <ItemsWrapGrid x:Name="MaxItemsWrapGrid" Orientation="Vertical"/>
                         </ItemsPanelTemplate>
                     </ListView.ItemsPanel>
-                    <ListView.Items>
-                        <local_samples:InferenceResult
-                            Label="Label"
-                            PreprocessTime="Preprocess Time"
-                            InferenceTime="Inference Time"
-                            PostprocessTime="Postprocess Time" />
-                    </ListView.Items>
                 </ListView>
             </Grid>
         </ScrollViewer>

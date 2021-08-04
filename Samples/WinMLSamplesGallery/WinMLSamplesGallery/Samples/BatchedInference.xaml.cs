@@ -194,8 +194,8 @@ namespace WinMLSamplesGallery.Samples
             if (selected_image_ != null)
             {
                 EnsureInit();
-                var (labels, probabilities) = Classify(selected_image_);
-                RenderInferenceResults(labels, probabilities);
+                var (label, times) = Classify(selected_image_);
+                RenderInferenceResults(label, times);
             }
         }
 
@@ -217,9 +217,9 @@ namespace WinMLSamplesGallery.Samples
             return labels;
         }
 
-        private (IEnumerable<string>, IReadOnlyList<float>) Classify(SoftwareBitmap softwareBitmap)
+        private (string, List<float>) Classify(SoftwareBitmap softwareBitmap)
         {
-            PerformanceMetricsMonitor.ClearLog();
+            /*PerformanceMetricsMonitor.ClearLog();*/
 
             long start, stop;
 
@@ -256,14 +256,22 @@ namespace WinMLSamplesGallery.Samples
             var probabilities = topKValues.GetAsVectorView();
             var indices = topKIndices.GetAsVectorView();
             var labels = indices.Select((index) => labels_[index]);
+            var most_confident_label = labels.First();
             stop = HighResolutionClock.UtcNow();
             var postProcessDuration = HighResolutionClock.DurationInMs(start, stop);
 
-            PerformanceMetricsMonitor.Log("Pre-process", preprocessDuration);
-            PerformanceMetricsMonitor.Log("Inference", inferenceDuration);
-            PerformanceMetricsMonitor.Log("Post-process", postProcessDuration);
+            /*            PerformanceMetricsMonitor.Log("Pre-process", preprocessDuration);
+                        PerformanceMetricsMonitor.Log("Inference", inferenceDuration);
+                        PerformanceMetricsMonitor.Log("Post-process", postProcessDuration);*/
 
-            return (labels, probabilities);
+            var times = new List<float>()
+            {
+                preprocessDuration,
+                inferenceDuration,
+                postProcessDuration
+            };
+
+            return (most_confident_label, times);
         }
 
         private static LearningModelEvaluationResult Evaluate(LearningModelSession session, object input)
@@ -290,20 +298,57 @@ namespace WinMLSamplesGallery.Samples
         {
         }
 
-        private void RenderInferenceResults(IEnumerable<string> labels, IReadOnlyList<float> probabilities)
+        private void RenderInferenceResults(string label, List<float> times)
         {
-            var indices = Enumerable.Range(1,1);
-            var zippedResults = indices.Zip(labels.Zip(probabilities));
-            System.Diagnostics.Debug.WriteLine(zippedResults.First());
+/*            var indices = Enumerable.Range(1,1); // Only get the most confident prediction
+            var zippedResults = indices.Zip(labels.Zip(probabilities));*/
+  
 /*            IEnumerable<(int First,(string First, float Second) Second)> topLabel = zippedResults.First()*/;
-            var results = zippedResults.Select(
-                (zippedResult) =>
-                    new Controls.Prediction
-                    {
-                        Index = zippedResult.First,
-                        Name = zippedResult.Second.First.Trim(new char[] { ',' }),
-                        Probability = zippedResult.Second.Second.ToString("E4")
-                    });
+            /*            var results = zippedResults.Select(
+                            (zippedResult) =>
+                                new Controls.Prediction
+                                {
+                                    Index = zippedResult.First,
+                                    Name = zippedResult.Second.First.Trim(new char[] { ',' }),
+                                    Probability = zippedResult.Second.Second.ToString("E4")
+                                });*/
+            /*            var results = zippedResults.Select(
+                            (zippedResult) =>
+                                new InferenceResult
+                                {
+                                    Label = zippedResult.Second.First.Trim(new char[] { ',' }),
+                                    PreprocessTime = "0.02",
+                                    InferenceTime = "0.04",
+                                    PostprocessTime = "0.08"
+                                });
+
+                        var secondResult = new InferenceResult();
+                        secondResult.Label = "Fish";
+                        secondResult.PreprocessTime = "20";
+                        secondResult.InferenceTime = "15";
+                        secondResult.PostprocessTime = "50";
+                        results = results.Append(secondResult);
+                        System.Diagnostics.Debug.WriteLine("results");
+                        System.Diagnostics.Debug.WriteLine(results);
+                        System.Diagnostics.Debug.WriteLine(results.ElementAt(0));
+                        System.Diagnostics.Debug.WriteLine(results.ElementAt(1));*/
+
+            var tableHeader = new InferenceResult {
+                Label = "Label",
+                PreprocessTime = "Preprocess Time (ms)",
+                InferenceTime = "Inference Time (ms)",
+                PostprocessTime = "Postprocess Time (ms)"
+            };
+            var result = new InferenceResult
+            {
+                Label = label,
+                PreprocessTime = times[0].ToString(),
+                InferenceTime = times[1].ToString(),
+                PostprocessTime = times[2].ToString()
+            };
+            var results = new List<InferenceResult>();
+            results.Add(tableHeader);
+            results.Add(result);
             InferenceResults.ItemsSource = results;
             InferenceResults.SelectedIndex = 0;
         }

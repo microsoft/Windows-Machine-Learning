@@ -95,7 +95,7 @@ namespace WinMLSamplesGallery.Samples
             return decoder.GetSoftwareBitmapAsync().GetAwaiter().GetResult();
         }
 
-        private void EnsureInit()
+        private void LoadLabelsAndModelPaths()
         {
             if (imagenetLabels_ == null)
             {
@@ -123,15 +123,14 @@ namespace WinMLSamplesGallery.Samples
                 };
             }
 
-            InitializeWindowsMachineLearning(currentModel_);
         }
 
-        private void InitializeWindowsMachineLearning(Classifier model)
+        private void InitializeWindowsMachineLearning(Classifier model, int batchSizeOverride=-1)
         {
             if (currentModel_ != loadedModel_)
             {
                 var modelPath = modelDictionary_[model];
-                inferenceSession_ = CreateLearningModelSession(modelPath);
+                inferenceSession_ = CreateLearningModelSession(modelPath, batchSizeOverride);
                 preProcessingSession_ = null;
                 Func<LearningModel> postProcessor = () => TensorizationModels.SoftMaxThenTopK(TopK);
                 postProcessingSession_ = CreateLearningModelSession(postProcessor());
@@ -149,14 +148,20 @@ namespace WinMLSamplesGallery.Samples
             }
         }
 
-        private LearningModelSession CreateLearningModelSession(string modelPath)
+        private void ResetModels()
+        {
+            currentModel_ = Classifier.SqueezeNet;
+            loadedModel_ = Classifier.NotSet;
+        }
+
+        private LearningModelSession CreateLearningModelSession(string modelPath, int batchSizeOverride=-1)
         {
             var model = CreateLearningModel(modelPath);
-            var session = CreateLearningModelSession(model);
+            var session = CreateLearningModelSession(model, batchSizeOverride);
             return session;
         }
 
-        private LearningModelSession CreateLearningModelSession(LearningModel model)
+        private LearningModelSession CreateLearningModelSession(LearningModel model, int batchSizeOverride=-1)
         {
             var kind =
                 (DeviceComboBox.SelectedIndex == 0) ?
@@ -167,6 +172,16 @@ namespace WinMLSamplesGallery.Samples
             {
                 CloseModelOnSessionCreation = true // Close the model to prevent extra memory usage
             };
+            if (batchSizeOverride > 0)
+            {
+                options.BatchSizeOverride = (uint) batchSizeOverride;
+                System.Diagnostics.Debug.WriteLine("Setting batchSizeOverride");
+            } else
+            {
+                System.Diagnostics.Debug.WriteLine("Did not set batchSizeOverride");
+            }
+            System.Diagnostics.Debug.WriteLine("batchSizeOverride");
+            System.Diagnostics.Debug.WriteLine(options.BatchSizeOverride);
             var session = new LearningModelSession(model, device, options);
             return session;
         }
@@ -187,9 +202,14 @@ namespace WinMLSamplesGallery.Samples
             var catImage = CreateSoftwareBitmapFromStorageFile(catFile);
             var fishImage = CreateSoftwareBitmapFromStorageFile(fishFile);
             var images = new List<SoftwareBitmap> { birdImage, catImage, fishImage };
-            EnsureInit();
+            LoadLabelsAndModelPaths();
+            InitializeWindowsMachineLearning(currentModel_, 3);
             var (individualResults, totalMetricTimes) = Classify(images);
             RenderInferenceResults(individualResults, totalMetricTimes);
+            ResetModels();
+            /*            InitializeWindowsMachineLearning(currentModel_);
+                        var (individualResults, totalMetricTimes) = Classify(images);
+                        RenderInferenceResults(individualResults, totalMetricTimes);*/
         }
 
         private static Dictionary<long, string> LoadLabels(string csvFile)
@@ -271,6 +291,84 @@ namespace WinMLSamplesGallery.Samples
                 totalInferenceTime += inferenceDuration;
                 totalPostprocessTime += postProcessDuration;
             });
+
+            totalMetricTimes.Add(new TotalMetricTime
+            {
+                Metric = "Total Preprocess Time",
+                TotalTime = totalPreprocessTime.ToString()
+            });
+            totalMetricTimes.Add(new TotalMetricTime
+            {
+                Metric = "Total Inference Time",
+                TotalTime = totalInferenceTime.ToString()
+            });
+            totalMetricTimes.Add(new TotalMetricTime
+            {
+                Metric = "Total Postprocess Time",
+                TotalTime = totalPostprocessTime.ToString()
+            });
+
+            return (individualResults, totalMetricTimes);
+        }
+
+        private (List<InferenceResult>, List<TotalMetricTime>) ClassifyBatched(List<SoftwareBitmap> images)
+        {
+            var individualResults = new List<InferenceResult>();
+            var totalMetricTimes = new List<TotalMetricTime>();
+            float totalPreprocessTime = 0;
+            float totalInferenceTime = 0;
+            float totalPostprocessTime = 0;
+
+            long start, stop;
+            var input = (object)VideoFrame.CreateWithSoftwareBitmap(images);
+
+            // PreProcess
+            start = HighResolutionClock.UtcNow();
+            object preProcessedOutput = input;
+            if (preProcessingSession_ != null)
+            {
+                var preProcessedResults = Evaluate(preProcessingSession_, input);
+                preProcessedOutput = preProcessedResults.Outputs.First().Value;
+                var preProcessedOutputTF = preProcessedOutput as TensorFloat;
+                var shape = preProcessedOutputTF.Shape;
+                System.Diagnostics.Debug.WriteLine("shape = {0}, {1}, {2}, {3}", shape[0], shape[1], shape[2], shape[3]);
+            }
+            stop = HighResolutionClock.UtcNow();
+            var preprocessDuration = HighResolutionClock.DurationInMs(start, stop);
+
+            // Inference
+            start = HighResolutionClock.UtcNow();
+            var inferenceResults = Evaluate(inferenceSession_, preProcessedOutput);
+            var inferenceOutput = inferenceResults.Outputs.First().Value as TensorFloat;
+            stop = HighResolutionClock.UtcNow();
+            var inferenceDuration = HighResolutionClock.DurationInMs(start, stop);
+
+            // PostProcess
+            start = HighResolutionClock.UtcNow();
+            var postProcessedOutputs = Evaluate(postProcessingSession_, inferenceOutput);
+            var topKValues = postProcessedOutputs.Outputs["TopKValues"] as TensorFloat;
+            var topKIndices = postProcessedOutputs.Outputs["TopKIndices"] as TensorInt64Bit;
+
+            // Return results
+            var probabilities = topKValues.GetAsVectorView();
+            var indices = topKIndices.GetAsVectorView();
+            var labels = indices.Select((index) => labels_[index]);
+            var most_confident_label = labels.First();
+            stop = HighResolutionClock.UtcNow();
+            var postProcessDuration = HighResolutionClock.DurationInMs(start, stop);
+
+            var result = new InferenceResult
+            {
+                Label = most_confident_label,
+                PreprocessTime = preprocessDuration.ToString(),
+                InferenceTime = inferenceDuration.ToString(),
+                PostprocessTime = postProcessDuration.ToString()
+            };
+
+            individualResults.Add(result);
+            totalPreprocessTime += preprocessDuration;
+            totalInferenceTime += inferenceDuration;
+            totalPostprocessTime += postProcessDuration;
 
             totalMetricTimes.Add(new TotalMetricTime
             {

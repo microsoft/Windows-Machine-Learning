@@ -9,10 +9,22 @@
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
     <Grid>
-        <Button x:Name="button_go" Content="Go" Margin="78,74,0,0" VerticalAlignment="Top" Click="button_go_Click"/>
-        <StackPanel Orientation="Horizontal">
-            <CaptureElement x:Name="WebCam" Stretch="Fill"  VerticalAlignment="Center" HorizontalAlignment="Left" Width="416" Height="416"/>
-        </StackPanel>
-        <Canvas x:Name="OverlayCanvas" VerticalAlignment="Center" HorizontalAlignment="Left" Width="416" Height="416"/>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        <AppBar Grid.Row="0" IsOpen="True" IsSticky="True">
+            <StackPanel Orientation="Horizontal">
+                <AppBarButton Icon="Play" x:Name="button_go" Label="Go" Click="button_go_Click" ToolTipService.ToolTip="Start detecting objects in the video." />
+            </StackPanel>
+        </AppBar>
+        <Grid Grid.Row="1">
+            <CaptureElement x:Name="WebCam" Grid.Row="1" Stretch="Fill"  VerticalAlignment="Center" HorizontalAlignment="Center" Width="416" Height="416"/>
+            <Canvas x:Name="OverlayCanvas" VerticalAlignment="Center" HorizontalAlignment="Center" Width="416" Height="416"/>
+        </Grid>
+        <Grid Grid.Row="2" Background="{ThemeResource ProgressBarBackgroundThemeBrush}">
+            <TextBlock x:Name="textblock_status" Margin="5"/>
+        </Grid>
     </Grid>
 </Page>

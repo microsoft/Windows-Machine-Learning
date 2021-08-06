@@ -1,0 +1,52 @@
+﻿<Page
+    x:Class="Iris_Data_Analysis.MainPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Iris_Data_Analysis"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" Height="939">
+
+    <Grid Margin="30,30,30,30">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        <TextBlock x:Name="title" HorizontalAlignment="Left" Text="Data Analysis App - Windows ML" TextWrapping="Wrap" VerticalAlignment="Top" FontSize="32" TextDecorations="Underline" FontWeight="Bold"/>
+        <TextBlock x:Name="subtitle" HorizontalAlignment="Left" Text="Provide the regression input :" TextWrapping="Wrap" VerticalAlignment="Top" FontSize="20" Grid.Row="1" FontWeight="Bold"/>
+        <Grid Grid.Row="2">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <TextBlock x:Name="sepal_length" Text="sepal length in mm [range of 10 - 100]:" VerticalAlignment="Center"/>
+            <TextBlock x:Name="sepal_width" Text="sepal width in mm [range of 10 - 80]:" VerticalAlignment="Center" Grid.Row="1"/>
+            <TextBlock x:Name="petal_length" Text="petal length in mm [range of 5 - 100]:" VerticalAlignment="Center" Grid.Row="2"/>
+            <TextBlock x:Name="petal_width" Text="sepal width in mm [range of 1 - 50]:" VerticalAlignment="Center" Grid.Row="3"/>
+
+            <Slider x:Name="sepal_length_input" Minimum="10" Maximum="100" Orientation="Horizontal" Grid.Column="1" Width="200" ValueChanged="sepal_length_input_ValueChanged"/>
+            <Slider x:Name="sepal_width_input" Minimum="10" Maximum="80" Orientation="Horizontal" Grid.Row="1" Grid.Column="1" Width="200" ValueChanged="sepal_width_input_ValueChanged"/>
+            <Slider x:Name="petal_length_input" Minimum="5" Maximum="100" Orientation="Horizontal" Grid.Row="2" Grid.Column="1" Width="200" ValueChanged="petal_length_input_ValueChanged"/>
+            <Slider x:Name="petal_width_input" Minimum="1" Maximum="50" Orientation="Horizontal" Grid.Row="3" Grid.Column="1" Width="200" ValueChanged="petal_width_input_ValueChanged"/>
+        </Grid>
+        <TextBlock x:Name="output" Text="Output:" FontSize="20" FontWeight="Bold" Grid.Row="3"/>
+        <Grid Grid.Row="4">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <TextBlock x:Name="output_subtitle" Text="Based on the information provided, the Iris type is:"/>
+            <TextBlock x:Name="model_output" Text="Model output" FontStyle="Italic"  Grid.Column="1" Margin="10,0,0,0"/>
+        </Grid>
+    </Grid>
+</Page>

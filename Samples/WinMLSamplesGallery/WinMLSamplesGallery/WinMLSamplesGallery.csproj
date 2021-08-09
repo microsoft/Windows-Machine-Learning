@@ -27,7 +27,14 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Remove="Samples\ImageEffects - Copy\**" />
+    <EmbeddedResource Remove="Samples\ImageEffects - Copy\**" />
+    <None Remove="Samples\ImageEffects - Copy\**" />
+    <Page Remove="Samples\ImageEffects - Copy\**" />
+  </ItemGroup>
+  <ItemGroup>
     <Compile Remove="Samples\ImageClassifier - Copy.xaml.cs" />
+    <Compile Remove="Samples\ObjectDetector\ImageEffects.xaml.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Remove="assets\hummingbird - Copy.jpg" />
@@ -44,6 +51,7 @@
     <None Remove="InputData\ilsvrc2013.txt" />
     <None Remove="InputData\kitten.png" />
     <None Remove="InputData\sysnet.txt" />
+    <None Remove="LargeModels\yolov4.onnx" />
     <None Remove="Models\candy.onnx" />
     <None Remove="Models\densenet-9.onnx" />
     <None Remove="Models\efficientnet-lite4-11.onnx" />
@@ -60,6 +68,7 @@
     <None Remove="Original-LightBlue.png" />
     <None Remove="Samples\ImageClassifier.xaml" />
     <None Remove="Samples\ImageEffects.xaml" />
+    <None Remove="Samples\ObjectDetector\ObjectDetector.xaml" />
     <None Remove="Video.xaml" />
   </ItemGroup>
   <ItemGroup>
@@ -71,6 +80,10 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="InputData\sysnet.txt" />
+    <Content Include="LargeModels\yolov4.onnx">
+      <Link>LargeModels\yolov4.onnx</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="Models\densenet-9.onnx">
       <Link>Models\densenet-9.onnx</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -261,6 +274,9 @@
       <Output TaskParameter="DownloadedFile" ItemName="None" />
     </DownloadFile>
     <DownloadFile Condition="!Exists('$(MSBuildProjectDirectory)\LargeModels\zfnet512-9.onnx')" SourceUrl="https://github.com/onnx/models/raw/master/vision/classification/zfnet-512/model/zfnet512-9.onnx" DestinationFolder="$(MSBuildProjectDirectory)\LargeModels">
+      <Output TaskParameter="DownloadedFile" ItemName="None" />
+    </DownloadFile>
+    <DownloadFile Condition="!Exists('$(MSBuildProjectDirectory)\LargeModels\yolov4.onnx')" SourceUrl="https://github.com/onnx/models/raw/master/vision/object_detection_segmentation/yolov4/model/yolov4.onnx" DestinationFolder="$(MSBuildProjectDirectory)\LargeModels">
       <Output TaskParameter="DownloadedFile" ItemName="None" />
     </DownloadFile>
   </Target>

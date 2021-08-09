@@ -4,22 +4,15 @@ using System.Globalization;
 using System.Linq;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using System.Runtime.InteropServices;
-using Windows.Storage.Pickers;
 using Windows.Storage;
 using Windows.Graphics.Imaging;
 using Windows.Media;
 using Microsoft.AI.MachineLearning;
 using Microsoft.UI.Xaml.Media.Imaging;
+using WinMLSamplesGallery.Common;
 
 namespace WinMLSamplesGallery.Samples
 {
-    [ComImport, Guid("3E68D4BD-7135-4D10-8018-9FB6D9F33FA1"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
-    public interface IInitializeWithWindow
-    {
-        void Initialize([In] IntPtr hwnd);
-    }
-
     public enum Classifier
     {
         NotSet = 0,
@@ -51,9 +44,6 @@ namespace WinMLSamplesGallery.Samples
     /// </summary>
     public sealed partial class ImageClassifier : Page
     {
-        [DllImport("user32.dll", ExactSpelling = true, CharSet = CharSet.Auto, PreserveSig = true, SetLastError = false)]
-        public static extern IntPtr GetActiveWindow();
-
         private static Dictionary<long, string> labels_;
         private LearningModelSession inferenceSession_;
         private LearningModelSession preProcessingSession_;
@@ -61,7 +51,6 @@ namespace WinMLSamplesGallery.Samples
 
         private SoftwareBitmap currentImage_ = null;
         Classifier currentModel_ = Classifier.NotSet;
-        Classifier loadedModel_ = Classifier.NotSet;
         const long BatchSize = 1;
         const long TopK = 10;
 
@@ -72,16 +61,29 @@ namespace WinMLSamplesGallery.Samples
         private static Dictionary<long, string> imagenetLabels_;
         private static Dictionary<long, string> ilsvrc2013Labels_;
 
+        private Classifier SelectedModel
+        {
+            get
+            {
+                if (AllModelsGrid == null || AllModelsGrid.SelectedItem == null) {
+                    return Classifier.NotSet;
+                }
+                var viewModel = AllModelsGrid.SelectedItem as WinMLSamplesGallery.Samples.ClassifierViewModel;
+                return viewModel.Tag;
+            }
+        }
+
         public ImageClassifier()
         {
             this.InitializeComponent();
 
-            AllModelsGrid.SelectedItem = null;
+            AllModelsGrid.SelectRange(new Microsoft.UI.Xaml.Data.ItemIndexRange(0, 1));
             AllModelsGrid.SelectionChanged += AllModelsGrid_SelectionChanged;
         }
 
-        private void EnsureInit()
+        private void EnsureInit(Classifier model)
         {
+
             if (imagenetLabels_ == null)
             {
                 imagenetLabels_ = LoadLabels("ms-appx:///InputData/sysnet.txt");
@@ -173,12 +175,12 @@ namespace WinMLSamplesGallery.Samples
                 };
             }
 
-            InitializeWindowsMachineLearning(currentModel_);
+            InitializeWindowsMachineLearning(model);
         }
 
         private void InitializeWindowsMachineLearning(Classifier model)
         {
-            if (currentModel_ != loadedModel_)
+            if (model != currentModel_)
             {
                 var modelPath = modelDictionary_[model];
                 inferenceSession_ = CreateLearningModelSession(modelPath);
@@ -203,7 +205,7 @@ namespace WinMLSamplesGallery.Samples
                     postProcessingSession_ = null;
                 }
 
-                if (currentModel_ == Classifier.RCNN_ILSVRC13)
+                if (model == Classifier.RCNN_ILSVRC13)
                 {
                     labels_ = ilsvrc2013Labels_;
                 }
@@ -212,7 +214,7 @@ namespace WinMLSamplesGallery.Samples
                     labels_ = imagenetLabels_;
                 }
 
-                loadedModel_ = currentModel_;
+                currentModel_ = model;
             }
         }
 
@@ -335,12 +337,12 @@ namespace WinMLSamplesGallery.Samples
 
         private void OpenButton_Clicked(object sender, RoutedEventArgs e)
         {
-            var file = PickFile();
-            if (file != null)
+            var bitmap = File.PickImageFileAsSoftwareBitmap();
+            if (bitmap != null)
             {
-                currentImage_ = CreateSoftwareBitmapFromStorageFile(file);
                 BasicGridView.SelectedItem = null;
-                TryPerformInference();
+                currentImage_ = bitmap;
+                TryPerformInference(SelectedModel);
             }
         }
 
@@ -350,39 +352,31 @@ namespace WinMLSamplesGallery.Samples
             var thumbnail = gridView.SelectedItem as WinMLSamplesGallery.Controls.Thumbnail;
             if (thumbnail != null)
             {
-                var image = thumbnail.ImageUri;
-                var file = StorageFile.GetFileFromApplicationUriAsync(new Uri(image)).GetAwaiter().GetResult();
-                currentImage_ = CreateSoftwareBitmapFromStorageFile(file);
-                TryPerformInference();
+                currentImage_ = File.CreateSoftwareBitmapFromPath(thumbnail.ImageUri);
+                TryPerformInference(SelectedModel);
             }
         }
 
         private void AllModelsGrid_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            var gridView = sender as GridView;
-            var link = gridView.SelectedItem as WinMLSamplesGallery.Samples.ClassifierViewModel;
-            currentModel_ = link.Tag;
-            TryPerformInference();
+            TryPerformInference(SelectedModel);
         }
 
-        private void TryPerformInference()
+
+        private void TryPerformInference(Classifier model)
         {
             if (currentImage_ != null)
             {
-                if (AllModelsGrid.SelectedItem == null)
-                {
-                    AllModelsGrid.SelectRange(new Microsoft.UI.Xaml.Data.ItemIndexRange(0, 1));
-                }
-                else
-                {
-                    EnsureInit();
+                EnsureInit(model);
 
-                    RenderImageInMainPanel(currentImage_);
+                // Draw the image to classify in the Image control
+                RenderingHelpers.BindSoftwareBitmapToImageControl(InputImage, currentImage_);
 
-                    var (labels, probabilities) = Classify(currentImage_);
-                    RenderInferenceResults(labels, probabilities);
+                // Classify the current image
+                var (labels, probabilities) = Classify(currentImage_);
 
-                }
+                // Render the classification and probabilities
+                RenderInferenceResults(labels, probabilities);
             }
         }
 
@@ -401,55 +395,9 @@ namespace WinMLSamplesGallery.Samples
             InferenceResults.SelectedIndex = 0;
         }
 
-        private void RenderImageInMainPanel(SoftwareBitmap softwareBitmap)
-        {
-            SoftwareBitmap displayBitmap = softwareBitmap;
-            //Image control only accepts BGRA8 encoding and Premultiplied/no alpha channel. This checks and converts
-            //the SoftwareBitmap we want to bind.
-            if (displayBitmap.BitmapPixelFormat != BitmapPixelFormat.Bgra8 ||
-                displayBitmap.BitmapAlphaMode != BitmapAlphaMode.Premultiplied)
-            {
-                displayBitmap = SoftwareBitmap.Convert(displayBitmap, BitmapPixelFormat.Bgra8, BitmapAlphaMode.Premultiplied);
-            }
-
-            // get software bitmap souce
-            var source = new SoftwareBitmapSource();
-            source.SetBitmapAsync(displayBitmap).GetAwaiter();
-            // draw the input image
-            InputImage.Source = source;
-        }
-
-        private StorageFile PickFile()
-        {
-            FileOpenPicker openPicker = new FileOpenPicker();
-            openPicker.ViewMode = PickerViewMode.Thumbnail;
-            openPicker.FileTypeFilter.Add(".jpg");
-            openPicker.FileTypeFilter.Add(".bmp");
-            openPicker.FileTypeFilter.Add(".png");
-            openPicker.FileTypeFilter.Add(".jpeg");
-
-            // When running on win32, FileOpenPicker needs to know the top-level hwnd via IInitializeWithWindow::Initialize.
-            if (Window.Current == null)
-            {
-                var picker_unknown = Marshal.GetComInterfaceForObject(openPicker, typeof(IInitializeWithWindow));
-                var initializeWithWindowWrapper = (IInitializeWithWindow)Marshal.GetTypedObjectForIUnknown(picker_unknown, typeof(IInitializeWithWindow));
-                IntPtr hwnd = GetActiveWindow();
-                initializeWithWindowWrapper.Initialize(hwnd);
-            }
-
-            return openPicker.PickSingleFileAsync().GetAwaiter().GetResult();
-        }
-
-        private static SoftwareBitmap CreateSoftwareBitmapFromStorageFile(StorageFile file)
-        {
-            var stream = file.OpenAsync(FileAccessMode.Read).GetAwaiter().GetResult();
-            var decoder = BitmapDecoder.CreateAsync(stream).GetAwaiter().GetResult();
-            return decoder.GetSoftwareBitmapAsync().GetAwaiter().GetResult();
-        }
-
         private void DeviceComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            TryPerformInference();
+            TryPerformInference(SelectedModel);
         }
     }
 }

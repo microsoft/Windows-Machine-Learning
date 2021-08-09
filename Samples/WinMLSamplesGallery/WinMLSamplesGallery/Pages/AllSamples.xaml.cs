@@ -49,6 +49,13 @@ namespace WinMLSamplesGallery
                         Frame.Navigate(typeof(Samples.ImageEffects), null, null);
                     }
                     break;
+                case PageId.ObjectDetector:
+                    // Only navigate if the selected page isn't currently loaded.
+                    if (!Type.Equals(Frame.CurrentSourcePageType, typeof(Samples.ObjectDetector)))
+                    {
+                        Frame.Navigate(typeof(Samples.ObjectDetector), null, null);
+                    }
+                    break;
             }
         }
     }

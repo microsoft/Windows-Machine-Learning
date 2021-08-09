@@ -427,6 +427,75 @@ namespace WinMLSamplesGallery.Samples
             return builder.CreateModel();
         }
 
+        public static LearningModel ReshapeFlatBufferNHWC(long n, long c, long h, long w, long newh, long neww)
+        {
+            long resizedW, resizedH, top, bottom, left, right;
+            CalculateCenterFillDimensions(h, w, newh, neww, out resizedW, out resizedH, out top, out bottom, out left, out right);
+            var builder = LearningModelBuilder.Create(11)
+                            .Inputs.Add(LearningModelBuilder.CreateTensorFeatureDescriptor("Input", TensorKind.UInt8, new long[] { 1, n * c * h * w }))
+                            .Outputs.Add(LearningModelBuilder.CreateTensorFeatureDescriptor("Output", TensorKind.Float, new long[] { n, newh, neww, c - 1 }))
+                            .Operators.Add(new LearningModelOperator("Cast")
+                                            .SetInput("input", "Input")
+                                            .SetAttribute("to", TensorInt64Bit.CreateFromIterable(new long[] { }, new long[] { (long)OnnxDataType.FLOAT }))
+                                            .SetOutput("output", "SliceOutput"))
+                            .Operators.Add(new LearningModelOperator("Reshape")
+                                            .SetInput("data", "SliceOutput")
+                                            .SetConstant("shape", TensorInt64Bit.CreateFromIterable(new long[] { 4 }, new long[] { n, h, w, c }))
+                                            .SetOutput("reshaped", "ReshapeOutput"))
+                            .Operators.Add(new LearningModelOperator("Slice")
+                                            .SetInput("data", "ReshapeOutput")
+                                            .SetConstant("starts", TensorInt64Bit.CreateFromIterable(new long[] { 4 }, new long[] { 0, 0, 0, 0 }))
+                                            .SetConstant("ends", TensorInt64Bit.CreateFromIterable(new long[] { 4 }, new long[] { n, h, w, c - 1 }))
+                                            .SetOutput("output", "SliceOutput2"))
+                            .Operators.Add(new LearningModelOperator("Resize")
+                                            .SetInput("X", "SliceOutput2")
+                                            .SetConstant("roi", TensorFloat.CreateFromIterable(new long[] { 8 }, new float[] { 0, 0, 0, 0, 1, 1, 1, 1 }))
+                                            .SetConstant("scales", TensorFloat.CreateFromIterable(new long[] { 4 }, new float[] { 1, (float)(1 + resizedH) / (float)h, (float)(1 + w) / (float)w, 1 }))
+                                            //.SetConstant("sizes", TensorInt64Bit.CreateFromIterable(new long[] { 4 }, new long[] { 1, 3, resizedH, resizedW }))
+                                            // Experimental Model Building API does not support inputs of string type, so cubic interpolation cant be set...
+                                            .SetAttribute("mode", TensorString.CreateFromArray(new long[] { }, new string[] { "nearest" }))
+                                            .SetOutput("Y", "ResizeOutput"))
+                            .Operators.Add(new LearningModelOperator("Slice")
+                                        .SetInput("data", "ResizeOutput")
+                                        .SetConstant("starts", TensorInt64Bit.CreateFromIterable(new long[] { 4 }, new long[] { 0, top, left, 0 }))
+                                        .SetConstant("ends", TensorInt64Bit.CreateFromIterable(new long[] { 4 }, new long[] { long.MaxValue, bottom, right, long.MaxValue }))
+                                        .SetOutput("output", "Output"));
+            return builder.CreateModel();
+        }
+
+        //public static LearningModel NMS(long topK, float iou_threshold, float score_threshold)
+        //{
+        //    var builder = LearningModelBuilder.Create(11)
+        //                    .Inputs.Add(LearningModelBuilder.CreateTensorFeatureDescriptor("Input", TensorKind.Float, new long[] { -1, -1, -1, 3, 85 }))
+        //                    .Outputs.Add(LearningModelBuilder.CreateTensorFeatureDescriptor("Output", TensorKind.Float, new long[] { n, newh, neww, c - 1 }))
+        //                    .Operators.Add(new LearningModelOperator("Cast")
+        //                                    .SetInput("input", "Input")
+        //                                    .SetAttribute("to", TensorInt64Bit.CreateFromIterable(new long[] { }, new long[] { (long)OnnxDataType.FLOAT }))
+        //                                    .SetOutput("output", "SliceOutput"))
+        //                    .Operators.Add(new LearningModelOperator("Reshape")
+        //                                    .SetInput("data", "SliceOutput")
+        //                                    .SetConstant("shape", TensorInt64Bit.CreateFromIterable(new long[] { 4 }, new long[] { n, h, w, c }))
+        //                                    .SetOutput("reshaped", "ReshapeOutput"))
+        //                    .Operators.Add(new LearningModelOperator("Slice")
+        //                                    .SetInput("data", "ReshapeOutput")
+        //                                    .SetConstant("starts", TensorInt64Bit.CreateFromIterable(new long[] { 4 }, new long[] { 0, 0, 0, 0 }))
+        //                                    .SetConstant("ends", TensorInt64Bit.CreateFromIterable(new long[] { 4 }, new long[] { n, h, w, c - 1 }))
+        //                                    .SetOutput("output", "SliceOutput2"))
+        //                    .Operators.Add(new LearningModelOperator("Resize")
+        //                                    .SetInput("X", "SliceOutput2")
+        //                                    .SetConstant("roi", TensorFloat.CreateFromIterable(new long[] { 8 }, new float[] { 0, 0, 0, 0, 1, 1, 1, 1 }))
+        //                                    .SetConstant("scales", TensorFloat.CreateFromIterable(new long[] { 4 }, new float[] { 1, (float)(1 + resizedH) / (float)h, (float)(1 + w) / (float)w, 1 }))
+        //                                    //.SetConstant("sizes", TensorInt64Bit.CreateFromIterable(new long[] { 4 }, new long[] { 1, 3, resizedH, resizedW }))
+        //                                    // Experimental Model Building API does not support inputs of string type, so cubic interpolation cant be set...
+        //                                    .SetAttribute("mode", TensorString.CreateFromArray(new long[] { }, new string[] { "nearest" }))
+        //                                    .SetOutput("Y", "ResizeOutput"))
+        //                    .Operators.Add(new LearningModelOperator("Slice")
+        //                                .SetInput("data", "ResizeOutput")
+        //                                .SetConstant("starts", TensorInt64Bit.CreateFromIterable(new long[] { 4 }, new long[] { 0, top, left, 0 }))
+        //                                .SetConstant("ends", TensorInt64Bit.CreateFromIterable(new long[] { 4 }, new long[] { long.MaxValue, bottom, right, long.MaxValue }))
+        //                                .SetOutput("output", "Output"));
+        //    return builder.CreateModel();
+        //}
 
         public static LearningModel TopK(long topk)
         {

@@ -40,7 +40,7 @@
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
         <Grid Height="250" Grid.Row="0">
-            <Image Source="assets/Original-LightBlue.png" Stretch="UniformToFill" Height="250" VerticalAlignment="Top"/>
+            <Image Source="ms-appx:///Assets/Original-LightBlue.png" Stretch="UniformToFill" Height="250" VerticalAlignment="Top"/>
             <Rectangle Fill="#66ffffff" HorizontalAlignment="Stretch" Height="250" VerticalAlignment="Top"/>
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Top" Height="250">
                 <Image Source="assets/winml_icon.ico" Stretch="UniformToFill" Height="200" VerticalAlignment="Center"/>
@@ -82,6 +82,9 @@
                         </local:Link>
                         <local:Link Title="Image Effects" Icon="&#xE155;" Tag="ImageEffects">
                             <local:Link.Description>Pick an image and apply a variety of effects powered by Windows AI MachineLearning like Blur, Sharpen, Contrast, and many more.</local:Link.Description>
+                        </local:Link>
+                        <local:Link Title="Object Detector" Icon="&#xE155;" Tag="ObjectDetector">
+                            <local:Link.Description>Detect objects in images.</local:Link.Description>
                         </local:Link>
                     </GridView.Items>
                 </GridView>

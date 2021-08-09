@@ -1,3 +1,4 @@
+
 import torch
 import pandas as pd
 import torch.nn as nn
@@ -8,8 +9,8 @@ import torch.optim as optim
 from torch.optim import Adam
 
 
-# Loading the Data - enter the path to the Iris Data base Excel file that you stored on your machine
-df = pd.read_excel(r'C:.....\Iris_dataset.xlsx')
+# Loading the Data
+df = pd.read_excel(r'C:\....\Iris_dataset.xlsx')
 print('Take a look at sample from the dataset:')
 print(df.head())
 
@@ -25,10 +26,10 @@ df.IrisType_num = [labels[item] for item in df.IrisType_num]  # Convert the valu
 
 # Define input and output datasets
 input = df.iloc[:, 1:-2]            # We drop the fist column and the two last ones.  
-print('\nRegression input is:')
+print('\nInput values are:')
 print(input.head())
 output = df.loc[:, 'IrisType_num']   # Output Y is the last column (can be also y=df.iloc[:, -1])
-print('\nRegression output is:')
+print('\nThe output value is:')
 print(output.head())
 
 # Convert Input and Output data to Tensors and create a TensorDataset
@@ -58,10 +59,10 @@ input_size = list(input.shape)[1]   # = 4. The input depends on how many feature
 learning_rate = 0.01
 output_size = len(labels)           # The output is prediction results for three types of Irises. 
 
-# Define Regression neural network
-class Regression(nn.Module):
+# Define neural network
+class Network(nn.Module):
    def __init__(self, input_size, output_size):
-       super(Regression, self).__init__()
+       super(Network, self).__init__()
        
        self.layer1 = nn.Linear(input_size, 24)
        self.layer2 = nn.Linear(24, 24)
@@ -74,8 +75,8 @@ class Regression(nn.Module):
        x3 = self.layer3(x2)
        return x3
 
-# Instantiate the regression model
-model = Regression(input_size, output_size)
+# Instantiate the model
+model = Network(input_size, output_size)
 
 
 # Define your execution device
@@ -89,7 +90,7 @@ optimizer = optim.Adam(model.parameters(), lr=learning_rate)
 
 # Function to save the model
 def saveModel():
-    path = "./RegressionModel.pth"
+    path = "./NetModel.pth"
     torch.save(model.state_dict(), path)
 
 
@@ -152,8 +153,8 @@ def train(num_epochs):
 # Function to test the model
 def test():
     # Load the model that we saved at the end of the training loop
-    model = Regression(input_size, output_size)
-    path = "RegressionModel.pth"
+    model = Network(input_size, output_size)
+    path = "NetModel.pth"
     model.load_state_dict(torch.load(path))
     
     running_accuracy = 0
@@ -174,8 +175,8 @@ def test():
 # Optional: Function to test which species were easier to predict 
 def test_species():
     # Load the model that we saved at the end of the training loop
-    model = Regression(input_size, output_size)
-    path = "RegressionModel.pth"
+    model = Network(input_size, output_size)
+    path = "NetModel.pth"
     model.load_state_dict(torch.load(path))
     
     labels_length = len(labels)          # how many labels of Irises we have. = 3 in our database.
@@ -210,7 +211,7 @@ def convert():
     # Export the model  
     torch.onnx.export(model,                    # model being run
                   dummy_input,                  # model input (or a tuple for multiple inputs)
-                  "Regression.onnx",      # where to save the model (can be a file or file-like object)
+                  "Network.onnx",               # where to save the model (can be a file or file-like object)
                   export_params=True,           # store the trained parameter weights inside the model file
                   opset_version=11,             # the ONNX version to export the model to
                   do_constant_folding=True,     # whether to execute constant folding for optimization
@@ -223,7 +224,7 @@ def convert():
 
 
 if __name__ == "__main__":
-    num_epochs = 25
+    num_epochs = 10
     train(num_epochs)
     print('Finished Training\n')
     test()

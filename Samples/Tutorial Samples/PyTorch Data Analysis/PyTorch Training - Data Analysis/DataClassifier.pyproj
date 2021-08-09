@@ -2,16 +2,16 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>c3c4fa1b-5fd1-4644-85bb-df7ab56eb8b5</ProjectGuid>
+    <ProjectGuid>ddb3cd5d-ac8d-4257-92a9-0a2c5b37452e</ProjectGuid>
     <ProjectHome>.</ProjectHome>
-    <StartupFile>PyTorchTrainingRegression.py</StartupFile>
+    <StartupFile>DataClassifier.py</StartupFile>
     <SearchPath>
     </SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
     <OutputPath>.</OutputPath>
-    <Name>PyTorchTrainingRegression</Name>
-    <RootNamespace>PyTorchTrainingRegression</RootNamespace>
-    <InterpreterId>Global|PythonCore|3.8</InterpreterId>
+    <Name>DataClassifier</Name>
+    <RootNamespace>DataClassifier</RootNamespace>
+    <InterpreterId>CondaEnv|CondaEnv|Anaconda3</InterpreterId>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <DebugSymbols>true</DebugSymbols>
@@ -22,11 +22,10 @@
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="PyTorchTrainingRegression.py" />
+    <InterpreterReference Include="CondaEnv|CondaEnv|Anaconda3" />
   </ItemGroup>
   <ItemGroup>
-    <InterpreterReference Include="CondaEnv|CondaEnv|Anaconda3" />
-    <InterpreterReference Include="Global|PythonCore|3.8" />
+    <Compile Include="DataClassifier.py" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />
   <!-- Uncomment the CoreCompile target to enable the Build command in

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -8,8 +7,8 @@ using Windows.Storage;
 using Windows.Graphics.Imaging;
 using Windows.Media;
 using Microsoft.AI.MachineLearning;
-using Microsoft.UI.Xaml.Media.Imaging;
 using WinMLSamplesGallery.Common;
+using WinMLSamplesGallery.Controls;
 
 namespace WinMLSamplesGallery.Samples
 {
@@ -44,22 +43,24 @@ namespace WinMLSamplesGallery.Samples
     /// </summary>
     public sealed partial class ImageClassifier : Page
     {
-        private static Dictionary<long, string> labels_;
-        private LearningModelSession inferenceSession_;
-        private LearningModelSession preProcessingSession_;
-        private LearningModelSession postProcessingSession_;
-
-        private SoftwareBitmap currentImage_ = null;
-        Classifier currentModel_ = Classifier.NotSet;
         const long BatchSize = 1;
         const long TopK = 10;
 
-        private Dictionary<Classifier, string> modelDictionary_;
-        private Dictionary<Classifier, Func<LearningModel>> postProcessorDictionary_;
-        private Dictionary<Classifier, Func<LearningModel>> preProcessorDictionary_;
+        private LearningModelSession _inferenceSession;
+        private LearningModelSession _postProcessingSession;
+        private LearningModelSession _preProcessingSession;
 
-        private static Dictionary<long, string> imagenetLabels_;
-        private static Dictionary<long, string> ilsvrc2013Labels_;
+        private Dictionary<Classifier, string> _modelDictionary;
+        private Dictionary<Classifier, Func<LearningModel>> _postProcessorDictionary;
+        private Dictionary<Classifier, Func<LearningModel>> _preProcessorDictionary;
+
+        private static Dictionary<long, string> _labels;
+        private static Dictionary<long, string> _imagenetLabels;
+        private static Dictionary<long, string> _ilsvrc2013Labels;
+
+        private SoftwareBitmap CurrentImage { get; set; }
+
+        private Classifier CurrentModel { get; set; }
 
         private Classifier SelectedModel
         {
@@ -68,35 +69,48 @@ namespace WinMLSamplesGallery.Samples
                 if (AllModelsGrid == null || AllModelsGrid.SelectedItem == null) {
                     return Classifier.NotSet;
                 }
-                var viewModel = AllModelsGrid.SelectedItem as WinMLSamplesGallery.Samples.ClassifierViewModel;
+                var viewModel = (ClassifierViewModel)AllModelsGrid.SelectedItem;
                 return viewModel.Tag;
             }
         }
+
+#pragma warning disable CA1416 // Validate platform compatibility
+        private LearningModelDeviceKind SelectedDeviceKind
+        {
+            get
+            {
+                return (DeviceComboBox.SelectedIndex == 0) ?
+                            LearningModelDeviceKind.Cpu :
+                            LearningModelDeviceKind.DirectXHighPerformance;
+            }
+        }
+#pragma warning restore CA1416 // Validate platform compatibility
 
         public ImageClassifier()
         {
             this.InitializeComponent();
 
+            CurrentImage = null;
+            CurrentModel = Classifier.NotSet;
             AllModelsGrid.SelectRange(new Microsoft.UI.Xaml.Data.ItemIndexRange(0, 1));
             AllModelsGrid.SelectionChanged += AllModelsGrid_SelectionChanged;
         }
 
-        private void EnsureInit(Classifier model)
+        private void EnsureInitialized()
         {
-
-            if (imagenetLabels_ == null)
+            if (_imagenetLabels == null)
             {
-                imagenetLabels_ = LoadLabels("ms-appx:///InputData/sysnet.txt");
+                _imagenetLabels = LoadLabels("ms-appx:///InputData/sysnet.txt");
             }
 
-            if (ilsvrc2013Labels_ == null)
+            if (_ilsvrc2013Labels == null)
             {
-                ilsvrc2013Labels_ = LoadLabels("ms-appx:///InputData/ilsvrc2013.txt");
+                _ilsvrc2013Labels = LoadLabels("ms-appx:///InputData/ilsvrc2013.txt");
             }
 
-            if (modelDictionary_ == null)
+            if (_modelDictionary == null)
             {
-                modelDictionary_ = new Dictionary<Classifier, string>{
+                _modelDictionary = new Dictionary<Classifier, string>{
                     { Classifier.SqueezeNet,        "ms-appx:///Models/squeezenet1.1-7.onnx" },
                     { Classifier.MobileNet,         "ms-appx:///Models/mobilenetv2-7.onnx" },
                     { Classifier.GoogleNet,         "ms-appx:///Models/googlenet-9.onnx"},
@@ -116,16 +130,16 @@ namespace WinMLSamplesGallery.Samples
                 };
             }
 
-            if (postProcessorDictionary_ == null)
+            if (_postProcessorDictionary == null)
             {
-                postProcessorDictionary_ = new Dictionary<Classifier, Func<LearningModel>>{
+                _postProcessorDictionary = new Dictionary<Classifier, Func<LearningModel>>{
                     { Classifier.SqueezeNet,        () => TensorizationModels.SoftMaxThenTopK(TopK) },
                     { Classifier.MobileNet,         () => TensorizationModels.SoftMaxThenTopK(TopK) },
                     { Classifier.GoogleNet,         () => TensorizationModels.TopK(TopK) },
-                    { Classifier.DenseNet121,       () => TensorizationModels.ReshapeThenSoftmaxThenTopK(new long[] { BatchSize, imagenetLabels_.Count, 1, 1 },
+                    { Classifier.DenseNet121,       () => TensorizationModels.ReshapeThenSoftmaxThenTopK(new long[] { BatchSize, _imagenetLabels.Count, 1, 1 },
                                                                                                     TopK,
                                                                                                     BatchSize,
-                                                                                                    imagenetLabels_.Count) },
+                                                                                                    _imagenetLabels.Count) },
                     { Classifier.Inception_V1,      () => TensorizationModels.TopK(TopK) },
                     { Classifier.Inception_V2,      () => TensorizationModels.TopK(TopK) },
                     { Classifier.ShuffleNet_V1,     () => TensorizationModels.TopK(TopK) },
@@ -141,9 +155,9 @@ namespace WinMLSamplesGallery.Samples
                 };
             }
 
-            if (preProcessorDictionary_ == null)
+            if (_preProcessorDictionary == null)
             {
-                preProcessorDictionary_ = new Dictionary<Classifier, Func<LearningModel>>{
+                _preProcessorDictionary = new Dictionary<Classifier, Func<LearningModel>>{
                     { Classifier.SqueezeNet,        null }, // No preprocessing required
                     { Classifier.MobileNet,         () => TensorizationModels.Normalize0_1ThenZScore(224, 224, 4,
                                                                                                 new float[] { 0.485f, 0.456f, 0.406f },
@@ -175,89 +189,74 @@ namespace WinMLSamplesGallery.Samples
                 };
             }
 
-            InitializeWindowsMachineLearning(model);
+            InitializeWindowsMachineLearning();
         }
 
-        private void InitializeWindowsMachineLearning(Classifier model)
+        private void InitializeWindowsMachineLearning()
         {
-            if (model != currentModel_)
+            var model = SelectedModel;
+            if (model != CurrentModel)
             {
-                var modelPath = modelDictionary_[model];
-                inferenceSession_ = CreateLearningModelSession(modelPath);
+                var modelPath = _modelDictionary[model];
+                _inferenceSession = CreateLearningModelSession(modelPath);
 
-                var preProcessor = preProcessorDictionary_[model];
-                if (preProcessor != null)
-                {
-                    preProcessingSession_ = CreateLearningModelSession(preProcessor());
-                }
-                else
-                {
-                    preProcessingSession_ = null;
-                }
+                var preProcessor = _preProcessorDictionary[model];
+                var hasPreProcessor = preProcessor != null;
+                _preProcessingSession = hasPreProcessor ? CreateLearningModelSession(preProcessor()) : null;
 
-                var postProcessor = postProcessorDictionary_[model];
-                if (postProcessor != null)
-                {
-                    postProcessingSession_ = CreateLearningModelSession(postProcessor());
-                }
-                else
-                {
-                    postProcessingSession_ = null;
-                }
+                var postProcessor = _postProcessorDictionary[model];
+                var hasPostProcessor = postProcessor != null;
+                _postProcessingSession = hasPostProcessor ? CreateLearningModelSession(postProcessor()) : null;
 
                 if (model == Classifier.RCNN_ILSVRC13)
                 {
-                    labels_ = ilsvrc2013Labels_;
+                    _labels = _ilsvrc2013Labels;
                 }
                 else
                 {
-                    labels_ = imagenetLabels_;
+                    _labels = _imagenetLabels;
                 }
 
-                currentModel_ = model;
+                CurrentModel = model;
             }
         }
 
 #pragma warning disable CA1416 // Validate platform compatibility
         private (IEnumerable<string>, IReadOnlyList<float>) Classify(SoftwareBitmap softwareBitmap)
         {
-            PerformanceMetricsMonitor.ClearLog();
-
             long start, stop;
+            PerformanceMetricsMonitor.ClearLog();
 
             var input = (object)VideoFrame.CreateWithSoftwareBitmap(softwareBitmap);
 
             // PreProcess
             start = HighResolutionClock.UtcNow();
             object preProcessedOutput = input;
-            if (preProcessingSession_ != null)
+            if (_preProcessingSession != null)
             {
-                var preProcessedResults = Evaluate(preProcessingSession_, input);
+                var preProcessedResults = Evaluate(_preProcessingSession, input);
                 preProcessedOutput = preProcessedResults.Outputs.First().Value;
-                var preProcessedOutputTF = preProcessedOutput as TensorFloat;
-                var shape = preProcessedOutputTF.Shape;
-                System.Diagnostics.Debug.WriteLine("shape = {0}, {1}, {2}, {3}", shape[0], shape[1], shape[2], shape[3]);
             }
             stop = HighResolutionClock.UtcNow();
             var preprocessDuration = HighResolutionClock.DurationInMs(start, stop);
 
             // Inference
             start = HighResolutionClock.UtcNow();
-            var inferenceResults = Evaluate(inferenceSession_, preProcessedOutput);
-            var inferenceOutput = inferenceResults.Outputs.First().Value as TensorFloat;
+            var inferenceResults = Evaluate(_inferenceSession, preProcessedOutput);
+            var inferenceOutput = inferenceResults.Outputs.First().Value;
             stop = HighResolutionClock.UtcNow();
             var inferenceDuration = HighResolutionClock.DurationInMs(start, stop);
 
             // PostProcess
             start = HighResolutionClock.UtcNow();
-            var postProcessedOutputs = Evaluate(postProcessingSession_, inferenceOutput);
-            var topKValues = postProcessedOutputs.Outputs["TopKValues"] as TensorFloat;
-            var topKIndices = postProcessedOutputs.Outputs["TopKIndices"] as TensorInt64Bit;
+            var postProcessedOutputs = Evaluate(_postProcessingSession, inferenceOutput);
+            var topKValues = (TensorFloat)postProcessedOutputs.Outputs["TopKValues"] ;
+            var topKIndices = (TensorInt64Bit)postProcessedOutputs.Outputs["TopKIndices"];
 
             // Return results
             var probabilities = topKValues.GetAsVectorView();
             var indices = topKIndices.GetAsVectorView();
-            var labels = indices.Select((index) => labels_[index]);
+            var labels = indices.Select((index) => _labels[index]);
             stop = HighResolutionClock.UtcNow();
             var postProcessDuration = HighResolutionClock.DurationInMs(start, stop);
 
@@ -297,13 +296,10 @@ namespace WinMLSamplesGallery.Samples
 
         private LearningModelSession CreateLearningModelSession(LearningModel model)
         {
-            var kind =
-                (DeviceComboBox.SelectedIndex == 0) ?
-                    LearningModelDeviceKind.Cpu :
-                    LearningModelDeviceKind.DirectXHighPerformance;
-            var device = new LearningModelDevice(kind);
-            var options = new LearningModelSessionOptions() {
-                CloseModelOnSessionCreation = true              // Close the model to prevent extra memory usage
+            var device = new LearningModelDevice(SelectedDeviceKind);
+            var options = new LearningModelSessionOptions()
+            {
+                CloseModelOnSessionCreation = true // Close the model to prevent extra memory usage
             };
             var session = new LearningModelSession(model, device, options);
             return session;
@@ -335,45 +331,17 @@ namespace WinMLSamplesGallery.Samples
             return labels;
         }
 
-        private void OpenButton_Clicked(object sender, RoutedEventArgs e)
+        private void TryPerformInference()
         {
-            var bitmap = File.PickImageFileAsSoftwareBitmap();
-            if (bitmap != null)
+            if (CurrentImage != null)
             {
-                BasicGridView.SelectedItem = null;
-                currentImage_ = bitmap;
-                TryPerformInference(SelectedModel);
-            }
-        }
-
-        private void SampleInputsGridView_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            var gridView = sender as GridView;
-            var thumbnail = gridView.SelectedItem as WinMLSamplesGallery.Controls.Thumbnail;
-            if (thumbnail != null)
-            {
-                currentImage_ = File.CreateSoftwareBitmapFromPath(thumbnail.ImageUri);
-                TryPerformInference(SelectedModel);
-            }
-        }
-
-        private void AllModelsGrid_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            TryPerformInference(SelectedModel);
-        }
-
-
-        private void TryPerformInference(Classifier model)
-        {
-            if (currentImage_ != null)
-            {
-                EnsureInit(model);
+                EnsureInitialized();
 
                 // Draw the image to classify in the Image control
-                RenderingHelpers.BindSoftwareBitmapToImageControl(InputImage, currentImage_);
+                RenderingHelpers.BindSoftwareBitmapToImageControl(InputImage, CurrentImage);
 
                 // Classify the current image
-                var (labels, probabilities) = Classify(currentImage_);
+                var (labels, probabilities) = Classify(CurrentImage);
 
                 // Render the classification and probabilities
                 RenderInferenceResults(labels, probabilities);
@@ -395,9 +363,36 @@ namespace WinMLSamplesGallery.Samples
             InferenceResults.SelectedIndex = 0;
         }
 
+        private void OpenButton_Clicked(object sender, RoutedEventArgs e)
+        {
+            var bitmap = File.PickImageFileAsSoftwareBitmap();
+            if (bitmap != null)
+            {
+                BasicGridView.SelectedItem = null;
+                CurrentImage = bitmap;
+                TryPerformInference();
+            }
+        }
+
+        private void SampleInputsGridView_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            var gridView = (GridView)sender;
+            var thumbnail = (Thumbnail)gridView.SelectedItem;
+            if (thumbnail != null)
+            {
+                CurrentImage = File.CreateSoftwareBitmapFromPath(thumbnail.ImageUri);
+                TryPerformInference();
+            }
+        }
+
+        private void AllModelsGrid_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            TryPerformInference();
+        }
+
         private void DeviceComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            TryPerformInference(SelectedModel);
+            TryPerformInference();
         }
     }
 }

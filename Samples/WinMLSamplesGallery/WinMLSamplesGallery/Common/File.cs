@@ -43,8 +43,7 @@ namespace WinMLSamplesGallery.Common
 
             return openPicker.PickSingleFileAsync().GetAwaiter().GetResult();
         }
-        
-        public static SoftwareBitmap CreateSoftwareBitmapFromStorageFile(StorageFile file)
+        public static BitmapDecoder CreateBitmapDecoderFromStorageFile(StorageFile file)
         {
             if (file == null)
             {
@@ -53,7 +52,31 @@ namespace WinMLSamplesGallery.Common
 
             var stream = file.OpenAsync(FileAccessMode.Read).GetAwaiter().GetResult();
             var decoder = BitmapDecoder.CreateAsync(stream).GetAwaiter().GetResult();
+            return decoder;
+        }
+
+        public static SoftwareBitmap CreateSoftwareBitmapFromStorageFile(StorageFile file)
+        {
+            if (file == null)
+            {
+                return null;
+            }
+
+            var decoder = CreateBitmapDecoderFromStorageFile(file);
             return decoder.GetSoftwareBitmapAsync().GetAwaiter().GetResult();
+        }
+
+        public static BitmapDecoder PickImageFileAsBitmapDecoder()
+        {
+            var file = PickImageFiles();
+            var bitmap = CreateBitmapDecoderFromStorageFile(file);
+            return bitmap;
+        }
+
+        public static BitmapDecoder CreateBitmapDecoderFromPath(string image)
+        {
+            var file = StorageFile.GetFileFromApplicationUriAsync(new Uri(image)).GetAwaiter().GetResult();
+            return File.CreateBitmapDecoderFromStorageFile(file);
         }
 
         public static SoftwareBitmap PickImageFileAsSoftwareBitmap() {

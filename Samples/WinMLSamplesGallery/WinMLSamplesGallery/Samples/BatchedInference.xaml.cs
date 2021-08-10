@@ -204,9 +204,10 @@ namespace WinMLSamplesGallery.Samples
             var images = new List<SoftwareBitmap> { birdImage, catImage, fishImage };
             LoadLabelsAndModelPaths();
             InitializeWindowsMachineLearning(currentModel_, 3);
-            var (individualResults, totalMetricTimes) = Classify(images);
+/*            var (individualResults, totalMetricTimes) = Classify(images);
             RenderInferenceResults(individualResults, totalMetricTimes);
-            ResetModels();
+            ResetModels();*/
+            ClassifyBatched(images);
             /*            InitializeWindowsMachineLearning(currentModel_);
                         var (individualResults, totalMetricTimes) = Classify(images);
                         RenderInferenceResults(individualResults, totalMetricTimes);*/
@@ -311,7 +312,7 @@ namespace WinMLSamplesGallery.Samples
             return (individualResults, totalMetricTimes);
         }
 
-        private (List<InferenceResult>, List<TotalMetricTime>) ClassifyBatched(List<SoftwareBitmap> images)
+        private void ClassifyBatched(List<SoftwareBitmap> images)
         {
             var individualResults = new List<InferenceResult>();
             var totalMetricTimes = new List<TotalMetricTime>();
@@ -320,31 +321,38 @@ namespace WinMLSamplesGallery.Samples
             float totalPostprocessTime = 0;
 
             long start, stop;
-            var input = (object)VideoFrame.CreateWithSoftwareBitmap(images);
+            var input = new List<VideoFrame>();
+            images.ForEach(delegate (SoftwareBitmap image)
+            {
+                input.Add(VideoFrame.CreateWithSoftwareBitmap(image));
+            });
 
             // PreProcess
             start = HighResolutionClock.UtcNow();
-            object preProcessedOutput = input;
-            if (preProcessingSession_ != null)
+            var preProcessedOutput = input;
+/*            if (preProcessingSession_ != null)
             {
-                var preProcessedResults = Evaluate(preProcessingSession_, input);
+                System.Diagnostics.Debug.WriteLine("Evaluating for preprocessing");
+                var preProcessedResults = EvaluateBatched(preProcessingSession_, input);
                 preProcessedOutput = preProcessedResults.Outputs.First().Value;
                 var preProcessedOutputTF = preProcessedOutput as TensorFloat;
                 var shape = preProcessedOutputTF.Shape;
                 System.Diagnostics.Debug.WriteLine("shape = {0}, {1}, {2}, {3}", shape[0], shape[1], shape[2], shape[3]);
-            }
+            }*/
             stop = HighResolutionClock.UtcNow();
             var preprocessDuration = HighResolutionClock.DurationInMs(start, stop);
 
             // Inference
             start = HighResolutionClock.UtcNow();
-            var inferenceResults = Evaluate(inferenceSession_, preProcessedOutput);
+            System.Diagnostics.Debug.WriteLine("Evaluating for inference");
+            var inferenceResults = EvaluateBatched(inferenceSession_, preProcessedOutput);
             var inferenceOutput = inferenceResults.Outputs.First().Value as TensorFloat;
             stop = HighResolutionClock.UtcNow();
             var inferenceDuration = HighResolutionClock.DurationInMs(start, stop);
 
             // PostProcess
             start = HighResolutionClock.UtcNow();
+            System.Diagnostics.Debug.WriteLine("Evaluating for postprocessing");
             var postProcessedOutputs = Evaluate(postProcessingSession_, inferenceOutput);
             var topKValues = postProcessedOutputs.Outputs["TopKValues"] as TensorFloat;
             var topKIndices = postProcessedOutputs.Outputs["TopKIndices"] as TensorInt64Bit;
@@ -353,10 +361,17 @@ namespace WinMLSamplesGallery.Samples
             var probabilities = topKValues.GetAsVectorView();
             var indices = topKIndices.GetAsVectorView();
             var labels = indices.Select((index) => labels_[index]);
-            var most_confident_label = labels.First();
+            System.Diagnostics.Debug.WriteLine("Labels");
+            System.Diagnostics.Debug.WriteLine(labels);
+            var labels_list = new List<string>(labels);
+            labels_list.ForEach(delegate (string label)
+            {
+                System.Diagnostics.Debug.WriteLine(label);
+            });
+            /*var most_confident_label = labels.First();*/
             stop = HighResolutionClock.UtcNow();
             var postProcessDuration = HighResolutionClock.DurationInMs(start, stop);
-
+/*
             var result = new InferenceResult
             {
                 Label = most_confident_label,
@@ -384,9 +399,9 @@ namespace WinMLSamplesGallery.Samples
             {
                 Metric = "Total Postprocess Time",
                 TotalTime = totalPostprocessTime.ToString()
-            });
+            });*/
 
-            return (individualResults, totalMetricTimes);
+            /*return (individualResults, totalMetricTimes);*/
         }
 
         private static LearningModelEvaluationResult Evaluate(LearningModelSession session, object input)
@@ -404,6 +419,26 @@ namespace WinMLSamplesGallery.Samples
             string outputName = session.Model.OutputFeatures[0].Name;
             binding.Bind(inputName, input);
             binding.Bind(outputName, output);
+
+            // Evaluate
+            return session.Evaluate(binding, "");
+        }
+
+        private static LearningModelEvaluationResult EvaluateBatched(LearningModelSession session, List<VideoFrame> input)
+        {
+            // Create the binding
+            var binding = new LearningModelBinding(session);
+
+            // Create an emoty output, that will keep the output resources on the GPU
+            // It will be chained into a the post processing on the GPU as well
+            var output = TensorFloat.Create();
+
+            // Bind inputs and outputs
+            // For squeezenet these evaluate to "data", and "squeezenet0_flatten0_reshape0"
+            string inputName = session.Model.InputFeatures[0].Name;
+            string outputName = session.Model.OutputFeatures[0].Name;
+            binding.Bind(inputName, input);
+            /*binding.Bind(outputName, output);*/
 
             // Evaluate
             return session.Evaluate(binding, "");

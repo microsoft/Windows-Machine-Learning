@@ -10,7 +10,7 @@ from torch.optim import Adam
 
 
 # Loading the Data
-df = pd.read_excel(r'C:\....\Iris_dataset.xlsx')
+df = pd.read_excel(r'C:\....\Iris_dataset.xlsx') # Enter the path to the dataset file on your machine
 print('Take a look at sample from the dataset:')
 print(df.head())
 

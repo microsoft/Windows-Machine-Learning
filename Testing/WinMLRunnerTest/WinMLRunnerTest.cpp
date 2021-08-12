@@ -164,7 +164,7 @@ namespace WinMLRunnerTest
         bool currentValueIsLargeEnough = true;
         bool doesActualMatchExpected = true;
         uint32_t currentIndex = 0;
-        uint32_t maxIndex = min(expectedOutputTensors.size(), 20);
+        uint32_t maxIndex = min(static_cast<uint32_t>(expectedOutputTensors.size()), 20u);
         while (currentValueIsLargeEnough && currentIndex < maxIndex)
         {
             // Compare expected vs actual prediction index

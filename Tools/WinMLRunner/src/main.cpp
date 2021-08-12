@@ -39,7 +39,7 @@ int main(int argc, char *argv[])
         std::wcout << hr.message().c_str() << std::endl;
         return hr.code();
     }
-    Profiler<WINML_MODEL_TEST_PERF> profiler;
+    auto profiler = std::make_unique<Profiler<WINML_MODEL_TEST_PERF>>();
     vector<LearningModelDeviceWithMetadata> deviceList;
     try
     {
@@ -52,7 +52,7 @@ int main(int argc, char *argv[])
     }
     LearningModelSessionOptions sessionOptions;
     PopulateSessionOptions(sessionOptions);
-    int returnCode = run(*commandLineArgs, profiler, deviceList, sessionOptions);
+    int returnCode = run(*commandLineArgs, *profiler, deviceList, sessionOptions);
     delete commandLineArgs;
     return returnCode;
 }

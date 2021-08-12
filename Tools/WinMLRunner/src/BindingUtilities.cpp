@@ -444,7 +444,7 @@ namespace BindingUtilities
         WriteType* end = reinterpret_cast<WriteType*>(reinterpret_cast<BYTE*>(data) + sizeInBytes);
         while (begin <= end)
         {
-            *begin = maxValue * static_cast<float>(randomBitsEngine()) / (randomBitsEngine.max)();
+            *begin = static_cast<WriteType>(maxValue * static_cast<float>(randomBitsEngine()) / (randomBitsEngine.max)());
             ++begin;
         }
     }

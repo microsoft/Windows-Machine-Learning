@@ -13,9 +13,9 @@ using namespace Windows::Storage;
 using namespace winrt::Windows::Storage::Streams;
 using namespace std;
 
-static const int CHANNELS = 1;
-static const int HEIGHT = 2;
-static const int WIDTH = 3;
+static const int CHANNELS_AXIS = 1;
+static const int HEIGHT_AXIS = 2;
+static const int WIDTH_AXIS = 3;
 static const int NUM_DIMENSIONS = 4;
 static const int TARGET_OPSET = 7;
 
@@ -26,7 +26,7 @@ HRESULT DebugShapeInferrer::InferOutputShapes (IMLOperatorShapeInferenceContext*
         uint32_t inputDimsSize;
         context->GetInputTensorDimensionCount(0, &inputDimsSize);
 
-        uint32_t *inputDims = new uint32_t[inputDimsSize];
+        uint32_t* inputDims = new uint32_t[inputDimsSize];
         winrt::check_hresult(context->GetInputTensorShape(0, inputDimsSize, inputDims));
 
         winrt::check_hresult(context->SetOutputTensorShape(0, inputDimsSize, inputDims));
@@ -39,7 +39,7 @@ HRESULT DebugShapeInferrer::InferOutputShapes (IMLOperatorShapeInferenceContext*
 }
 
 template <typename T>
-void WriteToPng(vector<uint32_t> inputDims, T* inputData, uint32_t size, hstring m_filePath)
+void WriteToPng(vector<uint32_t>& inputDims, const T* inputData, uint32_t size, hstring filePath)
 {    
     // expects nchw format
     if (inputDims.size() != NUM_DIMENSIONS) {
@@ -50,23 +50,23 @@ void WriteToPng(vector<uint32_t> inputDims, T* inputData, uint32_t size, hstring
     // TODO: add option to normalize data
     // currently if data values increase beyond the capacity of a byte then information will be lost
     vector<uint8_t> byteCopy;
-    for (int i = 0; i < size; i++) {
-        byteCopy.push_back( static_cast<uint8_t>(inputData[i]));
+    byteCopy.reserve(size * sizeof(T));
+    for (uint32_t i = 0; i < size; i++) {
+        byteCopy.push_back(static_cast<uint8_t>(inputData[i]));
     }
 
     // Get current directory
     wchar_t buf[MAX_PATH];
     _wgetcwd(buf, 256);
     StorageFolder parentFolder = StorageFolder::GetFolderFromPathAsync(buf).get();
-    int pixelsPerImage = inputDims.at(HEIGHT) * inputDims.at(WIDTH);
+    int pixelsPerImage = inputDims.at(HEIGHT_AXIS) * inputDims.at(WIDTH_AXIS);
 
     // for each output channel at this point in the network
-    for (int i = 0; i < inputDims.at(CHANNELS); i++) {
+    for (uint32_t i = 0; i < inputDims.at(CHANNELS_AXIS); i++) {
         // create png file
-        size_t outSize = 0;
         wstring suffix = L"_" + to_wstring(i);
         wstring ext = L".png";
-        wstring finalPath{ m_filePath };
+        wstring finalPath{ filePath };
         if (finalPath.compare(finalPath.size() - ext.size(), finalPath.size(), ext) != 0) {
             // append .png extension to filename
             finalPath += suffix;
@@ -81,10 +81,11 @@ void WriteToPng(vector<uint32_t> inputDims, T* inputData, uint32_t size, hstring
         BitmapEncoder encoder = BitmapEncoder::CreateAsync(BitmapEncoder::PngEncoderId(), stream).get();
 
         // select image pixels
-        vector<uint8_t> sub_vector(byteCopy.begin() + (i * pixelsPerImage), byteCopy.begin() + ((i + 1) * pixelsPerImage));
+        auto* firstElement = inputData.data() + (i * pixelsPerImage);
+        winrt::array_view<const uint8_t> view(firstElement, pixelsPerImage);
         DataWriter writer;
-        writer.WriteBytes(sub_vector);
-        SoftwareBitmap softwareBitmap(BitmapPixelFormat::Gray8, inputDims.at(HEIGHT), inputDims.at(WIDTH));
+        writer.WriteBytes(view);
+        SoftwareBitmap softwareBitmap(BitmapPixelFormat::Gray8, inputDims.at(HEIGHT_AXIS), inputDims.at(WIDTH_AXIS));
         IBuffer buffer = writer.DetachBuffer();
         softwareBitmap.CopyFromBuffer(buffer);
         // target pixel format is arbitrary because each channel will have equal value
@@ -95,21 +96,21 @@ void WriteToPng(vector<uint32_t> inputDims, T* inputData, uint32_t size, hstring
 }
 
 template <typename T>
-void WriteToText(vector<uint32_t> inputDims, T* inputData, uint32_t size, hstring m_filePath, MLOperatorTensorDataType dataType) {
+void WriteToText(vector<uint32_t>& inputDims, const T* inputData, uint32_t elementCount, hstring filePath, MLOperatorTensorDataType dataType) {
     // Get current directory
     wchar_t buf[MAX_PATH];
     _wgetcwd(buf, 256);
     StorageFolder parentFolder = StorageFolder::GetFolderFromPathAsync(buf).get();
-    parentFolder.CreateFileAsync(m_filePath, CreationCollisionOption::ReplaceExisting).get();
+    parentFolder.CreateFileAsync(filePath, CreationCollisionOption::ReplaceExisting).get();
 
     ofstream outputFile;
-    outputFile.open(winrt::to_string(m_filePath));
+    outputFile.open(winrt::to_string(filePath));
     outputFile << "dimensions: ";
     std::copy(begin(inputDims), end(inputDims), std::ostream_iterator<uint32_t>(outputFile, ", "));
     outputFile << "\ndata type: ";
     outputFile << (int)dataType;
     outputFile << "\ndata: ";
-    for (int i = 0; i < size; i++) {
+    for (uint32_t i = 0; i < elementCount; i++) {
         outputFile << inputData[i];
         outputFile << ", ";
     }
@@ -117,25 +118,24 @@ void WriteToText(vector<uint32_t> inputDims, T* inputData, uint32_t size, hstrin
 }
 
 template <typename T>
-void ComputeInternal(IMLOperatorTensor* pInputTensor, IMLOperatorTensor* pOutputTensor, uint32_t size,
-                    vector<uint32_t> inputDims, hstring m_filePath, hstring m_fileType)
+void ComputeInternal(IMLOperatorTensor* pInputTensor, IMLOperatorTensor* pOutputTensor, uint32_t elementCount,
+                    vector<uint32_t>& inputDims, hstring filePath, hstring fileType)
 {
     // Just copy the data from output to input
-    // Then print the input out to a file
+    // Then print the input to a file
     auto inputData = static_cast<T*>(pInputTensor->GetData());
     auto outputData = static_cast<T*>(pOutputTensor->GetData());
     auto dataType = pInputTensor->GetTensorDataType();
     
-    if (to_string(m_fileType) == "png") {
-        WriteToPng(inputDims, inputData, size, m_filePath);
+    if (winrt::to_string(fileType) == "png") {
+        WriteToPng(inputDims, inputData, elementCount, filePath);
     }
-    else if (winrt::to_string(m_fileType) == "text") {
-        WriteToText(inputDims, inputData, size, m_filePath, dataType);
+    else if (winrt::to_string(fileType) == "text") {
+        WriteToText(inputDims, inputData, elementCount, filePath, dataType);
     }
     // only useful if the debug output is used for some reason 
     // (not necessary since debug output can be consumed by no nodes without changing model execution
-    memcpy(outputData, inputData, size);
-
+    memcpy(outputData, inputData, elementCount * sizeof(T));
 }
 
 
@@ -185,43 +185,44 @@ HRESULT DebugOperator::Compute(IMLOperatorKernelContext* context)
         }
 
         if (outputTensor->IsCpuData() && inputTensor->IsCpuData()) {
-
-                switch (type) {
-                    case MLOperatorTensorDataType::Float:
-                    case MLOperatorTensorDataType::Float16:
-                        ComputeInternal<float>(inputTensor.get(), outputTensor.get(), inputDataSize, inputDims, m_filePath, m_fileType);
-                        break;
-                    case MLOperatorTensorDataType::Bool:
-                        ComputeInternal<bool>(inputTensor.get(), outputTensor.get(), inputDataSize, inputDims, m_filePath, m_fileType);
-                        break;
-                    case MLOperatorTensorDataType::Double:
-                        ComputeInternal<double>(inputTensor.get(), outputTensor.get(), inputDataSize, inputDims, m_filePath, m_fileType);
-                        break;
-                    case MLOperatorTensorDataType::UInt8:
-                        ComputeInternal<unsigned char>(inputTensor.get(), outputTensor.get(), inputDataSize, inputDims, m_filePath, m_fileType);
-                        break;
-                    case MLOperatorTensorDataType::Int8:
-                        ComputeInternal<char>(inputTensor.get(), outputTensor.get(), inputDataSize, inputDims, m_filePath, m_fileType);
-                        break;
-                    case MLOperatorTensorDataType::UInt16:
-                        ComputeInternal<unsigned short int>(inputTensor.get(), outputTensor.get(), inputDataSize, inputDims, m_filePath, m_fileType);
-                        break;
-                    case MLOperatorTensorDataType::Int16:
-                        ComputeInternal<short int>(inputTensor.get(), outputTensor.get(), inputDataSize, inputDims, m_filePath, m_fileType);
-                        break;
-                    case MLOperatorTensorDataType::Int32:
-                        ComputeInternal<int>(inputTensor.get(), outputTensor.get(), inputDataSize, inputDims, m_filePath, m_fileType);
-                        break;
-                    case MLOperatorTensorDataType::UInt32:
-                        ComputeInternal<unsigned int>(inputTensor.get(), outputTensor.get(), inputDataSize, inputDims, m_filePath, m_fileType);
-                        break;
-                    case MLOperatorTensorDataType::Int64:
-                        ComputeInternal<long long int>(inputTensor.get(), outputTensor.get(), inputDataSize, inputDims, m_filePath, m_fileType);
-                        break;
-                    case MLOperatorTensorDataType::UInt64:
-                        ComputeInternal<unsigned long long int>(inputTensor.get(), outputTensor.get(), inputDataSize, inputDims, m_filePath, m_fileType);
-                        break;
-                }
+            switch (type) {
+                case MLOperatorTensorDataType::Float:
+                    ComputeInternal<float>(inputTensor.get(), outputTensor.get(), inputDataSize, inputDims, m_filePath, m_fileType);
+                    break;
+                case MLOperatorTensorDataType::Bool:
+                    ComputeInternal<bool>(inputTensor.get(), outputTensor.get(), inputDataSize, inputDims, m_filePath, m_fileType);
+                    break;
+                case MLOperatorTensorDataType::Double:
+                    ComputeInternal<double>(inputTensor.get(), outputTensor.get(), inputDataSize, inputDims, m_filePath, m_fileType);
+                    break;
+                case MLOperatorTensorDataType::UInt8:
+                    ComputeInternal<uint8_t>(inputTensor.get(), outputTensor.get(), inputDataSize, inputDims, m_filePath, m_fileType);
+                    break;
+                case MLOperatorTensorDataType::Int8:
+                    ComputeInternal<int8_t>(inputTensor.get(), outputTensor.get(), inputDataSize, inputDims, m_filePath, m_fileType);
+                    break;
+                case MLOperatorTensorDataType::UInt16:
+                    ComputeInternal<uint16_t>(inputTensor.get(), outputTensor.get(), inputDataSize, inputDims, m_filePath, m_fileType);
+                    break;
+                case MLOperatorTensorDataType::Int16:
+                    ComputeInternal<int16_t>(inputTensor.get(), outputTensor.get(), inputDataSize, inputDims, m_filePath, m_fileType);
+                    break;
+                case MLOperatorTensorDataType::Int32:
+                    ComputeInternal<int32_t>(inputTensor.get(), outputTensor.get(), inputDataSize, inputDims, m_filePath, m_fileType);
+                    break;
+                case MLOperatorTensorDataType::UInt32:
+                    ComputeInternal<uint32_t>(inputTensor.get(), outputTensor.get(), inputDataSize, inputDims, m_filePath, m_fileType);
+                    break;
+                case MLOperatorTensorDataType::Int64:
+                    ComputeInternal<int64_t>(inputTensor.get(), outputTensor.get(), inputDataSize, inputDims, m_filePath, m_fileType);
+                    break;
+                case MLOperatorTensorDataType::UInt64:
+                    ComputeInternal<uint64_t>(inputTensor.get(), outputTensor.get(), inputDataSize, inputDims, m_filePath, m_fileType);
+                    break;
+                case MLOperatorTensorDataType::Float16:
+                default:
+                    return E_NOTIMPL;
+            }
         }
         return S_OK;
     }
@@ -354,7 +355,7 @@ void DebugOperatorFactory::RegisterDebugSchema(winrt::com_ptr<IMLOperatorRegistr
     debugFileTypeAttributeValue.type = MLOperatorAttributeType::String;
     debugFileTypeAttributeValue.valueCount = 1;
     static const char* defaultTypes[] = { "png" };
-    debugFileTypeAttributeValue.strings = defaultPaths;
+    debugFileTypeAttributeValue.strings = defaultTypes;
 
     std::vector<MLOperatorAttributeNameValue> attributeDefaultValues{ debugFilePathAttributeValue, debugFileTypeAttributeValue };
     debugSchema.defaultAttributes = attributeDefaultValues.data();
@@ -405,7 +406,7 @@ void DebugOperatorFactory::RegisterDebugKernel(winrt::com_ptr<IMLOperatorRegistr
     kernelDescription.typeConstraintCount = static_cast<uint32_t>(typeConstraints.size());
 
     MLOperatorAttributeNameValue debugFilePathAttributeValue;
-    debugFilePathAttributeValue.name = "fail-path";
+    debugFilePathAttributeValue.name = "file_path";
     debugFilePathAttributeValue.type = MLOperatorAttributeType::String;
     debugFilePathAttributeValue.valueCount = 1;
     static const char* defaultFilePath[] = { "" };

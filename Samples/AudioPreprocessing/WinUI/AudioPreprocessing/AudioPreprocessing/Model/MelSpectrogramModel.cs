@@ -221,6 +221,45 @@ namespace AudioPreprocessing.Model
             return outputImage.SoftwareBitmap;
         }
 
+        public IReadOnlyList<float> ClassifySpectrogram(SoftwareBitmap melSpectrogram)
+        {
+            var _modelPath = @"C:\Users\t-janedu\source\repos\Windows-Machine-Learning\Samples\AudioPreprocessing\WinUI\AudioPreprocessing\AudioPreprocessing\tmp\speech_recog.onnx";
+            var _deviceName = "cpu";
+            var _deviceKind = LearningModelDeviceKind.Default;
+            var imageTensor = ImageFeatureValue.CreateFromVideoFrame(VideoFrame.CreateWithSoftwareBitmap(melSpectrogram));
+
+            // Load and create the model 
+            Console.WriteLine($"Loading modelfile '{_modelPath}' on the '{_deviceName}' device");
+
+            int ticks = Environment.TickCount;
+            var _model = LearningModel.LoadFromFilePath(_modelPath);
+            ticks = Environment.TickCount - ticks;
+            Console.WriteLine($"model file loaded in { ticks } ticks");
+
+            // Create the evaluation session with the model and device
+            var _session = new LearningModelSession(_model, new LearningModelDevice(_deviceKind));
+
+            // create a binding object from the session
+            Console.WriteLine("Binding...");
+            LearningModelBinding binding = new LearningModelBinding(_session);
+               
+            binding.Bind(_model.InputFeatures.ElementAt(0).Name, imageTensor);
+
+            //Console.WriteLine("Running the model...");
+            ticks = Environment.TickCount;
+            var results = _session.Evaluate(binding, "RunId");
+            ticks = Environment.TickCount - ticks;
+            //Console.WriteLine($"model run took { ticks } ticks");
+
+            // retrieve results from evaluation
+            var resultTensor = results.Outputs[_model.OutputFeatures.ElementAt(0).Name] as TensorFloat;
+            
+            return resultTensor.GetAsVectorView();
+
+        }
+
+
+
         private void writeCSV(string filename, IEnumerable<float> data, int width, int height)
         {
             using (var file = File.CreateText(filename))

@@ -19,6 +19,9 @@ namespace AudioPreprocessing.ViewModel
         private string imagePath;
         private MelSpectrogramModel preprocessModel;
         private SoftwareBitmap melSpectrogramImage;
+        private string results;
+        private IReadOnlyList<float> resultVector;
+        
 
         public PreprocessViewModel()
         {
@@ -67,12 +70,19 @@ namespace AudioPreprocessing.ViewModel
             get { return melSpectrogramImage; }
             set { melSpectrogramImage = value; OnPropertyChanged(); }
         }
+        public string Results
+        {
+            get { return results; }
+            set { results = value; OnPropertyChanged(); }
+        }
 
-        public void GenerateMelSpectrograms(string wavPath, ModelSetting settings)
+        public void GenerateAndEvalAudio(string wavPath, ModelSetting settings)
         {
             bool colorize = settings.Colored;
             preprocessModel = new MelSpectrogramModel(settings);
             MelSpectrogramImage = preprocessModel.GenerateMelSpectrogram(wavPath);
+            resultVector = preprocessModel.ClassifySpectrogram(MelSpectrogramImage);
+            GetLabelledResults(resultVector);
             if (colorize)
             {
                 // Use computational graph to colorize image
@@ -89,8 +99,45 @@ namespace AudioPreprocessing.ViewModel
             {
                 MelSpectrogramImage = SoftwareBitmap.Convert(MelSpectrogramImage, BitmapPixelFormat.Bgra8, BitmapAlphaMode.Premultiplied);
             }
+
         }
 
+        private void GetLabelledResults(IReadOnlyList<float> resultVector)
+        {
+            var labels = new string[]{"backward", "bed", "bird", "cat", "dog", "down", "eight", "five", "follow",
+                     "forward", "four", "go", "happy", "house", "learn", "left", "marvin",
+                     "nine", "no", "off", "on", "one", "right", "seven", "sheila",
+                     "six", "stop", "three", "tree", "two", "up", "visual", "wow", "yes", "zero" };
+
+            List<(int index, float probability)> indexedResults = new List<(int, float)>();
+
+            for (int i = 0; i < resultVector.Count; i++)
+            {
+                indexedResults.Add((index: i, probability: resultVector[i]));
+            }
+            indexedResults.Sort((a, b) =>
+            {
+                if (a.probability < b.probability)
+                {
+                    return 1;
+                }
+                else if (a.probability > b.probability)
+                {
+                    return -1;
+                }
+                else
+                {
+                    return 0;
+                }
+            });
+
+            var topResults = new List<string>();
+            for (int i = 0; i < 3; i++)
+            {
+                topResults.Add($"\"{ labels[indexedResults[i].index]}\" with confidence of { indexedResults[i].probability}");
+            }
+            Results = string.Join('\n', topResults);
+        }
 
         public ICommand SaveFileCommand => new AsyncRelayCommand(p => SaveFile());
 

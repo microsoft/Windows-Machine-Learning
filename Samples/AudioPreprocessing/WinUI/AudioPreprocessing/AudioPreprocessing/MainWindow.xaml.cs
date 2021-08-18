@@ -50,9 +50,9 @@ namespace AudioPreprocessing
                 (int)Amplitude.Value
                 );
 
-            ViewModel.GenerateMelSpectrograms(wavPath, melSpecSettings);
+            ViewModel.GenerateAndEvalAudio(wavPath, melSpecSettings);
             WavFilePath.Text = ViewModel.AudioPath;
-
+            Labels.Text = ViewModel.Results;
             await ((SoftwareBitmapSource)spectrogram.Source).SetBitmapAsync(ViewModel.MelSpectrogramImage);
         }
 

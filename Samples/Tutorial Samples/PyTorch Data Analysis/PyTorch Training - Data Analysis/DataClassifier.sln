@@ -1,0 +1,23 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.31409.214
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{888888A0-9F3D-457C-B088-3A5042F75D52}") = "DataClassifier", "DataClassifier.pyproj", "{DDB3CD5D-AC8D-4257-92A9-0A2C5B37452E}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{DDB3CD5D-AC8D-4257-92A9-0A2C5B37452E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DDB3CD5D-AC8D-4257-92A9-0A2C5B37452E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {9F7C0492-4F0A-414D-B9AF-3CCF8B04B026}
+	EndGlobalSection
+EndGlobal

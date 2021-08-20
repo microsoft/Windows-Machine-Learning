@@ -40,7 +40,7 @@
         <StackPanel HorizontalAlignment="Center" Background="White" Orientation="Vertical">
             <TextBlock Name="WavFilePath" Text="{x:Bind ViewModel.AudioPath}" 
                 HorizontalAlignment="Center" VerticalAlignment="Center" />
-            <Image Name="spectrogram" Stretch="Fill" Height="500" Width="500" />
+            <Image Name="spectrogram" Stretch="Fill" Height="500" Width="500" Margin="10,10,10,10"/>
             <TextBlock Name="Labels" Text="{x:Bind ViewModel.Results}"
                 HorizontalAlignment="Center" VerticalAlignment="Center" />
         </StackPanel>

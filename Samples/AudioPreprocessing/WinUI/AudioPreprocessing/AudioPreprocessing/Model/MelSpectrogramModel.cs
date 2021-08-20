@@ -90,6 +90,7 @@ namespace AudioPreprocessing.Model
                 .SetConstant("W", TensorFloat.CreateFromArray(new List<long>() { batchSize, 1, 1, downsizeFactor }, filter))
                 .SetOutput("Y", "Output.Resampled"))
               ;
+            builder.Save(@"C:\Users\t-janedu\source\repos\Windows-Machine-Learning\Samples\AudioPreprocessing\WinUI\AudioPreprocessing\AudioPreprocessing\tmp\resampler.onnx");
             var model = builder.CreateModel();
             LearningModelSession session = new LearningModelSession(model);
             LearningModelBinding binding = new LearningModelBinding(session);

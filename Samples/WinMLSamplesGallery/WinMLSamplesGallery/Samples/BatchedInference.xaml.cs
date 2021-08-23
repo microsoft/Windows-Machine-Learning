@@ -133,7 +133,7 @@ namespace WinMLSamplesGallery.Samples
                 inferenceSession_ = CreateLearningModelSession(modelPath, batchSizeOverride);
                 preProcessingSession_ = null;
                 Func<LearningModel> postProcessor = () => TensorizationModels.SoftMaxThenTopK(TopK);
-                postProcessingSession_ = CreateLearningModelSession(postProcessor());
+                postProcessingSession_ = CreateLearningModelSession(postProcessor(), batchSizeOverride);
 
                 if (currentModel_ == Classifier.RCNN_ILSVRC13)
                 {
@@ -175,13 +175,7 @@ namespace WinMLSamplesGallery.Samples
             if (batchSizeOverride > 0)
             {
                 options.BatchSizeOverride = (uint) batchSizeOverride;
-                System.Diagnostics.Debug.WriteLine("Setting batchSizeOverride");
-            } else
-            {
-                System.Diagnostics.Debug.WriteLine("Did not set batchSizeOverride");
             }
-            System.Diagnostics.Debug.WriteLine("batchSizeOverride");
-            System.Diagnostics.Debug.WriteLine(options.BatchSizeOverride);
             var session = new LearningModelSession(model, device, options);
             return session;
         }
@@ -203,14 +197,15 @@ namespace WinMLSamplesGallery.Samples
             var fishImage = CreateSoftwareBitmapFromStorageFile(fishFile);
             var images = new List<SoftwareBitmap> { birdImage, catImage, fishImage };
             LoadLabelsAndModelPaths();
-            InitializeWindowsMachineLearning(currentModel_, 3);
-/*            var (individualResults, totalMetricTimes) = Classify(images);
-            RenderInferenceResults(individualResults, totalMetricTimes);
-            ResetModels();*/
-            ClassifyBatched(images);
             /*            InitializeWindowsMachineLearning(currentModel_);
                         var (individualResults, totalMetricTimes) = Classify(images);
                         RenderInferenceResults(individualResults, totalMetricTimes);*/
+
+
+            InitializeWindowsMachineLearning(currentModel_, 3);
+            ClassifyBatched(images);
+
+            ResetModels();
         }
 
         private static Dictionary<long, string> LoadLabels(string csvFile)
@@ -344,15 +339,42 @@ namespace WinMLSamplesGallery.Samples
 
             // Inference
             start = HighResolutionClock.UtcNow();
-            System.Diagnostics.Debug.WriteLine("Evaluating for inference");
             var inferenceResults = EvaluateBatched(inferenceSession_, preProcessedOutput);
             var inferenceOutput = inferenceResults.Outputs.First().Value as TensorFloat;
+  
+            // PostProcess
+            var outputVector = inferenceOutput.GetAsVectorView();
+            var outputList = new List<float>(outputVector);
+            var batchSize = input.Count;
+            System.Diagnostics.Debug.WriteLine("batchSize {0}", batchSize);
+            var oneOutputSize = outputList.Count / batchSize;
+            System.Diagnostics.Debug.WriteLine("oneOutputSize {0}", oneOutputSize);
+            // For each batch find the highest probability along with its label index
+            for (int batchId = 0; batchId < batchSize; batchId++)
+            {
+                float topProbability = 0;
+                int topProbabilityIndex = 0;
+                for (int i = 0; i < oneOutputSize; i++)
+                {
+                    var currentProbability = outputList[i + oneOutputSize * batchId];
+                    if (currentProbability > topProbability)
+                    {
+                        topProbability = currentProbability;
+                        topProbabilityIndex = i;
+                    }
+                }
+
+                var topLabel = labels_[topProbabilityIndex];
+                System.Diagnostics.Debug.WriteLine("Results for batch {0}", batchId);
+                System.Diagnostics.Debug.WriteLine("Top label: {0}, with probability {1}", topLabel, topProbability);
+
+            }
+
             stop = HighResolutionClock.UtcNow();
             var inferenceDuration = HighResolutionClock.DurationInMs(start, stop);
 
             // PostProcess
-            start = HighResolutionClock.UtcNow();
-            System.Diagnostics.Debug.WriteLine("Evaluating for postprocessing");
+/*            start = HighResolutionClock.UtcNow();
             var postProcessedOutputs = Evaluate(postProcessingSession_, inferenceOutput);
             var topKValues = postProcessedOutputs.Outputs["TopKValues"] as TensorFloat;
             var topKIndices = postProcessedOutputs.Outputs["TopKIndices"] as TensorInt64Bit;
@@ -361,13 +383,11 @@ namespace WinMLSamplesGallery.Samples
             var probabilities = topKValues.GetAsVectorView();
             var indices = topKIndices.GetAsVectorView();
             var labels = indices.Select((index) => labels_[index]);
-            System.Diagnostics.Debug.WriteLine("Labels");
-            System.Diagnostics.Debug.WriteLine(labels);
             var labels_list = new List<string>(labels);
             labels_list.ForEach(delegate (string label)
             {
                 System.Diagnostics.Debug.WriteLine(label);
-            });
+            });*/
             /*var most_confident_label = labels.First();*/
             stop = HighResolutionClock.UtcNow();
             var postProcessDuration = HighResolutionClock.DurationInMs(start, stop);

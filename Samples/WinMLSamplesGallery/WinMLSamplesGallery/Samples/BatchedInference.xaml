@@ -76,6 +76,19 @@
             </StackPanel>
         </DataTemplate>
 
+        <DataTemplate x:Name="EvalResultsTemplate" x:DataType="local_samples:EvalResult">
+            <StackPanel Grid.Row="4" Orientation="Vertical" Padding="10,20,0,0">
+                <TextBlock Text="Results Averaged over 100 Attempts" FontSize="18" FontWeight="Bold" TextDecorations="Underline" Typography.Capitals="AllSmallCaps" Typography.StylisticSet4="True"/>
+                <TextBlock FontSize="18" Typography.Capitals="AllSmallCaps" Typography.StylisticSet4="True">
+                    <Run Text="Non-Batched Avg. Total Eval Time: {Binding nonBatchedAvgTime}" />
+                </TextBlock>
+                <TextBlock FontSize="18" Typography.Capitals="AllSmallCaps" Typography.StylisticSet4="True">
+                    <Run Text="Batched Avg. Total Eval Time: {Binding batchedAvgTime}" />
+                </TextBlock>
+                <TextBlock FontSize="18" Typography.Capitals="AllSmallCaps" Typography.StylisticSet4="True">Batching was <Bold>X times faster</Bold> on average</TextBlock>
+            </StackPanel>
+        </DataTemplate>
+
     </Page.Resources>
 
     <Grid>
@@ -172,6 +185,12 @@
                         </ItemsPanelTemplate>
                     </ListView.ItemsPanel>
                 </ListView>
+
+                <GridView Grid.Row="4"
+                    x:Name="EvalResults"
+                    ItemTemplate="{StaticResource EvalResultsTemplate}">
+                </GridView>
+
             </Grid>
         </ScrollViewer>
     </Grid>

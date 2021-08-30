@@ -107,9 +107,22 @@
         <local_controls:SampleHeader
             Grid.Row="0"
             Title="Batching" />
-        <TextBlock Grid.Row="1" FontWeight="Bold" FontSize="22" TextAlignment="Center">Perform inference on multiple inputs at once to increase performance</TextBlock>
-        <TextBlock Grid.Row="1" FontSize="18" TextAlignment="Center" Margin="0,40,0,0">Images will be passed through SqueezeNet for classification</TextBlock>
-
+        <StackPanel Grid.Row="1">
+            <TextBlock FontWeight="Bold" FontSize="22" TextAlignment="Center">Perform inference on multiple inputs at once to increase performance</TextBlock>
+            <TextBlock FontSize="18" TextAlignment="Center" Margin="0,10,0,0">60 images will be passed through SqueezeNet for classification</TextBlock>
+            <TextBlock FontWeight="Bold" FontSize="16" TextAlignment="Center" Margin="0,20,0,0">Settings</TextBlock>
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,10,0,0">
+                <TextBlock>Toggle Device:</TextBlock>
+                <ComboBox x:Name="DeviceComboBox" SelectedIndex="0" Background="LightGray" PlaceholderText="Device"
+                        SelectionChanged="DeviceComboBox_SelectionChanged">
+                    <TextBlock Text="CPU" FontSize="16" Typography.Capitals="AllSmallCaps" Typography.StylisticSet4="True"/>
+                    <TextBlock Text="GPU" FontSize="16" Typography.Capitals="AllSmallCaps" Typography.StylisticSet4="True"/>
+                </ComboBox>
+            </StackPanel>
+            <StackPanel HorizontalAlignment="Center">
+                <Button Height="50" Click="StartInference">Start Inference</Button>
+            </StackPanel>
+        </StackPanel>
         <!--       <ScrollViewer 
             Grid.Row="2"
             ZoomMode="Disabled"

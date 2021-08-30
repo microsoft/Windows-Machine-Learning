@@ -30,7 +30,7 @@
     <Compile Remove="Samples\ImageClassifier - Copy.xaml.cs" />
   </ItemGroup>
   <ItemGroup>
-	<Compile Remove="Samples\BatchedInference - Copy.xaml.cs" />
+	<Compile Remove="Samples\Batching - Copy.xaml.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Remove="assets\hummingbird - Copy.jpg" />

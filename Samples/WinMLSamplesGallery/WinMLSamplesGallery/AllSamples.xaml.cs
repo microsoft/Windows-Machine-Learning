@@ -49,11 +49,11 @@ namespace WinMLSamplesGallery
                         Frame.Navigate(typeof(Samples.ImageEffects), null, null);
                     }
                     break;
-                case PageId.BatchedInference:
+                case PageId.Batching:
                     // Only navigate if the selected page isn't currently loaded.
-                    if (!Type.Equals(Frame.CurrentSourcePageType, typeof(Samples.BatchedInference)))
+                    if (!Type.Equals(Frame.CurrentSourcePageType, typeof(Samples.Batching)))
                     {
-                        Frame.Navigate(typeof(Samples.BatchedInference), null, null);
+                        Frame.Navigate(typeof(Samples.Batching), null, null);
                     }
                     break;
             }

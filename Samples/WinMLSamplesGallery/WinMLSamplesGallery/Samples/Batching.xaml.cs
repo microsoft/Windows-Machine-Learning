@@ -38,14 +38,14 @@ namespace WinMLSamplesGallery.Samples
     /// <summary>
     /// An empty page that can be used on its own or navigated to within a Frame.
     /// </summary>
-    public sealed partial class BatchedInference : Page
+    public sealed partial class Batching : Page
     {
         [DllImport("user32.dll", ExactSpelling = true, CharSet = CharSet.Auto, PreserveSig = true, SetLastError = false)]
         public static extern IntPtr GetActiveWindow();
 
         private static Dictionary<long, string> labels_;
-        private LearningModelSession nonBatchedInferenceSession_;
-        private LearningModelSession batchedInferenceSession_;
+        private LearningModelSession nonBatchingSession_;
+        private LearningModelSession BatchingSession_;
         private LearningModelSession preProcessingSession_;
         private LearningModelSession postProcessingSession_;
 
@@ -61,7 +61,7 @@ namespace WinMLSamplesGallery.Samples
         private static Dictionary<long, string> imagenetLabels_;
         private static Dictionary<long, string> ilsvrc2013Labels_;
 
-        public BatchedInference()
+        public Batching()
         {
             this.InitializeComponent();
         }
@@ -138,8 +138,8 @@ namespace WinMLSamplesGallery.Samples
             if (currentModel_ != loadedModel_)
             {
                 var modelPath = modelDictionary_[model];
-                nonBatchedInferenceSession_ = CreateLearningModelSession(modelPath);
-                batchedInferenceSession_ = CreateLearningModelSession(modelPath, batchSizeOverride);
+                nonBatchingSession_ = CreateLearningModelSession(modelPath);
+                BatchingSession_ = CreateLearningModelSession(modelPath, batchSizeOverride);
                 preProcessingSession_ = null;
 /*                Func<LearningModel> postProcessor = () => TensorizationModels.SoftMaxThenTopK(TopK);
                 postProcessingSession_ = CreateLearningModelSession(postProcessor(), batchSizeOverride);*/
@@ -267,7 +267,7 @@ namespace WinMLSamplesGallery.Samples
             {
                 input.Add(VideoFrame.CreateWithSoftwareBitmap(image));
             });
-            return Evaluate(nonBatchedInferenceSession_, input);
+            return Evaluate(nonBatchingSession_, input);
         }
 
         private float ClassifyBatched(List<SoftwareBitmap> images)
@@ -287,7 +287,7 @@ namespace WinMLSamplesGallery.Samples
 
             // Inference
 
-            return EvaluateBatched(batchedInferenceSession_, input);
+            return EvaluateBatched(BatchingSession_, input);
 
 /*            var inferenceResults = EvaluateBatched(inferenceSession_, preProcessedOutput);*/
 /*            var inferenceOutput = inferenceResults.Outputs.First().Value as TensorFloat;*/

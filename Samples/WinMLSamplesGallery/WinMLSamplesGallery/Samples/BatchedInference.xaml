@@ -77,13 +77,19 @@
         </DataTemplate>
 
         <DataTemplate x:Name="EvalResultsTemplate" x:DataType="local_samples:EvalResult">
-            <StackPanel Grid.Row="4" Orientation="Vertical" Padding="10,20,0,0">
+            <StackPanel Orientation="Vertical">
                 <TextBlock Text="Results Averaged over 100 Attempts" FontSize="18" FontWeight="Bold" TextDecorations="Underline" Typography.Capitals="AllSmallCaps" Typography.StylisticSet4="True"/>
-                <TextBlock FontSize="18" Typography.Capitals="AllSmallCaps" Typography.StylisticSet4="True">
-                    <Run Text="Non-Batched Avg. Total Eval Time: {Binding nonBatchedAvgTime}" />
+                <TextBlock FontSize="18"
+                    Typography.Capitals="AllSmallCaps"
+                    Typography.StylisticSet4="True"
+                    Text="Non-Batched Avg. Total Eval Time: ">
+                    <Run Text="{Binding nonBatchedAvgTime}" />
                 </TextBlock>
-                <TextBlock FontSize="18" Typography.Capitals="AllSmallCaps" Typography.StylisticSet4="True">
-                    <Run Text="Batched Avg. Total Eval Time: {Binding batchedAvgTime}" />
+                <TextBlock FontSize="18"
+                    Typography.Capitals="AllSmallCaps"
+                    Typography.StylisticSet4="True"
+                    Text="Batched Avg. Total Eval Time: ">
+                    <Run Text="{Binding batchedAvgTime}" />
                 </TextBlock>
                 <TextBlock FontSize="18" Typography.Capitals="AllSmallCaps" Typography.StylisticSet4="True">Batching was <Bold>X times faster</Bold> on average</TextBlock>
             </StackPanel>
@@ -189,6 +195,13 @@
                 <GridView Grid.Row="4"
                     x:Name="EvalResults"
                     ItemTemplate="{StaticResource EvalResultsTemplate}">
+                    <GridView.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <StackPanel Orientation="Horizontal" />
+                        </ItemsPanelTemplate>
+                    </GridView.ItemsPanel>
+                    <GridView.Items>
+                    </GridView.Items>
                 </GridView>
 
             </Grid>

@@ -176,7 +176,7 @@ namespace WinMLSamplesGallery.Samples
                 (DeviceComboBox.SelectedIndex == 0) ?
                     LearningModelDeviceKind.Cpu :
                     LearningModelDeviceKind.DirectXHighPerformance;
-            var device = new LearningModelDevice(LearningModelDeviceKind.DirectXHighPerformance);
+            var device = new LearningModelDevice(kind);
             var options = new LearningModelSessionOptions()
             {
                 CloseModelOnSessionCreation = true // Close the model to prevent extra memory usage
@@ -223,7 +223,14 @@ namespace WinMLSamplesGallery.Samples
                 nonBatchedAvgTime = avgNonBatchedDuration.ToString(),
                 batchedAvgTime = avgBatchDuration.ToString()
             };
-            EvalResults.ItemsSource = evalResult;
+            /*           var evalResult = new EvalResult
+                       {
+                           nonBatchedAvgTime = "10",
+                           batchedAvgTime = "20"
+                       };*/
+            List<EvalResult> results = new List<EvalResult>();
+            results.Insert(0, evalResult);
+            EvalResults.ItemsSource = results;
             /*            RenderInferenceResults(individualResults, totalMetricTimes);*/
 
             ResetModels();

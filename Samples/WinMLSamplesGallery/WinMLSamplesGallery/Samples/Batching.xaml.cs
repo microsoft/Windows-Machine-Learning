@@ -172,11 +172,11 @@ namespace WinMLSamplesGallery.Samples
 
         private LearningModelSession CreateLearningModelSession(LearningModel model, int batchSizeOverride=-1)
         {
-            var kind =
+/*            var kind =
                 (DeviceComboBox.SelectedIndex == 0) ?
                     LearningModelDeviceKind.Cpu :
-                    LearningModelDeviceKind.DirectXHighPerformance;
-            var device = new LearningModelDevice(kind);
+                    LearningModelDeviceKind.DirectXHighPerformance;*/
+            var device = new LearningModelDevice(LearningModelDeviceKind.Cpu);
             var options = new LearningModelSessionOptions()
             {
                 CloseModelOnSessionCreation = true // Close the model to prevent extra memory usage
@@ -230,7 +230,7 @@ namespace WinMLSamplesGallery.Samples
                        };*/
             List<EvalResult> results = new List<EvalResult>();
             results.Insert(0, evalResult);
-            EvalResults.ItemsSource = results;
+/*            EvalResults.ItemsSource = results;*/
             /*            RenderInferenceResults(individualResults, totalMetricTimes);*/
 
             ResetModels();
@@ -397,7 +397,8 @@ namespace WinMLSamplesGallery.Samples
         private void RenderInferenceResults(List<InferenceResult> individualResults,
             List<TotalMetricTime> totalMetricTimes)
         {
-            var individualResultsHeader = new InferenceResult {
+/*            var individualResultsHeader = new InferenceResult
+            {
                 Label = "Label",
                 PreprocessTime = "Preprocess Time (ms)",
                 InferenceTime = "Inference Time (ms)",
@@ -414,7 +415,7 @@ namespace WinMLSamplesGallery.Samples
             InferenceResults.ItemsSource = individualResults;
             InferenceResults.SelectedIndex = 0;
             TotalInferenceResults.ItemsSource = totalMetricTimes;
-            TotalInferenceResults.SelectedIndex = 0;
+            TotalInferenceResults.SelectedIndex = 0;*/
         }
 
     }

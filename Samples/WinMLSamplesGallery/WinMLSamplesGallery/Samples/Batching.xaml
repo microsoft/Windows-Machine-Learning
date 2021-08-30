@@ -96,6 +96,8 @@
         </DataTemplate>
 
     </Page.Resources>
+    
+    
 
     <Grid>
         <Grid.RowDefinitions>
@@ -104,10 +106,12 @@
         </Grid.RowDefinitions>
         <local_controls:SampleHeader
             Grid.Row="0"
-            Title="Batching"
-            Description="Perform inference on multiple inputs at once to increase performance." />
-        <ScrollViewer 
-            Grid.Row="1"
+            Title="Batching" />
+        <TextBlock Grid.Row="1" FontWeight="Bold" FontSize="22" TextAlignment="Center">Perform inference on multiple inputs at once to increase performance</TextBlock>
+        <TextBlock Grid.Row="1" FontSize="18" TextAlignment="Center" Margin="0,40,0,0">Images will be passed through SqueezeNet for classification</TextBlock>
+
+        <!--       <ScrollViewer 
+            Grid.Row="2"
             ZoomMode="Disabled"
             IsVerticalScrollChainingEnabled="True"
             HorizontalScrollMode="Enabled" HorizontalScrollBarVisibility="Disabled"
@@ -205,6 +209,6 @@
                 </GridView>
 
             </Grid>
-        </ScrollViewer>
+        </ScrollViewer> -->
     </Grid>
 </Page>

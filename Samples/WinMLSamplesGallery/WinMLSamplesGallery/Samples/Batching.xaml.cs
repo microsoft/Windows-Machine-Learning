@@ -223,7 +223,7 @@ namespace WinMLSamplesGallery.Samples
             InitializeWindowsMachineLearning(currentModel_, images.Count);
             float avgNonBatchedDuration = Classify(images);
             float avgBatchDuration = ClassifyBatched(images);
-            float ratio = avgBatchDuration / avgNonBatchedDuration;
+            float ratio = 1 / (avgBatchDuration / avgNonBatchedDuration);
             System.Diagnostics.Debug.WriteLine("Average Non-Batch Duration {0}", avgNonBatchedDuration);
             System.Diagnostics.Debug.WriteLine("Average Batch Duration {0}", avgBatchDuration);
             var evalResult = new EvalResult

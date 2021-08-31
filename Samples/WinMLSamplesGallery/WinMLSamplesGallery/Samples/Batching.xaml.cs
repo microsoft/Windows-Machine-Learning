@@ -199,6 +199,12 @@ namespace WinMLSamplesGallery.Samples
 
         private void StartInference(object sender, RoutedEventArgs e)
         {
+/*            System.Diagnostics.Debug.WriteLine("Visibility before {0}", RunningText.Visibility);
+            RunningText.Visibility = Visibility.Visible;
+            RunningText.InvalidateArrange();
+            RunningText.UpdateLayout();
+            System.Diagnostics.Debug.WriteLine("Visibility after {0}", RunningText.Visibility);
+*/
             var birdFile = StorageFile.GetFileFromApplicationUriAsync(new Uri("ms-appx:///InputData/hummingbird.jpg")).GetAwaiter().GetResult();
             var catFile = StorageFile.GetFileFromApplicationUriAsync(new Uri("ms-appx:///InputData/kitten.png")).GetAwaiter().GetResult();
             var fishFile = StorageFile.GetFileFromApplicationUriAsync(new Uri("ms-appx:///InputData/fish.png")).GetAwaiter().GetResult();
@@ -226,13 +232,14 @@ namespace WinMLSamplesGallery.Samples
                 batchedAvgTime = avgBatchDuration.ToString("0.00"),
                 timeRatio = ratio.ToString("0.0")
             };
-            /*            var evalResult = new EvalResult
-                        {
-                            nonBatchedAvgTime = "10",
-                            batchedAvgTime = "20"
-                        };*/
+  /*          var evalResult = new EvalResult
+            {
+                nonBatchedAvgTime = "10",
+                batchedAvgTime = "20"
+            };*/
             List<EvalResult> results = new List<EvalResult>();
             results.Insert(0, evalResult);
+/*            RunningText.Visibility = Visibility.Visible;*/
             Results.ItemsSource = results;
             /*            RenderInferenceResults(individualResults, totalMetricTimes);*/
 

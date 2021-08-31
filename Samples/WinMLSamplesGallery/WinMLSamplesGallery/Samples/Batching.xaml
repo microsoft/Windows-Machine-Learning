@@ -144,14 +144,17 @@
             <TextBlock FontSize="18" TextAlignment="Center" Margin="0,10,0,0">60 images will be passed through SqueezeNet for classification</TextBlock>
             <TextBlock FontWeight="Bold" FontSize="16" TextAlignment="Center" Margin="0,20,0,0">Settings</TextBlock>
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,10,0,0">
-                <TextBlock>Toggle Device:</TextBlock>
+                <TextBlock Margin="0,5,5,0">Toggle Device:</TextBlock>
                 <ComboBox x:Name="DeviceComboBox" SelectedIndex="0" Background="LightGray" PlaceholderText="Device"
-                        SelectionChanged="DeviceComboBox_SelectionChanged">
+                        SelectionChanged="DeviceComboBox_SelectionChanged" Margin="5,0,0,0">
                     <TextBlock Text="CPU" FontSize="16" Typography.Capitals="AllSmallCaps" Typography.StylisticSet4="True"/>
                     <TextBlock Text="GPU" FontSize="16" Typography.Capitals="AllSmallCaps" Typography.StylisticSet4="True"/>
                 </ComboBox>
             </StackPanel>
             <Button Height="50" Click="StartInference" Margin="0,30,0,0" FontSize="18" HorizontalAlignment="Center" FontWeight="Bold">Start Inference</Button>
+    <!--        <TextBlock x:Name="RunningText" Visibility="Collapsed" HorizontalAlignment="Center" Margin="0,10,0,0">
+                Running Inference...
+            </TextBlock> -->
             <GridView x:Name="Results" ItemTemplate="{StaticResource EvalResultsTemplateTwo}" HorizontalAlignment="Center">
             </GridView>
         </StackPanel>

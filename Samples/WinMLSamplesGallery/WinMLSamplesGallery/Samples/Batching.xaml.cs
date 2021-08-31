@@ -199,12 +199,10 @@ namespace WinMLSamplesGallery.Samples
 
         private void StartInference(object sender, RoutedEventArgs e)
         {
-/*            System.Diagnostics.Debug.WriteLine("Visibility before {0}", RunningText.Visibility);
+            System.Diagnostics.Debug.WriteLine("Visibility before {0}", RunningText.Visibility);
             RunningText.Visibility = Visibility.Visible;
-            RunningText.InvalidateArrange();
-            RunningText.UpdateLayout();
             System.Diagnostics.Debug.WriteLine("Visibility after {0}", RunningText.Visibility);
-*/
+
             var birdFile = StorageFile.GetFileFromApplicationUriAsync(new Uri("ms-appx:///InputData/hummingbird.jpg")).GetAwaiter().GetResult();
             var catFile = StorageFile.GetFileFromApplicationUriAsync(new Uri("ms-appx:///InputData/kitten.png")).GetAwaiter().GetResult();
             var fishFile = StorageFile.GetFileFromApplicationUriAsync(new Uri("ms-appx:///InputData/fish.png")).GetAwaiter().GetResult();
@@ -221,6 +219,42 @@ namespace WinMLSamplesGallery.Samples
 
             LoadLabelsAndModelPaths();
             InitializeWindowsMachineLearning(currentModel_, images.Count);
+
+            /*var evalResult = new System.Threading.Thread(new System.Threading.ThreadStart(DoClassifications(images)));*/
+            EvalResult evalResult = null;
+            /*System.Threading.Thread t = new System.Threading.Thread(() => DoClassifications(images));*/
+            System.Threading.Thread t = new System.Threading.Thread(() => {
+                float avgNonBatchedDuration = Classify(images);
+                float avgBatchDuration = ClassifyBatched(images);
+                float ratio = 1 / (avgBatchDuration / avgNonBatchedDuration);
+                System.Diagnostics.Debug.WriteLine("Average Non-Batch Duration {0}", avgNonBatchedDuration);
+                System.Diagnostics.Debug.WriteLine("Average Batch Duration {0}", avgBatchDuration);
+                evalResult = new EvalResult
+                {
+                    nonBatchedAvgTime = avgNonBatchedDuration.ToString("0.00"),
+                    batchedAvgTime = avgBatchDuration.ToString("0.00"),
+                    timeRatio = ratio.ToString("0.0")
+                };
+            });
+
+            t.Start();
+            t.Join();
+  /*          var evalResult = new EvalResult
+            {
+                nonBatchedAvgTime = "10",
+                batchedAvgTime = "20"
+            };*/
+            List<EvalResult> results = new List<EvalResult>();
+            results.Insert(0, evalResult);
+            RunningText.Visibility = Visibility.Visible;
+            Results.ItemsSource = results;
+            /*            RenderInferenceResults(individualResults, totalMetricTimes);*/
+
+            ResetModels();
+        }
+
+        private void DoClassifications(List<SoftwareBitmap> images)
+        {
             float avgNonBatchedDuration = Classify(images);
             float avgBatchDuration = ClassifyBatched(images);
             float ratio = 1 / (avgBatchDuration / avgNonBatchedDuration);
@@ -232,18 +266,6 @@ namespace WinMLSamplesGallery.Samples
                 batchedAvgTime = avgBatchDuration.ToString("0.00"),
                 timeRatio = ratio.ToString("0.0")
             };
-  /*          var evalResult = new EvalResult
-            {
-                nonBatchedAvgTime = "10",
-                batchedAvgTime = "20"
-            };*/
-            List<EvalResult> results = new List<EvalResult>();
-            results.Insert(0, evalResult);
-/*            RunningText.Visibility = Visibility.Visible;*/
-            Results.ItemsSource = results;
-            /*            RenderInferenceResults(individualResults, totalMetricTimes);*/
-
-            ResetModels();
         }
 
         private static Dictionary<long, string> LoadLabels(string csvFile)

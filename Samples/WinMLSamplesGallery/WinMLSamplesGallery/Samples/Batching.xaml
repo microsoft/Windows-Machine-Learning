@@ -152,9 +152,9 @@
                 </ComboBox>
             </StackPanel>
             <Button Height="50" Click="StartInference" Margin="0,30,0,0" FontSize="18" HorizontalAlignment="Center" FontWeight="Bold">Start Inference</Button>
-    <!--        <TextBlock x:Name="RunningText" Visibility="Collapsed" HorizontalAlignment="Center" Margin="0,10,0,0">
+            <TextBlock x:Name="RunningText" Visibility="Collapsed" HorizontalAlignment="Center" Margin="0,10,0,0">
                 Running Inference...
-            </TextBlock> -->
+            </TextBlock>
             <GridView x:Name="Results" ItemTemplate="{StaticResource EvalResultsTemplateTwo}" HorizontalAlignment="Center">
             </GridView>
         </StackPanel>

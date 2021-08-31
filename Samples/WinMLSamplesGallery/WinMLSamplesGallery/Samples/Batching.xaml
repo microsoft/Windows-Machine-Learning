@@ -118,7 +118,11 @@
                     Avg. Total Eval Time = Average amount of time it takes to perform inference on 60 inputs
                 </TextBlock>
                 <TextBlock FontSize="20" Margin="0,20,0,0" HorizontalAlignment="Center">
-                    Batching was <Span FontWeight="Bold" Foreground="#36b8ff">2.5x</Span> faster on average
+                    Batching was 
+                    <Span FontWeight="Bold" Foreground="#36b8ff">
+                        <Run Text="{Binding timeRatio}"/>x
+                    </Span>
+                    faster on average
                 </TextBlock>
             </StackPanel>
         </DataTemplate>

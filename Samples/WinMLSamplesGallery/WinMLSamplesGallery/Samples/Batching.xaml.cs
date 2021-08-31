@@ -26,6 +26,7 @@ namespace WinMLSamplesGallery.Samples
     {
         public string nonBatchedAvgTime { get; set; }
         public string batchedAvgTime { get; set; }
+        public string timeRatio { get; set; }
     }
 
 
@@ -212,22 +213,24 @@ namespace WinMLSamplesGallery.Samples
                 images.Add(fishImage);
             }
 
- /*           LoadLabelsAndModelPaths();
+            LoadLabelsAndModelPaths();
             InitializeWindowsMachineLearning(currentModel_, images.Count);
             float avgNonBatchedDuration = Classify(images);
             float avgBatchDuration = ClassifyBatched(images);
+            float ratio = avgBatchDuration / avgNonBatchedDuration;
             System.Diagnostics.Debug.WriteLine("Average Non-Batch Duration {0}", avgNonBatchedDuration);
             System.Diagnostics.Debug.WriteLine("Average Batch Duration {0}", avgBatchDuration);
             var evalResult = new EvalResult
             {
-                nonBatchedAvgTime = avgNonBatchedDuration.ToString(),
-                batchedAvgTime = avgBatchDuration.ToString()
-            };*/
-            var evalResult = new EvalResult
-            {
-                nonBatchedAvgTime = "10",
-                batchedAvgTime = "20"
+                nonBatchedAvgTime = avgNonBatchedDuration.ToString("0.00"),
+                batchedAvgTime = avgBatchDuration.ToString("0.00"),
+                timeRatio = ratio.ToString("0.0")
             };
+            /*            var evalResult = new EvalResult
+                        {
+                            nonBatchedAvgTime = "10",
+                            batchedAvgTime = "20"
+                        };*/
             List<EvalResult> results = new List<EvalResult>();
             results.Insert(0, evalResult);
             Results.ItemsSource = results;

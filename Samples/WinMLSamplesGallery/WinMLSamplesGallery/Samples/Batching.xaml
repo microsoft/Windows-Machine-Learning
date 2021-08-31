@@ -120,7 +120,24 @@
                 </ComboBox>
             </StackPanel>
             <StackPanel HorizontalAlignment="Center">
-                <Button Height="50" Click="StartInference">Start Inference</Button>
+                <Button Height="50" Click="StartInference" Margin="0,30,0,0" FontSize="18" HorizontalAlignment="Center" FontWeight="Bold">Start Inference</Button>
+                <TextBlock FontWeight="Bold" Margin="0,80,0,0" HorizontalAlignment="Center" TextDecorations="Underline" FontSize="18">
+                    Results averaged over 100 attempts
+                </TextBlock>
+                <StackPanel Orientation="Horizontal" Margin="0,20,0,0" HorizontalAlignment="Center">
+                    <TextBlock FontSize="20" Margin="0,0,10,0">
+                        Non-Batched Avg. Total Eval Time: <Span Foreground="Green" FontWeight="Bold">300ms</Span>
+                    </TextBlock>
+                    <TextBlock FontSize="20" Margin="10,0,0,0">
+                        Batched Avg. Total Eval Time: <Span Foreground="Green" FontWeight="Bold">300ms</Span>
+                    </TextBlock>
+                </StackPanel>
+                <TextBlock FontSize="14" FontWeight="Bold" Foreground="#969696" HorizontalAlignment="Center" Margin="0,10,0,0">
+                    Avg. Total Eval Time = Average amount of time it takes to perform inference on 60 inputs
+                </TextBlock>
+                <TextBlock FontSize="20" Margin="0,20,0,0" HorizontalAlignment="Center">
+                    Batching was <Span FontWeight="Bold" Foreground="#36b8ff">2.5x</Span> faster on average
+                </TextBlock>
             </StackPanel>
         </StackPanel>
         <!--       <ScrollViewer 

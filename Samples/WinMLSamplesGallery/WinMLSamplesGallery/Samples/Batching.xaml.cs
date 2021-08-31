@@ -212,7 +212,7 @@ namespace WinMLSamplesGallery.Samples
                 images.Add(fishImage);
             }
 
-            LoadLabelsAndModelPaths();
+ /*           LoadLabelsAndModelPaths();
             InitializeWindowsMachineLearning(currentModel_, images.Count);
             float avgNonBatchedDuration = Classify(images);
             float avgBatchDuration = ClassifyBatched(images);
@@ -222,15 +222,15 @@ namespace WinMLSamplesGallery.Samples
             {
                 nonBatchedAvgTime = avgNonBatchedDuration.ToString(),
                 batchedAvgTime = avgBatchDuration.ToString()
+            };*/
+            var evalResult = new EvalResult
+            {
+                nonBatchedAvgTime = "10",
+                batchedAvgTime = "20"
             };
-            /*           var evalResult = new EvalResult
-                       {
-                           nonBatchedAvgTime = "10",
-                           batchedAvgTime = "20"
-                       };*/
             List<EvalResult> results = new List<EvalResult>();
             results.Insert(0, evalResult);
-/*            EvalResults.ItemsSource = results;*/
+            Results.ItemsSource = results;
             /*            RenderInferenceResults(individualResults, totalMetricTimes);*/
 
             ResetModels();

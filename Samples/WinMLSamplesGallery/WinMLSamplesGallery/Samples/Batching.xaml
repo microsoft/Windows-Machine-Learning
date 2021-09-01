@@ -151,7 +151,10 @@
                     <TextBlock Text="GPU" FontSize="16" Typography.Capitals="AllSmallCaps" Typography.StylisticSet4="True"/>
                 </ComboBox>
             </StackPanel>
-            <Button Height="50" Click="StartInference" Margin="0,30,0,0" FontSize="18" HorizontalAlignment="Center" FontWeight="Bold">Start Inference</Button>
+            <Button x:Name="StartInferenceBtn" Height="50" Click="StartInference" Margin="0,30,0,0" FontSize="18"
+                    HorizontalAlignment="Center" FontWeight="Bold">
+                Start Inference
+            </Button>
             <TextBlock x:Name="RunningText" Visibility="Collapsed" HorizontalAlignment="Center" Margin="0,10,0,0">
                 Running Inference...
             </TextBlock>

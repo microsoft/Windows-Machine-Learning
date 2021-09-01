@@ -225,7 +225,7 @@ namespace WinMLSamplesGallery.Samples
             EvalText.Text = "Inferencing Non-Batched Inputs...";
             float avgNonBatchedDuration = await System.Threading.Tasks.Task.Run(() => Classify(images));
             EvalText.Text = "Inferencing Batched Inputs...";
-            float avgBatchDuration = await System.Threading.Tasks.Task.Run(() => Classify(images));
+            float avgBatchDuration = await System.Threading.Tasks.Task.Run(() => ClassifyBatched(images));
             float ratio = (1 - (avgBatchDuration / avgNonBatchedDuration)) * 100;
             var evalResult = new EvalResult
             {

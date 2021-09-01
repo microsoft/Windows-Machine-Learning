@@ -54,6 +54,8 @@ namespace WinMLSamplesGallery.Samples
         Classifier loadedModel_ = Classifier.NotSet;
         const long BatchSize = 1;
         const long TopK = 10;
+        float avgNonBatchedDuration = 0;
+        float avgBatchDuration = 0;
 
         private Dictionary<Classifier, string> modelDictionary_;
         private Dictionary<Classifier, Func<LearningModel>> postProcessorDictionary_;
@@ -202,6 +204,8 @@ namespace WinMLSamplesGallery.Samples
             StartInferenceBtn.IsEnabled = false;
             EvalResults.Visibility = Visibility.Collapsed;
             LoadingContainer.Visibility = Visibility.Visible;
+            avgNonBatchedDuration = 0;
+            avgBatchDuration = 0;
 
             var birdFile = StorageFile.GetFileFromApplicationUriAsync(new Uri("ms-appx:///InputData/hummingbird.jpg")).GetAwaiter().GetResult();
             var catFile = StorageFile.GetFileFromApplicationUriAsync(new Uri("ms-appx:///InputData/kitten.png")).GetAwaiter().GetResult();
@@ -223,9 +227,11 @@ namespace WinMLSamplesGallery.Samples
             /*var evalResult = new System.Threading.Thread(new System.Threading.ThreadStart(DoClassifications(images)));*/
             /*EvalResult evalResult = await System.Threading.Tasks.Task.Run(() => DoClassifications(images));*/
             EvalText.Text = "Inferencing Non-Batched Inputs...";
-            float avgNonBatchedDuration = await System.Threading.Tasks.Task.Run(() => Classify(images));
+            await Classify(images);
+ /*           float avgNonBatchedDuration = await System.Threading.Tasks.Task.Run(() => Classify(images));*/
             EvalText.Text = "Inferencing Batched Inputs...";
-            float avgBatchDuration = await System.Threading.Tasks.Task.Run(() => ClassifyBatched(images));
+            await ClassifyBatched(images);
+            /*            float avgBatchDuration = await System.Threading.Tasks.Task.Run(() => ClassifyBatched(images));*/
             float ratio = (1 - (avgBatchDuration / avgNonBatchedDuration)) * 100;
             var evalResult = new EvalResult
             {
@@ -244,7 +250,7 @@ namespace WinMLSamplesGallery.Samples
             ResetModels();
         }
 
-        private EvalResult DoClassifications(List<SoftwareBitmap> images)
+/*        private EvalResult DoClassifications(List<SoftwareBitmap> images)
         {
             float avgNonBatchedDuration = Classify(images);
             float avgBatchDuration = ClassifyBatched(images);
@@ -258,7 +264,7 @@ namespace WinMLSamplesGallery.Samples
                 timeRatio = ratio.ToString("0.0")
             };
             return evalResult;
-        }
+        }*/
 
         private static Dictionary<long, string> LoadLabels(string csvFile)
         {
@@ -277,8 +283,7 @@ namespace WinMLSamplesGallery.Samples
             }
             return labels;
         }
-
-        private float Classify(List<SoftwareBitmap> images)
+        async private System.Threading.Tasks.Task Classify(List<SoftwareBitmap> images)
         {
             var individualResults = new List<InferenceResult>();
             var totalMetricTimes = new List<TotalMetricTime>();
@@ -291,59 +296,15 @@ namespace WinMLSamplesGallery.Samples
             {
                 input.Add(VideoFrame.CreateWithSoftwareBitmap(image));
             });
-            return Evaluate(nonBatchingSession_, input);
-        }
-
-        private float ClassifyBatched(List<SoftwareBitmap> images)
-        {
-            var individualResults = new List<InferenceResult>();
-            var totalMetricTimes = new List<TotalMetricTime>();
-            float totalPreprocessTime = 0;
-            float totalInferenceTime = 0;
-            float totalPostprocessTime = 0;
-
-            long start, stop;
-            var input = new List<VideoFrame>();
-            images.ForEach(delegate (SoftwareBitmap image)
+            float totalEvalDurations = 0;
+            for (int i = 0; i < 100; i++)
             {
-                input.Add(VideoFrame.CreateWithSoftwareBitmap(image));
-            });
-
-            // Inference
-
-            return EvaluateBatched(BatchingSession_, input);
-
-/*            var inferenceResults = EvaluateBatched(inferenceSession_, preProcessedOutput);*/
-/*            var inferenceOutput = inferenceResults.Outputs.First().Value as TensorFloat;*/
-  
-            // PostProcess
-/*            var outputVector = inferenceOutput.GetAsVectorView();
-            var outputList = new List<float>(outputVector);
-            var batchSize = input.Count;
-            System.Diagnostics.Debug.WriteLine("batchSize {0}", batchSize);
-            var oneOutputSize = outputList.Count / batchSize;
-            System.Diagnostics.Debug.WriteLine("oneOutputSize {0}", oneOutputSize);*/
-            // For each batch find the highest probability along with its label index
-/*            for (int batchId = 0; batchId < batchSize; batchId++)
-            {
-                float topProbability = 0;
-                int topProbabilityIndex = 0;
-                for (int i = 0; i < oneOutputSize; i++)
-                {
-                    var currentProbability = outputList[i + oneOutputSize * batchId];
-                    if (currentProbability > topProbability)
-                    {
-                        topProbability = currentProbability;
-                        topProbabilityIndex = i;
-                    }
-                }
-
-                var topLabel = labels_[topProbabilityIndex];
-*//*                System.Diagnostics.Debug.WriteLine("Results for batch {0}", batchId);
-                System.Diagnostics.Debug.WriteLine("Top label: {0}, with probability {1}", topLabel, topProbability);*//*
-
-            }*/
-
+                EvalProgressText.Text = "Iteration " + i.ToString() + "/100";
+                EvalProgressBar.Value = i + 1;
+                float evalDuration = await System.Threading.Tasks.Task.Run(() => Evaluate(nonBatchingSession_, input));
+                totalEvalDurations += evalDuration;
+            }
+            avgNonBatchedDuration = totalEvalDurations / 100;
         }
 
         private static float Evaluate(LearningModelSession session, List<VideoFrame> input)
@@ -359,25 +320,48 @@ namespace WinMLSamplesGallery.Samples
             string inputName = session.Model.InputFeatures[0].Name;
             string outputName = session.Model.OutputFeatures[0].Name;
             float totalDuration = 0;
+
+            for (int j = 0; j < input.Count; j++)
+            {
+                var start = HighResolutionClock.UtcNow();
+                var binding = new LearningModelBinding(session);
+                binding.Bind(inputName, input[j]);
+                session.Evaluate(binding, "");
+                var stop = HighResolutionClock.UtcNow();
+                var duration = HighResolutionClock.DurationInMs(start, stop);
+                totalDuration += duration;
+            }
+            return totalDuration;
+        }
+
+
+
+        async private System.Threading.Tasks.Task ClassifyBatched(List<SoftwareBitmap> images)
+        {
+            var individualResults = new List<InferenceResult>();
+            var totalMetricTimes = new List<TotalMetricTime>();
+            float totalPreprocessTime = 0;
+            float totalInferenceTime = 0;
+            float totalPostprocessTime = 0;
+
+            long start, stop;
+            var input = new List<VideoFrame>();
+            images.ForEach(delegate (SoftwareBitmap image)
+            {
+                input.Add(VideoFrame.CreateWithSoftwareBitmap(image));
+            });
+            float totalEvalDurations = 0;
             for (int i = 0; i < 100; i++)
             {
-                System.Diagnostics.Debug.WriteLine("Non-Batched Iteration {0}", i);
-                for (int j = 0; j < input.Count; j++)
-                {
-                    var start = HighResolutionClock.UtcNow();
-                    var binding = new LearningModelBinding(session);
-                    binding.Bind(inputName, input[j]);
-                    session.Evaluate(binding, "");
-                    var stop = HighResolutionClock.UtcNow();
-                    var duration = HighResolutionClock.DurationInMs(start, stop);
-                    totalDuration += duration;
-                }
+                EvalProgressText.Text = "Iteration " + i.ToString() + "/100";
+                EvalProgressBar.Value = i + 1;
+                float evalDuration = await System.Threading.Tasks.Task.Run(() => EvaluateBatched(BatchingSession_, input));
+                totalEvalDurations += evalDuration;
             }
-            float avgDuration = totalDuration / 100;
-
-            // Evaluate
-            return avgDuration;
+            avgBatchDuration = totalEvalDurations / 100;
         }
+
+
 
         private static float EvaluateBatched(LearningModelSession session, List<VideoFrame> input)
         {
@@ -400,18 +384,11 @@ namespace WinMLSamplesGallery.Samples
 
             // Evaluate
             float totalDuration = bindDuration;
-            for (int i = 0; i < 100; i++)
-            {
-                System.Diagnostics.Debug.WriteLine("Batched Evaluation {0}", i);
-                var start = HighResolutionClock.UtcNow();
-                session.Evaluate(binding, "");
-                var stop = HighResolutionClock.UtcNow();
-                var duration = HighResolutionClock.DurationInMs(start, stop);
-                totalDuration += duration; 
-            }
-            float avgDuration = totalDuration / 100;
-            /*            System.Diagnostics.Debug.WriteLine("Avg Evaluation Duration after 100 runs {0}", avgDuration);*/
-            return avgDuration;
+            var start = HighResolutionClock.UtcNow();
+            session.Evaluate(binding, "");
+            var stop = HighResolutionClock.UtcNow();
+            var duration = HighResolutionClock.DurationInMs(start, stop);
+            return duration;
         }
 
         private void DeviceComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)

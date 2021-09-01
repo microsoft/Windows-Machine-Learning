@@ -156,8 +156,9 @@
                 Start Inference
             </Button>
             <StackPanel x:Name="LoadingContainer" Visibility="Collapsed" Margin="0,60,0,0" HorizontalAlignment="Center">
-                <TextBlock x:Name="EvalText" FontSize="22" FontWeight="Bold"></TextBlock>
-                <ProgressBar Width="130" IsIndeterminate="True" ShowPaused="False" ShowError="False" Margin="0,40,0,0" />
+                <TextBlock x:Name="EvalText" FontSize="22" FontWeight="Bold" />
+                <TextBlock x:Name="EvalProgressText" FontSize="16" Margin="0,40,0,0" TextAlignment="Center" />
+                <ProgressBar x:Name="EvalProgressBar" Width="130" Value="0" Margin="0,20,0,0" />
             </StackPanel>
             <GridView x:Name="EvalResults" ItemTemplate="{StaticResource EvalResultsTemplateTwo}" HorizontalAlignment="Center">
             </GridView>

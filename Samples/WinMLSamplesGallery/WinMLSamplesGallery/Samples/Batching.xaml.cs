@@ -200,6 +200,7 @@ namespace WinMLSamplesGallery.Samples
         async private void StartInference(object sender, RoutedEventArgs e)
         {
             RunningText.Visibility = Visibility.Visible;
+            EvalResults.Visibility = Visibility.Collapsed;
             StartInferenceBtn.IsEnabled = false;
 
              var birdFile = StorageFile.GetFileFromApplicationUriAsync(new Uri("ms-appx:///InputData/hummingbird.jpg")).GetAwaiter().GetResult();
@@ -246,8 +247,9 @@ namespace WinMLSamplesGallery.Samples
             List<EvalResult> results = new List<EvalResult>();
             results.Insert(0, evalResult);
             RunningText.Visibility = Visibility.Collapsed;
+            EvalResults.Visibility = Visibility.Visible;
             StartInferenceBtn.IsEnabled = true;
-            Results.ItemsSource = results;
+            EvalResults.ItemsSource = results;
             /*            RenderInferenceResults(individualResults, totalMetricTimes);*/
 
             ResetModels();

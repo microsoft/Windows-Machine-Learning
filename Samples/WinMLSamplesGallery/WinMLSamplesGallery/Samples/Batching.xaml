@@ -158,7 +158,7 @@
             <TextBlock x:Name="RunningText" Visibility="Collapsed" HorizontalAlignment="Center" Margin="0,10,0,0">
                 Running Inference...
             </TextBlock>
-            <GridView x:Name="Results" ItemTemplate="{StaticResource EvalResultsTemplateTwo}" HorizontalAlignment="Center">
+            <GridView x:Name="EvalResults" ItemTemplate="{StaticResource EvalResultsTemplateTwo}" HorizontalAlignment="Center">
             </GridView>
         </StackPanel>
         <!--       <ScrollViewer 

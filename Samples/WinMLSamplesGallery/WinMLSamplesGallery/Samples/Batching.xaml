@@ -120,7 +120,7 @@
                 <TextBlock FontSize="20" Margin="0,20,0,0" HorizontalAlignment="Center">
                     Batching was 
                     <Span FontWeight="Bold" Foreground="#36b8ff">
-                        <Run Text="{Binding timeRatio}"/>x
+                        <Run Text="{Binding timeRatio}"/>%
                     </Span>
                     faster on average
                 </TextBlock>

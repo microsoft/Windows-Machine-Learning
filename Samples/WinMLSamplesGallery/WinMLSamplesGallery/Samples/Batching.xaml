@@ -155,9 +155,10 @@
                     HorizontalAlignment="Center" FontWeight="Bold">
                 Start Inference
             </Button>
-            <TextBlock x:Name="RunningText" Visibility="Collapsed" HorizontalAlignment="Center" Margin="0,10,0,0">
-                Running Inference...
-            </TextBlock>
+            <StackPanel x:Name="LoadingContainer" Visibility="Collapsed" Margin="0,60,0,0" HorizontalAlignment="Center">
+                <TextBlock x:Name="EvalText" FontSize="22" FontWeight="Bold"></TextBlock>
+                <ProgressBar Width="130" IsIndeterminate="True" ShowPaused="False" ShowError="False" Margin="0,40,0,0" />
+            </StackPanel>
             <GridView x:Name="EvalResults" ItemTemplate="{StaticResource EvalResultsTemplateTwo}" HorizontalAlignment="Center">
             </GridView>
         </StackPanel>

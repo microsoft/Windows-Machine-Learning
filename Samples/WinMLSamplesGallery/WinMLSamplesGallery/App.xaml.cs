@@ -33,7 +33,6 @@ namespace WinMLSamplesGallery
         public App()
         {
             this.InitializeComponent();
-            this.Suspending += OnSuspending;
         }
 
         /// <summary>

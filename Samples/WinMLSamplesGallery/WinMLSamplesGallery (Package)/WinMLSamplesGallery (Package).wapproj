@@ -37,10 +37,10 @@
   <PropertyGroup>
     <ProjectGuid>dea7791f-55cf-4ed5-bc99-3870997b1242</ProjectGuid>
     <TargetPlatformVersion>10.0.19041.0</TargetPlatformVersion>
+	<AssetTargetFallback>net5.0-windows$(TargetPlatformVersion);$(AssetTargetFallback)</AssetTargetFallback>
     <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
     <DefaultLanguage>en-US</DefaultLanguage>
     <AppxPackageSigningEnabled>false</AppxPackageSigningEnabled>
-    <AppxTargetsLocation Condition="'$(AppxTargetsLocation)'==''">$(MSBuildThisFileDirectory)build\</AppxTargetsLocation>
     <EntryPointProjectUniqueName>..\WinMLSamplesGallery\WinMLSamplesGallery.csproj</EntryPointProjectUniqueName>
   </PropertyGroup>
   <ItemGroup>
@@ -64,5 +64,12 @@
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(WapProjPath)\Microsoft.DesktopBridge.targets" />
-  <Import Project="$(AppxTargetsLocation)Microsoft.WinUI.AppX.targets" />
+  <ItemGroup>
+    <PackageReference Include="Microsoft.ProjectReunion" Version="[0.8.0]">
+	  <IncludeAssets>build</IncludeAssets>
+    </PackageReference>
+	<PackageReference Include="Microsoft.ProjectReunion.WinUI" Version="[0.8.0]">
+	  <IncludeAssets>build</IncludeAssets>
+	</PackageReference>
+  </ItemGroup>
 </Project>

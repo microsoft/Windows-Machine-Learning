@@ -154,14 +154,20 @@
         <StackPanel Grid.Row="0" Grid.Column="1" Padding="0,40,40,0" HorizontalAlignment="Right">
             <TextBlock FontWeight="Bold" FontSize="20">View page code on GitHub</TextBlock>
             <TextBlock Margin="10,20,0,0" FontSize="16">
-                <Hyperlink TextDecorations="None">Xaml Source Code</Hyperlink>
+                <Hyperlink TextDecorations="None" NavigateUri="https://github.com/microsoft/Windows-Machine-Learning/blob/batching_sample/Samples/WinMLSamplesGallery/WinMLSamplesGallery/Samples/Batching.xaml">
+                    Xaml Source Code
+                </Hyperlink>
             </TextBlock>
             <TextBlock Margin="10,20,0,0" FontSize="16">
-                <Hyperlink TextDecorations="None">C# Source Code</Hyperlink>
+                <Hyperlink TextDecorations="None" NavigateUri="https://github.com/microsoft/Windows-Machine-Learning/blob/batching_sample/Samples/WinMLSamplesGallery/WinMLSamplesGallery/Samples/Batching.xaml.cs">
+                    C# Source Code
+                </Hyperlink>
             </TextBlock>
             <TextBlock FontWeight="Bold" FontSize="20" Margin="0,40,0,0">Documentation</TextBlock>
             <TextBlock Margin="10,20,0,0" FontSize="16">
-                <Hyperlink TextDecorations="None">BatchSizeOverride API</Hyperlink>
+                <Hyperlink TextDecorations="None" NavigateUri="https://docs.microsoft.com/en-us/uwp/api/windows.ai.machinelearning.learningmodelsessionoptions.batchsizeoverride?view=winrt-20348">
+                    BatchSizeOverride API
+                </Hyperlink>
             </TextBlock>
             <TextBlock FontWeight="Bold" FontSize="20" Margin="0,40,0,0">Feedback</TextBlock>
             <TextBlock Margin="10,20,0,0" FontSize="16">

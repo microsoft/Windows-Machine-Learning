@@ -299,7 +299,7 @@ namespace WinMLSamplesGallery.Samples
             float totalEvalDurations = 0;
             for (int i = 0; i < 100; i++)
             {
-                EvalProgressText.Text = "Iteration " + i.ToString() + "/100";
+                EvalProgressText.Text = "Attempt " + i.ToString() + "/100";
                 EvalProgressBar.Value = i + 1;
                 float evalDuration = await System.Threading.Tasks.Task.Run(() => Evaluate(nonBatchingSession_, input));
                 totalEvalDurations += evalDuration;
@@ -353,7 +353,7 @@ namespace WinMLSamplesGallery.Samples
             float totalEvalDurations = 0;
             for (int i = 0; i < 100; i++)
             {
-                EvalProgressText.Text = "Iteration " + i.ToString() + "/100";
+                EvalProgressText.Text = "Attempt " + i.ToString() + "/100";
                 EvalProgressBar.Value = i + 1;
                 float evalDuration = await System.Threading.Tasks.Task.Run(() => EvaluateBatched(BatchingSession_, input));
                 totalEvalDurations += evalDuration;

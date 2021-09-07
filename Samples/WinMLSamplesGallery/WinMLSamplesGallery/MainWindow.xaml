@@ -7,7 +7,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
-    <Grid>
+    <Grid Background="#f5f5f5">
         <NavigationView
             IsBackEnabled="True"
             x:Name="nvSample"
@@ -15,7 +15,12 @@
             BackRequested="nvSample_BackRequested"
             Loaded="nvSample_Loaded"
             AlwaysShowHeader="False"
-            PaneTitle="Windows AI">
+            PaneTitle="Windows AI"
+            FontFamily="Segoe MDL2 Assets">
+            <NavigationView.Resources>
+                <SolidColorBrush x:Key="NavigationViewExpandedPaneBackground" Color="#f5f5f5"/>
+                <SolidColorBrush x:Key="NavigationViewDefaultPaneBackground" Color="#f5f5f5" />
+            </NavigationView.Resources>
             <NavigationView.MenuItems>
                 <NavigationViewItem Icon="Flag" Content="Home" Tag="home" />
                 <NavigationViewItem Icon="Library" Content="All samples" Tag="all_samples" />
@@ -27,7 +32,8 @@
                 <NavigationViewItemSeparator />
                 <NavigationViewItem Icon="Library" Content="Benchmark" Tag="benchmark" />
             </NavigationView.MenuItems>
-            <Frame x:Name="contentFrame" Navigated="contentFrame_Navigated"/>
+            <Frame x:Name="contentFrame" Navigated="contentFrame_Navigated" BorderBrush="#dbdbdb" BorderThickness="1,1,0,0" Margin="0,40,0,0"
+                   CornerRadius="5,0,0,0" Background="White" FontFamily="Segoe MDL2 Assets"/>
         </NavigationView>
     </Grid>
     

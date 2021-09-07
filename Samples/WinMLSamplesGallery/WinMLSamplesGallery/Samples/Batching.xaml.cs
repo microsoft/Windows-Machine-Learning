@@ -224,14 +224,14 @@ namespace WinMLSamplesGallery.Samples
             LoadLabelsAndModelPaths();
             InitializeWindowsMachineLearning(currentModel_, images.Count);
 
-            /*var evalResult = new System.Threading.Thread(new System.Threading.ThreadStart(DoClassifications(images)));*/
-            /*EvalResult evalResult = await System.Threading.Tasks.Task.Run(() => DoClassifications(images));*/
+/*            var evalResult = new System.Threading.Thread(new System.Threading.ThreadStart(DoClassifications(images)));
+            EvalResult evalResult = await System.Threading.Tasks.Task.Run(() => DoClassifications(images));*/
             EvalText.Text = "Inferencing Non-Batched Inputs...";
             await Classify(images);
- /*           float avgNonBatchedDuration = await System.Threading.Tasks.Task.Run(() => Classify(images));*/
+/*            float avgNonBatchedDuration = await System.Threading.Tasks.Task.Run(() => Classify(images));*/
             EvalText.Text = "Inferencing Batched Inputs...";
             await ClassifyBatched(images);
-            /*            float avgBatchDuration = await System.Threading.Tasks.Task.Run(() => ClassifyBatched(images));*/
+/*            float avgBatchDuration = await System.Threading.Tasks.Task.Run(() => ClassifyBatched(images));*/
             float ratio = (1 - (avgBatchDuration / avgNonBatchedDuration)) * 100;
             var evalResult = new EvalResult
             {
@@ -245,7 +245,7 @@ namespace WinMLSamplesGallery.Samples
             EvalResults.Visibility = Visibility.Visible;
             StartInferenceBtn.IsEnabled = true;
             EvalResults.ItemsSource = results;
-            /*            RenderInferenceResults(individualResults, totalMetricTimes);*/
+/*            RenderInferenceResults(individualResults, totalMetricTimes);*/
 
             ResetModels();
         }

@@ -12,121 +12,30 @@
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
     <Page.Resources>
-        <DataTemplate x:Key="ImageTemplate" x:DataType="local_controls:Thumbnail">
-            <Image Source="{x:Bind ImageUri}" Width="200" />
-        </DataTemplate>
-
-        <DataTemplate x:Key="InferenceResultsRow" x:DataType="local_samples:InferenceResult">
-            <StackPanel Orientation="Horizontal">
-                <TextBlock Width="150"
-                    FontSize="14"
-                    Foreground="Black"
-                    Padding="1,1,1,1"
-                    Typography.Capitals="AllSmallCaps"
-                    Typography.StylisticSet4="True"
-                    TextTrimming="CharacterEllipsis">
-                    <Run Text="{Binding Label}" />
-                </TextBlock>
-                <TextBlock Width="150"
-                    FontSize="14"
-                    Foreground="Black"
-                    Padding="1,1,1,1"
-                    Typography.Capitals="AllSmallCaps"
-                    Typography.StylisticSet4="True"> 
-                    <Run Text="{Binding PreprocessTime}" />
-                </TextBlock>
-                <TextBlock Width="150"
-                    FontSize="14"
-                    Foreground="Black"
-                    Padding="1,1,1,1"
-                    Typography.Capitals="AllSmallCaps"
-                    Typography.StylisticSet4="True"> 
-                    <Run Text="{Binding InferenceTime}" />
-                </TextBlock>
-                <TextBlock Width="150"
-                    FontSize="14"
-                    Foreground="Black"
-                    Padding="1,1,1,1"
-                    Typography.Capitals="AllSmallCaps"
-                    Typography.StylisticSet4="True"> 
-                    <Run Text="{Binding PostprocessTime}" />
-                </TextBlock>
-            </StackPanel>
-        </DataTemplate>
-
-        <DataTemplate x:Name="TotalInferenceResultsRow" x:DataType="local_samples:TotalMetricTime">
-            <StackPanel Orientation="Horizontal">
-                <TextBlock Width="150"
-                    FontSize="14"
-                    Foreground="Black"
-                    Padding="1,1,1,1"
-                    Typography.Capitals="AllSmallCaps"
-                    Typography.StylisticSet4="True"
-                    TextTrimming="CharacterEllipsis">
-                    <Run Text="{Binding Metric}" />
-                </TextBlock>
-                <TextBlock Width="100"
-                    FontSize="14"
-                    Foreground="Black"
-                    Padding="1,1,1,1"
-                    Typography.Capitals="AllSmallCaps"
-                    Typography.StylisticSet4="True"> 
-                    <Run Text="{Binding TotalTime}" />
-                </TextBlock>
-            </StackPanel>
-        </DataTemplate>
-
         <DataTemplate x:Name="EvalResultsTemplate" x:DataType="local_samples:EvalResult">
-            <StackPanel Orientation="Vertical">
-                <TextBlock Text="Results Averaged over 100 Attempts" FontSize="18" FontWeight="Bold" TextDecorations="Underline" Typography.Capitals="AllSmallCaps" Typography.StylisticSet4="True"/>
-                <TextBlock FontSize="18"
-                    Typography.Capitals="AllSmallCaps"
-                    Typography.StylisticSet4="True"
-                    Text="Non-Batched Avg. Total Eval Time: ">
-                    <Run Text="{Binding nonBatchedAvgTime}" />
+            <StackPanel Margin="0,30,0,0">
+                <TextBlock FontWeight="Bold" FontSize="18" TextDecorations="Underline">Results averaged over 100 attempts</TextBlock>
+                <TextBlock Margin="0,15,0,0"><Bold>Note:</Bold> Avg. Total Eval Time = Average amount of time it took to infer 50 images</TextBlock>
+                <TextBlock FontSize="18" Margin="0,15,0,0">
+                    Non-Batched Avg. Total Eval Time:
+                    <Span FontWeight="Bold" Foreground="Green">
+                        <Run Text="{Binding nonBatchedAvgTime}" />
+                    </Span>
                 </TextBlock>
-                <TextBlock FontSize="18"
-                    Typography.Capitals="AllSmallCaps"
-                    Typography.StylisticSet4="True"
-                    Text="Batched Avg. Total Eval Time: ">
-                    <Run Text="{Binding batchedAvgTime}" />
+                <TextBlock FontSize="18" Margin="0,15,0,0">
+                    Batched Avg. Total Eval Time:
+                    <Span FontWeight="Bold" Foreground="Green">
+                        <Run Text="{Binding batchedAvgTime}" />
+                    </Span>
                 </TextBlock>
-                <TextBlock FontSize="18" Typography.Capitals="AllSmallCaps" Typography.StylisticSet4="True">Batching was <Bold>X times faster</Bold> on average</TextBlock>
-            </StackPanel>
-        </DataTemplate>
-
-        <DataTemplate x:Name="EvalResultsTemplateTwo" x:DataType="local_samples:EvalResult">
-            <StackPanel HorizontalAlignment="Center" Margin="0,80,0,0">
-                <TextBlock FontWeight="Bold" HorizontalAlignment="Center" TextDecorations="Underline" FontSize="18">
-                    Results averaged over 100 attempts
-                </TextBlock>
-                <StackPanel Orientation="Horizontal" Margin="0,20,0,0" HorizontalAlignment="Center">
-                    <TextBlock FontSize="20" Margin="0,0,10,0">
-                        Non-Batched Avg. Total Eval Time:
-                        <Span Foreground="Green" FontWeight="Bold">
-                            <Run Text="{Binding nonBatchedAvgTime}" />
-                        </Span>
-                    </TextBlock>
-                    <TextBlock FontSize="20" Margin="10,0,0,0">
-                        Batched Avg. Total Eval Time:
-                        <Span Foreground="Green" FontWeight="Bold">
-                            <Run Text="{Binding batchedAvgTime}" />
-                        </Span>
-                    </TextBlock>
-                </StackPanel>
-                <TextBlock FontSize="14" FontWeight="Bold" Foreground="#969696" HorizontalAlignment="Center" Margin="0,10,0,0">
-                    Avg. Total Eval Time = Average amount of time it takes to perform inference on 60 inputs
-                </TextBlock>
-                <TextBlock FontSize="20" Margin="0,20,0,0" HorizontalAlignment="Center">
-                    Batching was 
+                <TextBlock FontSize="18" Margin="0,15,0,0">
+                    Batching was
                     <Span FontWeight="Bold" Foreground="#36b8ff">
                         <Run Text="{Binding timeRatio}"/>%
                     </Span>
-                    faster on average
-                </TextBlock>
+                    faster on average</TextBlock>
             </StackPanel>
         </DataTemplate>
-
     </Page.Resources>
 
     <Grid>
@@ -136,8 +45,8 @@
         </Grid.ColumnDefinitions>
         <StackPanel Grid.Row="0" Grid.Column="0" Padding="40,40">
             <TextBlock FontWeight="Bold" FontSize="25">Batching</TextBlock>
-            <TextBlock Margin="0,15,0,0">Batching allows you to infer multiple inputs at once to increase performance.</TextBlock>
-            <TextBlock FontWeight="Bold" FontSize="18" Margin="0,40,0,0">Set the BatchSizeOverride property on your LearningModelSessionOptions object</TextBlock>
+            <TextBlock FontSize="16" Margin="0,15,0,0">Batching allows you to infer multiple inputs at once to increase performance.</TextBlock>
+            <TextBlock FontWeight="Bold" FontSize="20" Margin="0,40,0,0">Set the BatchSizeOverride property on your LearningModelSessionOptions object</TextBlock>
             <StackPanel Margin="0,15,0,0" HorizontalAlignment="Left" Width="1000" Background="#F6F6F6" BorderBrush="#9C9C9C" BorderThickness="2" CornerRadius="5" Padding="15,20,0,22">
                 <TextBlock FontSize="16">
                     <Span Foreground="#3562FF">var</Span> <Span Foreground="#1684B2">options</Span> = <Span Foreground="#3562FF">new</Span> <Span Foreground="#1F9D00">LearningModelSessionOptions</Span>();
@@ -149,8 +58,48 @@
             <TextBlock Margin="0,10,0,0" Width="1000" HorizontalAlignment="Left" TextTrimming="None" Height="20">
                 <Bold>Note:</Bold> Your model must have a value of -1 in the batch dimension and the DATA_BATCH Denotation on the batch dimension for batching to work.
             </TextBlock>
-            <TextBlock>To edit your model you can use tools like WinML Dashboard.</TextBlock>
+            <TextBlock>
+                To edit your model you can use tools like
+                <Hyperlink TextDecorations="None" NavigateUri="https://github.com/Microsoft/Windows-Machine-Learning/tree/master/Tools/WinMLDashboard">
+                    WinML Dashboard.
+                </Hyperlink>
+            </TextBlock>
+            <TextBlock FontWeight="Bold" FontSize="20" Margin="0,60,0,0">Compare inference runtimes with and without batching on the CPU and GPU (if available)</TextBlock>
+            <TextBlock FontSize="16" Margin="0,15,0,0">50 images will be passed through SqueezeNet for classification.</TextBlock>
+            <StackPanel Orientation="Horizontal" Margin="0,20,0,0">
+                <TextBlock FontSize="16" Margin="0,5">Batch Size</TextBlock>
+                <NumberBox Margin="15,0,0,0" Value="5" SpinButtonPlacementMode="Compact"></NumberBox>
+                <TextBlock FontSize="16" Margin="40,5,15,0">Device</TextBlock>
+                <ComboBox SelectedIndex="0">
+                    <x:String>CPU</x:String>
+                    <x:String>GPU</x:String>
+                </ComboBox>
+                <Button x:Name="StartInferenceBtn" FontSize="18" Margin="60,-2,0,0" Background="#5c5fed" Foreground="White" Click="StartInference">
+                    Start Inference
+                    <Button.Resources>
+                        <ResourceDictionary>
+                            <ResourceDictionary.ThemeDictionaries>
+                                <ResourceDictionary x:Key="Dark">
+                                    <SolidColorBrush x:Key="ButtonForegroundPointerOver" Color="White"/>
+                                    <SolidColorBrush x:Key="ButtonBackgroundPointerOver" Color="#4e50cc"/>
+                                </ResourceDictionary>
+                                <ResourceDictionary x:Key="Light">
+                                    <SolidColorBrush x:Key="ButtonForegroundPointerOver" Color="White"/>
+                                    <SolidColorBrush x:Key="ButtonBackgroundPointerOver" Color="#4e50cc"/>
+                                </ResourceDictionary>
+                            </ResourceDictionary.ThemeDictionaries>
+                        </ResourceDictionary>
+                    </Button.Resources>
+                </Button>
+            </StackPanel>
+            <StackPanel x:Name="LoadingContainer" Visibility="Collapsed" Orientation="Horizontal" Margin="0,30,0,0">
+                <TextBlock x:Name="EvalText" FontSize="16" FontWeight="Bold" Text="Evaluating non-batched Inputs: "/>
+                <TextBlock x:Name="EvalProgressText" FontSize="16" Margin="20,0,0,0" TextAlignment="Center" Text="Iteration 1/100" />
+                <ProgressBar x:Name="EvalProgressBar" Width="300" Value="0" Margin="20,0,0,0" />
+            </StackPanel>
+            <GridView x:Name="EvalResults" ItemTemplate="{StaticResource EvalResultsTemplate}" />
         </StackPanel>
+        
         <StackPanel Grid.Row="0" Grid.Column="1" Padding="0,40,40,0" HorizontalAlignment="Right">
             <TextBlock FontWeight="Bold" FontSize="20">View page code on GitHub</TextBlock>
             <TextBlock Margin="10,20,0,0" FontSize="16">

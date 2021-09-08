@@ -209,16 +209,13 @@ namespace WinMLSamplesGallery.Samples
 
             var birdFile = StorageFile.GetFileFromApplicationUriAsync(new Uri("ms-appx:///InputData/hummingbird.jpg")).GetAwaiter().GetResult();
             var catFile = StorageFile.GetFileFromApplicationUriAsync(new Uri("ms-appx:///InputData/kitten.png")).GetAwaiter().GetResult();
-            var fishFile = StorageFile.GetFileFromApplicationUriAsync(new Uri("ms-appx:///InputData/fish.png")).GetAwaiter().GetResult();
             var birdImage = CreateSoftwareBitmapFromStorageFile(birdFile);
             var catImage = CreateSoftwareBitmapFromStorageFile(catFile);
-            var fishImage = CreateSoftwareBitmapFromStorageFile(fishFile);
             var images = new List<SoftwareBitmap>();
-            for (int i = 0; i < 20; i++)
+            for (int i = 0; i < 25; i++)
             {
                 images.Add(birdImage);
                 images.Add(catImage);
-                images.Add(fishImage);
             }
 
             LoadLabelsAndModelPaths();

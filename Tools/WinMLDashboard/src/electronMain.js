@@ -61,8 +61,15 @@ function createWindow() {
 
     mainWindow = new BrowserWindow({
         height: 1000,
-        icon: path.join(__dirname, '../public/winml_icon.ico'),
         width: 1200,
+
+        icon: path.join(__dirname, '../public/winml_icon.ico'),
+        webPreferences: {
+            contextIsolation: false,
+            enableRemoteModule: true,
+            nodeIntegration: true,
+            webviewTag: true,
+        }
     });
     global.mainWindow = mainWindow;
     

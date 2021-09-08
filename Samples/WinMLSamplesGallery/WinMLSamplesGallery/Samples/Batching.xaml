@@ -8,7 +8,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
-    FontFamily="Segoe MDL2 Assets">
+    FontFamily="Arial">
 
     <Page.Resources>
         <DataTemplate x:Name="EvalResultsTemplate" x:DataType="local_samples:EvalResult">
@@ -55,10 +55,11 @@
                 </TextBlock>
             </StackPanel>
             <TextBlock Margin="0,10,0,0" Width="1000" HorizontalAlignment="Left" TextTrimming="None" Height="20">
-                <Bold>Note:</Bold> Your model must have a value of -1 in the batch dimension and the DATA_BATCH Denotation on the batch dimension for batching to work.
+                <Bold>Note:</Bold> In order for batching to work, your model must have a value of -1 or a variable name in the batch dimension.
+                Additionally, the DATA_BATCH Denotation 
             </TextBlock>
             <TextBlock>
-                To edit your model you can use tools like
+                must be added on the batch dimension. To edit your model you can use tools like
                 <Hyperlink TextDecorations="None" NavigateUri="https://github.com/Microsoft/Windows-Machine-Learning/tree/master/Tools/WinMLDashboard">
                     WinML Dashboard.
                 </Hyperlink>

@@ -52,7 +52,7 @@
                     <Span Foreground="#3562FF">var</Span> <Span Foreground="#1684B2">options</Span> = <Span Foreground="#3562FF">new</Span> <Span Foreground="#1F9D00">LearningModelSessionOptions</Span>();
                     </TextBlock>
                     <TextBlock FontSize="16" Margin="0,10,0,0">
-                    <Span Foreground="#1684B2">options</Span>.BatchSizeOverride = <Span Foreground="#086300">5</Span>;
+                    <Span Foreground="#1684B2">options</Span>.BatchSizeOverride = <Span Foreground="#086300">50</Span>;
                     </TextBlock>
                     <TextBlock FontSize="16" Margin="0,10,0,0">
                     <Span Foreground="#3562FF">var</Span> <Span Foreground="#1684B2">session</Span> = <Span Foreground="#3562FF">new</Span>

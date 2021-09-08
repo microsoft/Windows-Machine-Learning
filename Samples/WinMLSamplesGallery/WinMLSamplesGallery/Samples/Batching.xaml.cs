@@ -175,11 +175,12 @@ namespace WinMLSamplesGallery.Samples
 
         private LearningModelSession CreateLearningModelSession(LearningModel model, int batchSizeOverride=-1)
         {
-/*            var kind =
+            var deviceKind =
                 (DeviceComboBox.SelectedIndex == 0) ?
                     LearningModelDeviceKind.Cpu :
-                    LearningModelDeviceKind.DirectXHighPerformance;*/
-            var device = new LearningModelDevice(LearningModelDeviceKind.Cpu);
+                    LearningModelDeviceKind.DirectXHighPerformance;
+            System.Diagnostics.Debug.WriteLine("Device Kind {0}", deviceKind);
+            var device = new LearningModelDevice(deviceKind);
             var options = new LearningModelSessionOptions()
             {
                 CloseModelOnSessionCreation = true // Close the model to prevent extra memory usage
@@ -220,15 +221,10 @@ namespace WinMLSamplesGallery.Samples
 
             LoadLabelsAndModelPaths();
             InitializeWindowsMachineLearning(currentModel_, images.Count);
-
-/*            var evalResult = new System.Threading.Thread(new System.Threading.ThreadStart(DoClassifications(images)));
-            EvalResult evalResult = await System.Threading.Tasks.Task.Run(() => DoClassifications(images));*/
             EvalText.Text = "Inferencing Non-Batched Inputs:";
             await Classify(images);
-/*            float avgNonBatchedDuration = await System.Threading.Tasks.Task.Run(() => Classify(images));*/
             EvalText.Text = "Inferencing Batched Inputs:";
             await ClassifyBatched(images);
-/*            float avgBatchDuration = await System.Threading.Tasks.Task.Run(() => ClassifyBatched(images));*/
             float ratio = (1 - (avgBatchDuration / avgNonBatchedDuration)) * 100;
             var evalResult = new EvalResult
             {
@@ -242,26 +238,9 @@ namespace WinMLSamplesGallery.Samples
             EvalResults.Visibility = Visibility.Visible;
             StartInferenceBtn.IsEnabled = true;
             EvalResults.ItemsSource = results;
-/*            RenderInferenceResults(individualResults, totalMetricTimes);*/
-
             ResetModels();
         }
 
-/*        private EvalResult DoClassifications(List<SoftwareBitmap> images)
-        {
-            float avgNonBatchedDuration = Classify(images);
-            float avgBatchDuration = ClassifyBatched(images);
-            float ratio = 1 / (avgBatchDuration / avgNonBatchedDuration);
-            System.Diagnostics.Debug.WriteLine("Average Non-Batch Duration {0}", avgNonBatchedDuration);
-            System.Diagnostics.Debug.WriteLine("Average Batch Duration {0}", avgBatchDuration);
-            var evalResult = new EvalResult
-            {
-                nonBatchedAvgTime = avgNonBatchedDuration.ToString("0.00"),
-                batchedAvgTime = avgBatchDuration.ToString("0.00"),
-                timeRatio = ratio.ToString("0.0")
-            };
-            return evalResult;
-        }*/
 
         private static Dictionary<long, string> LoadLabels(string csvFile)
         {
@@ -387,34 +366,5 @@ namespace WinMLSamplesGallery.Samples
             var duration = HighResolutionClock.DurationInMs(start, stop);
             return duration;
         }
-
-        private void DeviceComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-        }
-
-        private void RenderInferenceResults(List<InferenceResult> individualResults,
-            List<TotalMetricTime> totalMetricTimes)
-        {
-/*            var individualResultsHeader = new InferenceResult
-            {
-                Label = "Label",
-                PreprocessTime = "Preprocess Time (ms)",
-                InferenceTime = "Inference Time (ms)",
-                PostprocessTime = "Postprocess Time (ms)"
-            };
-            individualResults.Insert(0, individualResultsHeader);
-            var totalMetricTimesHeader = new TotalMetricTime
-            {
-                Metric = "Metric",
-                TotalTime = "TotalTime"
-            };
-            totalMetricTimes.Insert(0, totalMetricTimesHeader);
-
-            InferenceResults.ItemsSource = individualResults;
-            InferenceResults.SelectedIndex = 0;
-            TotalInferenceResults.ItemsSource = totalMetricTimes;
-            TotalInferenceResults.SelectedIndex = 0;*/
-        }
-
     }
 }

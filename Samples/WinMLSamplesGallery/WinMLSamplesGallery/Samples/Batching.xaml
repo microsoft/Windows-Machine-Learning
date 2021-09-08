@@ -22,7 +22,7 @@
                     </Span>
                 </TextBlock>
                 <TextBlock FontSize="18" Margin="0,15,0,0">
-                    Batched Avg. Total Eval Time:
+                    Batched Avg. Total Eval Time (Batch Size of 50):
                     <Span FontWeight="Bold" Foreground="Green">
                         <Run Text="{Binding batchedAvgTime}" />
                     </Span>
@@ -73,10 +73,8 @@
                 <TextBlock FontWeight="Bold" FontSize="20" Margin="0,60,0,0">Compare inference runtimes with and without batching on the CPU and GPU (if available)</TextBlock>
                 <TextBlock FontSize="16" Margin="0,15,0,0">50 images will be passed through SqueezeNet for classification.</TextBlock>
                 <StackPanel Orientation="Horizontal" Margin="0,20,0,0">
-                    <TextBlock FontSize="16" Margin="0,5">Batch Size</TextBlock>
-                    <NumberBox Margin="15,0,0,0" Value="5" SpinButtonPlacementMode="Compact"></NumberBox>
-                    <TextBlock FontSize="16" Margin="40,5,15,0">Device</TextBlock>
-                    <ComboBox SelectedIndex="0">
+                    <TextBlock FontSize="16" Margin="0,5,15,0">Device</TextBlock>
+                    <ComboBox x:Name="DeviceComboBox" SelectedIndex="0">
                         <x:String>CPU</x:String>
                         <x:String>GPU</x:String>
                     </ComboBox>

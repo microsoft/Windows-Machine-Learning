@@ -170,6 +170,7 @@ namespace WinMLSamplesGallery.Samples
 
         private static float EvaluateBatched(LearningModelSession session, List<VideoFrame> input)
         {
+            // Bind
             var binding = new LearningModelBinding(session);
             string inputName = session.Model.InputFeatures[0].Name;
             var bindStart = HighResolutionClock.UtcNow();

@@ -16,7 +16,7 @@
             Loaded="nvSample_Loaded"
             AlwaysShowHeader="False"
             PaneTitle="Windows AI"
-            FontFamily="Segoe MDL2 Assets">
+            FontFamily="Arial">
             <NavigationView.Resources>
                 <SolidColorBrush x:Key="NavigationViewExpandedPaneBackground" Color="#f5f5f5"/>
                 <SolidColorBrush x:Key="NavigationViewDefaultPaneBackground" Color="#f5f5f5" />
@@ -33,7 +33,7 @@
                 <NavigationViewItem Icon="Library" Content="Benchmark" Tag="benchmark" />
             </NavigationView.MenuItems>
             <Frame x:Name="contentFrame" Navigated="contentFrame_Navigated" BorderBrush="#dbdbdb" BorderThickness="1,1,0,0" Margin="0,40,0,0"
-                   CornerRadius="5,0,0,0" Background="White" FontFamily="Segoe MDL2 Assets"/>
+                   CornerRadius="5,0,0,0" Background="White" FontFamily="Arial"/>
         </NavigationView>
     </Grid>
     

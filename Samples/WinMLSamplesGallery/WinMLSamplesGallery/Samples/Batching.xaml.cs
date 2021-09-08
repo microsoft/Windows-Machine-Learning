@@ -14,14 +14,6 @@ using Microsoft.UI.Xaml.Media.Imaging;
 
 namespace WinMLSamplesGallery.Samples
 {
-    public sealed class InferenceResult
-    {
-        public string Label { get; set; }
-        public string PreprocessTime { get; set; }
-        public string InferenceTime { get; set; }
-        public string PostprocessTime { get; set; }
-    }
-
     public sealed class EvalResult
     {
         public string nonBatchedAvgTime { get; set; }
@@ -29,74 +21,22 @@ namespace WinMLSamplesGallery.Samples
         public string timeRatio { get; set; }
     }
 
-
-    public sealed class TotalMetricTime
-    {
-        public string Metric { get; set; }
-        public string TotalTime { get; set; }
-    }
-
-    /// <summary>
-    /// An empty page that can be used on its own or navigated to within a Frame.
-    /// </summary>
     public sealed partial class Batching : Page
     {
         [DllImport("user32.dll", ExactSpelling = true, CharSet = CharSet.Auto, PreserveSig = true, SetLastError = false)]
         public static extern IntPtr GetActiveWindow();
 
-        private static Dictionary<long, string> labels_;
         private LearningModelSession nonBatchingSession_;
         private LearningModelSession BatchingSession_;
-        private LearningModelSession preProcessingSession_;
-        private LearningModelSession postProcessingSession_;
 
         Classifier currentModel_ = Classifier.SqueezeNet;
         Classifier loadedModel_ = Classifier.NotSet;
-        const long BatchSize = 1;
-        const long TopK = 10;
         float avgNonBatchedDuration = 0;
         float avgBatchDuration = 0;
-
-        private Dictionary<Classifier, string> modelDictionary_;
-        private Dictionary<Classifier, Func<LearningModel>> postProcessorDictionary_;
-        private Dictionary<Classifier, Func<LearningModel>> preProcessorDictionary_;
-
-        private static Dictionary<long, string> imagenetLabels_;
-        private static Dictionary<long, string> ilsvrc2013Labels_;
 
         public Batching()
         {
             this.InitializeComponent();
-        }
-
-        private void OpenButton_Clicked(object sender, RoutedEventArgs e)
-        {
-            var file = PickFile();
-            if (file != null)
-            {
-
-            }
-        }
-
-        private StorageFile PickFile()
-        {
-            FileOpenPicker openPicker = new FileOpenPicker();
-            openPicker.ViewMode = PickerViewMode.Thumbnail;
-            openPicker.FileTypeFilter.Add(".jpg");
-            openPicker.FileTypeFilter.Add(".bmp");
-            openPicker.FileTypeFilter.Add(".png");
-            openPicker.FileTypeFilter.Add(".jpeg");
-
-            // When running on win32, FileOpenPicker needs to know the top-level hwnd via IInitializeWithWindow::Initialize.
-            if (Window.Current == null)
-            {
-                var picker_unknown = Marshal.GetComInterfaceForObject(openPicker, typeof(IInitializeWithWindow));
-                var initializeWithWindowWrapper = (IInitializeWithWindow)Marshal.GetTypedObjectForIUnknown(picker_unknown, typeof(IInitializeWithWindow));
-                IntPtr hwnd = GetActiveWindow();
-                initializeWithWindowWrapper.Initialize(hwnd);
-            }
-
-            return openPicker.PickSingleFileAsync().GetAwaiter().GetResult();
         }
 
         private static SoftwareBitmap CreateSoftwareBitmapFromStorageFile(StorageFile file)
@@ -106,56 +46,13 @@ namespace WinMLSamplesGallery.Samples
             return decoder.GetSoftwareBitmapAsync().GetAwaiter().GetResult();
         }
 
-        private void LoadLabelsAndModelPaths()
-        {
-            if (imagenetLabels_ == null)
-            {
-                imagenetLabels_ = LoadLabels("ms-appx:///InputData/sysnet.txt");
-            }
-
-            if (ilsvrc2013Labels_ == null)
-            {
-                ilsvrc2013Labels_ = LoadLabels("ms-appx:///InputData/ilsvrc2013.txt");
-            }
-
-            if (modelDictionary_ == null)
-            {
-                modelDictionary_ = new Dictionary<Classifier, string>
-                {
-                    { Classifier.SqueezeNet, "ms-appx:///Models/squeezenet1.1-7.onnx" },
-
-                };
-            }
-
-            if (postProcessorDictionary_ == null)
-            {
-                postProcessorDictionary_ = new Dictionary<Classifier, Func<LearningModel>>{
-                    { Classifier.SqueezeNet, () => TensorizationModels.SoftMaxThenTopK(TopK) },
-                };
-            }
-
-        }
-
         private void InitializeWindowsMachineLearning(Classifier model, int batchSizeOverride=-1)
         {
             if (currentModel_ != loadedModel_)
             {
-                var modelPath = modelDictionary_[model];
+                var modelPath = "ms-appx:///Models/squeezenet1.1-7.onnx";
                 nonBatchingSession_ = CreateLearningModelSession(modelPath);
                 BatchingSession_ = CreateLearningModelSession(modelPath, batchSizeOverride);
-                preProcessingSession_ = null;
-/*                Func<LearningModel> postProcessor = () => TensorizationModels.SoftMaxThenTopK(TopK);
-                postProcessingSession_ = CreateLearningModelSession(postProcessor(), batchSizeOverride);*/
-
-                if (currentModel_ == Classifier.RCNN_ILSVRC13)
-                {
-                    labels_ = ilsvrc2013Labels_;
-                }
-                else
-                {
-                    labels_ = imagenetLabels_;
-                }
-
                 loadedModel_ = currentModel_;
             }
         }
@@ -179,7 +76,6 @@ namespace WinMLSamplesGallery.Samples
                 (DeviceComboBox.SelectedIndex == 0) ?
                     LearningModelDeviceKind.Cpu :
                     LearningModelDeviceKind.DirectXHighPerformance;
-            System.Diagnostics.Debug.WriteLine("Device Kind {0}", deviceKind);
             var device = new LearningModelDevice(deviceKind);
             var options = new LearningModelSessionOptions()
             {
@@ -219,7 +115,6 @@ namespace WinMLSamplesGallery.Samples
                 images.Add(catImage);
             }
 
-            LoadLabelsAndModelPaths();
             InitializeWindowsMachineLearning(currentModel_, images.Count);
             EvalText.Text = "Inferencing Non-Batched Inputs:";
             await Classify(images);
@@ -261,8 +156,6 @@ namespace WinMLSamplesGallery.Samples
         }
         async private System.Threading.Tasks.Task Classify(List<SoftwareBitmap> images)
         {
-            var individualResults = new List<InferenceResult>();
-            var totalMetricTimes = new List<TotalMetricTime>();
             float totalPreprocessTime = 0;
             float totalInferenceTime = 0;
             float totalPostprocessTime = 0;
@@ -310,12 +203,8 @@ namespace WinMLSamplesGallery.Samples
             return totalDuration;
         }
 
-
-
         async private System.Threading.Tasks.Task ClassifyBatched(List<SoftwareBitmap> images)
         {
-            var individualResults = new List<InferenceResult>();
-            var totalMetricTimes = new List<TotalMetricTime>();
             float totalPreprocessTime = 0;
             float totalInferenceTime = 0;
             float totalPostprocessTime = 0;
@@ -336,8 +225,6 @@ namespace WinMLSamplesGallery.Samples
             }
             avgBatchDuration = totalEvalDurations / 100;
         }
-
-
 
         private static float EvaluateBatched(LearningModelSession session, List<VideoFrame> input)
         {

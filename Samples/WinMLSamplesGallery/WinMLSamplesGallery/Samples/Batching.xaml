@@ -96,6 +96,9 @@
                         </Button.Resources>
                     </Button>
                 </StackPanel>
+                <TextBlock Margin="0,10,0,0" Width="1000" HorizontalAlignment="Left" TextTrimming="None" Height="20">
+                <Bold>Note:</Bold> Performance differences are usually much more apparent when using the GPU.
+                </TextBlock>
                 <StackPanel x:Name="LoadingContainer" Visibility="Collapsed" Orientation="Horizontal" Margin="0,30,0,0">
                     <TextBlock x:Name="EvalText" FontSize="16" FontWeight="Bold" Text="Evaluating non-batched Inputs: "/>
                     <TextBlock x:Name="EvalProgressText" FontSize="16" Margin="20,0,0,0" TextAlignment="Center" Text="Iteration 1/100" />

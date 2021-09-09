@@ -7,7 +7,7 @@ def parse_args():
     parser.add_argument('source', help='source  model')
     parser.add_argument('framework', help='source framework model comes from')
     parser.add_argument('ONNXVersion', help='which ONNX Version to convert to')
-    parser.add_argument('inputNames', help='names of input nodes')
+    parser.add_argument('inputNames', help='names of input nodes (optional)')
     parser.add_argument('outputNames', help='names of output nodes')
     parser.add_argument('destination', help='destination ONNX model (ONNX or prototxt extension)')
     parser.add_argument('--name', default='WimMLDashboardConvertedModel', help='(ONNX output only) model name')

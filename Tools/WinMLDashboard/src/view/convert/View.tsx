@@ -254,7 +254,7 @@ class ConvertView extends React.Component<IComponentProperties, IComponentState>
                 <div className={this.state.framework === 'TensorFlow' ? ' ' : 'hidden'}>
                     <div className='DisplayFlex'>
                         <label className='label-left-align'>Input Names: </label>
-                        <TextField id='inputNames' className='inputNames' placeholder='X:0' value={this.state.inputNames}  onChanged={this.setInputNames} />
+                        <TextField id='inputNames' className='inputNames' placeholder='X:0 (optional)' value={this.state.inputNames}  onChanged={this.setInputNames} />
                     </div>
                 </div>
                 <br />

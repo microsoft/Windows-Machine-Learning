@@ -51,6 +51,7 @@ interface IComponentState {
     currentStep: Step,
     error?: Error | string,
     framework: string,
+    inputNames: string,
     outputNames: string,
     source?: string,
 }
@@ -67,6 +68,7 @@ class ConvertView extends React.Component<IComponentProperties, IComponentState>
             currentStep: Step.Idle,
             error, 
             framework: '',
+            inputNames: '',
             outputNames: '',
         };
         log.info("Convert view is created.");
@@ -224,6 +226,7 @@ class ConvertView extends React.Component<IComponentProperties, IComponentState>
             { value: '1.6', label: '1.6 (opset V11)' },
             { value: '1.7', label: '1.7 (opset V12)' },
             { value: '1.8', label: '1.8 (opset V13)' },
+            { value: '1.9', label: '1.9 (opset V14)' },
         ]
         return (
             <div className="ModelConvert">
@@ -250,6 +253,13 @@ class ConvertView extends React.Component<IComponentProperties, IComponentState>
                 <br />
                 <div className={this.state.framework === 'TensorFlow' ? ' ' : 'hidden'}>
                     <div className='DisplayFlex'>
+                        <label className='label-left-align'>Input Names: </label>
+                        <TextField id='inputNames' className='inputNames' placeholder='X:0' value={this.state.inputNames}  onChanged={this.setInputNames} />
+                    </div>
+                </div>
+                <br />
+                <div className={this.state.framework === 'TensorFlow' ? ' ' : 'hidden'}>
+                    <div className='DisplayFlex'>
                         <label className='label-left-align'>Output Names: </label>
                         <TextField id='outputNames' className='outputNames' placeholder='output:0 output:1' value={this.state.outputNames}  onChanged={this.setOutputNames} />
                     </div>
@@ -265,6 +275,11 @@ class ConvertView extends React.Component<IComponentProperties, IComponentState>
             value: framework,
         }
     }
+
+    private setInputNames = (inputNames: string) => {
+        this.setState({inputNames})
+    }
+
     private setOutputNames = (outputNames: string) => {
         this.setState({outputNames})
     }
@@ -323,6 +338,7 @@ class ConvertView extends React.Component<IComponentProperties, IComponentState>
             await python([packagedFile('convert.py'), this.state.source!, 
                                                     this.state.framework, 
                                                     this.state.ONNXVersion.value,
+                                                    this.state.inputNames, 
                                                     this.state.outputNames, 
                                                     packagedFile('tempConvertResult.onnx')], {}, this.outputListener);
         } catch (e) {

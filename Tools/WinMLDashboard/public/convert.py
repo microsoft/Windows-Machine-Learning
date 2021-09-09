@@ -41,6 +41,7 @@ def get_opset(ONNXVersion):
     elif '1.9' == ONNXVersion:
         return 14
     else:
+        print('WARNING: ONNX Version ' + ONNXVersion + ' does not map to any known opset version, defaulting to opset V7')
         return 7
 
 

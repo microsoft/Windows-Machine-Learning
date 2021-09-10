@@ -30,6 +30,8 @@ def get_opset(ONNXVersion):
         return 7
     elif '1.3' == ONNXVersion:
         return 8
+    elif '1.4' == ONNXVersion:
+        return 9
     elif '1.5' == ONNXVersion:
         return 10
     elif '1.6' == ONNXVersion:

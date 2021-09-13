@@ -39,13 +39,14 @@ namespace WinMLSamplesGallery.Samples
             ResetEvalMetrics();
 
             var inputImages = GetInputImages();
-            CreateSessions(inputImages.Count);
+            int batchSize = GetBatchSizeFromBatchSizeComboBox();
+            CreateSessions(batchSize);
 
             UpdateEvalText(false);
             await Classify(inputImages);
 
             UpdateEvalText(true);
-            await ClassifyBatched(inputImages);
+            await ClassifyBatched(inputImages, batchSize);
 
             GenerateEvalResultAndUI();
         }
@@ -156,34 +157,50 @@ namespace WinMLSamplesGallery.Samples
             return totalDuration;
         }
 
-        async private System.Threading.Tasks.Task ClassifyBatched(List<VideoFrame> inputImages)
+        async private System.Threading.Tasks.Task ClassifyBatched(List<VideoFrame> inputImages, int batchSize)
         {
             float totalEvalDurations = 0;
             for (int i = 0; i < 100; i++)
             {
                 UpdateEvalProgressUI(i);
-                float evalDuration = await System.Threading.Tasks.Task.Run(() => EvaluateBatched(BatchingSession_, inputImages));
+                float evalDuration = await System.Threading.Tasks.Task.Run(() => EvaluateBatched(BatchingSession_, inputImages, batchSize));
                 totalEvalDurations += evalDuration;
             }
             avgBatchDuration = totalEvalDurations / 100;
         }
 
-        private static float EvaluateBatched(LearningModelSession session, List<VideoFrame> input)
+        private static float EvaluateBatched(LearningModelSession session, List<VideoFrame> input, int batchSize)
         {
-            // Bind
-            var binding = new LearningModelBinding(session);
-            string inputName = session.Model.InputFeatures[0].Name;
-            var bindStart = HighResolutionClock.UtcNow();
-            binding.Bind(inputName, input);
-            var bindStop = HighResolutionClock.UtcNow();
-            var bindDuration = HighResolutionClock.DurationInMs(bindStart, bindStop);
             // Evaluate
-            var evalStart = HighResolutionClock.UtcNow();
-            session.Evaluate(binding, "");
-            var evalStop = HighResolutionClock.UtcNow();
-            var evalDuration = HighResolutionClock.DurationInMs(evalStart, evalStop);
-            float totalDuration = bindDuration + evalDuration;
+            int numBatches = input.Count / batchSize;
+            string inputName = session.Model.InputFeatures[0].Name;
+            float totalDuration = 0;
+            for (int i = 0; i < numBatches; i++)
+            {
+                var binding = new LearningModelBinding(session);
+                List<VideoFrame> batch = input.GetRange(batchSize * i, batchSize);
+                var start = HighResolutionClock.UtcNow();
+                binding.Bind(inputName, batch);
+                session.Evaluate(binding, "");
+                var stop = HighResolutionClock.UtcNow();
+                var duration = HighResolutionClock.DurationInMs(start, stop);
+                totalDuration += duration;
+            }
             return totalDuration;
+        }
+
+        private int GetBatchSizeFromBatchSizeComboBox()
+        {
+            int batchSize;
+            if (BatchSizeComboBox.SelectedIndex == 0)
+                batchSize = 5;
+            else if (BatchSizeComboBox.SelectedIndex == 1)
+                batchSize = 10;
+            else if (BatchSizeComboBox.SelectedIndex == 2)
+                batchSize = 25;
+            else
+                batchSize = 50;
+            return batchSize;
         }
 
         private void UpdateEvalProgressUI(int attemptNumber)

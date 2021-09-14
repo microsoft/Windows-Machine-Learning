@@ -22,7 +22,7 @@
                     </Span>
                 </TextBlock>
                 <TextBlock FontSize="18" Margin="0,15,0,0">
-                    Batched Avg. Total Eval Time (Batch Size of 50):
+                    Batched Avg. Total Eval Time:
                     <Span FontWeight="Bold" Foreground="Green">
                         <Run Text="{Binding batchedAvgTime}" />
                     </Span>

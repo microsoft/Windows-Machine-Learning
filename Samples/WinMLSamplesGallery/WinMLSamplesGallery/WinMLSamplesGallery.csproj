@@ -46,6 +46,7 @@
     <None Remove="Controls\PerformanceMonitor.xaml" />
     <None Remove="Controls\SampleHeader.xaml" />
     <None Remove="HomePage.xaml" />
+	<None Remove="SampleBasePage.xaml" />
     <None Remove="Image.xaml" />
     <None Remove="InputData\ilsvrc2013.txt" />
     <None Remove="InputData\kitten.png" />
@@ -212,6 +213,12 @@
   </ItemGroup>
 
   <ItemGroup>
+	<Page Update="SampleBasePage.xaml">
+	  <Generator>MSBuild:Compile</Generator>
+	</Page>
+  </ItemGroup>
+
+	<ItemGroup>
     <Page Update="Controls\SampleHeader.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>

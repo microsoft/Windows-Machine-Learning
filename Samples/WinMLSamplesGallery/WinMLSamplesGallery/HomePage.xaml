@@ -86,6 +86,9 @@
                         <local:Link Title="Batching" Icon="&#xE155;" Tag="Batching">
                             <local:Link.Description>Perform inference on multiple inputs at once to increase performance.</local:Link.Description>
                         </local:Link>
+                        <local:Link Title="Base Page" Icon="&#xE155;" Tag="SampleBasePage">
+                            <local:Link.Description>This is the sample base page</local:Link.Description>
+                        </local:Link>
                     </GridView.Items>
                 </GridView>
             </StackPanel>

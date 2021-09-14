@@ -23,7 +23,8 @@ namespace WinMLSamplesGallery
         AllSamples = 0,
         ImageClassifier,
         ImageEffects,
-        Batching
+        Batching,
+        SampleBasePage
     }
 
     public sealed class Link
@@ -32,6 +33,12 @@ namespace WinMLSamplesGallery
         public string Description { get; set; }
         public string Icon { get; set; }
         public PageId Tag { get; set; }
+    }
+
+    public sealed class PageInfo
+    {
+        public string PageTitle { get; set; }
+        public string PageDescription { get; set; }
     }
 
     /// <summary>
@@ -70,6 +77,13 @@ namespace WinMLSamplesGallery
                     if (!Type.Equals(Frame.CurrentSourcePageType, typeof(Samples.Batching)))
                     {
                         Frame.Navigate(typeof(Samples.Batching), null, null);
+                    }
+                    break;
+                case PageId.SampleBasePage:
+                    // Only navigate if the selected page isn't currently loaded.
+                    if (!Type.Equals(Frame.CurrentSourcePageType, typeof(SampleBasePage)))
+                    {
+                        Frame.Navigate(typeof(SampleBasePage), new PageInfo {PageTitle="Test Title", PageDescription="Test Description"});
                     }
                     break;
             }

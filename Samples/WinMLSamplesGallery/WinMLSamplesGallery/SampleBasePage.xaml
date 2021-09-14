@@ -1,0 +1,18 @@
+<Page
+    x:Class="WinMLSamplesGallery.SampleBasePage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:WinMLSamplesGallery"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+	<StackPanel>
+	    <TextBlock>Sample Base Page</TextBlock>
+	    <TextBlock>Title:</TextBlock>
+	    <TextBlock Text="{x:Bind pageInfo.PageTitle}" />
+	    <TextBlock>Description:</TextBlock>
+	    <TextBlock Text="{x:Bind pageInfo.PageDescription}" />
+        <Frame x:Name="SampleFrame" Margin="0,20,0,0" />
+    </StackPanel>
+</Page>

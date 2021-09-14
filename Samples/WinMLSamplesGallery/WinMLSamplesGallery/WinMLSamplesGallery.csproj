@@ -70,6 +70,9 @@
     <None Remove="Video.xaml" />
   </ItemGroup>
   <ItemGroup>
+	<Content Include="SampleData\SampleData.json">
+		<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	</Content>
 	<Content Include="InputData\fish.png">
 		<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 	</Content>
@@ -286,4 +289,6 @@
       <Output TaskParameter="DownloadedFile" ItemName="None" />
     </DownloadFile>
   </Target>
+
+  <ProjectExtensions><VisualStudio><UserProperties /></VisualStudio></ProjectExtensions>
 </Project>

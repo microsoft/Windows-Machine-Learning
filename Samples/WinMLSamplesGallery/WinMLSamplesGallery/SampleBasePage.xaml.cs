@@ -12,6 +12,9 @@ using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
+using WinMLSamplesGallery.SampleData;
+using Windows.Data.Json;
+
 
 namespace WinMLSamplesGallery
 {
@@ -24,12 +27,19 @@ namespace WinMLSamplesGallery
             this.InitializeComponent();
         }
 
+        public async void GetSampleData()
+        {
+            SampleDataList sampleDataList = new SampleDataList();
+            JsonArray sampleData = await sampleDataList.GetSampleData();
+            System.Diagnostics.Debug.WriteLine("Data {0}", sampleData);
+        }
+
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {
             pageInfo = (PageInfo) e.Parameter;
             System.Diagnostics.Debug.WriteLine("Navigated to this page title {0}, description {1}", pageInfo.PageTitle, pageInfo.PageDescription);
 
-            this.SampleFrame.Navigate(typeof(Samples.Batching));
+            SampleFrame.Navigate(typeof(Samples.Batching));
         }
     }
 }

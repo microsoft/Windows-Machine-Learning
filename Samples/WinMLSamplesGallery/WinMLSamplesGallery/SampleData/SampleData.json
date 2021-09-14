@@ -1,0 +1,17 @@
+{
+  "Samples": [
+    {
+      "Title": "Image Classification",
+      "Description": "Pick an image and classify the scene into 1000 categories such as keyboard, mouse, pencil, and many animals.",
+      "IsFeature": false
+    },
+    {
+      "Title": "Batching",
+      "Description": "Infer multiple inputs at once to increase performance.",
+      "IsFeature": true,
+      "XAMLGithubLink": "https://github.com/microsoft/Windows-Machine-Learning/blob/batching_sample/Samples/WinMLSamplesGallery/WinMLSamplesGallery/Samples/Batching.xaml",
+      "CSharpGitHubLink": "https://github.com/microsoft/Windows-Machine-Learning/blob/batching_sample/Samples/WinMLSamplesGallery/WinMLSamplesGallery/Samples/Batching.xaml.cs",
+      "DocsLink": "https://docs.microsoft.com/en-us/uwp/api/windows.ai.machinelearning.learningmodelsessionoptions.batchsizeoverride?view=winrt-20348"
+    }
+  ]
+}

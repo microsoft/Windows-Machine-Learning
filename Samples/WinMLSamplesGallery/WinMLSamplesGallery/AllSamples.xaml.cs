@@ -30,10 +30,10 @@ namespace WinMLSamplesGallery
 
         private void StyledGrid_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            var gridView = sender as GridView;
+ /*           var gridView = sender as GridView;
             var link = gridView.SelectedItem as Link;
-            var model = link.Tag;
-            switch (model)
+            var model = link.Tag;*/
+/*            switch (model)
             {
                 case PageId.ImageClassifier:
                     // Only navigate if the selected page isn't currently loaded.
@@ -56,7 +56,7 @@ namespace WinMLSamplesGallery
                         Frame.Navigate(typeof(Samples.Batching), null, null);
                     }
                     break;
-            }
+            }*/
         }
     }
 }

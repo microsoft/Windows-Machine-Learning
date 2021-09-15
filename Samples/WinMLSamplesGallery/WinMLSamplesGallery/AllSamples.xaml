@@ -9,7 +9,7 @@
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
     <Page.Resources>
-        <DataTemplate x:Name="ImageOverlayTemplate" x:DataType="local:Link">
+        <DataTemplate x:Name="ImageOverlayTemplate" x:DataType="local:Sample">
             <Grid Height="150" Width="300" Background="#e6e6e6" BorderThickness="4" Padding="0,5,10,1">
 
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Top" Padding="5,1,5,1">
@@ -68,7 +68,7 @@
                     </GridView.ItemsPanel>
 
                     <GridView.Items>
-                        <local:Link Title="Image Classifier" Icon="&#xE155;" Tag="ImageClassifier">
+                        <!--<local:Link Title="Image Classifier" Icon="&#xE155;" Tag="ImageClassifier">
                             <local:Link.Description>SqueezeNet models perform image classification - they take images as input and classify the major object in the image into a set of pre-defined classes.</local:Link.Description>
                         </local:Link>
                         <local:Link Title="Image Effects" Icon="&#xE155;" Tag="ImageEffects">
@@ -76,7 +76,7 @@
                         </local:Link>
                         <local:Link Title="Batching" Icon="&#xE155;" Tag="Batching">
                             <local:Link.Description>Perform inference on multiple inputs at once to increase performance.</local:Link.Description>
-                        </local:Link>
+                        </local:Link>-->
                     </GridView.Items>
                 </GridView>
             </StackPanel>

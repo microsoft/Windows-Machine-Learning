@@ -6,7 +6,8 @@
       "Icon": "\uE155",
       "Tag": "ImageClassifier",
       "XAMLGithubLink": "https://github.com/microsoft/Windows-Machine-Learning/blob/batching_sample/Samples/WinMLSamplesGallery/WinMLSamplesGallery/Samples/ImageClassifier.xaml",
-      "CSharpGithubLink": "https://github.com/microsoft/Windows-Machine-Learning/blob/batching_sample/Samples/WinMLSamplesGallery/WinMLSamplesGallery/Samples/ImageClassifier.xaml.cs"
+      "CSharpGithubLink": "https://github.com/microsoft/Windows-Machine-Learning/blob/batching_sample/Samples/WinMLSamplesGallery/WinMLSamplesGallery/Samples/ImageClassifier.xaml.cs",
+      "DocsLink": "https://docs.microsoft.com/en-us/uwp/api/windows.ai.machinelearning.learningmodelsessionoptions.batchsizeoverride?view=winrt-20348"
     },
     {
       "Title": "Batching",
@@ -14,7 +15,7 @@
       "Icon": "\uE155",
       "Tag": "Batching",
       "XAMLGithubLink": "https://github.com/microsoft/Windows-Machine-Learning/blob/batching_sample/Samples/WinMLSamplesGallery/WinMLSamplesGallery/Samples/Batching.xaml",
-      "CSharpGitHubLink": "https://github.com/microsoft/Windows-Machine-Learning/blob/batching_sample/Samples/WinMLSamplesGallery/WinMLSamplesGallery/Samples/Batching.xaml.cs",
+      "CSharpGithubLink": "https://github.com/microsoft/Windows-Machine-Learning/blob/batching_sample/Samples/WinMLSamplesGallery/WinMLSamplesGallery/Samples/Batching.xaml.cs",
       "DocsLink": "https://docs.microsoft.com/en-us/uwp/api/windows.ai.machinelearning.learningmodelsessionoptions.batchsizeoverride?view=winrt-20348"
     }
   ]

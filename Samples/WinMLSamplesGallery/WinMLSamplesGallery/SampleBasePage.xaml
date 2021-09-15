@@ -7,12 +7,41 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
-	<StackPanel>
-	    <TextBlock>Sample Base Page</TextBlock>
-	    <TextBlock>Title:</TextBlock>
-	    <TextBlock Text="{x:Bind pageInfo.PageTitle}" />
-	    <TextBlock>Description:</TextBlock>
-	    <TextBlock Text="{x:Bind pageInfo.PageDescription}" />
-        <Frame x:Name="SampleFrame" Margin="0,20,0,0" />
-    </StackPanel>
+    <ScrollViewer>
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="0.7*"></ColumnDefinition>
+                <ColumnDefinition Width="0.3*"></ColumnDefinition>
+            </Grid.ColumnDefinitions>
+            <StackPanel Grid.Row="0" Grid.Column="0" Padding="40,40">
+                <TextBlock FontWeight="Bold" FontSize="25" Text="{x:Bind sample.Title}" />
+                <TextBlock FontSize="16" Margin="0,15,0,0" Text="{x:Bind sample.Description}" />
+                <Frame x:Name="SampleFrame" />
+            </StackPanel>
+
+            <StackPanel Grid.Row="0" Grid.Column="1" Padding="0,40,40,0" HorizontalAlignment="Right">
+                <TextBlock FontWeight="Bold" FontSize="20">View page code on GitHub</TextBlock>
+                <TextBlock Margin="10,20,0,0" FontSize="16">
+                <Hyperlink TextDecorations="None" NavigateUri="{x:Bind sample.XAMLGithubLink}">
+                    XAML Source Code
+                </Hyperlink>
+                </TextBlock>
+                <TextBlock Margin="10,20,0,0" FontSize="16">
+                <Hyperlink TextDecorations="None" NavigateUri="{x:Bind sample.CSharpGithubLink}">
+                    C# Source Code
+                </Hyperlink>
+                </TextBlock>
+                <TextBlock FontWeight="Bold" FontSize="20" Margin="0,40,0,0">Documentation</TextBlock>
+                <TextBlock Margin="10,20,0,0" FontSize="16">
+                <Hyperlink TextDecorations="None" NavigateUri="{x:Bind sample.DocsLink}">
+                    BatchSizeOverride API
+                </Hyperlink>
+                </TextBlock>
+                <TextBlock FontWeight="Bold" FontSize="20" Margin="0,40,0,0">Feedback</TextBlock>
+                <TextBlock Margin="10,20,0,0" FontSize="16">
+                <Hyperlink TextDecorations="None">Send feedback about this page</Hyperlink>
+                </TextBlock>
+            </StackPanel>
+        </Grid>
+    </ScrollViewer>
 </Page>

@@ -9,7 +9,7 @@
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
     <Page.Resources>
-        <DataTemplate x:Name="ImageOverlayTemplate" x:DataType="local:Link">
+        <DataTemplate x:Name="ImageOverlayTemplate" x:DataType="local:Sample">
             <Grid Height="150" Width="300" Background="#e6e6e6" BorderThickness="4" Padding="10,5,10,1">
 
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Top" Padding="5,1,5,1">
@@ -55,41 +55,26 @@
             HorizontalScrollMode="Enabled" HorizontalScrollBarVisibility="Disabled"
             VerticalScrollMode="Enabled" VerticalScrollBarVisibility="Visible">
             <StackPanel Orientation="Vertical">
-          <TextBlock Foreground="#12bef6"
-                     FontSize="25"
-                     FontFamily="Segoe UI Light"
-                     HorizontalAlignment="Left"
-                     Padding="10,20,0,5"
-                     Typography.Capitals="SmallCaps"
-                     Typography.StylisticSet4="True">Recently Added</TextBlock>
+              <TextBlock Foreground="#12bef6"
+                         FontSize="25"
+                         FontFamily="Segoe UI Light"
+                         HorizontalAlignment="Left"
+                         Padding="10,20,0,5"
+                         Typography.Capitals="SmallCaps"
+                         Typography.StylisticSet4="True">Recently Added</TextBlock>
 
-            <GridView x:Name="StyledGrid" ItemTemplate="{StaticResource ImageOverlayTemplate}" SelectionChanged="StyledGrid_SelectionChanged">
-                <GridView.ItemContainerStyle>
-                    <Style TargetType="GridViewItem">
-                        <Setter Property="Margin" Value="5, 5, 5, 5"/>
-                    </Style>
-                </GridView.ItemContainerStyle>
+                <GridView x:Name="StyledGrid" ItemTemplate="{StaticResource ImageOverlayTemplate}" SelectionChanged="NavigateToSample">
+                    <GridView.ItemContainerStyle>
+                        <Style TargetType="GridViewItem">
+                            <Setter Property="Margin" Value="5, 5, 5, 5"/>
+                        </Style>
+                    </GridView.ItemContainerStyle>
 
-                <GridView.ItemsPanel>
-                    <ItemsPanelTemplate>
-                        <ItemsWrapGrid x:Name="MaxItemsWrapGrid" Orientation="Horizontal"/>
-                    </ItemsPanelTemplate>
-                </GridView.ItemsPanel>
-
-                    <GridView.Items>
-                        <!--<local:Link Title="Image Classifier" Icon="&#xE155;" Tag="ImageClassifier">
-                            <local:Link.Description>Pick an image and classify the scene into 1000 categories such as keyboard, mouse, pencil, and many animals.</local:Link.Description>
-                        </local:Link>
-                        <local:Link Title="Image Effects" Icon="&#xE155;" Tag="ImageEffects">
-                            <local:Link.Description>Pick an image and apply a variety of effects powered by Windows AI MachineLearning like Blur, Sharpen, Contrast, and many more.</local:Link.Description>
-                        </local:Link>
-                        <local:Link Title="Batching" Icon="&#xE155;" Tag="Batching">
-                            <local:Link.Description>Perform inference on multiple inputs at once to increase performance.</local:Link.Description>
-                        </local:Link>
-                        <local:Link Title="Base Page" Icon="&#xE155;" Tag="SampleBasePage">
-                            <local:Link.Description>This is the sample base page</local:Link.Description>
-                        </local:Link>-->
-                    </GridView.Items>
+                    <GridView.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <ItemsWrapGrid x:Name="MaxItemsWrapGrid" Orientation="Horizontal"/>
+                        </ItemsPanelTemplate>
+                    </GridView.ItemsPanel>
                 </GridView>
             </StackPanel>
         </ScrollViewer>

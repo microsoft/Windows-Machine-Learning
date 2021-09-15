@@ -9,27 +9,15 @@ using Windows.Data.Json;
 
 namespace WinMLSamplesGallery
 {
-    public enum PageId
-    {
-        AllSamples = 0,
-        ImageClassifier,
-        ImageEffects,
-        Batching,
-        SampleBasePage
-    }
-
-    public sealed class Link
+    public sealed class Sample
     {
         public string Title { get; set; }
         public string Description { get; set; }
         public string Icon { get; set; }
-        public PageId Tag { get; set; }
-    }
-
-    public sealed class PageInfo
-    {
-        public string PageTitle { get; set; }
-        public string PageDescription { get; set; }
+        public string Tag { get; set; }
+        public string XAMLGithubLink { get; set; }
+        public string CSharpGithubLink { get; set; }
+        public string DocsLink { get; set; }
     }
 
     /// <summary>
@@ -49,67 +37,33 @@ namespace WinMLSamplesGallery
             await loader.GetSampleData();
             JsonArray sampleData = loader.data;
 
-            List<Link> links = new List<Link>();
+            List<Sample> samples = new List<Sample>();
             for (int i = 0; i < sampleData.Count; i++)
             {
                 JsonObject sample = sampleData[i].GetObject();
-                PageId sampleTag = GetTagFromString(sample["Tag"].GetString());
-                links.Add(new Link
+                samples.Add(new Sample
                 {
                     Title = sample["Title"].GetString(),
                     Description = sample["Description"].GetString(),
                     Icon = sample["Icon"].GetString(),
-                    Tag = sampleTag
+                    Tag = sample["Tag"].GetString(),
+                    XAMLGithubLink = sample["XAMLGithubLink"].GetString(),
+                    CSharpGithubLink = sample["CSharpGithubLink"].GetString(),
+                    DocsLink = sample["DocsLink"].GetString()
                 });
             }
-            StyledGrid.ItemsSource = links;
+            StyledGrid.ItemsSource = samples;
         }
 
-        private PageId GetTagFromString(string str)
+        private void NavigateToSample(object sender, SelectionChangedEventArgs e)
         {
-            PageId id = PageId.AllSamples;
-            if (str == "ImageClassifier")
-                id = PageId.ImageClassifier;
-            else if (str == "Batching")
-                id = PageId.Batching;
-            return id;
-        }
+            GridView gridView = sender as GridView;
+            Sample sample = gridView.SelectedItem as Sample;
 
-        private void StyledGrid_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            var gridView = sender as GridView;
-            var link = gridView.SelectedItem as Link;
-            var model = link.Tag;
-            switch (model)
+            // Only navigate if the selected page isn't currently loaded.
+            if (!Type.Equals(Frame.CurrentSourcePageType, typeof(SampleBasePage)))
             {
-                case PageId.ImageClassifier:
-                    // Only navigate if the selected page isn't currently loaded.
-                    if (!Type.Equals(Frame.CurrentSourcePageType, typeof(Samples.ImageClassifier)))
-                    {
-                        Frame.Navigate(typeof(Samples.ImageClassifier), null, null);
-                    }
-                    break;
-                case PageId.ImageEffects:
-                    // Only navigate if the selected page isn't currently loaded.
-                    if (!Type.Equals(Frame.CurrentSourcePageType, typeof(Samples.ImageEffects)))
-                    {
-                        Frame.Navigate(typeof(Samples.ImageEffects), null, null);
-                    }
-                    break;
-                case PageId.Batching:
-                    // Only navigate if the selected page isn't currently loaded.
-                    if (!Type.Equals(Frame.CurrentSourcePageType, typeof(Samples.Batching)))
-                    {
-                        Frame.Navigate(typeof(Samples.Batching), null, null);
-                    }
-                    break;
-                case PageId.SampleBasePage:
-                    // Only navigate if the selected page isn't currently loaded.
-                    if (!Type.Equals(Frame.CurrentSourcePageType, typeof(SampleBasePage)))
-                    {
-                        Frame.Navigate(typeof(SampleBasePage), new PageInfo {PageTitle="Test Title", PageDescription="Test Description"});
-                    }
-                    break;
+                Frame.Navigate(typeof(SampleBasePage), sample);
             }
         }
     }

@@ -54,7 +54,7 @@
             HorizontalScrollMode="Enabled" HorizontalScrollBarVisibility="Disabled"
             VerticalScrollMode="Enabled" VerticalScrollBarVisibility="Visible">
             <StackPanel Orientation="Vertical" Padding="5,5,5,5">
-                <GridView x:Name="StyledGrid" ItemTemplate="{StaticResource ImageOverlayTemplate}" SelectionChanged="StyledGrid_SelectionChanged">
+                <GridView x:Name="StyledGrid" ItemTemplate="{StaticResource ImageOverlayTemplate}" SelectionChanged="NavigateToSample">
                     <GridView.ItemContainerStyle>
                         <Style TargetType="GridViewItem">
                             <Setter Property="Margin" Value="5, 5, 5, 5"/>
@@ -66,18 +66,6 @@
                             <ItemsWrapGrid x:Name="MaxItemsWrapGrid" Orientation="Horizontal"/>
                         </ItemsPanelTemplate>
                     </GridView.ItemsPanel>
-
-                    <GridView.Items>
-                        <!--<local:Link Title="Image Classifier" Icon="&#xE155;" Tag="ImageClassifier">
-                            <local:Link.Description>SqueezeNet models perform image classification - they take images as input and classify the major object in the image into a set of pre-defined classes.</local:Link.Description>
-                        </local:Link>
-                        <local:Link Title="Image Effects" Icon="&#xE155;" Tag="ImageEffects">
-                            <local:Link.Description>Pick an image and apply a variety of effects powered by Windows AI MachineLearning like Blur, Sharpen, Contrast, and many more.</local:Link.Description>
-                        </local:Link>
-                        <local:Link Title="Batching" Icon="&#xE155;" Tag="Batching">
-                            <local:Link.Description>Perform inference on multiple inputs at once to increase performance.</local:Link.Description>
-                        </local:Link>-->
-                    </GridView.Items>
                 </GridView>
             </StackPanel>
         </ScrollViewer>

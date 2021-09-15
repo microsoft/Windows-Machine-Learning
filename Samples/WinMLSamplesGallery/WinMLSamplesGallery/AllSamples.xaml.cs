@@ -1,17 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
-using Windows.Foundation;
-using Windows.Foundation.Collections;
-using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Controls.Primitives;
-using Microsoft.UI.Xaml.Data;
-using Microsoft.UI.Xaml.Input;
-using Microsoft.UI.Xaml.Media;
-using Microsoft.UI.Xaml.Navigation;
+using WinMLSamplesGallery.SampleData;
+using Windows.Data.Json;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -26,37 +17,43 @@ namespace WinMLSamplesGallery
         public AllSamples()
         {
             this.InitializeComponent();
+            SetSampleLinks();
         }
 
-        private void StyledGrid_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private async void SetSampleLinks()
         {
- /*           var gridView = sender as GridView;
-            var link = gridView.SelectedItem as Link;
-            var model = link.Tag;*/
-/*            switch (model)
+            SampleDataLoader loader = new SampleDataLoader();
+            await loader.GetSampleData();
+            JsonArray sampleData = loader.data;
+
+            List<Sample> samples = new List<Sample>();
+            for (int i = 0; i < sampleData.Count; i++)
             {
-                case PageId.ImageClassifier:
-                    // Only navigate if the selected page isn't currently loaded.
-                    if (!Type.Equals(Frame.CurrentSourcePageType, typeof(Samples.ImageClassifier)))
-                    {
-                        Frame.Navigate(typeof(Samples.ImageClassifier), null, null);
-                    }
-                    break;
-                case PageId.ImageEffects:
-                    // Only navigate if the selected page isn't currently loaded.
-                    if (!Type.Equals(Frame.CurrentSourcePageType, typeof(Samples.ImageEffects)))
-                    {
-                        Frame.Navigate(typeof(Samples.ImageEffects), null, null);
-                    }
-                    break;
-                case PageId.Batching:
-                    // Only navigate if the selected page isn't currently loaded.
-                    if (!Type.Equals(Frame.CurrentSourcePageType, typeof(Samples.Batching)))
-                    {
-                        Frame.Navigate(typeof(Samples.Batching), null, null);
-                    }
-                    break;
-            }*/
+                JsonObject sample = sampleData[i].GetObject();
+                samples.Add(new Sample
+                {
+                    Title = sample["Title"].GetString(),
+                    Description = sample["Description"].GetString(),
+                    Icon = sample["Icon"].GetString(),
+                    Tag = sample["Tag"].GetString(),
+                    XAMLGithubLink = sample["XAMLGithubLink"].GetString(),
+                    CSharpGithubLink = sample["CSharpGithubLink"].GetString(),
+                    DocsLink = sample["DocsLink"].GetString()
+                });
+            }
+            StyledGrid.ItemsSource = samples;
+        }
+
+        private void NavigateToSample(object sender, SelectionChangedEventArgs e)
+        {
+            GridView gridView = sender as GridView;
+            Sample sample = gridView.SelectedItem as Sample;
+
+            // Only navigate if the selected page isn't currently loaded.
+            if (!Type.Equals(Frame.CurrentSourcePageType, typeof(SampleBasePage)))
+            {
+                Frame.Navigate(typeof(SampleBasePage), sample);
+            }
         }
     }
 }

@@ -77,7 +77,7 @@
                 </GridView.ItemsPanel>
 
                     <GridView.Items>
-                        <local:Link Title="Image Classifier" Icon="&#xE155;" Tag="ImageClassifier">
+                        <!--<local:Link Title="Image Classifier" Icon="&#xE155;" Tag="ImageClassifier">
                             <local:Link.Description>Pick an image and classify the scene into 1000 categories such as keyboard, mouse, pencil, and many animals.</local:Link.Description>
                         </local:Link>
                         <local:Link Title="Image Effects" Icon="&#xE155;" Tag="ImageEffects">
@@ -88,7 +88,7 @@
                         </local:Link>
                         <local:Link Title="Base Page" Icon="&#xE155;" Tag="SampleBasePage">
                             <local:Link.Description>This is the sample base page</local:Link.Description>
-                        </local:Link>
+                        </local:Link>-->
                     </GridView.Items>
                 </GridView>
             </StackPanel>

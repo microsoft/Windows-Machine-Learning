@@ -1,25 +1,22 @@
 using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
 using System.Threading.Tasks;
 using Windows.Data.Json;
 using Windows.Storage;
 
 namespace WinMLSamplesGallery.SampleData
 {
-    public class SampleDataList
+    public class SampleDataLoader
     {
-        public SampleDataList() { }
+        public JsonArray data;
+        public SampleDataLoader() { }
 
-        public async JsonArray GetSampleData()
+        public async Task GetSampleData()
         {
             Uri dataUri = new Uri("ms-appx:///SampleData/SampleData.json");
             StorageFile file = await StorageFile.GetFileFromApplicationUriAsync(dataUri);
             string jsonText = await FileIO.ReadTextAsync(file);
             JsonObject jsonObject = JsonObject.Parse(jsonText);
-            JsonArray data = jsonObject["Samples"].GetArray();
-            return data;
+            data = jsonObject["Samples"].GetArray();
         }
     }
 }

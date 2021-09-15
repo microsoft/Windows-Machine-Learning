@@ -1,17 +1,8 @@
-﻿using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Controls.Primitives;
-using Microsoft.UI.Xaml.Data;
-using Microsoft.UI.Xaml.Input;
-using Microsoft.UI.Xaml.Media;
-using Microsoft.UI.Xaml.Navigation;
+﻿using Microsoft.UI.Xaml.Controls;
 using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
-using Windows.Foundation;
-using Windows.Foundation.Collections;
+using WinMLSamplesGallery.SampleData;
+using Windows.Data.Json;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -49,6 +40,39 @@ namespace WinMLSamplesGallery
         public HomePage()
         {
             this.InitializeComponent();
+            SetSampleLinks();
+        }
+
+        private async void SetSampleLinks()
+        {
+            SampleDataLoader loader = new SampleDataLoader();
+            await loader.GetSampleData();
+            JsonArray sampleData = loader.data;
+
+            List<Link> links = new List<Link>();
+            for (int i = 0; i < sampleData.Count; i++)
+            {
+                JsonObject sample = sampleData[i].GetObject();
+                PageId sampleTag = GetTagFromString(sample["Tag"].GetString());
+                links.Add(new Link
+                {
+                    Title = sample["Title"].GetString(),
+                    Description = sample["Description"].GetString(),
+                    Icon = sample["Icon"].GetString(),
+                    Tag = sampleTag
+                });
+            }
+            StyledGrid.ItemsSource = links;
+        }
+
+        private PageId GetTagFromString(string str)
+        {
+            PageId id = PageId.AllSamples;
+            if (str == "ImageClassifier")
+                id = PageId.ImageClassifier;
+            else if (str == "Batching")
+                id = PageId.Batching;
+            return id;
         }
 
         private void StyledGrid_SelectionChanged(object sender, SelectionChangedEventArgs e)

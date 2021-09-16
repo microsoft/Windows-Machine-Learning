@@ -40,7 +40,7 @@
     <Content Remove="assets\hummingbird - Copy.jpg" />
   </ItemGroup>
   <ItemGroup>
-    <None Remove="AllSamples.xaml" />
+    <None Remove="AllSamplesPage.xaml" />
     <None Remove="Audio.xaml" />
     <None Remove="Benchmark.xaml" />
     <None Remove="Controls\PerformanceMonitor.xaml" />
@@ -172,7 +172,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Page Update="AllSamples.xaml">
+    <Page Update="AllSamplesPage.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Update="Controls\PerformanceMonitor.xaml">

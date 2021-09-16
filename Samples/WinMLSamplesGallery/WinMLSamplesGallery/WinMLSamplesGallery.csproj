@@ -46,6 +46,7 @@
     <None Remove="Controls\PerformanceMonitor.xaml" />
     <None Remove="Controls\SampleHeader.xaml" />
     <None Remove="HomePage.xaml" />
+	<None Remove="SamplesGrid.xaml" />
 	<None Remove="SampleBasePage.xaml" />
     <None Remove="Image.xaml" />
     <None Remove="InputData\ilsvrc2013.txt" />
@@ -211,6 +212,12 @@
 
   <ItemGroup>
     <Page Update="HomePage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+	
+  <ItemGroup>
+    <Page Update="SamplesGrid.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>

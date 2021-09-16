@@ -55,7 +55,7 @@
         </DataTemplate>
     </Page.Resources>
 
-    <Grid>
+    <Grid Margin="0,20,0,0">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />

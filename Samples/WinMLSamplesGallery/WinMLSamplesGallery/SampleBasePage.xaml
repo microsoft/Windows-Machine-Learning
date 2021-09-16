@@ -7,6 +7,16 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
+    <Page.Resources>
+        <DataTemplate x:Key="DocsListViewTemplate" x:DataType="local:SampleDoc">
+            <TextBlock Margin="10,20,0,0" FontSize="17">
+                <Hyperlink TextDecorations="None" NavigateUri="{Binding link}">
+                    BatchSizeOverride API
+                </Hyperlink>
+            </TextBlock>
+        </DataTemplate>
+    </Page.Resources>
+
     <ScrollViewer>
         <Grid>
             <Grid.ColumnDefinitions>
@@ -22,24 +32,34 @@
             <StackPanel Grid.Row="0" Grid.Column="1" Padding="0,40,40,0" HorizontalAlignment="Right">
                 <TextBlock FontWeight="Bold" FontSize="20">View page code on GitHub</TextBlock>
                 <TextBlock Margin="10,20,0,0" FontSize="16">
-                <Hyperlink TextDecorations="None" NavigateUri="{x:Bind sample.XAMLGithubLink}">
-                    XAML Source Code
-                </Hyperlink>
+                    <Hyperlink TextDecorations="None" NavigateUri="{x:Bind sample.XAMLGithubLink}">
+                        XAML Source Code
+                    </Hyperlink>
                 </TextBlock>
                 <TextBlock Margin="10,20,0,0" FontSize="16">
-                <Hyperlink TextDecorations="None" NavigateUri="{x:Bind sample.CSharpGithubLink}">
-                    C# Source Code
-                </Hyperlink>
+                    <Hyperlink TextDecorations="None" NavigateUri="{x:Bind sample.CSharpGithubLink}">
+                        C# Source Code
+                    </Hyperlink>
                 </TextBlock>
-                <TextBlock FontWeight="Bold" FontSize="20" Margin="0,40,0,0">Documentation</TextBlock>
-                <TextBlock Margin="10,20,0,0" FontSize="16">
-                <Hyperlink TextDecorations="None" NavigateUri="{x:Bind sample.DocsLink}">
-                    BatchSizeOverride API
-                </Hyperlink>
-                </TextBlock>
+                <TextBlock x:Name="DocsHeader" FontWeight="Bold" FontSize="20" Margin="0,40,0,0">Documentation</TextBlock>
+                <ListView
+                    ItemTemplate="{StaticResource DocsListViewTemplate}"
+                    ItemsSource="{x:Bind sample.Docs}">
+                    <ListView.ItemContainerStyle>
+                        <Style TargetType="ListViewItem">
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate>
+                                        <ContentPresenter/>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                        </Style>
+                    </ListView.ItemContainerStyle>
+                </ListView>
                 <TextBlock FontWeight="Bold" FontSize="20" Margin="0,40,0,0">Feedback</TextBlock>
                 <TextBlock Margin="10,20,0,0" FontSize="16">
-                <Hyperlink TextDecorations="None">Send feedback about this page</Hyperlink>
+                    <Hyperlink TextDecorations="None">Send feedback about this page</Hyperlink>
                 </TextBlock>
             </StackPanel>
         </Grid>

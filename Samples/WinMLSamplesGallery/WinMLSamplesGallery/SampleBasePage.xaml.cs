@@ -1,3 +1,4 @@
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
 using System;
@@ -25,6 +26,10 @@ namespace WinMLSamplesGallery
                     SampleFrame.Navigate(typeof(Samples.Batching));
                     break;
             }
+            if (sample.Docs.Count > 0)
+                DocsHeader.Visibility = Visibility.Visible;
+            else
+                DocsHeader.Visibility = Visibility.Collapsed;
         }
     }
 }

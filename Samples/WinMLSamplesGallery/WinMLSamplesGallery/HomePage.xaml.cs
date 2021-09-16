@@ -38,7 +38,7 @@ namespace WinMLSamplesGallery
                     Tag = sample["Tag"].GetString(),
                     XAMLGithubLink = sample["XAMLGithubLink"].GetString(),
                     CSharpGithubLink = sample["CSharpGithubLink"].GetString(),
-                    DocsLink = sample["DocsLink"].GetString()
+                    Docs = ConvertJsonArrayToSampleDocList(sample["Docs"].GetArray())
                 });
             }
             StyledGrid.ItemsSource = samples;
@@ -54,6 +54,20 @@ namespace WinMLSamplesGallery
             {
                 Frame.Navigate(typeof(SampleBasePage), sample);
             }
+        }
+
+        private List<SampleDoc> ConvertJsonArrayToSampleDocList(JsonArray arr)
+        {
+            List<SampleDoc> sampleDocList = new List<SampleDoc>();
+            for (int i = 0; i < arr.Count; i++)
+            {
+                JsonObject jsonDoc = arr[i].GetObject();
+                sampleDocList.Add(new SampleDoc{
+                    name = jsonDoc["name"].GetString(),
+                    link = jsonDoc["link"].GetString()
+                });
+            }
+            return sampleDocList;
         }
     }
 }

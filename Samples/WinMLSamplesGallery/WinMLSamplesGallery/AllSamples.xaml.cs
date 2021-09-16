@@ -37,8 +37,8 @@ namespace WinMLSamplesGallery
                     Icon = sample["Icon"].GetString(),
                     Tag = sample["Tag"].GetString(),
                     XAMLGithubLink = sample["XAMLGithubLink"].GetString(),
-                    CSharpGithubLink = sample["CSharpGithubLink"].GetString(),
-                    DocsLink = sample["DocsLink"].GetString()
+                    CSharpGithubLink = sample["CSharpGithubLink"].GetString()
+/*                    DocsLink = sample["DocsLink"].GetString()*/
                 });
             }
             StyledGrid.ItemsSource = samples;

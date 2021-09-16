@@ -1,4 +1,4 @@
-﻿using System;
+﻿using System.Collections.Generic;
 
 namespace WinMLSamplesGallery
 {
@@ -10,6 +10,12 @@ namespace WinMLSamplesGallery
         public string Tag { get; set; }
         public string XAMLGithubLink { get; set; }
         public string CSharpGithubLink { get; set; }
-        public string DocsLink { get; set; }
+        public List<SampleDoc> Docs { get; set; }
+    }
+
+    public sealed class SampleDoc
+    {
+        public string name { get; set; }
+        public string link { get; set; }
     }
 }

@@ -2,7 +2,7 @@
 
 ![WinML Samples Gallery Screenshot](README_Images/WinMLSamplesGalleryLandin.PNG)
 
-Demonstrates the different scenarios and features for [WinML] (https://docs.microsoft.com/en-us/windows/ai/windows-ml/)
+Demonstrates the different scenarios and features for [WinML](https://docs.microsoft.com/en-us/windows/ai/windows-ml/)
 
 ## The WinML Samples Gallery:
 
@@ -15,4 +15,4 @@ If you find a bug **within the WinML Samples Gallery** or want to request a new 
 
 ## Related topics
 
-[Windows Machine Learning Library (WinML)]https://docs.microsoft.com/en-us/windows/ai/windows-ml/)
+[Windows Machine Learning Library (WinML)](https://docs.microsoft.com/en-us/windows/ai/windows-ml/)

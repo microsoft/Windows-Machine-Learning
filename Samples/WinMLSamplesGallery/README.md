@@ -1,6 +1,6 @@
 ﻿# WinML Samples Gallery
 
-![WinML Samples Gallery Screenshot](README_Images/WinMLSamplesGalleryLanding.PNG)
+![WinML Samples Gallery Screenshot](README_Images/WinMLSamplesGalleryLanding.png)
 
 Demonstrates the different scenarios and features for [WinML](https://docs.microsoft.com/en-us/windows/ai/windows-ml/)
 

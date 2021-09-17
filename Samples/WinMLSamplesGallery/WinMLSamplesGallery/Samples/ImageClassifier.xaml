@@ -55,15 +55,12 @@
         </DataTemplate>
     </Page.Resources>
 
-    <Grid Margin="0,20,0,0">
+    <Grid Margin="0,0,0,0">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
-        <!--<local_controls:SampleHeader
-            Grid.Row="0"
-            Title="Image Classifier"
-            Description="This collection of models take images as input, then classifies the major objects in the images into 1000 object categories such as keyboard, mouse, pencil, and many animals." />-->
+        <TextBlock FontWeight="Bold" FontSize="20" Margin="0,40,0,0">Select an image to classify</TextBlock>
         <ScrollViewer 
             Grid.Row="1"
             ZoomMode="Disabled"

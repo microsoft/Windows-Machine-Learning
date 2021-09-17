@@ -66,10 +66,7 @@
         <TextBlock FontSize="16" Margin="0,15,0,0">50 images will be passed through SqueezeNet for classification.</TextBlock>
         <StackPanel Orientation="Horizontal" Margin="0,20,0,0">
             <TextBlock FontSize="16" Margin="0,5,15,0">Device</TextBlock>
-            <ComboBox x:Name="DeviceComboBox" SelectedIndex="0">
-                <x:String>CPU</x:String>
-                <x:String>GPU</x:String>
-            </ComboBox>
+            <local_controls:DeviceComboBox x:Name="DeviceComboBox" />
             <TextBlock FontSize="16" Margin="20,5,15,0">Batch Size</TextBlock>
             <ComboBox x:Name="BatchSizeComboBox" SelectedIndex="3">
                 <x:String>5</x:String>

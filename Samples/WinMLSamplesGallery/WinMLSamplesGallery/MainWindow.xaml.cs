@@ -29,10 +29,13 @@ namespace WinMLSamplesGallery
             ("video", typeof(Video)),
         };
 
+        public static Frame mainFrame;
+
         public MainWindow()
         {
             this.InitializeComponent();
             this.Title = "Windows AI Samples Gallery";
+            mainFrame = contentFrame;
         }
 
         private void nvSample_ItemInvoked(NavigationView sender, NavigationViewItemInvokedEventArgs args)

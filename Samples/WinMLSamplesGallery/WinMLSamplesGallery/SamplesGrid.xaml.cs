@@ -8,7 +8,8 @@ namespace WinMLSamplesGallery
 {
     public sealed partial class SamplesGrid : Page
     {
-        public SamplesGrid() {
+        public SamplesGrid()
+        {
             this.InitializeComponent();
             this.SetSampleLinks();
         }
@@ -41,11 +42,11 @@ namespace WinMLSamplesGallery
         {
             GridView gridView = sender as GridView;
             Sample sample = gridView.SelectedItem as Sample;
-
+            
             // Only navigate if the selected page isn't currently loaded.
-            if (!Type.Equals(Frame.CurrentSourcePageType, typeof(SampleBasePage)))
+            if (!Type.Equals(MainWindow.mainFrame.CurrentSourcePageType, typeof(SampleBasePage)))
             {
-                Frame.Navigate(typeof(SampleBasePage), sample);
+                MainWindow.mainFrame.Navigate(typeof(SampleBasePage), sample);
             }
         }
 
@@ -64,4 +65,5 @@ namespace WinMLSamplesGallery
             return sampleDocList;
         }
     }
+}
 

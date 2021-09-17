@@ -8,31 +8,6 @@
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
-    <Page.Resources>
-        <DataTemplate x:Name="ImageOverlayTemplate" x:DataType="local:Sample">
-            <Grid Height="150" Width="300" Background="#e6e6e6" BorderThickness="4" Padding="0,5,10,1">
-
-                <StackPanel Orientation="Horizontal" VerticalAlignment="Top" Padding="5,1,5,1">
-                    <TextBlock FontFamily="Segoe MDL2 Assets" Text="{x:Bind Icon}" FontSize="40" Foreground="#919191" Padding="0,5,0,0"/>
-                    <StackPanel Orientation="Vertical" VerticalAlignment="Top" Padding="8,0,0,0">
-                        <TextBlock FontSize="24" Text="{x:Bind Title}" Foreground="#12bef6"
-                                   Typography.Capitals="AllSmallCaps"
-                                   Typography.StylisticSet4="True"
-                                   VerticalAlignment="Top"
-                                   />
-                        <TextBlock FontSize="12" Text="{x:Bind Description}" Foreground="Black"
-                                   VerticalAlignment="Top"
-                                   HorizontalAlignment="Left"
-                                   Height="100"
-                                   Width="200"
-                                   TextWrapping="WrapWholeWords"
-                                   />
-                    </StackPanel>
-                </StackPanel>
-            </Grid>
-        </DataTemplate>
-    </Page.Resources>
-
     <Grid Height="Auto">
         <Grid.RowDefinitions>
             <RowDefinition Height="50" />
@@ -54,19 +29,7 @@
             HorizontalScrollMode="Enabled" HorizontalScrollBarVisibility="Disabled"
             VerticalScrollMode="Enabled" VerticalScrollBarVisibility="Visible">
             <StackPanel Orientation="Vertical" Padding="5,5,5,5">
-                <GridView x:Name="StyledGrid" ItemTemplate="{StaticResource ImageOverlayTemplate}" SelectionChanged="NavigateToSample">
-                    <GridView.ItemContainerStyle>
-                        <Style TargetType="GridViewItem">
-                            <Setter Property="Margin" Value="5, 5, 5, 5"/>
-                        </Style>
-                    </GridView.ItemContainerStyle>
-
-                    <GridView.ItemsPanel>
-                        <ItemsPanelTemplate>
-                            <ItemsWrapGrid x:Name="MaxItemsWrapGrid" Orientation="Horizontal"/>
-                        </ItemsPanelTemplate>
-                    </GridView.ItemsPanel>
-                </GridView>
+                <Frame x:Name="SamplesGrid" />
             </StackPanel>
         </ScrollViewer>
     </Grid>

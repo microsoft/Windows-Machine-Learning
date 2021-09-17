@@ -15,6 +15,7 @@ using Windows.Media;
 using Windows.Storage;
 using Windows.Storage.Pickers;
 using Windows.UI;
+using WinMLSamplesGallery.Common;
 
 namespace WinMLSamplesGallery.Samples
 {
@@ -520,7 +521,7 @@ namespace WinMLSamplesGallery.Samples
 
         private void OpenButton_Clicked(object sender, RoutedEventArgs e)
         {
-            var file = PickFile();
+            var file = File.PickImageFiles();
             if (file != null)
             {
                 BasicGridView.SelectedItem = null;
@@ -563,26 +564,6 @@ namespace WinMLSamplesGallery.Samples
             }
         }
 
-        private StorageFile PickFile()
-        {
-            FileOpenPicker openPicker = new FileOpenPicker();
-            openPicker.ViewMode = PickerViewMode.Thumbnail;
-            openPicker.FileTypeFilter.Add(".jpg");
-            openPicker.FileTypeFilter.Add(".bmp");
-            openPicker.FileTypeFilter.Add(".png");
-            openPicker.FileTypeFilter.Add(".jpeg");
-
-            // When running on win32, FileOpenPicker needs to know the top-level hwnd via IInitializeWithWindow::Initialize.
-            if (Window.Current == null)
-            {
-                var picker_unknown = Marshal.GetComInterfaceForObject(openPicker, typeof(IInitializeWithWindow));
-                var initializeWithWindowWrapper = (IInitializeWithWindow)Marshal.GetTypedObjectForIUnknown(picker_unknown, typeof(IInitializeWithWindow));
-                IntPtr hwnd = GetActiveWindow();
-                initializeWithWindowWrapper.Initialize(hwnd);
-            }
-
-            return openPicker.PickSingleFileAsync().GetAwaiter().GetResult();
-        }
 
         private BitmapDecoder CreateBitmapDecoderFromFile(StorageFile file)
         {

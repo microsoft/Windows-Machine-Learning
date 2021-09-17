@@ -14,7 +14,7 @@
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
         <Grid Height="250" Grid.Row="0">
-            <Image Source="assets/Original-LightBlue.png" Stretch="UniformToFill" Height="250" VerticalAlignment="Top"/>
+            <Image Source="ms-appx:///Assets/Original-LightBlue.png" Stretch="UniformToFill" Height="250" VerticalAlignment="Top"/>
             <Rectangle Fill="#66ffffff" HorizontalAlignment="Stretch" Height="250" VerticalAlignment="Top"/>
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Top" Height="250">
                 <Image Source="assets/winml_icon.ico" Stretch="UniformToFill" Height="200" VerticalAlignment="Center"/>

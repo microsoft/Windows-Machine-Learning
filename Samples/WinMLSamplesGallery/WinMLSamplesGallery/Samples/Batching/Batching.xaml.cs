@@ -1,16 +1,11 @@
 using System;
 using System.Collections.Generic;
-using System.Globalization;
-using System.Linq;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using System.Runtime.InteropServices;
-using Windows.Storage.Pickers;
 using Windows.Storage;
 using Windows.Graphics.Imaging;
 using Windows.Media;
 using Microsoft.AI.MachineLearning;
-using Microsoft.UI.Xaml.Media.Imaging;
 
 namespace WinMLSamplesGallery.Samples
 {
@@ -27,10 +22,13 @@ namespace WinMLSamplesGallery.Samples
         private LearningModelSession BatchingSession_;
         float avgNonBatchedDuration = 0;
         float avgBatchDuration = 0;
+        static bool navigatingAwayFromPage = false;
 
         public Batching()
         {
             this.InitializeComponent();
+            // Ensure static variable is always false on page initialization
+            navigatingAwayFromPage = false;
         }
 
         async private void StartInference(object sender, RoutedEventArgs e)
@@ -133,6 +131,8 @@ namespace WinMLSamplesGallery.Samples
             float totalEvalDurations = 0;
             for (int i = 0; i < 100; i++)
             {
+                if (navigatingAwayFromPage)
+                    break;
                 UpdateEvalProgressUI(i);
                 float evalDuration = await System.Threading.Tasks.Task.Run(() => Evaluate(nonBatchingSession_, inputImages));
                 totalEvalDurations += evalDuration;
@@ -146,6 +146,8 @@ namespace WinMLSamplesGallery.Samples
             float totalDuration = 0;
             for (int j = 0; j < input.Count; j++)
             {
+                if (navigatingAwayFromPage)
+                    break;
                 var binding = new LearningModelBinding(session);
                 var start = HighResolutionClock.UtcNow();
                 binding.Bind(inputName, input[j]);
@@ -162,6 +164,8 @@ namespace WinMLSamplesGallery.Samples
             float totalEvalDurations = 0;
             for (int i = 0; i < 100; i++)
             {
+                if (navigatingAwayFromPage)
+                    break;
                 UpdateEvalProgressUI(i);
                 float evalDuration = await System.Threading.Tasks.Task.Run(() => EvaluateBatched(BatchingSession_, inputImages, batchSize));
                 totalEvalDurations += evalDuration;
@@ -177,6 +181,8 @@ namespace WinMLSamplesGallery.Samples
             float totalDuration = 0;
             for (int i = 0; i < numBatches; i++)
             {
+                if (navigatingAwayFromPage)
+                    break;
                 var binding = new LearningModelBinding(session);
                 List<VideoFrame> batch = input.GetRange(batchSize * i, batchSize);
                 var start = HighResolutionClock.UtcNow();
@@ -224,6 +230,11 @@ namespace WinMLSamplesGallery.Samples
             EvalResults.Visibility = Visibility.Visible;
             StartInferenceBtn.IsEnabled = true;
             EvalResults.ItemsSource = results;
+        }
+
+        public void StopAllEvents()
+        {
+            navigatingAwayFromPage = true;
         }
     }
 }

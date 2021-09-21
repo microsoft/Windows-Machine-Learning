@@ -16,7 +16,7 @@ namespace WinMLSamplesGallery
 
         protected override async void OnNavigatedTo(NavigationEventArgs e)
         {
-            sample = (Sample) e.Parameter;
+            sample = (Sample)e.Parameter;
             switch (sample.Tag)
             {
                 case "ImageClassifier":
@@ -30,6 +30,16 @@ namespace WinMLSamplesGallery
                 DocsHeader.Visibility = Visibility.Visible;
             else
                 DocsHeader.Visibility = Visibility.Collapsed;
+        }
+
+        protected override async void OnNavigatingFrom(NavigatingCancelEventArgs e)
+        {
+            // Batching Sample contains background thread events that may need to be stopped.
+            if (SampleFrame.SourcePageType == typeof(Samples.Batching))
+            {
+                var page = (Samples.Batching)SampleFrame.Content;
+                page.StopAllEvents();
+            }
         }
     }
 }

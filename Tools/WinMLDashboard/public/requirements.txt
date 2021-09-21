@@ -1,14 +1,14 @@
 coremltools_windows==2.0b1
-onnxmltools==1.7.0
+onnxmltools==1.9.1
 onnxconverter-common==1.7.0
 h5py==2.8.0
 tensorflow==1.12.2
-tf2onnx==1.7.2
+tf2onnx==1.9.2
 Keras==2.2.4
 Keras-Applications==1.0.6
 Keras-Preprocessing==1.0.5
 keras2onnx==1.7.0
-protobuf==3.8.0
+protobuf==3.17.3
 PyYAML==4.2b1
 scipy==1.1.0
 scikit-learn==0.20.1

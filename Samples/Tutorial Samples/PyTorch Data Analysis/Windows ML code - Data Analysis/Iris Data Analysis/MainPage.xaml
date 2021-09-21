@@ -17,7 +17,7 @@
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
         <TextBlock x:Name="title" HorizontalAlignment="Left" Text="Data Analysis App - Windows ML" TextWrapping="Wrap" VerticalAlignment="Top" FontSize="32" TextDecorations="Underline" FontWeight="Bold"/>
-        <TextBlock x:Name="subtitle" HorizontalAlignment="Left" Text="Provide the regression input :" TextWrapping="Wrap" VerticalAlignment="Top" FontSize="20" Grid.Row="1" FontWeight="Bold"/>
+        <TextBlock x:Name="subtitle" HorizontalAlignment="Left" Text="Provide the input :" TextWrapping="Wrap" VerticalAlignment="Top" FontSize="20" Grid.Row="1" FontWeight="Bold"/>
         <Grid Grid.Row="2">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>

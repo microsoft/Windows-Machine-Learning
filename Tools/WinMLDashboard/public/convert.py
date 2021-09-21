@@ -7,6 +7,7 @@ def parse_args():
     parser.add_argument('source', help='source  model')
     parser.add_argument('framework', help='source framework model comes from')
     parser.add_argument('ONNXVersion', help='which ONNX Version to convert to')
+    parser.add_argument('inputNames', help='names of input nodes')
     parser.add_argument('outputNames', help='names of output nodes')
     parser.add_argument('destination', help='destination ONNX model (ONNX or prototxt extension)')
     parser.add_argument('--name', default='WimMLDashboardConvertedModel', help='(ONNX output only) model name')
@@ -29,9 +30,20 @@ def get_opset(ONNXVersion):
         return 7
     elif '1.3' == ONNXVersion:
         return 8
+    elif '1.4' == ONNXVersion:
+        return 9
     elif '1.5' == ONNXVersion:
         return 10
+    elif '1.6' == ONNXVersion:
+        return 11
+    elif '1.7' == ONNXVersion:
+        return 12
+    elif '1.8' == ONNXVersion:
+        return 13
+    elif '1.9' == ONNXVersion:
+        return 14
     else:
+        print('WARNING: ONNX Version ' + ONNXVersion + ' does not map to any known opset version, defaulting to opset V7')
         return 7
 
 
@@ -87,7 +99,7 @@ def libSVM_converter(args):
                                  target_opset=get_opset(args.ONNXVersion))
     return onnx_model
 
-def convert_tensorflow_file(filename, opset, output_names):
+def convert_tensorflow_file(filename, opset, input_names, output_names):
     import tensorflow
     from tensorflow.core.framework import graph_pb2
     from tensorflow.python.tools import freeze_graph
@@ -97,12 +109,12 @@ def convert_tensorflow_file(filename, opset, output_names):
     graph_def = graph_pb2.GraphDef()
     with open(filename, 'rb') as file:
         graph_def.ParseFromString(file.read())
-    converted_model = onnxmltools.convert_tensorflow(graph_def, target_opset=opset, input_names=[], output_names=output_names)
+    converted_model = onnxmltools.convert_tensorflow(graph_def, target_opset=opset, input_names=input_names, output_names=output_names)
     onnx.checker.check_model(converted_model)
     return converted_model
 
 def tensorFlow_converter(args):
-    return convert_tensorflow_file(args.source, get_opset(args.ONNXVersion), args.outputNames.split())
+    return convert_tensorflow_file(args.source, get_opset(args.ONNXVersion), args.inputNames.split(), args.outputNames.split())
 
 def onnx_converter(args):
     onnx_model = onnxmltools.load_model(args.source)

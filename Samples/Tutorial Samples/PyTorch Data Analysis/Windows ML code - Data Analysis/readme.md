@@ -2,8 +2,7 @@
 
 This sample represents the finished state of a data analyis sample code, as part of a tutorial presented in the Windows ML developer documentation.
 
-The tutorial shows how to train a multilabel regression model based on the tabular dataset using the PyTorch library, export the model to ONNX format and deploy the model with the Windows Machine Learning application that can run on any Windows device. 
-
+The tutorial shows how to solve a classification task with a neural network using the PyTorch library, export the model to ONNX format and deploy the model with the Windows Machine Learning application that can run on any Windows device.  
 
 Basic knowledge in Python and C# programming languages is required for the tutorial. Previous experience in machine learning is preferable but not required.
 

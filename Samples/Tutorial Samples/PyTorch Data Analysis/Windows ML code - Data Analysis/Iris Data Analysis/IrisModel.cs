@@ -15,7 +15,7 @@ namespace Iris_Data_Analysis
         public async Task Initialize()
         {
             // Load and create the model and session
-            var modelFile = await StorageFile.GetFileFromApplicationUriAsync(new Uri($"ms-appx:///Assets//Regression.onnx"));
+            var modelFile = await StorageFile.GetFileFromApplicationUriAsync(new Uri($"ms-appx:///Assets//Network.onnx"));
             _learning_model = await LearningModel.LoadFromStorageFileAsync(modelFile);
             _session = new LearningModelSession(_learning_model);
         }

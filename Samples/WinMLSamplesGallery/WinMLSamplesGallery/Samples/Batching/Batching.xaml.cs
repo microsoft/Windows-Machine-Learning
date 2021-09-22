@@ -23,6 +23,7 @@ namespace WinMLSamplesGallery.Samples
         float avgNonBatchedDuration = 0;
         float avgBatchDuration = 0;
         static bool navigatingAwayFromPage = false;
+        const int numInputImages = 50;
 
         public Batching()
         {
@@ -62,6 +63,7 @@ namespace WinMLSamplesGallery.Samples
             avgBatchDuration = 0;
         }
 
+        // Test input consists of 50 images (25 bird and 25 cat)
         private List<VideoFrame> GetInputImages()
         {
             var birdFile = StorageFile.GetFileFromApplicationUriAsync(new Uri("ms-appx:///InputData/hummingbird.jpg")).GetAwaiter().GetResult();
@@ -69,7 +71,7 @@ namespace WinMLSamplesGallery.Samples
             var birdImage = CreateSoftwareBitmapFromStorageFile(birdFile);
             var catImage = CreateSoftwareBitmapFromStorageFile(catFile);
             var inputImages = new List<VideoFrame>();
-            for (int i = 0; i < 25; i++)
+            for (int i = 0; i < numInputImages / 2; i++)
             {
                 inputImages.Add(VideoFrame.CreateWithSoftwareBitmap(birdImage));
                 inputImages.Add(VideoFrame.CreateWithSoftwareBitmap(catImage));

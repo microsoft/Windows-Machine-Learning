@@ -1,6 +1,4 @@
 using System;
-using System.Collections.Generic;
-using Windows.Data.Json;
 using Microsoft.UI.Xaml.Controls;
 
 namespace WinMLSamplesGallery

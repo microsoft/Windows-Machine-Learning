@@ -144,11 +144,11 @@ namespace WinMLSamplesGallery.Samples
         {
             string inputName = session.Model.InputFeatures[0].Name;
             float totalDuration = 0;
+            var binding = new LearningModelBinding(session);
             for (int j = 0; j < input.Count; j++)
             {
                 if (navigatingAwayFromPage)
                     break;
-                var binding = new LearningModelBinding(session);
                 var start = HighResolutionClock.UtcNow();
                 binding.Bind(inputName, input[j]);
                 session.Evaluate(binding, "");
@@ -175,15 +175,14 @@ namespace WinMLSamplesGallery.Samples
 
         private static float EvaluateBatched(LearningModelSession session, List<VideoFrame> input, int batchSize)
         {
-            // Evaluate
             int numBatches = input.Count / batchSize;
             string inputName = session.Model.InputFeatures[0].Name;
             float totalDuration = 0;
+            var binding = new LearningModelBinding(session);
             for (int i = 0; i < numBatches; i++)
             {
                 if (navigatingAwayFromPage)
                     break;
-                var binding = new LearningModelBinding(session);
                 List<VideoFrame> batch = input.GetRange(batchSize * i, batchSize);
                 var start = HighResolutionClock.UtcNow();
                 binding.Bind(inputName, batch);

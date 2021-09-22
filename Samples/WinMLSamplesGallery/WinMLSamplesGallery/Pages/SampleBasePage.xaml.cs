@@ -7,7 +7,7 @@ namespace WinMLSamplesGallery
 {
     public sealed partial class SampleBasePage : Page
     {
-        public Sample sample;
+        public SampleMetadata sampleMetadata;
 
         public SampleBasePage()
         {
@@ -16,8 +16,8 @@ namespace WinMLSamplesGallery
 
         protected override async void OnNavigatedTo(NavigationEventArgs e)
         {
-            sample = (Sample)e.Parameter;
-            switch (sample.Tag)
+            sampleMetadata = (SampleMetadata)e.Parameter;
+            switch (sampleMetadata.Tag)
             {
                 case "ImageClassifier":
                     SampleFrame.Navigate(typeof(Samples.ImageClassifier));
@@ -26,7 +26,7 @@ namespace WinMLSamplesGallery
                     SampleFrame.Navigate(typeof(Samples.Batching));
                     break;
             }
-            if (sample.Docs.Count > 0)
+            if (sampleMetadata.Docs.Count > 0)
                 DocsHeader.Visibility = Visibility.Visible;
             else
                 DocsHeader.Visibility = Visibility.Collapsed;

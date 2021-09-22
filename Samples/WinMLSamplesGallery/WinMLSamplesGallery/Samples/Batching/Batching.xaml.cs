@@ -197,16 +197,7 @@ namespace WinMLSamplesGallery.Samples
 
         private int GetBatchSizeFromBatchSizeComboBox()
         {
-            int batchSize;
-            if (BatchSizeComboBox.SelectedIndex == 0)
-                batchSize = 5;
-            else if (BatchSizeComboBox.SelectedIndex == 1)
-                batchSize = 10;
-            else if (BatchSizeComboBox.SelectedIndex == 2)
-                batchSize = 25;
-            else
-                batchSize = 50;
-            return batchSize;
+            return int.Parse(BatchSizeComboBox.SelectedItem.ToString());
         }
 
         private void UpdateEvalProgressUI(int attemptNumber)

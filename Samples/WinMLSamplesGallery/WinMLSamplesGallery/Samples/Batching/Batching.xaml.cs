@@ -24,6 +24,7 @@ namespace WinMLSamplesGallery.Samples
         float avgBatchDuration = 0;
         static bool navigatingAwayFromPage = false;
         const int numInputImages = 50;
+        const int numEvalIterations = 100;
 
         public Batching()
         {
@@ -128,7 +129,7 @@ namespace WinMLSamplesGallery.Samples
         async private System.Threading.Tasks.Task Classify(List<VideoFrame> inputImages)
         {
             float totalEvalDurations = 0;
-            for (int i = 0; i < 100; i++)
+            for (int i = 0; i < numEvalIterations; i++)
             {
                 if (navigatingAwayFromPage)
                     break;
@@ -161,7 +162,7 @@ namespace WinMLSamplesGallery.Samples
         async private System.Threading.Tasks.Task ClassifyBatched(List<VideoFrame> inputImages, int batchSize)
         {
             float totalEvalDurations = 0;
-            for (int i = 0; i < 100; i++)
+            for (int i = 0; i < numEvalIterations; i++)
             {
                 if (navigatingAwayFromPage)
                     break;

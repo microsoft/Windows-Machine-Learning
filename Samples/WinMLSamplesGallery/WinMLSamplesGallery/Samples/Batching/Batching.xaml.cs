@@ -104,10 +104,7 @@ namespace WinMLSamplesGallery.Samples
         private LearningModelSession CreateLearningModelSession(string modelPath, int batchSizeOverride=-1)
         {
             var model = CreateLearningModel(modelPath);
-            var deviceKind =
-                (DeviceComboBox.SelectedIndex == 0) ?
-                    LearningModelDeviceKind.Cpu :
-                    LearningModelDeviceKind.DirectXHighPerformance;
+            var deviceKind = DeviceComboBox.GetDeviceKind();
             var device = new LearningModelDevice(deviceKind);
             var options = new LearningModelSessionOptions()
             {

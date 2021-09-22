@@ -1,5 +1,6 @@
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.AI.MachineLearning;
 
 namespace WinMLSamplesGallery.Controls
 {
@@ -14,6 +15,14 @@ namespace WinMLSamplesGallery.Controls
         private void changeSelectedIndex(object sender, RoutedEventArgs e)
         {
             SelectedIndex = DeviceBox.SelectedIndex;
+        }
+
+        public LearningModelDeviceKind GetDeviceKind()
+        {
+            if (SelectedIndex == 0)
+                return LearningModelDeviceKind.Cpu;
+            else
+                return LearningModelDeviceKind.DirectXHighPerformance;
         }
     }
 }

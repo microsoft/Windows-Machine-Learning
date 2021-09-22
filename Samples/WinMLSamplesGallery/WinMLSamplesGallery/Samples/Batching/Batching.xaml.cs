@@ -137,7 +137,7 @@ namespace WinMLSamplesGallery.Samples
                 float evalDuration = await System.Threading.Tasks.Task.Run(() => Evaluate(nonBatchingSession_, inputImages));
                 totalEvalDurations += evalDuration;
             }
-            avgNonBatchedDuration = totalEvalDurations / 100;
+            avgNonBatchedDuration = totalEvalDurations / numEvalIterations;
         }
 
         private static float Evaluate(LearningModelSession session, List<VideoFrame> input)
@@ -170,7 +170,7 @@ namespace WinMLSamplesGallery.Samples
                 float evalDuration = await System.Threading.Tasks.Task.Run(() => EvaluateBatched(BatchingSession_, inputImages, batchSize));
                 totalEvalDurations += evalDuration;
             }
-            avgBatchDuration = totalEvalDurations / 100;
+            avgBatchDuration = totalEvalDurations / numEvalIterations;
         }
 
         private static float EvaluateBatched(LearningModelSession session, List<VideoFrame> input, int batchSize)
@@ -202,7 +202,7 @@ namespace WinMLSamplesGallery.Samples
 
         private void UpdateEvalProgressUI(int attemptNumber)
         {
-            EvalProgressText.Text = "Attempt " + attemptNumber.ToString() + "/100";
+            EvalProgressText.Text = "Attempt " + attemptNumber.ToString() + "/" + numEvalIterations.ToString();
             EvalProgressBar.Value = attemptNumber + 1;
         }
 

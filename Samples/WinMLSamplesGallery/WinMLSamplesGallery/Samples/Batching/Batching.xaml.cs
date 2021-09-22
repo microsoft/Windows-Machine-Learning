@@ -22,8 +22,8 @@ namespace WinMLSamplesGallery.Samples
         private LearningModelSession BatchingSession_;
         float avgNonBatchedDuration = 0;
         float avgBatchDuration = 0;
-        static bool navigatingAwayFromPage = false;
-        static object navigationLock = new Object();
+        // Marked volatile since it's updated across threads
+        static volatile bool navigatingAwayFromPage = false;
         const int numInputImages = 50;
         const int numEvalIterations = 100;
 
@@ -31,10 +31,7 @@ namespace WinMLSamplesGallery.Samples
         {
             this.InitializeComponent();
             // Ensure static variable is always false on page initialization
-            lock (navigationLock)
-            {
-                navigatingAwayFromPage = false;
-            }
+            navigatingAwayFromPage = false;
         }
 
         async private void StartInference(object sender, RoutedEventArgs e)
@@ -135,11 +132,8 @@ namespace WinMLSamplesGallery.Samples
             float totalEvalDurations = 0;
             for (int i = 0; i < numEvalIterations; i++)
             {
-                lock (navigationLock)
-                {
-                    if (navigatingAwayFromPage)
-                        break;
-                }
+                if (navigatingAwayFromPage)
+                    break;
                 UpdateEvalProgressUI(i);
                 float evalDuration = await System.Threading.Tasks.Task.Run(() => Evaluate(nonBatchingSession_, inputImages));
                 totalEvalDurations += evalDuration;
@@ -154,11 +148,8 @@ namespace WinMLSamplesGallery.Samples
             var binding = new LearningModelBinding(session);
             for (int j = 0; j < input.Count; j++)
             {
-                lock (navigationLock)
-                {
-                    if (navigatingAwayFromPage)
-                        break;
-                }
+                if (navigatingAwayFromPage)
+                    break;
                 var start = HighResolutionClock.UtcNow();
                 binding.Bind(inputName, input[j]);
                 session.Evaluate(binding, "");
@@ -174,11 +165,8 @@ namespace WinMLSamplesGallery.Samples
             float totalEvalDurations = 0;
             for (int i = 0; i < numEvalIterations; i++)
             {
-                lock (navigationLock)
-                {
-                    if (navigatingAwayFromPage)
-                        break;
-                }
+                if (navigatingAwayFromPage)
+                    break;
                 UpdateEvalProgressUI(i);
                 float evalDuration = await System.Threading.Tasks.Task.Run(() => EvaluateBatched(BatchingSession_, inputImages, batchSize));
                 totalEvalDurations += evalDuration;
@@ -194,11 +182,8 @@ namespace WinMLSamplesGallery.Samples
             var binding = new LearningModelBinding(session);
             for (int i = 0; i < numBatches; i++)
             {
-                lock(navigationLock)
-                {
-                    if (navigatingAwayFromPage)
-                        break;
-                }
+                if (navigatingAwayFromPage)
+                    break;
                 List<VideoFrame> batch = input.GetRange(batchSize * i, batchSize);
                 var start = HighResolutionClock.UtcNow();
                 binding.Bind(inputName, batch);
@@ -240,10 +225,7 @@ namespace WinMLSamplesGallery.Samples
 
         public void StopAllEvents()
         {
-            lock(navigationLock)
-            {
-                navigatingAwayFromPage = true;
-            }
+            navigatingAwayFromPage = true;
         }
     }
 }

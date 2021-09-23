@@ -41,9 +41,6 @@
     <Compile Remove="Samples\ObjectDetector\ImageEffects.xaml.cs" />
   </ItemGroup>
   <ItemGroup>
-	<Compile Remove="Samples\Batching - Copy.xaml.cs" />
-  </ItemGroup>
-  <ItemGroup>
     <Content Remove="assets\hummingbird - Copy.jpg" />
   </ItemGroup>
   <ItemGroup>

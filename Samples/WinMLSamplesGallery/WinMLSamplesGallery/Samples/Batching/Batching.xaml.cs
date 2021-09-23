@@ -20,7 +20,7 @@ namespace WinMLSamplesGallery.Samples
     public sealed partial class Batching : Page
     {
         private LearningModelSession nonBatchingSession_;
-        private LearningModelSession BatchingSession_;
+        private LearningModelSession batchingSession_;
         float avgNonBatchedDuration = 0;
         float avgBatchDuration = 0;
         // Marked volatile since it's updated across threads
@@ -102,7 +102,7 @@ namespace WinMLSamplesGallery.Samples
         {
             var modelPath = "ms-appx:///Models/squeezenet1.1-7.onnx";
             nonBatchingSession_ = await CreateLearningModelSession(modelPath);
-            BatchingSession_ = await CreateLearningModelSession(modelPath, batchSizeOverride);
+            batchingSession_ = await CreateLearningModelSession(modelPath, batchSizeOverride);
         }
 
         private async Task<LearningModelSession> CreateLearningModelSession(string modelPath, int batchSizeOverride=-1)
@@ -171,7 +171,7 @@ namespace WinMLSamplesGallery.Samples
                 if (navigatingAwayFromPage)
                     break;
                 UpdateEvalProgressUI(i);
-                float evalDuration = await Task.Run(() => EvaluateBatched(BatchingSession_, inputImages, batchSize));
+                float evalDuration = await Task.Run(() => EvaluateBatched(batchingSession_, inputImages, batchSize));
                 totalEvalDurations += evalDuration;
             }
             avgBatchDuration = totalEvalDurations / numEvalIterations;

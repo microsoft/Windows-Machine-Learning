@@ -7,7 +7,7 @@ Demonstrates the different scenarios and features for [WinML](https://docs.micro
 ## The WinML Samples Gallery:
 
 - **Demonstrates different scenarios for which WinML excels**: Various use cases that deal with different types of inputs (image, audio, etc.) are demonstrated.
-- **Shows how to implement different scenarios and features**: Each sample comes with a C# file that contains the corresponding code. Code snippets also presented in the app when applicable.
+- **Shows how to implement different scenarios and features**: Each sample comes with the corresponding code. Code snippets also presented in the app when applicable.
 
 ## 🐞 Found a bug? Want a new sample?
 

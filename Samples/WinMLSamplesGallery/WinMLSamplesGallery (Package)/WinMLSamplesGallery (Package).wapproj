@@ -65,7 +65,7 @@
   </ItemGroup>
   <Import Project="$(WapProjPath)\Microsoft.DesktopBridge.targets" />
   <ItemGroup>
-    <PackageReference Include="Microsoft.AI.MachineLearning" Version="1.9.0-dev-20210916-0238-83dc22585" />
+    <PackageReference Include="Microsoft.AI.MachineLearning" Version="1.9.0" />
     <PackageReference Include="Microsoft.ProjectReunion" Version="[0.8.0]">
       <IncludeAssets>build</IncludeAssets>
     </PackageReference>

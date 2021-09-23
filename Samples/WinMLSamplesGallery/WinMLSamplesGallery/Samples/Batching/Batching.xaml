@@ -97,7 +97,7 @@
         </TextBlock>
         <StackPanel x:Name="LoadingContainer" Visibility="Collapsed" Orientation="Horizontal" Margin="0,30,0,0">
             <TextBlock x:Name="EvalText" FontSize="16" FontWeight="Bold" Text="Evaluating non-batched Inputs: "/>
-            <TextBlock x:Name="EvalProgressText" FontSize="16" Margin="20,0,0,0" TextAlignment="Center" Text="Iteration 1/100" />
+            <TextBlock x:Name="EvalProgressText" FontSize="16" Margin="20,0,0,0" TextAlignment="Center" />
             <ProgressBar x:Name="EvalProgressBar" Width="300" Value="0" Margin="20,0,0,0" />
         </StackPanel>
         <GridView x:Name="EvalResults" ItemTemplate="{StaticResource EvalResultsTemplate}" />

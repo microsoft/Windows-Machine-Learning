@@ -6,6 +6,7 @@ using Windows.Storage;
 using Windows.Graphics.Imaging;
 using Windows.Media;
 using Microsoft.AI.MachineLearning;
+using System.Threading.Tasks;
 
 namespace WinMLSamplesGallery.Samples
 {
@@ -39,9 +40,9 @@ namespace WinMLSamplesGallery.Samples
             ShowEvalUI();
             ResetEvalMetrics();
 
-            var inputImages = GetInputImages();
+            var inputImages = await GetInputImages();
             int batchSize = GetBatchSizeFromBatchSizeComboBox();
-            CreateSessions(batchSize);
+            await CreateSessions(batchSize);
 
             UpdateEvalText(false);
             await Classify(inputImages);
@@ -66,12 +67,12 @@ namespace WinMLSamplesGallery.Samples
         }
 
         // Test input consists of 50 images (25 bird and 25 cat)
-        private List<VideoFrame> GetInputImages()
+        private async Task<List<VideoFrame>> GetInputImages()
         {
-            var birdFile = StorageFile.GetFileFromApplicationUriAsync(new Uri("ms-appx:///InputData/hummingbird.jpg")).GetAwaiter().GetResult();
-            var catFile = StorageFile.GetFileFromApplicationUriAsync(new Uri("ms-appx:///InputData/kitten.png")).GetAwaiter().GetResult();
-            var birdImage = CreateSoftwareBitmapFromStorageFile(birdFile);
-            var catImage = CreateSoftwareBitmapFromStorageFile(catFile);
+            var birdFile = await StorageFile.GetFileFromApplicationUriAsync(new Uri("ms-appx:///InputData/hummingbird.jpg"));
+            var catFile = await StorageFile .GetFileFromApplicationUriAsync(new Uri("ms-appx:///InputData/kitten.png"));
+            var birdImage = await CreateSoftwareBitmapFromStorageFile(birdFile);
+            var catImage = await CreateSoftwareBitmapFromStorageFile(catFile);
             var inputImages = new List<VideoFrame>();
             for (int i = 0; i < numInputImages / 2; i++)
             {
@@ -81,11 +82,12 @@ namespace WinMLSamplesGallery.Samples
             return inputImages;
         }
 
-        private SoftwareBitmap CreateSoftwareBitmapFromStorageFile(StorageFile file)
+        private async Task<SoftwareBitmap> CreateSoftwareBitmapFromStorageFile(StorageFile file)
         {
-            var stream = file.OpenAsync(FileAccessMode.Read).GetAwaiter().GetResult();
-            var decoder = BitmapDecoder.CreateAsync(stream).GetAwaiter().GetResult();
-            return decoder.GetSoftwareBitmapAsync().GetAwaiter().GetResult();
+            var stream = await file.OpenAsync(FileAccessMode.Read);
+            var decoder = await BitmapDecoder.CreateAsync(stream);
+            var bitmap = await decoder.GetSoftwareBitmapAsync();
+            return bitmap;
         }
 
         private void UpdateEvalText(bool isBatchingEval)
@@ -96,16 +98,16 @@ namespace WinMLSamplesGallery.Samples
                 EvalText.Text = "Inferencing Non-Batched Inputs:";
         }
 
-        private void CreateSessions(int batchSizeOverride)
+        private async Task CreateSessions(int batchSizeOverride)
         {
             var modelPath = "ms-appx:///Models/squeezenet1.1-7.onnx";
-            nonBatchingSession_ = CreateLearningModelSession(modelPath);
-            BatchingSession_ = CreateLearningModelSession(modelPath, batchSizeOverride);
+            nonBatchingSession_ = await CreateLearningModelSession(modelPath);
+            BatchingSession_ = await CreateLearningModelSession(modelPath, batchSizeOverride);
         }
 
-        private LearningModelSession CreateLearningModelSession(string modelPath, int batchSizeOverride=-1)
+        private async Task<LearningModelSession> CreateLearningModelSession(string modelPath, int batchSizeOverride=-1)
         {
-            var model = CreateLearningModel(modelPath);
+            var model = await CreateLearningModel(modelPath);
             var deviceKind = DeviceComboBox.GetDeviceKind();
             var device = new LearningModelDevice(deviceKind);
             var options = new LearningModelSessionOptions()
@@ -120,14 +122,15 @@ namespace WinMLSamplesGallery.Samples
             return session;
         }
 
-        private static LearningModel CreateLearningModel(string modelPath)
+        private static async Task<LearningModel> CreateLearningModel(string modelPath)
         {
             var uri = new Uri(modelPath);
-            var file = StorageFile.GetFileFromApplicationUriAsync(uri).GetAwaiter().GetResult();
-            return LearningModel.LoadFromStorageFileAsync(file).GetAwaiter().GetResult();
+            var file = await StorageFile.GetFileFromApplicationUriAsync(uri);
+            var model = await LearningModel.LoadFromStorageFileAsync(file);
+            return model;
         }
 
-        async private System.Threading.Tasks.Task Classify(List<VideoFrame> inputImages)
+        async private Task Classify(List<VideoFrame> inputImages)
         {
             float totalEvalDurations = 0;
             for (int i = 0; i < numEvalIterations; i++)
@@ -135,7 +138,7 @@ namespace WinMLSamplesGallery.Samples
                 if (navigatingAwayFromPage)
                     break;
                 UpdateEvalProgressUI(i);
-                float evalDuration = await System.Threading.Tasks.Task.Run(() => Evaluate(nonBatchingSession_, inputImages));
+                float evalDuration = await Task.Run(() => Evaluate(nonBatchingSession_, inputImages));
                 totalEvalDurations += evalDuration;
             }
             avgNonBatchedDuration = totalEvalDurations / numEvalIterations;
@@ -160,7 +163,7 @@ namespace WinMLSamplesGallery.Samples
             return totalDuration;
         }
 
-        async private System.Threading.Tasks.Task ClassifyBatched(List<VideoFrame> inputImages, int batchSize)
+        async private Task ClassifyBatched(List<VideoFrame> inputImages, int batchSize)
         {
             float totalEvalDurations = 0;
             for (int i = 0; i < numEvalIterations; i++)
@@ -168,7 +171,7 @@ namespace WinMLSamplesGallery.Samples
                 if (navigatingAwayFromPage)
                     break;
                 UpdateEvalProgressUI(i);
-                float evalDuration = await System.Threading.Tasks.Task.Run(() => EvaluateBatched(BatchingSession_, inputImages, batchSize));
+                float evalDuration = await Task.Run(() => EvaluateBatched(BatchingSession_, inputImages, batchSize));
                 totalEvalDurations += evalDuration;
             }
             avgBatchDuration = totalEvalDurations / numEvalIterations;

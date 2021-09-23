@@ -19,14 +19,18 @@ namespace WinMLSamplesGallery.Samples
 
     public sealed partial class Batching : Page
     {
-        private LearningModelSession nonBatchingSession_;
-        private LearningModelSession batchingSession_;
-        float avgNonBatchedDuration = 0;
-        float avgBatchDuration = 0;
-        // Marked volatile since it's updated across threads
-        static volatile bool navigatingAwayFromPage = false;
         const int numInputImages = 50;
         const int numEvalIterations = 100;
+
+        private LearningModelSession nonBatchingSession_;
+        private LearningModelSession batchingSession_;
+
+        float avgNonBatchedDuration_ = 0;
+        float avgBatchDuration_ = 0;
+
+        // Marked volatile since it's updated across threads
+        static volatile bool navigatingAwayFromPage = false;
+
 
         public Batching()
         {
@@ -62,8 +66,8 @@ namespace WinMLSamplesGallery.Samples
 
         private void ResetEvalMetrics()
         {
-            avgNonBatchedDuration = 0;
-            avgBatchDuration = 0;
+            avgNonBatchedDuration_ = 0;
+            avgBatchDuration_ = 0;
         }
 
         // Test input consists of 50 images (25 bird and 25 cat)
@@ -141,7 +145,7 @@ namespace WinMLSamplesGallery.Samples
                 float evalDuration = await Task.Run(() => Evaluate(nonBatchingSession_, inputImages));
                 totalEvalDurations += evalDuration;
             }
-            avgNonBatchedDuration = totalEvalDurations / numEvalIterations;
+            avgNonBatchedDuration_ = totalEvalDurations / numEvalIterations;
         }
 
         private static float Evaluate(LearningModelSession session, List<VideoFrame> input)
@@ -174,7 +178,7 @@ namespace WinMLSamplesGallery.Samples
                 float evalDuration = await Task.Run(() => EvaluateBatched(batchingSession_, inputImages, batchSize));
                 totalEvalDurations += evalDuration;
             }
-            avgBatchDuration = totalEvalDurations / numEvalIterations;
+            avgBatchDuration_ = totalEvalDurations / numEvalIterations;
         }
 
         private static float EvaluateBatched(LearningModelSession session, List<VideoFrame> input, int batchSize)
@@ -211,11 +215,11 @@ namespace WinMLSamplesGallery.Samples
 
         private void GenerateEvalResultAndUI()
         {
-            float ratio = (1 - (avgBatchDuration / avgNonBatchedDuration)) * 100;
+            float ratio = (1 - (avgBatchDuration_ / avgNonBatchedDuration_)) * 100;
             var evalResult = new EvalResult
             {
-                nonBatchedAvgTime = avgNonBatchedDuration.ToString("0.00"),
-                batchedAvgTime = avgBatchDuration.ToString("0.00"),
+                nonBatchedAvgTime = avgNonBatchedDuration_.ToString("0.00"),
+                batchedAvgTime = avgBatchDuration_.ToString("0.00"),
                 timeRatio = ratio.ToString("0.0")
             };
             List<EvalResult> results = new List<EvalResult>();

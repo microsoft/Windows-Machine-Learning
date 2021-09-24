@@ -22,6 +22,15 @@
           "link": "https://docs.microsoft.com/en-us/uwp/api/windows.ai.machinelearning.learningmodelsessionoptions.batchsizeoverride?view=winrt-20348"
         }
       ]
+    },
+    {
+      "Title": "Image Effects",
+      "Description": "Pick an image and apply a variety of effects powered by Windows AI MachineLearning like Blur, Sharpen, Contrast, and many more.",
+      "Icon": "\uE155",
+      "Tag": "ImageEffects",
+      "XAMLGithubLink": "https://github.com/microsoft/Windows-Machine-Learning/blob/user/numform/winml-samples-gallery/Samples/WinMLSamplesGallery/WinMLSamplesGallery/Samples/ImageEffects/ImageEffects.xaml",
+      "CSharpGithubLink": "https://github.com/microsoft/Windows-Machine-Learning/blob/user/numform/winml-samples-gallery/Samples/WinMLSamplesGallery/WinMLSamplesGallery/Samples/ImageEffects/ImageEffects.xaml.cs",
+      "Docs": []
     }
   ]
 }

@@ -25,6 +25,9 @@ namespace WinMLSamplesGallery
                 case "Batching":
                     SampleFrame.Navigate(typeof(Samples.Batching));
                     break;
+                case "ImageEffects":
+                    SampleFrame.Navigate(typeof(Samples.ImageEffects));
+                    break;
             }
             if (sampleMetadata.Docs.Count > 0)
                 DocsHeader.Visibility = Visibility.Visible;

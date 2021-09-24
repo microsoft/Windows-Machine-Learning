@@ -1,0 +1,24 @@
+﻿<Page
+    x:Class="WinMLSamplesGallery.Samples.StreamEffect"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:WinMLSamplesGallery"
+    xmlns:local_controls="using:WinMLSamplesGallery.Controls"
+    xmlns:local_samples="using:WinMLSamplesGallery.Samples"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    FontFamily="Arial">
+
+    <StackPanel>
+        <TextBlock FontWeight="Bold" FontSize="20" Margin="0,40,0,0">Set the BatchSizeOverride property on your LearningModelSessionOptions object</TextBlock>
+
+        <Image x:Name="InputImage"  VerticalAlignment="Top" HorizontalAlignment="Left" Source="ms-appx:///InputData/stream.png">
+        </Image>
+        <Button x:Name="StartInferenceBtn" FontSize="18" Margin="60,-2,0,0" Background="#5c5fed" Foreground="White" Click="StartInference"></Button>
+
+    </StackPanel>
+    
+
+
+</Page>

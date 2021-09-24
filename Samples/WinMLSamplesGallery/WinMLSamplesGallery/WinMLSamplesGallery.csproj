@@ -50,6 +50,7 @@
     <None Remove="Controls\PerformanceMonitor.xaml" />
     <None Remove="Controls\SampleHeader.xaml" />
     <None Remove="HomePage.xaml" />
+    <None Remove="LargeModels\fcn-resnet50-11.onnx" />
 	<None Remove="SamplesGrid.xaml" />
 	<None Remove="SampleBasePage.xaml" />
     <None Remove="Image.xaml" />
@@ -74,9 +75,12 @@
     <None Remove="Samples\ImageClassifier.xaml" />
     <None Remove="Samples\ImageEffects.xaml" />
     <None Remove="Samples\ObjectDetector\ObjectDetector.xaml" />
+    <None Remove="Samples\StreamEffect\StreamEffect.xaml" />
     <None Remove="Video.xaml" />
   </ItemGroup>
   <ItemGroup>
+	<Content Include="InputData\stream.jpg" />
+	<Content Include="LargeModels\fcn-resnet50-11.onnx" />
 	<Content Include="SampleMetadata\SampleMetadata.json">
 		<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 	</Content>
@@ -180,6 +184,9 @@
       <Link>LargeModels\zfnet512-9.onnx</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <Page Update="Samples\StreamEffect\StreamEffect.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
 
   <ItemGroup>

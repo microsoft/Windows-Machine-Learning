@@ -1,0 +1,36 @@
+﻿<Page
+    x:Class="WinMLSamplesGallery.AllSamplesPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:WinMLSamplesGallery"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+    <Grid Height="Auto">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="50" />
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        <Grid Height="50" Grid.Row="0">
+            <Image Source="assets/Original-LightBlue.png" Stretch="UniformToFill" Height="50" VerticalAlignment="Top"/>
+            <TextBlock Foreground="#12bef6"
+                     FontSize="25"
+                     FontFamily="Segoe UI Light"
+                     HorizontalAlignment="Left"
+                     VerticalAlignment="Center"
+                     Padding="10,0,0,0"
+                     Typography.Capitals="SmallCaps"
+                     Typography.StylisticSet4="True">All Samples</TextBlock>
+        </Grid>
+        <ScrollViewer Grid.Row="1" ZoomMode="Disabled"
+            IsVerticalScrollChainingEnabled="True"
+            HorizontalScrollMode="Enabled" HorizontalScrollBarVisibility="Disabled"
+            VerticalScrollMode="Enabled" VerticalScrollBarVisibility="Visible">
+            <StackPanel Orientation="Vertical" Padding="5,5,5,5">
+                <Frame x:Name="SamplesGrid" />
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
+</Page>

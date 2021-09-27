@@ -1,0 +1,105 @@
+<Page
+    x:Class="WinMLSamplesGallery.Samples.Batching"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:WinMLSamplesGallery"
+    xmlns:local_controls="using:WinMLSamplesGallery.Controls"
+    xmlns:local_samples="using:WinMLSamplesGallery.Samples"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    FontFamily="Arial">
+
+    <Page.Resources>
+        <DataTemplate x:Name="EvalResultsTemplate" x:DataType="local_samples:EvalResult">
+            <StackPanel Margin="0,30,0,0">
+                <TextBlock FontWeight="Bold" FontSize="18" TextDecorations="Underline">Results averaged over 100 attempts</TextBlock>
+                <TextBlock Margin="0,15,0,0"><Bold>Note:</Bold> Avg. Total Eval Time = Average amount of time it took to infer 50 images</TextBlock>
+                <TextBlock FontSize="18" Margin="0,15,0,0">
+                    Non-Batched Avg. Total Eval Time:
+                    <Span FontWeight="Bold" Foreground="Green">
+                        <Run Text="{Binding nonBatchedAvgTime}" />
+                    </Span>
+                </TextBlock>
+                <TextBlock FontSize="18" Margin="0,15,0,0">
+                    Batched Avg. Total Eval Time:
+                    <Span FontWeight="Bold" Foreground="Green">
+                        <Run Text="{Binding batchedAvgTime}" />
+                    </Span>
+                </TextBlock>
+                <TextBlock FontSize="18" Margin="0,15,0,0">
+                    Batching was
+                    <Span FontWeight="Bold" Foreground="#36b8ff">
+                        <Run Text="{Binding timeRatio}"/>%
+                    </Span>
+                    faster on average</TextBlock>
+            </StackPanel>
+        </DataTemplate>
+    </Page.Resources>
+
+    <StackPanel>
+        <TextBlock FontWeight="Bold" FontSize="20" Margin="0,40,0,0">Set the BatchSizeOverride property on your LearningModelSessionOptions object</TextBlock>
+        <StackPanel Margin="0,15,0,0" HorizontalAlignment="Left" Width="1000" Background="#F6F6F6" BorderBrush="#dbdbdb" BorderThickness="1" CornerRadius="5" Padding="15,20,0,22">
+            <TextBlock FontSize="16">
+            <Span Foreground="#3562FF">var</Span> <Span Foreground="#1684B2">options</Span> = <Span Foreground="#3562FF">new</Span> <Span Foreground="#1F9D00">LearningModelSessionOptions</Span>();
+            </TextBlock>
+            <TextBlock FontSize="16" Margin="0,10,0,0">
+            <Span Foreground="#1684B2">options</Span>.BatchSizeOverride = <Span Foreground="#086300">50</Span>;
+            </TextBlock>
+            <TextBlock FontSize="16" Margin="0,10,0,0">
+            <Span Foreground="#3562FF">var</Span> <Span Foreground="#1684B2">session</Span> = <Span Foreground="#3562FF">new</Span>
+            <Span Foreground="#1F9D00">LearningModelSession</Span>(<Span Foreground="#1684B2">model</Span>,
+            <Span Foreground="#1684B2">device</Span>, <Span Foreground="#1684B2">options</Span>);
+            </TextBlock>
+        </StackPanel>
+        <TextBlock Margin="0,10,0,0" Width="1000" HorizontalAlignment="Left" TextTrimming="None" Height="20">
+        <Bold>Note:</Bold> In order for batching to work, your model must have a value of -1 or a variable name in the batch dimension.
+        Additionally, the DATA_BATCH Denotation
+        </TextBlock>
+        <TextBlock>
+        must be added on the batch dimension. To edit your model you can use tools like
+        <Hyperlink TextDecorations="None" NavigateUri="https://github.com/Microsoft/Windows-Machine-Learning/tree/master/Tools/WinMLDashboard">
+            WinML Dashboard.
+        </Hyperlink>
+        </TextBlock>
+        <TextBlock FontWeight="Bold" FontSize="20" Margin="0,60,0,0">Compare inference runtimes with and without batching on the CPU and GPU (if available)</TextBlock>
+        <TextBlock FontSize="16" Margin="0,15,0,0">50 images will be passed through SqueezeNet for classification.</TextBlock>
+        <StackPanel Orientation="Horizontal" Margin="0,20,0,0">
+            <TextBlock FontSize="16" Margin="0,5,15,0">Device</TextBlock>
+            <local_controls:DeviceComboBox x:Name="DeviceComboBox" />
+            <TextBlock FontSize="16" Margin="20,5,15,0">Batch Size</TextBlock>
+            <ComboBox x:Name="BatchSizeComboBox" SelectedIndex="3">
+                <x:String>5</x:String>
+                <x:String>10</x:String>
+                <x:String>25</x:String>
+                <x:String>50</x:String>
+            </ComboBox>
+            <Button x:Name="StartInferenceBtn" FontSize="18" Margin="60,-2,0,0" Background="#5c5fed" Foreground="White" Click="StartInference">
+                Start Inference
+                <Button.Resources>
+                    <ResourceDictionary>
+                        <ResourceDictionary.ThemeDictionaries>
+                            <ResourceDictionary x:Key="Dark">
+                                <SolidColorBrush x:Key="ButtonForegroundPointerOver" Color="White"/>
+                                <SolidColorBrush x:Key="ButtonBackgroundPointerOver" Color="#4e50cc"/>
+                            </ResourceDictionary>
+                            <ResourceDictionary x:Key="Light">
+                                <SolidColorBrush x:Key="ButtonForegroundPointerOver" Color="White"/>
+                                <SolidColorBrush x:Key="ButtonBackgroundPointerOver" Color="#4e50cc"/>
+                            </ResourceDictionary>
+                        </ResourceDictionary.ThemeDictionaries>
+                    </ResourceDictionary>
+                </Button.Resources>
+            </Button>
+        </StackPanel>
+        <TextBlock Margin="0,10,0,0" Width="1000" HorizontalAlignment="Left" TextTrimming="None" Height="20">
+        <Bold>Note:</Bold> Performance differences are usually much more apparent when using the GPU.
+        </TextBlock>
+        <StackPanel x:Name="LoadingContainer" Visibility="Collapsed" Orientation="Horizontal" Margin="0,30,0,0">
+            <TextBlock x:Name="EvalText" FontSize="16" FontWeight="Bold" Text="Evaluating non-batched Inputs: "/>
+            <TextBlock x:Name="EvalProgressText" FontSize="16" Margin="20,0,0,0" TextAlignment="Center" />
+            <ProgressBar x:Name="EvalProgressBar" Width="300" Value="0" Margin="20,0,0,0" />
+        </StackPanel>
+        <GridView x:Name="EvalResults" ItemTemplate="{StaticResource EvalResultsTemplate}" />
+    </StackPanel>
+</Page>

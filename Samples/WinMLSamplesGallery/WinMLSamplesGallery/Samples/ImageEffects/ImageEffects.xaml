@@ -111,10 +111,7 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
-        <local_controls:SampleHeader
-            Grid.Row="0"
-            Title="Image Effects"
-            Description="Pick an image and apply a variety of effects powered by Windows AI MachineLearning like Blur, Sharpen, Contrast, and many more." />
+        <TextBlock FontWeight="Bold" FontSize="20" Margin="0,40,0,0">Apply effects to your image</TextBlock>
         <ScrollViewer 
             Grid.Row="1"
             ZoomMode="Disabled"

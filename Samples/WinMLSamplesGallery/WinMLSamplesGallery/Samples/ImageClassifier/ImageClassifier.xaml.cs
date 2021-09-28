@@ -50,6 +50,9 @@ namespace WinMLSamplesGallery.Samples
     {
         const long BatchSize = 1;
         const long TopK = 10;
+        const long Height = 224;
+        const long Width = 224;
+        const long Channels = 4;
 
         private LearningModelSession _inferenceSession;
         private LearningModelSession _postProcessingSession;
@@ -166,19 +169,19 @@ namespace WinMLSamplesGallery.Samples
             {
                 _preProcessorDictionary = new Dictionary<Classifier, Func<LearningModel>>{
                     { Classifier.SqueezeNet,        null }, // No preprocessing required
-                    { Classifier.MobileNet,         () => TensorizationModels.Normalize0_1ThenZScore(224, 224, 4,
+                    { Classifier.MobileNet,         () => TensorizationModels.Normalize0_1ThenZScore(Height, Width, Channels,
                                                                                                 new float[] { 0.485f, 0.456f, 0.406f },
                                                                                                 new float[] { 0.229f, 0.224f, 0.225f}) },
                     { Classifier.GoogleNet,         null },
-                    { Classifier.DenseNet121,       () => TensorizationModels.Normalize0_1ThenZScore(224, 224, 4,
+                    { Classifier.DenseNet121,       () => TensorizationModels.Normalize0_1ThenZScore(Height, Width, Channels,
                                                                                                 new float[] { 0.485f, 0.456f, 0.406f },
                                                                                                 new float[] { 0.229f, 0.224f, 0.225f}) },
                     { Classifier.Inception_V1,      null }, // No preprocessing required
                     { Classifier.Inception_V2,      null }, // ????
-                    { Classifier.ShuffleNet_V1,     () => TensorizationModels.Normalize0_1ThenZScore(224, 224, 4,
+                    { Classifier.ShuffleNet_V1,     () => TensorizationModels.Normalize0_1ThenZScore(Height, Width, Channels,
                                                                                                 new float[] { 0.485f, 0.456f, 0.406f },
                                                                                                 new float[] { 0.229f, 0.224f, 0.225f}) },
-                    { Classifier.ShuffleNet_V2,     () => TensorizationModels.Normalize0_1ThenZScore(224, 224, 4,
+                    { Classifier.ShuffleNet_V2,     () => TensorizationModels.Normalize0_1ThenZScore(Height, Width, Channels,
                                                                                                 new float[] { 0.485f, 0.456f, 0.406f },
                                                                                                 new float[] { 0.229f, 0.224f, 0.225f}) },
                     { Classifier.EfficientNetLite4, () => TensorizationModels.NormalizeMinusOneToOneThenTransposeNHWC() },
@@ -204,8 +207,8 @@ namespace WinMLSamplesGallery.Samples
             _tensorizationSession =
                 CreateLearningModelSession(
                     TensorizationModels.BasicTensorization(
-                        224, 224,
-                        1, 4, CurrentImageDecoder.PixelHeight, CurrentImageDecoder.PixelWidth,
+                        Height, Width,
+                        BatchSize, Channels, CurrentImageDecoder.PixelHeight, CurrentImageDecoder.PixelWidth,
                         "nearest"),
                         LearningModelDeviceKind.Cpu);
 

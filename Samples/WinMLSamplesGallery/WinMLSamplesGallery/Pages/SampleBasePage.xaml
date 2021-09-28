@@ -24,8 +24,8 @@
                 <ColumnDefinition Width="0.3*"></ColumnDefinition>
             </Grid.ColumnDefinitions>
             <StackPanel Grid.Row="0" Grid.Column="0" Padding="40,40">
-                <TextBlock FontWeight="Bold" FontSize="25" Text="{x:Bind sampleMetadata.Title}" />
-                <TextBlock FontSize="16" Margin="0,15,0,0" Text="{x:Bind sampleMetadata.Description}" />
+                <TextBlock FontWeight="Bold" FontSize="25" Text="{x:Bind sampleMetadata.Title}" TextWrapping="Wrap" />
+                <TextBlock FontSize="16" Margin="0,15,0,0" Text="{x:Bind sampleMetadata.Description}" TextWrapping="Wrap" />
                 <Frame x:Name="SampleFrame" />
             </StackPanel>
 

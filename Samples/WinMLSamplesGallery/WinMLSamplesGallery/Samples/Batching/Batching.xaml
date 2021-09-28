@@ -38,7 +38,7 @@
     </Page.Resources>
 
     <StackPanel>
-        <TextBlock FontWeight="Bold" FontSize="20" Margin="0,40,0,0">Set the BatchSizeOverride property on your LearningModelSessionOptions object</TextBlock>
+        <TextBlock FontWeight="Bold" FontSize="20" Margin="0,40,0,0" TextWrapping="Wrap">Set the BatchSizeOverride property on your LearningModelSessionOptions object</TextBlock>
         <StackPanel Margin="0,15,0,0" HorizontalAlignment="Left" Width="1000" Background="#F6F6F6" BorderBrush="#dbdbdb" BorderThickness="1" CornerRadius="5" Padding="15,20,0,22">
             <TextBlock FontSize="16">
             <Span Foreground="#3562FF">var</Span> <Span Foreground="#1684B2">options</Span> = <Span Foreground="#3562FF">new</Span> <Span Foreground="#1F9D00">LearningModelSessionOptions</Span>();
@@ -53,8 +53,8 @@
             </TextBlock>
         </StackPanel>
         <TextBlock Margin="0,10,0,0" Width="1000" HorizontalAlignment="Left" TextTrimming="None" Height="20">
-        <Bold>Note:</Bold> In order for batching to work, your model must have a value of -1 or a variable name in the batch dimension.
-        Additionally, the DATA_BATCH Denotation
+            <Bold>Note:</Bold> In order for batching to work, your model must have a value of -1 or a variable name in the batch dimension.
+            Additionally, the DATA_BATCH Denotation
         </TextBlock>
         <TextBlock>
         must be added on the batch dimension. To edit your model you can use tools like
@@ -62,8 +62,10 @@
             WinML Dashboard.
         </Hyperlink>
         </TextBlock>
-        <TextBlock FontWeight="Bold" FontSize="20" Margin="0,60,0,0">Compare inference runtimes with and without batching on the CPU and GPU (if available)</TextBlock>
-        <TextBlock FontSize="16" Margin="0,15,0,0">50 images will be passed through SqueezeNet for classification.</TextBlock>
+        <TextBlock FontWeight="Bold" FontSize="20" Margin="0,60,0,0" TextWrapping="Wrap">
+            Compare inference runtimes with and without batching on the CPU and GPU (if available)
+        </TextBlock>
+        <TextBlock FontSize="16" Margin="0,15,0,0" TextWrapping="Wrap">50 images will be passed through SqueezeNet for classification.</TextBlock>
         <StackPanel Orientation="Horizontal" Margin="0,20,0,0">
             <TextBlock FontSize="16" Margin="0,5,15,0">Device</TextBlock>
             <local_controls:DeviceComboBox x:Name="DeviceComboBox" />

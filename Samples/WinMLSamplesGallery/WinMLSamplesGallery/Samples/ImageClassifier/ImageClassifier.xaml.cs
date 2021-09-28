@@ -419,7 +419,7 @@ namespace WinMLSamplesGallery.Samples
 
         private void OpenButton_Clicked(object sender, RoutedEventArgs e)
         {
-            var bitmap = File.PickImageFileAsBitmapDecoder();
+            var bitmap = ImageHelper.PickImageFileAsBitmapDecoder();
             if (bitmap != null)
             {
                 BasicGridView.SelectedItem = null;
@@ -434,7 +434,7 @@ namespace WinMLSamplesGallery.Samples
             var thumbnail = (Thumbnail)gridView.SelectedItem;
             if (thumbnail != null)
             {
-                CurrentImageDecoder = File.CreateBitmapDecoderFromPath(thumbnail.ImageUri);
+                CurrentImageDecoder = ImageHelper.CreateBitmapDecoderFromPath(thumbnail.ImageUri);
                 TryPerformInference();
             }
         }

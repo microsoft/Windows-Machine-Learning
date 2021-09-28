@@ -195,7 +195,7 @@ namespace WinMLSamplesGallery.Samples
 
         private void OpenButton_Clicked(object sender, RoutedEventArgs e)
         {
-            var file = File.PickImageFiles();
+            var file = ImageHelper.PickImageFiles();
             if (file != null)
             {
                 var currentImage = CreateSoftwareBitmapFromStorageFile(file);

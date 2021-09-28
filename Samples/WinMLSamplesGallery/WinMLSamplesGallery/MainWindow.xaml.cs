@@ -100,14 +100,6 @@ namespace WinMLSamplesGallery
         {
             nvSample.IsBackEnabled = contentFrame.CanGoBack;
 
-            //if (contentFrame.SourcePageType == typeof(SettingsPage))
-            //{
-            //    // SettingsItem is not part of NavView.MenuItems, and doesn't have a Tag.
-            //    nvSample.SelectedItem = (muxc.NavigationViewItem)nvSample.SettingsItem;
-            //    nvSample.Header = "Settings";
-            //}
-            //else
-
             if (contentFrame.SourcePageType != null)
             {
                 var item = _pages.FirstOrDefault(p => p.Page == e.SourcePageType);
@@ -132,11 +124,6 @@ namespace WinMLSamplesGallery
             // Because we use ItemInvoked to navigate, we need to call Navigate
             // here to load the home page.
             NavView_Navigate("home", new Microsoft.UI.Xaml.Media.Animation.EntranceNavigationTransitionInfo());
-
-            // Listen to the window directly so the app responds
-            // to accelerator keys regardless of which element has focus.
-            //Microsoft.UI.Xaml.Window.Current.CoreWindow.Dispatcher.
-            //    AcceleratorKeyActivated({ this, &MainPage::CoreDispatcher_AcceleratorKeyActivated });
-}
+        }
     }
 }

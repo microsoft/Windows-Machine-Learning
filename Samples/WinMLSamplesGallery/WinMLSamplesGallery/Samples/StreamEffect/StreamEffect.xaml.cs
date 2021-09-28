@@ -18,6 +18,10 @@ using Microsoft.UI.Xaml.Media.Imaging;
 using Windows.Devices.Enumeration;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using Windows.Media.Capture;
+using WinMLSamplesGallery.Controls;
+using Windows.System.Display;
+
 
 namespace WinMLSamplesGallery.Samples
 {
@@ -35,7 +39,7 @@ namespace WinMLSamplesGallery.Samples
         }
 
         public IEnumerable<string> CameraNamesList { get; set; }
-        DeviceInformationCollection devices;
+        public DeviceInformationCollection devices;
         public event PropertyChangedEventHandler PropertyChanged;
         protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
         {
@@ -66,7 +70,6 @@ namespace WinMLSamplesGallery.Samples
                 CameraNamesList = devices.Select(device => device.Name);
                 Debug.WriteLine($"Devices: {string.Join(", ", CameraNamesList.ToArray<string>())}");
 
-                CameraNamesList = new List<string> { "A", "B", "C"};
                 return;
             }
         }
@@ -92,6 +95,9 @@ namespace WinMLSamplesGallery.Samples
 
         //Media capture fields
         StreamEffectViewModel streamEffectViewModel = new StreamEffectViewModel();
+        MediaCapture mediaCapture;
+        DisplayRequest displayrequest = new DisplayRequest();
+
 
         public StreamEffect()
         {
@@ -101,8 +107,28 @@ namespace WinMLSamplesGallery.Samples
 
         async private void StartInference(object sender, RoutedEventArgs e)
         {
-            LoadModelAsync();
-            getImageAsync();
+            //await CleanupCameraAsync();
+            var device = streamEffectViewModel.devices.ToList().ElementAt(streamEffectViewModel.SelectedCameraIndex);
+            var deviceKind = DeviceCmbBox.GetSelectedIndex();
+            // Create MediaCapture and its settings
+            var settings = new MediaCaptureInitializationSettings
+            {
+                VideoDeviceId = device.Id,
+                PhotoCaptureSource = PhotoCaptureSource.Auto,
+                MemoryPreference = deviceKind > 0 ? MediaCaptureMemoryPreference.Auto : MediaCaptureMemoryPreference.Cpu,
+                StreamingCaptureMode = StreamingCaptureMode.Video,
+                MediaCategory = MediaCategory.Communications,
+            };
+            mediaCapture = new MediaCapture();
+            await mediaCapture.InitializeAsync(settings);
+            displayrequest.RequestActive();
+
+            var capture = new CaptureElement();
+            //PreviewControl.CaptureElement = mediaCapture;
+            //_appModel.OutputCaptureElement = capture;
+
+            //LoadModelAsync();
+            //getImageAsync();
         }
 
         private void ChangeLiveStream(object sender, RoutedEventArgs e)

@@ -15,28 +15,22 @@
             <Setter Property="Foreground" Value="Black" />
         </Style>
     </Page.Resources>
-    
+
     <StackPanel>
-        <Button
-            Name="UIButtonLiveStream"
-            ToolTipService.ToolTip="Camera preview"
-            Click="ChangeLiveStream">
-            <Button.Content>
-                <SymbolIcon Symbol="Video"/>
-            </Button.Content>
-        </Button>
         <StackPanel
                 Name="UICameraSelectionControls"
                 Grid.Row="1"
                 HorizontalAlignment="Left"
                 VerticalAlignment="Bottom"
-                Orientation="vertical">
-            <TextBlock Style="{StaticResource TextBlockStyling}" Text="Camera: " />
+                Orientation="Horizontal"
+                Margin="0,20">
             <ComboBox
                     Name="UICmbCamera"
                     Foreground="White"
                     ItemsSource="{x:Bind streamEffectViewModel.CameraNamesList}"
-                    SelectedIndex="{x:Bind streamEffectViewModel.SelectedCameraIndex, Mode=TwoWay}">
+                    SelectedIndex="{x:Bind streamEffectViewModel.SelectedCameraIndex, Mode=TwoWay}"
+                    Margin="0,0,10,0"
+                >
                 <!--<i:Interaction.Behaviors>
                     <core:EventTriggerBehavior EventName="SelectionChanged">
                         <core:InvokeCommandAction Command="{Binding ChangeLiveStreamCommand}" />
@@ -46,13 +40,26 @@
                     <SolidColorBrush Opacity="0.3" Color="Black" />
                 </ComboBox.Background>
             </ComboBox>
-            <TextBlock Style="{StaticResource TextBlockStyling}" Text="{x:Bind streamEffectViewModel.SelectedCameraIndex, Mode=OneWay}" />
-
+            <local_controls:DeviceComboBox x:Name="DeviceCmbBox" />
+            <!--TODO: Change button to be start/restart stream as needed. ie. if changing sources. -->
+            <!--TODO: Disable until a media source is selected. -->
+            <Button x:Name="StartInferenceBtn"
+                ToolTipService.ToolTip="Start Stream"
+                Click="StartInference">
+                <Button.Content>
+                    <SymbolIcon Symbol="Play" />
+                </Button.Content>
+            </Button>
         </StackPanel>
+        <ContentControl
+                    Name="PreviewControl"
+                    Width="720"
+                    Height="720"
+                    Content="{Binding AppModel.OutputCaptureElement}" />
 
         <Image x:Name="InputImage"  VerticalAlignment="Top" HorizontalAlignment="Left" Source="ms-appx:///InputData/stream.png">
         </Image>
-        <Button x:Name="StartInferenceBtn" Click="StartInference"></Button>
+        
 
     </StackPanel>
     

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Data;
 using Windows.Storage;
 using Windows.Graphics.Imaging;
 using Windows.Media;
@@ -98,7 +99,7 @@ namespace WinMLSamplesGallery.Samples
 
             CurrentImageDecoder = null;
             CurrentModel = Classifier.NotSet;
-            AllModelsGrid.SelectRange(new Microsoft.UI.Xaml.Data.ItemIndexRange(0, 1));
+            AllModelsGrid.SelectRange(new ItemIndexRange(0, 1));
             AllModelsGrid.SelectionChanged += AllModelsGrid_SelectionChanged;
         }
 

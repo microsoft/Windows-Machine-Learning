@@ -25,12 +25,12 @@
             </Grid.ColumnDefinitions>
             <StackPanel Grid.Row="0" Grid.Column="0" Padding="40,40">
                 <TextBlock FontWeight="Bold" FontSize="25" Text="{x:Bind sampleMetadata.Title}" />
-                <TextBlock FontSize="16" Margin="0,15,0,0" Text="{x:Bind sampleMetadata.Description}" />
+                <TextBlock FontSize="16" Margin="0,15,0,0" Text="{x:Bind sampleMetadata.Description}" TextWrapping="Wrap"/>
                 <Frame x:Name="SampleFrame" />
             </StackPanel>
 
             <StackPanel Grid.Row="0" Grid.Column="1" Padding="0,40,40,0" HorizontalAlignment="Right">
-                <TextBlock FontWeight="Bold" FontSize="20">View page code on GitHub</TextBlock>
+                <TextBlock FontWeight="Bold" TextWrapping="Wrap" FontSize="20">View page code on GitHub</TextBlock>
                 <TextBlock Margin="10,20,0,0" FontSize="16">
                     <Hyperlink TextDecorations="None" NavigateUri="{x:Bind sampleMetadata.XAMLGithubLink}">
                         XAML Source Code

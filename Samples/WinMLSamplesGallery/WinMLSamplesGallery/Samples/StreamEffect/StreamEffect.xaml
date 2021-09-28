@@ -10,12 +10,49 @@
     mc:Ignorable="d"
     FontFamily="Arial">
 
+    <Page.Resources>
+        <Style x:Key="TextBlockStyling" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="Black" />
+        </Style>
+    </Page.Resources>
+    
     <StackPanel>
-        <TextBlock FontWeight="Bold" FontSize="20" Margin="0,40,0,0">Set the BatchSizeOverride property on your LearningModelSessionOptions object</TextBlock>
+        <Button
+            Name="UIButtonLiveStream"
+            ToolTipService.ToolTip="Camera preview"
+            Click="ChangeLiveStream">
+            <Button.Content>
+                <SymbolIcon Symbol="Video"/>
+            </Button.Content>
+        </Button>
+        <StackPanel
+                Name="UICameraSelectionControls"
+                Grid.Row="1"
+                HorizontalAlignment="Left"
+                VerticalAlignment="Bottom"
+                Orientation="vertical">
+            <TextBlock Style="{StaticResource TextBlockStyling}" Text="Camera: " />
+            <ComboBox
+                    Name="UICmbCamera"
+                    Foreground="White"
+                    ItemsSource="{x:Bind streamEffectViewModel.CameraNamesList}"
+                    SelectedIndex="{x:Bind streamEffectViewModel.SelectedCameraIndex, Mode=TwoWay}">
+                <!--<i:Interaction.Behaviors>
+                    <core:EventTriggerBehavior EventName="SelectionChanged">
+                        <core:InvokeCommandAction Command="{Binding ChangeLiveStreamCommand}" />
+                    </core:EventTriggerBehavior>
+                </i:Interaction.Behaviors>!-->
+                <ComboBox.Background>
+                    <SolidColorBrush Opacity="0.3" Color="Black" />
+                </ComboBox.Background>
+            </ComboBox>
+            <TextBlock Style="{StaticResource TextBlockStyling}" Text="{x:Bind streamEffectViewModel.SelectedCameraIndex, Mode=OneWay}" />
+
+        </StackPanel>
 
         <Image x:Name="InputImage"  VerticalAlignment="Top" HorizontalAlignment="Left" Source="ms-appx:///InputData/stream.png">
         </Image>
-        <Button x:Name="StartInferenceBtn" FontSize="18" Margin="60,-2,0,0" Background="#5c5fed" Foreground="White" Click="StartInference"></Button>
+        <Button x:Name="StartInferenceBtn" Click="StartInference"></Button>
 
     </StackPanel>
     

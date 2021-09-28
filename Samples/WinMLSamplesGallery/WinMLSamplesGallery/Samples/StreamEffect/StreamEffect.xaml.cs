@@ -15,13 +15,66 @@ using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.Foundation.Collections;
 using Windows.Foundation;
 using Microsoft.UI.Xaml.Media.Imaging;
+using Windows.Devices.Enumeration;
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
 
 namespace WinMLSamplesGallery.Samples
 {
+    public class StreamEffectViewModel : INotifyPropertyChanged
+    {
+        private int _selectedCameraIndex;
+        public int SelectedCameraIndex 
+        {
+            get { return _selectedCameraIndex; }
+            set {
+                _selectedCameraIndex = value;
+                Debug.WriteLine($"Update camera index to:{_selectedCameraIndex}");
+                OnPropertyChanged();
+            } 
+        }
+
+        public IEnumerable<string> CameraNamesList { get; set; }
+        DeviceInformationCollection devices;
+        public event PropertyChangedEventHandler PropertyChanged;
+        protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        {
+            Debug.WriteLine($"Update property {propertyName}");
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+
+        public async void GetDevices()
+        {
+            if (devices == null)
+            {
+                try
+                {
+                    devices = await DeviceInformation.FindAllAsync(DeviceClass.VideoCapture);
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine(ex.Message);
+                    devices = null;
+                }
+                if ((devices == null) || (devices.Count == 0))
+                {
+                    // No camera sources found
+                    Debug.WriteLine("No cameras found");
+                    //NotifyUser(false, "No cameras found.");
+                    return;
+                }
+                CameraNamesList = devices.Select(device => device.Name);
+                Debug.WriteLine($"Devices: {string.Join(", ", CameraNamesList.ToArray<string>())}");
+
+                CameraNamesList = new List<string> { "A", "B", "C"};
+                return;
+            }
+        }
+    }
+
     public sealed partial class StreamEffect : Page
     {
         private LearningModel _learningModel = null;
-        private LearningModelDeviceKind _inferenceDeviceSelected = LearningModelDeviceKind.DirectX;
         private LearningModelBinding _binding;
         private string _modelSource = "fcn-resnet50-11.onnx";
         private bool _useGpu = true;
@@ -37,15 +90,29 @@ namespace WinMLSamplesGallery.Samples
         LearningModelSession foregroundSession = null;
         LearningModelSession detensorizationSession = null;
 
+        //Media capture fields
+        StreamEffectViewModel streamEffectViewModel = new StreamEffectViewModel();
+
         public StreamEffect()
         {
             this.InitializeComponent();
+            streamEffectViewModel.GetDevices();
         }
 
         async private void StartInference(object sender, RoutedEventArgs e)
         {
             LoadModelAsync();
             getImageAsync();
+        }
+
+        private void ChangeLiveStream(object sender, RoutedEventArgs e)
+        {
+            return;
+        }
+
+        private async void CleanUpCameraAsync()
+        {
+            return;
         }
 
         private async void LoadModelAsync()

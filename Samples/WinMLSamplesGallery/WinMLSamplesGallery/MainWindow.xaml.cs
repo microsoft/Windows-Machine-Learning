@@ -22,8 +22,6 @@ namespace WinMLSamplesGallery
         private readonly List<(string Tag, Type Page)> _pages = new List<(string Tag, Type Page)>
         {
             ("all_samples", typeof(AllSamplesPage)),
-            ("audio", typeof(Audio)),
-            ("benchmark", typeof(Benchmark)),
             ("home", typeof(HomePage)),
             ("image", typeof(Image)),
             ("video", typeof(Video)),

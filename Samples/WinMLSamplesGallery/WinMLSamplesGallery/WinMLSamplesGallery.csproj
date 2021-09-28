@@ -45,8 +45,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Remove="AllSamplesPage.xaml" />
-    <None Remove="Audio.xaml" />
-    <None Remove="Benchmark.xaml" />
     <None Remove="Controls\PerformanceMonitor.xaml" />
     <None Remove="Controls\SampleHeader.xaml" />
     <None Remove="HomePage.xaml" />
@@ -203,19 +201,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Page Update="Pages\Audio.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-  </ItemGroup>
-
-  <ItemGroup>
     <Page Update="Pages\Image.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-  </ItemGroup>
-
-  <ItemGroup>
-    <Page Update="Pages\Benchmark.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>

@@ -327,7 +327,7 @@ namespace WinMLSamplesGallery.Samples
 
         public static LearningModel RotateRight90()
         {
-            return Rotate90(true /*rotateRight = false*/);
+            return Rotate90(true /*rotateRight = true*/);
         }
 
         public static LearningModel RotateLeft90()

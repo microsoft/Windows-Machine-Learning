@@ -167,6 +167,8 @@ namespace WinMLSamplesGallery.Samples
 
             if (_preProcessorDictionary == null)
             {
+                // Preprocessing values are described in the ONNX Model Zoo:
+                // https://github.com/onnx/models/tree/master/vision/classification/mobilenet
                 _preProcessorDictionary = new Dictionary<Classifier, Func<LearningModel>>{
                     { Classifier.SqueezeNet,        null }, // No preprocessing required
                     { Classifier.MobileNet,         () => TensorizationModels.Normalize0_1ThenZScore(Height, Width, Channels,

@@ -13,7 +13,7 @@
 
   <Properties>
     <DisplayName>WinMLSamplesGallery (Package)</DisplayName>
-    <PublisherDisplayName>sheil</PublisherDisplayName>
+    <PublisherDisplayName>Windows ML</PublisherDisplayName>
     <Logo>Images\StoreLogo.png</Logo>
   </Properties>
 

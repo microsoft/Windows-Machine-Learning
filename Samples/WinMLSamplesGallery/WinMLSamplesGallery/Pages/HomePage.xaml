@@ -1,0 +1,44 @@
+﻿<Page
+    x:Class="WinMLSamplesGallery.HomePage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:WinMLSamplesGallery"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+    <Grid Height="Auto">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="250" />
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        <Grid Height="250" Grid.Row="0">
+            <Image Source="ms-appx:///Assets/Original-LightBlue.png" Stretch="UniformToFill" Height="250" VerticalAlignment="Top"/>
+            <Rectangle Fill="#66ffffff" HorizontalAlignment="Stretch" Height="250" VerticalAlignment="Top"/>
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Top" Height="250">
+                <Image Source="assets/winml_icon.ico" Stretch="UniformToFill" Height="200" VerticalAlignment="Center"/>
+                <StackPanel Orientation="Vertical" Padding="25,0,0,0" VerticalAlignment="Center">
+                    <TextBlock Foreground="#12bef6" FontSize="60" FontFamily="Segoe UI Light" FontWeight="SemiBold" HorizontalAlignment="Center">Windows AI</TextBlock>
+                    <TextBlock Foreground="#12bef6" FontSize="50" FontFamily="Segoe UI Light" FontWeight="SemiBold" HorizontalAlignment="Center">1.8</TextBlock>
+                </StackPanel>
+            </StackPanel>
+        </Grid>
+        <ScrollViewer Grid.Row="1" ZoomMode="Disabled"
+            IsVerticalScrollChainingEnabled="True"
+            HorizontalScrollMode="Enabled" HorizontalScrollBarVisibility="Disabled"
+            VerticalScrollMode="Enabled" VerticalScrollBarVisibility="Visible">
+            <StackPanel Orientation="Vertical">
+                <TextBlock Foreground="#12bef6"
+                         FontSize="25"
+                         FontFamily="Segoe UI Light"
+                         HorizontalAlignment="Left"
+                         Padding="10,20,0,5"
+                         Typography.Capitals="SmallCaps"
+                         Typography.StylisticSet4="True">Recently Added</TextBlock>
+
+                <Frame x:Name="SamplesGrid" />
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
+</Page>

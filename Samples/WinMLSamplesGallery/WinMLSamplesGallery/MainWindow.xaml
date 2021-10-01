@@ -1,0 +1,39 @@
+﻿<Window
+    x:Class="WinMLSamplesGallery.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:WinMLSamplesGallery"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <Grid Background="#f5f5f5">
+        <NavigationView
+            IsBackEnabled="True"
+            x:Name="nvSample"
+            ItemInvoked="nvSample_ItemInvoked"
+            BackRequested="nvSample_BackRequested"
+            Loaded="nvSample_Loaded"
+            AlwaysShowHeader="False"
+            PaneTitle="Windows AI"
+            FontFamily="Arial">
+            <NavigationView.Resources>
+                <SolidColorBrush x:Key="NavigationViewExpandedPaneBackground" Color="#f5f5f5"/>
+                <SolidColorBrush x:Key="NavigationViewDefaultPaneBackground" Color="#f5f5f5" />
+            </NavigationView.Resources>
+            <NavigationView.MenuItems>
+                <NavigationViewItem Icon="Flag" Content="Home" Tag="home" />
+                <NavigationViewItem Icon="Library" Content="All samples" Tag="all_samples" />
+                <NavigationViewItemSeparator />
+                <NavigationViewItemHeader>Workloads</NavigationViewItemHeader>
+                <NavigationViewItem Icon="Library" Content="Image" Tag="image" />
+                <NavigationViewItem Icon="Library" Content="Video" Tag="video" />
+                <NavigationViewItem Icon="Library" Content="Audio" Tag="audio" />
+                <NavigationViewItemSeparator />
+                <NavigationViewItem Icon="Library" Content="Benchmark" Tag="benchmark" />
+            </NavigationView.MenuItems>
+            <Frame x:Name="contentFrame" Navigated="contentFrame_Navigated" BorderBrush="#dbdbdb" BorderThickness="1,1,0,0" Margin="0,40,0,0"
+                   CornerRadius="5,0,0,0" Background="White" FontFamily="Arial"/>
+        </NavigationView>
+    </Grid>
+</Window>

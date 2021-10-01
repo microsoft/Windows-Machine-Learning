@@ -35,5 +35,5 @@
             <Frame x:Name="contentFrame" Navigated="contentFrame_Navigated" BorderBrush="#dbdbdb" BorderThickness="1,1,0,0" Margin="0,40,0,0"
                    CornerRadius="5,0,0,0" Background="White" FontFamily="Arial"/>
         </NavigationView>
-    </Grid
+    </Grid>
 </Window>

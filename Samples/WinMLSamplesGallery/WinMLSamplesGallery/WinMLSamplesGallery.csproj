@@ -46,7 +46,6 @@
   <ItemGroup>
     <None Remove="AllSamplesPage.xaml" />
     <None Remove="Controls\PerformanceMonitor.xaml" />
-    <None Remove="Controls\SampleHeader.xaml" />
     <None Remove="HomePage.xaml" />
 	<None Remove="SamplesGrid.xaml" />
 	<None Remove="SampleBasePage.xaml" />
@@ -222,12 +221,6 @@
 	<Page Update="Pages\SampleBasePage.xaml">
 	  <Generator>MSBuild:Compile</Generator>
 	</Page>
-  </ItemGroup>
-
-	<ItemGroup>
-    <Page Update="Controls\SampleHeader.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
   </ItemGroup>
 
   <ItemGroup>

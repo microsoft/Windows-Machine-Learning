@@ -50,15 +50,8 @@ namespace WinMLSamplesGallery
             Microsoft.UI.Xaml.Media.Animation.NavigationTransitionInfo transitionInfo)
         {
             Type _page = null;
-            if (navItemTag == "settings")
-            {
-                // _page = typeof(SettingsPage);
-            }
-            else
-            {
-                var item = _pages.FirstOrDefault(p => p.Tag.Equals(navItemTag));
-                _page = item.Page;
-            }
+            var item = _pages.FirstOrDefault(p => p.Tag.Equals(navItemTag));
+            _page = item.Page;
             // Get the page type before navigation so you can prevent duplicate
             // entries in the backstack.
             var preNavPageType = contentFrame.CurrentSourcePageType;

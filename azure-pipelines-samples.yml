@@ -25,7 +25,7 @@ strategy:
       BuildConfiguration: Debug
 
 pool:
-  name: Package ES Lab E
+  name: Default
 #  demands: agent.osversion -equals 10.0.17763
 
 # CI trigger

@@ -32,12 +32,12 @@
             <StackPanel Grid.Row="0" Grid.Column="1" Padding="0,40,40,0" HorizontalAlignment="Right">
                 <TextBlock FontWeight="Bold" FontSize="20">View page code on GitHub</TextBlock>
                 <TextBlock Margin="10,20,0,0" FontSize="16">
-                    <Hyperlink TextDecorations="None" NavigateUri="{x:Bind sampleMetadata.XAMLGithubLink}">
+                    <Hyperlink TextDecorations="None" NavigateUri="{x:Bind sampleMetadata.XAMLGithubLink}" ToolTipService.ToolTip="{x:Bind sampleMetadata.XAMLGithubLink}">
                         XAML Source Code
                     </Hyperlink>
                 </TextBlock>
                 <TextBlock Margin="10,20,0,0" FontSize="16">
-                    <Hyperlink TextDecorations="None" NavigateUri="{x:Bind sampleMetadata.CSharpGithubLink}">
+                    <Hyperlink TextDecorations="None" NavigateUri="{x:Bind sampleMetadata.CSharpGithubLink}" ToolTipService.ToolTip="{x:Bind sampleMetadata.CSharpGithubLink}">
                         C# Source Code
                     </Hyperlink>
                 </TextBlock>

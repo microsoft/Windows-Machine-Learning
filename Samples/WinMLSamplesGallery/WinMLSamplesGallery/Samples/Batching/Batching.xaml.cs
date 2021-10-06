@@ -1,12 +1,12 @@
-using System;
-using System.Collections.Generic;
+using Microsoft.AI.MachineLearning;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Windows.Storage;
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 using Windows.Graphics.Imaging;
 using Windows.Media;
-using Microsoft.AI.MachineLearning;
-using System.Threading.Tasks;
+using Windows.Storage;
 
 namespace WinMLSamplesGallery.Samples
 {

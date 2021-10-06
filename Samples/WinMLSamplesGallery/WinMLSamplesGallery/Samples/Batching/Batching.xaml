@@ -39,7 +39,7 @@
 
     <StackPanel>
         <TextBlock FontWeight="Bold" FontSize="20" Margin="0,40,0,0" TextWrapping="Wrap">Set the BatchSizeOverride property on your LearningModelSessionOptions object</TextBlock>
-        <StackPanel Margin="0,15,0,0" HorizontalAlignment="Left" MaxWidth="1000" Background="#F6F6F6" BorderBrush="#dbdbdb" BorderThickness="1" CornerRadius="5" Padding="15,20,0,22">
+        <StackPanel Margin="0,15,0,0" HorizontalAlignment="Left" MaxWidth="1000" Background="#F6F6F6" BorderBrush="#dbdbdb" BorderThickness="1" CornerRadius="5" Padding="15,20,15,22">
             <TextBlock FontSize="16">
             <Span Foreground="#3562FF">var</Span> <Span Foreground="#1684B2">options</Span> = <Span Foreground="#3562FF">new</Span> <Span Foreground="#1F9D00">LearningModelSessionOptions</Span>();
             </TextBlock>

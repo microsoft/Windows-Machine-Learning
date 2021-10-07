@@ -74,11 +74,11 @@ steps:
   #   displayName: 'NuGet restore'
   #   condition: succeededOrFailed()
 
-  - task: NuGetCommand@2
-    inputs:
-      command: 'restore'
-      restoreSolution: 'Samples/WinMLSamplesGallery/WinMLSamplesGallery.sln'
-      feedsToUse: 'config'
+  # - task: NuGetCommand@2
+  #   inputs:
+  #     command: 'restore'
+  #     restoreSolution: 'Samples/WinMLSamplesGallery/WinMLSamplesGallery.sln'
+  #     feedsToUse: 'config'
 
   # - task: VSBuild@1
   #   displayName: 'Build UI test solution Testing/**/SamplesTest.sln'

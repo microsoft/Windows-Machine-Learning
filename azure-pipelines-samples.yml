@@ -62,7 +62,7 @@ steps:
   - task: UseDotNet@2
     inputs:
       packageType: 'sdk'
-      version: 'majorVersion.5.0'
+      version: 'majorVersion.5'
 
   - task: NuGetToolInstaller@0
     displayName: 'Use NuGet 4.9.2'

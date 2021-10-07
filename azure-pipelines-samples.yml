@@ -59,10 +59,10 @@ steps:
   #     version: 2.1.300
   #   condition: succeededOrFailed()
 
-  - task: UseDotNet@2
-    inputs:
-      packageType: 'sdk'
-      version: '5.0.x'
+  # - task: UseDotNet@2
+  #   inputs:
+  #     packageType: 'sdk'
+  #     version: '5.0.x'
 
   - task: NuGetToolInstaller@0
     displayName: 'Use NuGet 4.9.2'

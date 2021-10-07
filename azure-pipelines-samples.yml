@@ -74,11 +74,22 @@ steps:
   #   displayName: 'NuGet restore'
   #   condition: succeededOrFailed()
 
+  # - task: NuGetCommand@2
+  #   displayName: "Package Restore"
+  #   inputs:
+  #     command: 'restore'
+  #     restoreSolution: 'Samples/WinMLSamplesGallery/WinMLSamplesGallery.sln'
+  #     feedsToUse: 'config'
+      
   - task: NuGetCommand@2
+    displayName: "Package Restore"
     inputs:
       command: 'restore'
-      restoreSolution: 'Samples/WinMLSamplesGallery/WinMLSamplesGallery.sln'
-      feedsToUse: 'config'
+      restoreSolution: 'Samples/WinMLSamplesGallery/packages.config'
+      feedsToUse: 'select'
+
+  # - task: PowerShell@2
+  #   displayName: "NugGet"
 
   # - task: VSBuild@1
   #   displayName: 'Build UI test solution Testing/**/SamplesTest.sln'

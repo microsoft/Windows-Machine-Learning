@@ -87,7 +87,7 @@ steps:
       command: 'restore'
       restoreSolution: 'Samples/WinMLSamplesGallery/packages.config'
       feedsToUse: 'select'
-      restoreDirectory: 'Samples/WinMLSamplesGallery/packages'
+      restoreDirectory: 'Samples/WinMLSamplesGallery/WinMLSamplesGallery (Package)/obj'
 
 
 

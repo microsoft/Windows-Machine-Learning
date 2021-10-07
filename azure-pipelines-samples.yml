@@ -85,8 +85,10 @@ steps:
     displayName: "Package Restore"
     inputs:
       command: 'restore'
-      restoreSolution: 'Samples/WinMLSamplesGallery/packages.config'
+      restoreSolution: 'Samples/WinMLSamplesGallery'
       feedsToUse: 'select'
+
+
 
   # - task: PowerShell@2
   #   displayName: "NugGet"

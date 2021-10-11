@@ -45,7 +45,7 @@ namespace WinMLSamplesGallery.Samples
             ResetEvalMetrics();
 
             var inputImages = await GetInputImages();
-            int batchSize = GetBatchSizeFromBatchSizeComboBox();
+            int batchSize = GetBatchSizeFromBatchSizeSlider();
             await CreateSessions(batchSize);
 
             UpdateEvalText(false);
@@ -202,9 +202,9 @@ namespace WinMLSamplesGallery.Samples
             return totalDuration;
         }
 
-        private int GetBatchSizeFromBatchSizeComboBox()
+        private int GetBatchSizeFromBatchSizeSlider()
         {
-            return int.Parse(BatchSizeComboBox.SelectedItem.ToString());
+            return int.Parse(BatchSizeSlider.Value.ToString());
         }
 
         private void UpdateEvalProgressUI(int attemptNumber)
@@ -228,6 +228,11 @@ namespace WinMLSamplesGallery.Samples
             EvalResults.Visibility = Visibility.Visible;
             StartInferenceBtn.IsEnabled = true;
             EvalResults.ItemsSource = results;
+        }
+
+        private void UpdateBatchSizeText(object sender, RoutedEventArgs e)
+        {
+            BatchSizeText.Text = "Batch Size: " + BatchSizeSlider.Value.ToString();
         }
 
         public void StopAllEvents()

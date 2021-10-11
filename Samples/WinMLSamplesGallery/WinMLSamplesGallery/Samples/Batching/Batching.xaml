@@ -69,13 +69,14 @@
         <StackPanel Orientation="Horizontal" Margin="0,20,0,0">
             <TextBlock FontSize="16" Margin="0,5,15,0">Device</TextBlock>
             <local_controls:DeviceComboBox x:Name="DeviceComboBox" />
-            <TextBlock FontSize="16" Margin="20,5,15,0">Batch Size</TextBlock>
-            <ComboBox x:Name="BatchSizeComboBox" SelectedIndex="3">
+            <TextBlock x:Name="BatchSizeText" FontSize="16" Margin="20,5,15,0" Width="110">Batch Size: 50</TextBlock>
+            <Slider x:Name="BatchSizeSlider" Width="200" Minimum="1" Maximum="50" Value="50" ValueChanged="UpdateBatchSizeText" />
+            <!--<ComboBox x:Name="BatchSizeComboBox" SelectedIndex="3">
                 <x:String>5</x:String>
                 <x:String>10</x:String>
                 <x:String>25</x:String>
                 <x:String>50</x:String>
-            </ComboBox>
+            </ComboBox>-->
             <Button x:Name="StartInferenceBtn" FontSize="18" Margin="60,-2,0,0" Background="#5c5fed" Foreground="White" Click="StartInference">
                 Start Inference
                 <Button.Resources>

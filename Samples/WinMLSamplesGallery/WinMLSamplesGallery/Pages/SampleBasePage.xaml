@@ -15,6 +15,7 @@
                 </Hyperlink>
             </TextBlock>
         </DataTemplate>
+        <x:String x:Key="WinMLIssuesURL">https://github.com/microsoft/Windows-Machine-Learning/issues/new</x:String>
     </Page.Resources>
 
     <ScrollViewer>
@@ -59,7 +60,7 @@
                 </ListView>
                 <TextBlock FontWeight="Bold" FontSize="20" Margin="0,40,0,0">Feedback</TextBlock>
                 <TextBlock Margin="10,20,0,0" FontSize="16">
-                    <Hyperlink TextDecorations="None">Send feedback about this page</Hyperlink>
+                    <Hyperlink TextDecorations="None" NavigateUri="{StaticResource WinMLIssuesURL}">Send feedback about this page</Hyperlink>
                 </TextBlock>
             </StackPanel>
         </Grid>

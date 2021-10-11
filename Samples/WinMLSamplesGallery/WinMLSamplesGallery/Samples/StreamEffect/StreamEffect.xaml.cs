@@ -22,6 +22,9 @@ using Windows.Media.Capture;
 using WinMLSamplesGallery.Controls;
 using Windows.System.Display;
 
+using Windows.Media.Editing;
+using Windows.Media.Core;
+using Windows.Media.Playback;
 
 namespace WinMLSamplesGallery.Samples
 {
@@ -95,45 +98,51 @@ namespace WinMLSamplesGallery.Samples
 
         //Media capture fields
         StreamEffectViewModel streamEffectViewModel = new StreamEffectViewModel();
-        MediaCapture mediaCapture;
-        DisplayRequest displayrequest = new DisplayRequest();
+        private MediaComposition composition;
+
 
 
         public StreamEffect()
         {
             this.InitializeComponent();
-            streamEffectViewModel.GetDevices();
+            //composition = new MediaComposition();
+            //streamEffectViewModel.GetDevices();
         }
 
-        async private void StartInference(object sender, RoutedEventArgs e)
+        private async Task PickFileAndAddClip()
         {
-            //await CleanupCameraAsync();
-            var device = streamEffectViewModel.devices.ToList().ElementAt(streamEffectViewModel.SelectedCameraIndex);
-            var deviceKind = DeviceCmbBox.GetSelectedIndex();
-            // Create MediaCapture and its settings
-            var settings = new MediaCaptureInitializationSettings
+            var picker = new Windows.Storage.Pickers.FileOpenPicker();
+            picker.SuggestedStartLocation = Windows.Storage.Pickers.PickerLocationId.VideosLibrary;
+            picker.FileTypeFilter.Add(".mp4");
+            Windows.Storage.StorageFile pickedFile = await picker.PickSingleFileAsync();
+            if (pickedFile == null)
             {
-                VideoDeviceId = device.Id,
-                PhotoCaptureSource = PhotoCaptureSource.Auto,
-                MemoryPreference = deviceKind > 0 ? MediaCaptureMemoryPreference.Auto : MediaCaptureMemoryPreference.Cpu,
-                StreamingCaptureMode = StreamingCaptureMode.Video,
-                MediaCategory = MediaCategory.Communications,
-            };
-            mediaCapture = new MediaCapture();
-            await mediaCapture.InitializeAsync(settings);
-            displayrequest.RequestActive();
+                Debug.WriteLine("File picking cancelled");
+                return;
+            }
 
-            var capture = new CaptureElement();
-            //PreviewControl.CaptureElement = mediaCapture;
-            //_appModel.OutputCaptureElement = capture;
+            // These files could be picked from a location that we won't have access to later
+            var storageItemAccessList = Windows.Storage.AccessCache.StorageApplicationPermissions.FutureAccessList;
+            storageItemAccessList.Add(pickedFile);
 
-            //LoadModelAsync();
-            //getImageAsync();
+            var clip = await MediaClip.CreateFromFileAsync(pickedFile);
+            composition.Clips.Add(clip);
+
         }
 
-        private void ChangeLiveStream(object sender, RoutedEventArgs e)
+
+        private async void ChangeLiveStream(object sender, RoutedEventArgs e)
         {
-            return;
+            CameraCaptureUI captureUI = new CameraCaptureUI();
+            captureUI.PhotoSettings.AllowCropping = false;
+            captureUI.PhotoSettings.Format = CameraCaptureUIPhotoFormat.Png;
+
+            StorageFile videoFile = await captureUI.CaptureFileAsync(CameraCaptureUIMode.Photo);
+            if (videoFile == null)
+            {
+                // User cancelled photo capture
+                return;
+            }
         }
 
         private async void CleanUpCameraAsync()

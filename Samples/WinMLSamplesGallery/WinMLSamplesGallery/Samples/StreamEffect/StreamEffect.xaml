@@ -45,22 +45,14 @@
             <!--TODO: Disable until a media source is selected. -->
             <Button x:Name="StartInferenceBtn"
                 ToolTipService.ToolTip="Start Stream"
-                Click="StartInference">
+                Click="ChangeLiveStream">
                 <Button.Content>
                     <SymbolIcon Symbol="Play" />
                 </Button.Content>
             </Button>
         </StackPanel>
-        <ContentControl
-                    Name="PreviewControl"
-                    Width="720"
-                    Height="720"
-                    Content="{Binding AppModel.OutputCaptureElement}" />
-
         <Image x:Name="InputImage"  VerticalAlignment="Top" HorizontalAlignment="Left" Source="ms-appx:///InputData/stream.png">
         </Image>
-        
-
     </StackPanel>
     
 

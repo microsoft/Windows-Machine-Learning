@@ -29,6 +29,7 @@ HRESULT             AllocGetWindowText(HWND hwnd, WCHAR** pszText, DWORD* pcchLe
 LRESULT             OnCreateWindow(HWND hwnd);
 void                OnFileOpen(HWND hwnd);
 void                OnOpenURL(HWND hwnd);
+void                OnStartStream(HWND hwnd);
 void                OnPlayerEvent(HWND hwnd, WPARAM pUnkPtr);
 void                OnPaint(HWND hwnd);
 void                OnResize(WORD width, WORD height);
@@ -133,7 +134,9 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
         case ID_FILE_OPENURL:
             OnOpenURL(hwnd);
             break;
-
+        case ID_STREAM_START:
+            OnStartStream(hwnd);
+            break;
         default:
             return DefWindowProc(hwnd, message, wParam, lParam);
         }
@@ -259,6 +262,13 @@ void OnOpenURL(HWND hwnd)
 
     // The caller must free the URL string.
     CoTaskMemFree(url.pszURL);
+}
+
+void OnStartStream(HWND hwnd)
+{
+    HRESULT hr = S_OK;
+    hr = g_pPlayer->StartStream();
+
 }
 
 //  Handler for WM_CREATE message.

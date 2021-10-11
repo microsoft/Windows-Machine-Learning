@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
 // Microsoft Visual C++ generated include file.
-// Used by WindowsProject1.rc
+// Used by BackgroundBlur.rc
 
 #define IDS_APP_TITLE			103
 
@@ -11,7 +11,7 @@
 #define IDM_EXIT				105
 #define IDI_WINDOWSPROJECT1			107
 #define IDI_SMALL				108
-#define IDC_WINDOWSPROJECT1			109
+#define IDC_BACKGROUNDBLUR			109
 #define IDC_MYICON				2
 #ifndef IDC_STATIC
 #define IDC_STATIC				-1
@@ -24,6 +24,7 @@
 #define IDC_EDIT_URL                    1000
 #define ID_FILE_OPENFILE                32771
 #define ID_FILE_OPENURL                 32772
+#define ID_STREAM_START					32773
 #define IDC_STATIC                      -1
 
 // Next default values for new objects

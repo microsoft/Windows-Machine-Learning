@@ -27,6 +27,7 @@ BEGIN
     BEGIN
         MENUITEM "&Open File",                  ID_FILE_OPENFILE
         MENUITEM "Open &Url",                   ID_FILE_OPENURL
+        MENUITEM "Start Stream",                ID_STREAM_START
         MENUITEM SEPARATOR
         MENUITEM "E&xit",                       IDM_EXIT
     END

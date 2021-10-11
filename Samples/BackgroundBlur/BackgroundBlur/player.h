@@ -70,6 +70,7 @@ public:
 
     // Playback
     HRESULT       OpenURL(const WCHAR* sURL);
+    HRESULT       StartStream();
     HRESULT       Play();
     HRESULT       Pause();
     HRESULT       Stop();

@@ -35,6 +35,7 @@ HRESULT GetEventObject(IMFMediaEvent* pEvent, Q** ppObject)
 }
 
 HRESULT CreateMediaSource(PCWSTR pszURL, IMFMediaSource** ppSource);
+HRESULT CreateVideoCaptureDevice(IMFMediaSource** ppSource);
 
 HRESULT CreatePlaybackTopology(IMFMediaSource* pSource,
     IMFPresentationDescriptor* pPD, HWND hVideoWnd, IMFTopology** ppTopology);
@@ -163,6 +164,69 @@ HRESULT CPlayer::OpenURL(const WCHAR* sURL)
 
     // Create the media source.
     hr = CreateMediaSource(sURL, &m_pSource);
+    if (FAILED(hr))
+    {
+        goto done;
+    }
+
+    // Create the presentation descriptor for the media source.
+    hr = m_pSource->CreatePresentationDescriptor(&pSourcePD);
+    if (FAILED(hr))
+    {
+        goto done;
+    }
+
+    // Create a partial topology.
+    hr = CreatePlaybackTopology(m_pSource, pSourcePD, m_hwndVideo, &pTopology);
+    if (FAILED(hr))
+    {
+        goto done;
+    }
+
+    // Set the topology on the media session.
+    hr = m_pSession->SetTopology(0, pTopology);
+    if (FAILED(hr))
+    {
+        goto done;
+    }
+
+    m_state = OpenPending;
+
+    // If SetTopology succeeds, the media session will queue an 
+    // MESessionTopologySet event.
+
+done:
+    if (FAILED(hr))
+    {
+        m_state = Closed;
+    }
+
+    SafeRelease(&pSourcePD);
+    SafeRelease(&pTopology);
+    return hr;
+}
+
+//  Open a URL for playback.
+HRESULT CPlayer::StartStream()
+{
+    // 1. Create a new media session.
+    // 2. Create the media source.
+    // 3. Create the topology.
+    // 4. Queue the topology [asynchronous]
+    // 5. Start playback [asynchronous - does not happen in this method.]
+
+    IMFTopology* pTopology = NULL;
+    IMFPresentationDescriptor* pSourcePD = NULL;
+
+    // Create the media session.
+    HRESULT hr = CreateSession();
+    if (FAILED(hr))
+    {
+        goto done;
+    }
+
+    // Create the media source.
+    hr = CreateVideoCaptureDevice(&m_pSource);
     if (FAILED(hr))
     {
         goto done;
@@ -607,6 +671,54 @@ HRESULT CPlayer::Play()
     return StartPlayback();
 }
 
+// Creates a media source from the first availabe video capture device
+HRESULT CreateVideoCaptureDevice(IMFMediaSource** ppSource)
+{
+    *ppSource = NULL;
+
+    UINT32 count = 0;
+
+    IMFAttributes* pConfig = NULL;
+    IMFActivate** ppDevices = NULL;
+
+    // Create an attribute store to hold the search criteria.
+    HRESULT hr = MFCreateAttributes(&pConfig, 1);
+
+    // Request video capture devices.
+    if (SUCCEEDED(hr))
+    {
+        hr = pConfig->SetGUID(
+            MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE,
+            MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE_VIDCAP_GUID
+        );
+    }
+
+    // Enumerate the devices,
+    if (SUCCEEDED(hr))
+    {
+        hr = MFEnumDeviceSources(pConfig, &ppDevices, &count);
+    }
+
+    // Create a media source for the first device in the list.
+    if (SUCCEEDED(hr))
+    {
+        if (count > 0)
+        {
+            hr = ppDevices[0]->ActivateObject(IID_PPV_ARGS(ppSource));
+        }
+        else
+        {
+            hr = MF_E_NOT_FOUND;
+        }
+    }
+
+    for (DWORD i = 0; i < count; i++)
+    {
+        ppDevices[i]->Release();
+    }
+    CoTaskMemFree(ppDevices);
+    return hr;
+}
 
 //  Create a media source from a URL.
 HRESULT CreateMediaSource(PCWSTR sURL, IMFMediaSource** ppSource)

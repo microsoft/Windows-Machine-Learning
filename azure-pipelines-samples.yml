@@ -81,15 +81,29 @@ steps:
   #     restoreSolution: 'Samples/WinMLSamplesGallery/WinMLSamplesGallery.sln'
   #     feedsToUse: 'config'
       
-  - task: NuGetCommand@2
-    displayName: "Package Restore"
+  # - task: NuGetCommand@2
+  #   displayName: "Package Restore"
+  #   inputs:
+  #     command: 'restore'
+  #     restoreSolution: 'Samples/WinMLSamplesGallery/packages.config'
+  #     feedsToUse: 'select'
+  #     restoreDirectory: 'Samples/WinMLSamplesGallery/WinMLSamplesGallery (Package)/obj'
+
+# - task: DotNetCoreCLI@2
+#   displayName: dotnet restore
+#   inputs:
+#     command: restore
+#     projects: 'Samples/WinMLSamplesGallery/WinMLSamplesGallery/WinMLSamplesGallery.csproj'
+#     feedsToUse: 'select'
+#     vstsFeed: '<projectName>/<feedName>'
+#     includeNuGetOrg: true
+
+  - task: DotNetCoreCLI@2
     inputs:
       command: 'restore'
-      restoreSolution: 'Samples/WinMLSamplesGallery/packages.config'
-      feedsToUse: 'select'
-      restoreDirectory: 'Samples/WinMLSamplesGallery/WinMLSamplesGallery (Package)/obj'
-
-
+      projects: 'Samples/WinMLSamplesGallery/WinMLSamplesGallery/WinMLSamplesGallery.csproj'
+      feedsToUse: 'config'
+      nugetConfigPath: 'Samples/WinMLSamplesGallery/NuGet.config'
 
   # - task: PowerShell@2
   #   displayName: "NugGet"

@@ -60,6 +60,8 @@ namespace WinMLSamplesGallery.Samples
         private void ShowEvalUI()
         {
             StartInferenceBtn.IsEnabled = false;
+            BatchSizeSlider.IsEnabled = false;
+            DeviceComboBox.IsEnabled = false;
             EvalResults.Visibility = Visibility.Collapsed;
             LoadingContainer.Visibility = Visibility.Visible;
         }
@@ -240,6 +242,8 @@ namespace WinMLSamplesGallery.Samples
             LoadingContainer.Visibility = Visibility.Collapsed;
             EvalResults.Visibility = Visibility.Visible;
             StartInferenceBtn.IsEnabled = true;
+            BatchSizeSlider.IsEnabled = true;
+            DeviceComboBox.IsEnabled = true;
             EvalResults.ItemsSource = results;
         }
 

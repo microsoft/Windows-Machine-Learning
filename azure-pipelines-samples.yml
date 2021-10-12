@@ -101,7 +101,7 @@ steps:
   - task: DotNetCoreCLI@2
     inputs:
       command: 'restore'
-      projects: 'Samples/WinMLSamplesGallery/WinMLSamplesGallery/WinMLSamplesGallery.csproj'
+      projects: 'Samples/WinMLSamplesGallery/WinMLSamplesGallery (Package)/WinMLSamplesGallery WinMLSamplesGallery (Package).wapproj'
       feedsToUse: 'config'
       nugetConfigPath: 'Samples/WinMLSamplesGallery/NuGet.config'
 

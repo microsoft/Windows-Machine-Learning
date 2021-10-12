@@ -95,6 +95,7 @@ steps:
       restoreSolution: 'Samples/WinMLSamplesGallery/packages.config'
       feedsToUse: 'config'
       nugetConfigPath: 'Samples/WinMLSamplesGallery/NuGet.config'
+      restoreDirectory: 'Samples/WinMLSamplesGallery/WinMLSamplesGallery (Package)/obj'
 
 # - task: DotNetCoreCLI@2
 #   displayName: dotnet restore

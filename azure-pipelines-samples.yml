@@ -89,13 +89,13 @@ steps:
   #     feedsToUse: 'select'
   #     restoreDirectory: 'Samples/WinMLSamplesGallery/WinMLSamplesGallery (Package)/obj'
 
-  - task: NuGetCommand@2
-    inputs:
-      command: 'restore'
-      restoreSolution: 'Samples/WinMLSamplesGallery/packages.config'
-      feedsToUse: 'config'
-      nugetConfigPath: 'Samples/WinMLSamplesGallery/NuGet.config'
-      restoreDirectory: 'Samples/WinMLSamplesGallery/WinMLSamplesGallery (Package)/obj'
+  # - task: NuGetCommand@2
+  #   inputs:
+  #     command: 'restore'
+  #     restoreSolution: 'Samples/WinMLSamplesGallery/packages.config'
+  #     feedsToUse: 'config'
+  #     nugetConfigPath: 'Samples/WinMLSamplesGallery/NuGet.config'
+  #     restoreDirectory: 'Samples/WinMLSamplesGallery/WinMLSamplesGallery (Package)/obj'
 
 # - task: DotNetCoreCLI@2
 #   displayName: dotnet restore
@@ -106,12 +106,19 @@ steps:
 #     vstsFeed: '<projectName>/<feedName>'
 #     includeNuGetOrg: true
 
-  # - task: DotNetCoreCLI@2
+  - task: DotNetCoreCLI@2
+    inputs:
+      command: 'restore'
+      projects: 'Samples/WinMLSamplesGallery/WinMLSamplesGallery (Package)/WinMLSamplesGallery (Package).wapproj'
+      feedsToUse: 'config'
+      nugetConfigPath: 'Samples/WinMLSamplesGallery/NuGet.config'
+
+
+  # - task: CopyFiles@2
   #   inputs:
-  #     command: 'restore'
-  #     projects: 'Samples/WinMLSamplesGallery/WinMLSamplesGallery (Package)/WinMLSamplesGallery WinMLSamplesGallery (Package).wapproj'
-  #     feedsToUse: 'config'
-  #     nugetConfigPath: 'Samples/WinMLSamplesGallery/NuGet.config'
+  #     SourceFolder: 'Samples/WinMLSamplesGallery/WinMLSamplesGallery/obj'
+  #     Contents: 'project.assets.json'
+  #     TargetFolder: 'Samples/WinMLSamplesGallery/WinMLSamplesGallery (Package)/obj'
 
   # - task: PowerShell@2
   #   displayName: "NugGet"

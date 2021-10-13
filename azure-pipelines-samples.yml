@@ -114,7 +114,7 @@ steps:
   - task: DotNetCoreCLI@2
     inputs:
       command: 'custom'
-      custom: 'nuget locals all --clear'
+      custom: nuget locals all --clear
 
   - task: DotNetCoreCLI@2
     displayName: "DotNet Restore"

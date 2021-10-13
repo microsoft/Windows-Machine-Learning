@@ -138,7 +138,7 @@ steps:
       nugetConfigPath: 'Samples/WinMLSamplesGallery/NuGet.config'
 
 
-  # - task: CopyFiles@2
+  - task: CopyFiles@2
     displayName: "Copy package.assests.json into (Package) build"
     inputs:
       SourceFolder: 'Samples/WinMLSamplesGallery/WinMLSamplesGallery/obj'

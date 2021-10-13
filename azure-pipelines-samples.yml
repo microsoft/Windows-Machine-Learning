@@ -125,7 +125,9 @@ steps:
     displayName: "DotNet Restore"
     inputs:
       command: 'restore'
-      projects: 'Samples/WinMLSamplesGallery/WinMLSamplesGallery/WinMLSamplesGallery.csproj && Samples/WinMLSamplesGallery/WinMLSamplesGallery (Package)/WinMLSamplesGallery (Package).wapproj'
+      projects: |
+        'Samples/WinMLSamplesGallery/WinMLSamplesGallery/WinMLSamplesGallery.csproj'
+        'Samples/WinMLSamplesGallery/WinMLSamplesGallery (Package)/WinMLSamplesGallery (Package).wapproj'
       feedsToUse: 'config'
       nugetConfigPath: 'Samples/WinMLSamplesGallery/NuGet.config'
 

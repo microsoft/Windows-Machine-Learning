@@ -113,12 +113,19 @@ steps:
 
   - task: DotNetCoreCLI@2
     inputs:
+      command: 'custom'
+      custom: 'nuget locals all --clear'
+
+  - task: DotNetCoreCLI@2
+    displayName: "DotNet Restore"
+    inputs:
       command: 'restore'
       projects: 'Samples/WinMLSamplesGallery/WinMLSamplesGallery/WinMLSamplesGallery.csproj'
       feedsToUse: 'config'
       nugetConfigPath: 'Samples/WinMLSamplesGallery/NuGet.config'
 
   - task: CopyFiles@2
+    displayName: "Copy package.assests.json into (Package) build"
     inputs:
       SourceFolder: 'Samples/WinMLSamplesGallery/WinMLSamplesGallery/obj'
       Contents: 'project.assets.json'

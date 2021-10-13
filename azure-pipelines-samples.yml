@@ -139,11 +139,11 @@ steps:
 
 
   # - task: CopyFiles@2
-  #   displayName: "Copy package.assests.json into (Package) build"
-  #   inputs:
-  #     SourceFolder: 'Samples/WinMLSamplesGallery/WinMLSamplesGallery/obj'
-  #     Contents: 'project.assets.json'
-  #     TargetFolder: 'Samples/WinMLSamplesGallery/WinMLSamplesGallery (Package)/obj'
+    displayName: "Copy package.assests.json into (Package) build"
+    inputs:
+      SourceFolder: 'Samples/WinMLSamplesGallery/WinMLSamplesGallery/obj'
+      Contents: 'project.assets.json'
+      TargetFolder: 'Samples/WinMLSamplesGallery/WinMLSamplesGallery (Package)/obj'
 
   # - task: PowerShell@2
   #   displayName: "NugGet"

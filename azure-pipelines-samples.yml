@@ -288,7 +288,7 @@ steps:
     displayName: 'Build WinML Samples Gallery'
     inputs:
       solution: Samples/WinMLSamplesGallery/WinMLSamplesGallery.sln
-      vsVersion: latest
+      vsVersion: 16.0
       platform: '$(BuildPlatform)'
       configuration: '$(BuildConfiguration)'
       clean: true

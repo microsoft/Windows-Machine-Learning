@@ -1,8 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<Project>
-  <PropertyGroup>
-    <TargetFramework>net5.0-windows10.0.18362.0</TargetFramework>
-  </PropertyGroup>
+<Project ToolsVersion="15.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup Condition="'$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '15.0'">
     <VisualStudioVersion>15.0</VisualStudioVersion>
   </PropertyGroup>
@@ -40,7 +37,7 @@
   <PropertyGroup>
     <ProjectGuid>dea7791f-55cf-4ed5-bc99-3870997b1242</ProjectGuid>
     <TargetPlatformVersion>10.0.19041.0</TargetPlatformVersion>
-    <AssetTargetFallback>net5.0-windows$(TargetPlatformVersion)</AssetTargetFallback>
+    <AssetTargetFallback>net5.0-windows$(TargetPlatformVersion);$(AssetTargetFallback)</AssetTargetFallback>
     <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
     <DefaultLanguage>en-US</DefaultLanguage>
     <AppxPackageSigningEnabled>false</AppxPackageSigningEnabled>
@@ -106,17 +103,19 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\WinMLSamplesGallery\WinMLSamplesGallery.csproj">
+      <SkipGetTargetFrameworkProperties>True</SkipGetTargetFrameworkProperties>
       <PublishProfile>Properties\PublishProfiles\win10-$(Platform).pubxml</PublishProfile>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(WapProjPath)\Microsoft.DesktopBridge.targets" />
   <ItemGroup>
-    <PackageReference Include="Microsoft.AI.MachineLearning" Version="1.9.0" />
-    <PackageReference Include="Microsoft.ProjectReunion" Version="[0.8.0]">
+    <PackageReference Include="Microsoft.AI.MachineLearning" Version="1.9.1" />
+    <PackageReference Include="Microsoft.ProjectReunion" Version="0.8.4">
       <IncludeAssets>build</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.ProjectReunion.WinUI" Version="[0.8.0]">
       <IncludeAssets>build</IncludeAssets>
     </PackageReference>
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies.net451" />
   </ItemGroup>
 </Project>

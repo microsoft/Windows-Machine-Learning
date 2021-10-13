@@ -292,7 +292,6 @@ steps:
       platform: '$(BuildPlatform)'
       configuration: '$(BuildConfiguration)'
       clean: true
-      createLogFile: true
     condition: succeededOrFailed()
 
   - task: CopyFiles@2

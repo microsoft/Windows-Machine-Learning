@@ -289,7 +289,6 @@ steps:
     inputs:
       solution: Samples/WinMLSamplesGallery/WinMLSamplesGallery.sln
       vsVersion: latest
-      msbuildArgs: '-v:diag /p:OutDir=$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\SqueezeNetObjectDetection\ /p:WindowsTargetPlatformVersion=$(WindowsTargetPlatformVersion)'	
       platform: '$(BuildPlatform)'
       configuration: '$(BuildConfiguration)'
       clean: true

@@ -121,10 +121,10 @@ steps:
     inputs:
       script: 'C:\"Program Files"\dotnet\dotnet.exe nuget locals all --clear'
 
-  - task: CmdLine@2
-    displayName: "DotNet Restore"
-    inputs:
-      script: 'C:\"Program Files"\dotnet\dotnet.exe restore D:\a\_work\1\s\Samples\WinMLSamplesGallery\WinMLSamplesGallery\WinMLSamplesGallery.csproj --configfile D:\a\_work\1\s\Samples\WinMLSamplesGallery\NuGet.config'       
+  # - task: CmdLine@2
+  #   displayName: "DotNet Restore"
+  #   inputs:
+  #     script: 'C:\"Program Files"\dotnet\dotnet.exe restore D:\a\_work\1\s\Samples\WinMLSamplesGallery\WinMLSamplesGallery\WinMLSamplesGallery.csproj --configfile D:\a\_work\1\s\Samples\WinMLSamplesGallery\NuGet.config'       
 
   # - task: DotNetCoreCLI@2
   #   displayName: "DotNet Restore csproj"

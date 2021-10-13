@@ -111,10 +111,15 @@ steps:
 #     vstsFeed: '<projectName>/<feedName>'
 #     includeNuGetOrg: true
 
-  - task: DotNetCoreCLI@2
+  # - task: DotNetCoreCLI@2
+  #   inputs:
+  #     command: 'custom'
+  #     custom: nuget locals all --clear
+
+  - task: CmdLine@2
+    displayName: "Clear NuGet Locals"
     inputs:
-      command: 'custom'
-      custom: nuget locals all --clear
+      script: '"C:\Program Files\dotnet\dotnet.exe" nuget locals all --clear'
 
   - task: DotNetCoreCLI@2
     displayName: "DotNet Restore"

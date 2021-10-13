@@ -122,14 +122,21 @@ steps:
       script: '"C:\Program Files\dotnet\dotnet.exe" nuget locals all --clear'
 
   - task: DotNetCoreCLI@2
-    displayName: "DotNet Restore"
+    displayName: "DotNet Restore csproj"
     inputs:
       command: 'restore'
-      projects: |
-        'Samples/WinMLSamplesGallery/WinMLSamplesGallery/WinMLSamplesGallery.csproj'
-        'Samples/WinMLSamplesGallery/WinMLSamplesGallery (Package)/WinMLSamplesGallery (Package).wapproj'
+      projects: 'Samples/WinMLSamplesGallery/WinMLSamplesGallery/WinMLSamplesGallery.csproj'
       feedsToUse: 'config'
       nugetConfigPath: 'Samples/WinMLSamplesGallery/NuGet.config'
+
+  - task: DotNetCoreCLI@2
+    displayName: "DotNet Restore waproj"
+    inputs:
+      command: 'restore'
+      projects: 'Samples/WinMLSamplesGallery/WinMLSamplesGallery (Package)/WinMLSamplesGallery (Package).wapproj'
+      feedsToUse: 'config'
+      nugetConfigPath: 'Samples/WinMLSamplesGallery/NuGet.config'
+
 
   # - task: CopyFiles@2
   #   displayName: "Copy package.assests.json into (Package) build"

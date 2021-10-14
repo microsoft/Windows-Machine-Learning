@@ -320,6 +320,12 @@ steps:
   #     clean: true
   #   condition: succeededOrFailed()
 
+  - task: PowerShell@2
+    displayName: "Check if Platform.xml exists"
+    inputs:
+      targetType: 'inline'
+      script: 'Test-Path -Path "C:\Program Files (x86)\Windows Kits\10\Platforms\UAP\10.0.18362.0\Platform.xml"'
+
   - task: CmdLine@2
     displayName: "Build WinMLSamplesGallery"
     inputs:

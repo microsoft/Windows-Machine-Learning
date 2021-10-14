@@ -325,7 +325,7 @@ steps:
     inputs:
       targetType: 'inline'
       script: |
-        choco install windows-sdk-10.0.18362.0
+        choco install windows-sdk-10-version-1903-all
 
   - task: PowerShell@2
     displayName: "Check if Platform.xml exists"

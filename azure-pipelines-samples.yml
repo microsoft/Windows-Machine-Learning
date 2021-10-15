@@ -48,6 +48,12 @@ pr:
 
 steps: 
   - task: PowerShell@2
+    displayName: 'Install the win 10 SDK'
+    inputs:
+      targetType: 'inline'
+      script: |
+        choco install windows-sdk-10-version-1903-all -y
+  - task: PowerShell@2
     displayName: 'Check SDK Version 18362 is present'
     inputs:
       targetType: inline

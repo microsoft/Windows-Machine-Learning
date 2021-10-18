@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="..\..\BatchSupport\packages\Microsoft.AI.MachineLearning.1.8.1\build\native\Microsoft.AI.MachineLearning.props" Condition="Exists('..\..\BatchSupport\packages\Microsoft.AI.MachineLearning.1.8.1\build\native\Microsoft.AI.MachineLearning.props')" />
-  <Import Project="..\..\BatchSupport\packages\Microsoft.AI.DirectML.1.5.1\build\Microsoft.AI.DirectML.props" Condition="Exists('..\..\BatchSupport\packages\Microsoft.AI.DirectML.1.5.1\build\Microsoft.AI.DirectML.props')" />
+  <Import Project="..\..\BatchSupport\packages\Microsoft.AI.MachineLearning.1.9.1\build\native\Microsoft.AI.MachineLearning.props" Condition="Exists('..\..\BatchSupport\packages\Microsoft.AI.MachineLearning.1.9.1\build\native\Microsoft.AI.MachineLearning.props')" />
+  <Import Project="..\..\BatchSupport\packages\Microsoft.AI.DirectML.1.7.0\build\Microsoft.AI.DirectML.props" Condition="Exists('..\..\BatchSupport\packages\Microsoft.AI.DirectML.1.7.0\build\Microsoft.AI.DirectML.props')" />
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug_NuGet|Win32">
       <Configuration>Debug_NuGet</Configuration>
@@ -252,16 +252,16 @@
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
-    <Import Project="..\..\BatchSupport\packages\Microsoft.AI.DirectML.1.5.1\build\Microsoft.AI.DirectML.targets" Condition="Exists('..\..\BatchSupport\packages\Microsoft.AI.DirectML.1.5.1\build\Microsoft.AI.DirectML.targets')" />
-    <Import Project="..\..\BatchSupport\packages\Microsoft.AI.MachineLearning.1.8.1\build\native\Microsoft.AI.MachineLearning.targets" Condition="Exists('..\..\BatchSupport\packages\Microsoft.AI.MachineLearning.1.8.1\build\native\Microsoft.AI.MachineLearning.targets')" />
+    <Import Project="..\..\BatchSupport\packages\Microsoft.AI.DirectML.1.7.0\build\Microsoft.AI.DirectML.targets" Condition="Exists('..\..\BatchSupport\packages\Microsoft.AI.DirectML.1.7.0\build\Microsoft.AI.DirectML.targets')" />
+    <Import Project="..\..\BatchSupport\packages\Microsoft.AI.MachineLearning.1.9.1\build\native\Microsoft.AI.MachineLearning.targets" Condition="Exists('..\..\BatchSupport\packages\Microsoft.AI.MachineLearning.1.9.1\build\native\Microsoft.AI.MachineLearning.targets')" />
   </ImportGroup>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
-    <Error Condition="!Exists('..\..\BatchSupport\packages\Microsoft.AI.DirectML.1.5.1\build\Microsoft.AI.DirectML.props')" Text="$([System.String]::Format('$(ErrorText)', '..\..\BatchSupport\packages\Microsoft.AI.DirectML.1.5.1\build\Microsoft.AI.DirectML.props'))" />
-    <Error Condition="!Exists('..\..\BatchSupport\packages\Microsoft.AI.DirectML.1.5.1\build\Microsoft.AI.DirectML.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\BatchSupport\packages\Microsoft.AI.DirectML.1.5.1\build\Microsoft.AI.DirectML.targets'))" />
-    <Error Condition="!Exists('..\..\BatchSupport\packages\Microsoft.AI.MachineLearning.1.8.1\build\native\Microsoft.AI.MachineLearning.props')" Text="$([System.String]::Format('$(ErrorText)', '..\..\BatchSupport\packages\Microsoft.AI.MachineLearning.1.8.1\build\native\Microsoft.AI.MachineLearning.props'))" />
-    <Error Condition="!Exists('..\..\BatchSupport\packages\Microsoft.AI.MachineLearning.1.8.1\build\native\Microsoft.AI.MachineLearning.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\BatchSupport\packages\Microsoft.AI.MachineLearning.1.8.1\build\native\Microsoft.AI.MachineLearning.targets'))" />
+    <Error Condition="!Exists('..\..\BatchSupport\packages\Microsoft.AI.DirectML.1.7.0\build\Microsoft.AI.DirectML.props')" Text="$([System.String]::Format('$(ErrorText)', '..\..\BatchSupport\packages\Microsoft.AI.DirectML.1.7.0\build\Microsoft.AI.DirectML.props'))" />
+    <Error Condition="!Exists('..\..\BatchSupport\packages\Microsoft.AI.DirectML.1.7.0\build\Microsoft.AI.DirectML.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\BatchSupport\packages\Microsoft.AI.DirectML.1.7.0\build\Microsoft.AI.DirectML.targets'))" />
+    <Error Condition="!Exists('..\..\BatchSupport\packages\Microsoft.AI.MachineLearning.1.9.1\build\native\Microsoft.AI.MachineLearning.props')" Text="$([System.String]::Format('$(ErrorText)', '..\..\BatchSupport\packages\Microsoft.AI.MachineLearning.1.9.1\build\native\Microsoft.AI.MachineLearning.props'))" />
+    <Error Condition="!Exists('..\..\BatchSupport\packages\Microsoft.AI.MachineLearning.1.9.1\build\native\Microsoft.AI.MachineLearning.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\BatchSupport\packages\Microsoft.AI.MachineLearning.1.9.1\build\native\Microsoft.AI.MachineLearning.targets'))" />
   </Target>
 </Project>

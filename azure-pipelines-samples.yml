@@ -48,37 +48,37 @@ steps:
       targetType: inline
       script: if (-not (Test-Path "${ENV:programfiles(x86)}\windows Kits\10\include\10.0.18362.0\")) { choco install windows-sdk-10-version-1903-all -y }
 
-  - task: VSBuild@1
-    displayName: 'Build WinMLSamplesGallery'
-    inputs:
-      solution: 'Samples/WinMLSamplesGallery/WinMLSamplesGallery.sln'
-      vsVersion: "16.0"
-      msbuildArgs: '-v:diag /p:OutDir=$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\WinMLSamplesGallery\ /p:WindowsTargetPlatformVersion=$(WindowsTargetPlatformVersion) /t:Restore,Clean,Build'
-      platform: '$(BuildPlatform)'
-      configuration: '$(BuildConfiguration)'
-      msbuildArchitecture: x64
-      createLogFile: true
-    condition: succeededOrFailed()
+  #- task: VSBuild@1
+  #  displayName: 'Build WinMLSamplesGallery'
+  #  inputs:
+  #    solution: 'Samples/WinMLSamplesGallery/WinMLSamplesGallery.sln'
+  #    vsVersion: "16.0"
+  #    msbuildArgs: '-v:diag /p:OutDir=$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\WinMLSamplesGallery\ /p:WindowsTargetPlatformVersion=$(WindowsTargetPlatformVersion) /t:Restore,Clean,Build'
+  #    platform: '$(BuildPlatform)'
+  #    configuration: '$(BuildConfiguration)'
+  #    msbuildArchitecture: x64
+  #    createLogFile: true
+  #  condition: succeededOrFailed()
 
   # TODO: Add previously failing build tasks
-  - task: VSBuild@1
-    displayName: 'Build AdapterSelection Sample'
-    inputs:
-      solution: Samples/AdapterSelection/AdapterSelection.sln
-      vsVersion: "16.0"
-      msbuildArgs: '-v:diag /p:OutDir=$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\AdapterSelection\ /p:WindowsTargetPlatformVersion=$(WindowsTargetPlatformVersion) /t:Restore,Clean,Build'
-      platform: '$(BuildPlatform)'
-      configuration: '$(BuildConfiguration)'
-      msbuildArchitecture: x64
-      createLogFile: true
-    condition: succeededOrFailed()
-
   - task: VSBuild@1
     displayName: 'Build Batch Support Sample'
     inputs:
       solution: Samples/BatchSupport/BatchSupport.sln
       vsVersion: "16.0"
       msbuildArgs: '-v:diag /p:OutDir=$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\BatchSupport\ /p:WindowsTargetPlatformVersion=$(WindowsTargetPlatformVersion) /t:Restore,Clean,Build'
+      platform: '$(BuildPlatform)'
+      configuration: '$(BuildConfiguration)'
+      msbuildArchitecture: x64
+      createLogFile: true
+    condition: succeededOrFailed()
+
+  - task: VSBuild@1
+    displayName: 'Build AdapterSelection Sample'
+    inputs:
+      solution: Samples/AdapterSelection/AdapterSelection.sln
+      vsVersion: "16.0"
+      msbuildArgs: '-v:diag /p:OutDir=$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\AdapterSelection\ /p:WindowsTargetPlatformVersion=$(WindowsTargetPlatformVersion) /t:Restore,Clean,Build'
       platform: '$(BuildPlatform)'
       configuration: '$(BuildConfiguration)'
       msbuildArchitecture: x64

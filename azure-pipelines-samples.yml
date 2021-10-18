@@ -73,6 +73,18 @@ steps:
       createLogFile: true
     condition: succeededOrFailed()
 
+  - task: VSBuild@1
+    displayName: 'Build Batch Support Sample'
+    inputs:
+      solution: Samples/BatchSupport/BatchSupport.sln
+      vsVersion: "16.0"
+      msbuildArgs: '-v:diag /p:OutDir=$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\BatchSupport\ /p:WindowsTargetPlatformVersion=$(WindowsTargetPlatformVersion) /t:Restore,Clean,Build'
+      platform: '$(BuildPlatform)'
+      configuration: '$(BuildConfiguration)'
+      msbuildArchitecture: x64
+      createLogFile: true
+    condition: succeededOrFailed()
+
   - task: CopyFiles@2
     inputs:
       targetFolder: '$(Build.ArtifactStagingDirectory)\$(BuildPlatform)\$(BuildConfiguration)\'

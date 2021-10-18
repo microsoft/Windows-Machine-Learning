@@ -233,6 +233,7 @@ HRESULT CPlayer::StartStream()
     }
 
     // Create the presentation descriptor for the media source.
+    // Gets information about each of the streams. 
     hr = m_pSource->CreatePresentationDescriptor(&pSourcePD);
     if (FAILED(hr))
     {
@@ -1037,10 +1038,6 @@ HRESULT AddBranchToPartialTopology(
             //TRACE((L"Adding MFT to video stream"));
             class __declspec(uuid("{2F3DBC05-C011-4a8f-B264-E42E35C67BF4}")) ColorConverter; //"{98230571-0087-4204-b020-3282538e57d3}"
             CLSID guid = __uuidof(ColorConverter);
-            // TODO: Change into the correct data format {98230571-0087-4204-b020-3282538e57d3}
-            //CLSID guid = { 0x98230571,0x0087, 0x4204, 0xb020, 0x3282538e57d3 };
-
-            //{ 0x2f3dbc05, 0xc011, 0x4a8f, 0xb2, 0x64, 0xe4, 0x2e, 0x35, 0xc6, 0x7b, 0xf4 };
             
             CHECK_HR(hr = AddTransformNode(pTopology, guid, &pTransformNode));
 

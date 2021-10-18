@@ -10,8 +10,8 @@
 PCWSTR szTitle = L"BasicPlayback";
 PCWSTR szWindowClass = L"MFBASICPLAYBACK";
 
-HINSTANCE   g_hInstance;                        // current instance
-BOOL        g_bRepaintClient = TRUE;            // Repaint the application client area?
+HINSTANCE   g_hInstance;                    // current instance
+BOOL        g_bRepaintClient = TRUE;        // Repaint the application client area?
 CPlayer* g_pPlayer = NULL;                  // Global player object. 
 
 // Note: After WM_CREATE is processed, g_pPlayer remains valid until the

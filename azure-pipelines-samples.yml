@@ -17,7 +17,6 @@ strategy:
 
 pool:
   name: WinML
-#  demands: agent.osversion -equals 10.0.17763
 
 # CI trigger
 trigger:
@@ -62,6 +61,17 @@ steps:
     condition: succeededOrFailed()
 
   # TODO: Add previously failing build tasks
+  - task: VSBuild@1
+    displayName: 'Build AdapterSelection Sample'
+    inputs:
+      solution: Samples/AdapterSelection/AdapterSelection.sln
+      vsVersion: "16.0"
+      msbuildArgs: '-v:diag /p:OutDir=$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\AdapterSelection\ /p:WindowsTargetPlatformVersion=$(WindowsTargetPlatformVersion) /t:Restore,Clean,Build'
+      platform: '$(BuildPlatform)'
+      configuration: '$(BuildConfiguration)'
+      msbuildArchitecture: x64
+      createLogFile: true
+    condition: succeededOrFailed()
 
   - task: CopyFiles@2
     inputs:

@@ -53,11 +53,10 @@ steps:
       versionSpec: '5.11.0'
 
   - task: PowerShell@2
-    displayName: 'Install the win 10 SDK v10.0.18362.0'
+    displayName: 'Install the win 10 sdk v18362 if necessary'
     inputs:
-      targetType: 'inline'
-      script: |
-        choco install windows-sdk-10-version-1903-all -y
+      targetType: inline
+      script: if (-not (dir "${ENV:programfiles(x86)}\windows Kits\10\include\10.0.18362.0\) { choco install windows-sdk-10-version-1903-all -y }"
 
   - task: VSBuild@1
     displayName: 'Build WinMLSamplesGallery'

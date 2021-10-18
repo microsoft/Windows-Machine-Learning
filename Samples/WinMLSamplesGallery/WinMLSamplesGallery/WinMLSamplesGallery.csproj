@@ -235,7 +235,7 @@
 	</Page>
   </ItemGroup>
 
-  <Target Name="DownloadContentFiles" BeforeTargets="BeforeBuild">
+  <!--<Target Name="DownloadContentFiles" BeforeTargets="BeforeBuild">
     <DownloadFile Condition="!Exists('$(MSBuildProjectDirectory)\LargeModels\bvlcalexnet-9.onnx')" SourceUrl="https://github.com/onnx/models/raw/master/vision/classification/alexnet/model/bvlcalexnet-9.onnx" DestinationFolder="$(MSBuildProjectDirectory)\LargeModels">
       <Output TaskParameter="DownloadedFile" ItemName="None" />
     </DownloadFile>
@@ -287,7 +287,7 @@
     <DownloadFile Condition="!Exists('$(MSBuildProjectDirectory)\LargeModels\yolov4.onnx')" SourceUrl="https://github.com/onnx/models/raw/master/vision/object_detection_segmentation/yolov4/model/yolov4.onnx" DestinationFolder="$(MSBuildProjectDirectory)\LargeModels">
       <Output TaskParameter="DownloadedFile" ItemName="None" />
     </DownloadFile>
-  </Target>
+  </Target>-->
 
   <ProjectExtensions><VisualStudio><UserProperties /></VisualStudio></ProjectExtensions>
 </Project>

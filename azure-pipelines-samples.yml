@@ -14,18 +14,9 @@ strategy:
     Release_x64:
       BuildPlatform: x64
       BuildConfiguration: Release
-    Debug_x64:
-      BuildPlatform: x64
-      BuildConfiguration: Debug
-    Release_x86:
-      BuildPlatform: x86
-      BuildConfiguration: Release
-    Debug_x86:
-      BuildPlatform: x86
-      BuildConfiguration: Debug
 
 pool:
-  name: DirectML_BuildPool
+  name: WinML
 #  demands: agent.osversion -equals 10.0.17763
 
 # CI trigger

@@ -59,14 +59,6 @@ steps:
       script: |
         choco install windows-sdk-10-version-1903-all -y
 
-  # - task: PowerShell@2
-  #   displayName: "Build WinMLSamplesGallery"
-  #   inputs:
-  #     targetType: 'inline'
-  #     script: 'C:\"Program Files (x86)"\"Microsoft Visual Studio"\2019\Enterprise\MSBuild\Current\Bin\MSBuild.exe "D:\a\_work\1\s\Samples\WinMLSamplesGallery\WinMLSamplesGallery.sln" /nologo /nr:false /p:_MSDeployUserAgent="VSTS_cb55739e-4afe-46a3-970f-1b49d8ee7564_build_39302_0" /p:Configuration=Debug /p:Platform=x64 /p:ReadOnly=false /t:Restore,Clean,Build'
-
-  # TODO: Add previously failing build tasks
-
   - task: VSBuild@1
     displayName: 'Build WinMLSamplesGallery'
     inputs:
@@ -78,6 +70,8 @@ steps:
       msbuildArchitecture: x64
       createLogFile: true
     condition: succeededOrFailed()
+
+  # TODO: Add previously failing build tasks
 
   - task: CopyFiles@2
     inputs:

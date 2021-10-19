@@ -3,13 +3,13 @@
   <ItemGroup>
     <ClCompile Include="player.cpp" />
     <ClCompile Include="BackgroundBlur.cpp" />
+    <ClCompile Include="TransformBlur.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="framework.h" />
     <ClInclude Include="player.h" />
     <ClInclude Include="Resource.h" />
-    <ClInclude Include="targetver.h" />
     <ClInclude Include="BackgroundBlur.h" />
+    <ClInclude Include="TransformBlur.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="player.rc" />

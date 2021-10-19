@@ -1,13 +1,8 @@
 #include "TransformBlur.h"
-#include "Microsoft.AI.MachineLearning.h"
-
-#include <uuids.h>      // DirectShow GUIDs
-#include <assert.h>
-#include <evr.h>
 
 
 
-using namespace ABI::Microsoft::AI::MachineLearning;
+#define CHECK_HR(hr) if (FAILED(hr)) { goto done; }
 
 // Video FOURCC codes.
 const FOURCC FOURCC_YUY2 = MAKEFOURCC('Y', 'U', 'Y', '2');

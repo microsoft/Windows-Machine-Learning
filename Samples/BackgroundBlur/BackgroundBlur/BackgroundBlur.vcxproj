@@ -128,7 +128,7 @@
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>C:\Program Files %28x86%29\Windows Kits\10\Lib\10.0.19041.0\um\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>C:\Program Files (x86)\Windows Kits\10\Lib\10.0.19041.0\um\x64\Mfplat.lib;C:\Program Files (x86)\Windows Kits\10\Lib\10.0.19041.0\um\x64\Mf.lib;C:\Program Files (x86)\Windows Kits\10\Lib\10.0.19041.0\um\x64\Mfcore.lib;C:\Program Files (x86)\Windows Kits\10\Lib\10.0.19041.0\um\x64\evr.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>C:\Program Files (x86)\Windows Kits\10\Lib\10.0.19041.0\um\x64\Mfplat.lib;C:\Program Files (x86)\Windows Kits\10\Lib\10.0.19041.0\um\x64\Mf.lib;C:\Program Files (x86)\Windows Kits\10\Lib\10.0.19041.0\um\x64\Mfcore.lib;C:\Program Files (x86)\Windows Kits\10\Lib\10.0.19041.0\um\x64\evr.lib;C:\Program Files (x86)\Windows Kits\10\Lib\10.0.19041.0\um\x64\mfuuid.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -148,10 +148,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="framework.h" />
     <ClInclude Include="player.h" />
     <ClInclude Include="Resource.h" />
-    <ClInclude Include="targetver.h" />
     <ClInclude Include="BackgroundBlur.h" />
     <ClInclude Include="TransformBlur.h" />
   </ItemGroup>

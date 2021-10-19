@@ -6,6 +6,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 
 #include "Player.h"
+#include "TransformBlur.h"
 #include <assert.h>
 
 #pragma comment(lib, "shlwapi")
@@ -34,7 +35,7 @@ HRESULT GetEventObject(IMFMediaEvent* pEvent, Q** ppObject)
     return hr;
 }
 
-HRESULT CreateMediaSource(PCWSTR pszURL, IMFMediaSource** ppSource);
+//HRESULT CreateMediaSource(PCWSTR pszURL, IMFMediaSource** ppSource);
 HRESULT CreateVideoCaptureDevice(IMFMediaSource** ppSource);
 
 HRESULT CreatePlaybackTopology(IMFMediaSource* pSource,
@@ -937,10 +938,14 @@ HRESULT AddTransformNode(
     *ppNode = NULL;
 
     IMFTopologyNode* pNode = NULL;
+    TransformBlur* blur = NULL;
     IMFTransform* pMFT = NULL;
+    
+    HRESULT hr = TransformBlur::CreateInstance(NULL, __uuidof(IMFTransform), (void**)(&blur));
+    hr = blur->QueryInterface(__uuidof(IMFTransform), (void**)(&pMFT));
 
     // Create the node.
-    HRESULT hr = MFCreateTopologyNode(MF_TOPOLOGY_TRANSFORM_NODE, &pNode);
+    hr = MFCreateTopologyNode(MF_TOPOLOGY_TRANSFORM_NODE, &pNode);
     //hr = CGrayscale::CreateInstance(NULL, __uuidof(IMFTransform), (void**)(&pMFT));
     //pMFT = new CGrayscale(hr);
 
@@ -948,8 +953,8 @@ HRESULT AddTransformNode(
     if (SUCCEEDED(hr))
     {
 
-        //hr = pNode->SetObject(pMFT);
-        hr = pNode->SetGUID(MF_TOPONODE_TRANSFORM_OBJECTID, clsid);
+        hr = pNode->SetObject(pMFT);
+        //hr = pNode->SetGUID(MF_TOPONODE_TRANSFORM_OBJECTID, clsid);
     }
 
     // Add the node to the topology.

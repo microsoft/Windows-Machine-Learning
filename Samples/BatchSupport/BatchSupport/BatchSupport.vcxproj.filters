@@ -34,23 +34,17 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <CopyFileToFolders Include="..\..\..\SharedContent\models\SqueezeNet_batch3.onnx" />
+    <CopyFileToFolders Include="..\..\..\SharedContent\models\SqueezeNet_free.onnx" />
     <CopyFileToFolders Include="..\..\..\SharedContent\media\fish.png">
       <Filter>Resource Files</Filter>
     </CopyFileToFolders>
     <CopyFileToFolders Include="..\..\..\SharedContent\media\kitten_224.png">
       <Filter>Resource Files</Filter>
     </CopyFileToFolders>
-    <CopyFileToFolders Include="..\..\..\SharedContent\models\SqueezeNet_batch3.onnx">
-      <Filter>Resource Files</Filter>
-    </CopyFileToFolders>
-    <CopyFileToFolders Include="..\..\..\SharedContent\models\SqueezeNet_free.onnx">
-      <Filter>Resource Files</Filter>
-    </CopyFileToFolders>
-    <CopyFileToFolders Include="..\..\SqueezeNetObjectDetection\Desktop\cpp\Labels.txt">
-      <Filter>Resource Files</Filter>
-    </CopyFileToFolders>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="packages.config" />
+    <CopyFileToFolders Include="..\..\SqueezeNetObjectDetection\Desktop\cpp\Labels.txt" />
   </ItemGroup>
 </Project>

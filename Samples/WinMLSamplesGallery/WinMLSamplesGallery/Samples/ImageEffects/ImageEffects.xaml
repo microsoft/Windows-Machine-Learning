@@ -158,7 +158,7 @@
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Padding="0,2,0,0">
                             <Grid Padding="0,0,5,5">
                                 <ToggleSplitButton x:Name="ResizeToggleSplitButton" VerticalAlignment="Top" Height="46" Width="97" IsCheckedChanged="IsCheckedChanged" ToolTipService.ToolTip="Resize Image" >
-                                    <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xF617;"/>
+                                    <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE9A6;"/>
                                     <ToggleSplitButton.Flyout>
                                         <Flyout Placement="Bottom">
                                             <StackPanel Orientation="Vertical">

@@ -11,7 +11,7 @@ The Windows ML API is a [Windows Runtime Component](https://docs.microsoft.com/e
 This repo contains Windows Machine Learning samples and tools that demonstrate how to build machine learning powered scenarios into Windows applications.
 
 - [Getting Started with Windows ML](#getting-started-with-windows-ml)
-- [Model Demo Samples](#model-demo-samples)
+- [Model Samples](#model-samples)
 - [Advanced Scenario Samples](#advanced-scenario-samples)
 - [Developer Tools](#developer-tools)
 - [Feedback](#feedback)

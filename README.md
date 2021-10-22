@@ -52,7 +52,7 @@ In this section you will find various model samples for a variety of scenarios a
 
 A subdomain of computer vision in which an algorithm looks at an image and assigns it a tag from a collection of predefined tags or categories that it has been trained on.
 
-|            | Store App<br/>Inbox API |  Store App<br/>NuGet API | Desktop App<br/>Inbox API |  Desktop App<br/>NuGet API |
+| <u>Windows App Type</u> <br/>Distribution | <u>UWP</u><br/>In-Box |  <u>UWP</u><br/>NuGet | <u>Desktop</u><br/>In-Box | <u>Desktop</u><br/>NuGet |
 |------------|------------------------------------|--------------------------------------|------------------------------------|--------------------------------------|
 | [AlexNet](https://github.com/onnx/models/raw/master/vision/classification/alexnet/model/bvlcalexnet-9.onnx)                                | | ||[✔️C# .NET5 - Samples Gallery](https://github.com/microsoft/Windows-Machine-Learning/tree/user/sheilk/readme-updates/Samples/WinMLSamplesGallery)<br/>|
 | [CaffeNet](https://github.com/onnx/models/raw/master/vision/classification/caffenet/model/caffenet-9.onnx)                                  | | ||[✔️C# .NET5 - Samples Gallery](https://github.com/microsoft/Windows-Machine-Learning/tree/user/sheilk/readme-updates/Samples/WinMLSamplesGallery)<br/>|
@@ -77,7 +77,7 @@ A subdomain of computer vision in which an algorithm looks at an image and assig
 
 A computer vision technique that allows us to recompose the content of an image in the style of another.
 
-|            | Store App<br/>Inbox API |  Store App<br/>NuGet API | Desktop App<br/>Inbox API |  Desktop App<br/>NuGet API |
+| <u>Windows App Type</u> <br/>Distribution | <u>UWP</u><br/>In-Box |  <u>UWP</u><br/>NuGet | <u>Desktop</u><br/>In-Box | <u>Desktop</u><br/>NuGet |
 |------------|------------------------------------|--------------------------------------|------------------------------------|--------------------------------------|
 | FNSCandy   | [✔️C# - FNS Style Transfer](https://github.com/Microsoft/Windows-Machine-Learning/tree/master/Samples/FNSCandyStyleTransfer)<br/>[✔️C# - Real-Time Style Transfer](https://github.com/Microsoft/Windows-Machine-Learning/tree/master/Samples/StyleTransfer)<br/>           |                                                 |
 

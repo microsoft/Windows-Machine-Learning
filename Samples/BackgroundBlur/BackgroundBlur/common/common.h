@@ -126,3 +126,4 @@ bool AreComObjectsEqual(T1 *p1, T2 *p2)
 #include "propvar.h"
 //#include "TinyMap.h"
 #include "trace.h"
+#include "logmediatype.h"

@@ -148,6 +148,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="SegmentModel.h" />
     <ClInclude Include="player.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="BackgroundBlur.h" />
@@ -156,6 +157,7 @@
   <ItemGroup>
     <ClCompile Include="player.cpp" />
     <ClCompile Include="BackgroundBlur.cpp" />
+    <ClCompile Include="SegmentModel.cpp" />
     <ClCompile Include="TransformBlur.cpp" />
   </ItemGroup>
   <ItemGroup>

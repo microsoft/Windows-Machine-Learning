@@ -1,20 +1,21 @@
 #include "TransformBlur.h"
 
 
-
 #define CHECK_HR(hr) if (FAILED(hr)) { goto done; }
-
 // Video FOURCC codes.
 const FOURCC FOURCC_YUY2 = MAKEFOURCC('Y', 'U', 'Y', '2');
 const FOURCC FOURCC_UYVY = MAKEFOURCC('U', 'Y', 'V', 'Y');
 const FOURCC FOURCC_NV12 = MAKEFOURCC('N', 'V', '1', '2');
+const FOURCC FOURCC_RGB24 = 20;
 
 // Static array of media types (preferred and accepted).
 const GUID* g_MediaSubtypes[] =
 {
-    &MEDIASUBTYPE_NV12,
-    &MEDIASUBTYPE_YUY2,
-    &MEDIASUBTYPE_UYVY
+    &MEDIASUBTYPE_RGB24,
+    &MFVideoFormat_RGB24
+    //&MEDIASUBTYPE_NV12,
+    //&MEDIASUBTYPE_YUY2,
+    //&MEDIASUBTYPE_UYVY
 };
 
 // Number of media types in the aray.
@@ -67,7 +68,8 @@ TransformBlur::TransformBlur(HRESULT& hr) :
     m_videoFOURCC(0),
     m_imageWidthInPixels(0),
     m_imageHeightInPixels(0),
-    m_cbImageSize(0)
+    m_cbImageSize(0),
+    m_pTransformFn(NULL)
 {
 }
 
@@ -288,8 +290,11 @@ HRESULT TransformBlur::GetOutputStreamInfo(
 //-------------------------------------------------------------------
 HRESULT TransformBlur::GetAttributes(IMFAttributes** pAttributes)
 {
+    //IMFAttributes* pAttr = NULL;
+    HRESULT hr = MFCreateAttributes(pAttributes, 1);
+    hr = (*pAttributes)->SetUINT32(MF_SA_D3D_AWARE, TRUE);
     // This MFT does not support any attributes, so the method is not implemented.
-    return E_NOTIMPL;
+    return hr;
 }
 
 
@@ -755,7 +760,7 @@ HRESULT TransformBlur::ProcessMessage(
         // The pipeline should never send this message unless the MFT
         // has the MF_SA_D3D_AWARE attribute set to TRUE. However, if we
         // do get this message, it's invalid and we don't implement it.
-        hr = E_NOTIMPL;
+        hr = OnSetD3DManager(ulParam);
         break;
 
         // The remaining messages do not require any action from this MFT.
@@ -769,7 +774,11 @@ HRESULT TransformBlur::ProcessMessage(
     return hr;
 }
 
-
+HRESULT TransformBlur::OnSetD3DManager(ULONG_PTR ulParam)
+{
+    //HRESULT hr = IDirect3DDeviceManager9::GetVideoService();
+    return E_NOTIMPL;
+}
 
 //-------------------------------------------------------------------
 // Name: ProcessInput
@@ -898,6 +907,7 @@ HRESULT TransformBlur::ProcessOutput(
     CHECK_HR(hr = pOutputSamples[0].pSample->ConvertToContiguousBuffer(&pOutput));
 
     CHECK_HR(hr = OnProcessOutput(pInput, pOutput));
+    //m_pSample->CopyToBuffer(pOutput);
 
     // Set status flags.
     pOutputSamples[0].dwStatus = 0;
@@ -998,8 +1008,6 @@ HRESULT TransformBlur::OnCheckInputType(IMFMediaType* pmt)
 }
 
 
-
-
 //-------------------------------------------------------------------
 // Name: OnCheckOutputType
 // Description: Validate an output media type.
@@ -1035,15 +1043,13 @@ HRESULT TransformBlur::OnCheckOutputType(IMFMediaType* pmt)
     return hr;
 }
 
-
-
 //-------------------------------------------------------------------
 // Name: OnCheckMediaType
 // Description: Validates a media type for this transform.
 //-------------------------------------------------------------------
 HRESULT TransformBlur::OnCheckMediaType(IMFMediaType* pmt)
 {
-    //LogMediaType(pmt);
+    LogMediaType(pmt);
 
     GUID major_type = GUID_NULL;
     GUID subtype = GUID_NULL;
@@ -1152,6 +1158,34 @@ HRESULT TransformBlur::OnSetOutputType(IMFMediaType* pmt)
 
 
 
+void TransformImage_Stub(
+    BYTE* pDest,
+    LONG        lDestStride,
+    const BYTE* pSrc,
+    LONG        lSrcStride,
+    DWORD       dwWidthInPixels,
+    DWORD       dwHeightInPixels
+)
+{
+    // For now RGB
+    
+
+    for (DWORD y = 0; y < dwHeightInPixels; y++)
+    {
+        WORD* pSrc_Pixel = (WORD*)pSrc;
+        WORD* pDest_Pixel = (WORD*)pDest;
+
+        for (DWORD x = 0; x < dwWidthInPixels; x++)
+        {
+            WORD pixel = pSrc_Pixel[x];
+            pDest_Pixel[x] = pixel;
+        }
+        pDest += lDestStride;
+        pSrc += lSrcStride;
+    }
+}
+
+
 //-------------------------------------------------------------------
 // Name: OnProcessOutput
 // Description: Generates output data.
@@ -1170,6 +1204,7 @@ HRESULT TransformBlur::OnProcessOutput(IMFMediaBuffer* pIn, IMFMediaBuffer* pOut
     VideoBufferLock inputLock(pIn);
     VideoBufferLock outputLock(pOut);
 
+
     // Stride if the buffer does not support IMF2DBuffer
     LONG lDefaultStride = 0;
 
@@ -1183,17 +1218,16 @@ HRESULT TransformBlur::OnProcessOutput(IMFMediaBuffer* pIn, IMFMediaBuffer* pOut
 
     // TODO: Implement a LearningModelBuilder for grayscale
     // Invoke the image transform function.
-    /*assert(m_pTransformFn != NULL);
-    if (m_pTransformFn)
+    //assert(m_pTransformFn != NULL);
+    if (true)
     {
-        (*m_pTransformFn)(pDest, lDestStride, pSrc, lSrcStride,
+        TransformImage_Stub(pDest, lDestStride, pSrc, lSrcStride,
             m_imageWidthInPixels, m_imageHeightInPixels);
     }
     else
     {
         CHECK_HR(hr = E_UNEXPECTED);
-    }*/
-
+    }
 
     // Set the data size on the output buffer.
     CHECK_HR(hr = pOut->SetCurrentLength(m_cbImageSize));
@@ -1224,7 +1258,6 @@ HRESULT TransformBlur::OnFlush()
 // Description: After the input type is set, update our format 
 //              information.
 //-------------------------------------------------------------------
-
 HRESULT TransformBlur::UpdateFormatInfo()
 {
     HRESULT hr = S_OK;
@@ -1236,7 +1269,7 @@ HRESULT TransformBlur::UpdateFormatInfo()
     m_videoFOURCC = 0;
     m_cbImageSize = 0;
 
-    //m_pTransformFn = NULL;
+    m_pTransformFn = NULL;
 
     if (m_pInputType != NULL)
     {
@@ -1256,6 +1289,9 @@ HRESULT TransformBlur::UpdateFormatInfo()
 
         case FOURCC_NV12:
             //m_pTransformFn = TransformImage_NV12;
+            break; 
+
+        case FOURCC_RGB24:
             break;
 
         default:
@@ -1285,7 +1321,6 @@ done:
 // Description: 
 // Calculates the buffer size needed, based on the video format.
 //-------------------------------------------------------------------
-
 HRESULT GetImageSize(FOURCC fcc, UINT32 width, UINT32 height, DWORD* pcbImage)
 {
     HRESULT hr = S_OK;
@@ -1307,7 +1342,6 @@ HRESULT GetImageSize(FOURCC fcc, UINT32 width, UINT32 height, DWORD* pcbImage)
         }
         break;
 
-
     case FOURCC_NV12:
         // check overflow
         if ((height / 2 > MAXDWORD - height) ||
@@ -1319,6 +1353,19 @@ HRESULT GetImageSize(FOURCC fcc, UINT32 width, UINT32 height, DWORD* pcbImage)
         {
             // 12 bpp
             *pcbImage = width * (height + (height / 2));
+        }
+        break;
+
+    case FOURCC_RGB24:
+        // check overflow
+        if ((width * 3 > MAXDWORD) ||
+            (width * 3 > MAXDWORD / height))
+        {
+            hr = E_INVALIDARG;
+        }
+        else {
+            // 24 bpp
+            *pcbImage = width * height * 3;
         }
         break;
 

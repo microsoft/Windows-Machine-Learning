@@ -6,19 +6,29 @@
 #include <mferror.h>
 #include <strsafe.h>
 #include <shlwapi.h> // registry stuff
-#include <winrt/Microsoft.AI.MachineLearning.Experimental.h>
-#include <winrt/Microsoft.AI.MachineLearning.h>
 
 #include <assert.h>
 #include <evr.h>
 
 #include <initguid.h>
 #include <uuids.h>      // DirectShow GUIDs
+#include <d3d9.h>
+#include <dxva2api.h>
 
 #define USE_LOGGING
 #include "common.h"
 using namespace MediaFoundationSamples;
+#include "SegmentModel.h"
 
+// Function pointer for the function that transforms the image.
+typedef void (*IMAGE_TRANSFORM_FN)(
+    BYTE* pDest,
+    LONG        lDestStride,
+    const BYTE* pSrc,
+    LONG        lSrcStride,
+    DWORD       dwWidthInPixels,
+    DWORD       dwHeightInPixels
+    );
 
 class TransformBlur :
     public IMFTransform
@@ -179,6 +189,7 @@ private:
     HRESULT OnProcessOutput(IMFMediaBuffer* pIn, IMFMediaBuffer* pOut);
     HRESULT OnFlush();
 
+    HRESULT OnSetD3DManager(ULONG_PTR ulParam);
     HRESULT UpdateFormatInfo();
 
     long                        m_nRefCount;                // reference count
@@ -193,5 +204,8 @@ private:
     UINT32                      m_imageWidthInPixels;
     UINT32                      m_imageHeightInPixels;
     DWORD                       m_cbImageSize;              // Image size, in bytes.
+    // Image transform function. (Changes based on the media type.)
+    IMAGE_TRANSFORM_FN          m_pTransformFn;
 
+    SegmentModel  m_segmentModel;
 };

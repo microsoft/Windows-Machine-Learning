@@ -207,6 +207,115 @@ done:
     return hr;
 }
 
+HRESULT SetDeviceFormat(IMFMediaSource* pSource, DWORD dwFormatIndex)
+{
+    IMFPresentationDescriptor* pPD = NULL;
+    IMFStreamDescriptor* pSD = NULL;
+    IMFMediaTypeHandler* pHandler = NULL;
+    IMFMediaType* pType = NULL;
+
+    HRESULT hr = pSource->CreatePresentationDescriptor(&pPD);
+    if (FAILED(hr))
+    {
+        goto done;
+    }
+
+    BOOL fSelected;
+    hr = pPD->GetStreamDescriptorByIndex(0, &fSelected, &pSD);
+    if (FAILED(hr))
+    {
+        goto done;
+    }
+
+    hr = pSD->GetMediaTypeHandler(&pHandler);
+    if (FAILED(hr))
+    {
+        goto done;
+    }
+
+    hr = pHandler->GetMediaTypeByIndex(dwFormatIndex, &pType);
+    if (FAILED(hr))
+    {
+        goto done;
+    }
+
+    hr = pHandler->SetCurrentMediaType(pType);
+
+done:
+    SafeRelease(&pPD);
+    SafeRelease(&pSD);
+    SafeRelease(&pHandler);
+    SafeRelease(&pType);
+    return hr;
+}
+
+HRESULT EnumerateCaptureFormats(IMFMediaSource* pSource)
+{
+    IMFPresentationDescriptor* pPD = NULL;
+    IMFStreamDescriptor* pSD = NULL;
+    IMFMediaTypeHandler* pHandler = NULL;
+    IMFMediaType* pType = NULL;
+    DWORD cTypes = 0;
+
+    HRESULT hr = pSource->CreatePresentationDescriptor(&pPD);
+    if (FAILED(hr))
+    {
+        goto done;
+    }
+
+    BOOL fSelected;
+    hr = pPD->GetStreamDescriptorByIndex(0, &fSelected, &pSD);
+    if (FAILED(hr))
+    {
+        goto done;
+    }
+
+    hr = pSD->GetMediaTypeHandler(&pHandler);
+    if (FAILED(hr))
+    {
+        goto done;
+    }
+
+    hr = pHandler->GetMediaTypeCount(&cTypes);
+    if (FAILED(hr))
+    {
+        goto done;
+    }
+
+    for (DWORD i = 0; i < cTypes; i++)
+    {
+        hr = pHandler->GetMediaTypeByIndex(i, &pType);
+        if (FAILED(hr))
+        {
+            goto done;
+        }
+        // LogMediaType(pType);
+
+        GUID subtype = GUID_NULL;
+        CHECK_HR(hr = pType->GetGUID(MF_MT_SUBTYPE, &subtype));
+        if (subtype == MFVideoFormat_NV12) {
+            //OutputDebugString(L"This device supports RGB!");
+            SetDeviceFormat(pSource, i);
+            //break;
+            LogMediaType(pType);
+            OutputDebugString(L"\n");
+        }
+
+        //LogMediaType(pType);
+        //OutputDebugString(L"\n");
+
+        SafeRelease(&pType);
+    }
+
+done:
+    SafeRelease(&pPD);
+    SafeRelease(&pSD);
+    SafeRelease(&pHandler);
+    SafeRelease(&pType);
+    return hr;
+}
+
+
 //  Open a URL for playback.
 HRESULT CPlayer::StartStream()
 {
@@ -232,6 +341,7 @@ HRESULT CPlayer::StartStream()
     {
         goto done;
     }
+    EnumerateCaptureFormats(m_pSource);
 
     // Create the presentation descriptor for the media source.
     // Gets information about each of the streams. 

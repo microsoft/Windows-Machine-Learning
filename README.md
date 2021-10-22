@@ -29,21 +29,21 @@ For additional information on Windows ML, including step-by-step tutorials and h
 
 ## Getting Started with Windows ML
 
+**Prerequisites**
+- [Visual Studio 2017 Version 15.7.4 or Newer](https://developer.microsoft.com/en-us/windows/downloads)
+
+
 Windows ML offers machine learning inferencing via the inbox Windows SDK as well as a redistributable NuGet package. The table below highlights the availability, distribution, language support, servicing, and forward compatibility aspects of the In-Box and NuGet package for Windows ML.
 
 | |In-Box|	NuGet|
 |-|-----|------|
-|Availability|	Windows 10 version 1809 or higher	| Windows 8.1 or higher
-|Distribution|	Built into the Windows SDK |	Package and distribute as part of your application
+|Availability|	[Windows 10 - Build 17763 (RS5) or Newer](https://www.microsoft.com/en-us/software-download/windows10)<br/>For more detailed information about version support, checkout our [docs](https://docs.microsoft.com/en-us/uwp/api/windows.ai.machinelearning?view=winrt-22000).	| [Windows 8.1 or Newer](https://www.microsoft.com/en-us/software-download/windows8ISO)<br/>**NOTE**: Some APIs (ie: VideoFrame) are not available on older OSes.|
+|Windows SDK|	[Windows SDK - Build 17763 (RS5) or Newer](https://developer.microsoft.com/en-us/windows/downloads/sdk-archive/) |	[Windows SDK - Build 17763 (RS5) or Newer](https://developer.microsoft.com/en-us/windows/downloads/sdk-archive/)
+|Distribution|	Built into Windows |	Package and distribute as part of your application
 |Servicing|	Microsoft-driven (customers benefit automatically)	| Developer-driven
 |Forward| compatibility	Automatically rolls forward with new features	| Developer needs to update package manually
 
 Learn mode [here](https://docs.microsoft.com/en-us/windows/ai/windows-ml/get-started).
-
-- [Visual Studio 2017 Version 15.7.4 or Newer](https://developer.microsoft.com/en-us/windows/downloads)
-- [Windows 10 - Build 17763 (RS5) or Newer](https://www.microsoft.com/en-us/software-download/windows10)
-- [Windows SDK - Build 17763 (RS5) or Newer](https://www.microsoft.com/en-us/software-download/windowsinsiderpreviewSDK)
-
 
 ## Model Samples
 In this section you will find various model samples for a variety of scenarios across the different Windows ML API offerings. 
@@ -52,7 +52,7 @@ In this section you will find various model samples for a variety of scenarios a
 
 A subdomain of computer vision in which an algorithm looks at an image and assigns it a tag from a collection of predefined tags or categories that it has been trained on.
 
-|            | Store App<br/>Windows.AI.MachineLearning<br/>(Inbox API) |  Store App<br/>Microsoft.AI.MachineLearning<br/>(Redist API) | Desktop App<br/>Windows.AI.MachineLearning<br/>(Inbox API) |  Desktop App<br/>Microsoft.AI.MachineLearning<br/>(Redist API) |
+|            | Store App<br/>Inbox API |  Store App<br/>NuGet API | Desktop App<br/>Inbox API |  Desktop App<br/>NuGet API |
 |------------|------------------------------------|--------------------------------------|------------------------------------|--------------------------------------|
 | [AlexNet](https://github.com/onnx/models/raw/master/vision/classification/alexnet/model/bvlcalexnet-9.onnx)                                | | ||[✔️C# .NET5 - Samples Gallery](https://github.com/Microsoft/Windows-Machine-Learning/tree/master/Samples/SqueezeNetObjectDetection/NET5)<br/>|
 | [CaffeNet](https://github.com/onnx/models/raw/master/vision/classification/caffenet/model/caffenet-9.onnx)                                  | | ||[✔️C# .NET5 - Samples Gallery](https://github.com/Microsoft/Windows-Machine-Learning/tree/master/Samples/SqueezeNetObjectDetection/NET5)<br/>|
@@ -77,15 +77,15 @@ A subdomain of computer vision in which an algorithm looks at an image and assig
 
 A computer vision technique that allows us to recompose the content of an image in the style of another.
 
-|            | Store App<br/>Windows.AI.MachineLearning<br/>(Inbox API) |  Store App<br/>Microsoft.AI.MachineLearning<br/>(Redist API) | Desktop App<br/>Windows.AI.MachineLearning<br/>(Inbox API) |  Desktop App<br/>Microsoft.AI.MachineLearning<br/>(Redist API) |
+|            | Store App<br/>Inbox API |  Store App<br/>NuGet API | Desktop App<br/>Inbox API |  Desktop App<br/>NuGet API |
 |------------|------------------------------------|--------------------------------------|------------------------------------|--------------------------------------|
-| FNSCandy   | [✔️C# (FNS Style Transfer)](https://github.com/Microsoft/Windows-Machine-Learning/tree/master/Samples/FNSCandyStyleTransfer)<br/>[✔️C# (Real-Time Style Transfer)](https://github.com/Microsoft/Windows-Machine-Learning/tree/master/Samples/StyleTransfer)<br/>           |                                                 |
+| FNSCandy   | [✔️C# - FNS Style Transfer](https://github.com/Microsoft/Windows-Machine-Learning/tree/master/Samples/FNSCandyStyleTransfer)<br/>[✔️C# - Real-Time Style Transfer](https://github.com/Microsoft/Windows-Machine-Learning/tree/master/Samples/StyleTransfer)<br/>           |                                                 |
 
 <!--
 **Object Detection**
 
 
-|            | Store App<br/>Windows.AI.MachineLearning<br/>(Inbox API) |  Store App<br/>Microsoft.AI.MachineLearning<br/>(Redist API) | Desktop App<br/>Windows.AI.MachineLearning<br/>(Inbox API) |  Desktop App<br/>Microsoft.AI.MachineLearning<br/>(Redist API) |
+|            | Store App<br/>Inbox API |  Store App<br/>NuGet API | Desktop App<br/>Inbox API |  Desktop App<br/>NuGet API |
 |------------|------------------------------------|--------------------------------------|------------------------------------|--------------------------------------|
 | [YoloV4](https://github.com/onnx/models/raw/master/vision/object_detection_segmentation/yolov4/model/yolov4.onnx)                         | | ||[✔️C# .NET5 - Samples Gallery](https://github.com/Microsoft/Windows-Machine-Learning/tree/master/Samples/SqueezeNetObjectDetection/NET5)<br/>|
 

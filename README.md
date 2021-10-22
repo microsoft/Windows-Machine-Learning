@@ -116,7 +116,7 @@ These advanced samples show how to use various binding and evaluation features i
 
 - **Model Optimization**
 
-  Models may need further optimizations applied post conversion to support advanced features like batching and quantization. Check out the following tools for optimizig your model:
+  Models may need further optimizations applied post conversion to support advanced features like batching and quantization. Check out the following tools for optimizing your model:
 
   - **[WinML Dashboard (Preview)](https://github.com/Microsoft/Windows-Machine-Learning/tree/master/Tools/WinMLDashboard)**: a GUI-based tool for viewing, editing, converting, and validating machine learning models for Windows ML inference engine. This tool can be used to enable free dimensions on models that were built with fixed dimensions. [Download Preview Version](https://github.com/microsoft/Windows-Machine-Learning/releases)
 

@@ -143,6 +143,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\WinMLSamplesGalleryNative.Interop\WinMLSamplesGalleryNative.Interop.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Resource Include="Original-LightBlue.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Resource>

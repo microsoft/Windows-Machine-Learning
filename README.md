@@ -93,7 +93,7 @@ A computer vision technique that allows us to recompose the content of an image 
 
 ## Advanced Scenario Samples
 
-These advanced samples show how to use various binding and evaluation features feeds in Windows ML:
+These advanced samples show how to use various binding and evaluation features in Windows ML:
 
 - **[Custom Tensorization](https://github.com/Microsoft/Windows-Machine-Learning/tree/master/Samples/CustomTensorization)**: a Windows Console Application (C++/WinRT) that shows how to do custom tensorization.
 - **[Custom Operator (CPU)](https://github.com/Microsoft/Windows-Machine-Learning/tree/master/Samples/CustomOperator)**: a desktop app that defines multiple custom cpu operators. One of these is a debug operator which we invite you to integrate into your own workflow.

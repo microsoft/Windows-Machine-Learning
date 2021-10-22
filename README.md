@@ -43,7 +43,7 @@ Windows ML offers machine learning inferencing via the inbox Windows SDK as well
 |Servicing|	Microsoft-driven (customers benefit automatically)	| Developer-driven
 |Forward| compatibility	Automatically rolls forward with new features	| Developer needs to update package manually
 
-Learn mode [here](https://docs.microsoft.com/en-us/windows/ai/windows-ml/get-started).
+Learn more [here](https://docs.microsoft.com/en-us/windows/ai/windows-ml/get-started).
 
 ## Model Samples
 In this section you will find various model samples for a variety of scenarios across the different Windows ML API offerings.

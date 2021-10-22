@@ -109,7 +109,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="$(SolutionDir)$(Platform)\$(Configuration)\WinMLSamplesGalleryNative\*.dll" Link="%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
-    <None Include="$(SolutionDir)$(Platform)\$(Configuration)\WinMLSamplesGalleryNative\*.winmd" Link="%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
   <Import Project="$(WapProjPath)\Microsoft.DesktopBridge.targets" />
   <ItemGroup>

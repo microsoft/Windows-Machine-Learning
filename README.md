@@ -129,7 +129,7 @@ These advanced samples show how to use various binding and evaluation features f
 
     Download for [VS 2017](https://marketplace.visualstudio.com/items?itemName=WinML.mlgen), [VS 2019](https://marketplace.visualstudio.com/items?itemName=WinML.MLGenV2)
 
-  - Check out the [Model Demo Samples](#model-demos) and [Advanced Scenario Samples](#advanced-scenarios).
+  - Check out the [Model Samples](#model-samples) and [Advanced Scenario Samples](#advanced-scenarios).
 
 
 

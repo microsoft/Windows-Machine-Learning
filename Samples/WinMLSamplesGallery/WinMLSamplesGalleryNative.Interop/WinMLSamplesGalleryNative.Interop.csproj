@@ -17,7 +17,7 @@
 
   <Target Name="GenerateProjection" BeforeTargets="DispatchToInnerBuilds;Build;CoreCompile">
     <ItemGroup>
-      <WinMLSamplesGalleryNativeWinMDs Include="$(SolutionDir)WinMLSamplesGalleryNative\bin\$(Platform)\$(Configuration)\WinMLSamplesGalleryNative.winmd" />
+      <WinMLSamplesGalleryNativeWinMDs Include="$(SolutionDir)WinMLSamplesGalleryNative\bin\neutral\WinMLSamplesGalleryNative.winmd" />
     </ItemGroup>
 
     <PropertyGroup>

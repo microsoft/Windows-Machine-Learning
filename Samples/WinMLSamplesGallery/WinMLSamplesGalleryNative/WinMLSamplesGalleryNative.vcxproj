@@ -146,6 +146,6 @@
     <Error Condition="!Exists('..\packages\Microsoft.Windows.CppWinRT.2.0.210930.14\build\native\Microsoft.Windows.CppWinRT.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Windows.CppWinRT.2.0.210930.14\build\native\Microsoft.Windows.CppWinRT.targets'))" />
   </Target>
   <Target Name="CopyNeutral" AfterTargets="Build">
-    <Copy SourceFiles="$(SolutionDir)$(MSBuildProjectName)\bin\$(PlatformString)\$(Configuration)\WinMLSamplesGalleryNative.winmd" DestinationFolder="$(SolutionDir)$(MSBuildProjectName)\bin\neutral\WinMLSamplesGalleryNative.winmd" />
+    <Copy SourceFiles="$(OutDir)\WinMLSamplesGalleryNative.winmd" DestinationFolder="$(SolutionDir)$(MSBuildProjectName)\bin\neutral\WinMLSamplesGalleryNative.winmd" />
   </Target>
 </Project>

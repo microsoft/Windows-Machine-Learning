@@ -63,7 +63,19 @@ steps:
     inputs:
       solution: 'Samples/WinMLSamplesGallery/WinMLSamplesGallery.sln'
       vsVersion: "16.0"
-      msbuildArgs: '-v:diag /p:OutDir=$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\WinMLSamplesGallery\ /p:WindowsTargetPlatformVersion=$(WindowsTargetPlatformVersion) /t:Restore,Clean,Build'
+      msbuildArgs: '-v:diag /p:OutDir=$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\WinMLSamplesGallery\ /p:WindowsTargetPlatformVersion=$(WindowsTargetPlatformVersion) /p:UseLargeModels=true /t:Restore,Clean,Build'
+      platform: '$(BuildPlatform)'
+      configuration: '$(BuildConfiguration)'
+      msbuildArchitecture: x64
+      createLogFile: true
+    condition: succeededOrFailed()
+
+  - task: VSBuild@1
+    displayName: 'Build WinMLSamplesGallery with Large Models'
+    inputs:
+      solution: 'Samples/WinMLSamplesGallery/WinMLSamplesGallery.sln'
+      vsVersion: "16.0"
+      msbuildArgs: '-v:diag /p:OutDir=$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\WinMLSamplesGallery\  /p:UseLargeModels=true /p:WindowsTargetPlatformVersion=$(WindowsTargetPlatformVersion) /t:Restore,Clean,Build'
       platform: '$(BuildPlatform)'
       configuration: '$(BuildConfiguration)'
       msbuildArchitecture: x64

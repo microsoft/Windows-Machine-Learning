@@ -12,10 +12,5 @@ namespace WinMLSamplesGallery
             this.InitializeComponent();
             SamplesGrid.Navigate(typeof(SamplesGrid));
         }
-
-        private void Button_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
-        {
-           WinMLSamplesGalleryNative.Class.MessageBoxFromWin32();
-        }
     }
 }

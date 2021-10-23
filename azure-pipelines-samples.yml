@@ -58,6 +58,17 @@ steps:
       targetType: inline
       script: if (-not (Test-Path "${ENV:programfiles(x86)}\windows Kits\10\include\10.0.18362.0\")) { choco install windows-sdk-10-version-1903-all -y }
 
+
+  - task: PowerShell@2
+    displayName: 'Restore WinMLSamplesGalleryNative Nuget Packages'
+    inputs:
+    targetType: 'inline'
+    script: |
+      $src_root_dir = $Env:BUILD_SOURCESDIRECTORY;
+      $src_dir = [System.IO.Path]::Combine($src_root_dir, 'Samples', 'WinMLSamplesGallery')
+      $csproj = [System.IO.Path]::Combine($src_dir, 'WinMLSamplesGalleryNative', 'WinMLSamplesGalleryNative.vcxproj')
+      nuget restore $csproj
+
   - task: VSBuild@1
     displayName: 'Build WinMLSamplesGallery'
     inputs:

@@ -75,56 +75,21 @@
     <None Remove="Video.xaml" />
   </ItemGroup>
   <ItemGroup>
-	<Content Include="SampleMetadata\SampleMetadata.json">
-		<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-	</Content>
-	<Content Include="InputData\fish.png">
-		<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-	</Content>
-    <Content Include="InputData\hummingbird.jpg">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="InputData\ilsvrc2013.txt" />
-    <Content Include="InputData\kitten.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="InputData\sysnet.txt" />
-    <Content Include="Models\densenet-9.onnx">
-      <Link>Models\densenet-9.onnx</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Models\efficientnet-lite4-11.onnx">
-      <Link>Models\efficientnet-lite4-11.onnx</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Models\googlenet-9.onnx">
-      <Link>Models\googlenet-9.onnx</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Models\inception-v1-9.onnx">
-      <Link>Models\inception-v1-9.onnx</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Models\inception-v2-9.onnx">
-      <Link>Models\inception-v2-9.onnx</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Models\mobilenetv2-7.onnx">
-      <Link>Models\mobilenetv2-7.onnx</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Models\shufflenet-9.onnx">
-      <Link>Models\shufflenet-9.onnx</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Models\shufflenet-v2-10.onnx">
-      <Link>Models\shufflenet-v2-10.onnx</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Models\squeezenet1.1-7.onnx">
-      <Link>Models\squeezenet1.1-7.onnx</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
+	<Content Include="SampleMetadata\SampleMetadata.json" />
+	<Content Include="InputData\fish.png" />
+  <Content Include="InputData\hummingbird.jpg" />
+  <Content Include="InputData\ilsvrc2013.txt" />
+  <Content Include="InputData\kitten.png" />
+  <Content Include="InputData\sysnet.txt" />
+  <Content Include="Models\densenet-9.onnx" />
+  <Content Include="Models\efficientnet-lite4-11.onnx" />
+  <Content Include="Models\googlenet-9.onnx" />
+  <Content Include="Models\inception-v1-9.onnx" />
+  <Content Include="Models\inception-v2-9.onnx" />
+  <Content Include="Models\mobilenetv2-7.onnx" />
+  <Content Include="Models\shufflenet-9.onnx" />
+  <Content Include="Models\shufflenet-v2-10.onnx" />
+  <Content Include="Models\squeezenet1.1-7.onnx" />
   </ItemGroup>
 
   <ItemGroup>
@@ -145,7 +110,6 @@
 
   <ItemGroup>
     <Resource Include="Original-LightBlue.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Resource>
   </ItemGroup>
 

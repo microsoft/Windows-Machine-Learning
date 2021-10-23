@@ -62,12 +62,12 @@ steps:
   - task: PowerShell@2
     displayName: 'Restore WinMLSamplesGalleryNative Nuget Packages'
     inputs:
-    targetType: 'inline'
-    script: |
-      $src_root_dir = $Env:BUILD_SOURCESDIRECTORY;
-      $src_dir = [System.IO.Path]::Combine($src_root_dir, 'Samples', 'WinMLSamplesGallery')
-      $csproj = [System.IO.Path]::Combine($src_dir, 'WinMLSamplesGalleryNative', 'WinMLSamplesGalleryNative.vcxproj')
-      nuget restore $csproj
+      targetType: 'inline'
+      script: |
+        $src_root_dir = $Env:BUILD_SOURCESDIRECTORY;
+        $src_dir = [System.IO.Path]::Combine($src_root_dir, 'Samples', 'WinMLSamplesGallery')
+        $csproj = [System.IO.Path]::Combine($src_dir, 'WinMLSamplesGalleryNative', 'WinMLSamplesGalleryNative.vcxproj')
+        nuget restore $csproj
 
   - task: VSBuild@1
     displayName: 'Build WinMLSamplesGallery'

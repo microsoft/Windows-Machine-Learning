@@ -65,9 +65,9 @@ steps:
       targetType: 'inline'
       script: |
         $src_root_dir = $Env:BUILD_SOURCESDIRECTORY;
-        $src_dir = [System.IO.Path]::Combine($src_root_dir, 'Samples', 'WinMLSamplesGallery')
-        $csproj = [System.IO.Path]::Combine($src_dir, 'WinMLSamplesGalleryNative', 'WinMLSamplesGalleryNative.vcxproj')
-        nuget restore $csproj
+        $solution_dir = [System.IO.Path]::Combine($src_root_dir, 'Samples', 'WinMLSamplesGallery')
+        $csproj = [System.IO.Path]::Combine($solution_dir, 'WinMLSamplesGalleryNative', 'WinMLSamplesGalleryNative.vcxproj')
+        nuget restore $csproj -SolutionDirectory $solution_dir
 
   - task: VSBuild@1
     displayName: 'Build WinMLSamplesGallery'

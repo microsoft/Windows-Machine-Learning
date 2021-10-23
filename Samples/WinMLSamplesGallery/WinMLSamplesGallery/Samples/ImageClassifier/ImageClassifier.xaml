@@ -142,12 +142,14 @@
                         <local_samples:ClassifierViewModel Tag="EfficientNetLite4" Title="EfficientNet-Lite4" />
                         
                         <!--
-                        <local_samples:ModelLink Tag="RCNN_ILSVRC13" Title="RCNN_ILSVRC13" />
-                        <local_samples:ModelLink Tag="ResNet" Title="ResNet" />
-                        <local_samples:ModelLink Tag="VGG" Title="VGG" />
-                        <local_samples:ModelLink Tag="AlexNet" Title="AlexNet" />
-                        <local_samples:ModelLink Tag="CaffeNet" Title="CaffeNet" />
-                        <local_samples:ModelLink Tag="ZFNet512" Title="ZFNet-512" />
+                        Large Models: Uncomment specific models to enable them.
+
+                        <local_samples:ClassifierViewModel Tag="RCNN_ILSVRC13" Title="RCNN_ILSVRC13" />
+                        <local_samples:ClassifierViewModel Tag="ResNet" Title="ResNet" />
+                        <local_samples:ClassifierViewModel Tag="VGG" Title="VGG" />
+                        <local_samples:ClassifierViewModel Tag="AlexNet" Title="AlexNet" />
+                        <local_samples:ClassifierViewModel Tag="CaffeNet" Title="CaffeNet" />
+                        <local_samples:ClassifierViewModel Tag="ZFNet512" Title="ZFNet-512" />
                         -->
                     </GridView.Items>
                 </GridView>

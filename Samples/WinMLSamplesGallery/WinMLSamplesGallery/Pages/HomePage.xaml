@@ -35,7 +35,7 @@
                          Padding="10,20,0,5"
                          Typography.Capitals="SmallCaps"
                          Typography.StylisticSet4="True">Recently Added</TextBlock>
-
+                <Button Click="Button_Click" Content="CLICK TO LAUNCH A WIN32 MessageBOX" />
                 <Frame x:Name="SamplesGrid" />
             </StackPanel>
         </ScrollViewer>

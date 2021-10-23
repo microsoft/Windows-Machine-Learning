@@ -4,6 +4,7 @@ namespace WinMLSamplesGalleryNative
     runtimeclass Class
     {
         Class();
-        Int32 MyProperty;
+
+        static void MessageBoxFromWin32();
     }
 }

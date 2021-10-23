@@ -130,6 +130,7 @@ namespace WinMLSamplesGallery.Samples
                     { Classifier.ShuffleNet_V1,     "ms-appx:///Models/shufflenet-9.onnx"},
                     { Classifier.ShuffleNet_V2,     "ms-appx:///Models/shufflenet-v2-10.onnx"},
                     { Classifier.EfficientNetLite4, "ms-appx:///Models/efficientnet-lite4-11.onnx"},
+#if USE_LARGE_MODELS
                     // Large Models
                     { Classifier.AlexNet,           "ms-appx:///LargeModels/bvlcalexnet-9.onnx"},
                     { Classifier.CaffeNet,          "ms-appx:///LargeModels/caffenet-9.onnx"},
@@ -137,6 +138,7 @@ namespace WinMLSamplesGallery.Samples
                     { Classifier.ResNet,            "ms-appx:///LargeModels/resnet50-caffe2-v1-9.onnx"},
                     { Classifier.VGG,               "ms-appx:///LargeModels/vgg19-7.onnx"},
                     { Classifier.ZFNet512,          "ms-appx:///LargeModels/zfnet512-9.onnx"},
+#endif
                 };
             }
 
@@ -155,6 +157,7 @@ namespace WinMLSamplesGallery.Samples
                     { Classifier.ShuffleNet_V1,     () => TensorizationModels.TopK(TopK) },
                     { Classifier.ShuffleNet_V2,     () => TensorizationModels.SoftMaxThenTopK(TopK) },
                     { Classifier.EfficientNetLite4, () => TensorizationModels.SoftMaxThenTopK(TopK) },
+#if USE_LARGE_MODELS
                     // Large Models
                     { Classifier.AlexNet,           () => TensorizationModels.TopK(TopK) },
                     { Classifier.CaffeNet,          () => TensorizationModels.TopK(TopK) },
@@ -162,6 +165,7 @@ namespace WinMLSamplesGallery.Samples
                     { Classifier.ResNet,            () => TensorizationModels.SoftMaxThenTopK(TopK) },
                     { Classifier.VGG,               () => TensorizationModels.SoftMaxThenTopK(TopK) },
                     { Classifier.ZFNet512,          () => TensorizationModels.TopK(TopK) },
+#endif
                 };
             }
 
@@ -187,6 +191,7 @@ namespace WinMLSamplesGallery.Samples
                                                                                                 new float[] { 0.485f, 0.456f, 0.406f },
                                                                                                 new float[] { 0.229f, 0.224f, 0.225f}) },
                     { Classifier.EfficientNetLite4, () => TensorizationModels.NormalizeMinusOneToOneThenTransposeNHWC() },
+#if USE_LARGE_MODELS
                     // Large Models
                     { Classifier.AlexNet,           null }, // No preprocessing required
                     { Classifier.CaffeNet,          null }, // No preprocessing required
@@ -198,6 +203,7 @@ namespace WinMLSamplesGallery.Samples
                                                                                                 new float[] { 0.485f, 0.456f, 0.406f },
                                                                                                 new float[] { 0.229f, 0.224f, 0.225f}) },
                     { Classifier.ZFNet512,          null }, // No preprocessing required
+#endif
                 };
             }
 

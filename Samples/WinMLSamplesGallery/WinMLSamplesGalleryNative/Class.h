@@ -10,6 +10,9 @@ namespace winrt::WinMLSamplesGalleryNative::implementation
 
         int32_t MyProperty();
         void MyProperty(int32_t value);
+
+
+        static void MessageBoxFromWin32();
     };
 }
 

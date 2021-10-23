@@ -129,29 +129,6 @@
                             <ItemsWrapGrid x:Name="MaxItemsWrapGrid" Orientation="Horizontal"/>
                         </ItemsPanelTemplate>
                     </GridView.ItemsPanel>
-
-                    <GridView.Items>
-                        <local_samples:ClassifierViewModel Tag="SqueezeNet" Title="SqueezeNet" />
-                        <local_samples:ClassifierViewModel Tag="MobileNet" Title="MobileNet" />
-                        <local_samples:ClassifierViewModel Tag="GoogleNet" Title="GoogleNet" />
-                        <local_samples:ClassifierViewModel Tag="DenseNet121" Title="DenseNet-121" />
-                        <local_samples:ClassifierViewModel Tag="Inception_V1" Title="Inception_V1" />
-                        <local_samples:ClassifierViewModel Tag="Inception_V2" Title="Inception_V2" />
-                        <local_samples:ClassifierViewModel Tag="ShuffleNet_V1" Title="ShuffleNet_V1" />
-                        <local_samples:ClassifierViewModel Tag="ShuffleNet_V2" Title="ShuffleNet_V2" />
-                        <local_samples:ClassifierViewModel Tag="EfficientNetLite4" Title="EfficientNet-Lite4" />
-                        
-                        <!--
-                        Large Models: Uncomment specific models to enable them.
-
-                        <local_samples:ClassifierViewModel Tag="RCNN_ILSVRC13" Title="RCNN_ILSVRC13" />
-                        <local_samples:ClassifierViewModel Tag="ResNet" Title="ResNet" />
-                        <local_samples:ClassifierViewModel Tag="VGG" Title="VGG" />
-                        <local_samples:ClassifierViewModel Tag="AlexNet" Title="AlexNet" />
-                        <local_samples:ClassifierViewModel Tag="CaffeNet" Title="CaffeNet" />
-                        <local_samples:ClassifierViewModel Tag="ZFNet512" Title="ZFNet-512" />
-                        -->
-                    </GridView.Items>
                 </GridView>
 
                 <ListView Grid.Row="2"

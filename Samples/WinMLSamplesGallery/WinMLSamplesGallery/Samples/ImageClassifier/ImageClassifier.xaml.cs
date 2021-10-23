@@ -102,6 +102,28 @@ namespace WinMLSamplesGallery.Samples
 
             CurrentImageDecoder = null;
             CurrentModel = Classifier.NotSet;
+
+            var allModels = new List<ClassifierViewModel> {
+                new ClassifierViewModel { Tag = Classifier.SqueezeNet, Title = "SqueezeNet" },
+                new ClassifierViewModel { Tag = Classifier.DenseNet121, Title = "DenseNet-121" },
+                new ClassifierViewModel { Tag = Classifier.ShuffleNet_V1, Title = "ShuffleNet_V1" },
+                new ClassifierViewModel { Tag = Classifier.EfficientNetLite4, Title = "EfficientNet-Lite4" },
+
+#if USE_LARGE_MODELS
+                new ClassifierViewModel { Tag = Classifier.MobileNet, Title="MobileNet" },
+                new ClassifierViewModel { Tag = Classifier.GoogleNet, Title="GoogleNet" },
+                new ClassifierViewModel { Tag = Classifier.Inception_V1, Title="Inception_V1" },
+                new ClassifierViewModel { Tag = Classifier.Inception_V2, Title="Inception_V2" },
+                new ClassifierViewModel { Tag = Classifier.ShuffleNet_V2, Title="ShuffleNet_V2" },
+                new ClassifierViewModel { Tag = Classifier.RCNN_ILSVRC13, Title="RCNN_ILSVRC13" },
+                new ClassifierViewModel { Tag = Classifier.ResNet, Title="ResNet" },
+                new ClassifierViewModel { Tag = Classifier.VGG, Title="VGG" },
+                new ClassifierViewModel { Tag = Classifier.AlexNet, Title="AlexNet" },
+                new ClassifierViewModel { Tag = Classifier.CaffeNet, Title="CaffeNet" },
+                new ClassifierViewModel { Tag = Classifier.ZFNet512, Title="ZFNet-512" },
+#endif
+                };
+            AllModelsGrid.ItemsSource = allModels;
             AllModelsGrid.SelectRange(new ItemIndexRange(0, 1));
             AllModelsGrid.SelectionChanged += AllModelsGrid_SelectionChanged;
         }
@@ -121,19 +143,19 @@ namespace WinMLSamplesGallery.Samples
             if (_modelDictionary == null)
             {
                 _modelDictionary = new Dictionary<Classifier, string>{
-                    { Classifier.SqueezeNet,        "ms-appx:///Models/squeezenet1.1-7.onnx" },
-                    { Classifier.MobileNet,         "ms-appx:///Models/mobilenetv2-7.onnx" },
-                    { Classifier.GoogleNet,         "ms-appx:///Models/googlenet-9.onnx"},
                     { Classifier.DenseNet121,       "ms-appx:///Models/densenet-9.onnx"},
-                    { Classifier.Inception_V1,      "ms-appx:///Models/inception-v1-9.onnx"},
-                    { Classifier.Inception_V2,      "ms-appx:///Models/inception-v2-9.onnx"},
-                    { Classifier.ShuffleNet_V1,     "ms-appx:///Models/shufflenet-9.onnx"},
-                    { Classifier.ShuffleNet_V2,     "ms-appx:///Models/shufflenet-v2-10.onnx"},
                     { Classifier.EfficientNetLite4, "ms-appx:///Models/efficientnet-lite4-11.onnx"},
+                    { Classifier.ShuffleNet_V1,     "ms-appx:///Models/shufflenet-9.onnx"},
+                    { Classifier.SqueezeNet,        "ms-appx:///Models/squeezenet1.1-7.onnx" },
 #if USE_LARGE_MODELS
                     // Large Models
                     { Classifier.AlexNet,           "ms-appx:///LargeModels/bvlcalexnet-9.onnx"},
                     { Classifier.CaffeNet,          "ms-appx:///LargeModels/caffenet-9.onnx"},
+                    { Classifier.GoogleNet,         "ms-appx:///LargeModels/googlenet-9.onnx"},
+                    { Classifier.Inception_V1,      "ms-appx:///LargeModels/inception-v1-9.onnx"},
+                    { Classifier.Inception_V2,      "ms-appx:///LargeModels/inception-v2-9.onnx"},
+                    { Classifier.MobileNet,         "ms-appx:///LargeModels/mobilenetv2-7.onnx" },
+                    { Classifier.ShuffleNet_V2,     "ms-appx:///LargeModels/shufflenet-v2-10.onnx"},
                     { Classifier.RCNN_ILSVRC13,     "ms-appx:///LargeModels/rcnn-ilsvrc13-9.onnx"},
                     { Classifier.ResNet,            "ms-appx:///LargeModels/resnet50-caffe2-v1-9.onnx"},
                     { Classifier.VGG,               "ms-appx:///LargeModels/vgg19-7.onnx"},
@@ -145,22 +167,22 @@ namespace WinMLSamplesGallery.Samples
             if (_postProcessorDictionary == null)
             {
                 _postProcessorDictionary = new Dictionary<Classifier, Func<LearningModel>>{
-                    { Classifier.SqueezeNet,        () => TensorizationModels.SoftMaxThenTopK(TopK) },
-                    { Classifier.MobileNet,         () => TensorizationModels.SoftMaxThenTopK(TopK) },
-                    { Classifier.GoogleNet,         () => TensorizationModels.TopK(TopK) },
                     { Classifier.DenseNet121,       () => TensorizationModels.ReshapeThenSoftmaxThenTopK(new long[] { BatchSize, _imagenetLabels.Count, 1, 1 },
                                                                                                     TopK,
                                                                                                     BatchSize,
                                                                                                     _imagenetLabels.Count) },
-                    { Classifier.Inception_V1,      () => TensorizationModels.TopK(TopK) },
-                    { Classifier.Inception_V2,      () => TensorizationModels.TopK(TopK) },
-                    { Classifier.ShuffleNet_V1,     () => TensorizationModels.TopK(TopK) },
-                    { Classifier.ShuffleNet_V2,     () => TensorizationModels.SoftMaxThenTopK(TopK) },
                     { Classifier.EfficientNetLite4, () => TensorizationModels.SoftMaxThenTopK(TopK) },
+                    { Classifier.ShuffleNet_V1,     () => TensorizationModels.TopK(TopK) },
+                    { Classifier.SqueezeNet,        () => TensorizationModels.SoftMaxThenTopK(TopK) },
 #if USE_LARGE_MODELS
                     // Large Models
                     { Classifier.AlexNet,           () => TensorizationModels.TopK(TopK) },
                     { Classifier.CaffeNet,          () => TensorizationModels.TopK(TopK) },
+                    { Classifier.GoogleNet,         () => TensorizationModels.TopK(TopK) }, //chop
+                    { Classifier.Inception_V1,      () => TensorizationModels.TopK(TopK) },//chop
+                    { Classifier.Inception_V2,      () => TensorizationModels.TopK(TopK) }, //chop
+                    { Classifier.MobileNet,         () => TensorizationModels.SoftMaxThenTopK(TopK) }, //cchop
+                    { Classifier.ShuffleNet_V2,     () => TensorizationModels.SoftMaxThenTopK(TopK) }, //chop
                     { Classifier.RCNN_ILSVRC13,     () => TensorizationModels.TopK(TopK) },
                     { Classifier.ResNet,            () => TensorizationModels.SoftMaxThenTopK(TopK) },
                     { Classifier.VGG,               () => TensorizationModels.SoftMaxThenTopK(TopK) },
@@ -174,29 +196,29 @@ namespace WinMLSamplesGallery.Samples
                 // Preprocessing values are described in the ONNX Model Zoo:
                 // https://github.com/onnx/models/tree/master/vision/classification/mobilenet
                 _preProcessorDictionary = new Dictionary<Classifier, Func<LearningModel>>{
-                    { Classifier.SqueezeNet,        null }, // No preprocessing required
-                    { Classifier.MobileNet,         () => TensorizationModels.Normalize0_1ThenZScore(Height, Width, Channels,
-                                                                                                new float[] { 0.485f, 0.456f, 0.406f },
-                                                                                                new float[] { 0.229f, 0.224f, 0.225f}) },
-                    { Classifier.GoogleNet,         null },
                     { Classifier.DenseNet121,       () => TensorizationModels.Normalize0_1ThenZScore(Height, Width, Channels,
                                                                                                 new float[] { 0.485f, 0.456f, 0.406f },
                                                                                                 new float[] { 0.229f, 0.224f, 0.225f}) },
-                    { Classifier.Inception_V1,      null }, // No preprocessing required
-                    { Classifier.Inception_V2,      null }, // ????
+                    { Classifier.EfficientNetLite4, () => TensorizationModels.NormalizeMinusOneToOneThenTransposeNHWC() },
                     { Classifier.ShuffleNet_V1,     () => TensorizationModels.Normalize0_1ThenZScore(Height, Width, Channels,
                                                                                                 new float[] { 0.485f, 0.456f, 0.406f },
                                                                                                 new float[] { 0.229f, 0.224f, 0.225f}) },
-                    { Classifier.ShuffleNet_V2,     () => TensorizationModels.Normalize0_1ThenZScore(Height, Width, Channels,
-                                                                                                new float[] { 0.485f, 0.456f, 0.406f },
-                                                                                                new float[] { 0.229f, 0.224f, 0.225f}) },
-                    { Classifier.EfficientNetLite4, () => TensorizationModels.NormalizeMinusOneToOneThenTransposeNHWC() },
+                    { Classifier.SqueezeNet,        null }, // No preprocessing required
 #if USE_LARGE_MODELS
                     // Large Models
                     { Classifier.AlexNet,           null }, // No preprocessing required
                     { Classifier.CaffeNet,          null }, // No preprocessing required
+                    { Classifier.GoogleNet,         null },
+                    { Classifier.Inception_V1,      null }, // No preprocessing required
+                    { Classifier.Inception_V2,      null }, // ????
+                    { Classifier.MobileNet,         () => TensorizationModels.Normalize0_1ThenZScore(Height, Width, Channels,
+                                                                                                new float[] { 0.485f, 0.456f, 0.406f },
+                                                                                                new float[] { 0.229f, 0.224f, 0.225f}) },
                     { Classifier.RCNN_ILSVRC13,     null }, // No preprocessing required
                     { Classifier.ResNet,            () => TensorizationModels.Normalize0_1ThenZScore(224, 224, 4,
+                                                                                                new float[] { 0.485f, 0.456f, 0.406f },
+                                                                                                new float[] { 0.229f, 0.224f, 0.225f}) },
+                    { Classifier.ShuffleNet_V2,     () => TensorizationModels.Normalize0_1ThenZScore(Height, Width, Channels,
                                                                                                 new float[] { 0.485f, 0.456f, 0.406f },
                                                                                                 new float[] { 0.229f, 0.224f, 0.225f}) },
                     { Classifier.VGG,               () => TensorizationModels.Normalize0_1ThenZScore(224, 224, 4,

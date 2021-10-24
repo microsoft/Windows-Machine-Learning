@@ -55,13 +55,7 @@
     </Page.Resources>
 
     <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="*" />
-        </Grid.RowDefinitions>
-        <TextBlock FontWeight="Bold" FontSize="20" Margin="0,40,0,0">Select an image to classify</TextBlock>
         <ScrollViewer 
-            Grid.Row="1"
             ZoomMode="Disabled"
             IsVerticalScrollChainingEnabled="True"
             HorizontalScrollMode="Enabled" HorizontalScrollBarVisibility="Disabled"
@@ -73,7 +67,7 @@
                     <RowDefinition Height="*" />
                 </Grid.RowDefinitions>
 
-                <StackPanel Grid.Row="0" Orientation="Horizontal" Padding="5,10,0,0">
+                <StackPanel Grid.Row="0" Orientation="Horizontal" Padding="0,10,0,0">
                     <StackPanel Orientation="Vertical">
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
                             <Button FontFamily="Segoe MDL2 Assets" Content="&#xE1A5;" Width="97" Height="50" HorizontalAlignment="Left" Click="OpenButton_Clicked" />
@@ -114,7 +108,7 @@
 
                 <GridView Grid.Row="1" x:Name="AllModelsGrid" ItemTemplate="{StaticResource AllModelsTemplate}" SelectionMode="Extended"
                           SelectedIndex="0"
-                          Padding="5,10,0,0"
+                          Padding="0,10,0,0"
                           Width="600"
                           HorizontalAlignment="Left">
                     <GridView.ItemContainerStyle>
@@ -134,7 +128,7 @@
                 <ListView Grid.Row="2"
                           x:Name="InferenceResults"
                           HorizontalAlignment="Stretch"
-                          Padding="5,3,0,0"
+                          Padding="0,3,0,0"
                           ItemTemplate="{StaticResource InferenceResultsTemplate}"
                           IsItemClickEnabled="False"
                           SingleSelectionFollowsFocus="False">

@@ -114,7 +114,7 @@
   </ItemGroup>
 	
   <ItemGroup>
-    <Page Update="Common\SamplesGrid.xaml">
+    <Page Update="Pages\SamplesGrid.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>

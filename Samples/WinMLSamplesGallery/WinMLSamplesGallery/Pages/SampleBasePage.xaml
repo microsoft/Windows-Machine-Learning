@@ -9,62 +9,70 @@
 
     <Page.Resources>
         <DataTemplate x:Key="DocsListViewTemplate" x:DataType="local:SampleDoc">
-            <TextBlock Margin="10,20,0,0" FontSize="17">
+            <TextBlock FontSize="14">
                 <Hyperlink TextDecorations="None" NavigateUri="{Binding link}">
-                    BatchSizeOverride API
+                    <Run Text="{Binding name}" />
                 </Hyperlink>
             </TextBlock>
         </DataTemplate>
         <x:String x:Key="WinMLIssuesURL">https://github.com/microsoft/Windows-Machine-Learning/issues/new</x:String>
+        <x:String x:Key="WinMLIssuesURLTooltip">Send feedback about this sample.</x:String>
+        <x:String x:Key="ViewXamlSourceTooltip">View XAML Source on GitHub.</x:String>
+        <x:String x:Key="ViewSourceTooltip">View source on GitHub.</x:String>
     </Page.Resources>
 
     <ScrollViewer>
-        <Grid>
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="0.7*"></ColumnDefinition>
-                <ColumnDefinition Width="0.3*"></ColumnDefinition>
-            </Grid.ColumnDefinitions>
-            <StackPanel Grid.Row="0" Grid.Column="0" Padding="40,40">
-                <TextBlock FontWeight="Bold" FontSize="25" Text="{x:Bind sampleMetadata.Title}" TextWrapping="Wrap" />
-                <TextBlock FontSize="16" Margin="0,15,0,0" Text="{x:Bind sampleMetadata.Description}" TextWrapping="Wrap" />
-                <Frame x:Name="SampleFrame" />
-            </StackPanel>
+        <StackPanel MaxWidth="900" HorizontalAlignment="Left" Margin="10">
+            <Border BorderThickness="1" BorderBrush="Gray" CornerRadius="10,10,0,0" Background="#e0f8ff">
+                <Grid Padding="10">
+                    <TextBlock FontFamily="Segoe UI Light" FontSize="25" Text="{x:Bind sampleMetadata.Title}" TextWrapping="Wrap" />
 
-            <StackPanel Grid.Row="0" Grid.Column="1" Padding="0,40,40,0" HorizontalAlignment="Right">
-                <TextBlock FontWeight="Bold" FontSize="20">View page code on GitHub</TextBlock>
-                <TextBlock Margin="10,20,0,0" FontSize="16">
-                    <Hyperlink TextDecorations="None" NavigateUri="{x:Bind sampleMetadata.XAMLGithubLink}" ToolTipService.ToolTip="{x:Bind sampleMetadata.XAMLGithubLink}">
-                        XAML Source Code
-                    </Hyperlink>
-                </TextBlock>
-                <TextBlock Margin="10,20,0,0" FontSize="16">
-                    <Hyperlink TextDecorations="None" NavigateUri="{x:Bind sampleMetadata.CSharpGithubLink}" ToolTipService.ToolTip="{x:Bind sampleMetadata.CSharpGithubLink}">
-                        C# Source Code
-                    </Hyperlink>
-                </TextBlock>
-                <TextBlock x:Name="DocsHeader" FontWeight="Bold" FontSize="20" Margin="0,40,0,0">Documentation</TextBlock>
-                <ListView
-                    ItemTemplate="{StaticResource DocsListViewTemplate}"
-                    ItemsSource="{x:Bind sampleMetadata.Docs}">
-                    <ListView.ItemContainerStyle>
-                        <Style TargetType="ListViewItem">
-                            <Setter Property="Template">
-                                <Setter.Value>
-                                    <ControlTemplate>
-                                        <ContentPresenter/>
-                                    </ControlTemplate>
-                                </Setter.Value>
-                            </Setter>
-                        </Style>
-                    </ListView.ItemContainerStyle>
-                </ListView>
-                <TextBlock FontWeight="Bold" FontSize="20" Margin="0,40,0,0">Feedback</TextBlock>
-                <TextBlock Margin="10,20,0,0" FontSize="16">
-                    <Hyperlink TextDecorations="None" NavigateUri="{StaticResource WinMLIssuesURL}" ToolTipService.ToolTip="{StaticResource WinMLIssuesURL}">
-                        Send feedback about this page
-                    </Hyperlink>
-                </TextBlock>
-            </StackPanel>
-        </Grid>
+                    <Button Style="{StaticResource AccentButtonStyle}" Content="Learn more..." HorizontalAlignment="Right" ToolTipService.ToolTip="Learn more about this sample...">
+                        <Button.Flyout>
+                            <Flyout>
+                                <StackPanel Grid.Row="0" Grid.Column="1" HorizontalAlignment="Right">
+                                    <TextBlock Typography.Capitals="AllSmallCaps" Typography.StylisticSet4="True" FontFamily="Segoe UI Light" FontSize="20" Margin="0,0,0,5">View source code</TextBlock>
+                                    <TextBlock FontSize="14">
+                                        <Hyperlink TextDecorations="None" NavigateUri="{x:Bind sampleMetadata.XAMLGithubLink}" ToolTipService.ToolTip="{x:Bind sampleMetadata.XAMLGithubLink}">
+                                            XAML Source Code
+                                        </Hyperlink>
+                                    </TextBlock>
+                                    <TextBlock FontSize="14">
+                                        <Hyperlink TextDecorations="None" NavigateUri="{x:Bind sampleMetadata.CSharpGithubLink}" ToolTipService.ToolTip="{x:Bind sampleMetadata.CSharpGithubLink}">
+                                            C# Source Code
+                                        </Hyperlink>
+                                    </TextBlock>
+                                    <TextBlock x:Name="DocsHeader" Typography.Capitals="AllSmallCaps" Typography.StylisticSet4="True" FontFamily="Segoe UI Light" FontSize="20" Margin="0,20,0,5">Documentation</TextBlock>
+                                    <ListView
+                                            ItemTemplate="{StaticResource DocsListViewTemplate}"
+                                            ItemsSource="{x:Bind sampleMetadata.Docs}">
+                                        <ListView.ItemContainerStyle>
+                                            <Style TargetType="ListViewItem">
+                                                <Setter Property="Template">
+                                                    <Setter.Value>
+                                                        <ControlTemplate>
+                                                            <ContentPresenter/>
+                                                        </ControlTemplate>
+                                                    </Setter.Value>
+                                                </Setter>
+                                                <Setter Property="MinHeight" Value="0" />
+                                            </Style>
+                                        </ListView.ItemContainerStyle>
+                                    </ListView>
+                                    <TextBlock Typography.Capitals="AllSmallCaps" Typography.StylisticSet4="True" FontFamily="Segoe UI Light" FontSize="20" Margin="0,20,0,5">Feedback</TextBlock>
+                                    <TextBlock FontSize="14">
+                                        <Hyperlink TextDecorations="None" NavigateUri="{StaticResource WinMLIssuesURL}" ToolTipService.ToolTip="{StaticResource WinMLIssuesURL}">
+                                            Send feedback about this page
+                                        </Hyperlink>
+                                    </TextBlock>
+                                </StackPanel>
+                            </Flyout>
+                        </Button.Flyout>
+                    </Button>
+                </Grid>
+            </Border>
+            <TextBlock FontFamily="Segoe UI Light" FontSize="14" Margin="0,15,0,0" Text="{x:Bind sampleMetadata.Description}" TextWrapping="Wrap" />
+            <Frame x:Name="SampleFrame" />
+        </StackPanel>
     </ScrollViewer>
 </Page>

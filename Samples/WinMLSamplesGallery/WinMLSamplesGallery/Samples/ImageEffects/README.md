@@ -18,7 +18,7 @@ This sample demonstrates how models can be executed in order using [chaining in 
 ## Effects
 This sample demonstrates how to combine a varienty of effects in order to pre processing images and prepare them for a Machine Learning workflow.
 
-These ONNX model effects can be use downlevel and on any ONNX compliant Machine Learning engine such as Windows ML or [ONNX RUntime](https://github.com/microsoft/onnxruntime).
+These ONNX model effects can be use downlevel and on any ONNX compliant Machine Learning engine such as Windows ML or [ONNX Runtime](https://github.com/microsoft/onnxruntime).
 
 - [Resize Image](https://github.com/microsoft/Windows-Machine-Learning/blob/a08bb78dd3cd9a6449e2d02ae3cbb41b10ead463/Samples/WinMLSamplesGallery/WinMLSamplesGallery/Samples/ImageEffects/ImageEffects.xaml.cs#L321)
 - [Change Orientation](https://github.com/microsoft/Windows-Machine-Learning/blob/a08bb78dd3cd9a6449e2d02ae3cbb41b10ead463/Samples/WinMLSamplesGallery/WinMLSamplesGallery/Samples/ImageEffects/ImageEffects.xaml.cs#L345)

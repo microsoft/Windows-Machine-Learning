@@ -67,7 +67,6 @@ namespace WinMLSamplesGallery.Samples
         private static Dictionary<long, string> _imagenetLabels;
         private static Dictionary<long, string> _ilsvrc2013Labels;
 
-
         private BitmapDecoder CurrentImageDecoder { get; set; }
 
         private Classifier CurrentModel { get; set; }

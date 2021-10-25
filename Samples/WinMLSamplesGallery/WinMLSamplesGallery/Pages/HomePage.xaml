@@ -18,7 +18,7 @@
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Top" Height="250">
                 <Image Source="assets/winml_icon.ico" Stretch="UniformToFill" Height="200" VerticalAlignment="Center"/>
                 <StackPanel Orientation="Vertical" Padding="25,0,0,0" VerticalAlignment="Center">
-                    <TextBlock Foreground="#12bef6" FontSize="60" FontFamily="Segoe UI Light" FontWeight="SemiBold" HorizontalAlignment="Center">Windows AI</TextBlock>
+                    <TextBlock Foreground="#12bef6" FontSize="60" FontFamily="Segoe UI Light" FontWeight="SemiBold" HorizontalAlignment="Center">Windows ML</TextBlock>
                     <TextBlock Foreground="#12bef6" FontSize="50" FontFamily="Segoe UI Light" FontWeight="SemiBold" HorizontalAlignment="Center">1.9.1</TextBlock>
                 </StackPanel>
             </StackPanel>

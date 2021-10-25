@@ -8,7 +8,7 @@
 
   <Identity
     Name="42365107-cbb5-412e-80ac-554e5225ab17"
-    Publisher="CN=sheil"
+    Publisher="CN=Windows ML"
     Version="1.0.7.0" />
 
   <Properties>

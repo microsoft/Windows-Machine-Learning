@@ -1160,21 +1160,19 @@ HRESULT TransformBlur::OnSetOutputType(IMFMediaType* pmt)
 
 void TransformImage_Stub(
     BYTE* pDest,
-    LONG        lDestStride,
     const BYTE* pSrc,
-    LONG        lSrcStride,
-    DWORD       dwWidthInPixels,
-    DWORD       dwHeightInPixels
+    DWORD cbImageSize,
+    SegmentModel    segmentModel
 )
 {
-    // For now RGB
+    segmentModel.Run(&pSrc, &pDest, cbImageSize);
     
-
-    for (DWORD y = 0; y < dwHeightInPixels; y++)
+    // For now RGB
+    /*for (DWORD y = 0; y < dwHeightInPixels; y++)
     {
         WORD* pSrc_Pixel = (WORD*)pSrc;
         WORD* pDest_Pixel = (WORD*)pDest;
-
+        // pSrc_Pixel[x] and pSrc_Pixel[x+1] refer to 2bytes apart bc they are WORD* and WORD is 2 bytes
         for (DWORD x = 0; x < dwWidthInPixels; x++)
         {
             WORD pixel = pSrc_Pixel[x];
@@ -1182,7 +1180,7 @@ void TransformImage_Stub(
         }
         pDest += lDestStride;
         pSrc += lSrcStride;
-    }
+    }*/
 }
 
 
@@ -1221,8 +1219,7 @@ HRESULT TransformBlur::OnProcessOutput(IMFMediaBuffer* pIn, IMFMediaBuffer* pOut
     //assert(m_pTransformFn != NULL);
     if (true)
     {
-        TransformImage_Stub(pDest, lDestStride, pSrc, lSrcStride,
-            m_imageWidthInPixels, m_imageHeightInPixels);
+        TransformImage_Stub(pDest, pSrc, m_cbImageSize, m_segmentModel);
     }
     else
     {
@@ -1309,8 +1306,12 @@ HRESULT TransformBlur::UpdateFormatInfo()
 
         // Calculate the image size (not including padding)
         CHECK_HR(hr = GetImageSize(m_videoFOURCC, m_imageWidthInPixels, m_imageHeightInPixels, &m_cbImageSize));
-    }
 
+        // Set the size of the SegmentModel
+        // TODO: Check an HR? 
+        m_segmentModel = SegmentModel(m_imageWidthInPixels, m_imageHeightInPixels);
+    }
+    
 done:
     return hr;
 }

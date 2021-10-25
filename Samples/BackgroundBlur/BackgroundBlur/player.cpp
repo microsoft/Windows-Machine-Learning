@@ -296,9 +296,10 @@ HRESULT EnumerateCaptureFormats(IMFMediaSource* pSource)
         if (subtype == MFVideoFormat_NV12) {
             //OutputDebugString(L"This device supports RGB!");
             SetDeviceFormat(pSource, i);
-            //break;
+            
             LogMediaType(pType);
             OutputDebugString(L"\n");
+            break;
         }
 
         //LogMediaType(pType);

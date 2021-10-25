@@ -18,6 +18,7 @@ namespace WinMLSamplesGallery
     {
         public string Title { get; set; }
         public string Description { get; set; }
+        public string DescriptionShort { get; set; }
         public string Icon { get; set; }
         public string Tag { get; set; }
         public string XAMLGithubLink { get; set; }
@@ -42,6 +43,7 @@ namespace WinMLSamplesGallery
                 {
                     Title = currentSampleMetadata["Title"].GetString(),
                     Description = currentSampleMetadata["Description"].GetString(),
+                    DescriptionShort = currentSampleMetadata["DescriptionShort"].GetString(),
                     Icon = currentSampleMetadata["Icon"].GetString(),
                     Tag = currentSampleMetadata["Tag"].GetString(),
                     XAMLGithubLink = currentSampleMetadata["XAMLGithubLink"].GetString(),

@@ -296,7 +296,8 @@ namespace WinMLSamplesGallery.Samples
             var detensorizationDuration = HighResolutionClock.DurationInMs(start, stop);
 
             // Render
-            RenderImageInMainPanel(outputFrame);
+            var softwareBitmap = outputFrame.SoftwareBitmap;
+            RenderingHelpers.BindSoftwareBitmapToImageControl(InputImage, softwareBitmap);
 
             PerformanceMetricsMonitor.Log("Tensorize", tensorizationDuration);
             PerformanceMetricsMonitor.Log("Resize Effect", resizeDuration);
@@ -542,28 +543,6 @@ namespace WinMLSamplesGallery.Samples
                 ApplyEffects();
             }
         }
-
-        private void RenderImageInMainPanel(VideoFrame videoFrame)
-        {
-            if (videoFrame != null)
-            {
-                SoftwareBitmap displayBitmap = videoFrame.SoftwareBitmap;
-                //Image control only accepts BGRA8 encoding and Premultiplied/no alpha channel. This checks and converts
-                //the SoftwareBitmap we want to bind.
-                if (displayBitmap.BitmapPixelFormat != BitmapPixelFormat.Bgra8 ||
-                    displayBitmap.BitmapAlphaMode != BitmapAlphaMode.Premultiplied)
-                {
-                    displayBitmap = SoftwareBitmap.Convert(displayBitmap, BitmapPixelFormat.Bgra8, BitmapAlphaMode.Premultiplied);
-                }
-
-                // get software bitmap souce
-                var source = new SoftwareBitmapSource();
-                source.SetBitmapAsync(displayBitmap).GetAwaiter();
-                // draw the input image
-                InputImage.Source = source;
-            }
-        }
-
 
         private BitmapDecoder CreateBitmapDecoderFromFile(StorageFile file)
         {

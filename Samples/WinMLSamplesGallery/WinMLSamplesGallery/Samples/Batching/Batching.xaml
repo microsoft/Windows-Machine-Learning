@@ -12,21 +12,21 @@
     <Page.Resources>
         <DataTemplate x:Name="EvalResultsTemplate" x:DataType="local_samples:EvalResult">
             <StackPanel Margin="0,30,0,0">
-                <TextBlock FontWeight="Bold" FontSize="18" TextDecorations="Underline">Results averaged over 100 attempts</TextBlock>
-                <TextBlock Margin="0,15,0,0"><Bold>Note:</Bold> Avg. Total Eval Time = Average amount of time it took to infer 50 images</TextBlock>
-                <TextBlock FontSize="18" Margin="0,15,0,0">
+                <TextBlock FontWeight="Bold" FontFamily="Segoe UI Light" FontSize="14" TextDecorations="Underline">Results averaged over 100 attempts</TextBlock>
+                <TextBlock Margin="0,15,0,0" FontFamily="Segoe UI Light"><Bold>Note:</Bold> Avg. Total Eval Time = Average amount of time it took to infer 50 images</TextBlock>
+                <TextBlock FontSize="14" Margin="0,15,0,0">
                     Non-Batched Avg. Total Eval Time:
                     <Span FontWeight="Bold" Foreground="Green">
                         <Run Text="{Binding nonBatchedAvgTime}" />
                     </Span>
                 </TextBlock>
-                <TextBlock FontSize="18" Margin="0,15,0,0">
+                <TextBlock FontFamily="Segoe UI Light" FontSize="14" Margin="0,15,0,0">
                     Batched Avg. Total Eval Time:
                     <Span FontWeight="Bold" Foreground="Green">
                         <Run Text="{Binding batchedAvgTime}" />
                     </Span>
                 </TextBlock>
-                <TextBlock FontSize="18" Margin="0,15,0,0">
+                <TextBlock FontFamily="Segoe UI Light" FontSize="14" Margin="0,15,0,0">
                     Batching was
                     <Span FontWeight="Bold" Foreground="#36b8ff">
                         <Run Text="{Binding timeRatio}"/>%
@@ -38,62 +38,61 @@
     </Page.Resources>
 
     <StackPanel>
-        <TextBlock FontWeight="Bold" FontSize="20" Margin="0,40,0,0" TextWrapping="Wrap">Set the BatchSizeOverride property on your LearningModelSessionOptions object</TextBlock>
-        <StackPanel Margin="0,15,0,0" HorizontalAlignment="Left" MaxWidth="1000" Background="#F6F6F6" BorderBrush="#dbdbdb" BorderThickness="1" CornerRadius="5" Padding="15,20,15,22">
-            <TextBlock FontSize="16">
-            <Span Foreground="#3562FF">var</Span> <Span Foreground="#1684B2">options</Span> = <Span Foreground="#3562FF">new</Span> <Span Foreground="#1F9D00">LearningModelSessionOptions</Span>();
-            </TextBlock>
-            <TextBlock FontSize="16" Margin="0,10,0,0">
-            <Span Foreground="#1684B2">options</Span>.BatchSizeOverride = <Span Foreground="#086300">50</Span>;
-            </TextBlock>
-            <TextBlock FontSize="16" Margin="0,10,0,0">
-            <Span Foreground="#3562FF">var</Span> <Span Foreground="#1684B2">session</Span> = <Span Foreground="#3562FF">new</Span>
-            <Span Foreground="#1F9D00">LearningModelSession</Span>(<Span Foreground="#1684B2">model</Span>,
-            <Span Foreground="#1684B2">device</Span>, <Span Foreground="#1684B2">options</Span>);
-            </TextBlock>
-        </StackPanel>
-        <TextBlock Margin="0,10,0,0" MaxWidth="1000" HorizontalAlignment="Left" TextWrapping="Wrap">
-            <Bold>Note:</Bold> In order for batching to work, your model must have a value of -1 or a variable name in the batch dimension.
-            Additionally, the DATA_BATCH Denotation must be added on the batch dimension. To edit your model you can use tools like
-            <Hyperlink TextDecorations="None" NavigateUri="{StaticResource WinMLDashboardGithubURL}" ToolTipService.ToolTip="{StaticResource WinMLDashboardGithubURL}">
-                WinML Dashboard.
-            </Hyperlink>
-        </TextBlock>
-        <TextBlock FontWeight="Bold" FontSize="20" Margin="0,60,0,0" TextWrapping="Wrap">
-            Compare inference runtimes with and without batching on the CPU and GPU (if available)
-        </TextBlock>
-        <TextBlock FontSize="16" Margin="0,15,0,0" TextWrapping="Wrap">50 images will be passed through SqueezeNet for classification.</TextBlock>
         <StackPanel Orientation="Horizontal" Margin="0,20,0,0">
             <TextBlock FontSize="16" Margin="0,5,15,0">Device</TextBlock>
             <local_controls:DeviceComboBox x:Name="DeviceComboBox" />
             <TextBlock x:Name="BatchSizeText" FontSize="16" Margin="20,5,15,0" Width="110">Batch Size: 50</TextBlock>
-            <Slider x:Name="BatchSizeSlider" Width="200" Minimum="1" Maximum="50" Value="50" ValueChanged="UpdateBatchSizeText" />
-            <Button x:Name="StartInferenceBtn" FontSize="18" Margin="60,-2,0,0" Background="#5c5fed" Foreground="White" Click="StartInference">
+            <Slider x:Name="BatchSizeSlider" Width="200" Minimum="1" Maximum="50" Value="50" ValueChanged="UpdateBatchSizeText" Padding="0,0,20,0"/>
+            <Button x:Name="StartInferenceBtn" Style="{StaticResource AccentButtonStyle}" Click="StartInference">
                 Start Inference
-                <Button.Resources>
-                    <ResourceDictionary>
-                        <ResourceDictionary.ThemeDictionaries>
-                            <ResourceDictionary x:Key="Dark">
-                                <SolidColorBrush x:Key="ButtonForegroundPointerOver" Color="White"/>
-                                <SolidColorBrush x:Key="ButtonBackgroundPointerOver" Color="#4e50cc"/>
-                            </ResourceDictionary>
-                            <ResourceDictionary x:Key="Light">
-                                <SolidColorBrush x:Key="ButtonForegroundPointerOver" Color="White"/>
-                                <SolidColorBrush x:Key="ButtonBackgroundPointerOver" Color="#4e50cc"/>
-                            </ResourceDictionary>
-                        </ResourceDictionary.ThemeDictionaries>
-                    </ResourceDictionary>
-                </Button.Resources>
             </Button>
         </StackPanel>
-        <TextBlock Margin="0,10,0,0" MaxWidth="1000" HorizontalAlignment="Left" TextWrapping="Wrap">
-        <Bold>Note:</Bold> Performance differences are usually much more apparent when using the GPU.
-        </TextBlock>
-        <StackPanel x:Name="LoadingContainer" Visibility="Collapsed" Orientation="Horizontal" Margin="0,30,0,0">
-            <TextBlock x:Name="EvalText" FontSize="16" FontWeight="Bold" Text="Evaluating non-batched Inputs: "/>
-            <TextBlock x:Name="EvalProgressText" FontSize="16" Margin="20,0,0,0" TextAlignment="Center" />
+        <StackPanel x:Name="LoadingContainer" Visibility="Collapsed" Orientation="Horizontal" Margin="0,25,0,0">
+            <TextBlock x:Name="EvalText" FontFamily="Segoe UI Light" FontSize="14" FontWeight="Bold" Text="Evaluating non-batched Inputs: "/>
+            <TextBlock x:Name="EvalProgressText" FontFamily="Segoe UI Light" FontSize="14" Margin="20,0,0,0" TextAlignment="Center" />
             <ProgressBar x:Name="EvalProgressBar" Width="300" Value="0" Margin="20,0,0,0" />
         </StackPanel>
         <GridView x:Name="EvalResults" ItemTemplate="{StaticResource EvalResultsTemplate}" />
+        <TextBlock Margin="0,25,0,0" FontFamily="Segoe UI Light" FontSize="14" HorizontalAlignment="Left" TextWrapping="Wrap">
+            <Run FontSize="20" >Details</Run>
+            <LineBreak />
+            <LineBreak />
+            The Windows ML API allows callers to perform inference over batched inputs in order to increase performance.
+            <LineBreak />
+            <LineBreak />
+            To use batched inputs, the model must have a value of -1 or a variable name in the input batch dimension.
+            Additionally, the DATA_BATCH Denotation must be added on the batch dimension. To edit your model you can use tools like
+            <Hyperlink TextDecorations="None" NavigateUri="{StaticResource WinMLDashboardGithubURL}" ToolTipService.ToolTip="{StaticResource WinMLDashboardGithubURL}">
+                WinML Dashboard.
+            </Hyperlink>
+            <LineBreak />
+            <LineBreak />
+            By using batch size override further optimizations can be made by the engine to run machine learning models even faster.
+        </TextBlock>
+        <ComboBox SelectedIndex="0" BorderBrush="#dbdbdb" Header="" Width="70" FontSize="18" Margin="0,10,0,0"
+                  Typography.Capitals="AllSmallCaps" Typography.StylisticSet4="True"
+                  HorizontalAlignment="Right">
+            <x:String>C#</x:String>
+        </ComboBox>
+        <Grid Background="#F6F6F6" BorderBrush="#dbdbdb" BorderThickness="1" CornerRadius="5" Padding="15,20,15,22">
+            <TextBlock FontSize="14" FontFamily="Consolas">
+                <Run Foreground="#3562FF">var </Run>
+                <Run Foreground="#1684B2">options</Run>
+                <Run> = </Run>
+                <Run Foreground="#3562FF">new </Run>
+                <Run Foreground="#1F9D00">LearningModelSessionOptions</Run><Run>();</Run>
+                <LineBreak />
+                <Run Foreground="#1684B2" >options</Run><Run>.BatchSizeOverride = </Run>
+                <Run Foreground="#086300">50</Run><Run>;</Run>
+                <LineBreak />
+                <Run Foreground="#3562FF">var </Run>
+                <Run Foreground="#1684B2">session</Run>
+                <Run> = </Run>
+                <Run Foreground="#3562FF">new </Run>
+                <Run Foreground="#1F9D00">LearningModelSession</Run><Run>(</Run><Run Foreground="#1684B2">model</Run><Run>,</Run>
+                <Run Foreground="#1684B2">device</Run><Run>,</Run>
+                <Run Foreground="#1684B2">options</Run><Run>);</Run>
+            </TextBlock>
+        </Grid>
     </StackPanel>
 </Page>

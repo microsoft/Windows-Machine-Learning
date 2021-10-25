@@ -111,10 +111,6 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
-        <!--<local_controls:SampleHeader
-            Grid.Row="0"
-            Title="Object Detector"
-            Description="Pick an image and detect objects in the image." />-->
         <ScrollViewer 
             Grid.Row="1"
             ZoomMode="Disabled"

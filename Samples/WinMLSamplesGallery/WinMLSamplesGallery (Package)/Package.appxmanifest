@@ -9,7 +9,7 @@
   <Identity
     Name="42365107-cbb5-412e-80ac-554e5225ab17"
     Publisher="CN=Windows ML"
-    Version="1.0.0.0" />
+    Version="1.0.7.0" />
 
   <Properties>
     <DisplayName>WinMLSamplesGallery (Package)</DisplayName>

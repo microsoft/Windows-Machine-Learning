@@ -25,12 +25,14 @@
                 <NavigationViewItem Icon="Flag" Content="Home" Tag="home" />
                 <NavigationViewItem Icon="Library" Content="All samples" Tag="all_samples" />
                 <NavigationViewItemSeparator />
+                <!--
                 <NavigationViewItemHeader>Workloads</NavigationViewItemHeader>
-                <NavigationViewItem Icon="Library" Content="Image" Tag="image" />
-                <NavigationViewItem Icon="Library" Content="Video" Tag="video" />
-                <NavigationViewItem Icon="Library" Content="Audio" Tag="audio" />
+                <NavigationViewItem Icon="Library" Content="Image" Tag="image" IsEnabled="False" />
+                <NavigationViewItem Icon="Library" Content="Video" Tag="video" IsEnabled="False" />
+                <NavigationViewItem Icon="Library" Content="Audio" Tag="audio" IsEnabled="False" />
                 <NavigationViewItemSeparator />
-                <NavigationViewItem Icon="Library" Content="Benchmark" Tag="benchmark" />
+                <NavigationViewItem Icon="Library" Content="Benchmark" Tag="benchmark" IsEnabled="False" />
+                -->
             </NavigationView.MenuItems>
             <Frame x:Name="contentFrame" Navigated="contentFrame_Navigated" BorderBrush="#dbdbdb" BorderThickness="1,1,0,0" Margin="0,40,0,0"
                    CornerRadius="5,0,0,0" Background="White" FontFamily="Arial"/>

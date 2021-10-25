@@ -1,0 +1,10 @@
+namespace WinMLSamplesGalleryNative
+{
+    [default_interface]
+    runtimeclass Class
+    {
+        Class();
+
+        static void MessageBoxFromWin32();
+    }
+}

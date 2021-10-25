@@ -6,8 +6,8 @@
       "Description": "Pick an image and classify the scene into 1000 categories such as keyboard, mouse, pencil, and many animals. Many more models can be tested with this sample by building the WinML Samples Gallery App from source from the project GitHub. Select an image to classify.",
       "Icon": "\uE155",
       "Tag": "ImageClassifier",
-      "XAMLGithubLink": "https://github.com/microsoft/Windows-Machine-Learning/blob/user/sheilk/winml-samples-gallery/Samples/WinMLSamplesGallery/WinMLSamplesGallery/Samples/ImageClassifier/ImageClassifier.xaml",
-      "CSharpGithubLink": "https://github.com/microsoft/Windows-Machine-Learning/blob/user/sheilk/winml-samples-gallery/Samples/WinMLSamplesGallery/WinMLSamplesGallery/Samples/ImageClassifier/ImageClassifier.xaml.cs",
+      "XAMLGithubLink": "https://github.com/microsoft/Windows-Machine-Learning/blob/master/Samples/WinMLSamplesGallery/WinMLSamplesGallery/Samples/ImageClassifier/ImageClassifier.xaml",
+      "CSharpGithubLink": "https://github.com/microsoft/Windows-Machine-Learning/blob/master/Samples/WinMLSamplesGallery/WinMLSamplesGallery/Samples/ImageClassifier/ImageClassifier.xaml.cs",
       "Docs": []
     },
     {
@@ -16,8 +16,8 @@
       "Description": "Pick an image and apply a variety of effects powered by Windows AI MachineLearning like Blur, Sharpen, Contrast, and many more.",
       "Icon": "\uE155",
       "Tag": "ImageEffects",
-      "XAMLGithubLink": "https://github.com/microsoft/Windows-Machine-Learning/blob/user/sheilk/winml-samples-gallery/Samples/WinMLSamplesGallery/WinMLSamplesGallery/Samples/ImageEffects/ImageEffects.xaml",
-      "CSharpGithubLink": "https://github.com/microsoft/Windows-Machine-Learning/blob/user/sheilk/winml-samples-gallery/Samples/WinMLSamplesGallery/WinMLSamplesGallery/Samples/ImageEffects/ImageEffects.xaml.cs",
+      "XAMLGithubLink": "https://github.com/microsoft/Windows-Machine-Learning/blob/master/Samples/WinMLSamplesGallery/WinMLSamplesGallery/Samples/ImageEffects/ImageEffects.xaml",
+      "CSharpGithubLink": "https://github.com/microsoft/Windows-Machine-Learning/blob/master/Samples/WinMLSamplesGallery/WinMLSamplesGallery/Samples/ImageEffects/ImageEffects.xaml.cs",
       "Docs": []
     },
     {
@@ -26,8 +26,8 @@
       "Description": "Use this sample to compare inference runtime performace with and without batched inputs. 50 images will be passed through SqueezeNet for classification. Set a batch size and click Start Inference to compare.",
       "Icon": "\uE155",
       "Tag": "Batching",
-      "XAMLGithubLink": "https://github.com/microsoft/Windows-Machine-Learning/blob/user/sheilk/winml-samples-gallery/Samples/WinMLSamplesGallery/WinMLSamplesGallery/Samples/Batching/Batching.xaml",
-      "CSharpGithubLink": "https://github.com/microsoft/Windows-Machine-Learning/blob/user/sheilk/winml-samples-gallery/Samples/WinMLSamplesGallery/WinMLSamplesGallery/Samples/Batching/Batching.xaml.cs",
+      "XAMLGithubLink": "https://github.com/microsoft/Windows-Machine-Learning/blob/master/Samples/WinMLSamplesGallery/WinMLSamplesGallery/Samples/Batching/Batching.xaml",
+      "CSharpGithubLink": "https://github.com/microsoft/Windows-Machine-Learning/blob/master/Samples/WinMLSamplesGallery/WinMLSamplesGallery/Samples/Batching/Batching.xaml.cs",
       "Docs": [
         {
           "name": "BatchSizeOverride - API",

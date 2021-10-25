@@ -29,7 +29,7 @@ namespace WinMLSamplesGallery
         public MainWindow()
         {
             this.InitializeComponent();
-            this.Title = "Windows AI Samples Gallery";
+            this.Title = "Windows ML Samples Gallery";
             mainFrame = contentFrame;
         }
 

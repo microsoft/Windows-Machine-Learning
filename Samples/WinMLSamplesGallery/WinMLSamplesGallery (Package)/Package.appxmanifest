@@ -8,7 +8,7 @@
 
   <Identity
     Name="MicrosoftCorporationII.WindowsMLSamplesGallery"
-    Publisher="CN=Microsoft Corp."
+    Publisher="CN=Microsoft Corporation"
     Version="1.0.0.0" />
 
   <Properties>

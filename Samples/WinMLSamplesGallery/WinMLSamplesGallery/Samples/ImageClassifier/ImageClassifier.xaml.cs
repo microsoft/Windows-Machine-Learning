@@ -71,6 +71,8 @@ namespace WinMLSamplesGallery.Samples
 
         private Classifier CurrentModel { get; set; }
 
+        private bool UseOpenCV { get { return true; } }
+
         private Classifier SelectedModel
         {
             get
@@ -233,13 +235,20 @@ namespace WinMLSamplesGallery.Samples
 
         private void InitializeWindowsMachineLearning()
         {
-            _tensorizationSession =
-                CreateLearningModelSession(
-                    TensorizationModels.BasicTensorization(
-                        Height, Width,
-                        BatchSize, Channels, CurrentImageDecoder.PixelHeight, CurrentImageDecoder.PixelWidth,
-                        "nearest"),
-                        LearningModelDeviceKind.Cpu);
+            LearningModel tensorization_model = null;
+
+            if (UseOpenCV)
+            {
+                tensorization_model = TensorizationModels.CastResizeAndTranspose(Height, Width, "nearest");
+            }
+            else
+            {
+                tensorization_model = TensorizationModels.BasicTensorization(
+                            Height, Width,
+                            BatchSize, Channels, CurrentImageDecoder.PixelHeight, CurrentImageDecoder.PixelWidth,
+                            "nearest");
+            }
+            _tensorizationSession = CreateLearningModelSession(tensorization_model, LearningModelDeviceKind.Cpu);
 
             var model = SelectedModel;
             if (model != CurrentModel)
@@ -278,7 +287,13 @@ namespace WinMLSamplesGallery.Samples
 
             start = HighResolutionClock.UtcNow();
             object input = null;
-            if (ApiInformation.IsTypePresent("Windows.Media.VideoFrame"))
+            WinMLSamplesGalleryNative.OpenCVImage image = null;
+            if (UseOpenCV) {
+                image = WinMLSamplesGalleryNative.OpenCVImage.CreateFromPath("E:\\hummingbird.jpg");
+                input = image.AsTensor();
+                tensorizationSession = _tensorizationSession;
+            }
+            else if (ApiInformation.IsTypePresent("Windows.Media.VideoFrame") && false)
             {
                 var softwareBitmap = decoder.GetSoftwareBitmapAsync().GetAwaiter().GetResult();
                 input = VideoFrame.CreateWithSoftwareBitmap(softwareBitmap);
@@ -287,7 +302,7 @@ namespace WinMLSamplesGallery.Samples
             {
                 var pixelDataProvider = decoder.GetPixelDataAsync().GetAwaiter().GetResult();
                 var bytes = pixelDataProvider.DetachPixelData();
-                var buffer = bytes.AsBuffer(); // Need to make this 0 copy...
+                var buffer = bytes.AsBuffer();
                 input = TensorUInt8Bit.CreateFromBuffer(new long[] { 1, buffer.Length }, buffer);
 
                 tensorizationSession = _tensorizationSession;
@@ -303,6 +318,11 @@ namespace WinMLSamplesGallery.Samples
                 var tensorizationResults = Evaluate(tensorizationSession, input);
                 tensorizedOutput = tensorizationResults.Outputs.First().Value;
             }
+
+            if (image != null) {
+                image.Dispose();
+            }
+
             stop = HighResolutionClock.UtcNow();
             var tensorizeDuration = HighResolutionClock.DurationInMs(start, stop);
 

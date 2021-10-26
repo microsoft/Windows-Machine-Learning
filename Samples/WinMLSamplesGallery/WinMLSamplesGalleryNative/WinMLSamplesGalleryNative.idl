@@ -1,10 +1,10 @@
 namespace WinMLSamplesGalleryNative
 {
     [default_interface]
-    runtimeclass Class
+    runtimeclass OpenCVImage : Windows.Foundation.IClosable
     {
-        Class();
+        Microsoft.AI.MachineLearning.ITensor AsTensor();
 
-        static void MessageBoxFromWin32();
+        static OpenCVImage CreateFromPath(String path);
     }
 }

@@ -52,7 +52,7 @@ void SegmentModel::Run(const BYTE** pSrc, BYTE** pDest, DWORD cbImageSize)
 	// TODO: Array_View initialized as [x, y) correct? 
 	winrt::array_view<const byte> source{*pSrc, *pSrc + cbImageSize}; // TODO: Does this work when topdown vs. bottomup
 	//winrt::array_view<byte> dest{ *pDest, *pDest + cbImageSize };
-	std::vector<int64_t> shape = { 1, 3, m_imageHeightInPixels, m_imageWidthInPixels };
+	std::vector<int64_t> shape = { 1, m_imageHeightInPixels, m_imageWidthInPixels, 3 };
 
 	auto inputRawTensor = TensorUInt8Bit::CreateFromArray(std::vector<int64_t>{1, cbImageSize}, source);
 	auto outputTensor = TensorUInt8Bit::Create(shape);
@@ -99,7 +99,7 @@ LearningModel SegmentModel::ReshapeFlatBufferToNCHW(long n, long c, long h, long
 	auto builder = LearningModelBuilder::Create(11)
 		.Inputs().Add(LearningModelBuilder::CreateTensorFeatureDescriptor(L"Input", TensorKind::UInt8, winrt::array_view<int64_t const>({ 1, n * c * h * w })))
 		//.Outputs().Add(LearningModelBuilder::CreateTensorFeatureDescriptor(L"Output", TensorKind::UInt8, winrt::array_view<int64_t const>{ 1, n* c* h* w}))
-		.Outputs().Add(LearningModelBuilder::CreateTensorFeatureDescriptor(L"Output", TensorKind::UInt8, winrt::array_view<int64_t const>{1, n, c, h, w}))
+		.Outputs().Add(LearningModelBuilder::CreateTensorFeatureDescriptor(L"Output", TensorKind::UInt8, winrt::array_view<int64_t const>{n, h, w, c}))
 		.Operators().Add(LearningModelOperator((L"Cast"))
 			.SetInput(L"input", L"Input")
 			.SetOutput(L"output", L"SliceOutput")
@@ -117,7 +117,7 @@ LearningModel SegmentModel::ReshapeFlatBufferToNCHW(long n, long c, long h, long
 			.SetOutput(L"C", L"MulOutput")
 		)
 		.Operators().Add(LearningModelOperator(L"Add")
-			.SetConstant(L"A", TensorFloat::CreateFromIterable(std::vector<int64_t>{1}, std::vector<float>{1.f}))
+			.SetConstant(L"A", TensorFloat::CreateFromIterable(std::vector<int64_t>{1}, std::vector<float>{255.f}))
 			.SetInput(L"B", L"MulOutput")
 			.SetOutput(L"C", L"AddOutput")
 		)
@@ -131,7 +131,7 @@ LearningModel SegmentModel::ReshapeFlatBufferToNCHW(long n, long c, long h, long
 }
 
 LearningModelSession SegmentModel::CreateLearningModelSession(LearningModel model, bool closeModel) {
-	auto device = LearningModelDevice(LearningModelDeviceKind::Default); // Todo: Have a toggle between GPU/ CPU? 
+	auto device = LearningModelDevice(LearningModelDeviceKind::DirectX); // Todo: Have a toggle between GPU/ CPU? 
 	/*auto options = LearningModelSessionOptions() // TODO: Figure out with wifi
 	{
 		CloseModelOnSessionCreation = closeModel, // Close the model to prevent extra memory usage

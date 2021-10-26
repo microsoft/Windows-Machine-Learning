@@ -293,17 +293,17 @@ HRESULT EnumerateCaptureFormats(IMFMediaSource* pSource)
 
         GUID subtype = GUID_NULL;
         CHECK_HR(hr = pType->GetGUID(MF_MT_SUBTYPE, &subtype));
-        if (subtype == MFVideoFormat_NV12) {
+        if (subtype == MFVideoFormat_RGB24) {
             //OutputDebugString(L"This device supports RGB!");
             SetDeviceFormat(pSource, i);
             
-            LogMediaType(pType);
-            OutputDebugString(L"\n");
+            //LogMediaType(pType);
+            //OutputDebugString(L"\n");
             break;
         }
 
-        //LogMediaType(pType);
-        //OutputDebugString(L"\n");
+        LogMediaType(pType);
+        OutputDebugString(L"\n");
 
         SafeRelease(&pType);
     }
@@ -1065,6 +1065,16 @@ HRESULT AddTransformNode(
     {
 
         hr = pNode->SetObject(pMFT);
+
+        IMFAttributes* p_attr = NULL;
+        UINT32 p_aware = FALSE;
+        pMFT->GetAttributes(&p_attr);
+        MFGetAttributeUINT32(p_attr, MF_SA_D3D_AWARE, p_aware);
+        if (p_aware == TRUE) {+
+            // TODO: Get a pointer to the DXGI device manager from the EVR/output node
+            pMFT->ProcessMessage(MFT_MESSAGE_SET_D3D_MANAGER, NULL);
+        }
+        //p_attr->GetUINT32(MF_SA_D3D_AWARE, p_aware);
         //hr = pNode->SetGUID(MF_TOPONODE_TRANSFORM_OBJECTID, clsid);
     }
 
@@ -1143,6 +1153,7 @@ HRESULT AddBranchToPartialTopology(
         {
             goto done;
         }
+        
 
         // Check if a video stream, then create transform node. 
         // Get the media type handler for the stream.

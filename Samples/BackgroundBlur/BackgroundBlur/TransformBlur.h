@@ -12,7 +12,8 @@
 
 #include <initguid.h>
 #include <uuids.h>      // DirectShow GUIDs
-#include <d3d9.h>
+#include <d3d9types.h>
+#include <d3d11.h>
 #include <dxva2api.h>
 
 #define USE_LOGGING
@@ -204,8 +205,14 @@ private:
     UINT32                      m_imageWidthInPixels;
     UINT32                      m_imageHeightInPixels;
     DWORD                       m_cbImageSize;              // Image size, in bytes.
+    
     // Image transform function. (Changes based on the media type.)
     IMAGE_TRANSFORM_FN          m_pTransformFn;
+
+    // D3D fields
+    ID3D11VideoDevice*          m_pD3DVideoDevice;
+    ID3D11VideoContext*         m_pD3DVideoContex;
+
 
     SegmentModel  m_segmentModel;
 };

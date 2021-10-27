@@ -99,7 +99,7 @@
                     </StackPanel>
 
                     <StackPanel Orientation="Horizontal">
-                        <StackPanel Orientation="Vertical" Margin="5,0,0,0">
+                        <StackPanel Orientation="Vertical" Margin="11,0,0,0">
                             <Border x:Name="OriginalBorder" Background="LightGray" BorderBrush="LightGray" CornerRadius="5,5,0,0" Padding="0,5,0,5">
                                 <Grid Width="200">
                                     <TextBlock Text="Original" FontSize="18" Typography.Capitals="AllSmallCaps" Typography.StylisticSet4="True" HorizontalAlignment="Center"/>
@@ -113,7 +113,7 @@
                                     Click="InferOriginal_Click"/>
                         </StackPanel>
 
-                        <StackPanel Orientation="Vertical" Margin="15,0,0,0">
+                        <StackPanel Orientation="Vertical" Margin="11,0,0,0">
                             <Border x:Name="NoisyBorder" Background="LightGray" BorderBrush="LightGray" CornerRadius="5,5,0,0" Padding="0,5,0,5">
                                 <Grid Width="200">
                                     <TextBlock Text="Noisy" FontSize="18" Typography.Capitals="AllSmallCaps" Typography.StylisticSet4="True" HorizontalAlignment="Center"/>
@@ -127,7 +127,7 @@
                                     Click="InferNoisy_Click"/>
                         </StackPanel>
 
-                        <StackPanel Orientation="Vertical" Margin="15,0,0,0">
+                        <StackPanel Orientation="Vertical" Margin="11,0,0,0">
                             <Border x:Name="DenoisedBorder" Background="LightGray" BorderBrush="LightGray" CornerRadius="5,5,0,0" Padding="0,5,0,5">
                                 <Grid Width="200">
                                     <TextBlock Text="Denoised" FontSize="18" Typography.Capitals="AllSmallCaps" Typography.StylisticSet4="True" HorizontalAlignment="Center"/>

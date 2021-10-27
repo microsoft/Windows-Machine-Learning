@@ -37,7 +37,7 @@
     },
     {
       "Title": "OpenCV Interop",
-      "DescriptionShort": "Use Windows ML to perform inference on images loaded in OpenCV.",
+      "DescriptionShort": "The sample will use Windows ML to classify images that have been denoised using OpenCV.",
       "Description": "This sample demonstrates interop between Windows ML and OpenCV. The sample will classify images that have been denoised using OpenCV's medianBlur using the SqueezeNet model on Windows ML. Choose an image to get started.",
       "Icon": "\uE155",
       "Tag": "OpenCVInterop",

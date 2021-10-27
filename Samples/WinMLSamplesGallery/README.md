@@ -36,6 +36,8 @@ To learn how to implement these features in your application, or unlock addition
 
 - [Batched Inputs](./WinMLSamplesGallery/Samples/Batching): WinML enables batched inputs that allow callers to perform inference over multiple inputs at once in order to increase performance. Use this sample to compare inference runtime performace with and without batching.
 
+- [OpenCV Interop](./WinMLSamplesGallery/Samples/OpenCVInterop): This sample demonstrates how to interop between [Windows ML](https://docs.microsoft.com/en-us/windows/ai/windows-ml/) and [OpenCV](https://github.com/opencv/opencv). The demo will run [SqueezeNet](https://github.com/onnx/models/tree/master/vision/classification/squeezenet) image classification in WindowsML and consume images loaded and preprocessed using OpenCV.
+
 ## Feedback
 Please file an issue [here](https://github.com/microsoft/Windows-Machine-Learning/issues/new) if you encounter any issues with the WinML Samples Gallery or wish to request a new sample.
 

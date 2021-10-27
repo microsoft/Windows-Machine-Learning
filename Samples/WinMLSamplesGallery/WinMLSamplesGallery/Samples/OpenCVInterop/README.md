@@ -22,7 +22,7 @@ Windows ML will be used to resize and tensorize the image into NCHW format, as w
 - [OpenCV LICENSE](../../../../../external/opencv/4.5.4/LICENSE)
 
 ## Getting Started
-- Check out the [source](https://github.com/microsoft/Windows-Machine-Learning/blob/a08bb78dd3cd9a6449e2d02ae3cbb41b10ead463/Samples/WinMLSamplesGallery/WinMLSamplesGallery/Samples/ImageClassifier/ImageClassifier.xaml.cs#L123)
+- Check out the [source](https://github.com/microsoft/Windows-Machine-Learning/blob/91e493d699df80a633654929418f41bab136ae1d/Samples/WinMLSamplesGallery/WinMLSamplesGalleryNative/OpenCVImage.cpp#L21)
 
 ## Feedback
 Please file an issue [here](https://github.com/microsoft/Windows-Machine-Learning/issues/new) if you encounter any issues with this sample.

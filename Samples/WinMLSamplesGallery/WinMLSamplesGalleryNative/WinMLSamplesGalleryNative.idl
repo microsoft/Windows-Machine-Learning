@@ -4,7 +4,10 @@ namespace WinMLSamplesGalleryNative
     runtimeclass OpenCVImage : Windows.Foundation.IClosable
     {
         Microsoft.AI.MachineLearning.ITensor AsTensor();
+        Windows.Graphics.Imaging.SoftwareBitmap AsSoftwareBitmap();
 
         static OpenCVImage CreateFromPath(String path);
+        static OpenCVImage AddSaltAndPepperNoise(OpenCVImage image);
+        static OpenCVImage DenoiseMedianBlur(OpenCVImage image);
     }
 }

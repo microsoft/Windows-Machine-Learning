@@ -8,9 +8,15 @@ namespace winrt::WinMLSamplesGalleryNative::implementation
     struct OpenCVImage : OpenCVImageT<OpenCVImage>
     {
         OpenCVImage(winrt::hstring path);
+        OpenCVImage(cv::Mat&& image);
 
         static winrt::WinMLSamplesGalleryNative::OpenCVImage CreateFromPath(hstring const& path);
+        static winrt::WinMLSamplesGalleryNative::OpenCVImage AddSaltAndPepperNoise(winrt::WinMLSamplesGalleryNative::OpenCVImage image);
+        static winrt::WinMLSamplesGalleryNative::OpenCVImage DenoiseMedianBlur(winrt::WinMLSamplesGalleryNative::OpenCVImage image);
         winrt::Microsoft::AI::MachineLearning::ITensor AsTensor();
+        winrt::Windows::Graphics::Imaging::SoftwareBitmap AsSoftwareBitmap();
+
+        winrt::Windows::Storage::Streams::IBuffer AsWeakBuffer();
         void Close();
 
     private:

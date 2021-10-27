@@ -46,7 +46,10 @@ public:
     virtual HRESULT STDMETHODCALLTYPE get_Length(
         UINT32 * value)
     {
-        *value = m_p_end - m_p_begin;
+        if (value == nullptr) {
+            return E_POINTER;
+        }
+        *value = static_cast<uint32_t>(m_p_end - m_p_begin) * sizeof(T);
         return S_OK;
     }
 

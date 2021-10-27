@@ -13,7 +13,7 @@
 #include <initguid.h>
 #include <uuids.h>      // DirectShow GUIDs
 #include <d3d9types.h>
-#include <d3d11.h>
+#include <d3d9.h>
 #include <dxva2api.h>
 #include <d3d9helper.h>
 
@@ -212,8 +212,9 @@ private:
     IMAGE_TRANSFORM_FN          m_pTransformFn;
 
     // D3D fields
-    ID3D11VideoDevice*          m_pD3DVideoDevice;
-    ID3D11VideoContext*         m_pD3DVideoContex;
+    IDirect3DDeviceManager9*    m_pD3DDeviceManager;
+    //ID3D11VideoDevice*          m_pD3DVideoDevice;
+    //ID3D11VideoContext*         m_pD3DVideoContex;
 
 
     SegmentModel  m_segmentModel;

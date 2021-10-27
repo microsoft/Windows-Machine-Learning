@@ -107,6 +107,7 @@ protected:
     virtual HRESULT OnTopologyStatus(IMFMediaEvent* pEvent);
     virtual HRESULT OnPresentationEnded(IMFMediaEvent* pEvent);
     virtual HRESULT OnNewPresentation(IMFMediaEvent* pEvent);
+    virtual HRESULT OnTopologySet(IMFMediaEvent* pEvent);
 
     // Override to handle additional session events.
     virtual HRESULT OnSessionEvent(IMFMediaEvent*, MediaEventType)

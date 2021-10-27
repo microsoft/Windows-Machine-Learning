@@ -70,8 +70,7 @@ TransformBlur::TransformBlur(HRESULT& hr) :
     m_imageHeightInPixels(0),
     m_cbImageSize(0),
     m_pTransformFn(NULL),
-    m_pD3DVideoContex(NULL),
-    m_pD3DVideoDevice(NULL)
+    m_pD3DDeviceManager(NULL)
 {
 }
 
@@ -487,7 +486,7 @@ HRESULT TransformBlur::SetInputType(
     }
 
     // Find a d3d decoder configuration, if have a video device to use
-    if (m_pD3DVideoContex != NULL && m_pD3DVideoDevice != NULL) 
+    /*if (m_pD3DVideoContex != NULL && m_pD3DVideoDevice != NULL)
     {
         UINT profileCount = m_pD3DVideoDevice->GetVideoDecoderProfileCount();
         GUID decoderProfile = GUID_NULL;
@@ -496,7 +495,7 @@ HRESULT TransformBlur::SetInputType(
             m_pD3DVideoDevice->GetVideoDecoderProfile(i, &decoderProfile);
             
         }
-    }
+    }*/
 
     // The type is OK. 
     // Set the type, unless the caller was just testing.
@@ -775,7 +774,7 @@ HRESULT TransformBlur::ProcessMessage(
         // The pipeline should never send this message unless the MFT
         // has the MF_SA_D3D_AWARE attribute set to TRUE. However, if we
         // do get this message, it's invalid and we don't implement it.
-        // hr = OnSetD3DManager(ulParam);
+        hr = OnSetD3DManager(ulParam);
         break;
 
         // The remaining messages do not require any action from this MFT.
@@ -792,35 +791,25 @@ HRESULT TransformBlur::ProcessMessage(
 // TODO: Change param to be IUnknown* so can use from different locations
 HRESULT TransformBlur::OnSetD3DManager(ULONG_PTR ulParam)
 {
-    IMFDXGIDeviceManager* p_IMFDXGIManager = NULL;
+    IDirect3DDeviceManager9* p_IMFDXGIManager = NULL;
     HANDLE* p_deviceHandle = NULL;
-    ID3D11Device* p_D3DDevice = NULL;
     //ID3D11VideoDevice* p_D3DVideoDevice = NULL;
-    ID3D11DeviceContext* p_D3DDeviceContext = NULL;
     //ID3D11VideoContext* P_D3DVideoContext = NULL;
 
     // TODO: If ptr is null, clear the device manager 
     // 
     // Get the Device Manager sent from the  topology loader
     IUnknown* ptr = (IUnknown*) ulParam;
-    HRESULT hr = ptr->QueryInterface(IID_IMFDXGIDeviceManager, (void**)&p_IMFDXGIManager);
+    HRESULT hr = ptr->QueryInterface(IID_IDirect3DDeviceManager9, (void**)&m_pD3DDeviceManager);
     if (FAILED(hr))
     {
         goto done;
     }
 
-    // Get a handle to the D3D11 device
-    CHECK_HR(hr = p_IMFDXGIManager->OpenDeviceHandle(p_deviceHandle));
+    // Get a handle to the D3D9 device
+    // CHECK_HR(hr = p_IMFDXGIManager->OpenDeviceHandle(p_deviceHandle));
 
-    // Get a pointer to the D3D11 device
-    CHECK_HR(hr = p_IMFDXGIManager->GetVideoService(*p_deviceHandle, IID_ID3D11Device, (void**)&p_D3DDevice));
-
-    // Get a pointer to the video accelerator
-    CHECK_HR(hr = p_IMFDXGIManager->GetVideoService(*p_deviceHandle, IID_ID3D11VideoDevice, (void**)&m_pD3DVideoDevice));
-
-    // Get a pointer to the device context
-    p_D3DDevice->GetImmediateContext(&p_D3DDeviceContext);
-    CHECK_HR(hr = p_D3DDeviceContext->QueryInterface(__uuidof(ID3D11VideoContext), (void**)&m_pD3DVideoContex));
+    
 
 done:
     //TODO: Safe release anything as needed
@@ -889,7 +878,7 @@ HRESULT TransformBlur::ProcessInput(
     hr = pSample->GetBufferByIndex(0, &pBuffer);
     if (SUCCEEDED(hr))
     {
-        hr = MFGetService(pBuffer, MR_BUFFER_SERVICE, IID_PPV_ARGS(ppSurface));
+        HRESULT test = MFGetService(pBuffer, MR_BUFFER_SERVICE, IID_PPV_ARGS(ppSurface));
         pBuffer->Release();
     }
 

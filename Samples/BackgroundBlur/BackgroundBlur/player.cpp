@@ -328,6 +328,7 @@ HRESULT CPlayer::StartStream()
 
     IMFTopology* pTopology = NULL;
     IMFPresentationDescriptor* pSourcePD = NULL;
+    IDirect3DDeviceManager9* man = NULL;
 
     // Create the media session.
     HRESULT hr = CreateSession();
@@ -365,6 +366,8 @@ HRESULT CPlayer::StartStream()
     {
         goto done;
     }
+
+    hr = MFGetService(m_pSession, MR_VIDEO_ACCELERATION_SERVICE, IID_IDirect3DDeviceManager9, (void**)&man);
 
     m_state = OpenPending;
 
@@ -556,7 +559,9 @@ HRESULT CPlayer::HandleEvent(UINT_PTR pEventPtr)
     case MESessionTopologyStatus:
         hr = OnTopologyStatus(pEvent);
         break;
-
+    case MESessionTopologySet:
+        hr = OnTopologySet(pEvent);
+        break;
     case MEEndOfPresentation:
         hr = OnPresentationEnded(pEvent);
         break;
@@ -610,17 +615,10 @@ HRESULT CPlayer::OnTopologyStatus(IMFMediaEvent* pEvent)
         (void)MFGetService(m_pSession, MR_VIDEO_RENDER_SERVICE,
             IID_PPV_ARGS(&m_pVideoDisplay));
 
-        IDirect3DDeviceManager9* man = NULL;
-        hr = MFGetService(m_pSession, MR_VIDEO_ACCELERATION_SERVICE, IID_IDirect3DDeviceManager9, (void**)&man); 
-        if (hr == S_OK)
-        {
-            OutputDebugString(L"Found the d3d9 manager");
-            
-            // man->OpenDeviceHandle();
-            // TODO: Can we add a cache of the MFT so add this ? 
-        }
+        
         hr = StartPlayback();
     }
+done:
     return hr;
 }
 
@@ -643,6 +641,7 @@ HRESULT CPlayer::OnNewPresentation(IMFMediaEvent* pEvent)
     IMFPresentationDescriptor* pPD = NULL;
     IMFTopology* pTopology = NULL;
     IMFTopology* pFullTopology = NULL;
+    IDirect3DDeviceManager9* man = NULL;
 
     // Get the presentation descriptor from the event.
     HRESULT hr = GetEventObject(pEvent, &pPD);
@@ -668,6 +667,8 @@ HRESULT CPlayer::OnNewPresentation(IMFMediaEvent* pEvent)
         goto done;
     }
 
+    CHECK_HR(hr = MFGetService(m_pSession, MR_VIDEO_ACCELERATION_SERVICE, IID_IDirect3DDeviceManager9, (void**)&man));
+
 
     m_state = OpenPending;
 
@@ -677,63 +678,68 @@ done:
     return S_OK;
 }
 
-HRESULT TopoLoadD3D() {
-    IMFTopology* pTopology = NULL;
+HRESULT CPlayer::OnTopologySet(IMFMediaEvent* pEvent) {
     IDirect3DDeviceManager9* man = NULL;
-    WORD* pNumNodes = NULL;
-    IMFAttributes* pAttr = NULL;
-    IMFTopologyNode* pNode = NULL;
     HRESULT hr = S_OK;
     IMFTransform* pMFT = NULL;
-    UINT32 aware = FALSE;
 
     // Query the topo nodes for 1) video renderer service 2) MFT with D3d aware -> give them the d9manager and maybe set MF_TOPONODE_D3DAWARE 
+    // Have to have the topology queued to the media session before can find the d3dmanager
+    hr = MFGetService(m_pSession, MR_VIDEO_ACCELERATION_SERVICE, IID_IDirect3DDeviceManager9, (void**)&man);
+    if (hr == S_OK)
+    {
+        OutputDebugString(L"Found the d3d9 manager");
 
-    // 1. Find the video renderer service
-    IMFCollection* pOutputCollection = NULL;
-    pTopology->GetOutputNodeCollection(&pOutputCollection);
-    IMFTopologyNode* pOutputNode = NULL;
-    IUnknown* pUnk = NULL;
-    CHECK_HR(hr = pOutputCollection->GetElement(0, &pUnk));
-    hr = pUnk->QueryInterface(IID_PPV_ARGS(&pOutputNode));
-    // TODO: Immediately fail if no device manager? At this point mft doesn't know to even try d3dmanager
-    CHECK_HR(hr = MFGetService(pOutputNode, MR_VIDEO_ACCELERATION_SERVICE, IID_IDirect3DDeviceManager9, (void**)&man));
-    
-    if (SUCCEEDED(hr)) {
-        OutputDebugString(L"Found a node with an accel service!");
-    }
+        PROPVARIANT var;
+        IMFTopology* pTopology = NULL;
+        WORD pNumNodes = 0;
+        IMFTopologyNode* pNode = NULL;
+        UINT32 aware = FALSE;
 
-    // 2. If successful, give this d3dmanager to MFT
-    CHECK_HR(hr = pTopology->GetNodeCount(pNumNodes));
-    for (WORD i = 0; i < *pNumNodes; i++) {
-        pTopology->GetNode(i, &pNode);
-        MF_TOPOLOGY_TYPE* pType = NULL; // TODO: Instantiate outside loop?
-        pNode->GetNodeType(pType);
-
-        if (*pType == MF_TOPOLOGY_TRANSFORM_NODE)
+        PropVariantInit(&var);
+        hr = pEvent->GetValue(&var);
+        if (SUCCEEDED(hr))
         {
-            // Get the underlying MFT
-            CHECK_HR(hr = pNode->GetObject((IUnknown**)&pMFT));
-            // UINT32 p_aware = FALSE;
-            aware = MFGetAttributeUINT32(pAttr, MF_SA_D3D_AWARE, FALSE);
-
-            if (aware) {
-                pMFT->ProcessMessage(MFT_MESSAGE_SET_D3D_MANAGER, (ULONG_PTR)man);
-                break;
+            if (var.vt != VT_UNKNOWN)
+            {
+                hr = E_UNEXPECTED;
             }
         }
-    }
+        if (SUCCEEDED(hr))
+        {
+            hr = var.punkVal->QueryInterface(__uuidof(IMFTopology), (void**)&pTopology);
+        }
+        PropVariantClear(&var);
 
-    // 3. If either step fails, can't make d3d-aware
-    if (!aware) {
-        OutputDebugString(L"No MFT is d3d-aware! :(");
-    }
-    
+        //m_pSession->GetFullTopology(MFSESSION_GETFULLTOPOLOGY_CURRENT, NULL, &pTopology);
+        CHECK_HR(hr = pTopology->GetNodeCount(&pNumNodes));
+        MF_TOPOLOGY_TYPE pType ;
+        for (WORD i = 0; i < pNumNodes; i++) {
+            pTopology->GetNode(i, &pNode);
+             // TODO: Instantiate outside loop?
+            pNode->GetNodeType(&pType);
 
+            if (pType != NULL && pType == MF_TOPOLOGY_TRANSFORM_NODE)
+            {
+                IMFAttributes* pAttr = NULL;
+                // Get the underlying MFT
+                CHECK_HR(hr = pNode->GetObject((IUnknown**)&pMFT));
+                pMFT->GetAttributes(&pAttr);
+                // UINT32 p_aware = FALSE;
+                aware = MFGetAttributeUINT32(pAttr, MF_SA_D3D_AWARE, FALSE);
+                if (aware) {
+                    pMFT->ProcessMessage(MFT_MESSAGE_SET_D3D_MANAGER, (ULONG_PTR)man);
+                    break;
+                }
+            }
+        }
+
+        // TODO: Can we add a cache of the MFT so add this ? 
+    }
 
 done:
+    // TODO: Release d3dManager?
     SafeRelease(&pMFT);
-    SafeRelease(&pUnk);
     return hr;
 }
 
@@ -1148,9 +1154,9 @@ HRESULT AddTransformNode(
         UINT32 aware = MFGetAttributeUINT32(p_attr, MF_SA_D3D_AWARE, p_aware); // Seems to be 0? But attr is set to 1 in p_attr
         if (aware == TRUE) {
             // TODO: Get a pointer to the DXGI device manager from the EVR/output node
-            pMFT->ProcessMessage(MFT_MESSAGE_SET_D3D_MANAGER, NULL);
+            // pMFT->ProcessMessage(MFT_MESSAGE_SET_D3D_MANAGER, NULL);
         }
-        
+       
     }
 
     // Add the node to the topology.

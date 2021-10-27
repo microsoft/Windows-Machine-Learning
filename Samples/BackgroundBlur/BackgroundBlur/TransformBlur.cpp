@@ -295,6 +295,7 @@ HRESULT TransformBlur::GetAttributes(IMFAttributes** pAttributes)
     //IMFAttributes* pAttr = NULL;
     HRESULT hr = MFCreateAttributes(pAttributes, 1);
     hr = (*pAttributes)->SetUINT32(MF_SA_D3D_AWARE, TRUE);
+    //hr = (*pAttributes)->SetUINT32(MF_SA_D3D11_AWARE, TRUE);
     // This MFT does not support any attributes, so the method is not implemented.
     return hr;
 }
@@ -774,7 +775,7 @@ HRESULT TransformBlur::ProcessMessage(
         // The pipeline should never send this message unless the MFT
         // has the MF_SA_D3D_AWARE attribute set to TRUE. However, if we
         // do get this message, it's invalid and we don't implement it.
-        hr = OnSetD3DManager(ulParam);
+        // hr = OnSetD3DManager(ulParam);
         break;
 
         // The remaining messages do not require any action from this MFT.
@@ -798,9 +799,11 @@ HRESULT TransformBlur::OnSetD3DManager(ULONG_PTR ulParam)
     ID3D11DeviceContext* p_D3DDeviceContext = NULL;
     //ID3D11VideoContext* P_D3DVideoContext = NULL;
 
+    // TODO: If ptr is null, clear the device manager 
+    // 
     // Get the Device Manager sent from the  topology loader
     IUnknown* ptr = (IUnknown*) ulParam;
-    HRESULT hr = ptr->QueryInterface(__uuidof(IMFDXGIDeviceManager), (void**)&p_IMFDXGIManager);
+    HRESULT hr = ptr->QueryInterface(IID_IMFDXGIDeviceManager, (void**)&p_IMFDXGIManager);
     if (FAILED(hr))
     {
         goto done;
@@ -836,6 +839,8 @@ HRESULT TransformBlur::ProcessInput(
 )
 {
     AutoLock lock(m_critSec);
+    IDirect3DSurface9** ppSurface = NULL;
+    IMFMediaBuffer* pBuffer = NULL;
 
     if (pSample == NULL)
     {
@@ -879,6 +884,15 @@ HRESULT TransformBlur::ProcessInput(
 
     // Cache the sample. We do the actual work in ProcessOutput.
     m_pSample = pSample;
+    
+    // Check if for some reason already have d3dsurface
+    hr = pSample->GetBufferByIndex(0, &pBuffer);
+    if (SUCCEEDED(hr))
+    {
+        hr = MFGetService(pBuffer, MR_BUFFER_SERVICE, IID_PPV_ARGS(ppSurface));
+        pBuffer->Release();
+    }
+
     pSample->AddRef();  // Hold a reference count on the sample.
 
 done:

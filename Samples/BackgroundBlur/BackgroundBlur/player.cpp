@@ -5,7 +5,7 @@
 //
 // Copyright (c) Microsoft Corporation. All rights reserved.
 
-#include "Player.h"
+#include "player.h"
 #include "TransformBlur.h"
 #include <assert.h>
 
@@ -35,7 +35,7 @@ HRESULT GetEventObject(IMFMediaEvent* pEvent, Q** ppObject)
     return hr;
 }
 
-//HRESULT CreateMediaSource(PCWSTR pszURL, IMFMediaSource** ppSource);
+HRESULT CreateMediaSourceURL(PCWSTR pszURL, IMFMediaSource** ppSource);
 HRESULT CreateVideoCaptureDevice(IMFMediaSource** ppSource);
 
 HRESULT CreatePlaybackTopology(IMFMediaSource* pSource,
@@ -164,7 +164,7 @@ HRESULT CPlayer::OpenURL(const WCHAR* sURL)
     }
 
     // Create the media source.
-    hr = CreateMediaSource(sURL, &m_pSource);
+    hr = CreateMediaSourceURL(sURL, &m_pSource);
     if (FAILED(hr))
     {
         goto done;
@@ -610,6 +610,15 @@ HRESULT CPlayer::OnTopologyStatus(IMFMediaEvent* pEvent)
         (void)MFGetService(m_pSession, MR_VIDEO_RENDER_SERVICE,
             IID_PPV_ARGS(&m_pVideoDisplay));
 
+        IDirect3DDeviceManager9* man = NULL;
+        hr = MFGetService(m_pSession, MR_VIDEO_ACCELERATION_SERVICE, IID_IDirect3DDeviceManager9, (void**)&man); 
+        if (hr == S_OK)
+        {
+            OutputDebugString(L"Found the d3d9 manager");
+            
+            // man->OpenDeviceHandle();
+            // TODO: Can we add a cache of the MFT so add this ? 
+        }
         hr = StartPlayback();
     }
     return hr;
@@ -633,6 +642,7 @@ HRESULT CPlayer::OnNewPresentation(IMFMediaEvent* pEvent)
 {
     IMFPresentationDescriptor* pPD = NULL;
     IMFTopology* pTopology = NULL;
+    IMFTopology* pFullTopology = NULL;
 
     // Get the presentation descriptor from the event.
     HRESULT hr = GetEventObject(pEvent, &pPD);
@@ -648,6 +658,9 @@ HRESULT CPlayer::OnNewPresentation(IMFMediaEvent* pEvent)
         goto done;
     }
 
+    // IMFTopoLoader::Load(pTopology, &pFullTopology, NULL);
+    //hr = TopoLoadD3D(); // TODO: Forward decle to find it
+    
     // Set the topology on the media session.
     hr = m_pSession->SetTopology(0, pTopology);
     if (FAILED(hr))
@@ -655,12 +668,73 @@ HRESULT CPlayer::OnNewPresentation(IMFMediaEvent* pEvent)
         goto done;
     }
 
+
     m_state = OpenPending;
 
 done:
     SafeRelease(&pTopology);
     SafeRelease(&pPD);
     return S_OK;
+}
+
+HRESULT TopoLoadD3D() {
+    IMFTopology* pTopology = NULL;
+    IDirect3DDeviceManager9* man = NULL;
+    WORD* pNumNodes = NULL;
+    IMFAttributes* pAttr = NULL;
+    IMFTopologyNode* pNode = NULL;
+    HRESULT hr = S_OK;
+    IMFTransform* pMFT = NULL;
+    UINT32 aware = FALSE;
+
+    // Query the topo nodes for 1) video renderer service 2) MFT with D3d aware -> give them the d9manager and maybe set MF_TOPONODE_D3DAWARE 
+
+    // 1. Find the video renderer service
+    IMFCollection* pOutputCollection = NULL;
+    pTopology->GetOutputNodeCollection(&pOutputCollection);
+    IMFTopologyNode* pOutputNode = NULL;
+    IUnknown* pUnk = NULL;
+    CHECK_HR(hr = pOutputCollection->GetElement(0, &pUnk));
+    hr = pUnk->QueryInterface(IID_PPV_ARGS(&pOutputNode));
+    // TODO: Immediately fail if no device manager? At this point mft doesn't know to even try d3dmanager
+    CHECK_HR(hr = MFGetService(pOutputNode, MR_VIDEO_ACCELERATION_SERVICE, IID_IDirect3DDeviceManager9, (void**)&man));
+    
+    if (SUCCEEDED(hr)) {
+        OutputDebugString(L"Found a node with an accel service!");
+    }
+
+    // 2. If successful, give this d3dmanager to MFT
+    CHECK_HR(hr = pTopology->GetNodeCount(pNumNodes));
+    for (WORD i = 0; i < *pNumNodes; i++) {
+        pTopology->GetNode(i, &pNode);
+        MF_TOPOLOGY_TYPE* pType = NULL; // TODO: Instantiate outside loop?
+        pNode->GetNodeType(pType);
+
+        if (*pType == MF_TOPOLOGY_TRANSFORM_NODE)
+        {
+            // Get the underlying MFT
+            CHECK_HR(hr = pNode->GetObject((IUnknown**)&pMFT));
+            // UINT32 p_aware = FALSE;
+            aware = MFGetAttributeUINT32(pAttr, MF_SA_D3D_AWARE, FALSE);
+
+            if (aware) {
+                pMFT->ProcessMessage(MFT_MESSAGE_SET_D3D_MANAGER, (ULONG_PTR)man);
+                break;
+            }
+        }
+    }
+
+    // 3. If either step fails, can't make d3d-aware
+    if (!aware) {
+        OutputDebugString(L"No MFT is d3d-aware! :(");
+    }
+    
+
+
+done:
+    SafeRelease(&pMFT);
+    SafeRelease(&pUnk);
+    return hr;
 }
 
 //  Create a new instance of the media session.
@@ -834,7 +908,7 @@ HRESULT CreateVideoCaptureDevice(IMFMediaSource** ppSource)
 }
 
 //  Create a media source from a URL.
-HRESULT CreateMediaSource(PCWSTR sURL, IMFMediaSource** ppSource)
+HRESULT CreateMediaSourceURL(PCWSTR sURL, IMFMediaSource** ppSource)
 {
     MF_OBJECT_TYPE ObjectType = MF_OBJECT_INVALID;
 
@@ -994,7 +1068,7 @@ HRESULT AddOutputNode(
     IMFTopologyNode** ppNode)   // Receives the node pointer.
 {
     IMFTopologyNode* pNode = NULL;
-
+    IDirect3DDeviceManager9* man = NULL;
     // Create the node.
     HRESULT hr = MFCreateTopologyNode(MF_TOPOLOGY_OUTPUT_NODE, &pNode);
     if (FAILED(hr))
@@ -1031,6 +1105,7 @@ HRESULT AddOutputNode(
 
     // Return the pointer to the caller.
     *ppNode = pNode;
+    // CHECK_HR(hr = MFGetService(pActivate, MR_VIDEO_ACCELERATION_SERVICE, IID_IDirect3DDeviceManager9, (void**)&man));
     (*ppNode)->AddRef();
 
 done:
@@ -1066,16 +1141,16 @@ HRESULT AddTransformNode(
 
         hr = pNode->SetObject(pMFT);
 
+        //Determine if d3d-aware
         IMFAttributes* p_attr = NULL;
         UINT32 p_aware = FALSE;
         pMFT->GetAttributes(&p_attr);
-        MFGetAttributeUINT32(p_attr, MF_SA_D3D_AWARE, p_aware);
-        if (p_aware == TRUE) {+
+        UINT32 aware = MFGetAttributeUINT32(p_attr, MF_SA_D3D_AWARE, p_aware); // Seems to be 0? But attr is set to 1 in p_attr
+        if (aware == TRUE) {
             // TODO: Get a pointer to the DXGI device manager from the EVR/output node
             pMFT->ProcessMessage(MFT_MESSAGE_SET_D3D_MANAGER, NULL);
         }
-        //p_attr->GetUINT32(MF_SA_D3D_AWARE, p_aware);
-        //hr = pNode->SetGUID(MF_TOPONODE_TRANSFORM_OBJECTID, clsid);
+        
     }
 
     // Add the node to the topology.

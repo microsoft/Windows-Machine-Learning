@@ -16,6 +16,10 @@
 #include <strsafe.h>
 #include <initguid.h>
 
+#include <d3d9types.h>
+#include <d3d9.h>
+#include <dxva2api.h>
+
 // Media Foundation headers
 #include <mfapi.h>
 #include <mfobjects.h>
@@ -23,7 +27,9 @@
 #include <evr.h>
 #include <mftransform.h>
 
+
 #include "resource.h"
+
 
 
 template <class T> void SafeRelease(T** ppT)

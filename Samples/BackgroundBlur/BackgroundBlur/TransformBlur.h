@@ -15,6 +15,8 @@
 #include <d3d9types.h>
 #include <d3d11.h>
 #include <dxva2api.h>
+#include <d3d9helper.h>
+
 
 #define USE_LOGGING
 #include "common.h"

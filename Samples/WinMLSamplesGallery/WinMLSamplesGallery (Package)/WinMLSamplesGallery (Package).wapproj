@@ -128,7 +128,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="$(SolutionDir)$(Platform)\$(Configuration)\WinMLSamplesGalleryNative\*.dll" Link="%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
-    <None Include="E:\opencv\opencv\build\x64\vc15\bin\*.dll" Link="%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="$(SolutionDir)..\..\external\opencv\4.5.4\$(Platform)\$(Configuration)\bin\*.dll" Link="%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
   <Import Project="$(WapProjPath)\Microsoft.DesktopBridge.targets" />
   <ItemGroup>

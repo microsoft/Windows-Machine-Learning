@@ -293,7 +293,7 @@ namespace WinMLSamplesGallery.Samples
                 input = image.AsTensor();
                 tensorizationSession = _tensorizationSession;
             }
-            else if (ApiInformation.IsTypePresent("Windows.Media.VideoFrame") && false)
+            else if (ApiInformation.IsTypePresent("Windows.Media.VideoFrame"))
             {
                 var softwareBitmap = decoder.GetSoftwareBitmapAsync().GetAwaiter().GetResult();
                 input = VideoFrame.CreateWithSoftwareBitmap(softwareBitmap);

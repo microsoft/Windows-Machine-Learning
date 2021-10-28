@@ -80,7 +80,6 @@ steps:
       solution: 'build/external/opencv/cmake_config/$(BuildPlatform)/OpenCV.sln"'
       vsVersion: "16.0"
       msbuildArgs: '/p:Configuration=$(BuildConfiguration) /t:Build'
-      platform: '$(BuildPlatform)'
       configuration: '$(BuildConfiguration)'
       msbuildArchitecture: x64
       createLogFile: true
@@ -92,7 +91,6 @@ steps:
       solution: 'build/external/opencv/cmake_config/$(BuildPlatform)/INSTALL.vcxproj'
       vsVersion: "16.0"
       msbuildArgs: '/p:Configuration=$(BuildConfiguration)'
-      platform: '$(BuildPlatform)'
       configuration: '$(BuildConfiguration)'
       msbuildArchitecture: x64
       createLogFile: true

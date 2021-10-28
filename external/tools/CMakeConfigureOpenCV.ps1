@@ -38,6 +38,9 @@ $Args.Add("-DWITH_FFMPEG=OFF")
 $Args.Add("-DWITH_CUDA=OFF")
 $Args.Add("-DBUILD_EXAMPLES=OFF")
 $Args.Add("-DBUILD_TESTS=OFF")
+$Args.Add("-DBUILD_opencv_apps=OFF")
+$Args.Add("-DBUILD_DOCS=OFF")
+$Args.Add("-DBUILD_PERF_TESTS=OFF")
 $Args.Add("-DBUILD_opencv_world=ON")
 
 if ($Architecture -eq 'x64') {

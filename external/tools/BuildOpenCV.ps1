@@ -25,8 +25,8 @@ if ($Clean) {
 
 # Build OpenCV
 $solution = $CMakeBuildDirectory + "OpenCV.sln"
-msbuild /p:Configuration=$Configuration /t:Build $solution
+msbuild /p:Configuration=$Configuration /t:Build /p:LinkIncremental=false /p:DebugSymbols=false /p:DebugType=None $solution
 
 # Install
 $installProject = $CMakeBuildDirectory + "INSTALL.vcxproj"
-msbuild /p:Configuration=$Configuration $installProject
+msbuild /p:Configuration=$Configuration /p:LinkIncremental=false /p:DebugSymbols=false /p:DebugType=None $installProject

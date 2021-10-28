@@ -4,3 +4,6 @@
 [submodule "Samples/RustSqueezenet/winrt-rs"]
 	path = Samples/RustSqueezenet/winrt-rs
 	url = https://github.com/microsoft/winrt-rs.git
+[submodule "external/opencv"]
+	path = external/opencv
+	url = https://github.com/opencv/opencv.git

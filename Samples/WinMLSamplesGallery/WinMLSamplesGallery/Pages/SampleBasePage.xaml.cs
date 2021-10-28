@@ -28,6 +28,9 @@ namespace WinMLSamplesGallery
                 case "ImageEffects":
                     SampleFrame.Navigate(typeof(Samples.ImageEffects));
                     break;
+                case "OpenCVInterop":
+                    SampleFrame.Navigate(typeof(Samples.OpenCVInterop));
+                    break;
             }
             if (sampleMetadata.Docs.Count > 0)
                 DocsHeader.Visibility = Visibility.Visible;

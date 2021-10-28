@@ -8,8 +8,14 @@
     <Platforms>x86;x64;arm64</Platforms>
     <RuntimeIdentifiers>win10-x86;win10-x64;win10-arm64</RuntimeIdentifiers>
 	  <UseWinUI>true</UseWinUI>
-    <UseLargeModels Condition="$(UseLargeModels) == ''">false</UseLargeModels>
+    <UseLargeModels Condition="$(UseLargeModels) == ''">False</UseLargeModels>
+    <OpenCVLib Condition="'$(Configuration)'=='Debug'">opencv_world454d.lib</OpenCVLib>
+    <OpenCVLib Condition="'$(Configuration)'=='Release'">opencv_world454.lib</OpenCVLib>
+    <OpenCVLibFullPath>$(SolutionDir)..\..\build\external\opencv\cmake_config\$(Platform)\lib\$(Configuration)\$(OpenCVLib)</OpenCVLibFullPath>
+    <UseOpenCV>False</UseOpenCV>
+    <UseOpenCV Condition="Exists('$(OpenCVLibFullPath)')">True</UseOpenCV>
     <DefineConstants Condition="$(UseLargeModels)">$(DefineConstants);USE_LARGE_MODELS</DefineConstants>
+    <DefineConstants Condition="$(UseOpenCV)">$(DefineConstants);USE_OPENCV</DefineConstants>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup>
@@ -25,6 +31,7 @@
     <None Remove="Samples\ImageClassifier.xaml" />
     <None Remove="Samples\ImageEffects.xaml" />
     <None Remove="Samples\ObjectDetector\ObjectDetector.xaml" />
+    <None Remove="Samples\OpenCVInterop\OpenCVInterop.xaml" />
     <None Remove="Video.xaml" />
   </ItemGroup>
   <ItemGroup>
@@ -72,6 +79,7 @@
   <ItemGroup>
     <None Include="Samples\ImageEffects\ImageEffects.xaml.cs" />
     <None Include="Samples\ImageClassifier\ImageClassifier.xaml.cs" />
+    <None Include="Samples\OpenCVInterop\OpenCVInterop.xaml.cs" />
   </ItemGroup>
 
   <ItemGroup>
@@ -131,12 +139,9 @@
     <Page Update="Samples\ImageClassifier\ImageClassifier.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
-  </ItemGroup>
-
-  <ItemGroup>
-	<Page Update="Samples\ImageClassifier.xaml">
-		<Generator>MSBuild:Compile</Generator>
-	</Page>
+    <Page Update="Samples\OpenCVInterop\OpenCVInterop.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
 
   <ItemGroup>

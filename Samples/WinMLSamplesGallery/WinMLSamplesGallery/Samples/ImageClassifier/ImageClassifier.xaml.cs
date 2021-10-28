@@ -233,13 +233,11 @@ namespace WinMLSamplesGallery.Samples
 
         private void InitializeWindowsMachineLearning()
         {
-            _tensorizationSession =
-                CreateLearningModelSession(
-                    TensorizationModels.BasicTensorization(
-                        Height, Width,
-                        BatchSize, Channels, CurrentImageDecoder.PixelHeight, CurrentImageDecoder.PixelWidth,
-                        "nearest"),
-                        LearningModelDeviceKind.Cpu);
+            _tensorizationSession = CreateLearningModelSession(TensorizationModels.BasicTensorization(
+                Height, Width,
+                BatchSize, Channels, CurrentImageDecoder.PixelHeight, CurrentImageDecoder.PixelWidth,
+                "nearest"),
+                LearningModelDeviceKind.Cpu);
 
             var model = SelectedModel;
             if (model != CurrentModel)
@@ -287,7 +285,7 @@ namespace WinMLSamplesGallery.Samples
             {
                 var pixelDataProvider = decoder.GetPixelDataAsync().GetAwaiter().GetResult();
                 var bytes = pixelDataProvider.DetachPixelData();
-                var buffer = bytes.AsBuffer(); // Need to make this 0 copy...
+                var buffer = bytes.AsBuffer();
                 input = TensorUInt8Bit.CreateFromBuffer(new long[] { 1, buffer.Length }, buffer);
 
                 tensorizationSession = _tensorizationSession;
@@ -303,6 +301,7 @@ namespace WinMLSamplesGallery.Samples
                 var tensorizationResults = Evaluate(tensorizationSession, input);
                 tensorizedOutput = tensorizationResults.Outputs.First().Value;
             }
+
             stop = HighResolutionClock.UtcNow();
             var tensorizeDuration = HighResolutionClock.DurationInMs(start, stop);
 

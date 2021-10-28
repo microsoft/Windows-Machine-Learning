@@ -54,24 +54,24 @@ A subdomain of computer vision in which an algorithm looks at an image and assig
 
 | Windows App Type <br/>Distribution | UWP<br/>In-Box |  UWP<br/>NuGet | Desktop<br/>In-Box | Desktop<br/>NuGet |
 |------------|------------------------------------|--------------------------------------|------------------------------------|--------------------------------------|
-| [AlexNet](https://github.com/onnx/models/tree/master/vision/classification/alexnet)                                | | ||[✔️C# .NET5 - Samples Gallery](https://github.com/microsoft/Windows-Machine-Learning/tree/master/Samples/WinMLSamplesGallery)<br/>|
-| [CaffeNet](https://github.com/onnx/models/tree/master/vision/classification/caffenet)                                  | | ||[✔️C# .NET5 - Samples Gallery](https://github.com/microsoft/Windows-Machine-Learning/tree/master/Samples/WinMLSamplesGallery)<br/>|
-| [DenseNet](https://github.com/onnx/models/tree/master/vision/classification/densenet-121)                              | | ||[✔️C# .NET5 - Samples Gallery](https://github.com/microsoft/Windows-Machine-Learning/tree/master/Samples/WinMLSamplesGallery)<br/>|
-| [EfficientNet](https://github.com/onnx/models/tree/master/vision/classification/efficientnet-lite4)             | | ||[✔️C# .NET5 - Samples Gallery](https://github.com/microsoft/Windows-Machine-Learning/tree/master/Samples/WinMLSamplesGallery)<br/>|
+| [AlexNet](https://github.com/onnx/models/tree/master/vision/classification/alexnet)                                | | ||[✔️C# .NET5 - Samples Gallery](Samples/WinMLSamplesGallery)<br/>|
+| [CaffeNet](https://github.com/onnx/models/tree/master/vision/classification/caffenet)                                  | | ||[✔️C# .NET5 - Samples Gallery](Samples/WinMLSamplesGallery)<br/>|
+| [DenseNet](https://github.com/onnx/models/tree/master/vision/classification/densenet-121)                              | | ||[✔️C# .NET5 - Samples Gallery](Samples/WinMLSamplesGallery)<br/>|
+| [EfficientNet](https://github.com/onnx/models/tree/master/vision/classification/efficientnet-lite4)             | | ||[✔️C# .NET5 - Samples Gallery](Samples/WinMLSamplesGallery)<br/>|
 | [Emoji8](https://blogs.windows.com/windowsdeveloper/2018/11/16/introducing-emoji8/)     | [✔️C#](https://github.com/microsoft/Windows-Machine-Learning/tree/master/Samples/Emoji8/UWP/cs) |                                                 |
-| [GoogleNet](https://github.com/onnx/models/tree/master/vision/classification/inception_and_googlenet/googlenet)        | | ||[✔️C# .NET5 - Samples Gallery](https://github.com/microsoft/Windows-Machine-Learning/tree/master/Samples/WinMLSamplesGallery)<br/>|
-| [InceptionV1](https://github.com/onnx/models/tree/master/vision/classification/inception_and_googlenet/inception_v1)      | | ||[✔️C# .NET5 - Samples Gallery](https://github.com/microsoft/Windows-Machine-Learning/tree/master/Samples/WinMLSamplesGallery)<br/>|
-| [InceptionV2](https://github.com/onnx/models/tree/master/vision/classification/inception_and_googlenet/inception_v2)      | | ||[✔️C# .NET5 - Samples Gallery](https://github.com/microsoft/Windows-Machine-Learning/tree/master/Samples/WinMLSamplesGallery)<br/>|
+| [GoogleNet](https://github.com/onnx/models/tree/master/vision/classification/inception_and_googlenet/googlenet)        | | ||[✔️C# .NET5 - Samples Gallery](Samples/WinMLSamplesGallery)<br/>|
+| [InceptionV1](https://github.com/onnx/models/tree/master/vision/classification/inception_and_googlenet/inception_v1)      | | ||[✔️C# .NET5 - Samples Gallery](Samples/WinMLSamplesGallery)<br/>|
+| [InceptionV2](https://github.com/onnx/models/tree/master/vision/classification/inception_and_googlenet/inception_v2)      | | ||[✔️C# .NET5 - Samples Gallery](Samples/WinMLSamplesGallery)<br/>|
 | [MNIST](https://github.com/onnx/models/tree/master/vision/classification/mnist)      | [✔️C++/CX](https://github.com/Microsoft/Windows-Machine-Learning/tree/master/Samples/MNIST/UWP)<br/>[✔️C#](https://github.com/Microsoft/Windows-Machine-Learning/tree/master/Samples/MNIST/Tutorial/cs)<br/>    |                                                 |
-| [MobileNetV2](https://github.com/onnx/models/tree/master/vision/classification/mobilenet)                              | | ||[✔️C# .NET5 - Samples Gallery](https://github.com/microsoft/Windows-Machine-Learning/tree/master/Samples/WinMLSamplesGallery)<br/>|
-| [RCNN](https://github.com/onnx/models/tree/master/vision/classification/rcnn_ilsvrc13)                        | | ||[✔️C# .NET5 - Samples Gallery](https://github.com/microsoft/Windows-Machine-Learning/tree/master/Samples/WinMLSamplesGallery)<br/>|
-| [ResNet50](https://github.com/onnx/models/tree/master/vision/classification/resnet)                          | | ||[✔️C# .NET5 - Samples Gallery](https://github.com/microsoft/Windows-Machine-Learning/tree/master/Samples/WinMLSamplesGallery)<br/>|
-| [ShuffleNetV1](https://github.com/onnx/models/tree/master/vision/classification/shufflenet)                              | | ||[✔️C# .NET5 - Samples Gallery](https://github.com/microsoft/Windows-Machine-Learning/tree/master/Samples/WinMLSamplesGallery)<br/>|
-| [ShuffleNetV2](https://github.com/onnx/models/tree/master/vision/classification/shufflenet)                          | | ||[✔️C# .NET5 - Samples Gallery](https://github.com/microsoft/Windows-Machine-Learning/tree/master/Samples/WinMLSamplesGallery)<br/>|
-| [SqueezeNet](https://github.com/onnx/models/tree/master/vision/classification/squeezenet) | [✔️C#](https://github.com/Microsoft/Windows-Machine-Learning/tree/master/Samples/SqueezeNetObjectDetection/UWP/cs)<br/>[✔️JavaScript](https://github.com/Microsoft/Windows-Machine-Learning/tree/master/Samples/SqueezeNetObjectDetection/UWP/cs)<br/>        |                     |[✔️C++/WinRT](https://github.com/Microsoft/Windows-Machine-Learning/tree/master/Samples/SqueezeNetObjectDetection/Desktop/cpp)<br/> [✔️C# .NET5](https://github.com/Microsoft/Windows-Machine-Learning/tree/master/Samples/SqueezeNetObjectDetection/NET5)<br/>[✔️C# .NET Core 2](https://github.com/microsoft/Windows-Machine-Learning/tree/master/Samples/SqueezeNetObjectDetection/NETCore/cs)<br/>|[✔️C++/WinRT](https://github.com/Microsoft/Windows-Machine-Learning/tree/master/Samples/SqueezeNetObjectDetection/Desktop/cpp)<br/>[✔️C# .NET5 - Samples Gallery](https://github.com/microsoft/Windows-Machine-Learning/tree/master/Samples/WinMLSamplesGallery)<br/>[✔️Rust](https://github.com/microsoft/Windows-Machine-Learning/tree/master/Samples/RustSqueezenet)<br/>|
-| [VGG19](https://github.com/onnx/models/tree/master/vision/classification/vgg)                                          | | ||[✔️C# .NET5 - Samples Gallery](https://github.com/microsoft/Windows-Machine-Learning/tree/master/Samples/WinMLSamplesGallery)<br/>|
-| [VGG19bn](https://github.com/onnx/models/tree/master/vision/classification/vgg)                                       | | ||[✔️C# .NET5 - Samples Gallery](https://github.com/microsoft/Windows-Machine-Learning/tree/master/Samples/WinMLSamplesGallery)<br/>|
-| [ZFNet512](https://github.com/onnx/models/tree/master/vision/classification/zfnet-512)                                 | | ||[✔️C# .NET5 - Samples Gallery](https://github.com/microsoft/Windows-Machine-Learning/tree/master/Samples/WinMLSamplesGallery)<br/>|
+| [MobileNetV2](https://github.com/onnx/models/tree/master/vision/classification/mobilenet)                              | | ||[✔️C# .NET5 - Samples Gallery](Samples/WinMLSamplesGallery)<br/>|
+| [RCNN](https://github.com/onnx/models/tree/master/vision/classification/rcnn_ilsvrc13)                        | | ||[✔️C# .NET5 - Samples Gallery](Samples/WinMLSamplesGallery)<br/>|
+| [ResNet50](https://github.com/onnx/models/tree/master/vision/classification/resnet)                          | | ||[✔️C# .NET5 - Samples Gallery](Samples/WinMLSamplesGallery)<br/>|
+| [ShuffleNetV1](https://github.com/onnx/models/tree/master/vision/classification/shufflenet)                              | | ||[✔️C# .NET5 - Samples Gallery](Samples/WinMLSamplesGallery)<br/>|
+| [ShuffleNetV2](https://github.com/onnx/models/tree/master/vision/classification/shufflenet)                          | | ||[✔️C# .NET5 - Samples Gallery](Samples/WinMLSamplesGallery)<br/>|
+| [SqueezeNet](https://github.com/onnx/models/tree/master/vision/classification/squeezenet) | [✔️C#](https://github.com/Microsoft/Windows-Machine-Learning/tree/master/Samples/SqueezeNetObjectDetection/UWP/cs)<br/>[✔️JavaScript](https://github.com/Microsoft/Windows-Machine-Learning/tree/master/Samples/SqueezeNetObjectDetection/UWP/cs)<br/>        |                     |[✔️C++/WinRT](https://github.com/Microsoft/Windows-Machine-Learning/tree/master/Samples/SqueezeNetObjectDetection/Desktop/cpp)<br/> [✔️C# .NET5](https://github.com/Microsoft/Windows-Machine-Learning/tree/master/Samples/SqueezeNetObjectDetection/NET5)<br/>[✔️C# .NET Core 2](https://github.com/microsoft/Windows-Machine-Learning/tree/master/Samples/SqueezeNetObjectDetection/NETCore/cs)<br/>|[✔️C++/WinRT](https://github.com/Microsoft/Windows-Machine-Learning/tree/master/Samples/SqueezeNetObjectDetection/Desktop/cpp)<br/>[✔️C# .NET5 - Samples Gallery](Samples/WinMLSamplesGallery)<br/>[✔️Rust](https://github.com/microsoft/Windows-Machine-Learning/tree/master/Samples/RustSqueezenet)<br/>|
+| [VGG19](https://github.com/onnx/models/tree/master/vision/classification/vgg)                                          | | ||[✔️C# .NET5 - Samples Gallery](Samples/WinMLSamplesGallery)<br/>|
+| [VGG19bn](https://github.com/onnx/models/tree/master/vision/classification/vgg)                                       | | ||[✔️C# .NET5 - Samples Gallery](Samples/WinMLSamplesGallery)<br/>|
+| [ZFNet512](https://github.com/onnx/models/tree/master/vision/classification/zfnet-512)                                 | | ||[✔️C# .NET5 - Samples Gallery](Samples/WinMLSamplesGallery)<br/>|
 
 **Style Transfer**
 
@@ -87,7 +87,7 @@ A computer vision technique that allows us to recompose the content of an image 
 
 |            | Store App<br/>Inbox API |  Store App<br/>NuGet API | Desktop App<br/>Inbox API |  Desktop App<br/>NuGet API |
 |------------|------------------------------------|--------------------------------------|------------------------------------|--------------------------------------|
-| [YoloV4](https://github.com/onnx/models/raw/master/vision/object_detection_segmentation/yolov4/model/yolov4.onnx)                         | | ||[✔️C# .NET5 - Samples Gallery](https://github.com/microsoft/Windows-Machine-Learning/tree/master/Samples/WinMLSamplesGallery)<br/>|
+| [YoloV4](https://github.com/onnx/models/raw/master/vision/object_detection_segmentation/yolov4/model/yolov4.onnx)                         | | ||[✔️C# .NET5 - Samples Gallery](Samples/WinMLSamplesGallery)<br/>|
 
 -->
 
@@ -104,6 +104,7 @@ These advanced samples show how to use various binding and evaluation features i
 - **[PyTorch Data Analysis](https://github.com/Microsoft/Windows-AppConsult-Samples-UWP/tree/master/PlaneIdentifier)**: The tutorial shows how to solve a classification task with a neural network using the PyTorch library, export the model to ONNX format and deploy the model with the Windows Machine Learning application that can run on any Windows device.
 - **[PyTorch Image Classification](https://github.com/Microsoft/Windows-AppConsult-Samples-UWP/tree/master/PlaneIdentifier)**: The tutorial shows how to train an image classification neural network model using PyTorch, export the model to the ONNX format, and deploy it in a Windows Machine Learning application running locally on your Windows device.
 - **[YoloV4 Object Detection](https://github.com/Microsoft/Windows-AppConsult-Samples-UWP/tree/master/PlaneIdentifier)**: This tutorial shows how to build a UWP C# app that uses the YOLOv4 model to detect objects in video streams.
+- **[OpenCV Interop](Samples/WinMLSamplesGallery/WinMLSamplesGallery/Samples/OpenCVInterop)**: This sample demonstrates how to interop between [Windows ML](https://docs.microsoft.com/en-us/windows/ai/windows-ml/) and [OpenCV](https://github.com/opencv/opencv).
 
 ## Developer Tools
 
@@ -135,7 +136,7 @@ These advanced samples show how to use various binding and evaluation features i
 
     Download for [VS 2017](https://marketplace.visualstudio.com/items?itemName=WinML.mlgen), [VS 2019](https://marketplace.visualstudio.com/items?itemName=WinML.MLGenV2)
 
-  - **[WinML Samples Gallery](https://github.com/microsoft/Windows-Machine-Learning/tree/master/Samples/WinMLSamplesGallery):** explore a variety of ML integration scenarios and models.
+  - **[WinML Samples Gallery](Samples/WinMLSamplesGallery):** explore a variety of ML integration scenarios and models.
 
   - Check out the [Model Samples](#model-samples) and [Advanced Scenario Samples](#advanced-scenarios) to learn how to use Windows ML in your application.
   

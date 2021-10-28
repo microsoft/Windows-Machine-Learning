@@ -14,10 +14,15 @@
 
 # Build results
 [Bb]uild/
+[Dd]ebug/
 [Dd]ebugPublic/
+[Rr]elease/
 [Rr]eleases/
+x64/
+x86/
 [Ii]nt/
 bld/
+[Bbi]in/
 [Oo]bj/
 [Ll]og/
 [Tt]emp/

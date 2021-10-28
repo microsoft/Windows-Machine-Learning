@@ -37,8 +37,8 @@
     },
     {
       "Title": "OpenCV Interop",
-      "DescriptionShort": "The sample will use Windows ML to classify images that have been denoised using OpenCV.",
-      "Description": "This sample demonstrates interop between Windows ML and OpenCV. The sample will classify images that have been denoised using OpenCV's medianBlur using the SqueezeNet model on Windows ML. Choose an image to get started.",
+      "DescriptionShort": "The sample uses Windows ML to classify images that have been denoised using OpenCV.",
+      "Description": "This sample demonstrates interop between Windows ML and OpenCV. The sample classifes images that have been denoised using OpenCV's medianBlur using the SqueezeNet model on Windows ML. Choose an image to get started.",
       "Icon": "\uE155",
       "Tag": "OpenCVInterop",
       "XAMLGithubLink": "https://github.com/microsoft/Windows-Machine-Learning/blob/master/Samples/WinMLSamplesGallery/WinMLSamplesGallery/Samples/OpenCVInterop/OpenCVInterop.xaml",

@@ -70,7 +70,8 @@ TransformBlur::TransformBlur(HRESULT& hr) :
     m_imageHeightInPixels(0),
     m_cbImageSize(0),
     m_pTransformFn(NULL),
-    m_pD3DDeviceManager(NULL)
+    m_pD3DDeviceManager(NULL),
+    m_pDecoderService(NULL)
 {
 }
 
@@ -82,6 +83,8 @@ TransformBlur::~TransformBlur()
     SAFE_RELEASE(m_pInputType);
     SAFE_RELEASE(m_pOutputType);
     SAFE_RELEASE(m_pSample);
+    SAFE_RELEASE(m_pD3DDeviceManager);
+    SAFE_RELEASE(m_pDecoderService);
 }
 
 // IUnknown methods
@@ -791,13 +794,17 @@ HRESULT TransformBlur::ProcessMessage(
 // TODO: Change param to be IUnknown* so can use from different locations
 HRESULT TransformBlur::OnSetD3DManager(ULONG_PTR ulParam)
 {
-    IDirect3DDeviceManager9* p_IMFDXGIManager = NULL;
-    HANDLE* p_deviceHandle = NULL;
-    //ID3D11VideoDevice* p_D3DVideoDevice = NULL;
-    //ID3D11VideoContext* P_D3DVideoContext = NULL;
+    // First check if ulParam null, ie. if clearing the d3d manager
+    if (ulParam == NULL) 
+    {
+        SAFE_RELEASE(m_pD3DDeviceManager);
+        return S_OK;
+    }
 
-    // TODO: If ptr is null, clear the device manager 
-    // 
+    IDirect3DDeviceManager9* p_IMFDXGIManager = NULL;
+    HANDLE p_deviceHandle;
+    IDirectXVideoDecoderService* pDecoderService = NULL;
+
     // Get the Device Manager sent from the  topology loader
     IUnknown* ptr = (IUnknown*) ulParam;
     HRESULT hr = ptr->QueryInterface(IID_IDirect3DDeviceManager9, (void**)&m_pD3DDeviceManager);
@@ -806,13 +813,21 @@ HRESULT TransformBlur::OnSetD3DManager(ULONG_PTR ulParam)
         goto done;
     }
 
-    // Get a handle to the D3D9 device
-    // CHECK_HR(hr = p_IMFDXGIManager->OpenDeviceHandle(p_deviceHandle));
-
+    // Get a handle to the DXVA decoder service
+    hr = m_pD3DDeviceManager->OpenDeviceHandle(&p_deviceHandle);
+    // Get the decoder service
     
+    hr = m_pD3DDeviceManager->GetVideoService(p_deviceHandle, IID_IDirectXVideoDecoderService, (void**) &m_pDecoderService);
+    if (FAILED(hr)) 
+    {
+        OutputDebugString(L"Failed to get DXVA decoder service");
+        ProcessMessage(MFT_MESSAGE_SET_D3D_MANAGER, NULL);
+    }
 
 done:
     //TODO: Safe release anything as needed
+    SAFE_RELEASE(ptr);
+    //SAFE_RELEASE(p_deviceHandle);
     return hr;
 }
 

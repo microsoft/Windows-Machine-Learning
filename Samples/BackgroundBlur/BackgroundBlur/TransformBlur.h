@@ -213,9 +213,7 @@ private:
 
     // D3D fields
     IDirect3DDeviceManager9*    m_pD3DDeviceManager;
-    //ID3D11VideoDevice*          m_pD3DVideoDevice;
-    //ID3D11VideoContext*         m_pD3DVideoContex;
-
+    IDirectXVideoDecoderService* m_pDecoderService;
 
     SegmentModel  m_segmentModel;
 };

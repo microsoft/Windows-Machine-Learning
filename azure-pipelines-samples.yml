@@ -58,6 +58,11 @@ steps:
       targetType: inline
       script: if (-not (Test-Path "${ENV:programfiles(x86)}\windows Kits\10\include\10.0.18362.0\")) { choco install windows-sdk-10-version-1903-all -y }
 
+  - task: CMake@1
+    inputs:
+      workingDirectory: 'external\tools' # Optional
+      cmakeArgs: '-A $(BuildPlatform) -DCMAKE_SYSTEM_NAME=Windows -DCMAKE_SYSTEM_VERSION=10.0 -DWITH_OPENCL=OFF -DWITH_FFMPEG=OFF -DWITH_CUDA=OFF -DBUILD_EXAMPLES=OFF -DBUILD_TESTS=OFF -DBUILD_opencv_world=ON'
+
   - task: PowerShell@1
     displayName: Build OpenCV
     inputs:

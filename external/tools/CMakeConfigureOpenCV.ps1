@@ -39,7 +39,13 @@ $Args.Add("-DWITH_CUDA=OFF")
 $Args.Add("-DBUILD_EXAMPLES=OFF")
 $Args.Add("-DBUILD_TESTS=OFF")
 $Args.Add("-DBUILD_opencv_world=ON")
-$Args.Add("-DCMAKE_SYSTEM_PROCESSOR=" + $Architecture)
+
+if ($Architecture -eq 'x64') {
+  $Args.Add("-DCMAKE_SYSTEM_PROCESSOR=AMD64")
+}
+else {
+  $Args.Add("-DCMAKE_SYSTEM_PROCESSOR=" + $Architecture)
+}
 
 if ($Clean) {
     $Args.Add("--clean")	

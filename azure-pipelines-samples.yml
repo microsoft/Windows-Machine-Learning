@@ -61,7 +61,7 @@ steps:
   - task: CMake@1
     displayName: Generate OpenCV CMake Config
     inputs:
-      workingDirectory: 'external\tools' # Optional
+      workingDirectory: 'external\tools\opencv' 
       cmakeArgs: '-A $(BuildPlatform) -DCMAKE_SYSTEM_NAME=Windows -DCMAKE_SYSTEM_VERSION=10.0 -DWITH_OPENCL=OFF -DWITH_FFMPEG=OFF -DWITH_CUDA=OFF -DBUILD_EXAMPLES=OFF -DBUILD_TESTS=OFF -DBUILD_opencv_world=ON'
 
   - task: VSBuild@1

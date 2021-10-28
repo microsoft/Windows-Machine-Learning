@@ -111,7 +111,7 @@ steps:
     inputs:
       solution: 'Samples/WinMLSamplesGallery/WinMLSamplesGallery.sln'
       vsVersion: "16.0"
-      msbuildArgs: '/p:OutDir=$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\WinMLSamplesGallery\ /p:WindowsTargetPlatformVersion=$(WindowsTargetPlatformVersion) /p:UseLargeModels=true /t:Restore,Clean,Build'
+      msbuildArgs: '/p:OutDir=$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\WinMLSamplesGallery\ /p:WindowsTargetPlatformVersion=$(WindowsTargetPlatformVersion) /t:Restore,Clean,Build'
       platform: '$(BuildPlatform)'
       configuration: '$(BuildConfiguration)'
       msbuildArchitecture: x64

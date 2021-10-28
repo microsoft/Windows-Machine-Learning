@@ -18,7 +18,7 @@ Windows ML will be used to resize and tensorize the image into NCHW format, as w
 
 
 ## Licenses
-See [ThirdPartyNotices.txt]((../../../../../ThirdPartyNotices.txt) for relevant license info.
+See [ThirdPartyNotices.txt](../../../../../ThirdPartyNotices.txt) for relevant license info.
 
 ## Getting Started
 In order to build this sample, OpenCV will need to be built and linked into the WinML Samples Gallery. The OpenCV project is included as a submodule, and will need to be synced and built for your Platform Architecture and Configuration before it will appear in the Windows ML Samples Gallery. To do so follow these instructions:

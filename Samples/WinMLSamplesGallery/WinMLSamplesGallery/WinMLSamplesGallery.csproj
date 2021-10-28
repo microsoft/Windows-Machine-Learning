@@ -9,7 +9,13 @@
     <RuntimeIdentifiers>win10-x86;win10-x64;win10-arm64</RuntimeIdentifiers>
 	  <UseWinUI>true</UseWinUI>
     <UseLargeModels Condition="$(UseLargeModels) == ''">false</UseLargeModels>
+    <OpenCVLib Condition="'$(Configuration)'=='Debug'">opencv_world454d.lib</OpenCVLib>
+    <OpenCVLib Condition="'$(Configuration)'=='Release'">opencv_world454.lib</OpenCVLib>
+    <OpenCVLibFullPath>$(SolutionDir)..\..\build\external\opencv\cmake_config\$(Platform)\lib\$(Configuration)\$(OpenCVLib)</OpenCVLibFullPath>
+    <UseOpenCV>False</UseOpenCV>
+    <UseOpenCV Condition="Exists('$(OpenCVLibFullPath)')">True</UseOpenCV>
     <DefineConstants Condition="$(UseLargeModels)">$(DefineConstants);USE_LARGE_MODELS</DefineConstants>
+    <DefineConstants Condition="$(UseOpenCV)">$(DefineConstants);USE_OPENCV</DefineConstants>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup>

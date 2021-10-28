@@ -22,7 +22,22 @@ Windows ML will be used to resize and tensorize the image into NCHW format, as w
 - [OpenCV LICENSE](../../../../../external/opencv/4.5.4/LICENSE)
 
 ## Getting Started
-- Check out the [source](https://github.com/microsoft/Windows-Machine-Learning/blob/91e493d699df80a633654929418f41bab136ae1d/Samples/WinMLSamplesGallery/WinMLSamplesGalleryNative/OpenCVImage.cpp#L21)
+In order to build this sample, OpenCV will need to be built and linked into the WinML Samples Gallery. The OpenCV project is included as a submodule, and will need to be synced and built for your Platform Architecture and Configuration before it will appear in the Windows ML Samples Gallery. To do so follow these instructions:
+- Launch a Visual Studio Developer Command Prompt.
+- Navigate to root.
+- Sync submodules with `git submodule update --init --recursive`
+- Launch Powershell with `powershell`
+- Build the OpenCV project with
+
+  `.\external\tools\BuildOpenCV.ps1 -Architecture <ARCH> -Configuration <CONFIGURATION>`
+
+  For example:
+
+  `.\external\tools\BuildOpenCV.ps1 -Architecture x64 -Configuration Debug`
+- Launch the `WinMLSamplesGallery.sln` and build with the same **Architecture** and **Configuration** to see the sample appear.
+
+
+You can check out the source [here](https://github.com/microsoft/Windows-Machine-Learning/blob/91e493d699df80a633654929418f41bab136ae1d/Samples/WinMLSamplesGallery/WinMLSamplesGalleryNative/OpenCVImage.cpp#L21).
 
 ## Feedback
 Please file an issue [here](https://github.com/microsoft/Windows-Machine-Learning/issues/new) if you encounter any issues with this sample.

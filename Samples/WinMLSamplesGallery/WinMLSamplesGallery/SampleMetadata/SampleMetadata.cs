@@ -39,6 +39,17 @@ namespace WinMLSamplesGallery
             for (int i = 0; i < metadataJsonArray.Count; i++)
             {
                 JsonObject currentSampleMetadata = metadataJsonArray[i].GetObject();
+
+                bool shouldHideSample = false;
+#if !USE_OPENCV
+                shouldHideSample |= currentSampleMetadata["Tag"].GetString() == "OpenCVInterop";
+#endif
+
+                if (shouldHideSample)
+                {
+                    continue;
+                }
+
                 allSampleMetadata.Add(new SampleMetadata
                 {
                     Title = currentSampleMetadata["Title"].GetString(),

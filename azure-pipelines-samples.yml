@@ -30,6 +30,7 @@ pool:
 
 # CI trigger
 trigger:
+  batch: true
   branches:
     include:
     - master

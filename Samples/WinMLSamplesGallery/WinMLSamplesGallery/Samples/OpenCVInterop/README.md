@@ -18,6 +18,8 @@ Windows ML will be used to resize and tensorize the image into NCHW format, as w
 
 
 ## Licenses
+See [ThirdPartyNotices.txt]((../../../../../ThirdPartyNotices.txt) for relevant license info.
+
 
 - [OpenCV LICENSE](../../../../../external/opencv/4.5.4/LICENSE)
 

@@ -165,6 +165,13 @@ steps:
 
   - task: CopyFiles@2
     inputs:
+      targetFolder: '$(Build.ArtifactStagingDirectory)\AppPackages'
+      sourceFolder: 'Samples/WinMLSamplesGallery/WinMLSamplesGallery (Package)/AppPackages'
+      contents: '**\*'
+    condition: succeededOrFailed()
+
+  - task: CopyFiles@2
+    inputs:
       targetFolder: '$(Build.ArtifactStagingDirectory)\$(BuildPlatform)\$(BuildConfiguration)\SharedContent'
       sourceFolder: 'SharedContent'
       contents: '**\*'

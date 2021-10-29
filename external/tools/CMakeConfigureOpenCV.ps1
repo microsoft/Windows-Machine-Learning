@@ -21,42 +21,42 @@ Param
 )
 
 
-$Args = New-Object Collections.Generic.List[String]
-
+$Command = New-Object Collections.Generic.List[String]
+$Command.Add("cmake")
 if ($Architecture -eq 'x86') {
-  $Args.Add("-A Win32")
+  $Command.Add("-A Win32")
 }
 else {
-  $Args.Add("-A " + $Architecture)
+  $Command.Add("-A " + $Architecture)
 }
 
-$Args.Add("-G $Generator")
-$Args.Add("-DCMAKE_SYSTEM_NAME=Windows")
-$Args.Add("-DCMAKE_SYSTEM_VERSION=10.0")
-$Args.Add("-DWITH_OPENCL=OFF")
-$Args.Add("-DWITH_FFMPEG=OFF")
-$Args.Add("-DWITH_CUDA=OFF")
-$Args.Add("-DBUILD_EXAMPLES=OFF")
-$Args.Add("-DBUILD_TESTS=OFF")
-$Args.Add("-DBUILD_opencv_apps=OFF")
-$Args.Add("-DBUILD_DOCS=OFF")
-$Args.Add("-DBUILD_PERF_TESTS=OFF")
-$Args.Add("-DBUILD_opencv_world=ON")
+$Command.Add("-G '$Generator'")
+$Command.Add("-DCMAKE_SYSTEM_NAME=Windows")
+$Command.Add("-DCMAKE_SYSTEM_VERSION=10.0")
+$Command.Add("-DWITH_OPENCL=OFF")
+$Command.Add("-DWITH_FFMPEG=OFF")
+$Command.Add("-DWITH_CUDA=OFF")
+$Command.Add("-DBUILD_EXAMPLES=OFF")
+$Command.Add("-DBUILD_TESTS=OFF")
+$Command.Add("-DBUILD_opencv_apps=OFF")
+$Command.Add("-DBUILD_DOCS=OFF")
+$Command.Add("-DBUILD_PERF_TESTS=OFF")
+$Command.Add("-DBUILD_opencv_world=ON")
 
 if ($Architecture -eq 'x64') {
-  $Args.Add("-DCMAKE_SYSTEM_PROCESSOR=AMD64")
+  $Command.Add("-DCMAKE_SYSTEM_PROCESSOR=AMD64")
 }
 else {
-  $Args.Add("-DCMAKE_SYSTEM_PROCESSOR=" + $Architecture)
+  $Command.Add("-DCMAKE_SYSTEM_PROCESSOR=" + $Architecture)
 }
 
 if ($Clean) {
-    $Args.Add("--clean")	
+    $Command.Add("--clean")	
 }
 
-$Args.Add("-B $BuildDirectory")
-$Args.Add("$PSScriptRoot\..\opencv")
+$Command.Add("-B '$BuildDirectory'")
+$Command.Add("'$PSScriptRoot\..\opencv'")
 
-$ArgsStr = ($Args -join " ")
-$ArgsStr
-cmake $Args 
+$CommandStr = ($Command -join " ")
+$CommandStr
+Invoke-Expression $CommandStr

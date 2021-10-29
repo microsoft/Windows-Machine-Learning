@@ -11,7 +11,7 @@ using SixLabors.ImageSharp.Memory;
 using Microsoft.AI.MachineLearning;
 using Windows.Graphics.Imaging;
 
-namespace ImageSharpExtensrions
+namespace ImageSharpExtensionMethods
 {
     public static class ImageExtensions
     {

@@ -30,14 +30,15 @@ To learn how to implement these features in your application, or unlock addition
 - Build and deploy the **WinMLSamplesGallery (Package)** project.
 
 ## Samples
-- [Image Classifiation](./WinMLSamplesGallery/Samples/ImageClassifier): Pick an image and classify the scene into 1000 categories such as keyboard, mouse, pencil, and many animals. This sample demonstrates image classification using a large number of models taken from the [ONNX Model Zoo](https://github.com/onnx/models).
+- [Image Classifiation](./WinMLSamplesGallery/Samples/ImageClassifier): This sample demonstrates image classification using a large number of models taken from the [ONNX Model Zoo](https://github.com/onnx/models).
 
-- [Image Effects](./WinMLSamplesGallery/Samples/ImageEffects): Pick an image and apply a variety of effects powered by Windows AI MachineLearning like Blur, Sharpen, Contrast, and many more. These effects can be used to perform model input image preprocessing, or postprocessing for visualizing outputs.
+- [Image Effects](./WinMLSamplesGallery/Samples/ImageEffects): See how to apply preprocessing and postprocessing effects using platform and hardware agnostic ONNX Models and [chaining in Windows ML](https://docs.microsoft.com/en-us/windows/ai/windows-ml/chaining). 
 
-- [Batched Inputs](./WinMLSamplesGallery/Samples/Batching): WinML enables batched inputs that allow callers to perform inference over multiple inputs at once in order to increase performance. Use this sample to compare inference runtime performace with and without batching.
+- [Batched Inputs](./WinMLSamplesGallery/Samples/Batching): See how to speed up inference with batched inputs.
 
-- [OpenCV Interop](./WinMLSamplesGallery/Samples/OpenCVInterop): This sample demonstrates how to interop between [Windows ML](https://docs.microsoft.com/en-us/windows/ai/windows-ml/) and [OpenCV](https://github.com/opencv/opencv). The demo will run [SqueezeNet](https://github.com/onnx/models/tree/master/vision/classification/squeezenet) image classification in WindowsML and consume images loaded and preprocessed using OpenCV.
+- [OpenCV](./WinMLSamplesGallery/Samples/OpenCVInterop): See how to interop between [Windows ML](https://docs.microsoft.com/en-us/windows/ai/windows-ml/) and [OpenCV](https://github.com/opencv/opencv).
 
+- [ImageSharp](./WinMLSamplesGallery/Samples/ImageSharpInterop): See how to interop between [Windows ML](https://docs.microsoft.com/en-us/windows/ai/windows-ml/) and [ImageSharp](https://docs.sixlabors.com/articles/imagesharp/index.html).
 ## Feedback
 Please file an issue [here](https://github.com/microsoft/Windows-Machine-Learning/issues/new) if you encounter any issues with the WinML Samples Gallery or wish to request a new sample.
 

@@ -18,7 +18,7 @@ using WinMLSamplesGallery.Common;
 using WinMLSamplesGallery.Controls;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
-using ImageSharpExtensrions;
+using ImageSharpExtensionMethods;
 using SixLabors.ImageSharp.Processing;
 
 namespace WinMLSamplesGallery.Samples

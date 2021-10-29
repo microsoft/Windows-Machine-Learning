@@ -66,57 +66,70 @@ steps:
       targetType: inline
       script: if (-not (Test-Path "${ENV:programfiles(x86)}\windows Kits\10\include\10.0.18362.0\")) { choco install windows-sdk-10-version-1903-all -y }
 
-  - task: PowerShell@1
-    displayName: OpenCV - Configure CMake
+  - task: MsixPackaging@1
     inputs:
-      scriptName: external/tools/CMakeConfigureOpenCV.ps1
-      workingDirectory: $(System.ArtifactsDirectory)
-      arguments: >
+      outputPath: 'Samples/WinMLSamplesGallery/WinMLSamplesGallery (Package)/AppPackages'
+      solution: 'Samples/WinMLSamplesGallery/WinMLSamplesGallery.sln'
+      clean: false
+      generateBundle: true
+      buildConfiguration: 'debug'
+      updateAppVersion: false
+      appPackageDistributionMode: 'SideloadOnly'
+      msbuildLocationMethod: 'version'
+      msbuildVersion: 'latest'
+      msbuildArchitecture: 'x86'
+
+  # - task: PowerShell@1
+  #   displayName: OpenCV - Configure CMake
+  #   inputs:
+  #     scriptName: external/tools/CMakeConfigureOpenCV.ps1
+  #     workingDirectory: $(System.ArtifactsDirectory)
+  #     arguments: >
         -Architecture $(BuildPlatform)
 
-  - task: VSBuild@1
-    displayName: 'OpenCV - Build'
-    inputs:
-      solution: 'build/external/opencv/cmake_config/$(BuildPlatform)/OpenCV.sln"'
-      vsVersion: "16.0"
-      msbuildArgs: '/p:Configuration=$(BuildConfiguration) /t:Build /p:LinkIncremental=false /p:DebugSymbols=false /p:DebugType=None'
-      configuration: '$(BuildConfiguration)'
-      msbuildArchitecture: x64
-      createLogFile: true
-    condition: succeededOrFailed()
+  # - task: VSBuild@1
+  #   displayName: 'OpenCV - Build'
+  #   inputs:
+  #     solution: 'build/external/opencv/cmake_config/$(BuildPlatform)/OpenCV.sln"'
+  #     vsVersion: "16.0"
+  #     msbuildArgs: '/p:Configuration=$(BuildConfiguration) /t:Build /p:LinkIncremental=false /p:DebugSymbols=false /p:DebugType=None'
+  #     configuration: '$(BuildConfiguration)'
+  #     msbuildArchitecture: x64
+  #     createLogFile: true
+  #   condition: succeededOrFailed()
     
-  - task: VSBuild@1
-    displayName: 'OpenCV - Install'
-    inputs:
-      solution: 'build/external/opencv/cmake_config/$(BuildPlatform)/INSTALL.vcxproj'
-      vsVersion: "16.0"
-      msbuildArgs: '/p:Configuration=$(BuildConfiguration) /p:LinkIncremental=false /p:DebugSymbols=false /p:DebugType=None'
-      configuration: '$(BuildConfiguration)'
-      msbuildArchitecture: x64
-      createLogFile: true
-    condition: succeededOrFailed()
+  # - task: VSBuild@1
+  #   displayName: 'OpenCV - Install'
+  #   inputs:
+  #     solution: 'build/external/opencv/cmake_config/$(BuildPlatform)/INSTALL.vcxproj'
+  #     vsVersion: "16.0"
+  #     msbuildArgs: '/p:Configuration=$(BuildConfiguration) /p:LinkIncremental=false /p:DebugSymbols=false /p:DebugType=None'
+  #     configuration: '$(BuildConfiguration)'
+  #     msbuildArchitecture: x64
+  #     createLogFile: true
+  #   condition: succeededOrFailed()
 
-  - task: PowerShell@2
-    displayName: 'Restore WinMLSamplesGalleryNative Nuget Packages'
-    inputs:
-      targetType: 'inline'
-      script: |
-        $src_root_dir = $Env:BUILD_SOURCESDIRECTORY;
-        $solution_dir = [System.IO.Path]::Combine($src_root_dir, 'Samples', 'WinMLSamplesGallery')
-        $csproj = [System.IO.Path]::Combine($solution_dir, 'WinMLSamplesGalleryNative', 'WinMLSamplesGalleryNative.vcxproj')
-        nuget restore $csproj -SolutionDirectory $solution_dir
+  # - task: PowerShell@2
+  #   displayName: 'Restore WinMLSamplesGalleryNative Nuget Packages'
+  #   inputs:
+  #     targetType: 'inline'
+  #     script: |
+  #       $src_root_dir = $Env:BUILD_SOURCESDIRECTORY;
+  #       $solution_dir = [System.IO.Path]::Combine($src_root_dir, 'Samples', 'WinMLSamplesGallery')
+  #       $csproj = [System.IO.Path]::Combine($solution_dir, 'WinMLSamplesGalleryNative', 'WinMLSamplesGalleryNative.vcxproj')
+  #       nuget restore $csproj -SolutionDirectory $solution_dir
 
-  - task: VSBuild@1
-    displayName: 'Build WinMLSamplesGallery'
-    inputs:
-      solution: 'Samples/WinMLSamplesGallery/WinMLSamplesGallery.sln'
-      vsVersion: "16.0"
-      msbuildArgs: '/p:OutDir=$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\WinMLSamplesGallery\ /p:WindowsTargetPlatformVersion=$(WindowsTargetPlatformVersion) /t:Restore,Clean,Build'
-      platform: '$(BuildPlatform)'
-      configuration: '$(BuildConfiguration)'
-      msbuildArchitecture: x64
-      createLogFile: true
-    condition: succeededOrFailed()
+  # - task: VSBuild@1
+  #   displayName: 'Build WinMLSamplesGallery'
+  #   inputs:
+  #     solution: 'Samples/WinMLSamplesGallery/WinMLSamplesGallery.sln'
+  #     vsVersion: "16.0"
+  #     msbuildArgs: '/p:OutDir=$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\WinMLSamplesGallery\ /p:WindowsTargetPlatformVersion=$(WindowsTargetPlatformVersion) /t:Restore,Clean,Build'
+  #     platform: '$(BuildPlatform)'
+  #     configuration: '$(BuildConfiguration)'
+  #     msbuildArchitecture: x64
+  #     createLogFile: true
+  #   condition: succeededOrFailed()
 
   # TODO: Add previously failing build tasks
 

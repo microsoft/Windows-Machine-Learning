@@ -36,9 +36,9 @@ To learn how to implement these features in your application, or unlock addition
 
 - [Batched Inputs](./WinMLSamplesGallery/Samples/Batching): See how to speed up inference with batched inputs.
 
-- [OpenCV](./WinMLSamplesGallery/Samples/OpenCVInterop): See how to interop between [Windows ML](https://docs.microsoft.com/en-us/windows/ai/windows-ml/) and [OpenCV](https://github.com/opencv/opencv).
+- [OpenCV](./WinMLSamplesGallery/Samples/OpenCVInterop): See how to integrate [Windows ML](https://docs.microsoft.com/en-us/windows/ai/windows-ml/) with [OpenCV](https://github.com/opencv/opencv).
 
-- [ImageSharp](./WinMLSamplesGallery/Samples/ImageSharpInterop): See how to interop between [Windows ML](https://docs.microsoft.com/en-us/windows/ai/windows-ml/) and [ImageSharp](https://docs.sixlabors.com/articles/imagesharp/index.html).
+- [ImageSharp](./WinMLSamplesGallery/Samples/ImageSharpInterop): See how to integrate [Windows ML](https://docs.microsoft.com/en-us/windows/ai/windows-ml/) with [ImageSharp](https://docs.sixlabors.com/articles/imagesharp/index.html).
 ## Feedback
 Please file an issue [here](https://github.com/microsoft/Windows-Machine-Learning/issues/new) if you encounter any issues with the WinML Samples Gallery or wish to request a new sample.
 

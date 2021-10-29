@@ -95,19 +95,28 @@ A computer vision technique that allows us to recompose the content of an image 
 
 These advanced samples show how to use various binding and evaluation features in Windows ML:
 
-- **[Custom Tensorization](https://github.com/Microsoft/Windows-Machine-Learning/tree/master/Samples/CustomTensorization)**: a Windows Console Application (C++/WinRT) that shows how to do custom tensorization.
-- **[Custom Operator (CPU)](https://github.com/Microsoft/Windows-Machine-Learning/tree/master/Samples/CustomOperator)**: a desktop app that defines multiple custom cpu operators. One of these is a debug operator which we invite you to integrate into your own workflow.
-- **[Adapter Selection](https://github.com/Microsoft/Windows-Machine-Learning/tree/master/Samples/AdapterSelection)**: a desktop app that demonstrates how to choose a specific device adapter for running your model
+- **[Custom Tensorization](https://github.com/Microsoft/Windows-Machine-Learning/tree/master/Samples/CustomTensorization)**: A Windows Console Application (C++/WinRT) that shows how to do custom tensorization.
+
+- **[Custom Operator (CPU)](https://github.com/Microsoft/Windows-Machine-Learning/tree/master/Samples/CustomOperator)**: A desktop app that defines multiple custom cpu operators. One of these is a debug operator which we invite you to integrate into your own workflow.
+
+- **[Adapter Selection](https://github.com/Microsoft/Windows-Machine-Learning/tree/master/Samples/AdapterSelection)**: A desktop app that demonstrates how to choose a specific device adapter for running your model.
+
 - **[Plane Identifier](https://github.com/Microsoft/Windows-AppConsult-Samples-UWP/tree/master/PlaneIdentifier)**: a UWP app and a WPF app packaged with the Desktop Bridge, sharing the same model trained using [Azure Custom Vision service](https://customvision.ai/). For step-by-step instructions for this sample, please see the blog post [Upgrade your WinML application to the latest bits](https://blogs.msdn.microsoft.com/appconsult/2018/11/06/upgrade-your-winml-application-to-the-latest-bits/).
+
 - **[Custom Vision and Windows ML](https://github.com/Microsoft/Windows-AppConsult-Samples-UWP/tree/master/PlaneIdentifier)**: The tutorial shows how to train a neural network model to classify images of food using Azure Custom Vision service, export the model to ONNX format, and deploy the model in a Windows Machine Learning application running locally on Windows device. 
+
 - **[ML.NET and Windows ML](https://github.com/Microsoft/Windows-AppConsult-Samples-UWP/tree/master/PlaneIdentifier)**: This tutorial shows you how to train a neural network model to classify images of food using ML.NET Model Builder, export the model to ONNX format, and deploy the model in a Windows Machine Learning application running locally on a Windows device. 
+
 - **[PyTorch Data Analysis](https://github.com/Microsoft/Windows-AppConsult-Samples-UWP/tree/master/PlaneIdentifier)**: The tutorial shows how to solve a classification task with a neural network using the PyTorch library, export the model to ONNX format and deploy the model with the Windows Machine Learning application that can run on any Windows device.
+
 - **[PyTorch Image Classification](https://github.com/Microsoft/Windows-AppConsult-Samples-UWP/tree/master/PlaneIdentifier)**: The tutorial shows how to train an image classification neural network model using PyTorch, export the model to the ONNX format, and deploy it in a Windows Machine Learning application running locally on your Windows device.
+
 - **[YoloV4 Object Detection](https://github.com/Microsoft/Windows-AppConsult-Samples-UWP/tree/master/PlaneIdentifier)**: This tutorial shows how to build a UWP C# app that uses the YOLOv4 model to detect objects in video streams.
 
-### Interop with other external Image Processing Libraries
-- **[OpenCV Interop](Samples/WinMLSamplesGallery/WinMLSamplesGallery/Samples/OpenCVInterop)**: This sample demonstrates how to interop between [Windows ML](https://docs.microsoft.com/en-us/windows/ai/windows-ml/) and [OpenCV](https://github.com/opencv/opencv).
-- **[ImageSharp Interop](Samples/WinMLSamplesGallery/WinMLSamplesGallery/Samples/ImageSHarpInterop)**: This sample demonstrates how to interop between [Windows ML](https://docs.microsoft.com/en-us/windows/ai/windows-ml/) and [ImageSharp](https://github.com/SixLabors/ImageSharp).
+- **[OpenCV](Samples/WinMLSamplesGallery/WinMLSamplesGallery/Samples/OpenCVInterop)**: See how to integrate [Windows ML](https://docs.microsoft.com/en-us/windows/ai/windows-ml/) with [OpenCV](https://github.com/opencv/opencv).
+
+- **[ImageSharp](Samples/WinMLSamplesGallery/WinMLSamplesGallery/Samples/ImageSHarpInterop)**: See how to integrate [Windows ML](https://docs.microsoft.com/en-us/windows/ai/windows-ml/) with [ImageSharp](https://github.com/SixLabors/ImageSharp).
+
 
 ## Developer Tools
 

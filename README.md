@@ -115,7 +115,7 @@ These advanced samples show how to use various binding and evaluation features i
 
 - **[OpenCV](Samples/WinMLSamplesGallery/WinMLSamplesGallery/Samples/OpenCVInterop)**: See how to integrate [Windows ML](https://docs.microsoft.com/en-us/windows/ai/windows-ml/) with [OpenCV](https://github.com/opencv/opencv).
 
-- **[ImageSharp](Samples/WinMLSamplesGallery/WinMLSamplesGallery/Samples/ImageSHarpInterop)**: See how to integrate [Windows ML](https://docs.microsoft.com/en-us/windows/ai/windows-ml/) with [ImageSharp](https://github.com/SixLabors/ImageSharp).
+- **[ImageSharp](Samples/WinMLSamplesGallery/WinMLSamplesGallery/Samples/ImageSharpInterop)**: See how to integrate [Windows ML](https://docs.microsoft.com/en-us/windows/ai/windows-ml/) with [ImageSharp](https://github.com/SixLabors/ImageSharp).
 
 
 ## Developer Tools

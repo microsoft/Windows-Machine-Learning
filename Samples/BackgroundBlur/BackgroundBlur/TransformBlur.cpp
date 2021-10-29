@@ -11,11 +11,10 @@ const FOURCC FOURCC_RGB24 = 20;
 // Static array of media types (preferred and accepted).
 const GUID* g_MediaSubtypes[] =
 {
-    &MEDIASUBTYPE_RGB24,
-    &MFVideoFormat_RGB24
+    &MFVideoFormat_RGB24,
     //&MEDIASUBTYPE_NV12,
-    //&MEDIASUBTYPE_YUY2,
-    //&MEDIASUBTYPE_UYVY
+    &MEDIASUBTYPE_YUY2,
+    &MEDIASUBTYPE_UYVY
 };
 
 // Number of media types in the aray.
@@ -23,6 +22,8 @@ DWORD g_cNumSubtypes = ARRAY_SIZE(g_MediaSubtypes);
 
 // GetImageSize: Returns the size of a video frame, in bytes.
 HRESULT GetImageSize(FOURCC fcc, UINT32 width, UINT32 height, DWORD* pcbImage);
+// ConvertMFTypeToDXVAType: Convert an IMFMediaType to DXVA_Desc
+HRESULT ConvertMFTypeToDXVAType(IMFMediaType * pType, DXVA2_VideoDesc * pDesc);
 
 //-------------------------------------------------------------------
 // Name: CreateInstance
@@ -272,7 +273,8 @@ HRESULT TransformBlur::GetOutputStreamInfo(
     pStreamInfo->dwFlags =
         MFT_OUTPUT_STREAM_WHOLE_SAMPLES |
         MFT_OUTPUT_STREAM_SINGLE_SAMPLE_PER_BUFFER |
-        MFT_OUTPUT_STREAM_FIXED_SAMPLE_SIZE;
+        MFT_OUTPUT_STREAM_FIXED_SAMPLE_SIZE 
+        ;
 
     if (m_pOutputType == NULL)
     {
@@ -459,6 +461,8 @@ HRESULT TransformBlur::SetInputType(
     TRACE((L"TransformBlur::SetInputType\n"));
 
     AutoLock lock(m_critSec);
+    D3DFORMAT d;
+    GUID g = GUID_NULL;
 
     if (!IsValidInputStream(dwInputStreamID))
     {
@@ -490,31 +494,39 @@ HRESULT TransformBlur::SetInputType(
 
     // Find a d3d decoder configuration, if have a video device to use
     // TODO: Clear false if this is the way to go later
-    if (false && m_pD3DDeviceManager && m_pDecoderService) 
+    // TODO: Move to checkinputtype 
+    
+
+    if (m_pD3DDeviceManager && m_pDecoderService) 
     {
         UINT numDevices = 0;
+        UINT numFormats = 0;
         GUID* pguids = NULL;
+        D3DFORMAT* d3dFormats = NULL;
         m_pDecoderService->GetDecoderDeviceGuids(&numDevices, &pguids);
-        GUID g = GUID_NULL;
         for (UINT i = 0; i < numDevices; i++)
         {
             g = pguids[i];
             if (g == DXVA2_ModeH264_E || g == DXVA2_ModeH264_VLD_NoFGT)
             {
                 OutputDebugString(L"Found h264 decoder E");
-                break;
+                //break;
             }
-        }
-
-        D3DFORMAT* d3dFormats = NULL;
-        D3DFORMAT d;
-        m_pDecoderService->GetDecoderRenderTargets(g, &numDevices, &d3dFormats);
-        for (UINT i = 0; i < numDevices; i++)
-        {
-            d = d3dFormats[i];
-            if (d == D3DFMT_R8G8B8)
+            m_pDecoderService->GetDecoderRenderTargets(g, &numFormats, &d3dFormats);
+            for (UINT j = 0; j < numDevices; j++)
             {
-                OutputDebugString(L"Has rgb24!");
+                d = d3dFormats[j];
+                //(D3DFORMAT)subtype.Data1;
+                for (int k = 0; k < g_cNumSubtypes; k++)
+                {
+                    GUID gtest = *g_MediaSubtypes[k];
+                    if (d == (D3DFORMAT)(gtest.Data1))
+                    {
+                        OutputDebugString(L"Found a decoder with a supported format");
+                        // pType = ;
+                        break;
+                    }
+                }
             }
         }
 
@@ -993,6 +1005,7 @@ HRESULT TransformBlur::ProcessOutput(
     // Get the output buffer.
     CHECK_HR(hr = pOutputSamples[0].pSample->ConvertToContiguousBuffer(&pOutput));
 
+
     CHECK_HR(hr = OnProcessOutput(pInput, pOutput));
     //m_pSample->CopyToBuffer(pOutput);
 
@@ -1207,27 +1220,136 @@ HRESULT TransformBlur::OnSetInputType(IMFMediaType* pmt)
     {
         m_pInputType->AddRef();
     }
-    // Find a supported d3d decoder. Want input --> d3d surface
-    // Turns out this happens during negotiation. 
-    if (m_pDecoderService)
-    {
-        UINT numDevices = 0;
-        GUID** guids = NULL;
-        m_pDecoderService->GetDecoderDeviceGuids(&numDevices, guids);
-        for (UINT i = 0; i < numDevices; i++)
-        {
-            guids[i];
-        }
-    }
+
+    DXVA2_VideoDesc des;
+    HRESULT hr = ConvertMFTypeToDXVAType(m_pInputType, &des);
     
 
     // Update the format information.
     UpdateFormatInfo();
 
+    IDirect3DSurface9* ppSurfaces[4];
+    hr = m_pDecoderService->CreateSurface(
+        m_imageWidthInPixels,
+        m_imageHeightInPixels,
+        3,                       // Number of backbuffers
+        des.Format,              // D3DFORMAT   
+        D3DPOOL_DEFAULT,         // Memory pool to create the surfaces
+        0,                       // Reserved
+        DXVA2_VideoProcessorRenderTarget, //DXVATYPE Type of surface to make
+        ppSurfaces,              // Out array of d3d9 surfaces
+        NULL
+    );
+
     return S_OK;
 }
 
+// Fills in the DXVA2_ExtendedFormat structure.
+void GetDXVA2ExtendedFormatFromMFMediaType(
+    IMFMediaType* pType,
+    DXVA2_ExtendedFormat* pFormat
+)
+{
+    // Get the interlace mode.
+    MFVideoInterlaceMode interlace =
+        (MFVideoInterlaceMode)MFGetAttributeUINT32(
+            pType, MF_MT_INTERLACE_MODE, MFVideoInterlace_Unknown
+        );
 
+    // The values for interlace mode translate directly, except for mixed 
+    // interlace or progressive mode.
+
+    if (interlace == MFVideoInterlace_MixedInterlaceOrProgressive)
+    {
+        // Default to interleaved fields.
+        pFormat->SampleFormat = DXVA2_SampleFieldInterleavedEvenFirst;
+    }
+    else
+    {
+        pFormat->SampleFormat = (UINT)interlace;
+    }
+
+    // The remaining values translate directly.
+
+    // Use the "no-fail" attribute functions and default to "unknown."
+
+    pFormat->VideoChromaSubsampling = MFGetAttributeUINT32(
+        pType, MF_MT_VIDEO_CHROMA_SITING, MFVideoChromaSubsampling_Unknown);
+
+    pFormat->NominalRange = MFGetAttributeUINT32(
+        pType, MF_MT_VIDEO_NOMINAL_RANGE, MFNominalRange_Unknown);
+
+    pFormat->VideoTransferMatrix = MFGetAttributeUINT32(
+        pType, MF_MT_YUV_MATRIX, MFVideoTransferMatrix_Unknown);
+
+    pFormat->VideoLighting = MFGetAttributeUINT32(
+        pType, MF_MT_VIDEO_LIGHTING, MFVideoLighting_Unknown);
+
+    pFormat->VideoPrimaries = MFGetAttributeUINT32(
+        pType, MF_MT_VIDEO_PRIMARIES, MFVideoPrimaries_Unknown);
+
+    pFormat->VideoTransferFunction = MFGetAttributeUINT32(
+        pType, MF_MT_TRANSFER_FUNCTION, MFVideoTransFunc_Unknown);
+
+}
+
+
+HRESULT ConvertMFTypeToDXVAType(IMFMediaType* pType, DXVA2_VideoDesc* pDesc)
+{
+    ZeroMemory(pDesc, sizeof(*pDesc));
+
+    GUID                    subtype = GUID_NULL;
+    UINT32                  width = 0;
+    UINT32                  height = 0;
+    UINT32                  fpsNumerator = 0;
+    UINT32                  fpsDenominator = 0;
+
+    // The D3D format is the first DWORD of the subtype GUID.
+    HRESULT hr = pType->GetGUID(MF_MT_SUBTYPE, &subtype);
+    if (FAILED(hr))
+    {
+        goto done;
+    }
+
+    pDesc->Format = (D3DFORMAT)subtype.Data1;
+
+    // Frame size.
+    hr = MFGetAttributeSize(pType, MF_MT_FRAME_SIZE, &width, &height);
+    if (FAILED(hr))
+    {
+        goto done;
+    }
+
+    pDesc->SampleWidth = width;
+    pDesc->SampleHeight = height;
+
+    // Frame rate.
+    hr = MFGetAttributeRatio(pType, MF_MT_FRAME_RATE, &fpsNumerator, &fpsDenominator);
+    if (FAILED(hr))
+    {
+        goto done;
+    }
+
+    pDesc->InputSampleFreq.Numerator = fpsNumerator;
+    pDesc->InputSampleFreq.Denominator = fpsDenominator;
+
+    // Extended format information.
+    GetDXVA2ExtendedFormatFromMFMediaType(pType, &pDesc->SampleFormat);
+
+    // For progressive or single-field types, the output frequency is the same as
+    // the input frequency. For interleaved-field types, the output frequency is
+    // twice the input frequency.  
+    pDesc->OutputFrameFreq = pDesc->InputSampleFreq;
+
+    if ((pDesc->SampleFormat.SampleFormat == DXVA2_SampleFieldInterleavedEvenFirst) ||
+        (pDesc->SampleFormat.SampleFormat == DXVA2_SampleFieldInterleavedOddFirst))
+    {
+        pDesc->OutputFrameFreq.Numerator *= 2;
+    }
+
+done:
+    return hr;
+}
 
 
 //-------------------------------------------------------------------

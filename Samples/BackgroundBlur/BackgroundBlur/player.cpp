@@ -362,14 +362,17 @@ HRESULT CPlayer::StartStream()
         goto done;
     }
 
+    /*IMFTopoLoader* loader;
+    MFCreateTopoLoader(&loader);
+    IMFTopology* pOut;
+    loader->Load(pTopology, &pOut, NULL);*/
+
     // Set the topology on the media session.
     hr = m_pSession->SetTopology(0, pTopology);
     if (FAILED(hr))
     {
         goto done;
     }
-
-    hr = MFGetService(m_pSession, MR_VIDEO_ACCELERATION_SERVICE, IID_IDirect3DDeviceManager9, (void**)&man);
 
     m_state = OpenPending;
 
@@ -1382,9 +1385,6 @@ HRESULT CreatePlaybackTopology(
     {
         goto done;
     }
-
-
-
 
     // Get the number of streams in the media source.
     hr = pPD->GetStreamDescriptorCount(&cSourceStreams);

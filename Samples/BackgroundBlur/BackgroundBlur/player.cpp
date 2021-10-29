@@ -669,9 +669,6 @@ HRESULT CPlayer::OnNewPresentation(IMFMediaEvent* pEvent)
         goto done;
     }
 
-    CHECK_HR(hr = MFGetService(m_pSession, MR_VIDEO_ACCELERATION_SERVICE, IID_IDirect3DDeviceManager9, (void**)&man));
-
-
     m_state = OpenPending;
 
 done:
@@ -1226,12 +1223,11 @@ HRESULT AddTransformNode(
         IMFAttributes* p_attr = NULL;
         UINT32 p_aware = FALSE;
         pMFT->GetAttributes(&p_attr);
-        UINT32 aware = MFGetAttributeUINT32(p_attr, MF_SA_D3D_AWARE, p_aware); // Seems to be 0? But attr is set to 1 in p_attr
+        UINT32 aware = MFGetAttributeUINT32(p_attr, MF_SA_D3D_AWARE, p_aware); 
         if (aware == TRUE && d3dManager) {
-            // TODO: Get a pointer to the DXGI device manager from the EVR/output node
             pMFT->ProcessMessage(MFT_MESSAGE_SET_D3D_MANAGER, (ULONG_PTR)d3dManager);
+            pNode->SetUINT32(MF_TOPONODE_D3DAWARE, TRUE);
         }
-       
     }
 
     // Add the node to the topology.

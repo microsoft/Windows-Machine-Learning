@@ -489,12 +489,38 @@ HRESULT TransformBlur::SetInputType(
     }
 
     // Find a d3d decoder configuration, if have a video device to use
-    if (m_pD3DDeviceManager && m_pDecoderService) 
+    // TODO: Clear false if this is the way to go later
+    if (false && m_pD3DDeviceManager && m_pDecoderService) 
     {
         UINT numDevices = 0;
-        GUID** guids = NULL;
-        m_pDecoderService->GetDecoderDeviceGuids(&numDevices, guids);
-        //for (UINTi);
+        GUID* pguids = NULL;
+        m_pDecoderService->GetDecoderDeviceGuids(&numDevices, &pguids);
+        GUID g = GUID_NULL;
+        for (UINT i = 0; i < numDevices; i++)
+        {
+            g = pguids[i];
+            if (g == DXVA2_ModeH264_E || g == DXVA2_ModeH264_VLD_NoFGT)
+            {
+                OutputDebugString(L"Found h264 decoder E");
+                break;
+            }
+        }
+
+        D3DFORMAT* d3dFormats = NULL;
+        D3DFORMAT d;
+        m_pDecoderService->GetDecoderRenderTargets(g, &numDevices, &d3dFormats);
+        for (UINT i = 0; i < numDevices; i++)
+        {
+            d = d3dFormats[i];
+            if (d == D3DFMT_R8G8B8)
+            {
+                OutputDebugString(L"Has rgb24!");
+            }
+        }
+
+        // TODO: Move to done
+        CoTaskMemFree(pguids);
+        CoTaskMemFree(d3dFormats);
     }
 
     // The type is OK. 
@@ -505,6 +531,7 @@ HRESULT TransformBlur::SetInputType(
     }
 
 done:
+
     return hr;
 }
 
@@ -804,6 +831,7 @@ HRESULT TransformBlur::OnSetD3DManager(ULONG_PTR ulParam)
 
     // Get the Device Manager sent from the  topology loader
     IUnknown* ptr = (IUnknown*) ulParam;
+
     HRESULT hr = ptr->QueryInterface(IID_IDirect3DDeviceManager9, (void**)&m_pD3DDeviceManager);
     if (FAILED(hr))
     {

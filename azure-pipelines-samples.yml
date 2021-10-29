@@ -85,7 +85,7 @@ steps:
   #     scriptName: external/tools/CMakeConfigureOpenCV.ps1
   #     workingDirectory: $(System.ArtifactsDirectory)
   #     arguments: >
-        -Architecture $(BuildPlatform)
+        # -Architecture $(BuildPlatform)
 
   # - task: VSBuild@1
   #   displayName: 'OpenCV - Build'

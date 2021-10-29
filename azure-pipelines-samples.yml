@@ -110,7 +110,7 @@ steps:
     inputs:
       outputPath: 'Samples/WinMLSamplesGallery/WinMLSamplesGallery (Package)/AppPackages'
       solution: 'Samples/WinMLSamplesGallery/WinMLSamplesGallery.sln'
-      clean: false
+      clean: true
       generateBundle: true
       buildConfiguration: 'debug'
       updateAppVersion: false
@@ -118,6 +118,7 @@ steps:
       msbuildLocationMethod: 'version'
       msbuildVersion: 'latest'
       msbuildArchitecture: 'x86'
+      
 
   # - task: VSBuild@1
   #   displayName: 'Build WinMLSamplesGallery'

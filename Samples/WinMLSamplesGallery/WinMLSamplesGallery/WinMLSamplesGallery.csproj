@@ -32,6 +32,7 @@
     <None Remove="Samples\ImageEffects.xaml" />
     <None Remove="Samples\ObjectDetector\ObjectDetector.xaml" />
     <None Remove="Samples\OpenCVInterop\OpenCVInterop.xaml" />
+    <None Remove="Samples\ImageSharpInterop\ImageSharpInterop.xaml" />
     <None Remove="Video.xaml" />
   </ItemGroup>
   <ItemGroup>
@@ -73,6 +74,7 @@
     <PackageReference Include="Microsoft.AI.MachineLearning" Version="1.9.1" />
     <PackageReference Include="Microsoft.ProjectReunion" Version="0.8.4" />
     <PackageReference Include="Microsoft.Windows.CsWinRT" Version="1.3.5" />
+    <PackageReference Include="SixLabors.ImageSharp" Version="1.0.4" />
     <Manifest Include="$(ApplicationManifest)" />
   </ItemGroup>
 
@@ -80,6 +82,7 @@
     <None Include="Samples\ImageEffects\ImageEffects.xaml.cs" />
     <None Include="Samples\ImageClassifier\ImageClassifier.xaml.cs" />
     <None Include="Samples\OpenCVInterop\OpenCVInterop.xaml.cs" />
+    <None Include="Samples\ImageSharpInterop\ImageSharpInterop.xaml.cs" />
   </ItemGroup>
 
   <ItemGroup>
@@ -140,6 +143,9 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Update="Samples\OpenCVInterop\OpenCVInterop.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Update="Samples\ImageSharpInterop\ImageSharpInterop.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>

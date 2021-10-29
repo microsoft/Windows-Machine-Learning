@@ -104,7 +104,10 @@ These advanced samples show how to use various binding and evaluation features i
 - **[PyTorch Data Analysis](https://github.com/Microsoft/Windows-AppConsult-Samples-UWP/tree/master/PlaneIdentifier)**: The tutorial shows how to solve a classification task with a neural network using the PyTorch library, export the model to ONNX format and deploy the model with the Windows Machine Learning application that can run on any Windows device.
 - **[PyTorch Image Classification](https://github.com/Microsoft/Windows-AppConsult-Samples-UWP/tree/master/PlaneIdentifier)**: The tutorial shows how to train an image classification neural network model using PyTorch, export the model to the ONNX format, and deploy it in a Windows Machine Learning application running locally on your Windows device.
 - **[YoloV4 Object Detection](https://github.com/Microsoft/Windows-AppConsult-Samples-UWP/tree/master/PlaneIdentifier)**: This tutorial shows how to build a UWP C# app that uses the YOLOv4 model to detect objects in video streams.
+
+### Interop with other external Image Processing Libraries
 - **[OpenCV Interop](Samples/WinMLSamplesGallery/WinMLSamplesGallery/Samples/OpenCVInterop)**: This sample demonstrates how to interop between [Windows ML](https://docs.microsoft.com/en-us/windows/ai/windows-ml/) and [OpenCV](https://github.com/opencv/opencv).
+- **[ImageSharp Interop](Samples/WinMLSamplesGallery/WinMLSamplesGallery/Samples/ImageSHarpInterop)**: This sample demonstrates how to interop between [Windows ML](https://docs.microsoft.com/en-us/windows/ai/windows-ml/) and [ImageSharp](https://github.com/SixLabors/ImageSharp).
 
 ## Developer Tools
 

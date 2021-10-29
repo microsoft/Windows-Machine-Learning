@@ -36,7 +36,7 @@ In order to build this sample, OpenCV will need to be built and linked into the 
 - Launch the `WinMLSamplesGallery.sln` and build with the same **Architecture** and **Configuration** to see the sample appear.
 
 
-You can check out the source [here](https://github.com/microsoft/Windows-Machine-Learning/blob/91e493d699df80a633654929418f41bab136ae1d/Samples/WinMLSamplesGallery/WinMLSamplesGalleryNative/OpenCVImage.cpp#L21).
+You can check out the source [here](https://github.com/microsoft/Windows-Machine-Learning/blob/6840e7bd312b09ecd9f51127758f5168e4f844b9/Samples/WinMLSamplesGallery/WinMLSamplesGalleryNative/OpenCVImage.cpp#L19).
 
 ## Feedback
 Please file an issue [here](https://github.com/microsoft/Windows-Machine-Learning/issues/new) if you encounter any issues with this sample.

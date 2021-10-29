@@ -184,6 +184,8 @@ HRESULT CPlayer::OpenURL(const WCHAR* sURL)
         goto done;
     }
 
+
+
     // Set the topology on the media session.
     hr = m_pSession->SetTopology(0, pTopology);
     if (FAILED(hr))
@@ -560,7 +562,7 @@ HRESULT CPlayer::HandleEvent(UINT_PTR pEventPtr)
         hr = OnTopologyStatus(pEvent);
         break;
     case MESessionTopologySet:
-        hr = OnTopologySet(pEvent);
+        // hr = OnTopologySet(pEvent);
         break;
     case MEEndOfPresentation:
         hr = OnPresentationEnded(pEvent);
@@ -1066,6 +1068,81 @@ done:
     return hr;
 }
 
+// BindOutputNode
+// Sets the IMFStreamSink pointer on an output node.
+
+HRESULT BindOutputNode(IMFTopologyNode* pNode)
+{
+    IUnknown* pNodeObject = NULL;
+    IMFActivate* pActivate = NULL;
+    IMFStreamSink* pStream = NULL;
+    IMFMediaSink* pSink = NULL;
+
+    // Get the node's object pointer.
+    HRESULT hr = pNode->GetObject(&pNodeObject);
+    if (FAILED(hr))
+    {
+        return hr;
+    }
+
+    // The object pointer should be one of the following:
+    // 1. An activation object for the media sink.
+    // 2. The stream sink.
+
+    // If it's #2, then we're already done.
+
+    // First, check if it's an activation object.
+    hr = pNodeObject->QueryInterface(IID_PPV_ARGS(&pActivate));
+
+    if (SUCCEEDED(hr))
+    {
+        DWORD dwStreamID = 0;
+
+        // The object pointer is an activation object. 
+
+        // Try to create the media sink.
+        hr = pActivate->ActivateObject(IID_PPV_ARGS(&pSink));
+
+        // Look up the stream ID. (Default to zero.)
+
+        if (SUCCEEDED(hr))
+        {
+            dwStreamID = MFGetAttributeUINT32(pNode, MF_TOPONODE_STREAMID, 0);
+        }
+
+        // Now try to get or create the stream sink.
+
+        // Check if the media sink already has a stream sink with the requested ID.
+
+        if (SUCCEEDED(hr))
+        {
+            hr = pSink->GetStreamSinkById(dwStreamID, &pStream);
+            if (FAILED(hr))
+            {
+                // Try to add a new stream sink.
+                hr = pSink->AddStreamSink(dwStreamID, NULL, &pStream);
+            }
+        }
+
+        // Replace the node's object pointer with the stream sink. 
+        if (SUCCEEDED(hr))
+        {
+            hr = pNode->SetObject(pStream);
+        }
+    }
+    else
+    {
+        // Not an activation object. Is it a stream sink?
+        hr = pNodeObject->QueryInterface(IID_PPV_ARGS(&pStream));
+    }
+
+    SafeRelease(&pNodeObject);
+    SafeRelease(&pActivate);
+    SafeRelease(&pStream);
+    SafeRelease(&pSink);
+    return hr;
+}
+
 // Add an output node to a topology.
 HRESULT AddOutputNode(
     IMFTopology* pTopology,     // Topology.
@@ -1108,10 +1185,11 @@ HRESULT AddOutputNode(
     {
         goto done;
     }
-
+    BindOutputNode(pNode);
     // Return the pointer to the caller.
     *ppNode = pNode;
-    // CHECK_HR(hr = MFGetService(pActivate, MR_VIDEO_ACCELERATION_SERVICE, IID_IDirect3DDeviceManager9, (void**)&man));
+
+
     (*ppNode)->AddRef();
 
 done:
@@ -1123,12 +1201,12 @@ done:
 
 HRESULT AddTransformNode(
     IMFTopology* pTopology,     // Topology.
-    const CLSID& clsid,         // CLSID of the MFT.
+    IDirect3DDeviceManager9* d3dManager,
+    //const CLSID& clsid,         // CLSID of the MFT.
     IMFTopologyNode** ppNode    // Receives the node pointer.
 )
 {
     *ppNode = NULL;
-
     IMFTopologyNode* pNode = NULL;
     TransformBlur* blur = NULL;
     IMFTransform* pMFT = NULL;
@@ -1138,13 +1216,10 @@ HRESULT AddTransformNode(
 
     // Create the node.
     hr = MFCreateTopologyNode(MF_TOPOLOGY_TRANSFORM_NODE, &pNode);
-    //hr = CGrayscale::CreateInstance(NULL, __uuidof(IMFTransform), (void**)(&pMFT));
-    //pMFT = new CGrayscale(hr);
 
     // Set the CLSID attribute.
     if (SUCCEEDED(hr))
     {
-
         hr = pNode->SetObject(pMFT);
 
         //Determine if d3d-aware
@@ -1152,9 +1227,9 @@ HRESULT AddTransformNode(
         UINT32 p_aware = FALSE;
         pMFT->GetAttributes(&p_attr);
         UINT32 aware = MFGetAttributeUINT32(p_attr, MF_SA_D3D_AWARE, p_aware); // Seems to be 0? But attr is set to 1 in p_attr
-        if (aware == TRUE) {
+        if (aware == TRUE && d3dManager) {
             // TODO: Get a pointer to the DXGI device manager from the EVR/output node
-            // pMFT->ProcessMessage(MFT_MESSAGE_SET_D3D_MANAGER, NULL);
+            pMFT->ProcessMessage(MFT_MESSAGE_SET_D3D_MANAGER, (ULONG_PTR)d3dManager);
         }
        
     }
@@ -1246,8 +1321,27 @@ HRESULT AddBranchToPartialTopology(
             //TRACE((L"Adding MFT to video stream"));
             class __declspec(uuid("{2F3DBC05-C011-4a8f-B264-E42E35C67BF4}")) ColorConverter; //"{98230571-0087-4204-b020-3282538e57d3}"
             CLSID guid = __uuidof(ColorConverter);
-            
-            CHECK_HR(hr = AddTransformNode(pTopology, guid, &pTransformNode));
+
+
+            IUnknown* pNodeObject = NULL;
+            IDirect3DDeviceManager9* pD3DManager = NULL;
+            hr = pOutputNode->GetObject(&pNodeObject);
+            if (SUCCEEDED(hr))
+            {
+                hr = MFGetService(
+                    pNodeObject,
+                    MR_VIDEO_ACCELERATION_SERVICE,
+                    IID_PPV_ARGS(&pD3DManager)
+                );
+            }
+            if (SUCCEEDED(hr))
+            {
+                CHECK_HR(hr = AddTransformNode(pTopology, pD3DManager, &pTransformNode));
+            }
+            else 
+            {
+                CHECK_HR(hr = AddTransformNode(pTopology, NULL, &pTransformNode));
+            }
 
             // Connect the source node to the transform node.
             CHECK_HR(hr = pSourceNode->ConnectOutput(0, pTransformNode, 0));

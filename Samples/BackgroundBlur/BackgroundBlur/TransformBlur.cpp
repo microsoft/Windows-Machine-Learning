@@ -489,16 +489,13 @@ HRESULT TransformBlur::SetInputType(
     }
 
     // Find a d3d decoder configuration, if have a video device to use
-    /*if (m_pD3DVideoContex != NULL && m_pD3DVideoDevice != NULL)
+    if (m_pD3DDeviceManager && m_pDecoderService) 
     {
-        UINT profileCount = m_pD3DVideoDevice->GetVideoDecoderProfileCount();
-        GUID decoderProfile = GUID_NULL;
-        for (UINT i = 0; i < profileCount; i++) 
-        {
-            m_pD3DVideoDevice->GetVideoDecoderProfile(i, &decoderProfile);
-            
-        }
-    }*/
+        UINT numDevices = 0;
+        GUID** guids = NULL;
+        m_pDecoderService->GetDecoderDeviceGuids(&numDevices, guids);
+        //for (UINTi);
+    }
 
     // The type is OK. 
     // Set the type, unless the caller was just testing.
@@ -1182,6 +1179,19 @@ HRESULT TransformBlur::OnSetInputType(IMFMediaType* pmt)
     {
         m_pInputType->AddRef();
     }
+    // Find a supported d3d decoder. Want input --> d3d surface
+    // Turns out this happens during negotiation. 
+    if (m_pDecoderService)
+    {
+        UINT numDevices = 0;
+        GUID** guids = NULL;
+        m_pDecoderService->GetDecoderDeviceGuids(&numDevices, guids);
+        for (UINT i = 0; i < numDevices; i++)
+        {
+            guids[i];
+        }
+    }
+    
 
     // Update the format information.
     UpdateFormatInfo();

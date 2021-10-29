@@ -124,7 +124,7 @@ steps:
     inputs:
       solution: 'Samples/WinMLSamplesGallery/WinMLSamplesGallery.sln'
       vsVersion: "16.0"
-      msbuildArgs: '/p:UapAppxPackageBuildMode=SideloadOnly /p:AppxPackageSigningEnabled=false /p:AppxBundle=Always "/p:AppxBundleOutput=$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\WinMLSamplesGallery\" "/p:AppxBundlePlatforms=x86|x64" /p:WindowsTargetPlatformVersion=$(WindowsTargetPlatformVersion) /t:Restore,Clean,Build'
+      msbuildArgs: '/p:UapAppxPackageBuildMode=SideloadOnly /p:AppxPackageSigningEnabled=false /p:AppxBundle=Always "/p:AppxBundleOutput=Samples/WinMLSamplesGallery/WinMLSamplesGallery (Package)/AppPackages" "/p:AppxBundlePlatforms=x86|x64" /p:WindowsTargetPlatformVersion=$(WindowsTargetPlatformVersion) /t:Restore,Clean,Build'
       platform: '$(BuildPlatform)'
       configuration: '$(BuildConfiguration)'
       msbuildArchitecture: x64
@@ -145,23 +145,23 @@ steps:
 
   # TODO: Add previously failing build tasks
 
-  - task: CopyFiles@2
-    inputs:
-      targetFolder: '$(Build.ArtifactStagingDirectory)\$(BuildPlatform)\$(BuildConfiguration)\'
-      sourceFolder: '$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\'
-      Contents: |
-        **\SamplesTest\**
-        **\AppPackages\**
-    condition: succeededOrFailed()
+  # - task: CopyFiles@2
+  #   inputs:
+  #     targetFolder: '$(Build.ArtifactStagingDirectory)\$(BuildPlatform)\$(BuildConfiguration)\'
+  #     sourceFolder: '$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\'
+  #     Contents: |
+  #       **\SamplesTest\**
+  #       **\AppPackages\**
+  #   condition: succeededOrFailed()
 
-  - task: CopyFiles@2
-    inputs:
-      targetFolder: '$(Build.ArtifactStagingDirectory)\$(BuildPlatform)\$(BuildConfiguration)\'
-      sourceFolder: '$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\'
-      Contents: |
-        ?(AdapterSelection|CustomOperator|CustomTensorization)**\*
-        SqueezeNetObjectDetection\*
-    condition: succeededOrFailed()
+  # - task: CopyFiles@2
+  #   inputs:
+  #     targetFolder: '$(Build.ArtifactStagingDirectory)\$(BuildPlatform)\$(BuildConfiguration)\'
+  #     sourceFolder: '$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\'
+  #     Contents: |
+  #       ?(AdapterSelection|CustomOperator|CustomTensorization)**\*
+  #       SqueezeNetObjectDetection\*
+  #   condition: succeededOrFailed()
 
   - task: CopyFiles@2
     inputs:

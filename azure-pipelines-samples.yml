@@ -96,29 +96,40 @@ steps:
   #     createLogFile: true
   #   condition: succeededOrFailed()
 
-  - task: PowerShell@2
-    displayName: 'Restore WinMLSamplesGalleryNative Nuget Packages'
-    inputs:
-      targetType: 'inline'
-      script: |
-        $src_root_dir = $Env:BUILD_SOURCESDIRECTORY;
-        $solution_dir = [System.IO.Path]::Combine($src_root_dir, 'Samples', 'WinMLSamplesGallery')
-        $csproj = [System.IO.Path]::Combine($solution_dir, 'WinMLSamplesGalleryNative', 'WinMLSamplesGalleryNative.vcxproj')
-        nuget restore $csproj -SolutionDirectory $solution_dir
+  # - task: PowerShell@2
+  #   displayName: 'Restore WinMLSamplesGalleryNative Nuget Packages'
+  #   inputs:
+  #     targetType: 'inline'
+  #     script: |
+  #       $src_root_dir = $Env:BUILD_SOURCESDIRECTORY;
+  #       $solution_dir = [System.IO.Path]::Combine($src_root_dir, 'Samples', 'WinMLSamplesGallery')
+  #       $csproj = [System.IO.Path]::Combine($solution_dir, 'WinMLSamplesGalleryNative', 'WinMLSamplesGalleryNative.vcxproj')
+  #       nuget restore $csproj -SolutionDirectory $solution_dir
 
-  - task: MsixPackaging@1
+  # - task: MsixPackaging@1
+  #   inputs:
+  #     outputPath: 'Samples/WinMLSamplesGallery/WinMLSamplesGallery (Package)/AppPackages'
+  #     solution: 'Samples/WinMLSamplesGallery/WinMLSamplesGallery.sln'
+  #     clean: true
+  #     generateBundle: true
+  #     buildConfiguration: 'debug'
+  #     updateAppVersion: false
+  #     appPackageDistributionMode: 'SideloadOnly'
+  #     msbuildLocationMethod: 'version'
+  #     msbuildVersion: 'latest'
+  #     msbuildArchitecture: 'x86'
+
+  - task: VSBuild@1
+    displayName: 'Build And Publish WinMLSamplesGallery'
     inputs:
-      outputPath: 'Samples/WinMLSamplesGallery/WinMLSamplesGallery (Package)/AppPackages'
       solution: 'Samples/WinMLSamplesGallery/WinMLSamplesGallery.sln'
-      clean: true
-      generateBundle: true
-      buildConfiguration: 'debug'
-      updateAppVersion: false
-      appPackageDistributionMode: 'SideloadOnly'
-      msbuildLocationMethod: 'version'
-      msbuildVersion: 'latest'
-      msbuildArchitecture: 'x86'
-      
+      vsVersion: "16.0"
+      msbuildArgs: '/p:UapAppxPackageBuildMode=SideloadOnly /p:AppxPackageSigningEnabled=false /p:AppxBundle=Always "/p:AppxBundleOutput=Samples/WinMLSamplesGallery/WinMLSamplesGallery (Package)/AppPackages" /p:AppxBundlePlatforms=x86|x64 /p:WindowsTargetPlatformVersion=$(WindowsTargetPlatformVersion) /t:Restore,Clean,Build'
+      platform: '$(BuildPlatform)'
+      configuration: '$(BuildConfiguration)'
+      msbuildArchitecture: x64
+      createLogFile: true
+    condition: succeededOrFailed()      
 
   # - task: VSBuild@1
   #   displayName: 'Build WinMLSamplesGallery'

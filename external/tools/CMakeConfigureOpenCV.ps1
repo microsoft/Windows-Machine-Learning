@@ -30,7 +30,7 @@ else {
   $Args.Add("-A " + $Architecture)
 }
 
-$Args.Add("-G " + $Generator)
+$Args.Add("-G $Generator")
 $Args.Add("-DCMAKE_SYSTEM_NAME=Windows")
 $Args.Add("-DCMAKE_SYSTEM_VERSION=10.0")
 $Args.Add("-DWITH_OPENCL=OFF")
@@ -54,5 +54,9 @@ if ($Clean) {
     $Args.Add("--clean")	
 }
 
-$Args.Add("-B " + $BuildDirectory)
-cmake $Args "$PSScriptRoot\..\opencv"
+$Args.Add("-B $BuildDirectory")
+$Args.Add("$PSScriptRoot\..\opencv")
+
+$ArgsStr = ($Args -join " ")
+$ArgsStr
+cmake $Args 

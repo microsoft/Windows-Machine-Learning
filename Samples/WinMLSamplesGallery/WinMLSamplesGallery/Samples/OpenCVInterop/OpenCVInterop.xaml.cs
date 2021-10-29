@@ -285,7 +285,7 @@ namespace WinMLSamplesGallery.Samples
                     new Controls.Prediction {
                         Index = zippedResult.First,
                         Name = zippedResult.Second.First.Trim(new char[] { ',' }),
-                        Probability = zippedResult.Second.Second.ToString("E4")
+                        Probability = zippedResult.Second.Second.ToString("P")
                     });
             InferenceResults.ItemsSource = results;
             InferenceResults.SelectedIndex = 0;

@@ -96,15 +96,15 @@ steps:
   #     createLogFile: true
   #   condition: succeededOrFailed()
 
-  # - task: PowerShell@2
-  #   displayName: 'Restore WinMLSamplesGalleryNative Nuget Packages'
-  #   inputs:
-  #     targetType: 'inline'
-  #     script: |
-  #       $src_root_dir = $Env:BUILD_SOURCESDIRECTORY;
-  #       $solution_dir = [System.IO.Path]::Combine($src_root_dir, 'Samples', 'WinMLSamplesGallery')
-  #       $csproj = [System.IO.Path]::Combine($solution_dir, 'WinMLSamplesGalleryNative', 'WinMLSamplesGalleryNative.vcxproj')
-  #       nuget restore $csproj -SolutionDirectory $solution_dir
+  - task: PowerShell@2
+    displayName: 'Restore WinMLSamplesGalleryNative Nuget Packages'
+    inputs:
+      targetType: 'inline'
+      script: |
+        $src_root_dir = $Env:BUILD_SOURCESDIRECTORY;
+        $solution_dir = [System.IO.Path]::Combine($src_root_dir, 'Samples', 'WinMLSamplesGallery')
+        $csproj = [System.IO.Path]::Combine($solution_dir, 'WinMLSamplesGalleryNative', 'WinMLSamplesGalleryNative.vcxproj')
+        nuget restore $csproj -SolutionDirectory $solution_dir
 
   # - task: MsixPackaging@1
   #   inputs:

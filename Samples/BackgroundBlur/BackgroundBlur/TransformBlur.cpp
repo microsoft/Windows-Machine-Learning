@@ -13,8 +13,8 @@ const GUID* g_MediaSubtypes[] =
 {
     &MFVideoFormat_RGB24,
     //&MEDIASUBTYPE_NV12,
-    &MEDIASUBTYPE_YUY2,
-    &MEDIASUBTYPE_UYVY
+    //&MEDIASUBTYPE_YUY2,
+    //&MEDIASUBTYPE_UYVY
 };
 
 // Number of media types in the aray.

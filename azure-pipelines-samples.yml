@@ -134,7 +134,7 @@ steps:
   - task: PowerShell@2
     inputs:
       targetType: 'inline'
-      script: 'C:\"Program Files (x86)"\"Microsoft Visual Studio"\2019\Enterprise\MSBuild\Current\Bin\amd64\msbuild.exe Samples/WinMLSamplesGallery/WinMLSamplesGallery.sln /p:Configuration=$(BuildConfiguration) /p:Platform=$(BuildPlatform) /p:UapAppxPackageBuildMode=SideloadOnly /p:AppxPackageSigningEnabled=false /p:AppxBundle=Always "/p:AppxBundleOutput=Samples/WinMLSamplesGallery/WinMLSamplesGallery (Package)/AppPackages" "/p:AppxBundlePlatforms=x86|x64" /p:WindowsTargetPlatformVersion=$(WindowsTargetPlatformVersion) /t:Restore,Clean,Build'
+      script: 'C:\"Program Files (x86)"\"Microsoft Visual Studio"\2019\Enterprise\MSBuild\Current\Bin\amd64\msbuild.exe Samples/WinMLSamplesGallery/WinMLSamplesGallery.sln /p:Configuration=$(BuildConfiguration) /p:Platform=$(BuildPlatform) /p:UapAppxPackageBuildMode=SideloadOnly /p:AppxPackageSigningEnabled=false /p:AppxBundle=Always "/p:AppxBundleOutput=Samples/WinMLSamplesGallery/WinMLSamplesGallery (Package)/AppPackages" "/p:AppxBundlePlatforms=x86|x64" /p:WindowsTargetPlatformVersion=$(WindowsTargetPlatformVersion) /t:Restore,Clean,Build,Publish'
 
   # - task: VSBuild@1
   #   displayName: 'Build WinMLSamplesGallery'

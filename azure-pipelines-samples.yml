@@ -119,17 +119,22 @@ steps:
   #     msbuildVersion: 'latest'
   #     msbuildArchitecture: 'x86'
 
-  - task: VSBuild@1
-    displayName: 'Build And Publish WinMLSamplesGallery'
+  # - task: VSBuild@1
+  #   displayName: 'Build And Publish WinMLSamplesGallery'
+  #   inputs:
+  #     solution: 'Samples/WinMLSamplesGallery/WinMLSamplesGallery.sln'
+  #     vsVersion: "16.0"
+  #     msbuildArgs: '/p:UapAppxPackageBuildMode=SideloadOnly /p:AppxPackageSigningEnabled=false /p:AppxBundle=Always "/p:AppxBundleOutput=Samples/WinMLSamplesGallery/WinMLSamplesGallery (Package)/AppPackages" "/p:AppxBundlePlatforms=x86|x64" /p:WindowsTargetPlatformVersion=$(WindowsTargetPlatformVersion) /t:Restore,Clean,Build'
+  #     platform: '$(BuildPlatform)'
+  #     configuration: '$(BuildConfiguration)'
+  #     msbuildArchitecture: x64
+  #     createLogFile: true
+  #   condition: succeededOrFailed()      
+
+  - task: PowerShell@2
     inputs:
-      solution: 'Samples/WinMLSamplesGallery/WinMLSamplesGallery.sln'
-      vsVersion: "16.0"
-      msbuildArgs: '/p:UapAppxPackageBuildMode=SideloadOnly /p:AppxPackageSigningEnabled=false /p:AppxBundle=Always "/p:AppxBundleOutput=Samples/WinMLSamplesGallery/WinMLSamplesGallery (Package)/AppPackages" "/p:AppxBundlePlatforms=x86" /p:Configuration=Release /p:Platform=x64 /p:WindowsTargetPlatformVersion=$(WindowsTargetPlatformVersion) /t:Restore,Clean,Build'
-      platform: '$(BuildPlatform)'
-      configuration: '$(BuildConfiguration)'
-      msbuildArchitecture: x64
-      createLogFile: true
-    condition: succeededOrFailed()      
+      targetType: 'inline'
+      script: 'C:\"Program Files (x86)"\"Microsoft Visual Studio"\2019\Enterprise\MSBuild\Current\Bin\amd64\msbuild.exe Samples/WinMLSamplesGallery/WinMLSamplesGallery.sln /p:Configuration=$(BuildConfiguration) /p:Platform=$(BuildPlatform) /p:UapAppxPackageBuildMode=SideloadOnly /p:AppxPackageSigningEnabled=false /p:AppxBundle=Always "/p:AppxBundleOutput=Samples/WinMLSamplesGallery/WinMLSamplesGallery (Package)/AppPackages" "/p:AppxBundlePlatforms=x86|x64" /p:WindowsTargetPlatformVersion=$(WindowsTargetPlatformVersion) /t:Restore,Clean,Build'
 
   # - task: VSBuild@1
   #   displayName: 'Build WinMLSamplesGallery'

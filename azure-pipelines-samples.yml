@@ -116,7 +116,7 @@ steps:
       configuration: '$(BuildConfiguration)'
       msbuildArchitecture: x64
       createLogFile: true
-    condition: and(succeededOrFailed(), eq(variables['BuildConfiguration'], 'Release'))
+    condition: and(succeededOrFailed(), eq(variables['BuildConfiguration'], 'Debug'))
 
   - task: VSBuild@1
     displayName: 'Build And Publish WinMLSamplesGallery Release'
@@ -128,7 +128,7 @@ steps:
       configuration: '$(BuildConfiguration)'
       msbuildArchitecture: x64
       createLogFile: true
-    condition: and(succeededOrFailed(), eq(variables['BuildConfiguration'], 'Debug'))
+    condition: and(succeededOrFailed(), eq(variables['BuildConfiguration'], 'Release'))
 
   # TODO: Add previously failing build tasks
 

@@ -107,7 +107,19 @@ steps:
         nuget restore $csproj -SolutionDirectory $solution_dir
 
   - task: VSBuild@1
-    displayName: 'Build And Publish WinMLSamplesGallery'
+    displayName: 'Build WinMLSamplesGallery Debug'
+    inputs:
+      solution: 'Samples/WinMLSamplesGallery/WinMLSamplesGallery.sln'
+      vsVersion: "16.0"
+      msbuildArgs: '/p:WindowsTargetPlatformVersion=$(WindowsTargetPlatformVersion) /t:Restore,Clean,Build'
+      platform: '$(BuildPlatform)'
+      configuration: '$(BuildConfiguration)'
+      msbuildArchitecture: x64
+      createLogFile: true
+    condition: and(succeededOrFailed(), eq($(BuildConfiguration), 'Release'))
+
+  - task: VSBuild@1
+    displayName: 'Build And Publish WinMLSamplesGallery Release'
     inputs:
       solution: 'Samples/WinMLSamplesGallery/WinMLSamplesGallery.sln'
       vsVersion: "16.0"
@@ -116,7 +128,7 @@ steps:
       configuration: '$(BuildConfiguration)'
       msbuildArchitecture: x64
       createLogFile: true
-    condition: succeededOrFailed()
+    condition: and(succeededOrFailed(), eq($(BuildConfiguration), 'Debug'))
 
   # TODO: Add previously failing build tasks
 
@@ -144,7 +156,7 @@ steps:
       targetFolder: '$(Build.ArtifactStagingDirectory)\$(BuildPlatform)\$(BuildConfiguration)\AppPackages'
       sourceFolder: 'Samples/WinMLSamplesGallery/WinMLSamplesGallery (Package)/AppPackages'
       contents: '**\*'
-    condition: succeededOrFailed()
+    condition: and(succeededOrFailed(), eq($(BuildConfiguration), 'Release'))
 
   - task: CopyFiles@2
     inputs:

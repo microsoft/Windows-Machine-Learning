@@ -116,7 +116,7 @@ steps:
       configuration: '$(BuildConfiguration)'
       msbuildArchitecture: x64
       createLogFile: true
-    condition: and(succeededOrFailed(), eq($(BuildConfiguration), 'Release'))
+    condition: and(succeededOrFailed(), eq(variables['BuildConfiguration'], 'Release'))
 
   - task: VSBuild@1
     displayName: 'Build And Publish WinMLSamplesGallery Release'
@@ -128,7 +128,7 @@ steps:
       configuration: '$(BuildConfiguration)'
       msbuildArchitecture: x64
       createLogFile: true
-    condition: and(succeededOrFailed(), eq($(BuildConfiguration), 'Debug'))
+    condition: and(succeededOrFailed(), eq(variables['BuildConfiguration'], 'Debug'))
 
   # TODO: Add previously failing build tasks
 
@@ -156,7 +156,7 @@ steps:
       targetFolder: '$(Build.ArtifactStagingDirectory)\$(BuildPlatform)\$(BuildConfiguration)\AppPackages'
       sourceFolder: 'Samples/WinMLSamplesGallery/WinMLSamplesGallery (Package)/AppPackages'
       contents: '**\*'
-    condition: and(succeededOrFailed(), eq($(BuildConfiguration), 'Release'))
+    condition: and(succeededOrFailed(), eq(variables['BuildConfiguration'], 'Release'))
 
   - task: CopyFiles@2
     inputs:

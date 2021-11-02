@@ -111,7 +111,7 @@ steps:
     inputs:
       solution: 'Samples/WinMLSamplesGallery/WinMLSamplesGallery.sln'
       vsVersion: "16.0"
-      msbuildArgs: '/p:OutDir=$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\WinMLSamplesGallery\ /p:UapAppxPackageBuildMode=SideloadOnly /p:AppxPackageSigningEnabled=false /p:AppxBundle=Always "/p:AppxBundlePlatforms=x86|x64" /p:WindowsTargetPlatformVersion=$(WindowsTargetPlatformVersion) /t:Restore,Clean,Build,Publish'
+      msbuildArgs: '/p:UapAppxPackageBuildMode=SideloadOnly /p:AppxPackageSigningEnabled=false /p:AppxBundle=Always "/p:AppxBundlePlatforms=x86|x64" /p:WindowsTargetPlatformVersion=$(WindowsTargetPlatformVersion) /t:Restore,Clean,Build,Publish'
       platform: '$(BuildPlatform)'
       configuration: '$(BuildConfiguration)'
       msbuildArchitecture: x64
@@ -123,7 +123,7 @@ steps:
   - task: CopyFiles@2
     inputs:
       targetFolder: '$(Build.ArtifactStagingDirectory)\$(BuildPlatform)\$(BuildConfiguration)\'
-      sourceFolder: '$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\'
+      sourceFolder: 'Samples\WinMLSamplesGallery\WinMLSamplesGallery (Package)\bin\$(BuildConfiguration)\'
       Contents: |
         **\SamplesTest\**
         **\AppPackages\**
@@ -132,7 +132,7 @@ steps:
   - task: CopyFiles@2
     inputs:
       targetFolder: '$(Build.ArtifactStagingDirectory)\$(BuildPlatform)\$(BuildConfiguration)\'
-      sourceFolder: '$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\'
+      sourceFolder: 'Samples\WinMLSamplesGallery\WinMLSamplesGallery (Package)\bin\$(BuildPlatform)\$(BuildConfiguration)\'
       Contents: |
         ?(AdapterSelection|CustomOperator|CustomTensorization)**\*
         SqueezeNetObjectDetection\*

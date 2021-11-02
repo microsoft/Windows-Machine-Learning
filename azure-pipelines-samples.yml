@@ -139,6 +139,7 @@ steps:
     condition: succeededOrFailed()
 
   - task: CopyFiles@2
+    displayName: 'Copy App Packages'
     inputs:
       targetFolder: '$(Build.ArtifactStagingDirectory)\$(BuildPlatform)\$(BuildConfiguration)\AppPackages'
       sourceFolder: 'Samples/WinMLSamplesGallery/WinMLSamplesGallery (Package)/AppPackages'
@@ -146,7 +147,6 @@ steps:
     condition: succeededOrFailed()
 
   - task: CopyFiles@2
-    displayName: 'Copy App Packages'
     inputs:
       targetFolder: '$(Build.ArtifactStagingDirectory)\$(BuildPlatform)\$(BuildConfiguration)\SharedContent'
       sourceFolder: 'SharedContent'

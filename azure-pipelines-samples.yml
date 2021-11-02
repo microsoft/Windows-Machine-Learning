@@ -49,11 +49,11 @@ pr:
     - Tools
 
 steps: 
-  # - task: PowerShell@2
-  #   displayName: 'Clone Git Submodules'
-  #   inputs:
-  #     targetType: inline
-  #     script: git submodule update --init --recursive
+  - task: PowerShell@2
+    displayName: 'Clone Git Submodules'
+    inputs:
+      targetType: inline
+      script: git submodule update --init --recursive
 
   - task: NuGetToolInstaller@1
     displayName: 'Install NuGet 5.11.0'
@@ -66,35 +66,35 @@ steps:
       targetType: inline
       script: if (-not (Test-Path "${ENV:programfiles(x86)}\windows Kits\10\include\10.0.18362.0\")) { choco install windows-sdk-10-version-1903-all -y }
 
-  # - task: PowerShell@1
-  #   displayName: OpenCV - Configure CMake
-  #   inputs:
-  #     scriptName: external/tools/CMakeConfigureOpenCV.ps1
-  #     workingDirectory: $(System.ArtifactsDirectory)
-  #     arguments: >
-        # -Architecture $(BuildPlatform)
+  - task: PowerShell@1
+    displayName: OpenCV - Configure CMake
+    inputs:
+      scriptName: external/tools/CMakeConfigureOpenCV.ps1
+      workingDirectory: $(System.ArtifactsDirectory)
+      arguments: >
+        -Architecture $(BuildPlatform)
 
-  # - task: VSBuild@1
-  #   displayName: 'OpenCV - Build'
-  #   inputs:
-  #     solution: 'build/external/opencv/cmake_config/$(BuildPlatform)/OpenCV.sln"'
-  #     vsVersion: "16.0"
-  #     msbuildArgs: '/p:Configuration=$(BuildConfiguration) /t:Build /p:LinkIncremental=false /p:DebugSymbols=false /p:DebugType=None'
-  #     configuration: '$(BuildConfiguration)'
-  #     msbuildArchitecture: x64
-  #     createLogFile: true
-  #   condition: succeededOrFailed()
+  - task: VSBuild@1
+    displayName: 'OpenCV - Build'
+    inputs:
+      solution: 'build/external/opencv/cmake_config/$(BuildPlatform)/OpenCV.sln"'
+      vsVersion: "16.0"
+      msbuildArgs: '/p:Configuration=$(BuildConfiguration) /t:Build /p:LinkIncremental=false /p:DebugSymbols=false /p:DebugType=None'
+      configuration: '$(BuildConfiguration)'
+      msbuildArchitecture: x64
+      createLogFile: true
+    condition: succeededOrFailed()
     
-  # - task: VSBuild@1
-  #   displayName: 'OpenCV - Install'
-  #   inputs:
-  #     solution: 'build/external/opencv/cmake_config/$(BuildPlatform)/INSTALL.vcxproj'
-  #     vsVersion: "16.0"
-  #     msbuildArgs: '/p:Configuration=$(BuildConfiguration) /p:LinkIncremental=false /p:DebugSymbols=false /p:DebugType=None'
-  #     configuration: '$(BuildConfiguration)'
-  #     msbuildArchitecture: x64
-  #     createLogFile: true
-  #   condition: succeededOrFailed()
+  - task: VSBuild@1
+    displayName: 'OpenCV - Install'
+    inputs:
+      solution: 'build/external/opencv/cmake_config/$(BuildPlatform)/INSTALL.vcxproj'
+      vsVersion: "16.0"
+      msbuildArgs: '/p:Configuration=$(BuildConfiguration) /p:LinkIncremental=false /p:DebugSymbols=false /p:DebugType=None'
+      configuration: '$(BuildConfiguration)'
+      msbuildArchitecture: x64
+      createLogFile: true
+    condition: succeededOrFailed()
 
   - task: PowerShell@2
     displayName: 'Restore WinMLSamplesGalleryNative Nuget Packages'
@@ -106,19 +106,6 @@ steps:
         $csproj = [System.IO.Path]::Combine($solution_dir, 'WinMLSamplesGalleryNative', 'WinMLSamplesGalleryNative.vcxproj')
         nuget restore $csproj -SolutionDirectory $solution_dir
 
-  # - task: MsixPackaging@1
-  #   inputs:
-  #     outputPath: 'Samples/WinMLSamplesGallery/WinMLSamplesGallery (Package)/AppPackages'
-  #     solution: 'Samples/WinMLSamplesGallery/WinMLSamplesGallery.sln'
-  #     clean: true
-  #     generateBundle: true
-  #     buildConfiguration: 'debug'
-  #     updateAppVersion: false
-  #     appPackageDistributionMode: 'SideloadOnly'
-  #     msbuildLocationMethod: 'version'
-  #     msbuildVersion: 'latest'
-  #     msbuildArchitecture: 'x86'
-
   - task: VSBuild@1
     displayName: 'Build And Publish WinMLSamplesGallery'
     inputs:
@@ -129,44 +116,27 @@ steps:
       configuration: '$(BuildConfiguration)'
       msbuildArchitecture: x64
       createLogFile: true
-    condition: succeededOrFailed()      
-
-  # - task: PowerShell@2
-  #   inputs:
-  #     targetType: 'inline'
-  #     script: 'C:\"Program Files (x86)"\"Microsoft Visual Studio"\2019\Enterprise\MSBuild\Current\Bin\amd64\msbuild.exe Samples/WinMLSamplesGallery/WinMLSamplesGallery.sln /p:Configuration=$(BuildConfiguration) /p:Platform=$(BuildPlatform) /p:UapAppxPackageBuildMode=SideloadOnly /p:AppxPackageSigningEnabled=false /p:AppxBundle=Always "/p:AppxBundlePlatforms=x86|x64" /p:WindowsTargetPlatformVersion=$(WindowsTargetPlatformVersion) /t:Restore,Clean,Build,Publish'
-
-  # - task: VSBuild@1
-  #   displayName: 'Build WinMLSamplesGallery'
-  #   inputs:
-  #     solution: 'Samples/WinMLSamplesGallery/WinMLSamplesGallery.sln'
-  #     vsVersion: "16.0"
-  #     msbuildArgs: '/p:OutDir=$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\WinMLSamplesGallery\ /p:WindowsTargetPlatformVersion=$(WindowsTargetPlatformVersion) /t:Restore,Clean,Build'
-  #     platform: '$(BuildPlatform)'
-  #     configuration: '$(BuildConfiguration)'
-  #     msbuildArchitecture: x64
-  #     createLogFile: true
-  #   condition: succeededOrFailed()
+    condition: succeededOrFailed()
 
   # TODO: Add previously failing build tasks
 
-  # - task: CopyFiles@2
-  #   inputs:
-  #     targetFolder: '$(Build.ArtifactStagingDirectory)\$(BuildPlatform)\$(BuildConfiguration)\'
-  #     sourceFolder: '$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\'
-  #     Contents: |
-  #       **\SamplesTest\**
-  #       **\AppPackages\**
-  #   condition: succeededOrFailed()
+  - task: CopyFiles@2
+    inputs:
+      targetFolder: '$(Build.ArtifactStagingDirectory)\$(BuildPlatform)\$(BuildConfiguration)\'
+      sourceFolder: '$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\'
+      Contents: |
+        **\SamplesTest\**
+        **\AppPackages\**
+    condition: succeededOrFailed()
 
-  # - task: CopyFiles@2
-  #   inputs:
-  #     targetFolder: '$(Build.ArtifactStagingDirectory)\$(BuildPlatform)\$(BuildConfiguration)\'
-  #     sourceFolder: '$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\'
-  #     Contents: |
-  #       ?(AdapterSelection|CustomOperator|CustomTensorization)**\*
-  #       SqueezeNetObjectDetection\*
-  #   condition: succeededOrFailed()
+  - task: CopyFiles@2
+    inputs:
+      targetFolder: '$(Build.ArtifactStagingDirectory)\$(BuildPlatform)\$(BuildConfiguration)\'
+      sourceFolder: '$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\'
+      Contents: |
+        ?(AdapterSelection|CustomOperator|CustomTensorization)**\*
+        SqueezeNetObjectDetection\*
+    condition: succeededOrFailed()
 
   - task: CopyFiles@2
     inputs:
@@ -176,6 +146,7 @@ steps:
     condition: succeededOrFailed()
 
   - task: CopyFiles@2
+    displayName: 'Copy App Packages'
     inputs:
       targetFolder: '$(Build.ArtifactStagingDirectory)\$(BuildPlatform)\$(BuildConfiguration)\SharedContent'
       sourceFolder: 'SharedContent'

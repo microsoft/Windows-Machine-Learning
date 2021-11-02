@@ -123,7 +123,7 @@ steps:
   - task: CopyFiles@2
     inputs:
       targetFolder: '$(Build.ArtifactStagingDirectory)\$(BuildPlatform)\$(BuildConfiguration)\'
-      sourceFolder: 'Samples\WinMLSamplesGallery\WinMLSamplesGallery (Package)\bin\$(BuildConfiguration)\'
+      sourceFolder: 'Samples\WinMLSamplesGallery\WinMLSamplesGallery (Package)\bin\$(BuildPlatform)\$(BuildConfiguration)\'
       Contents: |
         **\SamplesTest\**
         **\AppPackages\**

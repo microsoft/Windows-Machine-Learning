@@ -91,6 +91,7 @@ void SegmentModel::Run(const BYTE** pSrc, BYTE** pDest, DWORD cbImageSize)
 	ITensor foreground = TensorUInt8Bit::Create(std::vector<int64_t>{1, m_imageHeightInPixels, m_imageWidthInPixels, 3});
 	LearningModelSession foregroundSession = CreateLearningModelSession(GetBackground(1, 3, m_imageHeightInPixels, m_imageWidthInPixels));
 	auto foregroundBinding = Evaluate(foregroundSession, std::vector<ITensor*>{&tensorizedImg, &rawLabels}, & foreground);
+	// TODO: Move data over to CPU somehow? 
 	auto reference = foreground.as<TensorUInt8Bit>().CreateReference().data();
 	CopyMemory(*pDest, reference, cbImageSize);
 }
@@ -162,12 +163,12 @@ LearningModel SegmentModel::GetBackground(long n, long c, long h, long w)
 		.Inputs().Add(LearningModelBuilder::CreateTensorFeatureDescriptor(L"InputImage", TensorKind::Float, array_view<int64_t const>{ n, c, h, w }))
 		.Inputs().Add(LearningModelBuilder::CreateTensorFeatureDescriptor(L"InputMask", TensorKind::Float, array_view<int64_t const>{ n, 1, h, w })) // Broadcast to each color channel
 		.Outputs().Add(LearningModelBuilder::CreateTensorFeatureDescriptor(L"Output", TensorKind::UInt8, array_view<int64_t const>{ n, h, w, c }))
-		// Averagepool input
-		.Operators().Add(LearningModelOperator(L"AveragePool")
+		// Averagepool input image
+		/*.Operators().Add(LearningModelOperator(L"AveragePool")
 			.SetInput(L"X", L"InputImage")
 			.SetAttribute(L"kernel_shape", TensorInt64Bit::CreateFromArray(std::vector<int64_t>{2}, std::vector<int64_t>{10, 10}))
 			.SetAttribute(L"auto_pad", TensorString::CreateFromArray(std::vector<int64_t>{1}, std::vector<hstring>{L"SAME_UPPER"}))
-			.SetOutput(L"Y", L"BlurredImage"))
+			.SetOutput(L"Y", L"BlurredImage"))*/
 		// Make mask
 		.Operators().Add(LearningModelOperator(L"Clip")
 			.SetInput(L"input", L"InputMask")
@@ -183,7 +184,7 @@ LearningModel SegmentModel::GetBackground(long n, long c, long h, long w)
 			.SetOutput(L"C", L"BackgroundMask"))
 		// Extract blurred background 
 		.Operators().Add(LearningModelOperator(L"Mul")
-			.SetInput(L"A", L"BlurredImage")
+			.SetInput(L"A", L"InputImage")
 			.SetInput(L"B", L"BackgroundMask")
 			.SetOutput(L"C", L"Background"))
 		// TODO: REmove once compose w foreground
@@ -326,7 +327,7 @@ LearningModel SegmentModel::ReshapeFlatBufferToNCHWAndInvert(long n, long c, lon
 }
 
 LearningModelSession SegmentModel::CreateLearningModelSession(LearningModel model, bool closeModel) {
-	auto device = LearningModelDevice(LearningModelDeviceKind::Default); // Todo: Have a toggle between GPU/ CPU? 
+	auto device = LearningModelDevice(LearningModelDeviceKind::DirectX); // Todo: Have a toggle between GPU/ CPU? 
 	auto options = LearningModelSessionOptions(); // TODO: Figure out with wifi
 	options.BatchSizeOverride(0);
 	options.CloseModelOnSessionCreation(closeModel);
@@ -364,10 +365,9 @@ LearningModelBinding SegmentModel::Evaluate(LearningModelSession sess, std::vect
 	auto results = sess.Evaluate(binding, L"");
 	auto resultTensor = results.Outputs().Lookup(outputName).try_as<TensorFloat>();
 	float testPixels[6];
-	if (resultTensor) {
+	if (false && resultTensor) {
 		auto resultVector = resultTensor.GetAsVectorView();
 		resultVector.GetMany(0, testPixels);
-
 	}
 
 	return binding;

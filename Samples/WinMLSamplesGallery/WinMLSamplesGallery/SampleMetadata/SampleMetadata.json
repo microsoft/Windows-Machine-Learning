@@ -54,6 +54,16 @@
       "XAMLGithubLink": "https://github.com/microsoft/Windows-Machine-Learning/blob/master/Samples/WinMLSamplesGallery/WinMLSamplesGallery/Samples/ImageSharpInterop/ImageSharpInterop.xaml",
       "CSharpGithubLink": "https://github.com/microsoft/Windows-Machine-Learning/blob/master/Samples/WinMLSamplesGallery/WinMLSamplesGallery/Samples/ImageSharpInterop/ImageSharpInterop.xaml.cs",
       "Docs": []
+    },
+    {
+      "Title": "Object Detector",
+      "DescriptionShort": "The sample uses Windows ML to detect and classify objects images using YOLO based models.",
+      "Description": "The sample uses Windows ML to detect and classify objects images using YOLO based models. Choose an image to get started.",
+      "Icon": "\uE155",
+      "Tag": "ObjectDetector",
+      "XAMLGithubLink": "https://github.com/microsoft/Windows-Machine-Learning/blob/master/Samples/WinMLSamplesGallery/WinMLSamplesGallery/Samples/ObjectDetector/ObjectDetector.xaml",
+      "CSharpGithubLink": "https://github.com/microsoft/Windows-Machine-Learning/blob/master/Samples/WinMLSamplesGallery/WinMLSamplesGallery/Samples/ObjectDetector/ObjectDetector.xaml.cs",
+      "Docs": []
     }
   ]
 }

@@ -12,6 +12,19 @@
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
     <Page.Resources>
+
+        <DataTemplate x:Name="AllModelsTemplate" x:DataType="local_samples:OnnxModelViewModel">
+            <Grid Background="#e6e6e6" BorderBrush="#12bef6" BorderThickness="1">
+                <TextBlock FontSize="14" Text="{x:Bind Title}"
+                            Typography.Capitals="AllSmallCaps"
+                            Typography.StylisticSet4="True"
+                            VerticalAlignment="Top"
+                            Padding="10,2,10,2"
+                            MinWidth="136"
+                            />
+            </Grid>
+        </DataTemplate>
+
         <DataTemplate x:Key="ImageTemplate" x:DataType="local_controls:Thumbnail">
             <Image Stretch="UniformToFill" Source="{x:Bind ImageUri}" Width="200" Height="150" />
         </DataTemplate>
@@ -124,7 +137,7 @@
                     <RowDefinition Height="*" />
                 </Grid.RowDefinitions>
 
-                <StackPanel Grid.Row="0" Orientation="Horizontal" Padding="5,10,0,0">
+                <StackPanel Grid.Row="0" Orientation="Horizontal" Padding="0,10,0,0">
                     <StackPanel Orientation="Vertical">
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
                             <Button FontFamily="Segoe MDL2 Assets" Content="&#xE1A5;" Width="97" Height="50" HorizontalAlignment="Left" Click="OpenButton_Clicked" />
@@ -150,19 +163,39 @@
                                 </ItemsPanelTemplate>
                             </GridView.ItemsPanel>
                             <GridView.Items>
+                                <local_controls:Thumbnail ImageUri="ms-appx:///InputData/hummingbird.jpg" />
                                 <local_controls:Thumbnail ImageUri="ms-appx:///InputData/kitten.png" />
                             </GridView.Items>
                         </GridView>
                     </StackPanel>
-                    <Grid Width="360" Height="360" HorizontalAlignment="Left" VerticalAlignment="Top">
-                        <Image x:Name="InputImage" Stretch="None" Width="224" Height="224" VerticalAlignment="Top" HorizontalAlignment="Left">
-                            <Image.RenderTransform>
-                                <ScaleTransform ScaleX="1.607142" ScaleY="1.607142" />
-                            </Image.RenderTransform>
-                        </Image>
+
+
+                    <Grid Background="LightGray" HorizontalAlignment="Left" Height="360" Width="360" VerticalAlignment="Top">
+                        <TextBlock TextWrapping="WrapWholeWords" Text="Choose an Image or Open a file..." HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        <Image x:Name="InputImage" Stretch="Uniform" Height="360" HorizontalAlignment="Center"/>
                     </Grid>
+                    <local_controls:PerformanceMonitor x:Name="Results"/>
                     <local_controls:PerformanceMonitor x:Name="PerformanceMetricsMonitor"/>
                 </StackPanel>
+
+                <GridView Grid.Row="1" x:Name="AllModelsGrid" ItemTemplate="{StaticResource AllModelsTemplate}" SelectionMode="Extended"
+                          SelectedIndex="0"
+                          Padding="0,10,0,0"
+                          Width="600"
+                          HorizontalAlignment="Left">
+                    <GridView.ItemContainerStyle>
+                        <Style TargetType="GridViewItem">
+                            <Setter Property="MinWidth" Value="0"/>
+                            <Setter Property="MinHeight" Value="0"/>
+                        </Style>
+                    </GridView.ItemContainerStyle>
+
+                    <GridView.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <ItemsWrapGrid x:Name="MaxItemsWrapGrid" Orientation="Horizontal"/>
+                        </ItemsPanelTemplate>
+                    </GridView.ItemsPanel>
+                </GridView>
             </Grid>
         </ScrollViewer>
     </Grid>

@@ -41,7 +41,7 @@
             </StackPanel>
         </DataTemplate>
 
-        <DataTemplate x:Name="AllModelsTemplate" x:DataType="local_samples:ClassifierViewModel">
+        <DataTemplate x:Name="AllModelsTemplate" x:DataType="local_samples:OnnxModelViewModel">
             <Grid Background="#e6e6e6" BorderBrush="#12bef6" BorderThickness="1">
                 <TextBlock FontSize="14" Text="{x:Bind Title}"
                             Typography.Capitals="AllSmallCaps"

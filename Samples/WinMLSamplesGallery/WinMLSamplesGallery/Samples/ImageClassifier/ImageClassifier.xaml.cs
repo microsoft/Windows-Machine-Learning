@@ -17,32 +17,6 @@ using WinMLSamplesGallery.Controls;
 
 namespace WinMLSamplesGallery.Samples
 {
-    public enum Classifier
-    {
-        NotSet = 0,
-        MobileNet,
-        ResNet,
-        SqueezeNet,
-        VGG,
-        AlexNet,
-        GoogleNet,
-        CaffeNet,
-        RCNN_ILSVRC13,
-        DenseNet121,
-        Inception_V1,
-        Inception_V2,
-        ShuffleNet_V1,
-        ShuffleNet_V2,
-        ZFNet512,
-        EfficientNetLite4,
-    }
-
-    public sealed class ClassifierViewModel
-    {
-        public string Title { get; set; }
-        public Classifier Tag { get; set; }
-    }
-
     /// <summary>
     /// An empty page that can be used on its own or navigated to within a Frame.
     /// </summary>
@@ -59,9 +33,9 @@ namespace WinMLSamplesGallery.Samples
         private LearningModelSession _preProcessingSession;
         private LearningModelSession _tensorizationSession;
 
-        private Dictionary<Classifier, string> _modelDictionary;
-        private Dictionary<Classifier, Func<LearningModel>> _postProcessorDictionary;
-        private Dictionary<Classifier, Func<LearningModel>> _preProcessorDictionary;
+        private Dictionary<OnnxModel, string> _modelDictionary;
+        private Dictionary<OnnxModel, Func<LearningModel>> _postProcessorDictionary;
+        private Dictionary<OnnxModel, Func<LearningModel>> _preProcessorDictionary;
 
         private static Dictionary<long, string> _labels;
         private static Dictionary<long, string> _imagenetLabels;
@@ -69,16 +43,16 @@ namespace WinMLSamplesGallery.Samples
 
         private BitmapDecoder CurrentImageDecoder { get; set; }
 
-        private Classifier CurrentModel { get; set; }
+        private OnnxModel CurrentModel { get; set; }
 
-        private Classifier SelectedModel
+        private OnnxModel SelectedModel
         {
             get
             {
                 if (AllModelsGrid == null || AllModelsGrid.SelectedItem == null) {
-                    return Classifier.NotSet;
+                    return OnnxModel.Unknown;
                 }
-                var viewModel = (ClassifierViewModel)AllModelsGrid.SelectedItem;
+                var viewModel = (OnnxModelViewModel)AllModelsGrid.SelectedItem;
                 return viewModel.Tag;
             }
         }
@@ -100,26 +74,26 @@ namespace WinMLSamplesGallery.Samples
             this.InitializeComponent();
 
             CurrentImageDecoder = null;
-            CurrentModel = Classifier.NotSet;
+            CurrentModel = OnnxModel.Unknown;
 
-            var allModels = new List<ClassifierViewModel> {
-                new ClassifierViewModel { Tag = Classifier.SqueezeNet, Title = "SqueezeNet" },
-                new ClassifierViewModel { Tag = Classifier.DenseNet121, Title = "DenseNet-121" },
-                new ClassifierViewModel { Tag = Classifier.ShuffleNet_V1, Title = "ShuffleNet_V1" },
-                new ClassifierViewModel { Tag = Classifier.EfficientNetLite4, Title = "EfficientNet-Lite4" },
+            var allModels = new List<OnnxModelViewModel> {
+                new OnnxModelViewModel { Tag = OnnxModel.SqueezeNet, Title = "SqueezeNet" },
+                new OnnxModelViewModel { Tag = OnnxModel.DenseNet121, Title = "DenseNet-121" },
+                new OnnxModelViewModel { Tag = OnnxModel.ShuffleNet_V1, Title = "ShuffleNet_V1" },
+                new OnnxModelViewModel { Tag = OnnxModel.EfficientNetLite4, Title = "EfficientNet-Lite4" },
 
 #if USE_LARGE_MODELS
-                new ClassifierViewModel { Tag = Classifier.MobileNet, Title="MobileNet" },
-                new ClassifierViewModel { Tag = Classifier.GoogleNet, Title="GoogleNet" },
-                new ClassifierViewModel { Tag = Classifier.Inception_V1, Title="Inception_V1" },
-                new ClassifierViewModel { Tag = Classifier.Inception_V2, Title="Inception_V2" },
-                new ClassifierViewModel { Tag = Classifier.ShuffleNet_V2, Title="ShuffleNet_V2" },
-                new ClassifierViewModel { Tag = Classifier.RCNN_ILSVRC13, Title="RCNN_ILSVRC13" },
-                new ClassifierViewModel { Tag = Classifier.ResNet, Title="ResNet" },
-                new ClassifierViewModel { Tag = Classifier.VGG, Title="VGG" },
-                new ClassifierViewModel { Tag = Classifier.AlexNet, Title="AlexNet" },
-                new ClassifierViewModel { Tag = Classifier.CaffeNet, Title="CaffeNet" },
-                new ClassifierViewModel { Tag = Classifier.ZFNet512, Title="ZFNet-512" },
+                new OnnxModelViewModel { Tag = OnnxModel.MobileNet, Title="MobileNet" },
+                new OnnxModelViewModel { Tag = OnnxModel.GoogleNet, Title="GoogleNet" },
+                new OnnxModelViewModel { Tag = OnnxModel.Inception_V1, Title="Inception_V1" },
+                new OnnxModelViewModel { Tag = OnnxModel.Inception_V2, Title="Inception_V2" },
+                new OnnxModelViewModel { Tag = OnnxModel.ShuffleNet_V2, Title="ShuffleNet_V2" },
+                new OnnxModelViewModel { Tag = OnnxModel.RCNN_ILSVRC13, Title="RCNN_ILSVRC13" },
+                new OnnxModelViewModel { Tag = OnnxModel.ResNet, Title="ResNet" },
+                new OnnxModelViewModel { Tag = OnnxModel.VGG, Title="VGG" },
+                new OnnxModelViewModel { Tag = OnnxModel.AlexNet, Title="AlexNet" },
+                new OnnxModelViewModel { Tag = OnnxModel.CaffeNet, Title="CaffeNet" },
+                new OnnxModelViewModel { Tag = OnnxModel.ZFNet512, Title="ZFNet-512" },
 #endif
                 };
             AllModelsGrid.ItemsSource = allModels;
@@ -141,11 +115,11 @@ namespace WinMLSamplesGallery.Samples
 
             if (_modelDictionary == null)
             {
-                _modelDictionary = new Dictionary<Classifier, string>{
-                    { Classifier.DenseNet121,       "ms-appx:///Models/densenet-9.onnx"},
-                    { Classifier.EfficientNetLite4, "ms-appx:///Models/efficientnet-lite4-11.onnx"},
-                    { Classifier.ShuffleNet_V1,     "ms-appx:///Models/shufflenet-9.onnx"},
-                    { Classifier.SqueezeNet,        "ms-appx:///Models/squeezenet1.1-7.onnx" },
+                _modelDictionary = new Dictionary<OnnxModel, string>{
+                    { OnnxModel.DenseNet121,       "ms-appx:///Models/densenet-9.onnx"},
+                    { OnnxModel.EfficientNetLite4, "ms-appx:///Models/efficientnet-lite4-11.onnx"},
+                    { OnnxModel.ShuffleNet_V1,     "ms-appx:///Models/shufflenet-9.onnx"},
+                    { OnnxModel.SqueezeNet,        "ms-appx:///Models/squeezenet1.1-7.onnx" },
 #if USE_LARGE_MODELS
                     // Large Models
                     { Classifier.AlexNet,           "ms-appx:///LargeModels/bvlcalexnet-9.onnx"},
@@ -165,14 +139,14 @@ namespace WinMLSamplesGallery.Samples
 
             if (_postProcessorDictionary == null)
             {
-                _postProcessorDictionary = new Dictionary<Classifier, Func<LearningModel>>{
-                    { Classifier.DenseNet121,       () => TensorizationModels.ReshapeThenSoftmaxThenTopK(new long[] { BatchSize, _imagenetLabels.Count, 1, 1 },
+                _postProcessorDictionary = new Dictionary<OnnxModel, Func<LearningModel>>{
+                    { OnnxModel.DenseNet121,       () => TensorizationModels.ReshapeThenSoftmaxThenTopK(new long[] { BatchSize, _imagenetLabels.Count, 1, 1 },
                                                                                                     TopK,
                                                                                                     BatchSize,
                                                                                                     _imagenetLabels.Count) },
-                    { Classifier.EfficientNetLite4, () => TensorizationModels.SoftMaxThenTopK(TopK) },
-                    { Classifier.ShuffleNet_V1,     () => TensorizationModels.TopK(TopK) },
-                    { Classifier.SqueezeNet,        () => TensorizationModels.SoftMaxThenTopK(TopK) },
+                    { OnnxModel.EfficientNetLite4, () => TensorizationModels.SoftMaxThenTopK(TopK) },
+                    { OnnxModel.ShuffleNet_V1,     () => TensorizationModels.TopK(TopK) },
+                    { OnnxModel.SqueezeNet,        () => TensorizationModels.SoftMaxThenTopK(TopK) },
 #if USE_LARGE_MODELS
                     // Large Models
                     { Classifier.AlexNet,           () => TensorizationModels.TopK(TopK) },
@@ -194,15 +168,15 @@ namespace WinMLSamplesGallery.Samples
             {
                 // Preprocessing values are described in the ONNX Model Zoo:
                 // https://github.com/onnx/models/tree/master/vision/classification/mobilenet
-                _preProcessorDictionary = new Dictionary<Classifier, Func<LearningModel>>{
-                    { Classifier.DenseNet121,       () => TensorizationModels.Normalize0_1ThenZScore(Height, Width, Channels,
+                _preProcessorDictionary = new Dictionary<OnnxModel, Func<LearningModel>>{
+                    { OnnxModel.DenseNet121,       () => TensorizationModels.Normalize0_1ThenZScore(Height, Width, Channels,
                                                                                                 new float[] { 0.485f, 0.456f, 0.406f },
                                                                                                 new float[] { 0.229f, 0.224f, 0.225f}) },
-                    { Classifier.EfficientNetLite4, () => TensorizationModels.NormalizeMinusOneToOneThenTransposeNHWC() },
-                    { Classifier.ShuffleNet_V1,     () => TensorizationModels.Normalize0_1ThenZScore(Height, Width, Channels,
+                    { OnnxModel.EfficientNetLite4, () => TensorizationModels.NormalizeMinusOneToOneThenTransposeNHWC() },
+                    { OnnxModel.ShuffleNet_V1,     () => TensorizationModels.Normalize0_1ThenZScore(Height, Width, Channels,
                                                                                                 new float[] { 0.485f, 0.456f, 0.406f },
                                                                                                 new float[] { 0.229f, 0.224f, 0.225f}) },
-                    { Classifier.SqueezeNet,        null }, // No preprocessing required
+                    { OnnxModel.SqueezeNet,        null }, // No preprocessing required
 #if USE_LARGE_MODELS
                     // Large Models
                     { Classifier.AlexNet,           null }, // No preprocessing required
@@ -253,7 +227,7 @@ namespace WinMLSamplesGallery.Samples
                 var hasPostProcessor = postProcessor != null;
                 _postProcessingSession = hasPostProcessor ? CreateLearningModelSession(postProcessor()) : null;
 
-                if (model == Classifier.RCNN_ILSVRC13)
+                if (model == OnnxModel.RCNN_ILSVRC13)
                 {
                     _labels = _ilsvrc2013Labels;
                 }

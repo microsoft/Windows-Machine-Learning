@@ -1,6 +1,7 @@
 ﻿using Microsoft.AI.MachineLearning;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Data;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Imaging;
 using System;
@@ -11,6 +12,7 @@ using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
+using Windows.Foundation.Metadata;
 using Windows.Graphics.Imaging;
 using Windows.Media;
 using Windows.Storage;
@@ -31,14 +33,32 @@ namespace WinMLSamplesGallery.Samples
         [DllImport("user32.dll", ExactSpelling = true, CharSet = CharSet.Auto, PreserveSig = true, SetLastError = false)]
         public static extern IntPtr GetActiveWindow();
 
-        LearningModelSession _session = null;
-        LearningModelSession tensorizationSession_ = null;
+        private LearningModelSession _inferenceSession = null;
+        private LearningModelSession _preProcessingSession = null;
+
+        private Dictionary<OnnxModel, string> _modelDictionary;
 
         LearningModelDevice dmlDevice;
         LearningModelDevice cpuDevice;
 
         bool initialized_ = false;
 
+        private BitmapDecoder CurrentImageDecoder { get; set; }
+
+        private OnnxModel CurrentModel { get; set; }
+
+        private OnnxModel SelectedModel
+        {
+            get
+            {
+                if (AllModelsGrid == null || AllModelsGrid.SelectedItem == null)
+                {
+                    return OnnxModel.Unknown;
+                }
+                var viewModel = (OnnxModelViewModel)AllModelsGrid.SelectedItem;
+                return viewModel.Tag;
+            }
+        }
 
         private readonly string[] _labels =
             {
@@ -139,8 +159,6 @@ namespace WinMLSamplesGallery.Samples
             }
         }
 
-
-
         private bool IsCpu
         {
             get
@@ -156,9 +174,73 @@ namespace WinMLSamplesGallery.Samples
             dmlDevice = new LearningModelDevice(LearningModelDeviceKind.DirectX);
             cpuDevice = new LearningModelDevice(LearningModelDeviceKind.Cpu);
 
-            _session = CreateLearningModelSession("ms-appx:///Models/yolov4.onnx");
+            CurrentModel = OnnxModel.YoloV3;
+            var allModels = new List<OnnxModelViewModel> {
+                new OnnxModelViewModel { Tag = OnnxModel.YoloV3, Title = "YoloV3" },
+                new OnnxModelViewModel { Tag = OnnxModel.YoloV4Repo, Title = "YoloV4 Repo" },
+                new OnnxModelViewModel { Tag = OnnxModel.YoloV4, Title = "YoloV4" },
+#if USE_LARGE_MODELS
+#endif
+                };
+
+            AllModelsGrid.ItemsSource = allModels;
+            AllModelsGrid.SelectRange(new ItemIndexRange(0, 1));
+            AllModelsGrid.SelectionChanged += AllModelsGrid_SelectionChanged;
+
+            EnsureInitialized();
+
             initialized_ = true;
         }
+
+        private void EnsureInitialized()
+        {
+            if (_modelDictionary == null)
+            {
+                _modelDictionary = new Dictionary<OnnxModel, string>{
+                    { OnnxModel.YoloV3,     "ms-appx:///Models/yolov3.onnx" },
+                    { OnnxModel.YoloV4Repo, "ms-appx:///Models/yolov4.repo.onnx" },
+                    { OnnxModel.YoloV4,     "ms-appx:///Models/yolov4.onnx" },
+#if USE_LARGE_MODELS
+                    // Large Models
+#endif
+                };
+            }
+            InitializeWindowsMachineLearning();
+        }
+
+        private void InitializeWindowsMachineLearning()
+        {
+            if (CurrentImageDecoder != null)
+            {
+                LearningModel preProcessingModel = null;
+                switch (SelectedModel)
+                {
+                    case OnnxModel.YoloV3:
+                        preProcessingModel = TensorizationModels.YoloV3(4, (long)CurrentImageDecoder.PixelHeight, (long)CurrentImageDecoder.PixelWidth);
+                        break;
+                    case OnnxModel.YoloV4Repo:
+                        preProcessingModel = TensorizationModels.YoloV4Repo(1, 4, (long)CurrentImageDecoder.PixelHeight, (long)CurrentImageDecoder.PixelWidth, 416, 416);
+                        break;
+                    case OnnxModel.YoloV4:
+                        preProcessingModel = TensorizationModels.YoloV4(1, 4, (long)CurrentImageDecoder.PixelHeight, (long)CurrentImageDecoder.PixelWidth, 416, 416);
+                        break;
+#if USE_LARGE_MODELS
+                 // Large Models
+#endif
+                };
+
+                _preProcessingSession = CreateLearningModelSession(preProcessingModel);
+            }
+
+            var model = SelectedModel;
+            if (model != CurrentModel)
+            {
+                var modelPath = _modelDictionary[model];
+                _inferenceSession = CreateLearningModelSession(modelPath);
+                CurrentModel = model;
+            }
+        }
+
 
         private LearningModelSession CreateLearningModelSession(string modelPath)
         {
@@ -195,12 +277,11 @@ namespace WinMLSamplesGallery.Samples
 
         private void OpenButton_Clicked(object sender, RoutedEventArgs e)
         {
-            var file = ImageHelper.PickImageFiles();
-            if (file != null)
+            var CurrentImageDecoder = ImageHelper.PickImageFileAsBitmapDecoder();
+            if (CurrentImageDecoder != null)
             {
-                var currentImage = CreateSoftwareBitmapFromStorageFile(file);
-                RenderImageInMainPanel(currentImage);
                 BasicGridView.SelectedItem = null;
+                TryPerformInference();
             }
         }
 
@@ -210,53 +291,63 @@ namespace WinMLSamplesGallery.Samples
             var thumbnail = gridView.SelectedItem as WinMLSamplesGallery.Controls.Thumbnail;
             if (thumbnail != null)
             {
-                var image = thumbnail.ImageUri;
-                var file = StorageFile.GetFileFromApplicationUriAsync(new Uri(image)).GetAwaiter().GetResult();
-                var softwareBitmap = CreateSoftwareBitmapFromStorageFile(file);
+                CurrentImageDecoder = ImageHelper.CreateBitmapDecoderFromPath(thumbnail.ImageUri);
+                TryPerformInference();
+            }
+        }
 
+        private void Detect(BitmapDecoder decoder)
+        {
+            Results.ClearLog();
 
-                tensorizationSession_ =
-                    CreateLearningModelSession(
-                        TensorizationModels.ReshapeFlatBufferNHWC(
-                            1,
-                            4,
-                            softwareBitmap.PixelHeight,
-                            softwareBitmap.PixelWidth,
-                            416,
-                            416));
-
-
-                // Tensorize
-                var stream = file.OpenAsync(FileAccessMode.Read).GetAwaiter().GetResult();
-                var decoder = BitmapDecoder.CreateAsync(stream).GetAwaiter().GetResult();
-                var bitmap = decoder.GetSoftwareBitmapAsync(BitmapPixelFormat.Bgra8, BitmapAlphaMode.Premultiplied).GetAwaiter().GetResult();
-                var pixelDataProvider = decoder.GetPixelDataAsync().GetAwaiter().GetResult();
+            // Tensorize
+            LearningModelSession preProcessingSession = null;
+            object inferenceInput = null;
+            object input = null;
+            if (ApiInformation.IsTypePresent("Windows.Media.VideoFrame") && false)
+            {
+                var softwareBitmap = decoder.GetSoftwareBitmapAsync().GetAwaiter().GetResult();
+                inferenceInput = VideoFrame.CreateWithSoftwareBitmap(softwareBitmap);
+            }
+            else
+            {
+                var pixelDataProvider = decoder.GetPixelDataAsync(BitmapPixelFormat.Rgba8, BitmapAlphaMode.Premultiplied, new BitmapTransform(), ExifOrientationMode.RespectExifOrientation, ColorManagementMode.ColorManageToSRgb).GetAwaiter().GetResult();
                 var bytes = pixelDataProvider.DetachPixelData();
                 var buffer = bytes.AsBuffer(); // Does this do a copy??
-                var inputRawTensor = TensorUInt8Bit.CreateFromBuffer(new long[] { 1, buffer.Length }, buffer);
+                input = TensorUInt8Bit.CreateFromBuffer(new long[] { 1, buffer.Length }, buffer);
+                preProcessingSession = _preProcessingSession;
+            }
 
-                // 3 channel NCHW
-                var tensorizeOutput = TensorFloat.Create(new long[] { 1, 416, 416, 3 });
-                var b = new LearningModelBinding(tensorizationSession_);
-                b.Bind(tensorizationSession_.Model.InputFeatures[0].Name, inputRawTensor);
-                b.Bind(tensorizationSession_.Model.OutputFeatures[0].Name, tensorizeOutput);
-                tensorizationSession_.Evaluate(b, "");
+            // 3 channel NCHW
+            if (preProcessingSession != null)
+            {
+                inferenceInput = TensorFloat.Create(new long[] { 1, 416, 416, 3 });
+                var b = new LearningModelBinding(preProcessingSession);
+                b.Bind(preProcessingSession.Model.InputFeatures[0].Name, input);
+                b.Bind(preProcessingSession.Model.OutputFeatures[0].Name, inferenceInput);
+                preProcessingSession.Evaluate(b, "");
+            }
 
-                // Resize
-                var resizeBinding = new LearningModelBinding(_session);
-                resizeBinding.Bind(_session.Model.InputFeatures[0].Name, tensorizeOutput);
-                var results = _session.Evaluate(resizeBinding, "");
+            // Infrence
+            var inferenceBinding = new LearningModelBinding(_inferenceSession);
+            inferenceBinding.Bind(_inferenceSession.Model.InputFeatures[0].Name, inferenceInput);
+            var results = _inferenceSession.Evaluate(inferenceBinding, "");
 
-                var output1 = results.Output(0) as TensorFloat;
+            var output = results.Output(0) as TensorFloat;
+            var data = output.GetAsVectorView();
+            var detections = ParseResult(data.ToList<float>().ToArray());
 
-                var data = output1.GetAsVectorView();
-                var detections = ParseResult(data.ToList<float>().ToArray());
+            var cp = new Comparer();
+            detections.Sort(cp);
+            var final = NMS(detections);
 
-                Comparer cp = new Comparer();
-                detections.Sort(cp);
-                var final = NMS(detections);
+            int num = 0;
+            foreach (var result in final)
+            {
+                num++;
+                Results.Log(result.label, 0);
+                if (num > 10) { break; }
 
-                RenderImageInMainPanel(softwareBitmap);
             }
         }
 
@@ -291,7 +382,7 @@ namespace WinMLSamplesGallery.Samples
         {
             int c_values = 84;
             int c_boxes = results.Length / c_values;
-            float confidence_threshold = 0.5f;
+            float confidence_threshold = 0.85f;
             List<DetectionResult> detections = new List<DetectionResult>();
             for (int i_box = 0; i_box < c_boxes; i_box++)
             {
@@ -382,6 +473,24 @@ namespace WinMLSamplesGallery.Samples
 
             //Debug.Assert(iou >= 0 && iou <= 1);
             return iou;
+        }
+
+        private void AllModelsGrid_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            TryPerformInference();
+        }
+
+        private void TryPerformInference()
+        {
+            if (CurrentImageDecoder != null)
+            {
+                EnsureInitialized();
+
+                // Draw the image to classify in the Image control
+                var softwareBitmap = CurrentImageDecoder.GetSoftwareBitmapAsync().GetAwaiter().GetResult();
+                RenderingHelpers.BindSoftwareBitmapToImageControl(InputImage, softwareBitmap);
+                Detect(CurrentImageDecoder);
+            }
         }
     }
 }

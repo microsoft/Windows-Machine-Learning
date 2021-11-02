@@ -1,4 +1,4 @@
-?# WinML Samples Gallery: Batching
+# WinML Samples Gallery: Batching
  Perform infererence over multiple inputs at once to increase runtime performance.
  
  Use this sample to compare inference runtime performace with and without batched inputs. 50 images will be passed through SqueezeNet for classification. Set a batch size and click Start Inference to compare.

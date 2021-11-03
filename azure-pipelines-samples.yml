@@ -2,7 +2,7 @@ resources:
 
 - repo: self
   clean: true
-
+timeOutInMinutes: 90
 variables:
   SamplesBin: SamplesBin
   WINDOWS_WINMD: C:\Program Files (x86)\Windows Kits\10\UnionMetadata\10.0.18362.0\Windows.winmd

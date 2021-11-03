@@ -25,6 +25,7 @@
     <None Remove="AllSamplesPage.xaml" />
     <None Remove="Controls\PerformanceMonitor.xaml" />
     <None Remove="HomePage.xaml" />
+    <None Remove="Models\squeezenet1.1-7-batched.onnx" />
 	<None Remove="SamplesGrid.xaml" />
 	<None Remove="SampleBasePage.xaml" />
     <None Remove="Image.xaml" />
@@ -36,6 +37,7 @@
     <None Remove="Video.xaml" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Models\squeezenet1.1-7-batched.onnx" />
     <Content Include="SampleMetadata\SampleMetadata.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
@@ -151,7 +153,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Models\" />
     <Folder Include="LargeModels\" />
   </ItemGroup>
 

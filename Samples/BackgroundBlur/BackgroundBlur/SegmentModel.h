@@ -1,6 +1,7 @@
 #pragma once
 #include <winrt/Microsoft.AI.MachineLearning.Experimental.h>
 #include <winrt/Microsoft.AI.MachineLearning.h>
+#include <Windows.AI.MachineLearning.native.h>
 #include <strsafe.h>
 #include <wtypes.h>
 #include <winrt/base.h>

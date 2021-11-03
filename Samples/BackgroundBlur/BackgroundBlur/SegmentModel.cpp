@@ -34,6 +34,7 @@ enum OnnxDataType : long {
 	ONNX_BFLOAT16 = 16,
 }OnnxDataType;
 hstring modelPath = L"C:\\Windows-Machine-Learning\\Samples\\BackgroundBlur\\BackgroundBlur\\Assets\\fcn-resnet50-11.onnx";
+bool useGPU = true;
 
 SegmentModel::SegmentModel() :
 	m_sess(NULL),
@@ -51,8 +52,6 @@ SegmentModel::SegmentModel(UINT32 w, UINT32 h) :
 
 	m_bufferSess = CreateLearningModelSession(ReshapeFlatBufferToNCHW(1, 3, h, w));
 }
-
-
 
 void SegmentModel::Run(const BYTE** pSrc, BYTE** pDest, DWORD cbImageSize)
 {
@@ -92,8 +91,23 @@ void SegmentModel::Run(const BYTE** pSrc, BYTE** pDest, DWORD cbImageSize)
 	LearningModelSession foregroundSession = CreateLearningModelSession(GetBackground(1, 3, m_imageHeightInPixels, m_imageWidthInPixels));
 	auto foregroundBinding = Evaluate(foregroundSession, std::vector<ITensor*>{&tensorizedImg, &rawLabels}, & foreground);
 	// TODO: Move data over to CPU somehow? 
-	auto reference = foreground.as<TensorUInt8Bit>().CreateReference().data();
-	CopyMemory(*pDest, reference, cbImageSize);
+	UINT32 outCapacity = 0;
+
+	if (useGPU)
+	{
+		foreground.as<ITensorNative>()->GetBuffer(pDest, &outCapacity);
+
+		ID3D12Resource* res = NULL;
+		foreground.as<ITensorNative>()->GetD3D12Resource(&res);
+		UINT DstRowPitch = 0, DstDepthPitch = 0, SrcSubresource = 0;
+		HRESULT hr = res->ReadFromSubresource((void*)*pDest, DstRowPitch, DstDepthPitch, SrcSubresource, NULL);
+		return;
+	}
+	else 
+	{
+		auto reference = foreground.as<TensorUInt8Bit>().CreateReference().data();
+		CopyMemory(*pDest, reference, cbImageSize);
+	}
 }
 
 void SegmentModel::RunTest(const BYTE** pSrc, BYTE** pDest, DWORD cbImageSize) 
@@ -327,7 +341,7 @@ LearningModel SegmentModel::ReshapeFlatBufferToNCHWAndInvert(long n, long c, lon
 }
 
 LearningModelSession SegmentModel::CreateLearningModelSession(LearningModel model, bool closeModel) {
-	auto device = LearningModelDevice(LearningModelDeviceKind::DirectX); // Todo: Have a toggle between GPU/ CPU? 
+	auto device = useGPU ? LearningModelDevice(LearningModelDeviceKind::DirectX) : LearningModelDevice(LearningModelDeviceKind::Default); // Todo: Have a toggle between GPU/ CPU? 
 	auto options = LearningModelSessionOptions(); // TODO: Figure out with wifi
 	options.BatchSizeOverride(0);
 	options.CloseModelOnSessionCreation(closeModel);

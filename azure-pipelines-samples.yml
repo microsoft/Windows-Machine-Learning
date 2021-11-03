@@ -33,7 +33,7 @@ pr:
     - Tools
 
 jobs:
-- job: Samples_Gallery_Build
+- job: Public_Samples_Build
   timeoutInMinutes: 90
 
   strategy:

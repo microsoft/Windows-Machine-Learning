@@ -153,6 +153,7 @@
   </ItemGroup>
 
   <ItemGroup>
+	<Folder Include="Models\" />  
     <Folder Include="LargeModels\" />
   </ItemGroup>
 

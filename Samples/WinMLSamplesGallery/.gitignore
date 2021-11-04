@@ -1,1 +1,2 @@
 *.onnx
+!squeezenet1.1-7-batched.onnx

@@ -7,7 +7,7 @@
 
 - [Getting Started](#getting-started)
 - [BatchSizeOverride](#batchsizeoverride)
-- [Feedback]($feedback)
+- [Feedback](#feedback)
 - [External Links](#external-links)
 
 ## Getting Started

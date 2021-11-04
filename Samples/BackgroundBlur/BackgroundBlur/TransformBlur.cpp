@@ -1387,7 +1387,7 @@ void TransformImage_Stub(
     SegmentModel    segmentModel
 )
 {
-    segmentModel.Run(&pSrc, &pDest, cbImageSize);
+    segmentModel.RunTest(&pSrc, &pDest, cbImageSize);
     
     // For now RGB
     /*for (DWORD y = 0; y < dwHeightInPixels; y++)

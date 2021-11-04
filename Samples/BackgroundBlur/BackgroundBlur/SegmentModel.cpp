@@ -63,7 +63,6 @@ void SegmentModel::Run(const BYTE** pSrc, BYTE** pDest, DWORD cbImageSize)
 	ITensor inputRawTensor = TensorUInt8Bit::CreateFromArray(std::vector<int64_t>{1, cbImageSize}, source);
 	ITensor tensorizedImg = TensorFloat::Create(shape);
 	auto tensorizationBinding = Evaluate(m_bufferSess, std::vector<ITensor*>{&inputRawTensor}, &tensorizedImg);
-	
 
 	// 2. Normalize input tensor
 	std::vector<float> mean = { 0.485f, 0.456f, 0.406f };
@@ -90,17 +89,23 @@ void SegmentModel::Run(const BYTE** pSrc, BYTE** pDest, DWORD cbImageSize)
 	ITensor foreground = TensorUInt8Bit::Create(std::vector<int64_t>{1, m_imageHeightInPixels, m_imageWidthInPixels, 3});
 	LearningModelSession foregroundSession = CreateLearningModelSession(GetBackground(1, 3, m_imageHeightInPixels, m_imageWidthInPixels));
 	auto foregroundBinding = Evaluate(foregroundSession, std::vector<ITensor*>{&tensorizedImg, &rawLabels}, & foreground);
+	
 	// TODO: Move data over to CPU somehow? 
 	UINT32 outCapacity = 0;
-
 	if (useGPU)
 	{
+		// v1: just get the reference- should fail
+		auto reference = foreground.as<TensorUInt8Bit>().CreateReference().data();
+
+		// v2: get the buffer from tensornative
+		auto f = foreground.as<ITensorNative>();
 		foreground.as<ITensorNative>()->GetBuffer(pDest, &outCapacity);
 
+		// v3: get from a d3dresource
 		ID3D12Resource* res = NULL;
-		foreground.as<ITensorNative>()->GetD3D12Resource(&res);
+		HRESULT hr = foreground.as<ITensorNative>()->GetD3D12Resource(&res);
 		UINT DstRowPitch = 0, DstDepthPitch = 0, SrcSubresource = 0;
-		HRESULT hr = res->ReadFromSubresource((void*)*pDest, DstRowPitch, DstDepthPitch, SrcSubresource, NULL);
+		hr = res->ReadFromSubresource((void*)*pDest, DstRowPitch, DstDepthPitch, SrcSubresource, NULL);
 		return;
 	}
 	else 
@@ -118,26 +123,27 @@ void SegmentModel::RunTest(const BYTE** pSrc, BYTE** pDest, DWORD cbImageSize)
 	//winrt::array_view<byte> dest{ *pDest, *pDest + cbImageSize };
 	std::vector<int64_t> shape = { 1, m_imageHeightInPixels, m_imageWidthInPixels, 3 };
 
-	auto inputRawTensor = TensorUInt8Bit::CreateFromArray(std::vector<int64_t>{1, cbImageSize}, source);
-	auto outputTensor = TensorUInt8Bit::Create(shape);
-	//auto outputTensor = TensorUInt8Bit::CreateFromArray(std::vector<int64_t>{1, cbImageSize}, dest);
-	auto binding = LearningModelBinding(m_sess);
-	hstring inputName = m_sess.Model().InputFeatures().GetAt(0).Name();
-	hstring outputName = m_sess.Model().OutputFeatures().GetAt(0).Name();
-	binding.Bind(inputName, inputRawTensor);
+	ITensor inputRawTensor = TensorUInt8Bit::CreateFromArray(std::vector<int64_t>{1, cbImageSize}, source);
+	ITensor outputTensor = TensorUInt8Bit::Create(shape);
+	auto binding = Evaluate(m_sess, { &inputRawTensor }, &outputTensor);
 
-	//auto outputBindProperties = PropertySet();
-	//outputBindProperties::Add(L"DisableTensorCpuSync", PropertyValue::CreateBoolean(true));
-	binding.Bind(outputName, outputTensor);
+	UINT32 outCapacity = 0;
+	if (useGPU)
+	{
+		// v1: just get the reference- should fail
+		auto reference = outputTensor.as<TensorUInt8Bit>().CreateReference().data();
 
-	auto results = m_sess.Evaluate(binding, L"");
-	auto resultTensor = results.Outputs().Lookup(L"Output").as<TensorUInt8Bit>();
-	auto resultVector = resultTensor.GetAsVectorView();
-	auto t = resultVector.GetAt(0);
+		// v2: get the buffer from tensornative
+		auto f = outputTensor.as<ITensorNative>();
+		outputTensor.as<ITensorNative>()->GetBuffer(pDest, &outCapacity);
 
-	auto reference = resultTensor.CreateReference().data();
-	
-	CopyMemory(*pDest, reference, cbImageSize);
+		// v3: get from a d3dresource
+		ID3D12Resource* res = NULL;
+		HRESULT hr = outputTensor.as<ITensorNative>()->GetD3D12Resource(&res);
+		UINT DstRowPitch = 0, DstDepthPitch = 0, SrcSubresource = 0;
+		hr = res->ReadFromSubresource((void*)*pDest, DstRowPitch, DstDepthPitch, SrcSubresource, NULL);
+		return;
+	}
 ;
 }
 
@@ -379,9 +385,20 @@ LearningModelBinding SegmentModel::Evaluate(LearningModelSession sess, std::vect
 	auto results = sess.Evaluate(binding, L"");
 	auto resultTensor = results.Outputs().Lookup(outputName).try_as<TensorFloat>();
 	float testPixels[6];
-	if (false && resultTensor) {
+	if (!useGPU && resultTensor) {
 		auto resultVector = resultTensor.GetAsVectorView();
 		resultVector.GetMany(0, testPixels);
+	}
+	if (useGPU && resultTensor)
+	{
+		auto f = resultTensor.as<ITensorNative>();
+
+		ID3D12Resource* res = NULL;
+		HRESULT hr = resultTensor.as<ITensorNative>()->GetD3D12Resource(&res);
+		UINT DstRowPitch = 0, DstDepthPitch = 0, SrcSubresource = 0;
+		BYTE* pTest = NULL;
+		hr = res->ReadFromSubresource((void*)pTest, DstRowPitch, DstDepthPitch, SrcSubresource, NULL);
+
 	}
 
 	return binding;

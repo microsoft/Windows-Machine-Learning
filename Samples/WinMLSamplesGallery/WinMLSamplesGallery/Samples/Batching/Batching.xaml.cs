@@ -106,7 +106,7 @@ namespace WinMLSamplesGallery.Samples
 
         private async Task CreateSessions(int batchSizeOverride)
         {
-            var modelPath = "ms-appx:///Models/squeezenet1.1-7.onnx";
+            var modelPath = "ms-appx:///Models/squeezenet1.1-7-batched.onnx";
             nonBatchingSession_ = await CreateLearningModelSession(modelPath);
             batchingSession_ = await CreateLearningModelSession(modelPath, batchSizeOverride);
         }

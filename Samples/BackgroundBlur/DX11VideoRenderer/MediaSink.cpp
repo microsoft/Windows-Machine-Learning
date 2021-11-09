@@ -697,7 +697,7 @@ STDMETHODIMP DX11VideoRenderer::CMediaSink::NotifyPreroll(MFTIME hnsUpcomingStar
 //-------------------------------------------------------------------
 
 DX11VideoRenderer::CMediaSink::CMediaSink(void) :
-    STREAM_ID(1),
+    STREAM_ID(0), // CHANGED from 1 -> 0 to line up with default stream ids in topo nodes
     m_nRefCount(1),
     m_csMediaSink(), // default ctor
     m_IsShutdown(FALSE),

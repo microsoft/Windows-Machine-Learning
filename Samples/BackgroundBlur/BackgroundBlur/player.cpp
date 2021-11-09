@@ -1197,6 +1197,61 @@ HRESULT BindOutputNode(IMFTopologyNode* pNode)
 // Add an output node to a topology.
 HRESULT AddOutputNode(
     IMFTopology* pTopology,     // Topology.
+    IMFActivate* pActivate,     // Media sink activation object.
+    DWORD dwId,                 // Identifier of the stream sink.
+    IMFTopologyNode** ppNode)   // Receives the node pointer.
+{
+    IMFTopologyNode* pNode = NULL;
+    IDirect3DDeviceManager9* man = NULL;
+
+    // Create the node.
+    HRESULT hr = MFCreateTopologyNode(MF_TOPOLOGY_OUTPUT_NODE, &pNode);
+    if (FAILED(hr))
+    {
+        goto done;
+    }
+
+    // Set the object pointer.
+    hr = pNode->SetObject(pActivate);
+    if (FAILED(hr))
+    {
+        goto done;
+    }
+
+    // Set the stream sink ID attribute.
+    hr = pNode->SetUINT32(MF_TOPONODE_STREAMID, dwId);
+    if (FAILED(hr))
+    {
+        goto done;
+    }
+
+    hr = pNode->SetUINT32(MF_TOPONODE_NOSHUTDOWN_ON_REMOVE, FALSE);
+    if (FAILED(hr))
+    {
+        goto done;
+    }
+
+    // Add the node to the topology.
+    hr = pTopology->AddNode(pNode);
+    if (FAILED(hr))
+    {
+        goto done;
+    }
+    BindOutputNode(pNode);
+    // Return the pointer to the caller.
+    *ppNode = pNode;
+
+
+    (*ppNode)->AddRef();
+
+done:
+    SafeRelease(&pNode);
+    return hr;
+}
+
+// Add an output node to a topology.
+HRESULT AddOutputNode(
+    IMFTopology* pTopology,     // Topology.
     IMFMediaSink* pSink,     // Media sink activation object.
     DWORD dwId,                 // Identifier of the stream sink.
     IMFTopologyNode** ppNode)   // Receives the node pointer.
@@ -1359,7 +1414,7 @@ HRESULT AddBranchToPartialTopology(
         }
 
         // Create the output node for the renderer.
-        hr = AddOutputNode(pTopology, pSink, 0, &pOutputNode);
+        hr = AddOutputNode(pTopology, pSinkActivate, 0, &pOutputNode);
         if (FAILED(hr))
         {
             goto done;

@@ -8,10 +8,10 @@
 #include "player.h"
 #include "TransformBlur.h"
 #include <assert.h>
+#include "DX11VideoRenderer.h"
 
 #pragma comment(lib, "shlwapi")
 #define CHECK_HR(hr) if (FAILED(hr)) { goto done; }
-
 
 template <class Q>
 HRESULT GetEventObject(IMFMediaEvent* pEvent, Q** ppObject)
@@ -993,7 +993,8 @@ HRESULT CreateMediaSinkActivate(
     else if (MFMediaType_Video == guidMajorType)
     {
         // Create the video renderer.
-        hr = MFCreateVideoRendererActivate(hVideoWindow, &pActivate);
+        //hr = MFCreateVideoRendererActivate(hVideoWindow, &pActivate);
+        hr = CreateDX11VideoRendererActivate(hVideoWindow, &pActivate);
     }
     else
     {
@@ -1201,7 +1202,7 @@ done:
 
 HRESULT AddTransformNode(
     IMFTopology* pTopology,     // Topology.
-    IDirect3DDeviceManager9* d3dManager,
+    IMFDXGIDeviceManager* d3dManager,
     //const CLSID& clsid,         // CLSID of the MFT.
     IMFTopologyNode** ppNode    // Receives the node pointer.
 )
@@ -1323,7 +1324,7 @@ HRESULT AddBranchToPartialTopology(
 
 
             IUnknown* pNodeObject = NULL;
-            IDirect3DDeviceManager9* pD3DManager = NULL;
+            IMFDXGIDeviceManager* pD3DManager = NULL;
             hr = pOutputNode->GetObject(&pNodeObject);
             if (SUCCEEDED(hr))
             {

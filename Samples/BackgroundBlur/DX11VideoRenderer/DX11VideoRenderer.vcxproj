@@ -1,8 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="..\packages\Microsoft.Windows.CppWinRT.2.0.210930.14\build\native\Microsoft.Windows.CppWinRT.props" Condition="Exists('..\packages\Microsoft.Windows.CppWinRT.2.0.210930.14\build\native\Microsoft.Windows.CppWinRT.props')" />
-  <Import Project="..\packages\Microsoft.AI.MachineLearning.1.9.1\build\native\Microsoft.AI.MachineLearning.props" Condition="Exists('..\packages\Microsoft.AI.MachineLearning.1.9.1\build\native\Microsoft.AI.MachineLearning.props')" />
-  <Import Project="..\packages\Microsoft.AI.DirectML.1.5.1\build\Microsoft.AI.DirectML.props" Condition="Exists('..\packages\Microsoft.AI.DirectML.1.5.1\build\Microsoft.AI.DirectML.props')" />
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
       <Configuration>Debug</Configuration>
@@ -24,33 +21,32 @@
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
-    <ProjectGuid>{7519dde1-9348-4054-81aa-0456dac71cbd}</ProjectGuid>
-    <RootNamespace>WindowsProject1</RootNamespace>
+    <ProjectGuid>{902bdf95-4fad-48c7-bbbc-b628f2d595c6}</ProjectGuid>
+    <RootNamespace>DX11VideoRenderer</RootNamespace>
     <WindowsTargetPlatformVersion>10.0.19041.0</WindowsTargetPlatformVersion>
-    <ProjectName>BackgroundBlur</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v142</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v142</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v142</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v142</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
@@ -90,13 +86,16 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;DX11VIDEORENDERER_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>C:\Program Files (x86)\Windows Kits\10\Lib\10.0.19041.0\um\x64\Mfplat.lib;C:\Program Files (x86)\Windows Kits\10\Lib\10.0.19041.0\um\x64\Mf.lib;C:\Program Files (x86)\Windows Kits\10\Lib\10.0.19041.0\um\x64\Mfcore.lib;C:\Program Files (x86)\Windows Kits\10\Lib\10.0.19041.0\um\x64\evr.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <EnableUAC>false</EnableUAC>
+      <ModuleDefinitionFile>DX11VideoRenderer.def</ModuleDefinitionFile>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -105,30 +104,37 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;DX11VIDEORENDERER_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableUAC>false</EnableUAC>
+      <ModuleDefinitionFile>DX11VideoRenderer.def</ModuleDefinitionFile>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_DEBUG;DX11VIDEORENDERER_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\Users\linneamay\.nuget\packages\microsoft.ai.machinelearning\1.9.1\build\native\include\abi;C:\Windows-Machine-Learning\Samples\BackgroundBlur\BackgroundBlur\common;C:\Windows-Machine-Learning\Samples\BackgroundBlur\DX11VideoRenderer;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>C:\Program Files %28x86%29\Windows Kits\10\Lib\10.0.19041.0\um\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>C:\Program Files (x86)\Windows Kits\10\Lib\10.0.19041.0\um\x64\Mfplat.lib;C:\Program Files (x86)\Windows Kits\10\Lib\10.0.19041.0\um\x64\Mf.lib;C:\Program Files (x86)\Windows Kits\10\Lib\10.0.19041.0\um\x64\Mfcore.lib;C:\Program Files (x86)\Windows Kits\10\Lib\10.0.19041.0\um\x64\evr.lib;C:\Program Files (x86)\Windows Kits\10\Lib\10.0.19041.0\um\x64\mfuuid.lib;C:\Windows-Machine-Learning\Samples\BackgroundBlur\x64\Debug\DX11VideoRenderer.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <EnableUAC>false</EnableUAC>
+      <AdditionalLibraryDirectories>C:\Program Files %28x86%29\Windows Kits\10\Lib\10.0.19041.0\um\$(Platform);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>winmm.lib;dcomp.lib;d3d11.lib;mfuuid.lib;mfplat.lib;evr.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;C:\Program Files (x86)\Windows Kits\10\Lib\10.0.19041.0\um\x64\Mfplat.lib;C:\Program Files (x86)\Windows Kits\10\Lib\10.0.19041.0\um\x64\Mf.lib;C:\Program Files (x86)\Windows Kits\10\Lib\10.0.19041.0\um\x64\Mfcore.lib;C:\Program Files (x86)\Windows Kits\10\Lib\10.0.19041.0\um\x64\evr.lib;C:\Program Files (x86)\Windows Kits\10\Lib\10.0.19041.0\um\x64\mfuuid.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <ModuleDefinitionFile>DX11VideoRenderer.def</ModuleDefinitionFile>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -137,54 +143,59 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NDEBUG;DX11VIDEORENDERER_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableUAC>false</EnableUAC>
+      <AdditionalLibraryDirectories>C:\Program Files %28x86%29\Windows Kits\10\Lib\10.0.19041.0\um\$(Platform);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>winmm.lib;dcomp.lib;d3d11.lib;mfuuid.lib;mfplat.lib;evr.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;C:\Program Files (x86)\Windows Kits\10\Lib\10.0.19041.0\um\x64\Mfplat.lib;C:\Program Files (x86)\Windows Kits\10\Lib\10.0.19041.0\um\x64\Mf.lib;C:\Program Files (x86)\Windows Kits\10\Lib\10.0.19041.0\um\x64\Mfcore.lib;C:\Program Files (x86)\Windows Kits\10\Lib\10.0.19041.0\um\x64\evr.lib;C:\Program Files (x86)\Windows Kits\10\Lib\10.0.19041.0\um\x64\mfuuid.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <ModuleDefinitionFile>DX11VideoRenderer.def</ModuleDefinitionFile>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="SegmentModel.h" />
-    <ClInclude Include="player.h" />
-    <ClInclude Include="Resource.h" />
-    <ClInclude Include="BackgroundBlur.h" />
-    <ClInclude Include="TransformBlur.h" />
+    <ClInclude Include="Activate.h" />
+    <ClInclude Include="ClassFactory.h" />
+    <ClInclude Include="Common.h" />
+    <ClInclude Include="display.h" />
+    <ClInclude Include="DX11VideoRenderer.h" />
+    <ClInclude Include="linklist.h" />
+    <ClInclude Include="Marker.h" />
+    <ClInclude Include="MediaSink.h" />
+    <ClInclude Include="MFAttributesImpl.h" />
+    <ClInclude Include="pch.h" />
+    <ClInclude Include="Presenter.h" />
+    <ClInclude Include="Scheduler.h" />
+    <ClInclude Include="StaticAsyncCallback.h" />
+    <ClInclude Include="StreamSink.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="player.cpp" />
-    <ClCompile Include="BackgroundBlur.cpp" />
-    <ClCompile Include="SegmentModel.cpp" />
-    <ClCompile Include="TransformBlur.cpp" />
+    <ClCompile Include="Activate.cpp" />
+    <ClCompile Include="ClassFactory.cpp" />
+    <ClCompile Include="display.cpp" />
+    <ClCompile Include="Marker.cpp" />
+    <ClCompile Include="MediaSink.cpp" />
+    <ClCompile Include="pch.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="Presenter.cpp" />
+    <ClCompile Include="Scheduler.cpp" />
+    <ClCompile Include="DX11VideoRenderer.cpp" />
+    <ClCompile Include="StreamSink.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="player.rc" />
-  </ItemGroup>
-  <ItemGroup>
-    <Image Include="small.ico" />
-    <Image Include="BackgroundBlur.ico" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="packages.config" />
+    <None Include="DX11VideoRenderer.def" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
-    <Import Project="..\packages\Microsoft.AI.DirectML.1.5.1\build\Microsoft.AI.DirectML.targets" Condition="Exists('..\packages\Microsoft.AI.DirectML.1.5.1\build\Microsoft.AI.DirectML.targets')" />
-    <Import Project="..\packages\Microsoft.AI.MachineLearning.1.9.1\build\native\Microsoft.AI.MachineLearning.targets" Condition="Exists('..\packages\Microsoft.AI.MachineLearning.1.9.1\build\native\Microsoft.AI.MachineLearning.targets')" />
-    <Import Project="..\packages\Microsoft.Windows.CppWinRT.2.0.210930.14\build\native\Microsoft.Windows.CppWinRT.targets" Condition="Exists('..\packages\Microsoft.Windows.CppWinRT.2.0.210930.14\build\native\Microsoft.Windows.CppWinRT.targets')" />
   </ImportGroup>
-  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
-    <PropertyGroup>
-      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
-    </PropertyGroup>
-    <Error Condition="!Exists('..\packages\Microsoft.AI.DirectML.1.5.1\build\Microsoft.AI.DirectML.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.AI.DirectML.1.5.1\build\Microsoft.AI.DirectML.props'))" />
-    <Error Condition="!Exists('..\packages\Microsoft.AI.DirectML.1.5.1\build\Microsoft.AI.DirectML.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.AI.DirectML.1.5.1\build\Microsoft.AI.DirectML.targets'))" />
-    <Error Condition="!Exists('..\packages\Microsoft.AI.MachineLearning.1.9.1\build\native\Microsoft.AI.MachineLearning.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.AI.MachineLearning.1.9.1\build\native\Microsoft.AI.MachineLearning.props'))" />
-    <Error Condition="!Exists('..\packages\Microsoft.AI.MachineLearning.1.9.1\build\native\Microsoft.AI.MachineLearning.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.AI.MachineLearning.1.9.1\build\native\Microsoft.AI.MachineLearning.targets'))" />
-    <Error Condition="!Exists('..\packages\Microsoft.Windows.CppWinRT.2.0.210930.14\build\native\Microsoft.Windows.CppWinRT.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Windows.CppWinRT.2.0.210930.14\build\native\Microsoft.Windows.CppWinRT.props'))" />
-    <Error Condition="!Exists('..\packages\Microsoft.Windows.CppWinRT.2.0.210930.14\build\native\Microsoft.Windows.CppWinRT.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Windows.CppWinRT.2.0.210930.14\build\native\Microsoft.Windows.CppWinRT.targets'))" />
-  </Target>
 </Project>

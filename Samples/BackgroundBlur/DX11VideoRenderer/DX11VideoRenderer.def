@@ -1,0 +1,4 @@
+LIBRARY
+EXPORTS
+	CreateDX11VideoRenderer
+    CreateDX11VideoRendererActivate

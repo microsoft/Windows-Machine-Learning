@@ -958,6 +958,56 @@ done:
     return hr;
 }
 
+//  Create an object for a renderer, based on the stream media type.
+HRESULT CreateMediaSink(
+    IMFStreamDescriptor* pSourceSD,     // Pointer to the stream descriptor.
+    HWND hVideoWindow,                  // Handle to the video clipping window.
+    IMFMediaSink** ppSink
+)
+{
+    IMFMediaTypeHandler* pHandler = NULL;
+    IMFMediaSink* pSink = NULL;
+
+    // Get the media type handler for the stream.
+    HRESULT hr = pSourceSD->GetMediaTypeHandler(&pHandler);
+    if (FAILED(hr))
+    {
+        goto done;
+    }
+
+    // Get the major media type.
+    GUID guidMajorType;
+    hr = pHandler->GetMajorType(&guidMajorType);
+    if (FAILED(hr))
+    {
+        goto done;
+    }
+
+    if (MFMediaType_Video == guidMajorType)
+    {
+        hr = CreateDX11VideoRenderer(__uuidof(IMFMediaSink), (void**)&pSink);
+    }
+    else
+    {
+        // Unknown stream type. 
+        hr = E_FAIL;
+        // Optionally, you could deselect this stream instead of failing.
+    }
+    if (FAILED(hr))
+    {
+        goto done;
+    }
+
+    // Return IMFMediaSink pointer to caller.
+    *ppSink = pSink;
+    (*ppSink)->AddRef();
+
+done:
+    SafeRelease(&pHandler);
+    SafeRelease(&pSink);
+    return hr;
+}
+
 //  Create an activation object for a renderer, based on the stream media type.
 
 HRESULT CreateMediaSinkActivate(
@@ -993,7 +1043,7 @@ HRESULT CreateMediaSinkActivate(
     else if (MFMediaType_Video == guidMajorType)
     {
         // Create the video renderer.
-        //hr = MFCreateVideoRendererActivate(hVideoWindow, &pActivate);
+        // hr = MFCreateVideoRendererActivate(hVideoWindow, &pActivate);
         hr = CreateDX11VideoRendererActivate(hVideoWindow, &pActivate);
     }
     else
@@ -1147,12 +1197,14 @@ HRESULT BindOutputNode(IMFTopologyNode* pNode)
 // Add an output node to a topology.
 HRESULT AddOutputNode(
     IMFTopology* pTopology,     // Topology.
-    IMFActivate* pActivate,     // Media sink activation object.
+    IMFMediaSink* pSink,     // Media sink activation object.
     DWORD dwId,                 // Identifier of the stream sink.
     IMFTopologyNode** ppNode)   // Receives the node pointer.
 {
     IMFTopologyNode* pNode = NULL;
     IDirect3DDeviceManager9* man = NULL;
+    IMFStreamSink* pStreamSink = NULL;
+
     // Create the node.
     HRESULT hr = MFCreateTopologyNode(MF_TOPOLOGY_OUTPUT_NODE, &pNode);
     if (FAILED(hr))
@@ -1160,8 +1212,9 @@ HRESULT AddOutputNode(
         goto done;
     }
 
+    CHECK_HR(hr = pSink->GetStreamSinkByIndex(dwId, &pStreamSink));
     // Set the object pointer.
-    hr = pNode->SetObject(pActivate);
+    hr = pNode->SetObject(pStreamSink);
     if (FAILED(hr))
     {
         goto done;
@@ -1274,7 +1327,7 @@ HRESULT AddBranchToPartialTopology(
     IMFTopologyNode* pSourceNode = NULL;
     IMFTopologyNode* pOutputNode = NULL;
     IMFTopologyNode* pTransformNode = NULL;
-
+    IMFMediaSink* pSink = NULL;
 
     BOOL fSelected = FALSE;
 
@@ -1296,6 +1349,8 @@ HRESULT AddBranchToPartialTopology(
             goto done;
         }
 
+        CHECK_HR(hr = CreateMediaSink(pSD, hVideoWnd, &pSink));
+
         // Add a source node for this stream.
         hr = AddSourceNode(pTopology, pSource, pPD, pSD, &pSourceNode);
         if (FAILED(hr))
@@ -1304,7 +1359,7 @@ HRESULT AddBranchToPartialTopology(
         }
 
         // Create the output node for the renderer.
-        hr = AddOutputNode(pTopology, pSinkActivate, 0, &pOutputNode);
+        hr = AddOutputNode(pTopology, pSink, 0, &pOutputNode);
         if (FAILED(hr))
         {
             goto done;

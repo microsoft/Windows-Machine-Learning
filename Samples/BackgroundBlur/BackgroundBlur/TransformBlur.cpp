@@ -1229,17 +1229,19 @@ HRESULT TransformBlur::OnSetInputType(IMFMediaType* pmt)
     UpdateFormatInfo();
 
     IDirect3DSurface9* ppSurfaces[4];
-    hr = m_pDecoderService->CreateSurface(
-        m_imageWidthInPixels,
-        m_imageHeightInPixels,
-        3,                       // Number of backbuffers
-        des.Format,              // D3DFORMAT   
-        D3DPOOL_DEFAULT,         // Memory pool to create the surfaces
-        0,                       // Reserved
-        DXVA2_VideoProcessorRenderTarget, //DXVATYPE Type of surface to make
-        ppSurfaces,              // Out array of d3d9 surfaces
-        NULL
-    );
+    if (m_pDecoderService) {
+        hr = m_pDecoderService->CreateSurface(
+            m_imageWidthInPixels,
+            m_imageHeightInPixels,
+            3,                       // Number of backbuffers
+            des.Format,              // D3DFORMAT   
+            D3DPOOL_DEFAULT,         // Memory pool to create the surfaces
+            0,                       // Reserved
+            DXVA2_VideoProcessorRenderTarget, //DXVATYPE Type of surface to make
+            ppSurfaces,              // Out array of d3d9 surfaces
+            NULL
+        );
+    }
 
     return S_OK;
 }

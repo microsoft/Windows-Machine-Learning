@@ -19,7 +19,7 @@
                 <Image Source="assets/winml_icon.ico" Stretch="UniformToFill" Height="200" VerticalAlignment="Center"/>
                 <StackPanel Orientation="Vertical" Padding="25,0,0,0" VerticalAlignment="Center">
                     <TextBlock Foreground="#12bef6" FontSize="60" FontFamily="Segoe UI Light" FontWeight="SemiBold" HorizontalAlignment="Center">Windows ML</TextBlock>
-                    <TextBlock Foreground="#12bef6" FontSize="50" FontFamily="Segoe UI Light" FontWeight="SemiBold" HorizontalAlignment="Center">1.9.1</TextBlock>
+                    <TextBlock Foreground="#12bef6" FontSize="60" FontFamily="Segoe UI Light" FontWeight="SemiBold" HorizontalAlignment="Center">Samples Gallery</TextBlock>
                 </StackPanel>
             </StackPanel>
         </Grid>

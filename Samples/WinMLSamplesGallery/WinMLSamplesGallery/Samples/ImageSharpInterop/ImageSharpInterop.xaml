@@ -72,12 +72,12 @@
                 <StackPanel Grid.Row="0" Orientation="Horizontal" Padding="0,10,0,0">
                     <StackPanel Orientation="Vertical">
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
-                            <Button FontFamily="Segoe MDL2 Assets" Content="&#xE1A5;" Width="97" Height="50" HorizontalAlignment="Left" Click="OpenButton_Clicked" />
+                            <Button FontFamily="Segoe MDL2 Assets" Content="&#xE1A5;" Width="55" Height="50" HorizontalAlignment="Left" Click="OpenButton_Clicked" />
                             <Grid Padding="5,0,0,0">
-                                <ComboBox x:Name="DeviceComboBox" SelectedIndex="0" Background="LightGray" PlaceholderText="Device" Height="50" Width="97"
+                                <ComboBox x:Name="DeviceComboBox" SelectedIndex="0" Background="LightGray" PlaceholderText="Device" Height="50" Width="139"
                                           SelectionChanged="DeviceComboBox_SelectionChanged">
                                     <TextBlock Text="CPU" FontSize="18" Typography.Capitals="AllSmallCaps" Typography.StylisticSet4="True"/>
-                                    <TextBlock Text="DML" FontSize="18" Typography.Capitals="AllSmallCaps" Typography.StylisticSet4="True"/>
+                                    <TextBlock Text="DirectML" FontSize="18" Typography.Capitals="AllSmallCaps" Typography.StylisticSet4="True"/>
                                 </ComboBox>
                             </Grid>
                         </StackPanel>

@@ -173,7 +173,7 @@ namespace WinMLSamplesGallery.Samples
             // Create the binding
             var binding = new LearningModelBinding(session);
 
-            // Create an emoty output, that will keep the output resources on the GPU
+            // Create an empty output, that will keep the output resources on the GPU
             // It will be chained into a the post processing on the GPU as well
             var output = TensorFloat.Create();
 

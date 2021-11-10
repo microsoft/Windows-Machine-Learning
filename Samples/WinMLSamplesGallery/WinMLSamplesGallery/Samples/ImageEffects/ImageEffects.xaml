@@ -127,7 +127,7 @@
                                 <ComboBox x:Name="DeviceComboBox" SelectedIndex="0" Background="LightGray" PlaceholderText="Device" Height="50" Width="97"
                                           SelectionChanged="DeviceComboBox_SelectionChanged">
                                     <TextBlock Text="CPU" FontSize="18" Typography.Capitals="AllSmallCaps" Typography.StylisticSet4="True"/>
-                                    <TextBlock Text="DML" FontSize="18" Typography.Capitals="AllSmallCaps" Typography.StylisticSet4="True"/>
+                                    <TextBlock Text="GPU" FontSize="18" Typography.Capitals="AllSmallCaps" Typography.StylisticSet4="True"/>
                                 </ComboBox>
                             </Grid>
                         </StackPanel>

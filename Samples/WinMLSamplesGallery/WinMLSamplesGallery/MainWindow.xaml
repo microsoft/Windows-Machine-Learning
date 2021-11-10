@@ -16,7 +16,8 @@
             Loaded="nvSample_Loaded"
             AlwaysShowHeader="False"
             PaneTitle="Windows AI"
-            FontFamily="Arial">
+            FontFamily="Arial"
+            IsSettingsVisible="False">
             <NavigationView.Resources>
                 <SolidColorBrush x:Key="NavigationViewExpandedPaneBackground" Color="#f5f5f5"/>
                 <SolidColorBrush x:Key="NavigationViewDefaultPaneBackground" Color="#f5f5f5" />

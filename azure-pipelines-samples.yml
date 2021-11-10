@@ -1,35 +1,21 @@
 resources:
-
 - repo: self
   clean: true
+
+pool:
+    vmImage: 'windows-latest'
+# pool:
+#   name: DirectML_BuildPool
+#  demands: agent.osversion -equals 10.0.17763
 
 variables:
   SamplesBin: SamplesBin
   WINDOWS_WINMD: C:\Program Files (x86)\Windows Kits\10\UnionMetadata\10.0.18362.0\Windows.winmd
   WindowsTargetPlatformVersion: 10.0.18362.0
 
-strategy:
-  maxParallel: 8
-  matrix:
-    Release_x64:
-      BuildPlatform: x64
-      BuildConfiguration: Release
-    Debug_x64:
-      BuildPlatform: x64
-      BuildConfiguration: Debug
-    Release_x86:
-      BuildPlatform: x86
-      BuildConfiguration: Release
-    Debug_x86:
-      BuildPlatform: x86
-      BuildConfiguration: Debug
-
-pool:
-  name: Package ES Lab E
-#  demands: agent.osversion -equals 10.0.17763
-
 # CI trigger
 trigger:
+  batch: true
   branches:
     include:
     - master
@@ -46,215 +32,146 @@ pr:
     exclude:
     - Tools
 
-steps: 
-  - task: PowerShell@2
-    displayName: 'Check SDK Version 18362 is present'
-    inputs:
-      targetType: inline
-      script: dir "${ENV:programfiles(x86)}\windows Kits\10\include\10.0.18362.0\"
-    
-  - task: DotNetCoreInstaller@0
-    displayName: 'Use .NET Core sdk 2.1.300'
-    inputs:
-      version: 2.1.300
-    condition: succeededOrFailed()
+jobs:
+- job: Public_Samples_Build
+  timeoutInMinutes: 90
 
-  - task: NuGetToolInstaller@0
-    displayName: 'Use NuGet 4.9.2'
-    inputs:
-      versionSpec: 4.9.2
-    condition: succeededOrFailed()
+  strategy:
+    maxParallel: 8
+    matrix:
+      Release_x64:
+        BuildPlatform: x64
+        BuildConfiguration: Release
+      Debug_x64:
+        BuildPlatform: x64
+        BuildConfiguration: Debug
+      Release_x86:
+        BuildPlatform: x86
+        BuildConfiguration: Release
+      Debug_x86:
+        BuildPlatform: x86
+        BuildConfiguration: Debug
 
-  - task: 333b11bd-d341-40d9-afcf-b32d5ce6f23b@2
-    displayName: 'NuGet restore'
-    condition: succeededOrFailed()
+  steps: 
+    - task: PowerShell@2
+      displayName: 'Clone Git Submodules'
+      inputs:
+        targetType: inline
+        script: git submodule update --init --recursive
 
-  - task: VSBuild@1
-    displayName: 'Build UI test solution Testing/**/SamplesTest.sln'
-    inputs:
-      solution: 'Testing/**/SamplesTest.sln'
-      vsVersion: 15.0
-      msbuildArgs: '-v:diag /p:OutDir=$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\SamplesTest\ /p:WindowsTargetPlatformVersion=$(WindowsTargetPlatformVersion)'
-      platform: '$(BuildPlatform)'
-      configuration: '$(BuildConfiguration)'
-      clean: true
-      msbuildArchitecture: x64
-      createLogFile: true
-    condition: succeededOrFailed()
+    - task: NuGetToolInstaller@1
+      displayName: 'Install NuGet 5.11.0'
+      inputs:
+        versionSpec: '5.11.0'
 
-  - task: VSBuild@1
-    displayName: 'Build AdapterSelection Sample'
-    inputs:
-      solution: Samples/AdapterSelection/AdapterSelection.sln
-      vsVersion: 15.0
-      msbuildArgs: '-v:diag /p:OutDir=$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\AdapterSelection\ /p:WindowsTargetPlatformVersion=$(WindowsTargetPlatformVersion)'
-      platform: '$(BuildPlatform)'
-      configuration: '$(BuildConfiguration)'
-      clean: true
-      msbuildArchitecture: x64
-      createLogFile: true
-    condition: succeededOrFailed()
+    - task: PowerShell@2
+      displayName: 'Install the win 10 sdk v18362 if necessary'
+      inputs:
+        targetType: inline
+        script: if (-not (Test-Path "${ENV:programfiles(x86)}\windows Kits\10\include\10.0.18362.0\")) { choco install windows-sdk-10-version-1903-all -y }
 
-  - task: VSBuild@1
-    displayName: 'Build CustomOperator Sample'
-    inputs:
-      solution: Samples/CustomOperator/desktop/cpp/custom-operator-sample.sln
-      vsVersion: 15.0
-      msbuildArgs: '-v:diag /p:OutDir=$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\CustomOperator\ /p:WindowsTargetPlatformVersion=$(WindowsTargetPlatformVersion)'
-      platform: '$(BuildPlatform)'
-      configuration: '$(BuildConfiguration)'
-      clean: true
-      msbuildArchitecture: x64
-      createLogFile: true
-    condition: succeededOrFailed()
+    - task: PowerShell@1
+      displayName: OpenCV - Configure CMake
+      inputs:
+        scriptName: external/tools/CMakeConfigureOpenCV.ps1
+        workingDirectory: $(System.ArtifactsDirectory)
+        arguments: >
+          -Architecture $(BuildPlatform)
 
+    - task: VSBuild@1
+      displayName: 'OpenCV - Build'
+      inputs:
+        solution: 'build/external/opencv/cmake_config/$(BuildPlatform)/OpenCV.sln"'
+        vsVersion: "16.0"
+        msbuildArgs: '/p:Configuration=$(BuildConfiguration) /t:Build /p:LinkIncremental=false /p:DebugSymbols=false /p:DebugType=None'
+        configuration: '$(BuildConfiguration)'
+        msbuildArchitecture: x64
+        createLogFile: true
+      condition: succeededOrFailed()
+      
+    - task: VSBuild@1
+      displayName: 'OpenCV - Install'
+      inputs:
+        solution: 'build/external/opencv/cmake_config/$(BuildPlatform)/INSTALL.vcxproj'
+        vsVersion: "16.0"
+        msbuildArgs: '/p:Configuration=$(BuildConfiguration) /p:LinkIncremental=false /p:DebugSymbols=false /p:DebugType=None'
+        configuration: '$(BuildConfiguration)'
+        msbuildArchitecture: x64
+        createLogFile: true
+      condition: succeededOrFailed()
 
-  - task: VSBuild@1
-    displayName: 'Build MNIST-Tutorial-cs Sample'
-    inputs:
-      solution: 'Samples/MNIST/Tutorial/cs/mnist_demo.sln'
-      vsVersion: 15.0
-      msbuildArgs: '-v:diag /p:OutDir=$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\MNIST-Tutorial\ /p:WindowsTargetPlatformVersion=$(WindowsTargetPlatformVersion)'
-      platform: '$(BuildPlatform)'
-      configuration: '$(BuildConfiguration)'
-      clean: true
-      msbuildArchitecture: x64
-      createLogFile: true
-    condition: succeededOrFailed()
+    - task: PowerShell@2
+      displayName: 'Restore WinMLSamplesGalleryNative Nuget Packages'
+      inputs:
+        targetType: 'inline'
+        script: |
+          $src_root_dir = $Env:BUILD_SOURCESDIRECTORY;
+          $solution_dir = [System.IO.Path]::Combine($src_root_dir, 'Samples', 'WinMLSamplesGallery')
+          $csproj = [System.IO.Path]::Combine($solution_dir, 'WinMLSamplesGalleryNative', 'WinMLSamplesGalleryNative.vcxproj')
+          nuget restore $csproj -SolutionDirectory $solution_dir
 
-  - task: VSBuild@1
-    displayName: 'Build MNIST-UWP-cs Sample'
-    inputs:
-      solution: 'Samples/MNIST/UWP/cs/mnist_demo.sln'
-      vsVersion: 15.0
-      msbuildArgs: '-v:diag /p:OutDir=$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\MNIST-cs\ /p:WindowsTargetPlatformVersion=$(WindowsTargetPlatformVersion)'
-      platform: '$(BuildPlatform)'
-      configuration: '$(BuildConfiguration)'
-      clean: true
-      msbuildArchitecture: x64
-      createLogFile: true
-    condition: succeededOrFailed()
+    - task: VSBuild@1
+      displayName: 'Build WinMLSamplesGallery Debug'
+      inputs:
+        solution: 'Samples/WinMLSamplesGallery/WinMLSamplesGallery.sln'
+        vsVersion: "16.0"
+        msbuildArgs: '/p:WindowsTargetPlatformVersion=$(WindowsTargetPlatformVersion) /t:Restore,Clean,Build'
+        platform: '$(BuildPlatform)'
+        configuration: '$(BuildConfiguration)'
+        msbuildArchitecture: x64
+        createLogFile: true
+      condition: and(succeededOrFailed(), eq(variables['BuildConfiguration'], 'Debug'))
 
-  - task: VSBuild@1
-    displayName: 'Build SqueezenetObjectDetection Sample'
-    inputs:
-      solution: Samples/SqueezeNetObjectDetection/squeezenetobjectdetection.sln
-      vsVersion: 15.0
-      msbuildArgs: '-v:diag /p:OutDir=$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\SqueezeNetObjectDetection\ /p:WindowsTargetPlatformVersion=$(WindowsTargetPlatformVersion)'	
-      platform: '$(BuildPlatform)'
-      configuration: '$(BuildConfiguration)'
-      clean: true
-      msbuildArchitecture: x64
-      createLogFile: true
-    condition: succeededOrFailed()
+    - task: VSBuild@1
+      displayName: 'Build And Publish WinMLSamplesGallery Release'
+      inputs:
+        solution: 'Samples/WinMLSamplesGallery/WinMLSamplesGallery.sln'
+        vsVersion: "16.0"
+        msbuildArgs: '/p:UapAppxPackageBuildMode=SideloadOnly /p:AppxPackageSigningEnabled=false /p:AppxBundle=Always "/p:AppxBundlePlatforms=x86|x64" /p:WindowsTargetPlatformVersion=$(WindowsTargetPlatformVersion) /t:Restore,Clean,Build,Publish'
+        platform: '$(BuildPlatform)'
+        configuration: '$(BuildConfiguration)'
+        msbuildArchitecture: x64
+        createLogFile: true
+      condition: and(succeededOrFailed(), eq(variables['BuildConfiguration'], 'Release'))
 
-  - task: VSBuild@1
-    displayName: 'Build FNSCandyStyleTransfer-UWP-CS Sample'
-    inputs:
-      solution: Samples/FNSCandyStyleTransfer/UWP/CS/snapcandy.sln
-      vsVersion: 15.0
-      msbuildArgs: '-v:diag  /p:OutDir=$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\FNSCandyStyleTransfer\ /p:WindowsTargetPlatformVersion=$(WindowsTargetPlatformVersion)'
-      platform: '$(BuildPlatform)'
-      configuration: '$(BuildConfiguration)'
-      clean: true
-      msbuildArchitecture: x64
-      createLogFile: true
-    condition: succeededOrFailed()
+    # TODO: Add previously failing build tasks
 
-  - task: VSBuild@1
-    displayName: 'Build MNIST-UWP-cppcx Sample'
-    inputs:
-      solution: 'Samples/MNIST/UWP/cppcx/mnist_cppcx.sln'
-      vsVersion: 15.0
-      msbuildArgs: '-v:diag /p:OutDir=$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\MNIST-cppcx\ /p:WindowsTargetPlatformVersion=$(WindowsTargetPlatformVersion)'
-      platform: '$(BuildPlatform)'
-      configuration: '$(BuildConfiguration)'
-      clean: true
-      msbuildArchitecture: x64
-      createLogFile: true
-    condition: succeededOrFailed()
+    - task: CopyFiles@2
+      inputs:
+        targetFolder: '$(Build.ArtifactStagingDirectory)\$(BuildPlatform)\$(BuildConfiguration)\'
+        sourceFolder: 'Samples\WinMLSamplesGallery\WinMLSamplesGallery (Package)\bin\$(BuildPlatform)\$(BuildConfiguration)\'
+        Contents: |
+          **\SamplesTest\**
+          **\AppPackages\**
+      condition: succeededOrFailed()
 
-  - task: VSBuild@1
-    displayName: 'Build CustomTensorization Sample'
-    inputs:
-      solution: Samples/CustomTensorization/CustomTensorization.sln
-      vsVersion: 15.0
-      msbuildArgs: '-v:diag /p:OutDir=$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\CustomTensorization\ /p:WindowsTargetPlatformVersion=$(WindowsTargetPlatformVersion)'
-      platform: '$(BuildPlatform)'
-      configuration: '$(BuildConfiguration)'
-      clean: true
-      msbuildArchitecture: x64
-      createLogFile: true
-    condition: succeededOrFailed()
+    - task: CopyFiles@2
+      inputs:
+        targetFolder: '$(Build.ArtifactStagingDirectory)\$(BuildPlatform)\$(BuildConfiguration)\'
+        sourceFolder: 'Samples\WinMLSamplesGallery\WinMLSamplesGallery (Package)\bin\$(BuildPlatform)\$(BuildConfiguration)\'
+        Contents: |
+          ?(AdapterSelection|CustomOperator|CustomTensorization)**\*
+          SqueezeNetObjectDetection\*
+      condition: succeededOrFailed()
 
-  - task: VSBuild@1
-    displayName: 'Build BatchSupport Sample'
-    inputs:
-      solution: Samples/BatchSupport/BatchSupport.sln
-      vsVersion: 15.0
-      msbuildArgs: '-v:diag /p:OutDir=$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\BatchSupport\ /p:WindowsTargetPlatformVersion=$(WindowsTargetPlatformVersion)'
-      platform: '$(BuildPlatform)'
-      configuration: '$(BuildConfiguration)'
-      clean: true
-      msbuildArchitecture: x64
-      createLogFile: true
-    condition: succeededOrFailed()
+    - task: CopyFiles@2
+      displayName: 'Copy App Packages'
+      inputs:
+        targetFolder: '$(Build.ArtifactStagingDirectory)\$(BuildPlatform)\$(BuildConfiguration)\AppPackages'
+        sourceFolder: 'Samples/WinMLSamplesGallery/WinMLSamplesGallery (Package)/AppPackages'
+        contents: '**\*'
+      condition: and(succeededOrFailed(), eq(variables['BuildConfiguration'], 'Release'))
 
-  - task: VSBuild@1
-    displayName: 'Build Emoji Sample'
-    inputs:
-      solution: Samples/Emoji8/UWP/cs/Emoji8.sln
-      vsVersion: 15.0
-      msbuildArgs: '-v:diag /p:OutDir=$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\Emoji8\ /p:WindowsTargetPlatformVersion=$(WindowsTargetPlatformVersion)'
-      platform: '$(BuildPlatform)'
-      configuration: '$(BuildConfiguration)'
-      clean: true
-      msbuildArchitecture: x64
-      createLogFile: true
-    condition: succeededOrFailed()
+    - task: CopyFiles@2
+      inputs:
+        targetFolder: '$(Build.ArtifactStagingDirectory)\$(BuildPlatform)\$(BuildConfiguration)\SharedContent'
+        sourceFolder: 'SharedContent'
+        contents: '**\*'
+      condition: succeededOrFailed()
 
-  - task: VSBuild@1
-    displayName: 'Build StreamFromResource Sample'
-    inputs:
-      solution: Samples/StreamFromResource/StreamFromResource.sln
-      vsVersion: 15.0
-      msbuildArgs: '-v:diag /p:OutDir=$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\StreamFromResource\ /p:WindowsTargetPlatformVersion=$(WindowsTargetPlatformVersion)'
-      platform: '$(BuildPlatform)'
-      configuration: '$(BuildConfiguration)'
-      clean: true
-      msbuildArchitecture: x64
-      createLogFile: true
-    condition: succeededOrFailed()
-
-  - task: CopyFiles@2
-    inputs:
-      targetFolder: '$(Build.ArtifactStagingDirectory)\$(BuildPlatform)\$(BuildConfiguration)\'
-      sourceFolder: '$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\'
-      Contents: |
-        **\SamplesTest\**
-        **\AppPackages\**
-    condition: succeededOrFailed()
-
-  - task: CopyFiles@2
-    inputs:
-      targetFolder: '$(Build.ArtifactStagingDirectory)\$(BuildPlatform)\$(BuildConfiguration)\'
-      sourceFolder: '$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\'
-      Contents: |
-        ?(AdapterSelection|CustomOperator|CustomTensorization)**\*
-        SqueezeNetObjectDetection\*
-    condition: succeededOrFailed()
-
-  - task: CopyFiles@2
-    inputs:
-      targetFolder: '$(Build.ArtifactStagingDirectory)\$(BuildPlatform)\$(BuildConfiguration)\SharedContent'
-      sourceFolder: 'SharedContent'
-      contents: '**\*'
-    condition: succeededOrFailed()
-   
-
-  - task: PublishBuildArtifacts@1
-    displayName: 'Publish Artifact: Samples'
-    inputs:
-      pathtoPublish: '$(Build.ArtifactStagingDirectory)'
-      artifactName: WinMLPublicSamples
-    condition: succeededOrFailed()
+    - task: PublishBuildArtifacts@1
+      displayName: 'Publish Artifact: Samples'
+      inputs:
+        pathtoPublish: '$(Build.ArtifactStagingDirectory)'
+        artifactName: WinMLPublicSamples
+      condition: succeededOrFailed()

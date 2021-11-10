@@ -8,7 +8,7 @@
     mc:Ignorable="d">
 
     <UserControl.Resources>
-        <DataTemplate x:Name="InferenceResultsTemplate" x:DataType="local:Metric">
+        <DataTemplate x:Name="InferenceResultsTemplate" x:DataType="local:PerformanceMetric">
             <StackPanel Orientation="Horizontal">
                 <TextBlock Width="150"
                     FontSize="14"
@@ -64,7 +64,7 @@
                 </ItemsPanelTemplate>
             </ListView.ItemsPanel>
             <ListView.Items>
-                <local:Metric Title="Metric" Duration="Duration (ms)" />
+                <local:PerformanceMetric Title="Metric" Duration="Duration (ms)" />
             </ListView.Items>
         </ListView>
         <ListView 

@@ -2,34 +2,57 @@
   "Samples": [
     {
       "Title": "Image Classification",
-      "Description": "Pick an image and classify the scene into 1000 categories such as keyboard, mouse, pencil, and many animals.",
+      "DescriptionShort": "Pick an image and classify the scene into 1000 categories such as keyboard, mouse, pencil, and many animals.",
+      "Description": "Pick an image and classify the scene into 1000 categories such as keyboard, mouse, pencil, and many animals. Many more models can be tested with this sample by building the WinML Samples Gallery App from source from the project GitHub. Select an image to classify.",
       "Icon": "\uE155",
       "Tag": "ImageClassifier",
-      "XAMLGithubLink": "https://github.com/microsoft/Windows-Machine-Learning/blob/batching_sample/Samples/WinMLSamplesGallery/WinMLSamplesGallery/Samples/ImageClassifier.xaml",
-      "CSharpGithubLink": "https://github.com/microsoft/Windows-Machine-Learning/blob/batching_sample/Samples/WinMLSamplesGallery/WinMLSamplesGallery/Samples/ImageClassifier.xaml.cs",
+      "XAMLGithubLink": "https://github.com/microsoft/Windows-Machine-Learning/blob/master/Samples/WinMLSamplesGallery/WinMLSamplesGallery/Samples/ImageClassifier/ImageClassifier.xaml",
+      "CSharpGithubLink": "https://github.com/microsoft/Windows-Machine-Learning/blob/master/Samples/WinMLSamplesGallery/WinMLSamplesGallery/Samples/ImageClassifier/ImageClassifier.xaml.cs",
       "Docs": []
     },
     {
-      "Title": "Batching",
-      "Description": "Infer multiple inputs at once to increase performance.",
+      "Title": "Image Effects",
+      "DescriptionShort": "Pick an image and apply a variety of effects powered by Windows AI MachineLearning like Blur, Sharpen, Contrast, and many more.",
+      "Description": "Pick an image and apply a variety of effects powered by Windows AI MachineLearning like Blur, Sharpen, Contrast, and many more.",
+      "Icon": "\uE155",
+      "Tag": "ImageEffects",
+      "XAMLGithubLink": "https://github.com/microsoft/Windows-Machine-Learning/blob/master/Samples/WinMLSamplesGallery/WinMLSamplesGallery/Samples/ImageEffects/ImageEffects.xaml",
+      "CSharpGithubLink": "https://github.com/microsoft/Windows-Machine-Learning/blob/master/Samples/WinMLSamplesGallery/WinMLSamplesGallery/Samples/ImageEffects/ImageEffects.xaml.cs",
+      "Docs": []
+    },
+    {
+      "Title": "Batched Inputs",
+      "DescriptionShort": "Perform infererence over multiple inputs at once to increase runtime performance.",
+      "Description": "Use this sample to compare inference runtime performace with and without batched inputs. 50 images will be passed through SqueezeNet for classification. Set a batch size and click Start Inference to compare. Note that in general batching makes a greater improvement on GPU than it does on CPU.",
       "Icon": "\uE155",
       "Tag": "Batching",
-      "XAMLGithubLink": "https://github.com/microsoft/Windows-Machine-Learning/blob/batching_sample/Samples/WinMLSamplesGallery/WinMLSamplesGallery/Samples/Batching.xaml",
-      "CSharpGithubLink": "https://github.com/microsoft/Windows-Machine-Learning/blob/batching_sample/Samples/WinMLSamplesGallery/WinMLSamplesGallery/Samples/Batching.xaml.cs",
+      "XAMLGithubLink": "https://github.com/microsoft/Windows-Machine-Learning/blob/master/Samples/WinMLSamplesGallery/WinMLSamplesGallery/Samples/Batching/Batching.xaml",
+      "CSharpGithubLink": "https://github.com/microsoft/Windows-Machine-Learning/blob/master/Samples/WinMLSamplesGallery/WinMLSamplesGallery/Samples/Batching/Batching.xaml.cs",
       "Docs": [
         {
-          "name": "BatchSizeOverride",
+          "name": "BatchSizeOverride - API",
           "link": "https://docs.microsoft.com/en-us/uwp/api/windows.ai.machinelearning.learningmodelsessionoptions.batchsizeoverride?view=winrt-20348"
         }
       ]
     },
     {
-      "Title": "Image Effects",
-      "Description": "Pick an image and apply a variety of effects powered by Windows AI MachineLearning like Blur, Sharpen, Contrast, and many more.",
+      "Title": "OpenCV",
+      "DescriptionShort": "The sample uses Windows ML to classify images that have been denoised natively using OpenCV.",
+      "Description": "This sample demonstrates interop between Windows ML and OpenCV. The sample classifes images that have been denoised using OpenCV's medianBlur using the SqueezeNet model on Windows ML. Choose an image to get started.",
       "Icon": "\uE155",
-      "Tag": "ImageEffects",
-      "XAMLGithubLink": "https://github.com/microsoft/Windows-Machine-Learning/blob/user/numform/winml-samples-gallery/Samples/WinMLSamplesGallery/WinMLSamplesGallery/Samples/ImageEffects/ImageEffects.xaml",
-      "CSharpGithubLink": "https://github.com/microsoft/Windows-Machine-Learning/blob/user/numform/winml-samples-gallery/Samples/WinMLSamplesGallery/WinMLSamplesGallery/Samples/ImageEffects/ImageEffects.xaml.cs",
+      "Tag": "OpenCVInterop",
+      "XAMLGithubLink": "https://github.com/microsoft/Windows-Machine-Learning/blob/master/Samples/WinMLSamplesGallery/WinMLSamplesGallery/Samples/OpenCVInterop/OpenCVInterop.xaml",
+      "CSharpGithubLink": "https://github.com/microsoft/Windows-Machine-Learning/blob/master/Samples/WinMLSamplesGallery/WinMLSamplesGallery/Samples/OpenCVInterop/OpenCVInterop.xaml.cs",
+      "Docs": []
+    },
+    {
+      "Title": "ImageSharp",
+      "DescriptionShort": "The sample uses Windows ML to classify images that have been loaded by the managed ImageSharp library.",
+      "Description": "The sample uses Windows ML to classify images that have been rotated by the managed ImageSharp library. Choose an image to get started.",
+      "Icon": "\uE155",
+      "Tag": "ImageSharpInterop",
+      "XAMLGithubLink": "https://github.com/microsoft/Windows-Machine-Learning/blob/master/Samples/WinMLSamplesGallery/WinMLSamplesGallery/Samples/ImageSharpInterop/ImageSharpInterop.xaml",
+      "CSharpGithubLink": "https://github.com/microsoft/Windows-Machine-Learning/blob/master/Samples/WinMLSamplesGallery/WinMLSamplesGallery/Samples/ImageSharpInterop/ImageSharpInterop.xaml.cs",
       "Docs": []
     },
     {

@@ -9,9 +9,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-// To learn more about WinUI, the WinUI project structure,
-// and more about our project templates, see: http://aka.ms/winui-project-info.
-
 namespace WinMLSamplesGallery
 {
     /// <summary>
@@ -22,8 +19,6 @@ namespace WinMLSamplesGallery
         private readonly List<(string Tag, Type Page)> _pages = new List<(string Tag, Type Page)>
         {
             ("all_samples", typeof(AllSamplesPage)),
-            ("audio", typeof(Audio)),
-            ("benchmark", typeof(Benchmark)),
             ("home", typeof(HomePage)),
             ("image", typeof(Image)),
             ("video", typeof(Video)),
@@ -34,16 +29,13 @@ namespace WinMLSamplesGallery
         public MainWindow()
         {
             this.InitializeComponent();
-            this.Title = "Windows AI Samples Gallery";
+            this.Title = "Windows ML Samples Gallery";
             mainFrame = contentFrame;
         }
 
         private void nvSample_ItemInvoked(NavigationView sender, NavigationViewItemInvokedEventArgs args)
         {
-            if (args.IsSettingsInvoked == true)
-            {
-            }
-            else if (args.InvokedItemContainer != null)
+            if (args.InvokedItemContainer != null)
             {
                 var navItemTag = args.InvokedItemContainer.Tag.ToString();
                 NavView_Navigate(navItemTag, args.RecommendedNavigationTransitionInfo);
@@ -55,15 +47,8 @@ namespace WinMLSamplesGallery
             Microsoft.UI.Xaml.Media.Animation.NavigationTransitionInfo transitionInfo)
         {
             Type _page = null;
-            if (navItemTag == "settings")
-            {
-                // _page = typeof(SettingsPage);
-            }
-            else
-            {
-                var item = _pages.FirstOrDefault(p => p.Tag.Equals(navItemTag));
-                _page = item.Page;
-            }
+            var item = _pages.FirstOrDefault(p => p.Tag.Equals(navItemTag));
+            _page = item.Page;
             // Get the page type before navigation so you can prevent duplicate
             // entries in the backstack.
             var preNavPageType = contentFrame.CurrentSourcePageType;
@@ -100,14 +85,6 @@ namespace WinMLSamplesGallery
         {
             nvSample.IsBackEnabled = contentFrame.CanGoBack;
 
-            //if (contentFrame.SourcePageType == typeof(SettingsPage))
-            //{
-            //    // SettingsItem is not part of NavView.MenuItems, and doesn't have a Tag.
-            //    nvSample.SelectedItem = (muxc.NavigationViewItem)nvSample.SettingsItem;
-            //    nvSample.Header = "Settings";
-            //}
-            //else
-
             if (contentFrame.SourcePageType != null)
             {
                 var item = _pages.FirstOrDefault(p => p.Page == e.SourcePageType);
@@ -132,11 +109,6 @@ namespace WinMLSamplesGallery
             // Because we use ItemInvoked to navigate, we need to call Navigate
             // here to load the home page.
             NavView_Navigate("home", new Microsoft.UI.Xaml.Media.Animation.EntranceNavigationTransitionInfo());
-
-            // Listen to the window directly so the app responds
-            // to accelerator keys regardless of which element has focus.
-            //Microsoft.UI.Xaml.Window.Current.CoreWindow.Dispatcher.
-            //    AcceleratorKeyActivated({ this, &MainPage::CoreDispatcher_AcceleratorKeyActivated });
-}
+        }
     }
 }

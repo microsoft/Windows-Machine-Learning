@@ -1,12 +1,12 @@
-using System;
-using System.Collections.Generic;
+using Microsoft.AI.MachineLearning;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Windows.Storage;
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 using Windows.Graphics.Imaging;
 using Windows.Media;
-using Microsoft.AI.MachineLearning;
-using System.Threading.Tasks;
+using Windows.Storage;
 
 namespace WinMLSamplesGallery.Samples
 {
@@ -45,7 +45,7 @@ namespace WinMLSamplesGallery.Samples
             ResetEvalMetrics();
 
             var inputImages = await GetInputImages();
-            int batchSize = GetBatchSizeFromBatchSizeComboBox();
+            int batchSize = GetBatchSizeFromBatchSizeSlider();
             await CreateSessions(batchSize);
 
             UpdateEvalText(false);
@@ -60,6 +60,8 @@ namespace WinMLSamplesGallery.Samples
         private void ShowEvalUI()
         {
             StartInferenceBtn.IsEnabled = false;
+            BatchSizeSlider.IsEnabled = false;
+            DeviceComboBox.IsEnabled = false;
             EvalResults.Visibility = Visibility.Collapsed;
             LoadingContainer.Visibility = Visibility.Visible;
         }
@@ -104,7 +106,7 @@ namespace WinMLSamplesGallery.Samples
 
         private async Task CreateSessions(int batchSizeOverride)
         {
-            var modelPath = "ms-appx:///Models/squeezenet1.1-7.onnx";
+            var modelPath = "ms-appx:///Models/squeezenet1.1-7-batched.onnx";
             nonBatchingSession_ = await CreateLearningModelSession(modelPath);
             batchingSession_ = await CreateLearningModelSession(modelPath, batchSizeOverride);
         }
@@ -183,7 +185,7 @@ namespace WinMLSamplesGallery.Samples
 
         private static float EvaluateBatched(LearningModelSession session, List<VideoFrame> input, int batchSize)
         {
-            int numBatches = input.Count / batchSize;
+            int numBatches = (int) Math.Ceiling((Decimal) input.Count / batchSize);
             string inputName = session.Model.InputFeatures[0].Name;
             float totalDuration = 0;
             var binding = new LearningModelBinding(session);
@@ -191,7 +193,20 @@ namespace WinMLSamplesGallery.Samples
             {
                 if (navigatingAwayFromPage)
                     break;
-                List<VideoFrame> batch = input.GetRange(batchSize * i, batchSize);
+                int rangeStart = batchSize * i;
+                List<VideoFrame> batch;
+                // Add padding to the last batch if necessary
+                if (rangeStart + batchSize > input.Count)
+                {
+                    int numInputsRemaining = input.Count - rangeStart;
+                    int paddingAmount = batchSize - numInputsRemaining;
+                    batch = input.GetRange(rangeStart, numInputsRemaining);
+                    batch.AddRange(input.GetRange(0, paddingAmount));
+                }
+                else
+                {
+                    batch = input.GetRange(rangeStart, batchSize);
+                }
                 var start = HighResolutionClock.UtcNow();
                 binding.Bind(inputName, batch);
                 session.Evaluate(binding, "");
@@ -202,9 +217,9 @@ namespace WinMLSamplesGallery.Samples
             return totalDuration;
         }
 
-        private int GetBatchSizeFromBatchSizeComboBox()
+        private int GetBatchSizeFromBatchSizeSlider()
         {
-            return int.Parse(BatchSizeComboBox.SelectedItem.ToString());
+            return int.Parse(BatchSizeSlider.Value.ToString());
         }
 
         private void UpdateEvalProgressUI(int attemptNumber)
@@ -227,7 +242,14 @@ namespace WinMLSamplesGallery.Samples
             LoadingContainer.Visibility = Visibility.Collapsed;
             EvalResults.Visibility = Visibility.Visible;
             StartInferenceBtn.IsEnabled = true;
+            BatchSizeSlider.IsEnabled = true;
+            DeviceComboBox.IsEnabled = true;
             EvalResults.ItemsSource = results;
+        }
+
+        private void UpdateBatchSizeText(object sender, RoutedEventArgs e)
+        {
+            BatchSizeText.Text = "Batch Size: " + BatchSizeSlider.Value.ToString();
         }
 
         public void StopAllEvents()

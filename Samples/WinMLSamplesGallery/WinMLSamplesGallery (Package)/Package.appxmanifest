@@ -7,13 +7,13 @@
   IgnorableNamespaces="uap rescap">
 
   <Identity
-    Name="42365107-cbb5-412e-80ac-554e5225ab17"
-    Publisher="CN=sheil"
+    Name="MicrosoftCorporationII.WindowsMLSamplesGallery"
+    Publisher="CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US"
     Version="1.0.0.0" />
 
   <Properties>
-    <DisplayName>WinMLSamplesGallery (Package)</DisplayName>
-    <PublisherDisplayName>sheil</PublisherDisplayName>
+    <DisplayName>Windows ML Samples Gallery</DisplayName>
+    <PublisherDisplayName>Microsoft Corp.</PublisherDisplayName>
     <Logo>Images\StoreLogo.png</Logo>
   </Properties>
 
@@ -31,12 +31,12 @@
       Executable="$targetnametoken$.exe"
       EntryPoint="$targetentrypoint$">
       <uap:VisualElements
-        DisplayName="WinMLSamplesGallery (Package)"
+        DisplayName="Windows ML SamplesGallery"
         Description="WinMLSamplesGallery (Package)"
         BackgroundColor="transparent"
         Square150x150Logo="Images\Square150x150Logo.png"
         Square44x44Logo="Images\Square44x44Logo.png">
-        <uap:DefaultTile Wide310x150Logo="Images\Wide310x150Logo.png" />
+        <uap:DefaultTile Wide310x150Logo="Images\Wide310x150Logo.png"  Square71x71Logo="Images\SmallTile.png" Square310x310Logo="Images\LargeTile.png"/>
         <uap:SplashScreen Image="Images\SplashScreen.png" />
       </uap:VisualElements>
     </Application>

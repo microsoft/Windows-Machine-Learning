@@ -107,13 +107,7 @@
     </Page.Resources>
 
     <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="*" />
-        </Grid.RowDefinitions>
-        <TextBlock FontWeight="Bold" FontSize="20" Margin="0,40,0,0">Apply effects to your image</TextBlock>
         <ScrollViewer 
-            Grid.Row="1"
             ZoomMode="Disabled"
             IsVerticalScrollChainingEnabled="True"
             HorizontalScrollMode="Enabled" HorizontalScrollBarVisibility="Disabled"
@@ -125,15 +119,15 @@
                     <RowDefinition Height="*" />
                 </Grid.RowDefinitions>
 
-                <StackPanel Grid.Row="0" Orientation="Horizontal" Padding="5,10,0,0">
+                <StackPanel Grid.Row="0" Orientation="Horizontal" Padding="0,10,0,0">
                     <StackPanel Orientation="Vertical">
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
-                            <Button FontFamily="Segoe MDL2 Assets" Content="&#xE1A5;" Width="97" Height="50" HorizontalAlignment="Left" Click="OpenButton_Clicked" />
+                            <Button FontFamily="Segoe MDL2 Assets" Content="&#xE1A5;" Width="55" Height="50" HorizontalAlignment="Left" Click="OpenButton_Clicked" />
                             <Grid Padding="5,0,0,0">
-                                <ComboBox x:Name="DeviceComboBox" SelectedIndex="0" Background="LightGray" PlaceholderText="Device" Height="50" Width="97"
+                                <ComboBox x:Name="DeviceComboBox" SelectedIndex="0" Background="LightGray" PlaceholderText="Device" Height="50" Width="139"
                                           SelectionChanged="DeviceComboBox_SelectionChanged">
                                     <TextBlock Text="CPU" FontSize="18" Typography.Capitals="AllSmallCaps" Typography.StylisticSet4="True"/>
-                                    <TextBlock Text="DML" FontSize="18" Typography.Capitals="AllSmallCaps" Typography.StylisticSet4="True"/>
+                                    <TextBlock Text="DirectML" FontSize="18" Typography.Capitals="AllSmallCaps" Typography.StylisticSet4="True"/>
                                 </ComboBox>
                             </Grid>
                         </StackPanel>
@@ -158,7 +152,7 @@
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Padding="0,2,0,0">
                             <Grid Padding="0,0,5,5">
                                 <ToggleSplitButton x:Name="ResizeToggleSplitButton" VerticalAlignment="Top" Height="46" Width="97" IsCheckedChanged="IsCheckedChanged" ToolTipService.ToolTip="Resize Image" >
-                                    <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xF617;"/>
+                                    <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE9A6;"/>
                                     <ToggleSplitButton.Flyout>
                                         <Flyout Placement="Bottom">
                                             <StackPanel Orientation="Vertical">

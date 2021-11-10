@@ -156,7 +156,7 @@ namespace WinMLSamplesGallery.Samples
             dmlDevice = new LearningModelDevice(LearningModelDeviceKind.DirectX);
             cpuDevice = new LearningModelDevice(LearningModelDeviceKind.Cpu);
 
-            _session = CreateLearningModelSession("ms-appx:///LargeModels/yolov4.onnx");
+            _session = CreateLearningModelSession("ms-appx:///Models/yolov4.onnx");
             initialized_ = true;
         }
 
@@ -195,7 +195,7 @@ namespace WinMLSamplesGallery.Samples
 
         private void OpenButton_Clicked(object sender, RoutedEventArgs e)
         {
-            var file = File.PickImageFiles();
+            var file = ImageHelper.PickImageFiles();
             if (file != null)
             {
                 var currentImage = CreateSoftwareBitmapFromStorageFile(file);

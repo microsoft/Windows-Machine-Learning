@@ -14,12 +14,9 @@ using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
 using System.Collections.ObjectModel;
 
-// To learn more about WinUI, the WinUI project structure,
-// and more about our project templates, see: http://aka.ms/winui-project-info.
-
 namespace WinMLSamplesGallery.Controls
 {
-    public sealed class Metric
+    public sealed class PerformanceMetric
     {
         public string Title { get; set; }
         public string Duration { get; set; }
@@ -27,7 +24,7 @@ namespace WinMLSamplesGallery.Controls
 
     public sealed partial class PerformanceMonitor : UserControl
     {
-        private ObservableCollection<Metric> Items { get; } = new ObservableCollection<Metric>();
+        private ObservableCollection<PerformanceMetric> Items { get; } = new ObservableCollection<PerformanceMetric>();
 
         public PerformanceMonitor()
         {
@@ -38,7 +35,7 @@ namespace WinMLSamplesGallery.Controls
 
         public void Log(string title, float duration) {
             var duationString = String.Format("{0:00.0000}", duration);
-            Items.Add(new Metric { Title = title, Duration = duationString });
+            Items.Add(new PerformanceMetric { Title = title, Duration = duationString });
             this.Visibility = Visibility.Visible;
         }
 

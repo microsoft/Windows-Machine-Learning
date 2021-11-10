@@ -296,7 +296,8 @@ namespace WinMLSamplesGallery.Samples
             var detensorizationDuration = HighResolutionClock.DurationInMs(start, stop);
 
             // Render
-            RenderImageInMainPanel(outputFrame);
+            var softwareBitmap = outputFrame.SoftwareBitmap;
+            RenderingHelpers.BindSoftwareBitmapToImageControl(InputImage, softwareBitmap);
 
             PerformanceMetricsMonitor.Log("Tensorize", tensorizationDuration);
             PerformanceMetricsMonitor.Log("Resize Effect", resizeDuration);
@@ -521,7 +522,7 @@ namespace WinMLSamplesGallery.Samples
 
         private void OpenButton_Clicked(object sender, RoutedEventArgs e)
         {
-            var file = File.PickImageFiles();
+            var file = ImageHelper.PickImageFiles();
             if (file != null)
             {
                 BasicGridView.SelectedItem = null;
@@ -542,28 +543,6 @@ namespace WinMLSamplesGallery.Samples
                 ApplyEffects();
             }
         }
-
-        private void RenderImageInMainPanel(VideoFrame videoFrame)
-        {
-            if (videoFrame != null)
-            {
-                SoftwareBitmap displayBitmap = videoFrame.SoftwareBitmap;
-                //Image control only accepts BGRA8 encoding and Premultiplied/no alpha channel. This checks and converts
-                //the SoftwareBitmap we want to bind.
-                if (displayBitmap.BitmapPixelFormat != BitmapPixelFormat.Bgra8 ||
-                    displayBitmap.BitmapAlphaMode != BitmapAlphaMode.Premultiplied)
-                {
-                    displayBitmap = SoftwareBitmap.Convert(displayBitmap, BitmapPixelFormat.Bgra8, BitmapAlphaMode.Premultiplied);
-                }
-
-                // get software bitmap souce
-                var source = new SoftwareBitmapSource();
-                source.SetBitmapAsync(displayBitmap).GetAwaiter();
-                // draw the input image
-                InputImage.Source = source;
-            }
-        }
-
 
         private BitmapDecoder CreateBitmapDecoderFromFile(StorageFile file)
         {
@@ -636,47 +615,3 @@ namespace WinMLSamplesGallery.Samples
         }
     }
 }
-/*
-  // Will need this for 0 copy interop
-    public class PinnedBuffer : Windows.Storage.Streams.IBuffer, IBufferByteAccess
-
-
-    {
-        GCHandle handle_;
-        IntPtr ptr_;
-        uint num_bytes_;
-
-        public PinnedBuffer(byte[] array) {
-            num_bytes_ = (uint)array.Length;
-            handle_ = GCHandle.Alloc(array, GCHandleType.Pinned);
-            ptr_ = GCHandle.ToIntPtr(handle_);
-        }
-
-        ~PinnedBuffer() {
-            handle_.Free();
-        }
-
-        public uint Capacity => num_bytes_;
-
-        public uint Length
-        {
-            get => num_bytes_;
-            set
-            {
-                num_bytes_ = value;
-            }
-        }
-
-#pragma warning disable CA1416 // Validate platform compatibility
-        public TensorFloat ToTensorFloat()
-        {
-            return TensorFloat.CreateFromBuffer(new long[] { num_bytes_ }, this);
-        }
-
-        public unsafe void Buffer(out byte* pByte)
-        {
-            pByte = (byte*)ptr_;
-        }
-#pragma warning restore CA1416 // Validate platform compatibility
-    }
- */

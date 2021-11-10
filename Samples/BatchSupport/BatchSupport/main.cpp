@@ -100,7 +100,7 @@ bool ParseArgs(int argc, char *argv[]) {
     return false;
   }
   modelType = argv[1];
-  if (argc > 3) {
+  if (argc >= 3) {
     inputType = argv[2];
   }
   return true;

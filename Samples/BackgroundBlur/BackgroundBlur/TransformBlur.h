@@ -13,9 +13,9 @@
 #include <initguid.h>
 #include <uuids.h>      // DirectShow GUIDs
 #include <d3d9types.h>
-#include <d3d9.h>
+#include <d3d11.h>
 #include <dxva2api.h>
-#include <d3d9helper.h>
+//#include <d3d11helper.h>
 
 
 #define USE_LOGGING
@@ -212,7 +212,7 @@ private:
     IMAGE_TRANSFORM_FN          m_pTransformFn;
 
     // D3D fields
-    IDirect3DDeviceManager9*    m_pD3DDeviceManager;
+    IMFDXGIDeviceManager*    m_pD3DDeviceManager;
     IDirectXVideoDecoderService* m_pDecoderService;
 
     SegmentModel  m_segmentModel;

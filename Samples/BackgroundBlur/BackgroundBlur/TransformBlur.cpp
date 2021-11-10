@@ -837,14 +837,17 @@ HRESULT TransformBlur::OnSetD3DManager(ULONG_PTR ulParam)
         return S_OK;
     }
 
-    IDirect3DDeviceManager9* p_IMFDXGIManager = NULL;
+    IMFDXGIDeviceManager* p_IMFDXGIManager = NULL;
     HANDLE p_deviceHandle;
-    IDirectXVideoDecoderService* pDecoderService = NULL;
+
+    // TODO: Change video and video device to fields
+    ID3D11VideoDevice* pDecoderService = NULL;
+    ID3D11Device* pd3dDevice = NULL;
 
     // Get the Device Manager sent from the  topology loader
     IUnknown* ptr = (IUnknown*) ulParam;
 
-    HRESULT hr = ptr->QueryInterface(IID_IDirect3DDeviceManager9, (void**)&m_pD3DDeviceManager);
+    HRESULT hr = ptr->QueryInterface(IID_IMFDXGIDeviceManager, (void**)&m_pD3DDeviceManager);
     if (FAILED(hr))
     {
         goto done;
@@ -852,9 +855,14 @@ HRESULT TransformBlur::OnSetD3DManager(ULONG_PTR ulParam)
 
     // Get a handle to the DXVA decoder service
     hr = m_pD3DDeviceManager->OpenDeviceHandle(&p_deviceHandle);
-    // Get the decoder service
+
+    // Get the d3d11 device
+    m_pD3DDeviceManager->GetVideoService(p_deviceHandle, IID_ID3D12Device, (void**) &pd3dDevice);
     
-    hr = m_pD3DDeviceManager->GetVideoService(p_deviceHandle, IID_IDirectXVideoDecoderService, (void**) &m_pDecoderService);
+    // Get the d3d11 video device
+    hr = m_pD3DDeviceManager->GetVideoService(p_deviceHandle, IID_ID3D11VideoDevice, (void**) &m_pDecoderService);
+
+
     if (FAILED(hr)) 
     {
         OutputDebugString(L"Failed to get DXVA decoder service");
@@ -880,7 +888,7 @@ HRESULT TransformBlur::ProcessInput(
 )
 {
     AutoLock lock(m_critSec);
-    IDirect3DSurface9** ppSurface = NULL;
+    IDirect3DSurface11* ppSurface = NULL;
     IMFMediaBuffer* pBuffer = NULL;
 
     if (pSample == NULL)

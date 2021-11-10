@@ -9,7 +9,7 @@
 
     <ComboBox x:Name="DeviceBox" SelectedIndex="0" SelectionChanged="changeSelectedIndex">
         <x:String>CPU</x:String>
-        <x:String>GPU</x:String>
+        <x:String>DirectML</x:String>
     </ComboBox>
 
 </UserControl>

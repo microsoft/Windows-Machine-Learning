@@ -19,7 +19,7 @@
 
 
 #define USE_LOGGING
-#include "common.h"
+#include "common/common.h"
 using namespace MediaFoundationSamples;
 #include "SegmentModel.h"
 
@@ -212,8 +212,12 @@ private:
     IMAGE_TRANSFORM_FN          m_pTransformFn;
 
     // D3D fields
-    IMFDXGIDeviceManager*    m_pD3DDeviceManager;
-    IDirectXVideoDecoderService* m_pDecoderService;
+    IMFDXGIDeviceManager*       m_pD3DDeviceManager;
+    HANDLE                      m_pHandle;              // Handle to the current device
+    // IDirectXVideoDecoderService*m_pDecoderService;
+    ID3D11Device*               m_pD3DDevice;
+    ID3D11VideoDevice*          m_pD3DVideoDevice;
 
+    // Model fields
     SegmentModel  m_segmentModel;
 };

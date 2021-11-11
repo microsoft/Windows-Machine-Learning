@@ -121,13 +121,13 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\Users\linneamay\.nuget\packages\microsoft.ai.machinelearning\1.9.1\build\native\include\abi;C:\Windows-Machine-Learning\Samples\BackgroundBlur\BackgroundBlur\common;C:\Windows-Machine-Learning\Samples\BackgroundBlur\DX11VideoRenderer;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Users\linneamay\.nuget\packages\microsoft.ai.machinelearning\1.9.1\build\native\include\abi;$(SolutionDir)DX11VideoRenderer;common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>C:\Program Files %28x86%29\Windows Kits\10\Lib\10.0.19041.0\um\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>C:\Program Files %28x86%29\Windows Kits\10\Lib\10.0.19041.0\um\$(PlatformShortName);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>C:\Program Files (x86)\Windows Kits\10\Lib\10.0.19041.0\um\x64\Mfplat.lib;C:\Program Files (x86)\Windows Kits\10\Lib\10.0.19041.0\um\x64\Mf.lib;C:\Program Files (x86)\Windows Kits\10\Lib\10.0.19041.0\um\x64\Mfcore.lib;C:\Program Files (x86)\Windows Kits\10\Lib\10.0.19041.0\um\x64\evr.lib;C:\Program Files (x86)\Windows Kits\10\Lib\10.0.19041.0\um\x64\mfuuid.lib;C:\Windows-Machine-Learning\Samples\BackgroundBlur\x64\Debug\DX11VideoRenderer.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>

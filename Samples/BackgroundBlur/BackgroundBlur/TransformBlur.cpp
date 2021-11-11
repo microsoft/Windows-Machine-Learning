@@ -12,9 +12,9 @@ const FOURCC FOURCC_RGB24 = 20;
 const GUID* g_MediaSubtypes[] =
 {
     &MFVideoFormat_RGB24,
-    //&MEDIASUBTYPE_NV12,
-    //&MEDIASUBTYPE_YUY2,
-    //&MEDIASUBTYPE_UYVY
+    &MEDIASUBTYPE_NV12,
+    &MEDIASUBTYPE_YUY2,
+    &MEDIASUBTYPE_UYVY
 };
 
 // Number of media types in the aray.
@@ -72,7 +72,9 @@ TransformBlur::TransformBlur(HRESULT& hr) :
     m_cbImageSize(0),
     m_pTransformFn(NULL),
     m_pD3DDeviceManager(NULL),
-    m_pDecoderService(NULL)
+    m_pHandle(NULL),
+    m_pD3DDevice(NULL),
+    m_pD3DVideoDevice(NULL)
 {
 }
 
@@ -84,8 +86,11 @@ TransformBlur::~TransformBlur()
     SAFE_RELEASE(m_pInputType);
     SAFE_RELEASE(m_pOutputType);
     SAFE_RELEASE(m_pSample);
+
+    m_pD3DDeviceManager->CloseDeviceHandle(m_pHandle);
     SAFE_RELEASE(m_pD3DDeviceManager);
-    SAFE_RELEASE(m_pDecoderService);
+    SAFE_RELEASE(m_pD3DDevice);
+    SAFE_RELEASE(m_pD3DVideoDevice);
 }
 
 // IUnknown methods
@@ -492,44 +497,31 @@ HRESULT TransformBlur::SetInputType(
         CHECK_HR(hr = OnCheckInputType(pType));
     }
 
-    // Find a d3d decoder configuration, if have a video device to use
-    // TODO: Clear false if this is the way to go later
-    // TODO: Move to checkinputtype 
-    
-
-    if (m_pD3DDeviceManager && m_pDecoderService) 
+    // Find a decoder configuration
+    if (m_pD3DDeviceManager) 
     {
         UINT numDevices = 0;
         UINT numFormats = 0;
         GUID* pguids = NULL;
         D3DFORMAT* d3dFormats = NULL;
-        m_pDecoderService->GetDecoderDeviceGuids(&numDevices, &pguids);
-        for (UINT i = 0; i < numDevices; i++)
+
+        UINT numProfiles = m_pD3DVideoDevice->GetVideoDecoderProfileCount();
+        for (UINT i = 0; i < numProfiles; i++)
         {
-            g = pguids[i];
-            if (g == DXVA2_ModeH264_E || g == DXVA2_ModeH264_VLD_NoFGT)
-            {
-                OutputDebugString(L"Found h264 decoder E");
-                //break;
-            }
-            m_pDecoderService->GetDecoderRenderTargets(g, &numFormats, &d3dFormats);
-            for (UINT j = 0; j < numDevices; j++)
-            {
-                d = d3dFormats[j];
-                //(D3DFORMAT)subtype.Data1;
-                for (int k = 0; k < g_cNumSubtypes; k++)
-                {
-                    GUID gtest = *g_MediaSubtypes[k];
-                    if (d == (D3DFORMAT)(gtest.Data1))
-                    {
-                        OutputDebugString(L"Found a decoder with a supported format");
-                        // pType = ;
-                        break;
-                    }
-                }
+            GUID pDecoderProfile = GUID_NULL;
+            CHECK_HR(hr = m_pD3DVideoDevice->GetVideoDecoderProfile(i, &pDecoderProfile));
+
+            BOOL rgbSupport; 
+            hr = m_pD3DVideoDevice->CheckVideoDecoderFormat(&pDecoderProfile, DXGI_FORMAT_AYUV, &rgbSupport);
+            // IF H264 and supports a yuv/rgb format
+            if (rgbSupport) {
+                // D3D11_DECODER_PROFILE_H264_VLD_NOFGT
+                OutputDebugString(L"supports AYUV!");
             }
         }
 
+
+        
         // TODO: Move to done
         CoTaskMemFree(pguids);
         CoTaskMemFree(d3dFormats);
@@ -854,20 +846,22 @@ HRESULT TransformBlur::OnSetD3DManager(ULONG_PTR ulParam)
     }
 
     // Get a handle to the DXVA decoder service
+    // TODO: Change to give to the field instead of local variable
     hr = m_pD3DDeviceManager->OpenDeviceHandle(&p_deviceHandle);
 
     // Get the d3d11 device
-    m_pD3DDeviceManager->GetVideoService(p_deviceHandle, IID_ID3D12Device, (void**) &pd3dDevice);
+    m_pD3DDeviceManager->GetVideoService(p_deviceHandle, IID_ID3D12Device, (void**) &m_pD3DDevice);
     
     // Get the d3d11 video device
-    hr = m_pD3DDeviceManager->GetVideoService(p_deviceHandle, IID_ID3D11VideoDevice, (void**) &m_pDecoderService);
-
+    hr = m_pD3DDeviceManager->GetVideoService(p_deviceHandle, IID_ID3D11VideoDevice, (void**) &m_pD3DVideoDevice);
 
     if (FAILED(hr)) 
     {
         OutputDebugString(L"Failed to get DXVA decoder service");
         ProcessMessage(MFT_MESSAGE_SET_D3D_MANAGER, NULL);
     }
+
+    // TOOD: Get the ID3D11DeviceContext and use to add multi-thread protection on the device context
 
 done:
     //TODO: Safe release anything as needed
@@ -888,7 +882,6 @@ HRESULT TransformBlur::ProcessInput(
 )
 {
     AutoLock lock(m_critSec);
-    IDirect3DSurface11* ppSurface = NULL;
     IMFMediaBuffer* pBuffer = NULL;
 
     if (pSample == NULL)
@@ -935,12 +928,12 @@ HRESULT TransformBlur::ProcessInput(
     m_pSample = pSample;
     
     // Check if for some reason already have d3dsurface
-    hr = pSample->GetBufferByIndex(0, &pBuffer);
+    /*hr = pSample->GetBufferByIndex(0, &pBuffer);
     if (SUCCEEDED(hr))
     {
         HRESULT test = MFGetService(pBuffer, MR_BUFFER_SERVICE, IID_PPV_ARGS(ppSurface));
         pBuffer->Release();
-    }
+    }*/
 
     pSample->AddRef();  // Hold a reference count on the sample.
 
@@ -1235,21 +1228,6 @@ HRESULT TransformBlur::OnSetInputType(IMFMediaType* pmt)
 
     // Update the format information.
     UpdateFormatInfo();
-
-    IDirect3DSurface9* ppSurfaces[4];
-    if (m_pDecoderService) {
-        hr = m_pDecoderService->CreateSurface(
-            m_imageWidthInPixels,
-            m_imageHeightInPixels,
-            3,                       // Number of backbuffers
-            des.Format,              // D3DFORMAT   
-            D3DPOOL_DEFAULT,         // Memory pool to create the surfaces
-            0,                       // Reserved
-            DXVA2_VideoProcessorRenderTarget, //DXVATYPE Type of surface to make
-            ppSurfaces,              // Out array of d3d9 surfaces
-            NULL
-        );
-    }
 
     return S_OK;
 }

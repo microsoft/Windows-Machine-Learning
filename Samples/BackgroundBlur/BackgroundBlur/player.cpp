@@ -958,55 +958,6 @@ done:
     return hr;
 }
 
-//  Create an object for a renderer, based on the stream media type.
-HRESULT CreateMediaSink(
-    IMFStreamDescriptor* pSourceSD,     // Pointer to the stream descriptor.
-    HWND hVideoWindow,                  // Handle to the video clipping window.
-    IMFMediaSink** ppSink
-)
-{
-    IMFMediaTypeHandler* pHandler = NULL;
-    IMFMediaSink* pSink = NULL;
-
-    // Get the media type handler for the stream.
-    HRESULT hr = pSourceSD->GetMediaTypeHandler(&pHandler);
-    if (FAILED(hr))
-    {
-        goto done;
-    }
-
-    // Get the major media type.
-    GUID guidMajorType;
-    hr = pHandler->GetMajorType(&guidMajorType);
-    if (FAILED(hr))
-    {
-        goto done;
-    }
-
-    if (MFMediaType_Video == guidMajorType)
-    {
-        hr = CreateDX11VideoRenderer(__uuidof(IMFMediaSink), (void**)&pSink);
-    }
-    else
-    {
-        // Unknown stream type. 
-        hr = E_FAIL;
-        // Optionally, you could deselect this stream instead of failing.
-    }
-    if (FAILED(hr))
-    {
-        goto done;
-    }
-
-    // Return IMFMediaSink pointer to caller.
-    *ppSink = pSink;
-    (*ppSink)->AddRef();
-
-done:
-    SafeRelease(&pHandler);
-    SafeRelease(&pSink);
-    return hr;
-}
 
 //  Create an activation object for a renderer, based on the stream media type.
 
@@ -1249,65 +1200,6 @@ done:
     return hr;
 }
 
-// Add an output node to a topology.
-HRESULT AddOutputNode(
-    IMFTopology* pTopology,     // Topology.
-    IMFMediaSink* pSink,     // Media sink activation object.
-    DWORD dwId,                 // Identifier of the stream sink.
-    IMFTopologyNode** ppNode)   // Receives the node pointer.
-{
-    IMFTopologyNode* pNode = NULL;
-    IDirect3DDeviceManager9* man = NULL;
-    IMFStreamSink* pStreamSink = NULL;
-
-    // Create the node.
-    HRESULT hr = MFCreateTopologyNode(MF_TOPOLOGY_OUTPUT_NODE, &pNode);
-    if (FAILED(hr))
-    {
-        goto done;
-    }
-
-    CHECK_HR(hr = pSink->GetStreamSinkByIndex(dwId, &pStreamSink));
-    // Set the object pointer.
-    hr = pNode->SetObject(pStreamSink);
-    if (FAILED(hr))
-    {
-        goto done;
-    }
-
-    // Set the stream sink ID attribute.
-    hr = pNode->SetUINT32(MF_TOPONODE_STREAMID, dwId);
-    if (FAILED(hr))
-    {
-        goto done;
-    }
-
-    hr = pNode->SetUINT32(MF_TOPONODE_NOSHUTDOWN_ON_REMOVE, FALSE);
-    if (FAILED(hr))
-    {
-        goto done;
-    }
-
-    // Add the node to the topology.
-    hr = pTopology->AddNode(pNode);
-    if (FAILED(hr))
-    {
-        goto done;
-    }
-    BindOutputNode(pNode);
-    // Return the pointer to the caller.
-    *ppNode = pNode;
-
-
-    (*ppNode)->AddRef();
-
-done:
-    SafeRelease(&pNode);
-    return hr;
-}
-//</SnippetPlayer.cpp>
-
-
 HRESULT AddTransformNode(
     IMFTopology* pTopology,     // Topology.
     IMFDXGIDeviceManager* d3dManager,
@@ -1331,12 +1223,12 @@ HRESULT AddTransformNode(
     {
         hr = pNode->SetObject(pMFT);
 
-        //Determine if d3d-aware
+        //Determine if the MFT is d3d-aware
         IMFAttributes* p_attr = NULL;
         UINT32 p_aware = FALSE;
-        pMFT->GetAttributes(&p_attr);
+        hr = pMFT->GetAttributes(&p_attr);
         UINT32 aware = MFGetAttributeUINT32(p_attr, MF_SA_D3D_AWARE, p_aware); 
-        if (false && aware == TRUE && d3dManager) {
+        if (aware == TRUE && d3dManager) {
             pMFT->ProcessMessage(MFT_MESSAGE_SET_D3D_MANAGER, (ULONG_PTR)d3dManager);
             pNode->SetUINT32(MF_TOPONODE_D3DAWARE, TRUE);
         }
@@ -1404,8 +1296,6 @@ HRESULT AddBranchToPartialTopology(
             goto done;
         }
 
-        CHECK_HR(hr = CreateMediaSink(pSD, hVideoWnd, &pSink));
-
         // Add a source node for this stream.
         hr = AddSourceNode(pTopology, pSource, pPD, pSD, &pSourceNode);
         if (FAILED(hr))
@@ -1428,11 +1318,7 @@ HRESULT AddBranchToPartialTopology(
         CHECK_HR(hr = pHandler->GetMajorType(&guidMajorType));
         if (MFMediaType_Video == guidMajorType)
         {
-            //TRACE((L"Adding MFT to video stream"));
-            class __declspec(uuid("{2F3DBC05-C011-4a8f-B264-E42E35C67BF4}")) ColorConverter; //"{98230571-0087-4204-b020-3282538e57d3}"
-            CLSID guid = __uuidof(ColorConverter);
-
-
+            // Query the output node for the d3d device manager
             IUnknown* pNodeObject = NULL;
             IMFDXGIDeviceManager* pD3DManager = NULL;
             hr = pOutputNode->GetObject(&pNodeObject);

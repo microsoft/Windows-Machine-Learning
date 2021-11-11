@@ -47,8 +47,11 @@ SegmentModel::SegmentModel(UINT32 w, UINT32 h) :
 	m_sess(NULL),
 	m_bufferSess(NULL)
 {
+	// TODO: Adapt based on video_FOURCC- might not always be RGBA
+
 	SetImageSize(w, h);
-	m_sess = CreateLearningModelSession(ReshapeFlatBufferToNCHWAndInvert(1, 3, h, w));
+	// 4 channels: RGBA
+	m_sess = CreateLearningModelSession(ReshapeFlatBufferToNCHWAndInvert(1, 4, h, w));
 
 	m_bufferSess = CreateLearningModelSession(ReshapeFlatBufferToNCHW(1, 3, h, w));
 }
@@ -118,30 +121,25 @@ void SegmentModel::Run(const BYTE** pSrc, BYTE** pDest, DWORD cbImageSize)
 void SegmentModel::RunTest(const BYTE** pSrc, BYTE** pDest, DWORD cbImageSize) 
 {
 	// Right now the single input type I allow is topdown, this should work
-	// TODO: Array_View initialized as [x, y) correct? 
 	winrt::array_view<const byte> source{*pSrc, *pSrc + cbImageSize}; // TODO: Does this work when topdown vs. bottomup
-	//winrt::array_view<byte> dest{ *pDest, *pDest + cbImageSize };
-	std::vector<int64_t> shape = { 1, m_imageHeightInPixels, m_imageWidthInPixels, 3 };
+	std::vector<int64_t> shape = { 1, m_imageHeightInPixels, m_imageWidthInPixels, 4 };
 
 	ITensor inputRawTensor = TensorUInt8Bit::CreateFromArray(std::vector<int64_t>{1, cbImageSize}, source);
 	ITensor outputTensor = TensorUInt8Bit::Create(shape);
-	auto binding = Evaluate(m_sess, { &inputRawTensor }, &outputTensor);
+	auto binding = Evaluate(m_sess, { &inputRawTensor }, &outputTensor, true);
 
 	UINT32 outCapacity = 0;
 	if (useGPU)
 	{
 		// v1: just get the reference- should fail
 		auto reference = outputTensor.as<TensorUInt8Bit>().CreateReference().data();
-
-		// v2: get the buffer from tensornative
-		auto f = outputTensor.as<ITensorNative>();
-		outputTensor.as<ITensorNative>()->GetBuffer(pDest, &outCapacity);
+		CopyMemory(*pDest, reference, cbImageSize);
 
 		// v3: get from a d3dresource
-		ID3D12Resource* res = NULL;
+		/*ID3D12Resource* res = NULL;
 		HRESULT hr = outputTensor.as<ITensorNative>()->GetD3D12Resource(&res);
 		UINT DstRowPitch = 0, DstDepthPitch = 0, SrcSubresource = 0;
-		hr = res->ReadFromSubresource((void*)*pDest, DstRowPitch, DstDepthPitch, SrcSubresource, NULL);
+		hr = res->ReadFromSubresource((void*)*pDest, DstRowPitch, DstDepthPitch, SrcSubresource, NULL);*/
 		return;
 	}
 ;
@@ -314,17 +312,22 @@ LearningModel SegmentModel::ReshapeFlatBufferToNCHWAndInvert(long n, long c, lon
 	//TensorInt64Bit::CreateFromIterable(winrt::param::iterable<int64_t>({ 1,2,3 }), size);
 	auto builder = LearningModelBuilder::Create(11)
 		.Inputs().Add(LearningModelBuilder::CreateTensorFeatureDescriptor(L"Input", TensorKind::UInt8, winrt::array_view<int64_t const>({ 1, n * c * h * w })))
-		//.Outputs().Add(LearningModelBuilder::CreateTensorFeatureDescriptor(L"Output", TensorKind::UInt8, winrt::array_view<int64_t const>{ 1, n* c* h* w}))
+		// Remove the alpha channel
 		.Outputs().Add(LearningModelBuilder::CreateTensorFeatureDescriptor(L"Output", TensorKind::UInt8, winrt::array_view<int64_t const>{n, h, w, c}))
 		.Operators().Add(LearningModelOperator((L"Cast"))
 			.SetInput(L"input", L"Input")
-			.SetOutput(L"output", L"SliceOutput")
+			.SetOutput(L"output", L"CastOutput")
 			.SetAttribute(L"to",
 				TensorInt64Bit::CreateFromIterable(std::vector<int64_t>{}, std::vector<int64_t>{OnnxDataType::ONNX_FLOAT})))
 		.Operators().Add(LearningModelOperator(L"Reshape")
-			.SetInput(L"data", L"SliceOutput")
+			.SetInput(L"data", L"CastOutput")
 			.SetConstant(L"shape", TensorInt64Bit::CreateFromIterable(std::vector<int64_t>{4}, std::vector<int64_t>{n, h, w, c}))
 			.SetOutput(L"reshaped", L"ReshapeOutput"))
+		/*.Operators().Add(LearningModelOperator(L"Slice")
+			.SetInput(L"data", L"ReshapeOutput")
+			.SetConstant(L"starts", TensorInt64Bit::CreateFromIterable(std::vector<int64_t>{ 4 }, std::vector<int64_t>{ 0, 0, 0, 0 }))
+			.SetConstant(L"ends", TensorInt64Bit::CreateFromIterable(std::vector<int64_t>{ 4 }, std::vector<int64_t>{ n, h, w, c - 1 }))
+			.SetOutput(L"output", L"SliceOutput"))*/
 		// Now shape NCHW
 		.Operators().Add(LearningModelOperator(L"Mul")
 			.SetInput(L"A", L"ReshapeOutput")
@@ -378,7 +381,7 @@ LearningModelBinding SegmentModel::Evaluate(LearningModelSession sess, std::vect
 	hstring outputName = sess.Model().OutputFeatures().GetAt(0).Name();
 
 	auto outputBindProperties = PropertySet();
-	outputBindProperties.Insert(L"DisableTensorCpuSync", PropertyValue::CreateBoolean(true));
+	outputBindProperties.Insert(L"DisableTensorCpuSync", PropertyValue::CreateBoolean(!wait));
 	binding.Bind(outputName, *output, outputBindProperties);
 	//EvaluateInternal(sess, binding);
 

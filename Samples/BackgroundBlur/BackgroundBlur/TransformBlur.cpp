@@ -7,14 +7,15 @@ const FOURCC FOURCC_YUY2 = MAKEFOURCC('Y', 'U', 'Y', '2');
 const FOURCC FOURCC_UYVY = MAKEFOURCC('U', 'Y', 'V', 'Y');
 const FOURCC FOURCC_NV12 = MAKEFOURCC('N', 'V', '1', '2');
 const FOURCC FOURCC_RGB24 = 20;
+const FOURCC FOURCC_RGB32 = 22;
 
 // Static array of media types (preferred and accepted).
 const GUID* g_MediaSubtypes[] =
 {
-    &MFVideoFormat_RGB24,
-    &MEDIASUBTYPE_NV12,
-    &MEDIASUBTYPE_YUY2,
-    &MEDIASUBTYPE_UYVY
+    &MFVideoFormat_RGB32,
+    //&MEDIASUBTYPE_NV12,
+    //&MEDIASUBTYPE_YUY2,
+    //&MEDIASUBTYPE_UYVY
 };
 
 // Number of media types in the aray.
@@ -278,7 +279,8 @@ HRESULT TransformBlur::GetOutputStreamInfo(
     pStreamInfo->dwFlags =
         MFT_OUTPUT_STREAM_WHOLE_SAMPLES |
         MFT_OUTPUT_STREAM_SINGLE_SAMPLE_PER_BUFFER |
-        MFT_OUTPUT_STREAM_FIXED_SAMPLE_SIZE 
+        MFT_OUTPUT_STREAM_FIXED_SAMPLE_SIZE
+        // MFT_OUTPUT_STREAM_PROVIDES_SAMPLES
         ;
 
     if (m_pOutputType == NULL)
@@ -301,11 +303,8 @@ HRESULT TransformBlur::GetOutputStreamInfo(
 //-------------------------------------------------------------------
 HRESULT TransformBlur::GetAttributes(IMFAttributes** pAttributes)
 {
-    //IMFAttributes* pAttr = NULL;
     HRESULT hr = MFCreateAttributes(pAttributes, 1);
-    hr = (*pAttributes)->SetUINT32(MF_SA_D3D_AWARE, TRUE);
-    //hr = (*pAttributes)->SetUINT32(MF_SA_D3D11_AWARE, TRUE);
-    // This MFT does not support any attributes, so the method is not implemented.
+    hr = (*pAttributes)->SetUINT32(MF_SA_D3D_AWARE, FALSE);
     return hr;
 }
 
@@ -332,8 +331,11 @@ HRESULT TransformBlur::GetOutputStreamAttributes(
     IMFAttributes** ppAttributes
 )
 {
-    // This MFT does not support any attributes, so the method is not implemented.
-    return E_NOTIMPL;
+    HRESULT hr = MFCreateAttributes(ppAttributes, 1);
+    hr = (*ppAttributes)->SetUINT32(MF_SA_MINIMUM_OUTPUT_SAMPLE_COUNT, 3);
+
+
+    return hr;
 }
 
 //-------------------------------------------------------------------
@@ -1376,21 +1378,7 @@ void TransformImage_Stub(
 )
 {
     segmentModel.RunTest(&pSrc, &pDest, cbImageSize);
-    
-    // For now RGB
-    /*for (DWORD y = 0; y < dwHeightInPixels; y++)
-    {
-        WORD* pSrc_Pixel = (WORD*)pSrc;
-        WORD* pDest_Pixel = (WORD*)pDest;
-        // pSrc_Pixel[x] and pSrc_Pixel[x+1] refer to 2bytes apart bc they are WORD* and WORD is 2 bytes
-        for (DWORD x = 0; x < dwWidthInPixels; x++)
-        {
-            WORD pixel = pSrc_Pixel[x];
-            pDest_Pixel[x] = pixel;
-        }
-        pDest += lDestStride;
-        pSrc += lSrcStride;
-    }*/
+    // CopyMemory(pDest, pSrc, cbImageSize);
 }
 
 
@@ -1500,7 +1488,9 @@ HRESULT TransformBlur::UpdateFormatInfo()
 
         case FOURCC_RGB24:
             break;
-            
+
+        case FOURCC_RGB32:
+            break;
         default:
             CHECK_HR(hr = E_UNEXPECTED);
         }
@@ -1580,6 +1570,18 @@ HRESULT GetImageSize(FOURCC fcc, UINT32 width, UINT32 height, DWORD* pcbImage)
         }
         break;
 
+    case FOURCC_RGB32:
+        // check overflow
+        if ((width * 4 > MAXDWORD) ||
+            (width * 4 > MAXDWORD / height))
+        {
+            hr = E_INVALIDARG;
+        }
+        else {
+            // 32 bpp
+            *pcbImage = width * height * 4;
+        }
+        break;
     default:
         hr = E_FAIL;    // Unsupported type.
     }

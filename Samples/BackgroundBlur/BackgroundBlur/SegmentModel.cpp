@@ -73,42 +73,36 @@ void SegmentModel::Run(const BYTE** pSrc, BYTE** pDest, DWORD cbImageSize)
 	LearningModelSession normalizationSession = CreateLearningModelSession(Normalize0_1ThenZScore(m_imageHeightInPixels, m_imageWidthInPixels, 3, mean, std));
 	ITensor intermediateTensor = TensorFloat::Create(shape);
 	auto normalizationBinding = Evaluate(normalizationSession, std::vector<ITensor*>{&tensorizedImg}, & intermediateTensor);
-	// intermediateTensor.as<TensorFloat>().GetAsVectorView().GetMany(0, testpixels);
 
 	// 3. Run through actual model
 	std::vector<int64_t> FCNResnetOutputShape = { 1, 21, m_imageHeightInPixels, m_imageWidthInPixels };
 	LearningModelSession FCNResnetSession = CreateLearningModelSession(FCNResnet());
 	ITensor FCNResnetOutput = TensorFloat::Create(FCNResnetOutputShape);
 	auto FCNResnetBinding = Evaluate(FCNResnetSession, std::vector<ITensor*>{&intermediateTensor}, & FCNResnetOutput);
-	//FCNResnetOutput.as<TensorFloat>().GetAsVectorView().GetMany(0, testpixels);
 
 	// 4.Extract labels with argmax
 	ITensor rawLabels = TensorFloat::Create({1, 1, m_imageHeightInPixels, m_imageWidthInPixels});
 	LearningModelSession argmaxSession = CreateLearningModelSession(Argmax(1, m_imageHeightInPixels, m_imageWidthInPixels));
 	auto argmaxBinding = Evaluate(argmaxSession, std::vector<ITensor*>{&FCNResnetOutput}, & rawLabels);
-	//rawLabels.as<TensorFloat>().GetAsVectorView().GetMany(0, testpixels);
 
 	// 5. Get the foreground
 	ITensor foreground = TensorUInt8Bit::Create(std::vector<int64_t>{1, m_imageHeightInPixels, m_imageWidthInPixels, 3});
 	LearningModelSession foregroundSession = CreateLearningModelSession(GetBackground(1, 3, m_imageHeightInPixels, m_imageWidthInPixels));
-	auto foregroundBinding = Evaluate(foregroundSession, std::vector<ITensor*>{&tensorizedImg, &rawLabels}, & foreground);
+	// Enable tensorcpusync for the last evaluate so can extract and give back to buffer
+	// Will remove once can just pass along d3d reources back to MFT
+	auto foregroundBinding = Evaluate(foregroundSession, std::vector<ITensor*>{&tensorizedImg, &rawLabels}, & foreground, true);
 	
-	// TODO: Move data over to CPU somehow? 
 	UINT32 outCapacity = 0;
 	if (useGPU)
 	{
 		// v1: just get the reference- should fail
 		auto reference = foreground.as<TensorUInt8Bit>().CreateReference().data();
 
-		// v2: get the buffer from tensornative
-		auto f = foreground.as<ITensorNative>();
-		foreground.as<ITensorNative>()->GetBuffer(pDest, &outCapacity);
-
 		// v3: get from a d3dresource
-		ID3D12Resource* res = NULL;
+		/*ID3D12Resource* res = NULL;
 		HRESULT hr = foreground.as<ITensorNative>()->GetD3D12Resource(&res);
 		UINT DstRowPitch = 0, DstDepthPitch = 0, SrcSubresource = 0;
-		hr = res->ReadFromSubresource((void*)*pDest, DstRowPitch, DstDepthPitch, SrcSubresource, NULL);
+		hr = res->ReadFromSubresource((void*)*pDest, DstRowPitch, DstDepthPitch, SrcSubresource, NULL);*/
 		return;
 	}
 	else 
@@ -142,7 +136,6 @@ void SegmentModel::RunTest(const BYTE** pSrc, BYTE** pDest, DWORD cbImageSize)
 		hr = res->ReadFromSubresource((void*)*pDest, DstRowPitch, DstDepthPitch, SrcSubresource, NULL);*/
 		return;
 	}
-;
 }
 
 void SegmentModel::SetImageSize(UINT32 w, UINT32 h) 

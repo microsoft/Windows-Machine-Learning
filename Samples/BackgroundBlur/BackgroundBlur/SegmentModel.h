@@ -9,7 +9,6 @@
 using namespace winrt::Microsoft::AI::MachineLearning;
 using namespace winrt::Microsoft::AI::MachineLearning::Experimental;
 
-// TODO: Implement IUnknown? 
 class SegmentModel {
 public:
 	LearningModelSession m_sess; 

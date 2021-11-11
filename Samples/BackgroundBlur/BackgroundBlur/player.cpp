@@ -184,8 +184,6 @@ HRESULT CPlayer::OpenURL(const WCHAR* sURL)
         goto done;
     }
 
-
-
     // Set the topology on the media session.
     hr = m_pSession->SetTopology(0, pTopology);
     if (FAILED(hr))
@@ -295,12 +293,9 @@ HRESULT EnumerateCaptureFormats(IMFMediaSource* pSource)
 
         GUID subtype = GUID_NULL;
         CHECK_HR(hr = pType->GetGUID(MF_MT_SUBTYPE, &subtype));
-        if (subtype == MFVideoFormat_RGB24) {
-            //OutputDebugString(L"This device supports RGB!");
+        if (subtype == MFVideoFormat_RGB32) {
             SetDeviceFormat(pSource, i);
             
-            //LogMediaType(pType);
-            //OutputDebugString(L"\n");
             break;
         }
 
@@ -319,7 +314,7 @@ done:
 }
 
 
-//  Open a URL for playback.
+//  Start streaming playback
 HRESULT CPlayer::StartStream()
 {
     // 1. Create a new media session.
@@ -361,11 +356,6 @@ HRESULT CPlayer::StartStream()
     {
         goto done;
     }
-
-    /*IMFTopoLoader* loader;
-    MFCreateTopoLoader(&loader);
-    IMFTopology* pOut;
-    loader->Load(pTopology, &pOut, NULL);*/
 
     // Set the topology on the media session.
     hr = m_pSession->SetTopology(0, pTopology);
@@ -564,9 +554,6 @@ HRESULT CPlayer::HandleEvent(UINT_PTR pEventPtr)
     case MESessionTopologyStatus:
         hr = OnTopologyStatus(pEvent);
         break;
-    case MESessionTopologySet:
-        // hr = OnTopologySet(pEvent);
-        break;
     case MEEndOfPresentation:
         hr = OnPresentationEnded(pEvent);
         break;
@@ -678,71 +665,6 @@ done:
     SafeRelease(&pTopology);
     SafeRelease(&pPD);
     return S_OK;
-}
-
-HRESULT CPlayer::OnTopologySet(IMFMediaEvent* pEvent) {
-    IDirect3DDeviceManager9* man = NULL;
-    HRESULT hr = S_OK;
-    IMFTransform* pMFT = NULL;
-
-    // Query the topo nodes for 1) video renderer service 2) MFT with D3d aware -> give them the d9manager and maybe set MF_TOPONODE_D3DAWARE 
-    // Have to have the topology queued to the media session before can find the d3dmanager
-    hr = MFGetService(m_pSession, MR_VIDEO_ACCELERATION_SERVICE, IID_IDirect3DDeviceManager9, (void**)&man);
-    if (hr == S_OK)
-    {
-        OutputDebugString(L"Found the d3d9 manager");
-
-        PROPVARIANT var;
-        IMFTopology* pTopology = NULL;
-        WORD pNumNodes = 0;
-        IMFTopologyNode* pNode = NULL;
-        UINT32 aware = FALSE;
-
-        PropVariantInit(&var);
-        hr = pEvent->GetValue(&var);
-        if (SUCCEEDED(hr))
-        {
-            if (var.vt != VT_UNKNOWN)
-            {
-                hr = E_UNEXPECTED;
-            }
-        }
-        if (SUCCEEDED(hr))
-        {
-            hr = var.punkVal->QueryInterface(__uuidof(IMFTopology), (void**)&pTopology);
-        }
-        PropVariantClear(&var);
-
-        //m_pSession->GetFullTopology(MFSESSION_GETFULLTOPOLOGY_CURRENT, NULL, &pTopology);
-        CHECK_HR(hr = pTopology->GetNodeCount(&pNumNodes));
-        MF_TOPOLOGY_TYPE pType ;
-        for (WORD i = 0; i < pNumNodes; i++) {
-            pTopology->GetNode(i, &pNode);
-             // TODO: Instantiate outside loop?
-            pNode->GetNodeType(&pType);
-
-            if (pType != NULL && pType == MF_TOPOLOGY_TRANSFORM_NODE)
-            {
-                IMFAttributes* pAttr = NULL;
-                // Get the underlying MFT
-                CHECK_HR(hr = pNode->GetObject((IUnknown**)&pMFT));
-                pMFT->GetAttributes(&pAttr);
-                // UINT32 p_aware = FALSE;
-                aware = MFGetAttributeUINT32(pAttr, MF_SA_D3D_AWARE, FALSE);
-                if (aware) {
-                    pMFT->ProcessMessage(MFT_MESSAGE_SET_D3D_MANAGER, (ULONG_PTR)man);
-                    break;
-                }
-            }
-        }
-
-        // TODO: Can we add a cache of the MFT so add this ? 
-    }
-
-done:
-    // TODO: Release d3dManager?
-    SafeRelease(&pMFT);
-    return hr;
 }
 
 //  Create a new instance of the media session.
@@ -960,7 +882,6 @@ done:
 
 
 //  Create an activation object for a renderer, based on the stream media type.
-
 HRESULT CreateMediaSinkActivate(
     IMFStreamDescriptor* pSourceSD,     // Pointer to the stream descriptor.
     HWND hVideoWindow,                  // Handle to the video clipping window.
@@ -1072,7 +993,6 @@ done:
 
 // BindOutputNode
 // Sets the IMFStreamSink pointer on an output node.
-
 HRESULT BindOutputNode(IMFTopologyNode* pNode)
 {
     IUnknown* pNodeObject = NULL;
@@ -1203,7 +1123,6 @@ done:
 HRESULT AddTransformNode(
     IMFTopology* pTopology,     // Topology.
     IMFDXGIDeviceManager* d3dManager,
-    //const CLSID& clsid,         // CLSID of the MFT.
     IMFTopologyNode** ppNode    // Receives the node pointer.
 )
 {
@@ -1218,7 +1137,7 @@ HRESULT AddTransformNode(
     // Create the node.
     hr = MFCreateTopologyNode(MF_TOPOLOGY_TRANSFORM_NODE, &pNode);
 
-    // Set the CLSID attribute.
+    // Set the object of the node to the MFT
     if (SUCCEEDED(hr))
     {
         hr = pNode->SetObject(pMFT);
@@ -1310,7 +1229,6 @@ HRESULT AddBranchToPartialTopology(
             goto done;
         }
         
-
         // Check if a video stream, then create transform node. 
         // Get the media type handler for the stream.
         CHECK_HR(hr = pSD->GetMediaTypeHandler(&pHandler));
@@ -1362,9 +1280,6 @@ done:
     SafeRelease(&pOutputNode);
     return hr;
 }
-
-
-
 
 //  Create a playback topology from a media source.
 HRESULT CreatePlaybackTopology(

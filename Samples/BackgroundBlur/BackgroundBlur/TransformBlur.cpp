@@ -502,11 +502,6 @@ HRESULT TransformBlur::SetInputType(
     // Find a decoder configuration
     if (m_pD3DDeviceManager) 
     {
-        UINT numDevices = 0;
-        UINT numFormats = 0;
-        GUID* pguids = NULL;
-        D3DFORMAT* d3dFormats = NULL;
-
         UINT numProfiles = m_pD3DVideoDevice->GetVideoDecoderProfileCount();
         for (UINT i = 0; i < numProfiles; i++)
         {
@@ -515,18 +510,14 @@ HRESULT TransformBlur::SetInputType(
 
             BOOL rgbSupport; 
             hr = m_pD3DVideoDevice->CheckVideoDecoderFormat(&pDecoderProfile, DXGI_FORMAT_AYUV, &rgbSupport);
-            // IF H264 and supports a yuv/rgb format
+            // DXGI_FORMAT_R8G8B8A8_UNORM or DXGI_FORMAT_B8G8R8X8_UNORM
+            hr = m_pD3DVideoDevice->CheckVideoDecoderFormat(&pDecoderProfile, DXGI_FORMAT_B8G8R8X8_UNORM, &rgbSupport);
             if (rgbSupport) {
                 // D3D11_DECODER_PROFILE_H264_VLD_NOFGT
-                OutputDebugString(L"supports AYUV!");
+                OutputDebugString(L"supports RGB32!\n");
             }
+
         }
-
-
-        
-        // TODO: Move to done
-        CoTaskMemFree(pguids);
-        CoTaskMemFree(d3dFormats);
     }
 
     // The type is OK. 

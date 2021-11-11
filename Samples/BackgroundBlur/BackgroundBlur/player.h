@@ -30,8 +30,6 @@
 #include "resource.h"
 
 
-
-
 template <class T> void SafeRelease(T** ppT)
 {
     if (*ppT)
@@ -107,7 +105,6 @@ protected:
     virtual HRESULT OnTopologyStatus(IMFMediaEvent* pEvent);
     virtual HRESULT OnPresentationEnded(IMFMediaEvent* pEvent);
     virtual HRESULT OnNewPresentation(IMFMediaEvent* pEvent);
-    virtual HRESULT OnTopologySet(IMFMediaEvent* pEvent);
 
     // Override to handle additional session events.
     virtual HRESULT OnSessionEvent(IMFMediaEvent*, MediaEventType)
@@ -115,18 +112,11 @@ protected:
         return S_OK;
     }
 
-    /*HRESULT AddTransformNode(
-        IMFTopology* pTopology,     // Topology.
-        const CLSID& clsid,         // CLSID of the MFT.
-        IMFTopologyNode** ppNode    // Receives the node pointer.
-    );*/
-
-
 protected:
     long                    m_nRefCount;        // Reference count.
 
-    IMFMediaSession* m_pSession;
-    IMFMediaSource* m_pSource;
+    IMFMediaSession*        m_pSession;
+    IMFMediaSource*         m_pSource;
     IMFVideoDisplayControl* m_pVideoDisplay;
 
     HWND                    m_hwndVideo;        // Video window.

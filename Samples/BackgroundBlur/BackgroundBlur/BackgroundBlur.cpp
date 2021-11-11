@@ -268,6 +268,11 @@ void OnStartStream(HWND hwnd)
 {
     HRESULT hr = S_OK;
     hr = g_pPlayer->StartStream();
+    if (!SUCCEEDED(hr))
+    {
+        NotifyError(hwnd, L"Could not find an adequate video capture device.", hr);
+        UpdateUI(hwnd, Closed);
+    }
 
 }
 

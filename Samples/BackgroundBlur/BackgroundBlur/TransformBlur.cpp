@@ -71,7 +71,6 @@ TransformBlur::TransformBlur(HRESULT& hr) :
     m_imageWidthInPixels(0),
     m_imageHeightInPixels(0),
     m_cbImageSize(0),
-    m_pTransformFn(NULL),
     m_pD3DDeviceManager(NULL),
     m_pHandle(NULL),
     m_pD3DDevice(NULL),
@@ -1403,9 +1402,7 @@ HRESULT TransformBlur::OnProcessOutput(IMFMediaBuffer* pIn, IMFMediaBuffer* pOut
     // Lock the output buffer.
     CHECK_HR(hr = outputLock.LockBuffer(lDefaultStride, m_imageHeightInPixels, &pDest, &lDestStride));
 
-    // TODO: Implement a LearningModelBuilder for grayscale
     // Invoke the image transform function.
-    //assert(m_pTransformFn != NULL);
     if (true)
     {
         TransformImage_Stub(pDest, pSrc, m_cbImageSize, m_segmentModel);
@@ -1455,36 +1452,11 @@ HRESULT TransformBlur::UpdateFormatInfo()
     m_videoFOURCC = 0;
     m_cbImageSize = 0;
 
-    m_pTransformFn = NULL;
-
     if (m_pInputType != NULL)
     {
         CHECK_HR(hr = m_pInputType->GetGUID(MF_MT_SUBTYPE, &subtype));
 
         m_videoFOURCC = subtype.Data1;
-
-        switch (m_videoFOURCC)
-        {
-        case FOURCC_YUY2:
-            //m_pTransformFn = TransformImage_YUY2;
-            break;
-
-        case FOURCC_UYVY:
-            //m_pTransformFn = TransformImage_UYVY;
-            break;
-
-        case FOURCC_NV12:
-            //m_pTransformFn = TransformImage_NV12;
-            break; 
-
-        case FOURCC_RGB24:
-            break;
-
-        case FOURCC_RGB32:
-            break;
-        default:
-            CHECK_HR(hr = E_UNEXPECTED);
-        }
 
         CHECK_HR(hr = MFGetAttributeSize(
             m_pInputType,
@@ -1499,7 +1471,6 @@ HRESULT TransformBlur::UpdateFormatInfo()
         CHECK_HR(hr = GetImageSize(m_videoFOURCC, m_imageWidthInPixels, m_imageHeightInPixels, &m_cbImageSize));
 
         // Set the size of the SegmentModel
-        // TODO: Check an HR? 
         m_segmentModel = SegmentModel(m_imageWidthInPixels, m_imageHeightInPixels);
     }
     

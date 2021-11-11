@@ -202,19 +202,15 @@ private:
     IMFMediaType* m_pInputType;              // Input media type.
     IMFMediaType* m_pOutputType;             // Output media type.
 
-    // Fomat information- tbd if needed
+    // Fomat information
     FOURCC                      m_videoFOURCC;
     UINT32                      m_imageWidthInPixels;
     UINT32                      m_imageHeightInPixels;
     DWORD                       m_cbImageSize;              // Image size, in bytes.
-    
-    // Image transform function. (Changes based on the media type.)
-    IMAGE_TRANSFORM_FN          m_pTransformFn;
 
     // D3D fields
     IMFDXGIDeviceManager*       m_pD3DDeviceManager;
     HANDLE                      m_pHandle;              // Handle to the current device
-    // IDirectXVideoDecoderService*m_pDecoderService;
     ID3D11Device*               m_pD3DDevice;
     ID3D11VideoDevice*          m_pD3DVideoDevice;
 

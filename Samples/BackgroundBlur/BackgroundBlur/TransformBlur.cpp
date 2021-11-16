@@ -88,9 +88,6 @@ TransformBlur::~TransformBlur()
     SAFE_RELEASE(m_pSample);
 
     m_pD3DDeviceManager->CloseDeviceHandle(m_pHandle);
-    SAFE_RELEASE(m_pD3DDeviceManager);
-    SAFE_RELEASE(m_pD3DDevice);
-    SAFE_RELEASE(m_pD3DVideoDevice);
 }
 
 // IUnknown methods
@@ -817,7 +814,7 @@ HRESULT TransformBlur::OnSetD3DManager(ULONG_PTR ulParam)
     // First check if ulParam null, ie. if clearing the d3d manager
     if (ulParam == NULL) 
     {
-        SAFE_RELEASE(m_pD3DDeviceManager);
+        m_pD3DDeviceManager.Release();
         return S_OK;
     }
 

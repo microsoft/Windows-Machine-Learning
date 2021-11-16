@@ -4,7 +4,8 @@ using winrt::Windows::Foundation::PropertyValue;
 using winrt::hstring;
 using namespace winrt;
 using namespace Windows::Foundation::Collections;
-
+#include <iostream>
+#include <filesystem>
 enum OnnxDataType : long {
 	ONNX_UNDEFINED = 0,
 	// Basic types.
@@ -33,19 +34,18 @@ enum OnnxDataType : long {
 	// This format has 1 sign bit, 8 exponent bits, and 7 mantissa bits.
 	ONNX_BFLOAT16 = 16,
 }OnnxDataType;
-hstring modelPath = L"C:\\Windows-Machine-Learning\\Samples\\BackgroundBlur\\BackgroundBlur\\Assets\\fcn-resnet50-11.onnx";
-bool useGPU = true;
 
 SegmentModel::SegmentModel() :
 	m_sess(NULL),
-	m_bufferSess(NULL)
+	m_bufferSess(NULL),
+	m_useGPU(true)
 {
-	//m_sess = CreateLearningModelSession(ReshapeFlatBufferToNCHW(1,3,700,1000));
 }
 
 SegmentModel::SegmentModel(UINT32 w, UINT32 h) :
 	m_sess(NULL),
-	m_bufferSess(NULL)
+	m_bufferSess(NULL),
+	m_useGPU(true)
 {
 	// TODO: Adapt based on video_FOURCC- might not always be RGBA
 
@@ -93,7 +93,7 @@ void SegmentModel::Run(const BYTE** pSrc, BYTE** pDest, DWORD cbImageSize)
 	auto foregroundBinding = Evaluate(foregroundSession, std::vector<ITensor*>{&tensorizedImg, &rawLabels}, & foreground, true);
 	
 	UINT32 outCapacity = 0;
-	if (useGPU)
+	if (m_useGPU)
 	{
 		// v1: just get the reference- should fail
 		auto reference = foreground.as<TensorUInt8Bit>().CreateReference().data();
@@ -123,7 +123,7 @@ void SegmentModel::RunTest(const BYTE** pSrc, BYTE** pDest, DWORD cbImageSize)
 	auto binding = Evaluate(m_sess, { &inputRawTensor }, &outputTensor, true);
 
 	UINT32 outCapacity = 0;
-	if (useGPU)
+	if (m_useGPU)
 	{
 		// v1: just get the reference- should fail
 		auto reference = outputTensor.as<TensorUInt8Bit>().CreateReference().data();
@@ -165,7 +165,9 @@ LearningModel SegmentModel::Argmax(long axis, long h, long w)
 
 LearningModel SegmentModel::FCNResnet()
 {
-	return LearningModel::LoadFromFilePath(modelPath);
+	auto rel = std::filesystem::current_path();
+	rel.append("Assets\\fcn-resnet50-11.onnx");
+	return LearningModel::LoadFromFilePath(rel + L"");
 }
 
 LearningModel SegmentModel::GetBackground(long n, long c, long h, long w)
@@ -246,7 +248,7 @@ LearningModel SegmentModel::GetForeground(long n, long c, long h, long w)
 	return builder.CreateModel();
 }
 
-LearningModel SegmentModel::Normalize0_1ThenZScore(long h, long w, long c, std::vector<float> means, std::vector<float> stddev)
+LearningModel SegmentModel::Normalize0_1ThenZScore(long h, long w, long c, const std::vector<float>& means, const std::vector<float>& stddev)
 {
 	assert(means.size() == c);
 	assert(stddev.size() == c);
@@ -342,9 +344,9 @@ LearningModel SegmentModel::ReshapeFlatBufferToNCHWAndInvert(long n, long c, lon
 	return builder.CreateModel();
 }
 
-LearningModelSession SegmentModel::CreateLearningModelSession(LearningModel model, bool closeModel) {
-	auto device = useGPU ? LearningModelDevice(LearningModelDeviceKind::DirectX) : LearningModelDevice(LearningModelDeviceKind::Default); // Todo: Have a toggle between GPU/ CPU? 
-	auto options = LearningModelSessionOptions(); // TODO: Figure out with wifi
+LearningModelSession SegmentModel::CreateLearningModelSession(const LearningModel& model, bool closeModel) {
+	auto device = m_useGPU ? LearningModelDevice(LearningModelDeviceKind::DirectX) : LearningModelDevice(LearningModelDeviceKind::Default); // Todo: Have a toggle between GPU/ CPU? 
+	auto options = LearningModelSessionOptions(); 
 	options.BatchSizeOverride(0);
 	options.CloseModelOnSessionCreation(closeModel);
 	auto session = LearningModelSession(model, device);
@@ -361,7 +363,7 @@ void EvaluateInternal(LearningModelSession sess, LearningModelBinding bind, bool
 	}*/
 }
 
-LearningModelBinding SegmentModel::Evaluate(LearningModelSession sess, std::vector<ITensor*> input, ITensor* output, bool wait) 
+LearningModelBinding SegmentModel::Evaluate(LearningModelSession sess,const std::vector<ITensor*>& input, ITensor* output, bool wait) 
 {
 	auto binding = LearningModelBinding(sess);
 
@@ -381,20 +383,9 @@ LearningModelBinding SegmentModel::Evaluate(LearningModelSession sess, std::vect
 	auto results = sess.Evaluate(binding, L"");
 	auto resultTensor = results.Outputs().Lookup(outputName).try_as<TensorFloat>();
 	float testPixels[6];
-	if (!useGPU && resultTensor) {
+	if (resultTensor) {
 		auto resultVector = resultTensor.GetAsVectorView();
 		resultVector.GetMany(0, testPixels);
-	}
-	if (useGPU && resultTensor)
-	{
-		auto f = resultTensor.as<ITensorNative>();
-
-		ID3D12Resource* res = NULL;
-		HRESULT hr = resultTensor.as<ITensorNative>()->GetD3D12Resource(&res);
-		UINT DstRowPitch = 0, DstDepthPitch = 0, SrcSubresource = 0;
-		BYTE* pTest = NULL;
-		hr = res->ReadFromSubresource((void*)pTest, DstRowPitch, DstDepthPitch, SrcSubresource, NULL);
-
 	}
 
 	return binding;

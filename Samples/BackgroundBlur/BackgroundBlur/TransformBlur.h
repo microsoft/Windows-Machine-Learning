@@ -6,7 +6,7 @@
 #include <mferror.h>
 #include <strsafe.h>
 #include <shlwapi.h> // registry stuff
-
+#include <atlbase.h>
 #include <assert.h>
 #include <evr.h>
 
@@ -74,7 +74,7 @@ public:
         MFT_OUTPUT_STREAM_INFO* pStreamInfo
     );
 
-    STDMETHODIMP GetAttributes(IMFAttributes** pAttributes);
+    STDMETHODIMP GetAttributes(IMFAttributes** ppAttributes);
 
     STDMETHODIMP GetInputStreamAttributes(
         DWORD           dwInputStreamID,
@@ -209,10 +209,10 @@ private:
     DWORD                       m_cbImageSize;              // Image size, in bytes.
 
     // D3D fields
-    IMFDXGIDeviceManager*       m_pD3DDeviceManager;
-    HANDLE                      m_pHandle;              // Handle to the current device
-    ID3D11Device*               m_pD3DDevice;
-    ID3D11VideoDevice*          m_pD3DVideoDevice;
+    CComPtr<IMFDXGIDeviceManager>       m_pD3DDeviceManager;
+    CComPtr<ID3D11Device>               m_pD3DDevice;
+    CComPtr<ID3D11VideoDevice>          m_pD3DVideoDevice;
+    HANDLE                              m_pHandle;          // Handle to the current device
 
     // Model fields
     SegmentModel  m_segmentModel;

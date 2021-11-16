@@ -6,13 +6,20 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 
 #include "player.h"
+#include <algorithm>
+#include <iostream>
+#include <memory>
+#include <string>
+#include <vector>
+#include <atlbase.h> // Contains the declaration of CComPtr.
+
 
 PCWSTR szTitle = L"BasicPlayback";
 PCWSTR szWindowClass = L"MFBASICPLAYBACK";
 
 HINSTANCE   g_hInstance;                    // current instance
 BOOL        g_bRepaintClient = TRUE;        // Repaint the application client area?
-CPlayer* g_pPlayer = NULL;                  // Global player object. 
+CComPtr<CPlayer> g_pPlayer;                  // Global player object. 
 
 // Note: After WM_CREATE is processed, g_pPlayer remains valid until the
 // window is destroyed.
@@ -69,7 +76,6 @@ int APIENTRY  wWinMain(HINSTANCE hInstance, HINSTANCE, PWSTR, int nCmdShow)
     if (g_pPlayer)
     {
         g_pPlayer->Shutdown();
-        SafeRelease(&g_pPlayer);
     }
     return 0;
 }
@@ -175,8 +181,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 //  Open an audio/video file.
 void OnFileOpen(HWND hwnd)
 {
-    IFileOpenDialog* pFileOpen = NULL;
-    IShellItem* pItem = NULL;
+    CComPtr<IFileOpenDialog> pFileOpen;
+    CComPtr<IShellItem> pItem;
     PWSTR pszFilePath = NULL;
 
     // Create the FileOpenDialog object.
@@ -227,8 +233,6 @@ done:
         UpdateUI(hwnd, Closed);
     }
     CoTaskMemFree(pszFilePath);
-    SafeRelease(&pItem);
-    SafeRelease(&pFileOpen);
 }
 
 //  Open a media file from a URL.

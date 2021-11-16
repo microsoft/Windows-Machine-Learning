@@ -18,8 +18,9 @@ public:
 	void Run(const BYTE** pSrc, BYTE** pDest, DWORD cbImageSize);
 	void RunTest(const BYTE** pSrc, BYTE** pDest, DWORD cbImageSize);
 
-	LearningModelSession CreateLearningModelSession(LearningModel model, bool closedModel=true);
+	LearningModelSession CreateLearningModelSession(const LearningModel& model, bool closedModel=true);
 	void SetImageSize(UINT32 w, UINT32 h);
+	bool m_useGPU = true;
 
 private: 
 	LearningModel GetBackground(long n, long c, long h, long w);
@@ -28,13 +29,15 @@ private:
 	LearningModel FCNResnet();
 	LearningModel ReshapeFlatBufferToNCHW(long n, long c, long h, long w);
 	LearningModel ReshapeFlatBufferToNCHWAndInvert(long n, long c, long h, long w);
-	LearningModel Normalize0_1ThenZScore(long height, long width, long channels, std::vector<float> means, std::vector<float> stddev);
+	LearningModel Normalize0_1ThenZScore(long height, long width, long channels, const std::vector<float>& means, const std::vector<float>& stddev);
 
-	LearningModelBinding Evaluate(LearningModelSession sess, std::vector<ITensor*> input, ITensor* output, bool wait = false);
+	// TODO: What's being passed when construct the array when passing as argument? 
+	LearningModelBinding Evaluate(LearningModelSession sess, const std::vector<ITensor*>& input, ITensor* output, bool wait = false);
 
 	UINT32                      m_imageWidthInPixels;
 	UINT32                      m_imageHeightInPixels;
 
 	// Intermediate sessions need to be condensed later
+	// TODO: Keep as smart pointers instead
 	LearningModelSession m_bufferSess;
 };

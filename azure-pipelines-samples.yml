@@ -127,7 +127,7 @@ jobs:
       inputs:
         solution: 'Samples/WinMLSamplesGallery/WinMLSamplesGallery.sln'
         vsVersion: "16.0"
-        msbuildArgs: '/p:UapAppxPackageBuildMode=SideloadOnly /p:AppxPackageSigningEnabled=false /p:AppxBundle=Always "/p:AppxBundlePlatforms=x86|x64" /p:WindowsTargetPlatformVersion=$(WindowsTargetPlatformVersion) /t:Restore,Clean,Build,Publish'
+        msbuildArgs: '/p:UapAppxPackageBuildMode=SideloadOnly /p:AppxPackageSigningEnabled=false /p:AppxBundle=Always "/p:AppxBundlePlatforms=x86|x64|arm64" /p:WindowsTargetPlatformVersion=$(WindowsTargetPlatformVersion) /t:Restore,Clean,Build,Publish'
         platform: '$(BuildPlatform)'
         configuration: '$(BuildConfiguration)'
         msbuildArchitecture: x64

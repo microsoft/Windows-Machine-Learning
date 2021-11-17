@@ -1,6 +1,5 @@
 #include "TransformBlur.h"
 
-
 #define CHECK_HR(hr) if (FAILED(hr)) { goto done; }
 // Video FOURCC codes.
 const FOURCC FOURCC_YUY2 = MAKEFOURCC('Y', 'U', 'Y', '2');
@@ -89,7 +88,6 @@ TransformBlur::~TransformBlur()
 
     m_pD3DDeviceManager->CloseDeviceHandle(m_pHandle);
 }
-
 
 // IUnknown methods
 ULONG TransformBlur::AddRef()

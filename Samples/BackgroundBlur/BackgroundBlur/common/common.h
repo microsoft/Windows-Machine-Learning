@@ -115,15 +115,9 @@ bool AreComObjectsEqual(T1 *p1, T2 *p2)
 
 #include <assert.h>
 
-#include "mfutils.h"
 #include "asyncCB.h"
 #include "BufferLock.h"
-//#include "ClassFactory.h"
 #include "critsec.h"
-//#include "GrowArray.h"
-//#include "linklist.h"
 #include "mediatype.h"
-//#include "propvar.h"
-//#include "TinyMap.h"
 #include "trace.h"
 #include "logmediatype.h"

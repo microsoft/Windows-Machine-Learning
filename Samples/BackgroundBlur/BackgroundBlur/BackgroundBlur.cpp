@@ -6,7 +6,6 @@
 #include <vector>
 #include <atlbase.h> // Contains the declaration of CComPtr.
 
-
 PCWSTR szTitle = L"BasicPlayback";
 PCWSTR szWindowClass = L"MFBASICPLAYBACK";
 

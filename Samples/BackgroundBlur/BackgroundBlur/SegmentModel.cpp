@@ -251,7 +251,7 @@ LearningModel SegmentModel::GetForeground(long n, long c, long h, long w)
 	return builder.CreateModel();
 }
 
-LearningModel SegmentModel::Normalize0_1ThenZScore(long h, long w, long c, const std::vector<float>& means, const std::vector<float>& stddev)
+LearningModel SegmentModel::Normalize0_1ThenZScore(long h, long w, long c, const std::array<float, 3>& means, const std::array<float, 3>& stddev)
 {
 	assert(means.size() == c);
 	assert(stddev.size() == c);
@@ -286,7 +286,7 @@ LearningModel SegmentModel::ReshapeFlatBufferToNCHW(long n, long c, long h, long
 {
 	auto builder = LearningModelBuilder::Create(11)
 		// Loading in buffers and reshape
-		.Inputs().Add(LearningModelBuilder::CreateTensorFeatureDescriptor(L"Input", TensorKind::UInt8, ({ 1, n * c * h * w })))
+		.Inputs().Add(LearningModelBuilder::CreateTensorFeatureDescriptor(L"Input", TensorKind::UInt8, { 1, n * c * h * w }))
 		.Outputs().Add(LearningModelBuilder::CreateTensorFeatureDescriptor(L"Output", TensorKind::Float, {n, c, h, w}))
 		.Operators().Add(LearningModelOperator((L"Cast"))
 			.SetInput(L"input", L"Input")

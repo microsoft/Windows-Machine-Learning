@@ -15,7 +15,7 @@
             BackRequested="nvSample_BackRequested"
             Loaded="nvSample_Loaded"
             AlwaysShowHeader="False"
-            PaneTitle="Windows AI"
+            PaneTitle="Windows ML"
             FontFamily="Arial"
             IsSettingsVisible="False">
             <NavigationView.Resources>

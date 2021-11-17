@@ -1,5 +1,5 @@
 ﻿# WinML Samples Gallery: Image Effects
-Pick an image and apply a variety of effects powered by Windows AI MachineLearning like Blur, Sharpen, Contrast, and many more. These effects can be used to perform model input image preprocessing, or postprocessing for visualizing outputs.
+Pick an image and apply a variety of effects powered by Windows ML like Blur, Sharpen, Contrast, and many more. These effects can be used to perform model input image preprocessing, or postprocessing for visualizing outputs.
 
 This sample demonstrates using the ```Windows.AI.MachineLearning.Experimental``` namespace to create efficient pre and post processing models in ONNX.
 

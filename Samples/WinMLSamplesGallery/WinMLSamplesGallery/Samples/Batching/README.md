@@ -1,4 +1,4 @@
-# WinML Samples Gallery: Batching
+# Windows ML Samples Gallery: Batching
  Perform infererence over multiple inputs at once to increase runtime performance.
  
  Use this sample to compare inference runtime performace with and without batched inputs. 50 images will be passed through SqueezeNet for classification. Set a batch size and click Start Inference to compare.
@@ -20,7 +20,7 @@
 - **Note**: To use batched inputs, the model must have a value of -1 or a variable name in the input batch dimension. Additionally, the DATA_BATCH Denotation must be added on the batch dimension. To edit your model you can use tools like [WinML Dashboard](https://github.com/Microsoft/Windows-Machine-Learning/tree/master/Tools/WinMLDashboard).
 
 ## Feedback
-Please file an issue [here](https://github.com/microsoft/Windows-Machine-Learning/issues/new) if you encounter any issues with the WinML Samples Gallery or wish to request a new sample.
+Please file an issue [here](https://github.com/microsoft/Windows-Machine-Learning/issues/new) if you encounter any issues with the Windows ML Samples Gallery or wish to request a new sample.
 
 ## External Links
 

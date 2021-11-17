@@ -118,6 +118,8 @@ namespace WinMLSamplesGallery.Samples
             _imagenetLabels = LoadLabels("ms-appx:///InputData/sysnet.txt");
             _inferenceSession = CreateLearningModelSession("ms-appx:///Models/squeezenet1.1-7.onnx");
             _postProcessingSession = CreateLearningModelSession(TensorizationModels.SoftMaxThenTopK(TopK));
+
+            BasicGridView.SelectedIndex = 0;
         }
 
 #pragma warning disable CA1416 // Validate platform compatibility

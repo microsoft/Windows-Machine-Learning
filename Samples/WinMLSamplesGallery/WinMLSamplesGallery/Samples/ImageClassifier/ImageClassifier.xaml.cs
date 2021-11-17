@@ -125,6 +125,8 @@ namespace WinMLSamplesGallery.Samples
             AllModelsGrid.ItemsSource = allModels;
             AllModelsGrid.SelectRange(new ItemIndexRange(0, 1));
             AllModelsGrid.SelectionChanged += AllModelsGrid_SelectionChanged;
+
+            BasicGridView.SelectedIndex = 0;
         }
 
         private void EnsureInitialized()

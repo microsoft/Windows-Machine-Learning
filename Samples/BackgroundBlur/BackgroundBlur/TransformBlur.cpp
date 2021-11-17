@@ -90,6 +90,7 @@ TransformBlur::~TransformBlur()
     m_pD3DDeviceManager->CloseDeviceHandle(m_pHandle);
 }
 
+
 // IUnknown methods
 ULONG TransformBlur::AddRef()
 {
@@ -106,7 +107,6 @@ ULONG TransformBlur::Release()
     // For thread safety, return a temporary variable.
     return uCount;
 }
-
 HRESULT TransformBlur::QueryInterface(REFIID iid, void** ppv)
 {
     if (!ppv)
@@ -301,6 +301,7 @@ HRESULT TransformBlur::GetAttributes(IMFAttributes** pAttributes)
 {
     HRESULT hr = MFCreateAttributes(pAttributes, 1);
     hr = (*pAttributes)->SetUINT32(MF_SA_D3D_AWARE, FALSE);
+    hr = (*pAttributes)->SetUINT32(MF_SA_D3D11_AWARE, TRUE);
     return hr;
 }
 
@@ -1357,15 +1358,14 @@ HRESULT TransformBlur::OnSetOutputType(IMFMediaType* pmt)
 
 
 
-void TransformImage_Stub(
+void TransformImage(
     BYTE* pDest,
     const BYTE* pSrc,
-    DWORD cbImageSize,
-    SegmentModel    segmentModel
+    const DWORD cbImageSize,
+    SegmentModel&    segmentModel
 )
 {
     segmentModel.RunTest(&pSrc, &pDest, cbImageSize);
-    // CopyMemory(pDest, pSrc, cbImageSize);
 }
 
 
@@ -1400,9 +1400,9 @@ HRESULT TransformBlur::OnProcessOutput(IMFMediaBuffer* pIn, IMFMediaBuffer* pOut
     CHECK_HR(hr = outputLock.LockBuffer(lDefaultStride, m_imageHeightInPixels, &pDest, &lDestStride));
 
     // Invoke the image transform function.
-    if (true)
+    if (SUCCEEDED(hr))
     {
-        TransformImage_Stub(pDest, pSrc, m_cbImageSize, m_segmentModel);
+        TransformImage(pDest, pSrc, m_cbImageSize, m_segmentModel);
     }
     else
     {

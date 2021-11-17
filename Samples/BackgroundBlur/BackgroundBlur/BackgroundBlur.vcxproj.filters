@@ -8,13 +8,13 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="player.h" />
-    <ClInclude Include="Resource.h" />
     <ClInclude Include="BackgroundBlur.h" />
     <ClInclude Include="TransformBlur.h" />
     <ClInclude Include="SegmentModel.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <ResourceCompile Include="player.rc" />
+    <ClInclude Include="resource.h" />
+    <ClInclude Include="common\PropVar.h" />
+    <ClInclude Include="common\registry.h" />
+    <ClInclude Include="common\trace.h" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="small.ico" />
@@ -22,5 +22,8 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="player.rc" />
   </ItemGroup>
 </Project>

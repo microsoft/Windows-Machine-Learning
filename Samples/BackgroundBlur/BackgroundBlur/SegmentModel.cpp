@@ -1,9 +1,12 @@
 #include "SegmentModel.h"
 #include <winrt/windows.foundation.collections.h>
+
 using winrt::Windows::Foundation::PropertyValue;
 using winrt::hstring;
 using namespace winrt;
 using namespace Windows::Foundation::Collections;
+
+
 #include <iostream>
 #include <filesystem>
 enum OnnxDataType : long {
@@ -56,7 +59,7 @@ SegmentModel::SegmentModel(UINT32 w, UINT32 h) :
 	m_bufferSess = CreateLearningModelSession(ReshapeFlatBufferToNCHW(1, 3, h, w));
 }
 
-void SegmentModel::Run(const BYTE** pSrc, BYTE** pDest, DWORD cbImageSize)
+void SegmentModel::Run(const BYTE** pSrc, BYTE** pDest, const DWORD cbImageSize)
 {
 	// TODO: Make all these sessions earlier, so just passing inputs/outputs here
 
@@ -68,8 +71,8 @@ void SegmentModel::Run(const BYTE** pSrc, BYTE** pDest, DWORD cbImageSize)
 	auto tensorizationBinding = Evaluate(m_bufferSess, std::vector<ITensor*>{&inputRawTensor}, &tensorizedImg);
 
 	// 2. Normalize input tensor
-	std::vector<float> mean = { 0.485f, 0.456f, 0.406f };
-	std::vector<float> std = { 0.229f, 0.224f, 0.225f };
+	std::array<float, 3> mean = { 0.485f, 0.456f, 0.406f };
+	std::array<float, 3> std = { 0.229f, 0.224f, 0.225f };
 	LearningModelSession normalizationSession = CreateLearningModelSession(Normalize0_1ThenZScore(m_imageHeightInPixels, m_imageWidthInPixels, 3, mean, std));
 	ITensor intermediateTensor = TensorFloat::Create(shape);
 	auto normalizationBinding = Evaluate(normalizationSession, std::vector<ITensor*>{&tensorizedImg}, & intermediateTensor);
@@ -112,7 +115,7 @@ void SegmentModel::Run(const BYTE** pSrc, BYTE** pDest, DWORD cbImageSize)
 	}
 }
 
-void SegmentModel::RunTest(const BYTE** pSrc, BYTE** pDest, DWORD cbImageSize) 
+void SegmentModel::RunTest(const BYTE** pSrc, BYTE** pDest, const DWORD cbImageSize) 
 {
 	// Right now the single input type I allow is topdown, this should work
 	winrt::array_view<const byte> source{*pSrc, *pSrc + cbImageSize}; // TODO: Does this work when topdown vs. bottomup
@@ -147,16 +150,16 @@ void SegmentModel::SetImageSize(UINT32 w, UINT32 h)
 LearningModel SegmentModel::Argmax(long axis, long h, long w)
 {
 	auto builder = LearningModelBuilder::Create(12)
-		.Inputs().Add(LearningModelBuilder::CreateTensorFeatureDescriptor(L"Data", TensorKind::Float, array_view<int64_t const>{ -1, -1, h, w })) // Different input type? 
-		.Outputs().Add(LearningModelBuilder::CreateTensorFeatureDescriptor(L"Output", TensorKind::Float, array_view<int64_t const>{ -1, -1, h, w })) // Output of int64? 
+		.Inputs().Add(LearningModelBuilder::CreateTensorFeatureDescriptor(L"Data", TensorKind::Float, { -1, -1, h, w })) // Different input type? 
+		.Outputs().Add(LearningModelBuilder::CreateTensorFeatureDescriptor(L"Output", TensorKind::Float, { -1, -1, h, w })) // Output of int64? 
 		.Operators().Add( LearningModelOperator(L"ArgMax")
 			.SetInput(L"data", L"Data")
-			.SetAttribute(L"keepdims", TensorInt64Bit::CreateFromArray(std::vector<int64_t>{1}, std::vector<int64_t>{ 1 }))
-			.SetAttribute(L"axis", TensorInt64Bit::CreateFromIterable(std::vector<int64_t>{1}, std::vector<int64_t> { axis })) // Correct way of passing axis? 
+			.SetAttribute(L"keepdims", TensorInt64Bit::CreateFromArray({1}, { 1 }))
+			.SetAttribute(L"axis", TensorInt64Bit::CreateFromIterable({1}, { axis })) // Correct way of passing axis? 
 			.SetOutput(L"reduced", L"Reduced"))
 		.Operators().Add( LearningModelOperator(L"Cast")
 			.SetInput(L"input", L"Reduced")
-			.SetAttribute(L"to", TensorInt64Bit::CreateFromIterable(std::vector<int64_t>{}, std::vector<int64_t>{OnnxDataType::ONNX_FLOAT}))
+			.SetAttribute(L"to", TensorInt64Bit::CreateFromIterable({}, {OnnxDataType::ONNX_FLOAT}))
 			.SetOutput(L"output", L"Output"))
 		;
 
@@ -173,26 +176,26 @@ LearningModel SegmentModel::FCNResnet()
 LearningModel SegmentModel::GetBackground(long n, long c, long h, long w)
 {
 	auto builder = LearningModelBuilder::Create(12)
-		.Inputs().Add(LearningModelBuilder::CreateTensorFeatureDescriptor(L"InputImage", TensorKind::Float, array_view<int64_t const>{ n, c, h, w }))
-		.Inputs().Add(LearningModelBuilder::CreateTensorFeatureDescriptor(L"InputMask", TensorKind::Float, array_view<int64_t const>{ n, 1, h, w })) // Broadcast to each color channel
-		.Outputs().Add(LearningModelBuilder::CreateTensorFeatureDescriptor(L"Output", TensorKind::UInt8, array_view<int64_t const>{ n, h, w, c }))
+		.Inputs().Add(LearningModelBuilder::CreateTensorFeatureDescriptor(L"InputImage", TensorKind::Float, { n, c, h, w }))
+		.Inputs().Add(LearningModelBuilder::CreateTensorFeatureDescriptor(L"InputMask", TensorKind::Float, { n, 1, h, w })) // Broadcast to each color channel
+		.Outputs().Add(LearningModelBuilder::CreateTensorFeatureDescriptor(L"Output", TensorKind::UInt8, { n, h, w, c }))
 		// Averagepool input image
 		/*.Operators().Add(LearningModelOperator(L"AveragePool")
 			.SetInput(L"X", L"InputImage")
-			.SetAttribute(L"kernel_shape", TensorInt64Bit::CreateFromArray(std::vector<int64_t>{2}, std::vector<int64_t>{10, 10}))
-			.SetAttribute(L"auto_pad", TensorString::CreateFromArray(std::vector<int64_t>{1}, std::vector<hstring>{L"SAME_UPPER"}))
+			.SetAttribute(L"kernel_shape", TensorInt64Bit::CreateFromArray(std::vector<int64_t>{2}, std::array<int64_t,2>{10, 10}))
+			.SetAttribute(L"auto_pad", TensorString::CreateFromArray(std::vector<int64_t>{1}, std::array<hstring,1>{L"SAME_UPPER"}))
 			.SetOutput(L"Y", L"BlurredImage"))*/
 		// Make mask
 		.Operators().Add(LearningModelOperator(L"Clip")
 			.SetInput(L"input", L"InputMask")
-			.SetConstant(L"max", TensorFloat::CreateFromIterable(std::vector<int64_t>{ 1 }, std::vector<float>{ 1.f }))
+			.SetConstant(L"max", TensorFloat::CreateFromIterable({ 1 }, { 1.f }))
 			.SetOutput(L"output", L"MaskBinary"))
 		.Operators().Add(LearningModelOperator(L"Mul")
 			.SetInput(L"A", L"MaskBinary")
-			.SetConstant(L"B", TensorFloat::CreateFromIterable(std::vector<int64_t>{1}, std::vector<float>{-1.f}))
+			.SetConstant(L"B", TensorFloat::CreateFromIterable({1}, {-1.f}))
 			.SetOutput(L"C", L"NegMask"))
 		.Operators().Add(LearningModelOperator(L"Add") // BackgroundMask = (1- foreground Mask)
-			.SetConstant(L"A", TensorFloat::CreateFromIterable(std::vector<int64_t>{1}, std::vector<float>{1.f}))
+			.SetConstant(L"A", TensorFloat::CreateFromIterable({1}, {1.f}))
 			.SetInput(L"B", L"NegMask")
 			.SetOutput(L"C", L"BackgroundMask"))
 		// Extract blurred background 
@@ -203,13 +206,13 @@ LearningModel SegmentModel::GetBackground(long n, long c, long h, long w)
 		// TODO: REmove once compose w foreground
 		.Operators().Add(LearningModelOperator(L"Transpose")
 			.SetInput(L"data", L"Background")
-			.SetAttribute(L"perm", TensorInt64Bit::CreateFromArray(std::vector<int64_t>{ 4 }, std::vector<int64_t>{ 0, 2, 3, 1 }))
+			.SetAttribute(L"perm", TensorInt64Bit::CreateFromArray({ 4 }, { 0, 2, 3, 1 }))
 			.SetOutput(L"transposed", L"TransposeOutput"))
 		.Operators().Add(LearningModelOperator(L"Cast")
 			.SetInput(L"input", L"TransposeOutput")
 			.SetOutput(L"output", L"Output")
 			.SetAttribute(L"to",
-				TensorInt64Bit::CreateFromIterable(std::vector<int64_t>{}, std::vector<int64_t>{OnnxDataType::ONNX_UINT8})))
+				TensorInt64Bit::CreateFromIterable({}, {OnnxDataType::ONNX_UINT8})))
 		;
 
 	return builder.CreateModel();
@@ -218,12 +221,12 @@ LearningModel SegmentModel::GetBackground(long n, long c, long h, long w)
 LearningModel SegmentModel::GetForeground(long n, long c, long h, long w)
 {
 	auto builder = LearningModelBuilder::Create(12)
-		.Inputs().Add(LearningModelBuilder::CreateTensorFeatureDescriptor(L"InputImage", TensorKind::Float, array_view<int64_t const>{ n, c, h, w }))
-		.Inputs().Add(LearningModelBuilder::CreateTensorFeatureDescriptor(L"InputMask", TensorKind::Float, array_view<int64_t const>{ n, 1, h, w })) // Broadcast to each color channel
-		.Outputs().Add(LearningModelBuilder::CreateTensorFeatureDescriptor(L"Output", TensorKind::UInt8, array_view<int64_t const>{ n, h, w, c }))
+		.Inputs().Add(LearningModelBuilder::CreateTensorFeatureDescriptor(L"InputImage", TensorKind::Float, { n, c, h, w }))
+		.Inputs().Add(LearningModelBuilder::CreateTensorFeatureDescriptor(L"InputMask", TensorKind::Float, { n, 1, h, w })) // Broadcast to each color channel
+		.Outputs().Add(LearningModelBuilder::CreateTensorFeatureDescriptor(L"Output", TensorKind::UInt8, { n, h, w, c }))
 		.Operators().Add(LearningModelOperator(L"Clip")
 			.SetInput(L"input", L"InputMask")
-			.SetConstant(L"max", TensorFloat::CreateFromIterable(std::vector<int64_t>{ 1 }, std::vector<float>{ 1.f }))
+			.SetConstant(L"max", TensorFloat::CreateFromIterable({ 1 }, { 1.f }))
 			.SetOutput(L"output", L"MaskBinary"))
 		.Operators().Add(LearningModelOperator(L"Mul")
 			.SetInput(L"A", L"InputImage")
@@ -232,17 +235,17 @@ LearningModel SegmentModel::GetForeground(long n, long c, long h, long w)
 		// Convert to buffer output- detensorization? 
 		.Operators().Add(LearningModelOperator(L"Transpose")
 			.SetInput(L"data", L"Foreground")
-			.SetAttribute(L"perm", TensorInt64Bit::CreateFromArray(std::vector<int64_t>{ 4 }, std::vector<int64_t>{ 0, 2, 3, 1 }))
+			.SetAttribute(L"perm", TensorInt64Bit::CreateFromArray({ 4 }, { 0, 2, 3, 1 }))
 			.SetOutput(L"transposed", L"TransposeOutput"))
 		/*.Operators().Add(LearningModelOperator(L"Reshape")
 			.SetInput(L"data", L"TransposeOutput")
-			.SetConstant(L"shape", TensorInt64Bit::CreateFromIterable(std::vector<int64_t>{ 2 }, std::vector<int64_t>{ 1, n*c*h*w }))
+			.SetConstant(L"shape", TensorInt64Bit::CreateFromIterable({ 2 }, { 1, n*c*h*w }))
 			.SetOutput(L"reshaped", L"ReshapeOutput"))*/
 		.Operators().Add(LearningModelOperator(L"Cast")
 			.SetInput(L"input", L"TransposeOutput")
 			.SetOutput(L"output", L"Output")
 			.SetAttribute(L"to",
-				TensorInt64Bit::CreateFromIterable(std::vector<int64_t>{}, std::vector<int64_t>{OnnxDataType::ONNX_UINT8})))
+				TensorInt64Bit::CreateFromIterable({}, {OnnxDataType::ONNX_UINT8})))
 		;
 
 	return builder.CreateModel();
@@ -254,19 +257,19 @@ LearningModel SegmentModel::Normalize0_1ThenZScore(long h, long w, long c, const
 	assert(stddev.size() == c);
 
 	auto builder = LearningModelBuilder::Create(12)
-		.Inputs().Add(LearningModelBuilder::CreateTensorFeatureDescriptor(L"Input", L"The NCHW image", TensorKind::Float, array_view<int64_t const>{1, c, h, w}))
-		.Outputs().Add(LearningModelBuilder::CreateTensorFeatureDescriptor(L"Output", L"The NCHW image normalized with mean and stddev.", TensorKind::Float, array_view<int64_t const>{1, c, h, w}))
+		.Inputs().Add(LearningModelBuilder::CreateTensorFeatureDescriptor(L"Input", L"The NCHW image", TensorKind::Float, {1, c, h, w}))
+		.Outputs().Add(LearningModelBuilder::CreateTensorFeatureDescriptor(L"Output", L"The NCHW image normalized with mean and stddev.", TensorKind::Float, {1, c, h, w}))
 		.Operators().Add(LearningModelOperator(L"Div") // Normalize from 0-255 to 0-1 by dividing by 255
 			.SetInput(L"A", L"Input")
-			.SetConstant(L"B", TensorFloat::CreateFromArray(std::vector<int64_t>{}, array_view<const float>{ 255.f }))
+			.SetConstant(L"B", TensorFloat::CreateFromArray({}, std::array<const float,1>{ 255.f }))
 			.SetOutput(L"C", L"DivOutput"))
 		.Operators().Add(LearningModelOperator(L"Reshape")
-			.SetConstant(L"data", TensorFloat::CreateFromArray(std::vector<int64_t>{ c }, means))
-			.SetConstant(L"shape", TensorInt64Bit::CreateFromIterable(std::vector<int64_t>{ 4 }, std::vector<int64_t>{ 1, c, 1, 1 }))
+			.SetConstant(L"data", TensorFloat::CreateFromArray({ c }, means))
+			.SetConstant(L"shape", TensorInt64Bit::CreateFromIterable({ 4 }, { 1, c, 1, 1 }))
 			.SetOutput(L"reshaped", L"MeansReshaped"))
 		.Operators().Add(LearningModelOperator(L"Reshape")
-			.SetConstant(L"data", TensorFloat::CreateFromArray(std::vector<int64_t>{ c }, stddev))
-			.SetConstant(L"shape", TensorInt64Bit::CreateFromIterable(std::vector<int64_t>{ 4 }, std::vector<int64_t>{ 1, c, 1, 1 }))
+			.SetConstant(L"data", TensorFloat::CreateFromArray({ c }, stddev))
+			.SetConstant(L"shape", TensorInt64Bit::CreateFromIterable({ 4 }, { 1, c, 1, 1 }))
 			.SetOutput(L"reshaped", L"StdDevReshaped"))
 		.Operators().Add(LearningModelOperator(L"Sub") // Shift by the means
 			.SetInput(L"A", L"DivOutput")
@@ -283,55 +286,55 @@ LearningModel SegmentModel::ReshapeFlatBufferToNCHW(long n, long c, long h, long
 {
 	auto builder = LearningModelBuilder::Create(11)
 		// Loading in buffers and reshape
-		.Inputs().Add(LearningModelBuilder::CreateTensorFeatureDescriptor(L"Input", TensorKind::UInt8, array_view<int64_t const>({ 1, n * c * h * w })))
-		.Outputs().Add(LearningModelBuilder::CreateTensorFeatureDescriptor(L"Output", TensorKind::Float, array_view<int64_t const>{n, c, h, w}))
+		.Inputs().Add(LearningModelBuilder::CreateTensorFeatureDescriptor(L"Input", TensorKind::UInt8, ({ 1, n * c * h * w })))
+		.Outputs().Add(LearningModelBuilder::CreateTensorFeatureDescriptor(L"Output", TensorKind::Float, {n, c, h, w}))
 		.Operators().Add(LearningModelOperator((L"Cast"))
 			.SetInput(L"input", L"Input")
 			.SetOutput(L"output", L"SliceOutput")
 			.SetAttribute(L"to",
-				TensorInt64Bit::CreateFromIterable(std::vector<int64_t>{}, std::vector<int64_t>{OnnxDataType::ONNX_FLOAT})))
+				TensorInt64Bit::CreateFromIterable({}, {OnnxDataType::ONNX_FLOAT})))
 		.Operators().Add(LearningModelOperator(L"Reshape")
 			.SetInput(L"data", L"SliceOutput")
-			.SetConstant(L"shape", TensorInt64Bit::CreateFromIterable(std::vector<int64_t>{4}, std::vector<int64_t>{n, h, w, c}))
+			.SetConstant(L"shape", TensorInt64Bit::CreateFromIterable({4}, {n, h, w, c}))
 			.SetOutput(L"reshaped", L"ReshapeOutput"))
 		.Operators().Add(LearningModelOperator(L"Transpose")
 			.SetInput(L"data", L"ReshapeOutput")
-			.SetAttribute(L"perm", TensorInt64Bit::CreateFromArray(std::vector<int64_t>{ 4 }, std::vector<int64_t>{ 0, 3, 1, 2 }))
+			.SetAttribute(L"perm", TensorInt64Bit::CreateFromArray({ 4 }, { 0, 3, 1, 2 }))
 			.SetOutput(L"transposed", L"Output"))
 	;
 	return builder.CreateModel();
 }
 
 LearningModel SegmentModel::ReshapeFlatBufferToNCHWAndInvert(long n, long c, long h, long w) {
-	auto size = std::vector<int64_t>{ 1 };
+	auto size = { 1 };
 	//TensorInt64Bit::CreateFromIterable(winrt::param::iterable<int64_t>({ 1,2,3 }), size);
 	auto builder = LearningModelBuilder::Create(11)
-		.Inputs().Add(LearningModelBuilder::CreateTensorFeatureDescriptor(L"Input", TensorKind::UInt8, winrt::array_view<int64_t const>({ 1, n * c * h * w })))
+		.Inputs().Add(LearningModelBuilder::CreateTensorFeatureDescriptor(L"Input", TensorKind::UInt8, { 1, n * c * h * w }))
 		// Remove the alpha channel
-		.Outputs().Add(LearningModelBuilder::CreateTensorFeatureDescriptor(L"Output", TensorKind::UInt8, winrt::array_view<int64_t const>{n, h, w, c}))
+		.Outputs().Add(LearningModelBuilder::CreateTensorFeatureDescriptor(L"Output", TensorKind::UInt8, {n, h, w, c}))
 		.Operators().Add(LearningModelOperator((L"Cast"))
 			.SetInput(L"input", L"Input")
 			.SetOutput(L"output", L"CastOutput")
 			.SetAttribute(L"to",
-				TensorInt64Bit::CreateFromIterable(std::vector<int64_t>{}, std::vector<int64_t>{OnnxDataType::ONNX_FLOAT})))
+				TensorInt64Bit::CreateFromIterable({}, {OnnxDataType::ONNX_FLOAT})))
 		.Operators().Add(LearningModelOperator(L"Reshape")
 			.SetInput(L"data", L"CastOutput")
-			.SetConstant(L"shape", TensorInt64Bit::CreateFromIterable(std::vector<int64_t>{4}, std::vector<int64_t>{n, h, w, c}))
+			.SetConstant(L"shape", TensorInt64Bit::CreateFromIterable({4}, {n, h, w, c}))
 			.SetOutput(L"reshaped", L"ReshapeOutput"))
 		/*.Operators().Add(LearningModelOperator(L"Slice")
 			.SetInput(L"data", L"ReshapeOutput")
-			.SetConstant(L"starts", TensorInt64Bit::CreateFromIterable(std::vector<int64_t>{ 4 }, std::vector<int64_t>{ 0, 0, 0, 0 }))
-			.SetConstant(L"ends", TensorInt64Bit::CreateFromIterable(std::vector<int64_t>{ 4 }, std::vector<int64_t>{ n, h, w, c - 1 }))
+			.SetConstant(L"starts", TensorInt64Bit::CreateFromIterable({ 4 }, { 0, 0, 0, 0 }))
+			.SetConstant(L"ends", TensorInt64Bit::CreateFromIterable({ 4 }, { n, h, w, c - 1 }))
 			.SetOutput(L"output", L"SliceOutput"))*/
 		// Now shape NCHW
 		.Operators().Add(LearningModelOperator(L"Mul")
 			.SetInput(L"A", L"ReshapeOutput")
-			.SetConstant(L"B", TensorFloat::CreateFromIterable(std::vector<int64_t>{1}, std::vector<float>{-1.f}))
-			//.SetConstant(L"B", TensorFloat::CreateFromIterable(std::vector<int64_t>{3}, std::vector<float>{0.114f, 0.587f, 0.299f}))
+			.SetConstant(L"B", TensorFloat::CreateFromIterable({1}, {-1.f}))
+			//.SetConstant(L"B", TensorFloat::CreateFromIterable({3}, {0.114f, 0.587f, 0.299f}))
 			.SetOutput(L"C", L"MulOutput")
 		)
 		.Operators().Add(LearningModelOperator(L"Add")
-			.SetConstant(L"A", TensorFloat::CreateFromIterable(std::vector<int64_t>{1}, std::vector<float>{255.f}))
+			.SetConstant(L"A", TensorFloat::CreateFromIterable({1}, {255.f}))
 			.SetInput(L"B", L"MulOutput")
 			.SetOutput(L"C", L"AddOutput")
 		)
@@ -339,7 +342,7 @@ LearningModel SegmentModel::ReshapeFlatBufferToNCHWAndInvert(long n, long c, lon
 			.SetInput(L"input", L"AddOutput")
 			.SetOutput(L"output", L"Output")
 			.SetAttribute(L"to",
-				TensorInt64Bit::CreateFromIterable(std::vector<int64_t>{}, std::vector<int64_t>{OnnxDataType::ONNX_UINT8})))
+				TensorInt64Bit::CreateFromIterable({}, {OnnxDataType::ONNX_UINT8})))
 		;
 	return builder.CreateModel();
 }
@@ -363,7 +366,7 @@ void EvaluateInternal(LearningModelSession sess, LearningModelBinding bind, bool
 	}*/
 }
 
-LearningModelBinding SegmentModel::Evaluate(LearningModelSession sess,const std::vector<ITensor*>& input, ITensor* output, bool wait) 
+LearningModelBinding SegmentModel::Evaluate(LearningModelSession& sess,const std::vector<ITensor*>& input, ITensor* output, bool wait) 
 {
 	auto binding = LearningModelBinding(sess);
 

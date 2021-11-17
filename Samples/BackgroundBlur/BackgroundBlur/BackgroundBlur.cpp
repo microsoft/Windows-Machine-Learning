@@ -1,10 +1,3 @@
-// THIS CODE AND INFORMATION IS PROVIDED "AS IS" WITHOUT WARRANTY OF
-// ANY KIND, EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO
-// THE IMPLIED WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A
-// PARTICULAR PURPOSE.
-//
-// Copyright (c) Microsoft Corporation. All rights reserved.
-
 #include "player.h"
 #include <algorithm>
 #include <iostream>
@@ -84,12 +77,11 @@ int APIENTRY  wWinMain(HINSTANCE hInstance, HINSTANCE, PWSTR, int nCmdShow)
 BOOL InitInstance(HINSTANCE hInst, int nCmdShow)
 {
     HWND hwnd;
-    WNDCLASSEX wcex;
+    WNDCLASSEX wcex {};
 
     g_hInstance = hInst; // Store the instance handle.
 
     // Register the window class.
-    ZeroMemory(&wcex, sizeof(WNDCLASSEX));
     wcex.cbSize = sizeof(WNDCLASSEX);
     wcex.style = CS_HREDRAW | CS_VREDRAW;
     wcex.lpfnWndProc = WndProc;
@@ -285,16 +277,13 @@ LRESULT OnCreateWindow(HWND hwnd)
 {
     // Initialize the player object.
     HRESULT hr = CPlayer::CreateInstance(hwnd, hwnd, &g_pPlayer);
-    if (SUCCEEDED(hr))
-    {
-        UpdateUI(hwnd, Closed);
-        return 0;   // Success.
-    }
-    else
+    if (!SUCCEEDED(hr))
     {
         NotifyError(NULL, L"Could not initialize the player object.", hr);
         return -1;  // Destroy the window
     }
+    UpdateUI(hwnd, Closed);
+    return 0;   // Success.
 }
 
 //  Handler for WM_PAINT messages.
@@ -375,9 +364,6 @@ void UpdateUI(HWND hwnd, PlayerState state)
         break;
 
     case Started:
-        bPlayback = TRUE;
-        break;
-
     case Paused:
         bPlayback = TRUE;
         break;
@@ -434,8 +420,13 @@ INT_PTR CALLBACK OpenUrlDialogProc(HWND hDlg, UINT message, WPARAM wParam, LPARA
         case IDOK:
             if (pUrl)
             {
+                if (pUrl->pszURL) 
+                {
+                    CoTaskMemFree(pUrl->pszURL);
+                }
+
                 // Get the URL from the edit box in the dialog. This function 
-                // allocates memory. The caller must call CoTaskMemAlloc.
+                // allocates memory. The caller must call CoTaskMemFree.
                 if (SUCCEEDED(AllocGetWindowText(GetDlgItem(hDlg, IDC_EDIT_URL),
                     &pUrl->pszURL, &pUrl->cch)))
                 {

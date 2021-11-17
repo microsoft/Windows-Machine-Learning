@@ -15,8 +15,8 @@ public:
 	SegmentModel();
 	SegmentModel(UINT32 w, UINT32 h);
 
-	void Run(const BYTE** pSrc, BYTE** pDest, DWORD cbImageSize);
-	void RunTest(const BYTE** pSrc, BYTE** pDest, DWORD cbImageSize);
+	void Run(const BYTE** pSrc, BYTE** pDest, const DWORD cbImageSize);
+	void RunTest(const BYTE** pSrc, BYTE** pDest, const DWORD cbImageSize);
 
 	LearningModelSession CreateLearningModelSession(const LearningModel& model, bool closedModel=true);
 	void SetImageSize(UINT32 w, UINT32 h);
@@ -29,10 +29,9 @@ private:
 	LearningModel FCNResnet();
 	LearningModel ReshapeFlatBufferToNCHW(long n, long c, long h, long w);
 	LearningModel ReshapeFlatBufferToNCHWAndInvert(long n, long c, long h, long w);
-	LearningModel Normalize0_1ThenZScore(long height, long width, long channels, const std::vector<float>& means, const std::vector<float>& stddev);
+	LearningModel Normalize0_1ThenZScore(long height, long width, long channels, const std::array<float, 3>& means, const std::array<float,3>& stddev);
 
-	// TODO: What's being passed when construct the array when passing as argument? 
-	LearningModelBinding Evaluate(LearningModelSession sess, const std::vector<ITensor*>& input, ITensor* output, bool wait = false);
+	LearningModelBinding Evaluate(LearningModelSession& sess, const std::vector<ITensor*>& input, ITensor* output, bool wait = false);
 
 	UINT32                      m_imageWidthInPixels;
 	UINT32                      m_imageHeightInPixels;

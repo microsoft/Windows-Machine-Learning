@@ -148,9 +148,12 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="common\PropVar.h" />
+    <ClInclude Include="common\registry.h" />
+    <ClInclude Include="common\trace.h" />
+    <ClInclude Include="resource.h" />
     <ClInclude Include="SegmentModel.h" />
     <ClInclude Include="player.h" />
-    <ClInclude Include="Resource.h" />
     <ClInclude Include="BackgroundBlur.h" />
     <ClInclude Include="TransformBlur.h" />
   </ItemGroup>
@@ -161,14 +164,14 @@
     <ClCompile Include="TransformBlur.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="player.rc" />
-  </ItemGroup>
-  <ItemGroup>
     <Image Include="small.ico" />
     <Image Include="BackgroundBlur.ico" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="player.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
@@ -188,12 +191,8 @@
     <Error Condition="!Exists('..\packages\Microsoft.Windows.CppWinRT.2.0.210930.14\build\native\Microsoft.Windows.CppWinRT.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Windows.CppWinRT.2.0.210930.14\build\native\Microsoft.Windows.CppWinRT.targets'))" />
   </Target>
   <Target Name="DownloadContentFiles" BeforeTargets="Build">
-        <DownloadFile
-            Condition="!Exists('$(MSBuildProjectDirectory)\Assets\fcn-resnet50-11.onnx')"
-            SourceUrl="https://github.com/onnx/models/raw/master/vision/object_detection_segmentation/fcn/model/fcn-resnet50-11.onnx"
-            DestinationFolder="$(MSBuildProjectDirectory)\Assets">
-          <Output TaskParameter="DownloadedFile" ItemName="Content" />
-      </DownloadFile>
-    </Target>
-  
+    <DownloadFile Condition="!Exists('$(MSBuildProjectDirectory)\Assets\fcn-resnet50-11.onnx')" SourceUrl="https://github.com/onnx/models/raw/master/vision/object_detection_segmentation/fcn/model/fcn-resnet50-11.onnx" DestinationFolder="$(MSBuildProjectDirectory)\Assets">
+      <Output TaskParameter="DownloadedFile" ItemName="Content" />
+    </DownloadFile>
+  </Target>
 </Project>

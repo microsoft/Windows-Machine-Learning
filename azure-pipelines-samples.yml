@@ -167,6 +167,7 @@ jobs:
       inputs:
         targetType: 'inline'
         script: 'mv $(Build.ArtifactStagingDirectory)\$(BuildPlatform)\$(BuildConfiguration)\AppPackages Samples/WinMLSamplesGallery/"WinMLSamplesGallery (Package)"/AppPackages'
+      condition: and(succeededOrFailed(), eq(variables['BuildConfiguration'], 'Release'))
 
     - task: CopyFiles@2
       inputs:

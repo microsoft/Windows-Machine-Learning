@@ -166,7 +166,7 @@ jobs:
       displayName: 'Move App Packages'
       inputs:
         targetType: 'inline'
-        script: 'mv $(Build.ArtifactStagingDirectory)\$(BuildPlatform)\$(BuildConfiguration)\AppPackages Samples/WinMLSamplesGallery/"WinMLSamplesGallery (Package)"/AppPackages'
+        script: 'mv Samples/WinMLSamplesGallery/"WinMLSamplesGallery (Package)"/AppPackages $(Build.ArtifactStagingDirectory)\$(BuildPlatform)\$(BuildConfiguration)\AppPackages'
       condition: and(succeededOrFailed(), eq(variables['BuildConfiguration'], 'Release'))
 
     - task: CopyFiles@2

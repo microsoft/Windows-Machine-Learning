@@ -31,7 +31,7 @@
       Executable="$targetnametoken$.exe"
       EntryPoint="$targetentrypoint$">
       <uap:VisualElements
-        DisplayName="Windows ML SamplesGallery"
+        DisplayName="Windows ML Samples Gallery"
         Description="WinMLSamplesGallery (Package)"
         BackgroundColor="transparent"
         Square150x150Logo="Images\Square150x150Logo.png"

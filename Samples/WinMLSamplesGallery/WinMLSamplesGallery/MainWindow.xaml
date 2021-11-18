@@ -15,7 +15,7 @@
             BackRequested="nvSample_BackRequested"
             Loaded="nvSample_Loaded"
             AlwaysShowHeader="False"
-            PaneTitle="Windows AI"
+            PaneTitle="Windows ML"
             FontFamily="Arial"
             IsSettingsVisible="False">
             <NavigationView.Resources>
@@ -26,6 +26,11 @@
                 <NavigationViewItem Icon="Flag" Content="Home" Tag="home" />
                 <NavigationViewItem Icon="Library" Content="All samples" Tag="all_samples" />
                 <NavigationViewItemSeparator />
+                <TextBlock>
+                    <Hyperlink TextDecorations="None" NavigateUri="https://docs.microsoft.com/en-us/windows/ai/windows-ml/">
+                        Learn more about Windows ML
+                    </Hyperlink>
+                </TextBlock>
             </NavigationView.MenuItems>
             <Frame x:Name="contentFrame" Navigated="contentFrame_Navigated" BorderBrush="#dbdbdb" BorderThickness="1,1,0,0" Margin="0,40,0,0"
                    CornerRadius="5,0,0,0" Background="White" FontFamily="Arial"/>

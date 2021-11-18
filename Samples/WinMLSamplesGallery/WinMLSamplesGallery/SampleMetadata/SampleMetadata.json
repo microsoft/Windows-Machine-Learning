@@ -3,7 +3,7 @@
     {
       "Title": "Image Classification",
       "DescriptionShort": "Pick an image and classify the scene into 1000 categories such as keyboard, mouse, pencil, and many animals.",
-      "Description": "Pick an image and classify the scene into 1000 categories such as keyboard, mouse, pencil, and many animals. Many more models can be tested with this sample by building the WinML Samples Gallery App from source from the project GitHub. Select an image to classify.",
+      "Description": "Pick an image and classify the scene into 1000 categories such as keyboard, mouse, pencil, and many animals. Many more models can be tested with this sample by building the Windows ML Samples Gallery App from source from the project GitHub. Select an image to classify.",
       "Icon": "\uE155",
       "Tag": "ImageClassifier",
       "XAMLGithubLink": "https://github.com/microsoft/Windows-Machine-Learning/blob/master/Samples/WinMLSamplesGallery/WinMLSamplesGallery/Samples/ImageClassifier/ImageClassifier.xaml",
@@ -12,8 +12,8 @@
     },
     {
       "Title": "Image Effects",
-      "DescriptionShort": "Pick an image and apply a variety of effects powered by Windows AI MachineLearning like Blur, Sharpen, Contrast, and many more.",
-      "Description": "Pick an image and apply a variety of effects powered by Windows AI MachineLearning like Blur, Sharpen, Contrast, and many more.",
+      "DescriptionShort": "Pick an image and apply a variety of effects powered by Windows ML like Blur, Sharpen, Contrast, and many more.",
+      "Description": "Pick an image and apply a variety of effects powered by Windows ML like Blur, Sharpen, Contrast, and many more.",
       "Icon": "\uE155",
       "Tag": "ImageEffects",
       "XAMLGithubLink": "https://github.com/microsoft/Windows-Machine-Learning/blob/master/Samples/WinMLSamplesGallery/WinMLSamplesGallery/Samples/ImageEffects/ImageEffects.xaml",

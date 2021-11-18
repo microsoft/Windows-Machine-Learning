@@ -1,4 +1,4 @@
-﻿# WinML Samples Gallery: OpenCV Interop
+﻿# Windows ML Samples Gallery: OpenCV Interop
 This sample demonstrates how to interop between [Windows ML](https://docs.microsoft.com/en-us/windows/ai/windows-ml/) and [OpenCV](https://github.com/opencv/opencv).
 
 OpenCV (Open Source Computer Vision Library) is an open source computer vision and machine learning software library. OpenCV was built to provide a common infrastructure for computer vision applications and to accelerate the use of machine perception in the commercial products. 
@@ -21,7 +21,7 @@ Windows ML will be used to resize and tensorize the image into NCHW format, as w
 See [ThirdPartyNotices.txt](../../../../../ThirdPartyNotices.txt) for relevant license info.
 
 ## Getting Started
-In order to build this sample, OpenCV will need to be built and linked into the WinML Samples Gallery. The OpenCV project is included as a submodule, and will need to be synced and built for your Platform Architecture and Configuration before it will appear in the Windows ML Samples Gallery. To do so follow these instructions:
+In order to build this sample, OpenCV will need to be built and linked into the Windows ML Samples Gallery. The OpenCV project is included as a submodule, and will need to be synced and built for your Platform Architecture and Configuration before it will appear in the Windows ML Samples Gallery. To do so follow these instructions:
 - Launch a Visual Studio Developer Command Prompt.
 - Navigate to the `repository root` directory.
 - Sync submodules with `git submodule update --init --recursive`

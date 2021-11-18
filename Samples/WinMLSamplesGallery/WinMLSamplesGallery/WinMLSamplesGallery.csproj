@@ -50,7 +50,6 @@
 
   <!-- Models to include in the app -->
   <ItemGroup>
-    <Content Include="Models\yolov4.onnx" />
     <Content Include="Models\densenet-9.onnx" />
     <Content Include="Models\efficientnet-lite4-11.onnx" />
     <Content Include="Models\shufflenet-9.onnx" />
@@ -169,9 +168,6 @@
       <Output TaskParameter="DownloadedFile" ItemName="Content" />
     </DownloadFile>
     <DownloadFile Condition="!Exists('$(MSBuildProjectDirectory)\Models\squeezenet1.1-7.onnx')" SourceUrl="https://github.com/onnx/models/raw/master/vision/classification/squeezenet/model/squeezenet1.1-7.onnx" DestinationFolder="$(MSBuildProjectDirectory)\Models">
-      <Output TaskParameter="DownloadedFile" ItemName="Content" />
-    </DownloadFile>
-    <DownloadFile Condition="!Exists('$(MSBuildProjectDirectory)\Models\yolov4.onnx')" SourceUrl="https://github.com/onnx/models/raw/master/vision/object_detection_segmentation/yolov4/model/yolov4.onnx" DestinationFolder="$(MSBuildProjectDirectory)\Models">
       <Output TaskParameter="DownloadedFile" ItemName="Content" />
     </DownloadFile>
 

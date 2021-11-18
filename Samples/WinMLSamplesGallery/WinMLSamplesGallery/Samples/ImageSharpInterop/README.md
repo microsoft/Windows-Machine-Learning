@@ -1,4 +1,4 @@
-﻿# WinML Samples Gallery: ImageSharp Interop
+﻿# Windows ML Samples Gallery: ImageSharp Interop
 This sample demonstrates how to interop between [Windows ML](https://docs.microsoft.com/en-us/windows/ai/windows-ml/) and [ImageSharp](https://docs.sixlabors.com/articles/imagesharp/index.html).
 
 ImageSharp is a new, fully featured, fully managed, cross-platform, 2D graphics library.

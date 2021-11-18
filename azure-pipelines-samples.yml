@@ -154,13 +154,19 @@ jobs:
           SqueezeNetObjectDetection\*
       condition: succeededOrFailed()
 
-    - task: CopyFiles@2
-      displayName: 'Copy App Packages'
+    # - task: CopyFiles@2
+    #   displayName: 'Copy App Packages'
+    #   inputs:
+    #     targetFolder: '$(Build.ArtifactStagingDirectory)\$(BuildPlatform)\$(BuildConfiguration)\AppPackages'
+    #     sourceFolder: 'Samples/WinMLSamplesGallery/WinMLSamplesGallery (Package)/AppPackages'
+    #     contents: '**\*'
+    #   condition: and(succeededOrFailed(), eq(variables['BuildConfiguration'], 'Release'))
+
+    - task: PowerShell@2
+      displayName: 'Move App Packages'
       inputs:
-        targetFolder: '$(Build.ArtifactStagingDirectory)\$(BuildPlatform)\$(BuildConfiguration)\AppPackages'
-        sourceFolder: 'Samples/WinMLSamplesGallery/WinMLSamplesGallery (Package)/AppPackages'
-        contents: '**\*'
-      condition: and(succeededOrFailed(), eq(variables['BuildConfiguration'], 'Release'))
+        targetType: 'inline'
+        script: 'mv $(Build.ArtifactStagingDirectory)\$(BuildPlatform)\$(BuildConfiguration)\AppPackages Samples/WinMLSamplesGallery/"WinMLSamplesGallery (Package)"/AppPackages'
 
     - task: CopyFiles@2
       inputs:

@@ -1,4 +1,4 @@
-﻿# WinML Samples Gallery
+﻿# Windows ML Samples Gallery
 
 Demonstrates different machine learning scenarios and features using [Windows ML](https://docs.microsoft.com/en-us/windows/ai/windows-ml/) in an interactive format. This app is the interactive companion shows the integration of [Windows Machine Learning Library APIs](https://docs.microsoft.com/en-us/uwp/api/windows.ai.machinelearning) into a desktop [WinUI 3](https://github.com/microsoft/microsoft-ui-xaml) application.
 
@@ -12,7 +12,7 @@ Demonstrates different machine learning scenarios and features using [Windows ML
 
 
 ## Getting Started
-- The WinML Samples Gallery is available in the Microsoft Store. Click [here](./) to download.
+- The WinML Samples Gallery is available in the Microsoft Store. Click [here](https://www.microsoft.com/store/apps/9PKBFQKBCLM9) to download.
 - Check out the [source](https://github.com/microsoft/Windows-Machine-Learning/tree/master/Samples/WinMLSamplesGallery/WinMLSamplesGallery/Samples) for each sample.
 
 ## Build From Source

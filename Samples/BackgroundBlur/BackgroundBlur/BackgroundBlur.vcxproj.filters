@@ -1,0 +1,29 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="player.cpp" />
+    <ClCompile Include="BackgroundBlur.cpp" />
+    <ClCompile Include="TransformBlur.cpp" />
+    <ClCompile Include="SegmentModel.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="player.h" />
+    <ClInclude Include="BackgroundBlur.h" />
+    <ClInclude Include="TransformBlur.h" />
+    <ClInclude Include="SegmentModel.h" />
+    <ClInclude Include="resource.h" />
+    <ClInclude Include="common\PropVar.h" />
+    <ClInclude Include="common\registry.h" />
+    <ClInclude Include="common\trace.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="small.ico" />
+    <Image Include="BackgroundBlur.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="player.rc" />
+  </ItemGroup>
+</Project>

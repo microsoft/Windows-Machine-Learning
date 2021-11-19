@@ -54,6 +54,15 @@
       "XAMLGithubLink": "https://github.com/microsoft/Windows-Machine-Learning/blob/master/Samples/WinMLSamplesGallery/WinMLSamplesGallery/Samples/ImageSharpInterop/ImageSharpInterop.xaml",
       "CSharpGithubLink": "https://github.com/microsoft/Windows-Machine-Learning/blob/master/Samples/WinMLSamplesGallery/WinMLSamplesGallery/Samples/ImageSharpInterop/ImageSharpInterop.xaml.cs",
       "Docs": []
+    },
+    {
+      "Title": "Stream Effect",
+      "Description": "Pick an input media source to run real-time background image blur powered by Windows AI MachineLearning.",
+      "Icon": "\uE155",
+      "Tag": "StreamEffect",
+      "XAMLGithubLink": "https://github.com/microsoft/Windows-Machine-Learning/blob/user/numform/winml-samples-gallery/Samples/WinMLSamplesGallery/WinMLSamplesGallery/Samples/ImageEffects/ImageEffects.xaml",
+      "CSharpGithubLink": "https://github.com/microsoft/Windows-Machine-Learning/blob/user/numform/winml-samples-gallery/Samples/WinMLSamplesGallery/WinMLSamplesGallery/Samples/ImageEffects/ImageEffects.xaml.cs",
+      "Docs": []
     }
   ]
 }

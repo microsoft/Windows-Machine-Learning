@@ -7,25 +7,17 @@
 
 #include "Capture.h"
 #include "resource.h"
+#include "common.h"
 
 #include <shlobj.h>
 #include <Shlwapi.h>
 #include <powrprof.h>
 #include <KnownFolders.h>
 
-// Include the v6 common controls in the manifest
-/*#pragma comment(linker, \
-    "\"/manifestdependency:type='Win32' "\
-    "name='Microsoft.Windows.Common-Controls' "\
-    "version='6.0.0.0' "\
-    "processorArchitecture='*' "\
-    "publicKeyToken='6595b64144ccf1df' "\
-    "language='*'\"")*/
-
 CaptureManager* g_pEngine = NULL;
 HPOWERNOTIFY    g_hPowerNotify = NULL;
 HPOWERNOTIFY    g_hPowerNotifyMonitor = NULL;
-SYSTEM_POWER_CAPABILITIES   g_pwrCaps;
+SYSTEM_POWER_CAPABILITIES   g_pwrCaps{};
 bool            g_fSleepState = false;
 
 INT_PTR CALLBACK ChooseDeviceDlgProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
@@ -47,11 +39,7 @@ INT WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
     }
     bCoInit = true;
 
-    hr = MFStartup(MF_VERSION);
-    if (FAILED(hr))
-    {
-        goto done;
-    }
+    CHECK_HR(hr = MFStartup(MF_VERSION));
 
     bMFStartup = true;
 
@@ -220,7 +208,7 @@ namespace MainWindow
     HWND hStatus = NULL;
     bool bRecording = false;
     bool bPreviewing = false;
-    IMFActivate* pSelectedDevice = NULL;
+    CComPtr<IMFActivate> pSelectedDevice;
 
     wchar_t PhotoFileName[MAX_PATH];
 
@@ -296,7 +284,7 @@ namespace MainWindow
     BOOL OnCreate(HWND hwnd, LPCREATESTRUCT /*lpCreateStruct*/)
     {
         BOOL                fSuccess = FALSE;
-        IMFAttributes* pAttributes = NULL;
+        CComPtr<IMFAttributes> pAttributes;
         HRESULT             hr = S_OK;
 
         hPreview = CreatePreviewWindow(GetModuleHandle(NULL), hwnd);
@@ -311,10 +299,7 @@ namespace MainWindow
             goto done;
         }
 
-        if (FAILED(CaptureManager::CreateInstance(hwnd, &g_pEngine)))
-        {
-            goto done;
-        }
+        CHECK_HR(hr = CaptureManager::CreateInstance(hwnd, &g_pEngine));
 
         hr = g_pEngine->InitializeCaptureManager(hPreview, pSelectedDevice);
         if (FAILED(hr))
@@ -328,14 +313,12 @@ namespace MainWindow
         // We also want to hook into the monitor on/off notification for AOAC (SOC) systems.
         g_hPowerNotify = RegisterSuspendResumeNotification((HANDLE)hwnd, DEVICE_NOTIFY_WINDOW_HANDLE);
         g_hPowerNotifyMonitor = RegisterPowerSettingNotification((HANDLE)hwnd, &GUID_MONITOR_POWER_ON, DEVICE_NOTIFY_WINDOW_HANDLE);
-        ZeroMemory(&g_pwrCaps, sizeof(g_pwrCaps));
         GetPwrCapabilities(&g_pwrCaps);
 
         UpdateUI(hwnd);
         fSuccess = TRUE;
 
     done:
-        SafeRelease(&pAttributes);
         return fSuccess;
     }
 
@@ -370,6 +353,7 @@ namespace MainWindow
     {
         delete g_pEngine;
         g_pEngine = NULL;
+
         if (g_hPowerNotify)
         {
             UnregisterSuspendResumeNotification(g_hPowerNotify);
@@ -382,7 +366,7 @@ namespace MainWindow
     {
         ChooseDeviceParam param;
 
-        IMFAttributes* pAttributes = NULL;
+        CComPtr<IMFAttributes> pAttributes;
         INT_PTR result = NULL;
 
         HRESULT hr = MFCreateAttributes(&pAttributes, 1);
@@ -392,19 +376,11 @@ namespace MainWindow
         }
 
         // Ask for source type = video capture devices
-        hr = pAttributes->SetGUID(MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE,
-            MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE_VIDCAP_GUID);
-        if (FAILED(hr))
-        {
-            goto done;
-        }
+        CHECK_HR(hr = pAttributes->SetGUID(MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE,
+            MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE_VIDCAP_GUID));
 
         // Enumerate devices.
-        hr = MFEnumDeviceSources(pAttributes, &param.ppDevices, &param.count);
-        if (FAILED(hr))
-        {
-            goto done;
-        }
+        CHECK_HR(hr = MFEnumDeviceSources(pAttributes, &param.ppDevices, &param.count));
 
         // Ask the user to select one.
         result = DialogBoxParam(GetModuleHandle(NULL),
@@ -421,18 +397,13 @@ namespace MainWindow
                 goto done;
             }
 
-            hr = g_pEngine->InitializeCaptureManager(hPreview, param.ppDevices[iDevice]);
-            if (FAILED(hr))
-            {
-                goto done;
-            }
-            SafeRelease(&pSelectedDevice);
+            CHECK_HR(hr = g_pEngine->InitializeCaptureManager(hPreview, param.ppDevices[iDevice]));
+
+            pSelectedDevice.Release();
             pSelectedDevice = param.ppDevices[iDevice];
-            pSelectedDevice->AddRef();
         }
 
     done:
-        SafeRelease(&pAttributes);
         if (FAILED(hr))
         {
             ShowError(hwnd, IDS_ERR_SET_DEVICE, hr);
@@ -440,7 +411,7 @@ namespace MainWindow
         UpdateUI(hwnd);
     }
 
-
+    // TODO: Remove record options
     void OnStartRecord(HWND hwnd)
     {
         IFileSaveDialog* pFileSave = NULL;
@@ -558,7 +529,7 @@ namespace MainWindow
         LPTSTR path;
 
         // Get the path to the Documents folder.
-        IShellItem* psi = NULL;
+        CComPtr<IShellItem> psi;
         PWSTR pszFolderPath = NULL;
 
         HRESULT hr = SHCreateItemInKnownFolder(FOLDERID_Documents, 0, NULL, IID_PPV_ARGS(&psi));
@@ -567,23 +538,14 @@ namespace MainWindow
             goto done;
         }
 
-        hr = psi->GetDisplayName(SIGDN_FILESYSPATH, &pszFolderPath);
-        if (FAILED(hr))
-        {
-            goto done;
-        }
-
+        CHECK_HR(hr = psi->GetDisplayName(SIGDN_FILESYSPATH, &pszFolderPath));
         // Construct a file name based on the current time.
 
         SYSTEMTIME time;
         GetLocalTime(&time);
 
-        hr = StringCchPrintf(filename, MAX_PATH, L"MyPhoto%04u_%02u%02u_%02u%02u%02u.jpg",
-            time.wYear, time.wMonth, time.wDay, time.wHour, time.wMinute, time.wSecond);
-        if (FAILED(hr))
-        {
-            goto done;
-        }
+        CHECK_HR(hr = StringCchPrintf(filename, MAX_PATH, L"MyPhoto%04u_%02u%02u_%02u%02u%02u.jpg",
+            time.wYear, time.wMonth, time.wDay, time.wHour, time.wMinute, time.wSecond));
 
         path = PathCombine(PhotoFileName, pszFolderPath, filename);
         if (path == NULL)
@@ -592,7 +554,7 @@ namespace MainWindow
             goto done;
         }
 
-        hr = g_pEngine->TakePhoto(path);
+        CHECK_HR(hr = g_pEngine->TakePhoto(path));
         if (FAILED(hr))
         {
             goto done;
@@ -601,7 +563,6 @@ namespace MainWindow
         _SetStatusText(path);
 
     done:
-        SafeRelease(&psi);
         CoTaskMemFree(pszFolderPath);
 
         if (FAILED(hr))

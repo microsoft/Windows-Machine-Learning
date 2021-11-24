@@ -10,6 +10,7 @@
 
 #include "Capture.h"
 #include <wincodec.h>
+#include "common.h"
 
 HRESULT CopyAttribute(IMFAttributes *pSrc, IMFAttributes *pDest, const GUID& key)
 {
@@ -29,12 +30,12 @@ HRESULT CopyAttribute(IMFAttributes *pSrc, IMFAttributes *pDest, const GUID& key
 
 HRESULT CloneVideoMediaType(IMFMediaType *pSrcMediaType, REFGUID guidSubType, IMFMediaType **ppNewMediaType)
 {
-    IMFMediaType *pNewMediaType = NULL;
+    CComPtr<IMFMediaType> pNewMediaType;
 
     HRESULT hr = MFCreateMediaType(&pNewMediaType);
     if (FAILED(hr))
     {
-        goto done;
+        return hr;
     }
 
     hr = pNewMediaType->SetGUID(MF_MT_MAJOR_TYPE, MFMediaType_Video);     
@@ -77,7 +78,6 @@ HRESULT CloneVideoMediaType(IMFMediaType *pSrcMediaType, REFGUID guidSubType, IM
     (*ppNewMediaType)->AddRef();
 
 done:
-    SafeRelease(&pNewMediaType);
     return hr;
 }
 

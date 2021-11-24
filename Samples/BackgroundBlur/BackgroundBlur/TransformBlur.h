@@ -201,9 +201,9 @@ private:
     long                        m_nRefCount;                // reference count
     CritSec                     m_critSec;
 
-    IMFSample* m_pSample;                 // Input sample.
-    IMFMediaType* m_pInputType;              // Input media type.
-    IMFMediaType* m_pOutputType;             // Output media type.
+    CComPtr<IMFSample> m_pSample;                           // Input sample.
+    CComPtr<IMFMediaType> m_pInputType;                     // Input media type.
+    CComPtr<IMFMediaType> m_pOutputType;                    // Output media type.
 
     // Fomat information
     FOURCC                      m_videoFOURCC;

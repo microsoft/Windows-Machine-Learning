@@ -13,6 +13,7 @@
     <ClInclude Include="SegmentModel.h" />
     <ClInclude Include="Capture.h" />
     <ClInclude Include="Resource.h" />
+    <ClInclude Include="common.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

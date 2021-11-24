@@ -1,7 +1,7 @@
 #include "TransformBlur.h"
 #include <windows.graphics.directx.direct3d11.interop.h>
+#include "common.h"
 
-#define CHECK_HR(hr) if (FAILED(hr)) { goto done; }
 // Video FOURCC codes.
 const FOURCC FOURCC_YUY2 = MAKEFOURCC('Y', 'U', 'Y', '2');
 const FOURCC FOURCC_UYVY = MAKEFOURCC('U', 'Y', 'V', 'Y');
@@ -20,10 +20,7 @@ const GUID* g_MediaSubtypes[] =
 
 // Number of media types in the aray.
 DWORD g_cNumSubtypes = ARRAY_SIZE(g_MediaSubtypes);
-
-// GetImageSize: Returns the size of a video frame, in bytes.
 HRESULT GetImageSize(FOURCC fcc, UINT32 width, UINT32 height, DWORD* pcbImage);
-// ConvertMFTypeToDXVAType: Convert an IMFMediaType to DXVA_Desc
 
 //-------------------------------------------------------------------
 // Name: CreateInstance
@@ -81,10 +78,6 @@ TransformBlur::TransformBlur(HRESULT& hr) :
 TransformBlur::~TransformBlur()
 {
     assert(m_nRefCount == 0);
-
-    SAFE_RELEASE(m_pInputType);
-    SAFE_RELEASE(m_pOutputType);
-    SAFE_RELEASE(m_pSample);
 
     m_pD3DDeviceManager->CloseDeviceHandle(m_pHandle);
 }
@@ -1011,10 +1004,9 @@ HRESULT TransformBlur::ProcessOutput(
 
     // TODO: if this way works, add the sample to output buff
     pOutputSamples->pSample = pOutput.Detach(); // IS this correct? 
+
 done:
-
-    SAFE_RELEASE(m_pSample);   // Release our input sample.
-
+    m_pSample.Release(); // Explicitly release to get a new sample in ProcessInput
     return hr;
 }
 
@@ -1197,12 +1189,12 @@ HRESULT TransformBlur::OnSetInputType(IMFMediaType* pmt)
     // if pmt is NULL, clear the type.
     // if pmt is non-NULL, set the type.
 
-    SAFE_RELEASE(m_pInputType);
-    m_pInputType = pmt;
-    if (m_pInputType)
+    m_pInputType.Release();
+    m_pInputType = pmt; // TODO: Do we need this to addref, or should we attach? 
+    /*if (m_pInputType)
     {
         m_pInputType->AddRef();
-    }
+    }*/
 
     // Update the format information.
     UpdateFormatInfo();
@@ -1226,12 +1218,12 @@ HRESULT TransformBlur::OnSetOutputType(IMFMediaType* pmt)
     // if pmt is NULL, clear the type.
     // if pmt is non-NULL, set the type.
 
-    SAFE_RELEASE(m_pOutputType);
+    m_pOutputType.Release();
     m_pOutputType = pmt;
-    if (m_pOutputType)
+    /*if (m_pOutputType)
     {
         m_pOutputType->AddRef();
-    }
+    }*/
 
     return S_OK;
 }
@@ -1345,7 +1337,7 @@ done:
 HRESULT TransformBlur::OnFlush()
 {
     // For this MFT, flushing just means releasing the input sample.
-    SAFE_RELEASE(m_pSample);
+    m_pSample.Release();
     return S_OK;
 }
 

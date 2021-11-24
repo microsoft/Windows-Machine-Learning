@@ -1,14 +1,15 @@
 #include "SegmentModel.h"
 #include <winrt/windows.foundation.collections.h>
+#include <winrt/Windows.Media.h>
+#include <winrt/Windows.Graphics.DirectX.Direct3D11.h>
+#include <iostream>
+#include <filesystem>
 
 using winrt::Windows::Foundation::PropertyValue;
 using winrt::hstring;
 using namespace winrt;
 using namespace Windows::Foundation::Collections;
 
-
-#include <iostream>
-#include <filesystem>
 enum OnnxDataType : long {
 	ONNX_UNDEFINED = 0,
 	// Basic types.
@@ -53,10 +54,15 @@ SegmentModel::SegmentModel(UINT32 w, UINT32 h) :
 	// TODO: Adapt based on video_FOURCC- might not always be RGBA
 
 	SetImageSize(w, h);
-	// 4 channels: RGBA
-	m_sess = CreateLearningModelSession(ReshapeFlatBufferToNCHWAndInvert(1, 4, h, w));
+	m_sess = CreateLearningModelSession(Invert(1, 3, h, w));
 
-	m_bufferSess = CreateLearningModelSession(ReshapeFlatBufferToNCHW(1, 3, h, w));
+	m_bufferSess = CreateLearningModelSession(ReshapeFlatBufferToNCHW(1, -1, h, w));
+}
+
+void SegmentModel::SetImageSize(UINT32 w, UINT32 h)
+{
+	m_imageWidthInPixels = w;
+	m_imageHeightInPixels = h;
 }
 
 void SegmentModel::Run(const BYTE** pSrc, BYTE** pDest, const DWORD cbImageSize)
@@ -141,11 +147,60 @@ void SegmentModel::RunTest(const BYTE** pSrc, BYTE** pDest, const DWORD cbImageS
 	}
 }
 
-void SegmentModel::SetImageSize(UINT32 w, UINT32 h) 
+// IS const oK here? 
+IDirect3DSurface SegmentModel::RunTestDXGI(const IDirect3DSurface& pSrc,  const DWORD cbImageSize)
 {
-	m_imageWidthInPixels = w;
-	m_imageHeightInPixels = h;
+
+	using namespace Windows::Media;
+	VideoFrame input = VideoFrame::CreateWithDirect3D11Surface(pSrc);
+	auto desc = input.Direct3DSurface().Description(); // B8G8R8X8UIntNormalized
+
+	VideoFrame output = VideoFrame::CreateAsDirect3D11SurfaceBacked(desc.Format, desc.Width, desc.Height);
+	VideoFrame input2 = VideoFrame::CreateAsDirect3D11SurfaceBacked(desc.Format, desc.Width, desc.Height);
+	input.CopyToAsync(input2);
+	desc = input2.Direct3DSurface().Description();
+	auto binding = LearningModelBinding(m_sess); 
+
+	hstring inputName = m_sess.Model().InputFeatures().GetAt(0).Name();
+	binding.Bind(inputName, input2);
+	
+	hstring outputName = m_sess.Model().OutputFeatures().GetAt(0).Name();
+
+	auto outputBindProperties = PropertySet();
+	binding.Bind(outputName, output);
+	auto results = m_sess.Evaluate(binding, L"");
+
+	auto resultFrame = results.Outputs().Lookup(outputName).try_as<VideoFrame>();
+
+	VideoFrame output2 = VideoFrame::CreateAsDirect3D11SurfaceBacked(desc.Format, desc.Width, desc.Height);
+	output.CopyToAsync(output2);
+	desc = resultFrame.Direct3DSurface().Description();
+	return output.Direct3DSurface();
+
 }
+
+LearningModel SegmentModel::Invert(long n, long c, long h, long w)
+{
+	auto builder = LearningModelBuilder::Create(11)
+		// Loading in buffers and reshape
+		.Inputs().Add(LearningModelBuilder::CreateTensorFeatureDescriptor(L"Input", TensorKind::Float, { n, c, h, w }))
+		.Outputs().Add(LearningModelBuilder::CreateTensorFeatureDescriptor(L"Output", TensorKind::Float, { n, c, h, w }))
+		.Operators().Add(LearningModelOperator(L"Mul")
+			.SetInput(L"A", L"Input")
+			.SetConstant(L"B", TensorFloat::CreateFromIterable({ 1 }, { -1.f }))
+			//.SetConstant(L"B", TensorFloat::CreateFromIterable({3}, {0.114f, 0.587f, 0.299f}))
+			.SetOutput(L"C", L"MulOutput")
+		)
+		.Operators().Add(LearningModelOperator(L"Add")
+			.SetConstant(L"A", TensorFloat::CreateFromIterable({ 1 }, { 1.f }))
+			.SetInput(L"B", L"MulOutput")
+			.SetOutput(L"C", L"Output")
+		)
+		;
+
+	return builder.CreateModel();
+}
+
 
 LearningModel SegmentModel::Argmax(long axis, long h, long w)
 {
@@ -305,6 +360,8 @@ LearningModel SegmentModel::ReshapeFlatBufferToNCHW(long n, long c, long h, long
 	return builder.CreateModel();
 }
 
+
+
 LearningModel SegmentModel::ReshapeFlatBufferToNCHWAndInvert(long n, long c, long h, long w) {
 	auto size = { 1 };
 	//TensorInt64Bit::CreateFromIterable(winrt::param::iterable<int64_t>({ 1,2,3 }), size);
@@ -357,7 +414,7 @@ LearningModelSession SegmentModel::CreateLearningModelSession(const LearningMode
 }
 
 
-void EvaluateInternal(LearningModelSession sess, LearningModelBinding bind, bool wait = false)
+void SegmentModel::EvaluateInternal(LearningModelSession sess, LearningModelBinding bind, bool wait)
 {
 	auto results = sess.Evaluate(bind, L"");
 	/*auto results = sess.EvaluateAsync(bind, L"");

@@ -1,4 +1,6 @@
 #pragma once
+
+
 #include <mftransform.h>
 #include <mfapi.h>
 #include <mftransform.h>
@@ -9,6 +11,7 @@
 #include <atlbase.h>
 #include <assert.h>
 #include <evr.h>
+#include <mfobjects.h>
 
 #include <initguid.h>
 #include <uuids.h>      // DirectShow GUIDs
@@ -189,7 +192,7 @@ private:
     HRESULT OnCheckMediaType(IMFMediaType* pmt);
     HRESULT OnSetInputType(IMFMediaType* pmt);
     HRESULT OnSetOutputType(IMFMediaType* pmt);
-    HRESULT OnProcessOutput(IMFMediaBuffer* pIn, IMFMediaBuffer* pOut);
+    HRESULT OnProcessOutput(IMFSample** pOut);
     HRESULT OnFlush();
 
     HRESULT OnSetD3DManager(ULONG_PTR ulParam);

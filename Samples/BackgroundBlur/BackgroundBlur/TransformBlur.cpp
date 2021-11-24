@@ -1,4 +1,5 @@
 #include "TransformBlur.h"
+#include <windows.graphics.directx.direct3d11.interop.h>
 
 #define CHECK_HR(hr) if (FAILED(hr)) { goto done; }
 // Video FOURCC codes.
@@ -12,7 +13,7 @@ const FOURCC FOURCC_RGB32 = 22;
 const GUID* g_MediaSubtypes[] =
 {
     &MFVideoFormat_RGB32,
-    //&MEDIASUBTYPE_NV12,
+    //&MFVideoFormat_NV12,
     //&MEDIASUBTYPE_YUY2,
     //&MEDIASUBTYPE_UYVY
 };
@@ -23,7 +24,6 @@ DWORD g_cNumSubtypes = ARRAY_SIZE(g_MediaSubtypes);
 // GetImageSize: Returns the size of a video frame, in bytes.
 HRESULT GetImageSize(FOURCC fcc, UINT32 width, UINT32 height, DWORD* pcbImage);
 // ConvertMFTypeToDXVAType: Convert an IMFMediaType to DXVA_Desc
-HRESULT ConvertMFTypeToDXVAType(IMFMediaType * pType, DXVA2_VideoDesc * pDesc);
 
 //-------------------------------------------------------------------
 // Name: CreateInstance
@@ -273,8 +273,8 @@ HRESULT TransformBlur::GetOutputStreamInfo(
     pStreamInfo->dwFlags =
         MFT_OUTPUT_STREAM_WHOLE_SAMPLES |
         MFT_OUTPUT_STREAM_SINGLE_SAMPLE_PER_BUFFER |
-        MFT_OUTPUT_STREAM_FIXED_SAMPLE_SIZE
-        // MFT_OUTPUT_STREAM_PROVIDES_SAMPLES
+        MFT_OUTPUT_STREAM_FIXED_SAMPLE_SIZE  |
+        MFT_OUTPUT_STREAM_PROVIDES_SAMPLES
         ;
 
     if (m_pOutputType == NULL)
@@ -298,7 +298,7 @@ HRESULT TransformBlur::GetOutputStreamInfo(
 HRESULT TransformBlur::GetAttributes(IMFAttributes** pAttributes)
 {
     HRESULT hr = MFCreateAttributes(pAttributes, 1);
-    hr = (*pAttributes)->SetUINT32(MF_SA_D3D_AWARE, FALSE);
+    hr = (*pAttributes)->SetUINT32(MF_SA_D3D_AWARE, TRUE);
     hr = (*pAttributes)->SetUINT32(MF_SA_D3D11_AWARE, TRUE);
     return hr;
 }
@@ -326,8 +326,11 @@ HRESULT TransformBlur::GetOutputStreamAttributes(
     IMFAttributes** ppAttributes
 )
 {
-    HRESULT hr = MFCreateAttributes(ppAttributes, 1);
-    hr = (*ppAttributes)->SetUINT32(MF_SA_MINIMUM_OUTPUT_SAMPLE_COUNT, 3);
+    //return E_NOTIMPL;
+
+    HRESULT hr = MFCreateAttributes(ppAttributes, 2);
+    hr = (*ppAttributes)->SetUINT32(MF_SA_MINIMUM_OUTPUT_SAMPLE_COUNT, 1);
+    hr = (*ppAttributes)->SetUINT32(MF_SA_MINIMUM_OUTPUT_SAMPLE_COUNT_PROGRESSIVE, 1);
 
 
     return hr;
@@ -495,7 +498,7 @@ HRESULT TransformBlur::SetInputType(
     }
 
     // Find a decoder configuration
-    if (m_pD3DDeviceManager) 
+    if (false && m_pD3DDeviceManager) 
     {
         UINT numProfiles = m_pD3DVideoDevice->GetVideoDecoderProfileCount();
         for (UINT i = 0; i < numProfiles; i++)
@@ -810,18 +813,18 @@ HRESULT TransformBlur::ProcessMessage(
 // TODO: Change param to be IUnknown* so can use from different locations
 HRESULT TransformBlur::OnSetD3DManager(ULONG_PTR ulParam)
 {
-    // First check if ulParam null, ie. if clearing the d3d manager
+    // If ulParam is NULL, reset the device
+    // If ulParam has a value, set up the DXGI Device Manager
+    m_pD3DDeviceManager.Release();
+    m_pD3DDevice.Release();
+    m_pD3DVideoDevice.Release();
     if (ulParam == NULL) 
     {
-        m_pD3DDeviceManager.Release();
         return S_OK;
     }
 
-    IMFDXGIDeviceManager* p_IMFDXGIManager = NULL;
-    HANDLE p_deviceHandle;
-
     // TODO: Change video and video device to fields
-    ID3D11VideoDevice* pDecoderService = NULL;
+    ID3D11VideoDevice* pVideoDevice = NULL;
     ID3D11Device* pd3dDevice = NULL;
 
     // Get the Device Manager sent from the  topology loader
@@ -835,13 +838,14 @@ HRESULT TransformBlur::OnSetD3DManager(ULONG_PTR ulParam)
 
     // Get a handle to the DXVA decoder service
     // TODO: Change to give to the field instead of local variable
-    hr = m_pD3DDeviceManager->OpenDeviceHandle(&p_deviceHandle);
+    //hr = m_pD3DDeviceManager->OpenDeviceHandle(&p_deviceHandle);
 
     // Get the d3d11 device
-    m_pD3DDeviceManager->GetVideoService(p_deviceHandle, IID_ID3D12Device, (void**) &m_pD3DDevice);
+    //m_pD3DDeviceManager->GetVideoService(p_deviceHandle, IID_ID3D11Device, (void**) &m_pD3DDevice);
     
     // Get the d3d11 video device
-    hr = m_pD3DDeviceManager->GetVideoService(p_deviceHandle, IID_ID3D11VideoDevice, (void**) &m_pD3DVideoDevice);
+    // TODO: ID3D11VideoDevice::CreateVideoProcessor to get a video processor
+    //hr = m_pD3DDeviceManager->GetVideoService(p_deviceHandle, IID_ID3D11VideoDevice, (void**) &m_pD3DVideoDevice);
 
     if (FAILED(hr)) 
     {
@@ -870,8 +874,8 @@ HRESULT TransformBlur::ProcessInput(
 )
 {
     AutoLock lock(m_critSec);
-    IMFMediaBuffer* pBuffer = NULL;
-
+   
+    // TODO: If not null, but no actual new sample from engine? 
     if (pSample == NULL)
     {
         return E_POINTER;
@@ -914,17 +918,6 @@ HRESULT TransformBlur::ProcessInput(
 
     // Cache the sample. We do the actual work in ProcessOutput.
     m_pSample = pSample;
-    
-    // Check if for some reason already have d3dsurface
-    /*hr = pSample->GetBufferByIndex(0, &pBuffer);
-    if (SUCCEEDED(hr))
-    {
-        HRESULT test = MFGetService(pBuffer, MR_BUFFER_SERVICE, IID_PPV_ARGS(ppSurface));
-        pBuffer->Release();
-    }*/
-
-    pSample->AddRef();  // Hold a reference count on the sample.
-
 done:
     return hr;
 }
@@ -970,8 +963,8 @@ HRESULT TransformBlur::ProcessOutput(
         return E_INVALIDARG;
     }
 
-    // It must contain a sample.
-    if (pOutputSamples[0].pSample == NULL)
+    // It must contain a sample. - We're allocating now, so it doesn't have to!
+    if (false && pOutputSamples[0].pSample == NULL)
     {
         return E_INVALIDARG;
     }
@@ -985,42 +978,43 @@ HRESULT TransformBlur::ProcessOutput(
 
     HRESULT hr = S_OK;
 
-    IMFMediaBuffer* pInput = NULL;
-    IMFMediaBuffer* pOutput = NULL;
+    CComPtr<IMFSample> pOutput;
 
     // Get the input buffer.
-    CHECK_HR(hr = m_pSample->ConvertToContiguousBuffer(&pInput));
+    //CHECK_HR(hr = m_pSample->ConvertToContiguousBuffer(&pInput));
 
     // Get the output buffer.
-    CHECK_HR(hr = pOutputSamples[0].pSample->ConvertToContiguousBuffer(&pOutput));
+    //CHECK_HR(hr = pOutputSamples[0].pSample->ConvertToContiguousBuffer(&pOutput));
 
 
-    CHECK_HR(hr = OnProcessOutput(pInput, pOutput));
+    CHECK_HR(hr = OnProcessOutput(&pOutput));
     //m_pSample->CopyToBuffer(pOutput);
+
 
     // Set status flags.
     pOutputSamples[0].dwStatus = 0;
     *pdwStatus = 0;
 
-
+                
     // Copy the duration and time stamp from the input sample,
     // if present.
-
+    
     if (SUCCEEDED(m_pSample->GetSampleDuration(&hnsDuration)))
     {
-        CHECK_HR(hr = pOutputSamples[0].pSample->SetSampleDuration(hnsDuration));
+        CHECK_HR(hr = pOutput->SetSampleDuration(hnsDuration));
     }
 
     if (SUCCEEDED(m_pSample->GetSampleTime(&hnsTime)))
     {
-        CHECK_HR(hr = pOutputSamples[0].pSample->SetSampleTime(hnsTime));
+        CHECK_HR(hr = pOutput->SetSampleTime(hnsTime));
     }
 
+    // TODO: if this way works, add the sample to output buff
+    pOutputSamples->pSample = pOutput.Detach(); // IS this correct? 
 done:
 
     SAFE_RELEASE(m_pSample);   // Release our input sample.
-    SAFE_RELEASE(pInput);
-    SAFE_RELEASE(pOutput);
+
     return hr;
 }
 
@@ -1178,7 +1172,7 @@ HRESULT TransformBlur::OnCheckMediaType(IMFMediaType* pmt)
 
     // Video must be progressive frames.
     CHECK_HR(hr = pmt->GetUINT32(MF_MT_INTERLACE_MODE, (UINT32*)&interlace));
-    if (interlace != MFVideoInterlace_Progressive)
+    if (!(interlace == MFVideoInterlace_Progressive /* || interlace == MFVideoInterlace_MixedInterlaceOrProgressive*/))
     {
         CHECK_HR(hr = MF_E_INVALIDMEDIATYPE);
     }
@@ -1210,121 +1204,10 @@ HRESULT TransformBlur::OnSetInputType(IMFMediaType* pmt)
         m_pInputType->AddRef();
     }
 
-    DXVA2_VideoDesc des;
-    HRESULT hr = ConvertMFTypeToDXVAType(m_pInputType, &des);
-    
-
     // Update the format information.
     UpdateFormatInfo();
 
     return S_OK;
-}
-
-// Fills in the DXVA2_ExtendedFormat structure.
-void GetDXVA2ExtendedFormatFromMFMediaType(
-    IMFMediaType* pType,
-    DXVA2_ExtendedFormat* pFormat
-)
-{
-    // Get the interlace mode.
-    MFVideoInterlaceMode interlace =
-        (MFVideoInterlaceMode)MFGetAttributeUINT32(
-            pType, MF_MT_INTERLACE_MODE, MFVideoInterlace_Unknown
-        );
-
-    // The values for interlace mode translate directly, except for mixed 
-    // interlace or progressive mode.
-
-    if (interlace == MFVideoInterlace_MixedInterlaceOrProgressive)
-    {
-        // Default to interleaved fields.
-        pFormat->SampleFormat = DXVA2_SampleFieldInterleavedEvenFirst;
-    }
-    else
-    {
-        pFormat->SampleFormat = (UINT)interlace;
-    }
-
-    // The remaining values translate directly.
-
-    // Use the "no-fail" attribute functions and default to "unknown."
-
-    pFormat->VideoChromaSubsampling = MFGetAttributeUINT32(
-        pType, MF_MT_VIDEO_CHROMA_SITING, MFVideoChromaSubsampling_Unknown);
-
-    pFormat->NominalRange = MFGetAttributeUINT32(
-        pType, MF_MT_VIDEO_NOMINAL_RANGE, MFNominalRange_Unknown);
-
-    pFormat->VideoTransferMatrix = MFGetAttributeUINT32(
-        pType, MF_MT_YUV_MATRIX, MFVideoTransferMatrix_Unknown);
-
-    pFormat->VideoLighting = MFGetAttributeUINT32(
-        pType, MF_MT_VIDEO_LIGHTING, MFVideoLighting_Unknown);
-
-    pFormat->VideoPrimaries = MFGetAttributeUINT32(
-        pType, MF_MT_VIDEO_PRIMARIES, MFVideoPrimaries_Unknown);
-
-    pFormat->VideoTransferFunction = MFGetAttributeUINT32(
-        pType, MF_MT_TRANSFER_FUNCTION, MFVideoTransFunc_Unknown);
-
-}
-
-
-HRESULT ConvertMFTypeToDXVAType(IMFMediaType* pType, DXVA2_VideoDesc* pDesc)
-{
-    ZeroMemory(pDesc, sizeof(*pDesc));
-
-    GUID                    subtype = GUID_NULL;
-    UINT32                  width = 0;
-    UINT32                  height = 0;
-    UINT32                  fpsNumerator = 0;
-    UINT32                  fpsDenominator = 0;
-
-    // The D3D format is the first DWORD of the subtype GUID.
-    HRESULT hr = pType->GetGUID(MF_MT_SUBTYPE, &subtype);
-    if (FAILED(hr))
-    {
-        goto done;
-    }
-
-    pDesc->Format = (D3DFORMAT)subtype.Data1;
-
-    // Frame size.
-    hr = MFGetAttributeSize(pType, MF_MT_FRAME_SIZE, &width, &height);
-    if (FAILED(hr))
-    {
-        goto done;
-    }
-
-    pDesc->SampleWidth = width;
-    pDesc->SampleHeight = height;
-
-    // Frame rate.
-    hr = MFGetAttributeRatio(pType, MF_MT_FRAME_RATE, &fpsNumerator, &fpsDenominator);
-    if (FAILED(hr))
-    {
-        goto done;
-    }
-
-    pDesc->InputSampleFreq.Numerator = fpsNumerator;
-    pDesc->InputSampleFreq.Denominator = fpsDenominator;
-
-    // Extended format information.
-    GetDXVA2ExtendedFormatFromMFMediaType(pType, &pDesc->SampleFormat);
-
-    // For progressive or single-field types, the output frequency is the same as
-    // the input frequency. For interleaved-field types, the output frequency is
-    // twice the input frequency.  
-    pDesc->OutputFrameFreq = pDesc->InputSampleFreq;
-
-    if ((pDesc->SampleFormat.SampleFormat == DXVA2_SampleFieldInterleavedEvenFirst) ||
-        (pDesc->SampleFormat.SampleFormat == DXVA2_SampleFieldInterleavedOddFirst))
-    {
-        pDesc->OutputFrameFreq.Numerator *= 2;
-    }
-
-done:
-    return hr;
 }
 
 
@@ -1353,54 +1236,92 @@ HRESULT TransformBlur::OnSetOutputType(IMFMediaType* pmt)
     return S_OK;
 }
 
-
-
-
-void TransformImage(
-    BYTE* pDest,
-    const BYTE* pSrc,
-    const DWORD cbImageSize,
-    SegmentModel&    segmentModel
+HRESULT LockDevice(
+    IMFDXGIDeviceManager* pDeviceManager,
+    BOOL fBlock,
+    ID3D11Device** ppDevice, // Receives a pointer to the device.
+    HANDLE* pHandle              // Receives a device handle.   
 )
 {
-    segmentModel.RunTest(&pSrc, &pDest, cbImageSize);
-}
+    *pHandle = NULL;
+    *ppDevice = NULL;
 
+    HANDLE hDevice = 0;
+
+    HRESULT hr = pDeviceManager->OpenDeviceHandle(&hDevice);
+
+    if (SUCCEEDED(hr))
+    {
+        hr = pDeviceManager->LockDevice(hDevice, IID_PPV_ARGS(ppDevice), fBlock);
+    }
+
+    if (hr == DXVA2_E_NEW_VIDEO_DEVICE)
+    {
+        // Invalid device handle. Try to open a new device handle.
+        hr = pDeviceManager->CloseDeviceHandle(hDevice);
+
+        if (SUCCEEDED(hr))
+        {
+            hr = pDeviceManager->OpenDeviceHandle(&hDevice);
+        }
+
+        // Try to lock the device again.
+        if (SUCCEEDED(hr))
+        {
+            hr = pDeviceManager->LockDevice(hDevice, IID_PPV_ARGS(ppDevice), TRUE);
+        }
+    }
+
+    if (SUCCEEDED(hr))
+    {
+        *pHandle = hDevice;
+    }
+    return hr;
+}
 
 //-------------------------------------------------------------------
 // Name: OnProcessOutput
 // Description: Generates output data.
 //-------------------------------------------------------------------
-HRESULT TransformBlur::OnProcessOutput(IMFMediaBuffer* pIn, IMFMediaBuffer* pOut)
+HRESULT TransformBlur::OnProcessOutput(IMFSample** ppOut)
 {
+    // TODO: Change to CComPtr
     HRESULT hr = S_OK;
+    CComPtr<IMFDXGIBuffer> pSrc;
+    CComPtr<ID3D11Texture2D> pTextSrc;
+    CComPtr<ID3D11Texture2D> pTextDest;
+    CComPtr<IDXGISurface> pSurfaceSrc;
 
-    BYTE* pDest = NULL;         // Destination buffer.
-    LONG lDestStride = 0;       // Destination stride.
+    IDirect3DSurface pD3DSurfaceSrc; // IDirect3DSurface objects are winrt objects
+    IDirect3DSurface pD3DSurfaceDest;
+    winrt::com_ptr<IInspectable> pSurfaceInspectable;
 
-    BYTE* pSrc = NULL;          // Source buffer.
-    LONG lSrcStride = 0;        // Source stride.
+    CComPtr<IMFSample> pSample;
+    CComPtr<IMFMediaBuffer> pBuffOut;
 
-    // Helper objects to lock the buffers.
-    VideoBufferLock inputLock(pIn);
-    VideoBufferLock outputLock(pOut);
+    // Get buffer
+    CComPtr<IMFMediaBuffer> pBuffIn;
 
+    // TODO: Second time around, fatal exit because sample doesn't have anything
+    CHECK_HR(hr = m_pSample->ConvertToContiguousBuffer(&pBuffIn));
+    hr = pBuffIn->QueryInterface(__uuidof(IMFDXGIBuffer), (LPVOID*)(&pSrc));
 
-    // Stride if the buffer does not support IMF2DBuffer
-    LONG lDefaultStride = 0;
+    // TODO: Find a way to make this resource shareable
+    hr = pSrc->GetResource(IID_PPV_ARGS(&pTextSrc));
+    hr = pTextSrc->QueryInterface(IID_PPV_ARGS(&pSurfaceSrc));
 
-    CHECK_HR(hr = GetDefaultStride(m_pInputType, &lDefaultStride));
-
-    // Lock the input buffer.
-    CHECK_HR(hr = inputLock.LockBuffer(lDefaultStride, this->m_imageHeightInPixels, &pSrc, &lSrcStride));
-
-    // Lock the output buffer.
-    CHECK_HR(hr = outputLock.LockBuffer(lDefaultStride, m_imageHeightInPixels, &pDest, &lDestStride));
+    hr = CreateDirect3D11SurfaceFromDXGISurface(pSurfaceSrc, pSurfaceInspectable.put());
+    pD3DSurfaceSrc = pSurfaceInspectable.as<IDirect3DSurface>();
 
     // Invoke the image transform function.
     if (SUCCEEDED(hr))
     {
-        TransformImage(pDest, pSrc, m_cbImageSize, m_segmentModel);
+        pD3DSurfaceDest = m_segmentModel.RunTestDXGI(pD3DSurfaceSrc, m_cbImageSize);
+        auto spDxgiInterfaceAccess = pD3DSurfaceDest.as<Windows::Graphics::DirectX::Direct3D11::IDirect3DDxgiInterfaceAccess>();
+        hr = spDxgiInterfaceAccess->GetInterface(IID_PPV_ARGS(&pTextDest));
+        hr = MFCreateDXGISurfaceBuffer(IID_ID3D11Texture2D, pTextDest, 0, TRUE, &pBuffOut);
+        MFCreateSample(ppOut);
+        hr = (*ppOut)->AddBuffer(pBuffOut);
     }
     else
     {
@@ -1408,7 +1329,7 @@ HRESULT TransformBlur::OnProcessOutput(IMFMediaBuffer* pIn, IMFMediaBuffer* pOut
     }
 
     // Set the data size on the output buffer.
-    CHECK_HR(hr = pOut->SetCurrentLength(m_cbImageSize));
+    CHECK_HR(hr = pBuffOut->SetCurrentLength(m_cbImageSize));
 
     // The VideoBufferLock class automatically unlocks the buffers.
 done:

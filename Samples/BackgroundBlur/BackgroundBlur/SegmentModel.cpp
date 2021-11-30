@@ -150,16 +150,16 @@ void SegmentModel::RunTest(const BYTE** pSrc, BYTE** pDest, const DWORD cbImageS
 // IS const oK here? 
 IDirect3DSurface SegmentModel::RunTestDXGI(const IDirect3DSurface& pSrc,  const DWORD cbImageSize)
 {
-
 	using namespace Windows::Media;
 	VideoFrame input = VideoFrame::CreateWithDirect3D11Surface(pSrc);
 	auto desc = input.Direct3DSurface().Description(); // B8G8R8X8UIntNormalized
 
 	VideoFrame output = VideoFrame::CreateAsDirect3D11SurfaceBacked(desc.Format, desc.Width, desc.Height);
 	VideoFrame input2 = VideoFrame::CreateAsDirect3D11SurfaceBacked(desc.Format, desc.Width, desc.Height);
-	input.CopyToAsync(input2);
+	input.CopyToAsync(input2).get(); // TODO: I'm guessing it's this copy that's causing issues... 
+	//copyTask.GetResults();
 	desc = input2.Direct3DSurface().Description();
-	auto binding = LearningModelBinding(m_sess); 
+	auto binding = LearningModelBinding(m_sess);
 
 	hstring inputName = m_sess.Model().InputFeatures().GetAt(0).Name();
 	binding.Bind(inputName, input2);
@@ -169,14 +169,11 @@ IDirect3DSurface SegmentModel::RunTestDXGI(const IDirect3DSurface& pSrc,  const 
 	auto outputBindProperties = PropertySet();
 	binding.Bind(outputName, output);
 	auto results = m_sess.Evaluate(binding, L"");
-
 	auto resultFrame = results.Outputs().Lookup(outputName).try_as<VideoFrame>();
+	auto desc2 = resultFrame.Direct3DSurface().Description();
 
-	VideoFrame output2 = VideoFrame::CreateAsDirect3D11SurfaceBacked(desc.Format, desc.Width, desc.Height);
-	output.CopyToAsync(output2);
-	desc = resultFrame.Direct3DSurface().Description();
-	return output.Direct3DSurface();
-
+	resultFrame.CopyToAsync(input).get();
+	return input.Direct3DSurface();
 }
 
 LearningModel SegmentModel::Invert(long n, long c, long h, long w)
@@ -192,7 +189,7 @@ LearningModel SegmentModel::Invert(long n, long c, long h, long w)
 			.SetOutput(L"C", L"MulOutput")
 		)
 		.Operators().Add(LearningModelOperator(L"Add")
-			.SetConstant(L"A", TensorFloat::CreateFromIterable({ 1 }, { 1.f }))
+			.SetConstant(L"A", TensorFloat::CreateFromIterable({ 1 }, { 255.f }))
 			.SetInput(L"B", L"MulOutput")
 			.SetOutput(L"C", L"Output")
 		)

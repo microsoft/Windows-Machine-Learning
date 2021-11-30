@@ -291,3 +291,5 @@ __pycache__/
 # UWP Generated files
 **/Generated Files/
 /Samples/StyleTransfer/Assets
+/Samples/BackgroundBlur/BackgroundBlur/AsyncMFTWrapper.h
+/Samples/BackgroundBlur/BackgroundBlur/AsyncMFTWrapper.cpp

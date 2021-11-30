@@ -319,8 +319,8 @@ HRESULT TransformBlur::GetOutputStreamAttributes(
     IMFAttributes** ppAttributes
 )
 {
-    //return E_NOTIMPL;
-
+    return E_NOTIMPL;
+    // TODO: Does this screw with output ? 
     HRESULT hr = MFCreateAttributes(ppAttributes, 2);
     hr = (*ppAttributes)->SetUINT32(MF_SA_MINIMUM_OUTPUT_SAMPLE_COUNT, 1);
     hr = (*ppAttributes)->SetUINT32(MF_SA_MINIMUM_OUTPUT_SAMPLE_COUNT_PROGRESSIVE, 1);
@@ -831,10 +831,10 @@ HRESULT TransformBlur::OnSetD3DManager(ULONG_PTR ulParam)
 
     // Get a handle to the DXVA decoder service
     // TODO: Change to give to the field instead of local variable
-    //hr = m_pD3DDeviceManager->OpenDeviceHandle(&p_deviceHandle);
+    hr = m_pD3DDeviceManager->OpenDeviceHandle(&m_pHandle);
 
     // Get the d3d11 device
-    //m_pD3DDeviceManager->GetVideoService(p_deviceHandle, IID_ID3D11Device, (void**) &m_pD3DDevice);
+    m_pD3DDeviceManager->GetVideoService(m_pHandle, IID_ID3D11Device, (void**) &m_pD3DDevice);
     
     // Get the d3d11 video device
     // TODO: ID3D11VideoDevice::CreateVideoProcessor to get a video processor
@@ -912,6 +912,7 @@ HRESULT TransformBlur::ProcessInput(
     // Cache the sample. We do the actual work in ProcessOutput.
     m_pSample = pSample;
 done:
+    //pSample->Release();
     return hr;
 }
 
@@ -971,18 +972,12 @@ HRESULT TransformBlur::ProcessOutput(
 
     HRESULT hr = S_OK;
 
+    // TODO: MF Create sample instead so no detaching funkiness? 
     CComPtr<IMFSample> pOutput;
 
-    // Get the input buffer.
-    //CHECK_HR(hr = m_pSample->ConvertToContiguousBuffer(&pInput));
-
-    // Get the output buffer.
-    //CHECK_HR(hr = pOutputSamples[0].pSample->ConvertToContiguousBuffer(&pOutput));
-
-
     CHECK_HR(hr = OnProcessOutput(&pOutput));
-    //m_pSample->CopyToBuffer(pOutput);
 
+    //pOutput = m_pSample;
 
     // Set status flags.
     pOutputSamples[0].dwStatus = 0;
@@ -1282,7 +1277,12 @@ HRESULT TransformBlur::OnProcessOutput(IMFSample** ppOut)
     CComPtr<IMFDXGIBuffer> pSrc;
     CComPtr<ID3D11Texture2D> pTextSrc;
     CComPtr<ID3D11Texture2D> pTextDest;
+    CComPtr<ID3D11Texture2D> pTextInterm;
     CComPtr<IDXGISurface> pSurfaceSrc;
+    CComPtr<IDXGISurface> pSurfaceDest;
+    D3D11_TEXTURE2D_DESC desc{};
+    CComPtr<IDXGIResource> spDxgiResource;
+
 
     IDirect3DSurface pD3DSurfaceSrc; // IDirect3DSurface objects are winrt objects
     IDirect3DSurface pD3DSurfaceDest;
@@ -1290,6 +1290,8 @@ HRESULT TransformBlur::OnProcessOutput(IMFSample** ppOut)
 
     CComPtr<IMFSample> pSample;
     CComPtr<IMFMediaBuffer> pBuffOut;
+    CComPtr<ID3D11Device> destDevice;
+    CComPtr<ID3D11Device> srcDevice;
 
     // Get buffer
     CComPtr<IMFMediaBuffer> pBuffIn;
@@ -1300,6 +1302,13 @@ HRESULT TransformBlur::OnProcessOutput(IMFSample** ppOut)
 
     // TODO: Find a way to make this resource shareable
     hr = pSrc->GetResource(IID_PPV_ARGS(&pTextSrc));
+    pTextSrc->GetDesc(&desc);
+    desc.MiscFlags |= D3D11_RESOURCE_MISC_SHARED_KEYEDMUTEX
+        | D3D11_RESOURCE_MISC_SHARED_NTHANDLE;
+    m_pD3DDevice->CreateTexture2D(&desc, NULL, &pTextInterm);
+
+    pTextSrc->GetDevice(&srcDevice);
+
     hr = pTextSrc->QueryInterface(IID_PPV_ARGS(&pSurfaceSrc));
 
     hr = CreateDirect3D11SurfaceFromDXGISurface(pSurfaceSrc, pSurfaceInspectable.put());
@@ -1311,10 +1320,15 @@ HRESULT TransformBlur::OnProcessOutput(IMFSample** ppOut)
         pD3DSurfaceDest = m_segmentModel.RunTestDXGI(pD3DSurfaceSrc, m_cbImageSize);
         auto spDxgiInterfaceAccess = pD3DSurfaceDest.as<Windows::Graphics::DirectX::Direct3D11::IDirect3DDxgiInterfaceAccess>();
         hr = spDxgiInterfaceAccess->GetInterface(IID_PPV_ARGS(&pTextDest));
+        hr = spDxgiInterfaceAccess->GetInterface(IID_PPV_ARGS(&pSurfaceDest));
         hr = MFCreateDXGISurfaceBuffer(IID_ID3D11Texture2D, pTextDest, 0, TRUE, &pBuffOut);
         MFCreateSample(ppOut);
         hr = (*ppOut)->AddBuffer(pBuffOut);
+
+        pTextDest->GetDevice(&destDevice);
+        //hr = MFCreateVideoSampleFromSurface((IUnknown*)pSurfaceDest, ppOut);
     }
+
     else
     {
         CHECK_HR(hr = E_UNEXPECTED);

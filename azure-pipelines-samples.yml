@@ -163,7 +163,7 @@ jobs:
       inputs:
         solution: 'Samples/MNIST/UWP/cs/mnist_demo.sln'
         vsVersion: "16.0"
-        msbuildArgs: '-v:diag /p:OutDir=$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\MNIST-cs\  /p:AppxPackageSigningEnabled=false /p:WindowsTargetPlatformVersion=$(WindowsTargetPlatformVersion)  /t:Restore,Clean,Build'
+        msbuildArgs: '-v:diag /p:OutDir=$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\MNIST-cs\ /p:AppxBundle=Never /p:AppxPackageSigningEnabled=false /p:WindowsTargetPlatformVersion=$(WindowsTargetPlatformVersion)  /t:Restore,Clean,Build'
         platform: '$(BuildPlatform)'
         configuration: '$(BuildConfiguration)_NuGet'
         msbuildArchitecture: x64

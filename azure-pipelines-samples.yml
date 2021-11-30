@@ -165,7 +165,7 @@ jobs:
         vsVersion: "16.0"
         msbuildArgs: '-v:diag /p:OutDir=$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\MNIST-cs\  /p:AppxPackageSigningEnabled=false /p:WindowsTargetPlatformVersion=$(WindowsTargetPlatformVersion)  /t:Restore,Clean,Build'
         platform: '$(BuildPlatform)'
-        configuration: '$(BuildConfiguration)'
+        configuration: '$(BuildConfiguration)_NuGet'
         msbuildArchitecture: x64
         createLogFile: true
       condition: succeededOrFailed()

@@ -145,6 +145,138 @@ jobs:
         msbuildArchitecture: x64
         createLogFile: true
       condition: succeededOrFailed()
+      
+    - task: VSBuild@1
+      displayName: 'Build AdapterSelection Sample'
+      inputs:
+        solution: Samples/AdapterSelection/AdapterSelection.sln
+        vsVersion: "16.0"
+        msbuildArgs: '-v:diag /p:OutDir=$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\AdapterSelection\ /p:WindowsTargetPlatformVersion=$(WindowsTargetPlatformVersion) /t:Restore,Clean,Build'
+        platform: '$(BuildPlatform)'
+        configuration: '$(BuildConfiguration)'
+        msbuildArchitecture: x64
+        createLogFile: true
+      condition: succeededOrFailed()
+
+    - task: VSBuild@1
+      displayName: 'Build CustomOperator Sample'
+      inputs:
+        solution: Samples/CustomOperator/desktop/cpp/custom-operator-sample.sln
+        vsVersion: "16.0"
+        msbuildArgs: '-v:diag /p:OutDir=$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\CustomOperator\ /p:WindowsTargetPlatformVersion=$(WindowsTargetPlatformVersion) /t:Restore,Clean,Build'
+        platform: '$(BuildPlatform)'
+        configuration: '$(BuildConfiguration)'
+        msbuildArchitecture: x64
+        createLogFile: true
+      condition: succeededOrFailed()
+
+    - task: VSBuild@1
+      displayName: 'Build MNIST-Tutorial-cs Sample'
+      inputs:
+        solution: 'Samples/MNIST/Tutorial/cs/mnist_demo.sln'
+        vsVersion: "16.0"
+        msbuildArgs: '-v:diag /p:OutDir=$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\MNIST-Tutorial\ /p:WindowsTargetPlatformVersion=$(WindowsTargetPlatformVersion)  /t:Restore,Clean,Build'
+        platform: '$(BuildPlatform)'
+        configuration: '$(BuildConfiguration)'
+        msbuildArchitecture: x64
+        createLogFile: true
+      condition: succeededOrFailed()
+
+    - task: VSBuild@1
+      displayName: 'Build MNIST-UWP-cs Sample'
+      inputs:
+        solution: 'Samples/MNIST/UWP/cs/mnist_demo.sln'
+        vsVersion: "16.0"
+        msbuildArgs: '-v:diag /p:OutDir=$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\MNIST-cs\ /p:WindowsTargetPlatformVersion=$(WindowsTargetPlatformVersion)  /t:Restore,Clean,Build'
+        platform: '$(BuildPlatform)'
+        configuration: '$(BuildConfiguration)'
+        msbuildArchitecture: x64
+        createLogFile: true
+      condition: succeededOrFailed()
+
+    - task: VSBuild@1
+      displayName: 'Build SqueezenetObjectDetection Sample'
+      inputs:
+        solution: Samples/SqueezeNetObjectDetection/squeezenetobjectdetection.sln
+        vsVersion: "16.0"
+        msbuildArgs: '-v:diag /p:OutDir=$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\SqueezeNetObjectDetection\ /p:WindowsTargetPlatformVersion=$(WindowsTargetPlatformVersion)  /t:Restore,Clean,Build'
+        platform: '$(BuildPlatform)'
+        configuration: '$(BuildConfiguration)'
+        msbuildArchitecture: x64
+        createLogFile: true
+      condition: succeededOrFailed()
+
+    - task: VSBuild@1
+      displayName: 'Build FNSCandyStyleTransfer-UWP-CS Sample'
+      inputs:
+        solution: Samples/FNSCandyStyleTransfer/UWP/CS/snapcandy.sln
+        vsVersion: "16.0"
+        msbuildArgs: '-v:diag  /p:OutDir=$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\FNSCandyStyleTransfer\ /p:WindowsTargetPlatformVersion=$(WindowsTargetPlatformVersion)  /t:Restore,Clean,Build'
+        platform: '$(BuildPlatform)'
+        configuration: '$(BuildConfiguration)'
+        msbuildArchitecture: x64
+        createLogFile: true
+      condition: succeededOrFailed()
+
+    - task: VSBuild@1
+      displayName: 'Build MNIST-UWP-cppcx Sample'
+      inputs:
+        solution: 'Samples/MNIST/UWP/cppcx/mnist_cppcx.sln'
+        vsVersion: "16.0"
+        msbuildArgs: '-v:diag /p:OutDir=$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\MNIST-cppcx\ /p:WindowsTargetPlatformVersion=$(WindowsTargetPlatformVersion) /t:Restore,Clean,Build'
+        platform: '$(BuildPlatform)'
+        configuration: '$(BuildConfiguration)'
+        msbuildArchitecture: x64
+        createLogFile: true
+      condition: succeededOrFailed()
+
+    - task: VSBuild@1
+      displayName: 'Build CustomTensorization Sample'
+      inputs:
+        solution: Samples/CustomTensorization/CustomTensorization.sln
+        vsVersion: "16.0"
+        msbuildArgs: '-v:diag /p:OutDir=$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\CustomTensorization\ /p:WindowsTargetPlatformVersion=$(WindowsTargetPlatformVersion) /t:Restore,Clean,Build'
+        platform: '$(BuildPlatform)'
+        configuration: '$(BuildConfiguration)'
+        msbuildArchitecture: x64
+        createLogFile: true
+      condition: succeededOrFailed()
+
+    - task: VSBuild@1
+      displayName: 'Build BatchSupport Sample'
+      inputs:
+        solution: Samples/BatchSupport/BatchSupport.sln
+        vsVersion: "16.0"
+        msbuildArgs: '-v:diag /p:OutDir=$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\BatchSupport\ /p:WindowsTargetPlatformVersion=$(WindowsTargetPlatformVersion)  /t:Restore,Clean,Build'
+        platform: '$(BuildPlatform)'
+        configuration: '$(BuildConfiguration)'
+        msbuildArchitecture: x64
+        createLogFile: true
+      condition: succeededOrFailed()
+
+    - task: VSBuild@1
+      displayName: 'Build Emoji Sample'
+      inputs:
+        solution: Samples/Emoji8/UWP/cs/Emoji8.sln
+        vsVersion: "16.0"
+        msbuildArgs: '-v:diag /p:OutDir=$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\Emoji8\ /p:WindowsTargetPlatformVersion=$(WindowsTargetPlatformVersion)  /t:Restore,Clean,Build'
+        platform: '$(BuildPlatform)'
+        configuration: '$(BuildConfiguration)'
+        msbuildArchitecture: x64
+        createLogFile: true
+      condition: succeededOrFailed()
+
+    - task: VSBuild@1
+      displayName: 'Build StreamFromResource Sample'
+      inputs:
+        solution: Samples/StreamFromResource/StreamFromResource.sln
+        vsVersion: "16.0"
+        msbuildArgs: '-v:diag /p:OutDir=$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\StreamFromResource\ /p:WindowsTargetPlatformVersion=$(WindowsTargetPlatformVersion) /t:Restore,Clean,Build'
+        platform: '$(BuildPlatform)'
+        configuration: '$(BuildConfiguration)'
+        msbuildArchitecture: x64
+        createLogFile: true
+      condition: succeededOrFailed()
 
     # - task: CopyFiles@2
     #   inputs:

@@ -7,8 +7,11 @@
 #include "winrt/Microsoft.AI.MachineLearning.h"
 
 #include "WeakBuffer.h"
+#include "RandomAccessStream.h"
+
 #include <wrl.h>
 #include <sstream>
+#include <fstream>
 
 namespace wrl = ::Microsoft::WRL;
 namespace details = ::Microsoft::AI::MachineLearning::Details;
@@ -21,6 +24,28 @@ namespace winrt::WinMLSamplesGalleryNative::implementation
 #ifdef USE_OPENCV
         image_ = cv::imread(winrt::to_string(path), cv::IMREAD_COLOR);
 #endif
+        std::ifstream infile("C:\\Users\\sheil\\source\\repos\\App1\\SqueezeNet.onnx");
+
+        //get length of file
+        infile.seekg(0, std::ios::end);
+        size_t length = infile.tellg();
+        infile.seekg(0, std::ios::beg);
+
+        auto buffer = std::unique_ptr<char[]>(new char[length]);
+
+        //read file
+        infile.read(buffer.get(), length);
+
+        winrt::com_ptr<abi_wss::IBuffer> ptr;
+        auto start = reinterpret_cast<uint8_t*>(buffer.get());
+        auto end = reinterpret_cast<uint8_t*>(buffer.get() + length);
+        wrl::MakeAndInitialize<details::WeakBuffer<uint8_t>>(ptr.put(), start, end);
+        winrt::com_ptr<abi_wss::IRandomAccessStreamReference> ras_ref;
+        wrl::MakeAndInitialize<::WinMLSamplesGalleryNative::RandomAccessStreamReference>(ras_ref.put(), ptr.get());
+
+        winrt::Windows::Storage::Streams::IRandomAccessStreamReference stream_ref;
+        winrt::attach_abi(stream_ref, ras_ref.get());
+        winrt::Microsoft::AI::MachineLearning::LearningModel::LoadFromStream(stream_ref);
     }
 
 #ifdef USE_OPENCV

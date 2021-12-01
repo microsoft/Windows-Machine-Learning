@@ -19,33 +19,46 @@ namespace abi_wss = ABI::Windows::Storage::Streams;
 
 namespace winrt::WinMLSamplesGalleryNative::implementation
 {
-    OpenCVImage::OpenCVImage(winrt::hstring path)
-    {
-#ifdef USE_OPENCV
-        image_ = cv::imread(winrt::to_string(path), cv::IMREAD_COLOR);
-#endif
-        std::ifstream infile("C:\\Users\\sheil\\source\\repos\\App1\\SqueezeNet.onnx");
+    static winrt::Microsoft::AI::MachineLearning::LearningModel CreateModelFromRandomAccessStreamReferenceFromPath(
+        const char* path) {
+        std::ifstream infile(path, std::ios_base::binary);
 
         //get length of file
         infile.seekg(0, std::ios::end);
         size_t length = infile.tellg();
         infile.seekg(0, std::ios::beg);
 
-        auto buffer = std::unique_ptr<char[]>(new char[length]);
+        // create buffer
+        auto buffer = std::unique_ptr<byte[]>(new byte[length]);
 
-        //read file
-        infile.read(buffer.get(), length);
+        // read file
+        infile.read(reinterpret_cast<char*>(buffer.get()), length);
 
-        winrt::com_ptr<abi_wss::IBuffer> ptr;
+        // get start and end pointers
         auto start = reinterpret_cast<uint8_t*>(buffer.get());
         auto end = reinterpret_cast<uint8_t*>(buffer.get() + length);
-        wrl::MakeAndInitialize<details::WeakBuffer<uint8_t>>(ptr.put(), start, end);
-        winrt::com_ptr<abi_wss::IRandomAccessStreamReference> ras_ref;
-        wrl::MakeAndInitialize<::WinMLSamplesGalleryNative::RandomAccessStreamReference>(ras_ref.put(), ptr.get());
 
-        winrt::Windows::Storage::Streams::IRandomAccessStreamReference stream_ref;
-        winrt::attach_abi(stream_ref, ras_ref.get());
-        winrt::Microsoft::AI::MachineLearning::LearningModel::LoadFromStream(stream_ref);
+        // wrap bytes in weak buffer
+        winrt::com_ptr<abi_wss::IBuffer> ptr;
+        wrl::MakeAndInitialize<details::WeakBuffer<uint8_t>>(ptr.put(), start, end);
+
+        // wrap buffer in random access stream
+        wrl::ComPtr<ABI::Windows::Storage::Streams::IRandomAccessStreamReference> reference;
+        wrl::MakeAndInitialize<::WinMLSamplesGalleryNative::RandomAccessStreamReference>(&reference, ptr.get());
+
+        winrt::Windows::Storage::Streams::IRandomAccessStreamReference random_access_stream;
+        winrt::attach_abi(random_access_stream, reference.Detach());
+        return winrt::Microsoft::AI::MachineLearning::LearningModel::LoadFromStream(random_access_stream);
+    }
+
+    OpenCVImage::OpenCVImage(winrt::hstring path)
+    {
+#ifdef USE_OPENCV
+        image_ = cv::imread(winrt::to_string(path), cv::IMREAD_COLOR);
+#endif
+        winrt::Microsoft::AI::MachineLearning::LearningModel::LoadFromFilePath(L"C:\\Users\\sheil\\source\\repos\\App1\\SqueezeNet.onnx");
+        auto file_path = "C:\\Users\\sheil\\source\\repos\\App1\\SqueezeNet.onnx";
+        auto model = CreateModelFromRandomAccessStreamReferenceFromPath(file_path);
     }
 
 #ifdef USE_OPENCV

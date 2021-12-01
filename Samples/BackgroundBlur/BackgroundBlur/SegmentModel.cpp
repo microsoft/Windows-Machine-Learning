@@ -9,6 +9,8 @@ using winrt::Windows::Foundation::PropertyValue;
 using winrt::hstring;
 using namespace winrt;
 using namespace Windows::Foundation::Collections;
+using namespace Windows::Media;
+
 
 enum OnnxDataType : long {
 	ONNX_UNDEFINED = 0,
@@ -39,16 +41,24 @@ enum OnnxDataType : long {
 	ONNX_BFLOAT16 = 16,
 }OnnxDataType;
 
+// TODO: Probably don't need to be globals
+std::array<float, 3> mean = { 0.485f, 0.456f, 0.406f };
+std::array<float, 3> std = { 0.229f, 0.224f, 0.225f };
+
 SegmentModel::SegmentModel() :
 	m_sess(NULL),
-	m_bufferSess(NULL),
+	//m_sessPreprocess(NULL),
+	//m_sessFCN(NULL),
+	//m_sessPostprocess(NULL),
 	m_useGPU(true)
 {
 }
 
 SegmentModel::SegmentModel(UINT32 w, UINT32 h) :
 	m_sess(NULL),
-	m_bufferSess(NULL),
+	/*m_sessPreprocess(NULL),
+	m_sessFCN(NULL),
+	m_sessPostprocess(NULL),*/
 	m_useGPU(true)
 {
 	// TODO: Adapt based on video_FOURCC- might not always be RGBA
@@ -56,32 +66,44 @@ SegmentModel::SegmentModel(UINT32 w, UINT32 h) :
 	SetImageSize(w, h);
 	m_sess = CreateLearningModelSession(Invert(1, 3, h, w));
 
-	m_bufferSess = CreateLearningModelSession(ReshapeFlatBufferToNCHW(1, -1, h, w));
-}
+	// Initialize segmentation learningmodelsessions
+	/*m_sessPreprocess = CreateLearningModelSession(Normalize0_1ThenZScore(h, w, 3, mean, std));
+	m_sessFCN = CreateLearningModelSession(FCNResnet());
+	m_sessPostprocess = CreateLearningModelSession(PostProcess(1, 3, h, w, 1));*/
 
+}
 void SegmentModel::SetImageSize(UINT32 w, UINT32 h)
 {
 	m_imageWidthInPixels = w;
 	m_imageHeightInPixels = h;
 }
 
-void SegmentModel::Run(const BYTE** pSrc, BYTE** pDest, const DWORD cbImageSize)
+IDirect3DSurface SegmentModel::Run(const IDirect3DSurface& pSrc, const DWORD cbImageSize)
 {
 	// TODO: Make all these sessions earlier, so just passing inputs/outputs here
+	// 1. Get input buffer as a VideoFrame
+	VideoFrame input = VideoFrame::CreateWithDirect3D11Surface(pSrc);
+	auto desc = input.Direct3DSurface().Description(); // B8G8R8X8UIntNormalized
 
-	// 1. Get input buffer as a Tensor
-	winrt::array_view<const byte> source{ *pSrc, *pSrc + cbImageSize }; // TODO: Does this work when topdown vs. bottomup
+	VideoFrame output = VideoFrame::CreateAsDirect3D11SurfaceBacked(desc.Format, desc.Width, desc.Height);
+	VideoFrame input2 = VideoFrame::CreateAsDirect3D11SurfaceBacked(desc.Format, desc.Width, desc.Height);
+	input.CopyToAsync(input2).get(); // TODO: I'm guessing it's this copy that's causing issues... 
 	std::vector<int64_t> shape = { 1, 3, m_imageHeightInPixels, m_imageWidthInPixels };
-	ITensor inputRawTensor = TensorUInt8Bit::CreateFromArray(std::vector<int64_t>{1, cbImageSize}, source);
-	ITensor tensorizedImg = TensorFloat::Create(shape);
-	auto tensorizationBinding = Evaluate(m_bufferSess, std::vector<ITensor*>{&inputRawTensor}, &tensorizedImg);
+	// TODO: Make sure input surface still has the same shape as m_imageHeight and m_imageWidth? 
+
 
 	// 2. Normalize input tensor
-	std::array<float, 3> mean = { 0.485f, 0.456f, 0.406f };
-	std::array<float, 3> std = { 0.229f, 0.224f, 0.225f };
 	LearningModelSession normalizationSession = CreateLearningModelSession(Normalize0_1ThenZScore(m_imageHeightInPixels, m_imageWidthInPixels, 3, mean, std));
 	ITensor intermediateTensor = TensorFloat::Create(shape);
-	auto normalizationBinding = Evaluate(normalizationSession, std::vector<ITensor*>{&tensorizedImg}, & intermediateTensor);
+	auto binding = LearningModelBinding(normalizationSession);
+	hstring inputName = normalizationSession.Model().InputFeatures().GetAt(0).Name();
+	binding.Bind(inputName, input2);
+
+	hstring outputName = normalizationSession.Model().OutputFeatures().GetAt(0).Name();
+	auto outputBindProperties = PropertySet();
+	outputBindProperties.Insert(L"DisableTensorCpuSync", PropertyValue::CreateBoolean(true));
+	binding.Bind(outputName, intermediateTensor, outputBindProperties);
+	auto results = normalizationSession.Evaluate(binding, L"");
 
 	// 3. Run through actual model
 	std::vector<int64_t> FCNResnetOutputShape = { 1, 21, m_imageHeightInPixels, m_imageWidthInPixels };
@@ -92,33 +114,24 @@ void SegmentModel::Run(const BYTE** pSrc, BYTE** pDest, const DWORD cbImageSize)
 	// 4.Extract labels with argmax
 	ITensor rawLabels = TensorFloat::Create({1, 1, m_imageHeightInPixels, m_imageWidthInPixels});
 	LearningModelSession argmaxSession = CreateLearningModelSession(Argmax(1, m_imageHeightInPixels, m_imageWidthInPixels));
-	auto argmaxBinding = Evaluate(argmaxSession, std::vector<ITensor*>{&FCNResnetOutput}, & rawLabels);
+	auto argmaxBinding = Evaluate(argmaxSession, std::vector<ITensor*>{&FCNResnetOutput}, & rawLabels, true);
 
 	// 5. Get the foreground
 	ITensor foreground = TensorUInt8Bit::Create(std::vector<int64_t>{1, m_imageHeightInPixels, m_imageWidthInPixels, 3});
-	LearningModelSession foregroundSession = CreateLearningModelSession(GetBackground(1, 3, m_imageHeightInPixels, m_imageWidthInPixels));
-	// Enable tensorcpusync for the last evaluate so can extract and give back to buffer
-	// Will remove once can just pass along d3d reources back to MFT
-	auto foregroundBinding = Evaluate(foregroundSession, std::vector<ITensor*>{&tensorizedImg, &rawLabels}, & foreground, true);
-	
-	UINT32 outCapacity = 0;
-	if (m_useGPU)
-	{
-		// v1: just get the reference- should fail
-		auto reference = foreground.as<TensorUInt8Bit>().CreateReference().data();
+	std::array<int64_t,4> labelShape;
+	auto labels = rawLabels.try_as<TensorFloat>().Shape().GetMany(0, labelShape);
 
-		// v3: get from a d3dresource
-		/*ID3D12Resource* res = NULL;
-		HRESULT hr = foreground.as<ITensorNative>()->GetD3D12Resource(&res);
-		UINT DstRowPitch = 0, DstDepthPitch = 0, SrcSubresource = 0;
-		hr = res->ReadFromSubresource((void*)*pDest, DstRowPitch, DstDepthPitch, SrcSubresource, NULL);*/
-		return;
-	}
-	else 
-	{
-		auto reference = foreground.as<TensorUInt8Bit>().CreateReference().data();
-		CopyMemory(*pDest, reference, cbImageSize);
-	}
+	LearningModelSession foregroundSession = CreateLearningModelSession(GetForeground(1, 3, m_imageHeightInPixels, m_imageWidthInPixels));
+	binding = LearningModelBinding(foregroundSession);
+	binding.Bind(L"InputImage", input2);
+	binding.Bind(L"InputMask", rawLabels);
+	outputBindProperties = PropertySet();
+	outputBindProperties.Insert(L"DisableTensorCpuSync", PropertyValue::CreateBoolean(false));
+	binding.Bind(outputName, output, outputBindProperties);
+	results = foregroundSession.Evaluate(binding, L"");
+
+	output.CopyToAsync(input).get();
+	return input.Direct3DSurface();
 }
 
 void SegmentModel::RunTest(const BYTE** pSrc, BYTE** pDest, const DWORD cbImageSize) 
@@ -147,17 +160,14 @@ void SegmentModel::RunTest(const BYTE** pSrc, BYTE** pDest, const DWORD cbImageS
 	}
 }
 
-// IS const oK here? 
 IDirect3DSurface SegmentModel::RunTestDXGI(const IDirect3DSurface& pSrc,  const DWORD cbImageSize)
 {
-	using namespace Windows::Media;
 	VideoFrame input = VideoFrame::CreateWithDirect3D11Surface(pSrc);
 	auto desc = input.Direct3DSurface().Description(); // B8G8R8X8UIntNormalized
 
 	VideoFrame output = VideoFrame::CreateAsDirect3D11SurfaceBacked(desc.Format, desc.Width, desc.Height);
 	VideoFrame input2 = VideoFrame::CreateAsDirect3D11SurfaceBacked(desc.Format, desc.Width, desc.Height);
 	input.CopyToAsync(input2).get(); // TODO: I'm guessing it's this copy that's causing issues... 
-	//copyTask.GetResults();
 	desc = input2.Direct3DSurface().Description();
 	auto binding = LearningModelBinding(m_sess);
 
@@ -178,6 +188,7 @@ IDirect3DSurface SegmentModel::RunTestDXGI(const IDirect3DSurface& pSrc,  const 
 
 LearningModel SegmentModel::Invert(long n, long c, long h, long w)
 {
+	
 	auto builder = LearningModelBuilder::Create(11)
 		// Loading in buffers and reshape
 		.Inputs().Add(LearningModelBuilder::CreateTensorFeatureDescriptor(L"Input", TensorKind::Float, { n, c, h, w }))
@@ -198,7 +209,33 @@ LearningModel SegmentModel::Invert(long n, long c, long h, long w)
 	return builder.CreateModel();
 }
 
-
+LearningModel SegmentModel::PostProcess(long n, long c, long h, long w, long axis)
+{
+	auto builder = LearningModelBuilder::Create(12)
+		.Inputs().Add(LearningModelBuilder::CreateTensorFeatureDescriptor(L"InputImage", TensorKind::Float, { n, c, h, w }))
+		.Inputs().Add(LearningModelBuilder::CreateTensorFeatureDescriptor(L"InputScores", TensorKind::Float, { -1, -1, h, w })) // Different input type? 
+		.Outputs().Add(LearningModelBuilder::CreateTensorFeatureDescriptor(L"OutputImage", TensorKind::Float, { -1, -1, h, w })) // Output of int64? 
+		// Argmax Model Outputs
+		.Operators().Add(LearningModelOperator(L"ArgMax")
+			.SetInput(L"data", L"Data")
+			.SetAttribute(L"keepdims", TensorInt64Bit::CreateFromArray({ 1 }, { 1 }))
+			.SetAttribute(L"axis", TensorInt64Bit::CreateFromIterable({ 1 }, { axis })) // Correct way of passing axis? 
+			.SetOutput(L"reduced", L"Reduced"))
+		.Operators().Add(LearningModelOperator(L"Cast")
+			.SetInput(L"input", L"Reduced")
+			.SetAttribute(L"to", TensorInt64Bit::CreateFromIterable({}, { OnnxDataType::ONNX_FLOAT }))
+			.SetOutput(L"output", L"ArgmaxOutput"))
+		// Extract the foreground using the argmax scores to create a mask
+		.Operators().Add(LearningModelOperator(L"Clip")
+			.SetInput(L"input", L"ArgmaxOutput")
+			.SetConstant(L"max", TensorFloat::CreateFromIterable({ 1 }, { 1.f }))
+			.SetOutput(L"output", L"MaskBinary"))
+		.Operators().Add(LearningModelOperator(L"Mul")
+			.SetInput(L"A", L"InputImage")
+			.SetInput(L"B", L"MaskBinary")
+			.SetOutput(L"C", L"OutputImage"))
+		;
+}
 LearningModel SegmentModel::Argmax(long axis, long h, long w)
 {
 	auto builder = LearningModelBuilder::Create(12)
@@ -230,7 +267,7 @@ LearningModel SegmentModel::GetBackground(long n, long c, long h, long w)
 	auto builder = LearningModelBuilder::Create(12)
 		.Inputs().Add(LearningModelBuilder::CreateTensorFeatureDescriptor(L"InputImage", TensorKind::Float, { n, c, h, w }))
 		.Inputs().Add(LearningModelBuilder::CreateTensorFeatureDescriptor(L"InputMask", TensorKind::Float, { n, 1, h, w })) // Broadcast to each color channel
-		.Outputs().Add(LearningModelBuilder::CreateTensorFeatureDescriptor(L"Output", TensorKind::UInt8, { n, h, w, c }))
+		.Outputs().Add(LearningModelBuilder::CreateTensorFeatureDescriptor(L"Output", TensorKind::Float, { n, c, h, w }))
 		// Averagepool input image
 		/*.Operators().Add(LearningModelOperator(L"AveragePool")
 			.SetInput(L"X", L"InputImage")
@@ -254,9 +291,9 @@ LearningModel SegmentModel::GetBackground(long n, long c, long h, long w)
 		.Operators().Add(LearningModelOperator(L"Mul")
 			.SetInput(L"A", L"InputImage")
 			.SetInput(L"B", L"BackgroundMask")
-			.SetOutput(L"C", L"Background"))
+			.SetOutput(L"C", L"Output"))
 		// TODO: REmove once compose w foreground
-		.Operators().Add(LearningModelOperator(L"Transpose")
+		/*.Operators().Add(LearningModelOperator(L"Transpose")
 			.SetInput(L"data", L"Background")
 			.SetAttribute(L"perm", TensorInt64Bit::CreateFromArray({ 4 }, { 0, 2, 3, 1 }))
 			.SetOutput(L"transposed", L"TransposeOutput"))
@@ -264,7 +301,7 @@ LearningModel SegmentModel::GetBackground(long n, long c, long h, long w)
 			.SetInput(L"input", L"TransposeOutput")
 			.SetOutput(L"output", L"Output")
 			.SetAttribute(L"to",
-				TensorInt64Bit::CreateFromIterable({}, {OnnxDataType::ONNX_UINT8})))
+				TensorInt64Bit::CreateFromIterable({}, {OnnxDataType::ONNX_UINT8})))*/
 		;
 
 	return builder.CreateModel();
@@ -275,7 +312,7 @@ LearningModel SegmentModel::GetForeground(long n, long c, long h, long w)
 	auto builder = LearningModelBuilder::Create(12)
 		.Inputs().Add(LearningModelBuilder::CreateTensorFeatureDescriptor(L"InputImage", TensorKind::Float, { n, c, h, w }))
 		.Inputs().Add(LearningModelBuilder::CreateTensorFeatureDescriptor(L"InputMask", TensorKind::Float, { n, 1, h, w })) // Broadcast to each color channel
-		.Outputs().Add(LearningModelBuilder::CreateTensorFeatureDescriptor(L"Output", TensorKind::UInt8, { n, h, w, c }))
+		.Outputs().Add(LearningModelBuilder::CreateTensorFeatureDescriptor(L"Output", TensorKind::Float, { n, c, h, w }))
 		.Operators().Add(LearningModelOperator(L"Clip")
 			.SetInput(L"input", L"InputMask")
 			.SetConstant(L"max", TensorFloat::CreateFromIterable({ 1 }, { 1.f }))
@@ -283,21 +320,21 @@ LearningModel SegmentModel::GetForeground(long n, long c, long h, long w)
 		.Operators().Add(LearningModelOperator(L"Mul")
 			.SetInput(L"A", L"InputImage")
 			.SetInput(L"B", L"MaskBinary")
-			.SetOutput(L"C", L"Foreground"))
+			.SetOutput(L"C", L"Output"))
 		// Convert to buffer output- detensorization? 
-		.Operators().Add(LearningModelOperator(L"Transpose")
+		/*.Operators().Add(LearningModelOperator(L"Transpose")
 			.SetInput(L"data", L"Foreground")
 			.SetAttribute(L"perm", TensorInt64Bit::CreateFromArray({ 4 }, { 0, 2, 3, 1 }))
 			.SetOutput(L"transposed", L"TransposeOutput"))
-		/*.Operators().Add(LearningModelOperator(L"Reshape")
+		.Operators().Add(LearningModelOperator(L"Reshape")
 			.SetInput(L"data", L"TransposeOutput")
 			.SetConstant(L"shape", TensorInt64Bit::CreateFromIterable({ 2 }, { 1, n*c*h*w }))
-			.SetOutput(L"reshaped", L"ReshapeOutput"))*/
+			.SetOutput(L"reshaped", L"ReshapeOutput"))
 		.Operators().Add(LearningModelOperator(L"Cast")
 			.SetInput(L"input", L"TransposeOutput")
 			.SetOutput(L"output", L"Output")
 			.SetAttribute(L"to",
-				TensorInt64Bit::CreateFromIterable({}, {OnnxDataType::ONNX_UINT8})))
+				TensorInt64Bit::CreateFromIterable({}, {OnnxDataType::ONNX_UINT8}))) */
 		;
 
 	return builder.CreateModel();
@@ -437,13 +474,13 @@ LearningModelBinding SegmentModel::Evaluate(LearningModelSession& sess,const std
 	binding.Bind(outputName, *output, outputBindProperties);
 	//EvaluateInternal(sess, binding);
 
-	auto results = sess.Evaluate(binding, L"");
+	/*auto results = sess.Evaluate(binding, L"");
 	auto resultTensor = results.Outputs().Lookup(outputName).try_as<TensorFloat>();
 	float testPixels[6];
 	if (resultTensor) {
 		auto resultVector = resultTensor.GetAsVectorView();
 		resultVector.GetMany(0, testPixels);
-	}
+	}*/
 
 	return binding;
 }

@@ -18,7 +18,8 @@ public:
 	SegmentModel();
 	SegmentModel(UINT32 w, UINT32 h);
 
-	void Run(const BYTE** pSrc, BYTE** pDest, const DWORD cbImageSize);
+	IDirect3DSurface Run(const IDirect3DSurface& pSrc, const DWORD cbImageSize);
+	
 	void RunTest(const BYTE** pSrc, BYTE** pDest, const DWORD cbImageSize);
 	IDirect3DSurface RunTestDXGI(const IDirect3DSurface& pSrc, const DWORD cbImageSize);
 
@@ -27,10 +28,13 @@ public:
 	bool m_useGPU = true;
 
 private: 
+	LearningModel PostProcess(long n, long c, long h, long w, long axis);
+	LearningModel FCNResnet();
+
+
 	LearningModel GetBackground(long n, long c, long h, long w);
 	LearningModel GetForeground(long n, long c, long h, long w);
 	LearningModel Argmax(long axis, long h, long w);
-	LearningModel FCNResnet();
 	LearningModel ReshapeFlatBufferToNCHW(long n, long c, long h, long w);
 	LearningModel ReshapeFlatBufferToNCHWAndInvert(long n, long c, long h, long w);
 	LearningModel Normalize0_1ThenZScore(long height, long width, long channels, const std::array<float, 3>& means, const std::array<float,3>& stddev);
@@ -44,5 +48,8 @@ private:
 
 	// Intermediate sessions need to be condensed later
 	// TODO: Keep as smart pointers instead
-	LearningModelSession m_bufferSess;
+	//LearningModelSession m_sessPreprocess;
+	//LearningModelSession m_sessFCN;
+	//LearningModelSession m_sessPostprocess;
+
 };

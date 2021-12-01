@@ -816,10 +816,6 @@ HRESULT TransformBlur::OnSetD3DManager(ULONG_PTR ulParam)
         return S_OK;
     }
 
-    // TODO: Change video and video device to fields
-    ID3D11VideoDevice* pVideoDevice = NULL;
-    ID3D11Device* pd3dDevice = NULL;
-
     // Get the Device Manager sent from the  topology loader
     IUnknown* ptr = (IUnknown*) ulParam;
 
@@ -957,7 +953,7 @@ HRESULT TransformBlur::ProcessOutput(
         return E_INVALIDARG;
     }
 
-    // It must contain a sample. - We're allocating now, so it doesn't have to!
+    // It must contain a sample. - EDIT: We're allocating now, so it doesn't have to!
     if (false && pOutputSamples[0].pSample == NULL)
     {
         return E_INVALIDARG;
@@ -972,21 +968,16 @@ HRESULT TransformBlur::ProcessOutput(
 
     HRESULT hr = S_OK;
 
-    // TODO: MF Create sample instead so no detaching funkiness? 
+    // This MFT allocates its own samples, so pass a new IMFSample to fill in
     CComPtr<IMFSample> pOutput;
-
     CHECK_HR(hr = OnProcessOutput(&pOutput));
-
-    //pOutput = m_pSample;
 
     // Set status flags.
     pOutputSamples[0].dwStatus = 0;
     *pdwStatus = 0;
-
-                
+ 
     // Copy the duration and time stamp from the input sample,
     // if present.
-    
     if (SUCCEEDED(m_pSample->GetSampleDuration(&hnsDuration)))
     {
         CHECK_HR(hr = pOutput->SetSampleDuration(hnsDuration));
@@ -1269,35 +1260,37 @@ HRESULT LockDevice(
 //-------------------------------------------------------------------
 // Name: OnProcessOutput
 // Description: Generates output data.
+// 
+// IMFSample -> IMFMediaBuffer          Get underlying buffer
+// IMFMediaBuffer -> IMFDXGIBuffer      QI to get the DXGI-backed buffer
+// IMFDXGIBuffer -> ID3D11Texture2D     Get texture resources from DXGI-backed buffer
+// ID3D11Texture2D -> IDXGISurface      QI to get DXGI surface from texture resource
+// IDXGISurface -> IDirect3DSurface     DXGI-D3D interop so can create a VideoFrame for WinML
 //-------------------------------------------------------------------
 HRESULT TransformBlur::OnProcessOutput(IMFSample** ppOut)
 {
-    // TODO: Change to CComPtr
     HRESULT hr = S_OK;
+
+    // Extract resources from sample
+    CComPtr<IMFMediaBuffer> pBuffOut;
+    CComPtr<IMFMediaBuffer> pBuffIn;
     CComPtr<IMFDXGIBuffer> pSrc;
     CComPtr<ID3D11Texture2D> pTextSrc;
     CComPtr<ID3D11Texture2D> pTextDest;
-    CComPtr<ID3D11Texture2D> pTextInterm;
     CComPtr<IDXGISurface> pSurfaceSrc;
     CComPtr<IDXGISurface> pSurfaceDest;
     D3D11_TEXTURE2D_DESC desc{};
-    CComPtr<IDXGIResource> spDxgiResource;
 
-
+    // Surfaces that model uses
     IDirect3DSurface pD3DSurfaceSrc; // IDirect3DSurface objects are winrt objects
     IDirect3DSurface pD3DSurfaceDest;
     winrt::com_ptr<IInspectable> pSurfaceInspectable;
 
-    CComPtr<IMFSample> pSample;
-    CComPtr<IMFMediaBuffer> pBuffOut;
+    // Testing where each texture ends up
     CComPtr<ID3D11Device> destDevice;
     CComPtr<ID3D11Device> srcDevice;
 
-    // Get buffer
-    CComPtr<IMFMediaBuffer> pBuffIn;
-
-    // TODO: Second time around, fatal exit because sample doesn't have anything
-    CHECK_HR(hr = m_pSample->ConvertToContiguousBuffer(&pBuffIn));
+    hr = m_pSample->ConvertToContiguousBuffer(&pBuffIn);
     hr = pBuffIn->QueryInterface(__uuidof(IMFDXGIBuffer), (LPVOID*)(&pSrc));
 
     // TODO: Find a way to make this resource shareable
@@ -1305,9 +1298,9 @@ HRESULT TransformBlur::OnProcessOutput(IMFSample** ppOut)
     pTextSrc->GetDesc(&desc);
     desc.MiscFlags |= D3D11_RESOURCE_MISC_SHARED_KEYEDMUTEX
         | D3D11_RESOURCE_MISC_SHARED_NTHANDLE;
-    m_pD3DDevice->CreateTexture2D(&desc, NULL, &pTextInterm);
+    //m_pD3DDevice->CreateTexture2D(&desc, NULL, &pTextInterm);
 
-    pTextSrc->GetDevice(&srcDevice);
+    pTextSrc->GetDevice(&srcDevice); // Debugging
 
     hr = pTextSrc->QueryInterface(IID_PPV_ARGS(&pSurfaceSrc));
 
@@ -1317,16 +1310,23 @@ HRESULT TransformBlur::OnProcessOutput(IMFSample** ppOut)
     // Invoke the image transform function.
     if (SUCCEEDED(hr))
     {
+        // Lock the device so renderer won't try and use the surface at the same time
+        HANDLE localHandle = NULL;
+        m_pD3DDevice.Release();
+        hr = LockDevice(m_pD3DDeviceManager, TRUE, &m_pD3DDevice, &localHandle);
+
         pD3DSurfaceDest = m_segmentModel.RunTestDXGI(pD3DSurfaceSrc, m_cbImageSize);
+
+        // Build an output sample from the output surface
         auto spDxgiInterfaceAccess = pD3DSurfaceDest.as<Windows::Graphics::DirectX::Direct3D11::IDirect3DDxgiInterfaceAccess>();
         hr = spDxgiInterfaceAccess->GetInterface(IID_PPV_ARGS(&pTextDest));
-        hr = spDxgiInterfaceAccess->GetInterface(IID_PPV_ARGS(&pSurfaceDest));
         hr = MFCreateDXGISurfaceBuffer(IID_ID3D11Texture2D, pTextDest, 0, TRUE, &pBuffOut);
         MFCreateSample(ppOut);
         hr = (*ppOut)->AddBuffer(pBuffOut);
 
-        pTextDest->GetDevice(&destDevice);
-        //hr = MFCreateVideoSampleFromSurface((IUnknown*)pSurfaceDest, ppOut);
+        // Signal to renderer that it can continue rendering surfaces to screen
+        hr = m_pD3DDeviceManager->UnlockDevice(localHandle, FALSE);
+        //pTextDest->GetDevice(&destDevice);
     }
 
     else

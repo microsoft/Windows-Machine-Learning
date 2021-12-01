@@ -389,7 +389,6 @@ HRESULT CaptureManager::StartPreview()
         {
             goto done;
         }
-        
 
         CComPtr<TransformBlur> blur ;
         CComPtr<IMFTransform> pMFT ;
@@ -397,6 +396,7 @@ HRESULT CaptureManager::StartPreview()
         hr = TransformBlur::CreateInstance(NULL, __uuidof(IMFTransform), (void**)(&blur));
         hr = blur->QueryInterface(__uuidof(IMFTransform), (void**)(&pMFT));
 
+        // IMFCaptureSource
         hr = pSource->AddEffect(0, pMFT);
         if (FAILED(hr))
         {

@@ -158,17 +158,17 @@ jobs:
         createLogFile: true
       condition: succeededOrFailed()
 
-    # - task: VSBuild@1
-    #   displayName: 'Build MNIST-UWP-cs Sample'
-    #   inputs:
-    #     solution: 'Samples/MNIST/UWP/cs/mnist_demo.sln'
-    #     vsVersion: "16.0"
-    #     msbuildArgs: '-v:diag /p:OutDir=$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\MNIST-cs\ /p:AppxBundle=Never /p:AppxPackageSigningEnabled=false /p:WindowsTargetPlatformVersion=$(WindowsTargetPlatformVersion)  /t:Restore,Clean,Build'
-    #     platform: '$(BuildPlatform)'
-    #     configuration: '$(BuildConfiguration)_NuGet'
-    #     msbuildArchitecture: x64
-    #     createLogFile: true
-    #   condition: succeededOrFailed()
+    - task: VSBuild@1
+      displayName: 'Build MNIST-UWP-cs Sample'
+      inputs:
+        solution: 'Samples/MNIST/UWP/cs/mnist_demo.sln'
+        vsVersion: "16.0"
+        msbuildArgs: '-v:diag /p:OutDir=$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\MNIST-cs\ /p:AppxBundle=Never /p:AppxPackageSigningEnabled=false /p:WindowsTargetPlatformVersion=$(WindowsTargetPlatformVersion)  /t:Restore,Clean,Build'
+        platform: '$(BuildPlatform)'
+        configuration: '$(BuildConfiguration)_NuGet'
+        msbuildArchitecture: x64
+        createLogFile: true
+      condition: succeededOrFailed()
 
     - task: VSBuild@1
       displayName: 'Build FNSCandyStyleTransfer-UWP-CS Sample'
@@ -200,7 +200,6 @@ jobs:
         sourceFolder: 'Samples\WinMLSamplesGallery\WinMLSamplesGallery (Package)\bin\$(BuildPlatform)\$(BuildConfiguration)\'
         Contents: |
           **\SamplesTest\**
-          **\AppPackages\**
       condition: succeededOrFailed()
 
     - task: PowerShell@2

@@ -48,8 +48,8 @@ private:
 
 	// Intermediate sessions need to be condensed later
 	// TODO: Keep as smart pointers instead
-	//LearningModelSession m_sessPreprocess;
-	//LearningModelSession m_sessFCN;
-	//LearningModelSession m_sessPostprocess;
+	LearningModelSession m_sessPreprocess;
+	LearningModelSession m_sessFCN;
+	LearningModelSession m_sessPostprocess;
 
 };

@@ -201,6 +201,8 @@ private:
     long                        m_nRefCount;                // reference count
     CritSec                     m_critSec;
 
+    IMFAttributes*      m_pAttributes;
+
     CComPtr<IMFSample> m_pSample;                           // Input sample.
     CComPtr<IMFMediaType> m_pInputType;                     // Input media type.
     CComPtr<IMFMediaType> m_pOutputType;                    // Output media type.

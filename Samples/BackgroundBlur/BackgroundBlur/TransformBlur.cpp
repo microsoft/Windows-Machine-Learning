@@ -70,8 +70,13 @@ TransformBlur::TransformBlur(HRESULT& hr) :
     m_pD3DDeviceManager(NULL),
     m_pHandle(NULL),
     m_pD3DDevice(NULL),
-    m_pD3DVideoDevice(NULL)
+    m_pD3DVideoDevice(NULL),
+    m_pAttributes(NULL)
 {
+    hr = MFCreateAttributes(&m_pAttributes, 2);
+    hr = m_pAttributes->SetUINT32(MF_SA_D3D_AWARE, TRUE);
+    hr = m_pAttributes->SetUINT32(MF_SA_D3D11_AWARE, TRUE);
+
 }
 
 //Destructor
@@ -80,6 +85,7 @@ TransformBlur::~TransformBlur()
     assert(m_nRefCount == 0);
 
     m_pD3DDeviceManager->CloseDeviceHandle(m_pHandle);
+    SAFE_RELEASE(m_pAttributes);
 }
 
 // IUnknown methods
@@ -288,12 +294,19 @@ HRESULT TransformBlur::GetOutputStreamInfo(
 // Name: GetAttributes
 // Returns the attributes for the MFT.
 //-------------------------------------------------------------------
-HRESULT TransformBlur::GetAttributes(IMFAttributes** pAttributes)
+HRESULT TransformBlur::GetAttributes(IMFAttributes** ppAttributes)
 {
-    HRESULT hr = MFCreateAttributes(pAttributes, 1);
-    hr = (*pAttributes)->SetUINT32(MF_SA_D3D_AWARE, TRUE);
-    hr = (*pAttributes)->SetUINT32(MF_SA_D3D11_AWARE, TRUE);
-    return hr;
+    if (ppAttributes == NULL)
+    {
+        return E_POINTER;
+    }
+
+    AutoLock lock (m_critSec);
+
+    *ppAttributes = m_pAttributes;
+    (*ppAttributes)->AddRef();
+
+    return S_OK;
 }
 
 

@@ -43,22 +43,22 @@ enum OnnxDataType : long {
 
 // TODO: Probably don't need to be globals
 std::array<float, 3> mean = { 0.485f, 0.456f, 0.406f };
-std::array<float, 3> std = { 0.229f, 0.224f, 0.225f };
+std::array<float, 3> stddev = { 0.229f, 0.224f, 0.225f };
 
 SegmentModel::SegmentModel() :
 	m_sess(NULL),
-	//m_sessPreprocess(NULL),
-	//m_sessFCN(NULL),
-	//m_sessPostprocess(NULL),
+	m_sessPreprocess(NULL),
+	m_sessFCN(NULL),
+	m_sessPostprocess(NULL),
 	m_useGPU(true)
 {
 }
 
 SegmentModel::SegmentModel(UINT32 w, UINT32 h) :
 	m_sess(NULL),
-	/*m_sessPreprocess(NULL),
+	m_sessPreprocess(NULL),
 	m_sessFCN(NULL),
-	m_sessPostprocess(NULL),*/
+	m_sessPostprocess(NULL),
 	m_useGPU(true)
 {
 	// TODO: Adapt based on video_FOURCC- might not always be RGBA
@@ -67,9 +67,9 @@ SegmentModel::SegmentModel(UINT32 w, UINT32 h) :
 	m_sess = CreateLearningModelSession(Invert(1, 3, h, w));
 
 	// Initialize segmentation learningmodelsessions
-	/*m_sessPreprocess = CreateLearningModelSession(Normalize0_1ThenZScore(h, w, 3, mean, std));
+	m_sessPreprocess = CreateLearningModelSession(Normalize0_1ThenZScore(h, w, 3, mean, stddev));
 	m_sessFCN = CreateLearningModelSession(FCNResnet());
-	m_sessPostprocess = CreateLearningModelSession(PostProcess(1, 3, h, w, 1));*/
+	m_sessPostprocess = CreateLearningModelSession(PostProcess(1, 3, h, w, 1));
 
 }
 void SegmentModel::SetImageSize(UINT32 w, UINT32 h)
@@ -91,9 +91,8 @@ IDirect3DSurface SegmentModel::Run(const IDirect3DSurface& pSrc, const DWORD cbI
 	std::vector<int64_t> shape = { 1, 3, m_imageHeightInPixels, m_imageWidthInPixels };
 	// TODO: Make sure input surface still has the same shape as m_imageHeight and m_imageWidth? 
 
-
 	// 2. Normalize input tensor
-	LearningModelSession normalizationSession = CreateLearningModelSession(Normalize0_1ThenZScore(m_imageHeightInPixels, m_imageWidthInPixels, 3, mean, std));
+	LearningModelSession normalizationSession = CreateLearningModelSession(Normalize0_1ThenZScore(m_imageHeightInPixels, m_imageWidthInPixels, 3, mean, stddev));
 	ITensor intermediateTensor = TensorFloat::Create(shape);
 	auto binding = LearningModelBinding(normalizationSession);
 	hstring inputName = normalizationSession.Model().InputFeatures().GetAt(0).Name();
@@ -172,17 +171,17 @@ IDirect3DSurface SegmentModel::RunTestDXGI(const IDirect3DSurface& pSrc,  const 
 	auto binding = LearningModelBinding(m_sess);
 
 	hstring inputName = m_sess.Model().InputFeatures().GetAt(0).Name();
-	binding.Bind(inputName, input2);
+	binding.Bind(inputName, input);
 	
 	hstring outputName = m_sess.Model().OutputFeatures().GetAt(0).Name();
 
 	auto outputBindProperties = PropertySet();
 	binding.Bind(outputName, output);
-	auto results = m_sess.Evaluate(binding, L"");
+	/*auto results = m_sess.Evaluate(binding, L"");
 	auto resultFrame = results.Outputs().Lookup(outputName).try_as<VideoFrame>();
-	auto desc2 = resultFrame.Direct3DSurface().Description();
+	auto desc2 = resultFrame.Direct3DSurface().Description();*/
 
-	resultFrame.CopyToAsync(input).get();
+	output.CopyToAsync(input).get(); // Copy back to input frame so MFT uses the same surface
 	return input.Direct3DSurface();
 }
 
@@ -217,7 +216,7 @@ LearningModel SegmentModel::PostProcess(long n, long c, long h, long w, long axi
 		.Outputs().Add(LearningModelBuilder::CreateTensorFeatureDescriptor(L"OutputImage", TensorKind::Float, { -1, -1, h, w })) // Output of int64? 
 		// Argmax Model Outputs
 		.Operators().Add(LearningModelOperator(L"ArgMax")
-			.SetInput(L"data", L"Data")
+			.SetInput(L"data", L"InputScores")
 			.SetAttribute(L"keepdims", TensorInt64Bit::CreateFromArray({ 1 }, { 1 }))
 			.SetAttribute(L"axis", TensorInt64Bit::CreateFromIterable({ 1 }, { axis })) // Correct way of passing axis? 
 			.SetOutput(L"reduced", L"Reduced"))
@@ -235,6 +234,8 @@ LearningModel SegmentModel::PostProcess(long n, long c, long h, long w, long axi
 			.SetInput(L"B", L"MaskBinary")
 			.SetOutput(L"C", L"OutputImage"))
 		;
+
+	return builder.CreateModel();
 }
 LearningModel SegmentModel::Argmax(long axis, long h, long w)
 {

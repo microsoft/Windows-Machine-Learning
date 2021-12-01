@@ -4,7 +4,7 @@
 //
 #define DataFileType        DataFileResource
 #define DataFileTypeString  L"DataFileResource"
-#define IDR_SQUEEZENET_MODEL 101
+#define IDR_ENCRYPTED_MODEL 101
 
 // Next default values for new objects
 // 

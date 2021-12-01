@@ -128,13 +128,14 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <None Include="$(SolutionDir)$(Platform)\$(Configuration)\WinMLSamplesGalleryNative\*.dll" Link="%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
     <None Include="$(SolutionDir)..\..\build\external\opencv\cmake_config\$(Platform)\bin\$(Configuration)\*.dll" Link="%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
   <Import Project="$(WapProjPath)\Microsoft.DesktopBridge.targets" />
   <ItemGroup>
-    <PackageReference Include="Microsoft.AI.MachineLearning" Version="1.9.1" />
-    <PackageReference Include="Microsoft.ProjectReunion" Version="0.8.4">
+    <PackageReference Include="Microsoft.AI.MachineLearning">
+      <Version>1.9.1</Version>
+    </PackageReference>
+    <PackageReference Include="Microsoft.ProjectReunion" Version="0.8.5">
       <IncludeAssets>build</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.ProjectReunion.WinUI" Version="[0.8.0]">

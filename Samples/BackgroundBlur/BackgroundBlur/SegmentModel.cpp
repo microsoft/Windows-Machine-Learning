@@ -171,7 +171,8 @@ IDirect3DSurface SegmentModel::RunTestDXGI(const IDirect3DSurface& pSrc,  const 
 	auto binding = LearningModelBinding(m_sess);
 
 	hstring inputName = m_sess.Model().InputFeatures().GetAt(0).Name();
-	binding.Bind(inputName, input);
+	binding.Bind(inputName, input);			// Fails in VideoFrameToTensorConverer::ShareD3D11Texture
+	// binding.Bind(inputName, inpu2);		// Succeeds in VideoFrameToTensorConverer::ShareD3D11Texture
 	
 	hstring outputName = m_sess.Model().OutputFeatures().GetAt(0).Name();
 

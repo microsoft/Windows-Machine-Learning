@@ -10,4 +10,10 @@ namespace WinMLSamplesGalleryNative
         static OpenCVImage AddSaltAndPepperNoise(OpenCVImage image);
         static OpenCVImage DenoiseMedianBlur(OpenCVImage image);
     }
+
+    [default_interface]
+    runtimeclass EncryptedModels
+    {
+        static Microsoft.AI.MachineLearning.LearningModel LoadEncryptedResource(String key);
+    }
 }

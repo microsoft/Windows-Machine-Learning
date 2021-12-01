@@ -54,6 +54,16 @@
       "XAMLGithubLink": "https://github.com/microsoft/Windows-Machine-Learning/blob/master/Samples/WinMLSamplesGallery/WinMLSamplesGallery/Samples/ImageSharpInterop/ImageSharpInterop.xaml",
       "CSharpGithubLink": "https://github.com/microsoft/Windows-Machine-Learning/blob/master/Samples/WinMLSamplesGallery/WinMLSamplesGallery/Samples/ImageSharpInterop/ImageSharpInterop.xaml.cs",
       "Docs": []
+    },
+    {
+      "Title": "Encrypted Models",
+      "DescriptionShort": "The sample shows how to use Windows ML to load encrypted models from embedded resources.",
+      "Description": "The sample shows how to use Windows ML to load encrypted models from embedded resources.",
+      "Icon": "\uE155",
+      "Tag": "EncryptedResource",
+      "XAMLGithubLink": "https://github.com/microsoft/Windows-Machine-Learning/blob/master/Samples/WinMLSamplesGallery/WinMLSamplesGallery/Samples/ImageSharpInterop/EncryptedResource.xaml",
+      "CSharpGithubLink": "https://github.com/microsoft/Windows-Machine-Learning/blob/master/Samples/WinMLSamplesGallery/WinMLSamplesGallery/Samples/ImageSharpInterop/EncryptedResource.xaml.cs",
+      "Docs": []
     }
   ]
 }

@@ -52,4 +52,8 @@ private:
 	LearningModelSession m_sessFCN;
 	LearningModelSession m_sessPostprocess;
 
+	LearningModelBinding m_bindPreprocess;
+	LearningModelBinding m_bindFCN;
+	LearningModelBinding m_bindPostprocess;
+
 };

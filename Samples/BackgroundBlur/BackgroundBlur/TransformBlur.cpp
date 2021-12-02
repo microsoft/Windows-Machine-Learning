@@ -1328,7 +1328,7 @@ HRESULT TransformBlur::OnProcessOutput(IMFSample** ppOut)
         m_pD3DDevice.Release();
         hr = LockDevice(m_pD3DDeviceManager, TRUE, &m_pD3DDevice, &localHandle);
 
-        pD3DSurfaceDest = m_segmentModel.RunTestDXGI(pD3DSurfaceSrc, m_cbImageSize);
+        pD3DSurfaceDest = m_segmentModel.Run(pD3DSurfaceSrc, m_cbImageSize);
 
         // Build an output sample from the output surface
         auto spDxgiInterfaceAccess = pD3DSurfaceDest.as<Windows::Graphics::DirectX::Direct3D11::IDirect3DDxgiInterfaceAccess>();

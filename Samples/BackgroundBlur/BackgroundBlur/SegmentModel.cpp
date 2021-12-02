@@ -44,13 +44,17 @@ enum OnnxDataType : long {
 // TODO: Probably don't need to be globals
 std::array<float, 3> mean = { 0.485f, 0.456f, 0.406f };
 std::array<float, 3> stddev = { 0.229f, 0.224f, 0.225f };
+auto outputBindProperties = PropertySet();
 
 SegmentModel::SegmentModel() :
 	m_sess(NULL),
 	m_sessPreprocess(NULL),
 	m_sessFCN(NULL),
 	m_sessPostprocess(NULL),
-	m_useGPU(true)
+	m_useGPU(true),
+	m_bindPreprocess(NULL),
+	m_bindFCN(NULL),
+	m_bindPostprocess(NULL)
 {
 }
 
@@ -59,10 +63,11 @@ SegmentModel::SegmentModel(UINT32 w, UINT32 h) :
 	m_sessPreprocess(NULL),
 	m_sessFCN(NULL),
 	m_sessPostprocess(NULL),
-	m_useGPU(true)
+	m_useGPU(true),
+	m_bindPreprocess(NULL),
+	m_bindFCN(NULL),
+	m_bindPostprocess(NULL)
 {
-	// TODO: Adapt based on video_FOURCC- might not always be RGBA
-
 	SetImageSize(w, h);
 	m_sess = CreateLearningModelSession(Invert(1, 3, h, w));
 
@@ -70,6 +75,11 @@ SegmentModel::SegmentModel(UINT32 w, UINT32 h) :
 	m_sessPreprocess = CreateLearningModelSession(Normalize0_1ThenZScore(h, w, 3, mean, stddev));
 	m_sessFCN = CreateLearningModelSession(FCNResnet());
 	m_sessPostprocess = CreateLearningModelSession(PostProcess(1, 3, h, w, 1));
+
+	// Initialize segmentation bindings
+	m_bindPreprocess = LearningModelBinding(m_sessPreprocess);
+	m_bindFCN = LearningModelBinding(m_sessFCN);
+	m_bindPostprocess = LearningModelBinding(m_sessPostprocess);
 
 }
 void SegmentModel::SetImageSize(UINT32 w, UINT32 h)
@@ -80,7 +90,6 @@ void SegmentModel::SetImageSize(UINT32 w, UINT32 h)
 
 IDirect3DSurface SegmentModel::Run(const IDirect3DSurface& pSrc, const DWORD cbImageSize)
 {
-	// TODO: Make all these sessions earlier, so just passing inputs/outputs here
 	// 1. Get input buffer as a VideoFrame
 	VideoFrame input = VideoFrame::CreateWithDirect3D11Surface(pSrc);
 	auto desc = input.Direct3DSurface().Description(); // B8G8R8X8UIntNormalized
@@ -91,45 +100,41 @@ IDirect3DSurface SegmentModel::Run(const IDirect3DSurface& pSrc, const DWORD cbI
 	std::vector<int64_t> shape = { 1, 3, m_imageHeightInPixels, m_imageWidthInPixels };
 	// TODO: Make sure input surface still has the same shape as m_imageHeight and m_imageWidth? 
 
-	// 2. Normalize input tensor
-	LearningModelSession normalizationSession = CreateLearningModelSession(Normalize0_1ThenZScore(m_imageHeightInPixels, m_imageWidthInPixels, 3, mean, stddev));
+	// 2. Preprocessing: z-score normalization 
 	ITensor intermediateTensor = TensorFloat::Create(shape);
-	auto binding = LearningModelBinding(normalizationSession);
-	hstring inputName = normalizationSession.Model().InputFeatures().GetAt(0).Name();
-	binding.Bind(inputName, input2);
+	hstring inputName = m_sessPreprocess.Model().InputFeatures().GetAt(0).Name();
+	hstring outputName = m_sessPreprocess.Model().OutputFeatures().GetAt(0).Name();
 
-	hstring outputName = normalizationSession.Model().OutputFeatures().GetAt(0).Name();
-	auto outputBindProperties = PropertySet();
+	m_bindPreprocess.Bind(inputName, input2);
 	outputBindProperties.Insert(L"DisableTensorCpuSync", PropertyValue::CreateBoolean(true));
-	binding.Bind(outputName, intermediateTensor, outputBindProperties);
-	auto results = normalizationSession.Evaluate(binding, L"");
+	m_bindPreprocess.Bind(outputName, intermediateTensor, outputBindProperties);
+	m_sessPreprocess.EvaluateAsync(m_bindPreprocess, L"");
 
 	// 3. Run through actual model
 	std::vector<int64_t> FCNResnetOutputShape = { 1, 21, m_imageHeightInPixels, m_imageWidthInPixels };
-	LearningModelSession FCNResnetSession = CreateLearningModelSession(FCNResnet());
 	ITensor FCNResnetOutput = TensorFloat::Create(FCNResnetOutputShape);
-	auto FCNResnetBinding = Evaluate(FCNResnetSession, std::vector<ITensor*>{&intermediateTensor}, & FCNResnetOutput);
 
-	// 4.Extract labels with argmax
+	m_bindFCN.Bind(m_sessFCN.Model().InputFeatures().GetAt(0).Name(), intermediateTensor);
+	m_bindFCN.Bind(m_sessFCN.Model().OutputFeatures().GetAt(0).Name(), FCNResnetOutput, outputBindProperties);
+	m_sessFCN.EvaluateAsync(m_bindFCN, L"");
+
+	// 4.Postprocessing: extract labels from FCN scores and use to compose background-blurred image
 	ITensor rawLabels = TensorFloat::Create({1, 1, m_imageHeightInPixels, m_imageWidthInPixels});
-	LearningModelSession argmaxSession = CreateLearningModelSession(Argmax(1, m_imageHeightInPixels, m_imageWidthInPixels));
-	auto argmaxBinding = Evaluate(argmaxSession, std::vector<ITensor*>{&FCNResnetOutput}, & rawLabels, true);
-
-	// 5. Get the foreground
-	ITensor foreground = TensorUInt8Bit::Create(std::vector<int64_t>{1, m_imageHeightInPixels, m_imageWidthInPixels, 3});
-	std::array<int64_t,4> labelShape;
-	auto labels = rawLabels.try_as<TensorFloat>().Shape().GetMany(0, labelShape);
-
-	LearningModelSession foregroundSession = CreateLearningModelSession(GetForeground(1, 3, m_imageHeightInPixels, m_imageWidthInPixels));
-	binding = LearningModelBinding(foregroundSession);
-	binding.Bind(L"InputImage", input2);
-	binding.Bind(L"InputMask", rawLabels);
-	outputBindProperties = PropertySet();
 	outputBindProperties.Insert(L"DisableTensorCpuSync", PropertyValue::CreateBoolean(false));
-	binding.Bind(outputName, output, outputBindProperties);
-	results = foregroundSession.Evaluate(binding, L"");
+	m_bindPostprocess.Bind(m_sessPostprocess.Model().InputFeatures().GetAt(0).Name(), input2); // InputImage
+	m_bindPostprocess.Bind(m_sessPostprocess.Model().InputFeatures().GetAt(1).Name(), FCNResnetOutput); // InputScores
+	m_bindPostprocess.Bind(m_sessPostprocess.Model().OutputFeatures().GetAt(0).Name(), output); // TODO: DisableTensorCPUSync to false now? 
+	// Retrieve final output
+	m_sessPostprocess.EvaluateAsync(m_bindPostprocess, L"").get(); 
 
-	output.CopyToAsync(input).get();
+	// Copy back to the correct surface for MFT
+	output.CopyToAsync(input).get(); 
+
+	// Clean up bindings before returning
+	m_bindPreprocess.Clear();
+	m_bindFCN.Clear();
+	m_bindPostprocess.Clear(); 
+
 	return input.Direct3DSurface();
 }
 
@@ -214,7 +219,7 @@ LearningModel SegmentModel::PostProcess(long n, long c, long h, long w, long axi
 	auto builder = LearningModelBuilder::Create(12)
 		.Inputs().Add(LearningModelBuilder::CreateTensorFeatureDescriptor(L"InputImage", TensorKind::Float, { n, c, h, w }))
 		.Inputs().Add(LearningModelBuilder::CreateTensorFeatureDescriptor(L"InputScores", TensorKind::Float, { -1, -1, h, w })) // Different input type? 
-		.Outputs().Add(LearningModelBuilder::CreateTensorFeatureDescriptor(L"OutputImage", TensorKind::Float, { -1, -1, h, w })) // Output of int64? 
+		.Outputs().Add(LearningModelBuilder::CreateTensorFeatureDescriptor(L"OutputImage", TensorKind::Float, { n, c, h, w })) 
 		// Argmax Model Outputs
 		.Operators().Add(LearningModelOperator(L"ArgMax")
 			.SetInput(L"data", L"InputScores")

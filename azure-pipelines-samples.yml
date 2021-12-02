@@ -203,6 +203,15 @@ jobs:
           **\AppPackages\**
       condition: succeededOrFailed()
 
+    - task: CopyFiles@2
+      inputs:
+        targetFolder: '$(Build.ArtifactStagingDirectory)\$(BuildPlatform)\$(BuildConfiguration)\'
+        sourceFolder: 'Samples\WinMLSamplesGallery\WinMLSamplesGallery (Package)\bin\$(BuildPlatform)\$(BuildConfiguration)\'
+        Contents: |
+          ?(AdapterSelection|CustomOperator|CustomTensorization)**\*
+          SqueezeNetObjectDetection\*
+      condition: succeededOrFailed()
+
     - task: PowerShell@2
       displayName: 'Move App Packages'
       inputs:

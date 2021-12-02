@@ -16,9 +16,9 @@ Global
 		Release_Inbox|ARM = Release_Inbox|ARM
 		Release_Inbox|x64 = Release_Inbox|x64
 		Release_Inbox|x86 = Release_Inbox|x86
-		Release_Nuget|ARM = Release_Nuget|ARM
-		Release_Nuget|x64 = Release_Nuget|x64
-		Release_Nuget|x86 = Release_Nuget|x86
+		Release_NuGet|ARM = Release_NuGet|ARM
+		Release_NuGet|x64 = Release_NuGet|x64
+		Release_NuGet|x86 = Release_NuGet|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{B9DB8CE5-0491-4C2D-BEF7-C25E01EF55E3}.Debug_Inbox|ARM.ActiveCfg = Debug_Inbox|ARM
@@ -48,15 +48,15 @@ Global
 		{B9DB8CE5-0491-4C2D-BEF7-C25E01EF55E3}.Release_Inbox|x86.ActiveCfg = Release_Inbox|Win32
 		{B9DB8CE5-0491-4C2D-BEF7-C25E01EF55E3}.Release_Inbox|x86.Build.0 = Release_Inbox|Win32
 		{B9DB8CE5-0491-4C2D-BEF7-C25E01EF55E3}.Release_Inbox|x86.Deploy.0 = Release_Inbox|Win32
-		{B9DB8CE5-0491-4C2D-BEF7-C25E01EF55E3}.Release_Nuget|ARM.ActiveCfg = Release|ARM
-		{B9DB8CE5-0491-4C2D-BEF7-C25E01EF55E3}.Release_Nuget|ARM.Build.0 = Release|ARM
-		{B9DB8CE5-0491-4C2D-BEF7-C25E01EF55E3}.Release_Nuget|ARM.Deploy.0 = Release|ARM
-		{B9DB8CE5-0491-4C2D-BEF7-C25E01EF55E3}.Release_Nuget|x64.ActiveCfg = Release|x64
-		{B9DB8CE5-0491-4C2D-BEF7-C25E01EF55E3}.Release_Nuget|x64.Build.0 = Release|x64
-		{B9DB8CE5-0491-4C2D-BEF7-C25E01EF55E3}.Release_Nuget|x64.Deploy.0 = Release|x64
-		{B9DB8CE5-0491-4C2D-BEF7-C25E01EF55E3}.Release_Nuget|x86.ActiveCfg = Release|x86
-		{B9DB8CE5-0491-4C2D-BEF7-C25E01EF55E3}.Release_Nuget|x86.Build.0 = Release|x86
-		{B9DB8CE5-0491-4C2D-BEF7-C25E01EF55E3}.Release_Nuget|x86.Deploy.0 = Release|x86
+		{B9DB8CE5-0491-4C2D-BEF7-C25E01EF55E3}.Release_NuGet|ARM.ActiveCfg = Release|ARM
+		{B9DB8CE5-0491-4C2D-BEF7-C25E01EF55E3}.Release_NuGet|ARM.Build.0 = Release|ARM
+		{B9DB8CE5-0491-4C2D-BEF7-C25E01EF55E3}.Release_NuGet|ARM.Deploy.0 = Release|ARM
+		{B9DB8CE5-0491-4C2D-BEF7-C25E01EF55E3}.Release_NuGet|x64.ActiveCfg = Release|x64
+		{B9DB8CE5-0491-4C2D-BEF7-C25E01EF55E3}.Release_NuGet|x64.Build.0 = Release|x64
+		{B9DB8CE5-0491-4C2D-BEF7-C25E01EF55E3}.Release_NuGet|x64.Deploy.0 = Release|x64
+		{B9DB8CE5-0491-4C2D-BEF7-C25E01EF55E3}.Release_NuGet|x86.ActiveCfg = Release|x86
+		{B9DB8CE5-0491-4C2D-BEF7-C25E01EF55E3}.Release_NuGet|x86.Build.0 = Release|x86
+		{B9DB8CE5-0491-4C2D-BEF7-C25E01EF55E3}.Release_NuGet|x86.Deploy.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

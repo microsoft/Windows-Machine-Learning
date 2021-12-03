@@ -7,9 +7,7 @@
     xmlns:local_samples="using:WinMLSamplesGallery.Samples"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    mc:Ignorable="d"
-    
-    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+    mc:Ignorable="d">
 
     <Page.Resources>
         <DataTemplate x:Key="ImageTemplate" x:DataType="local_controls:Thumbnail">
@@ -122,9 +120,13 @@
                 <StackPanel Grid.Row="0" Orientation="Horizontal" Padding="0,10,0,0">
                     <StackPanel Orientation="Vertical">
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
-                            <Button FontFamily="Segoe MDL2 Assets" Content="&#xE1A5;" Width="55" Height="50" HorizontalAlignment="Left" Click="OpenButton_Clicked" />
+                            <Button FontFamily="Segoe MDL2 Assets" Content="&#xE1A5;"
+                                    Background="{ThemeResource ButtonBackgroundThemeBrush}"
+                                    Width="55" Height="50" HorizontalAlignment="Left" Click="OpenButton_Clicked" />
                             <Grid Padding="5,0,0,0">
-                                <ComboBox x:Name="DeviceComboBox" SelectedIndex="0" Background="LightGray" PlaceholderText="Device" Height="50" Width="139"
+                                <ComboBox x:Name="DeviceComboBox" SelectedIndex="0"
+                                          Background="{ThemeResource ButtonBackgroundThemeBrush}"
+                                          PlaceholderText="Device" Height="50" Width="139"
                                           SelectionChanged="DeviceComboBox_SelectionChanged">
                                     <TextBlock Text="CPU" FontSize="18" Typography.Capitals="AllSmallCaps" Typography.StylisticSet4="True"/>
                                     <TextBlock Text="DirectML" FontSize="18" Typography.Capitals="AllSmallCaps" Typography.StylisticSet4="True"/>

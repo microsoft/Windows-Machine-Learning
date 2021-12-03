@@ -6,9 +6,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:local_controls="using:WinMLSamplesGallery.Controls"
     xmlns:local_samples="using:WinMLSamplesGallery.Samples"
-    mc:Ignorable="d"
-    
-    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+    mc:Ignorable="d">
 
     <Page.Resources>
         <DataTemplate x:Name="InferenceResultsTemplate" x:DataType="local_controls:Prediction">

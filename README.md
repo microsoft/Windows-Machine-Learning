@@ -113,11 +113,6 @@ These advanced samples show how to use various binding and evaluation features i
 
 - **[YoloV4 Object Detection](https://github.com/Microsoft/Windows-AppConsult-Samples-UWP/tree/master/PlaneIdentifier)**: This tutorial shows how to build a UWP C# app that uses the YOLOv4 model to detect objects in video streams.
 
-- **[OpenCV](Samples/WinMLSamplesGallery/WinMLSamplesGallery/Samples/OpenCVInterop)**: See how to integrate [Windows ML](https://docs.microsoft.com/en-us/windows/ai/windows-ml/) with [OpenCV](https://github.com/opencv/opencv).
-
-- **[ImageSharp](Samples/WinMLSamplesGallery/WinMLSamplesGallery/Samples/ImageSharpInterop)**: See how to integrate [Windows ML](https://docs.microsoft.com/en-us/windows/ai/windows-ml/) with [ImageSharp](https://github.com/SixLabors/ImageSharp).
-
-
 ## Developer Tools
 
 - **Model Conversion**

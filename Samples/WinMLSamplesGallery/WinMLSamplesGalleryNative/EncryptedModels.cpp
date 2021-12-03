@@ -39,44 +39,56 @@ static HMODULE GetCurrentModule()
 
 template <typename T = void*>
 void EncryptToFile(const char* file, crypto_core::CryptographicKey key, wss::IBuffer buffer) {
+    // Encrypt
     auto encrypted_model_buffer = crypto_core::CryptographicEngine::Encrypt(key, buffer, nullptr);
+
+    // Get encrypted_model_buffer as IBufferByteAccess
     auto byte_access = encrypted_model_buffer.as<::Windows::Storage::Streams::IBufferByteAccess>();
+
+    // Get buffer as bytes*
     byte* bytes;
-    byte_access->Buffer(&bytes);
+    HRESULT hr = byte_access->Buffer(&bytes);
+    if (FAILED(hr)) {
+        __fastfail(3);
+    }
+
+    // Get buffer length
     auto encrypted_length = encrypted_model_buffer.Length();
-    std::ofstream f(file, std::ios_base::binary);
-    f.write(reinterpret_cast<const char*>(bytes), encrypted_length);
-    f.flush();
-    f.close();
+
+    // Write the buffer to the file
+    std::ofstream file(file, std::ios_base::binary);
+    file.write(reinterpret_cast<const char*>(bytes), encrypted_length);
+    file.flush();
+    file.close();
 }
 
+winrt::Microsoft::AI::MachineLearning::LearningModel EncryptedModels::LoadEncryptedResource(hstring const& key)
+{
+    winrt::Microsoft::AI::MachineLearning::LearningModel model = nullptr;
+    auto current_module = GetCurrentModule();
 
-static winrt::Microsoft::AI::MachineLearning::LearningModel CreateModelFromRandomAccessStreamReferenceFromPath(
-    const char* key) {
+    // Find the resource
+    const auto model_resource_info = FindResource(current_module, MAKEINTRESOURCE(IDR_ENCRYPTED_MODEL), DataFileTypeString);
+    if (model_resource_info == nullptr)
+    {
+        __fastfail(1);
+    }
+
+    // Load the resource
+    const auto model_resource = LoadResource(current_module, model_resource_info);
+    if (model_resource == nullptr)
+    {
+        __fastfail(2);
+    }
+
+    // get a byte point to the resource
+    const unsigned char* model_bytes = static_cast<const unsigned char*>(LockResource(model_resource));
+    const auto model_length = SizeofResource(current_module, model_resource_info);
+
     try {
-        auto current_module = GetCurrentModule();
-
-        // Find the resource
-        const auto modelResource = FindResource(current_module, MAKEINTRESOURCE(IDR_ENCRYPTED_MODEL), DataFileTypeString);
-        if (modelResource == nullptr)
-        {
-            __fastfail(1);
-        }
-
-        // Load the resource
-        const auto modelMem = LoadResource(current_module, modelResource);
-        if (modelMem == nullptr)
-        {
-            __fastfail(2);
-        }
-
-        // get a byte point to the resource
-        const unsigned char* data = static_cast<const unsigned char*>(LockResource(modelMem));
-        const auto length = SizeofResource(current_module, modelResource);
-
         // get start and end pointers
-        auto start = reinterpret_cast<const uint8_t*>(data);
-        auto end = reinterpret_cast<const uint8_t*>(data + length);
+        auto start = reinterpret_cast<const uint8_t*>(model_bytes);
+        auto end = reinterpret_cast<const uint8_t*>(model_bytes + model_length);
 
         // wrap bytes in weak buffer
         winrt::com_ptr<abi_wss::IBuffer> ptr;
@@ -85,9 +97,9 @@ static winrt::Microsoft::AI::MachineLearning::LearningModel CreateModelFromRando
         winrt::attach_abi(model_buffer, ptr.detach());
 
         // Create the key
-        auto algName = crypto_core::SymmetricAlgorithmNames::AesEcbPkcs7();
-        auto provider = crypto_core::SymmetricKeyAlgorithmProvider::OpenAlgorithm(algName);
-        auto key_buffer = crypto::CryptographicBuffer::ConvertStringToBinary(winrt::to_hstring(key), crypto::BinaryStringEncoding::Utf8);
+        auto algorithm_name = crypto_core::SymmetricAlgorithmNames::AesEcbPkcs7();
+        auto provider = crypto_core::SymmetricKeyAlgorithmProvider::OpenAlgorithm(algorithm_name);
+        auto key_buffer = crypto::CryptographicBuffer::ConvertStringToBinary(key, crypto::BinaryStringEncoding::Utf8);
         auto crypto_key = provider.CreateSymmetricKey(key_buffer);
 
         // Only needed to generate the encrypted model
@@ -95,7 +107,9 @@ static winrt::Microsoft::AI::MachineLearning::LearningModel CreateModelFromRando
 
         // Decrypt
         auto decrypted_model_buffer = crypto_core::CryptographicEngine::Decrypt(crypto_key, model_buffer, nullptr);
-        winrt::com_ptr<abi_wss::IBuffer> decrypted_buffer_abi{ decrypted_model_buffer.as<abi_wss::IBuffer>() };
+        auto decrypted_buffer_abi = winrt::com_ptr<abi_wss::IBuffer> {
+            decrypted_model_buffer.as<abi_wss::IBuffer>()
+        };
 
         // wrap buffer in random access stream
         wrl::ComPtr<ABI::Windows::Storage::Streams::IRandomAccessStreamReference> reference;
@@ -103,21 +117,17 @@ static winrt::Microsoft::AI::MachineLearning::LearningModel CreateModelFromRando
         winrt::Windows::Storage::Streams::IRandomAccessStreamReference random_access_stream;
         winrt::attach_abi(random_access_stream, reference.Detach());
 
-        auto model = winrt::Microsoft::AI::MachineLearning::LearningModel::LoadFromStream(random_access_stream);
-
-        // clean up.
-        FreeResource(modelMem);
-
-        return model;
+        model = winrt::Microsoft::AI::MachineLearning::LearningModel::LoadFromStream(random_access_stream);
     }
     catch (...) {
-        return nullptr;
+        // Hide errors
+        model = nullptr;
     }
-}
 
-winrt::Microsoft::AI::MachineLearning::LearningModel EncryptedModels::LoadEncryptedResource(hstring const& key)
-{
-    return CreateModelFromRandomAccessStreamReferenceFromPath(winrt::to_string(key).c_str());
+    // Clean up.
+    FreeResource(model_resource);
+
+    return model;
 }
 
 }

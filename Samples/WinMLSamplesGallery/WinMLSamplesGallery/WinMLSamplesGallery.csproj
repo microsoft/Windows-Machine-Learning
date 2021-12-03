@@ -19,6 +19,12 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Remove="Samples\EncryptedResource\**" />
+    <EmbeddedResource Remove="Samples\EncryptedResource\**" />
+    <None Remove="Samples\EncryptedResource\**" />
+    <Page Remove="Samples\EncryptedResource\**" />
+  </ItemGroup>
+  <ItemGroup>
     <Compile Remove="Samples\ObjectDetector\ImageEffects.xaml.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -82,7 +88,6 @@
   <ItemGroup>
     <None Include="Samples\ImageEffects\ImageEffects.xaml.cs" />
     <None Include="Samples\ImageClassifier\ImageClassifier.xaml.cs" />
-    <None Include="Samples\EncryptedResource\EncryptedResource.xaml.cs" />
     <None Include="Samples\OpenCVInterop\OpenCVInterop.xaml.cs" />
     <None Include="Samples\ImageSharpInterop\ImageSharpInterop.xaml.cs" />
   </ItemGroup>
@@ -143,9 +148,6 @@
   <ItemGroup>
     <Page Update="Samples\ImageClassifier\ImageClassifier.xaml">
       <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Update="Samples\EncryptedResource\EncryptedResource.xaml">
-      <XamlRuntime>MSBuild:Compile</XamlRuntime>
     </Page>
     <Page Update="Samples\OpenCVInterop\OpenCVInterop.xaml">
       <Generator>MSBuild:Compile</Generator>

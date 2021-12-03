@@ -34,8 +34,8 @@ namespace WinMLSamplesGallery
                 case "ImageSharpInterop":
                     SampleFrame.Navigate(typeof(Samples.ImageSharpInterop));
                     break;
-                case "EncryptedResource":
-                    SampleFrame.Navigate(typeof(Samples.EncryptedResource));
+                case "EncryptedModel":
+                    SampleFrame.Navigate(typeof(Samples.EncryptedModel));
                     break;
             }
             if (sampleMetadata.Docs.Count > 0)

@@ -20,6 +20,7 @@ using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using ImageSharpExtensionMethods;
 using SixLabors.ImageSharp.Processing;
+using System.IO;
 
 namespace WinMLSamplesGallery.Samples
 {
@@ -40,7 +41,6 @@ namespace WinMLSamplesGallery.Samples
 
         private Image<Bgra32> CurrentImage { get; set; }
 
-#pragma warning disable CA1416 // Validate platform compatibility
         private LearningModelDeviceKind SelectedDeviceKind
         {
             get
@@ -50,7 +50,6 @@ namespace WinMLSamplesGallery.Samples
                             LearningModelDeviceKind.DirectXHighPerformance;
             }
         }
-#pragma warning restore CA1416 // Validate platform compatibility
 
         public ImageSharpInterop()
         {
@@ -58,13 +57,18 @@ namespace WinMLSamplesGallery.Samples
 
             var tensorizationModel = TensorizationModels.BasicTensorization(Height, Width, BatchSize, Channels, Height, Width, "nearest");
             _tensorizationSession = CreateLearningModelSession(tensorizationModel, SelectedDeviceKind);
-            _inferenceSession = CreateLearningModelSession("ms-appx:///Models/squeezenet1.1-7.onnx");
-            _postProcessingSession = CreateLearningModelSession(TensorizationModels.SoftMaxThenTopK(TopK));
+
+            var inferenceModelName = "squeezenet1.1-7.onnx";
+            var inferenceModelPath = Path.Join(Windows.ApplicationModel.Package.Current.InstalledLocation.Path, "Models", inferenceModelName);
+            var inferenceModel = LearningModel.LoadFromFilePath(inferenceModelPath);
+            _inferenceSession = CreateLearningModelSession(inferenceModel);
+
+            var postProcessingModel = TensorizationModels.SoftMaxThenTopK(TopK);
+            _postProcessingSession = CreateLearningModelSession(postProcessingModel);
 
             BasicGridView.SelectedIndex = 0;
         }
 
-#pragma warning disable CA1416 // Validate platform compatibility
         private (IEnumerable<string>, IReadOnlyList<float>) Classify(Image<Bgra32> image, float angle)
         {
             long start, stop;
@@ -139,13 +143,6 @@ namespace WinMLSamplesGallery.Samples
             return session.Evaluate(binding, "");
         }
 
-        private LearningModelSession CreateLearningModelSession(string modelPath)
-        {
-            var model = CreateLearningModel(modelPath);
-            var session =  CreateLearningModelSession(model);
-            return session;
-        }
-
         private LearningModelSession CreateLearningModelSession(LearningModel model, Nullable<LearningModelDeviceKind> kind = null)
         {
             var device = new LearningModelDevice(kind ?? SelectedDeviceKind);
@@ -156,14 +153,6 @@ namespace WinMLSamplesGallery.Samples
             var session = new LearningModelSession(model, device, options);
             return session;
         }
-
-        private static LearningModel CreateLearningModel(string modelPath)
-        {
-            var uri = new Uri(modelPath);
-            var file = StorageFile.GetFileFromApplicationUriAsync(uri).GetAwaiter().GetResult();
-            return LearningModel.LoadFromStorageFileAsync(file).GetAwaiter().GetResult();
-        }
-#pragma warning restore CA1416 // Validate platform compatibility
 
         private void TryPerformInference(bool reloadImages = true)
         {

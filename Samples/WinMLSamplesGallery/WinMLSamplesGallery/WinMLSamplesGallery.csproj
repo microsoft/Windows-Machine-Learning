@@ -86,6 +86,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Include="..\.editorconfig" Link=".editorconfig" />
     <None Include="Samples\ImageEffects\ImageEffects.xaml.cs" />
     <None Include="Samples\ImageClassifier\ImageClassifier.xaml.cs" />
     <None Include="Samples\OpenCVInterop\OpenCVInterop.xaml.cs" />

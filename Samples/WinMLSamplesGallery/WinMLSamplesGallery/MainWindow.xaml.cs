@@ -110,5 +110,15 @@ namespace WinMLSamplesGallery
             // here to load the home page.
             NavView_Navigate("home", new Microsoft.UI.Xaml.Media.Animation.EntranceNavigationTransitionInfo());
         }
+
+        private void nvSample_PaneClosing(NavigationView sender, NavigationViewPaneClosingEventArgs args)
+        {
+            LearnMoreLink.Visibility = Visibility.Collapsed;
+        }
+
+        private void nvSample_PaneOpening(NavigationView sender, object args)
+        {
+            LearnMoreLink.Visibility = Visibility.Visible;
+        }
     }
 }

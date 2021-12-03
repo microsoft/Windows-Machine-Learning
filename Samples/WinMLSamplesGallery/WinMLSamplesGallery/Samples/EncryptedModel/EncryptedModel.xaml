@@ -35,15 +35,19 @@
             </StackPanel>
         </DataTemplate>
     </Page.Resources>
-    <Grid>
+    <Grid Padding="0,20,0,0">
         <StackPanel>
-            <StackPanel Orientation="Horizontal" Margin="0,20,0,0">
-                <PasswordBox x:Name="DecryptionKey" Header="Enter the key:" Width="228" Password="WindowsMLSamples" PasswordChar="#"/>
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Text="Enter the Key:" FontSize="16"
+                    Typography.Capitals="AllSmallCaps" Typography.StylisticSet4="True"
+                    Foreground="Black" FontFamily="Segoe UI Light" VerticalAlignment="Bottom"
+                    Padding="0, 0, 10, 7"/>
+                <PasswordBox x:Name="DecryptionKey" Width="226" Password="WindowsMLSamples" PasswordChar="#" HorizontalAlignment="Left"/>
                 <Button Content="Decrypt" x:Name="DecryptButton" 
                     Margin="2,0,0,0" Click="OnDecryptClick" VerticalAlignment="Bottom"
                     Style="{StaticResource AccentButtonStyle}"
-                    Width="100" />
-                <Button Content="View key..." Margin="2,0,0,0" VerticalAlignment="Bottom">
+                    Width="113" />
+                <Button Width="113" Content="View key..." Margin="2,0,0,0" VerticalAlignment="Bottom">
                     <Button.Flyout>
                         <Flyout>
                             <StackPanel Grid.Row="0" Grid.Column="1" HorizontalAlignment="Right">
@@ -53,22 +57,23 @@
                     </Button.Flyout>
                 </Button>
                 <TextBlock x:Name="Fail" FontSize="16" FontWeight="Bold"
-                       Visibility="Collapsed"
-                       Typography.Capitals="AllSmallCaps" Typography.StylisticSet4="True"
-                       Foreground="Red" FontFamily="Segoe UI Light" Text="Invalid key!" VerticalAlignment="Bottom"
-                       Padding="7, 0, 0, 7"
-                       />
+                    Visibility="Collapsed"
+                    Typography.Capitals="AllSmallCaps" Typography.StylisticSet4="True"
+                    Foreground="Red" FontFamily="Segoe UI Light" Text="Invalid key!" VerticalAlignment="Bottom"
+                    Padding="7, 0, 0, 7"
+                    />
                 <TextBlock x:Name="Succeed" FontSize="16" FontWeight="Bold"
-                       Visibility="Collapsed"
-                       Typography.Capitals="AllSmallCaps" Typography.StylisticSet4="True"
-                       Foreground="Green" FontFamily="Segoe UI Light" Text="Model decrypted!" VerticalAlignment="Bottom"
-                       Padding="7, 0, 0, 7"
+                    Visibility="Collapsed"
+                    Typography.Capitals="AllSmallCaps" Typography.StylisticSet4="True"
+                    Foreground="Green" FontFamily="Segoe UI Light" Text="Model decrypted!" VerticalAlignment="Bottom"
+                    Padding="7, 0, 0, 7"
                        />
             </StackPanel>
             <StackPanel Orientation="Horizontal" Padding="0,2,0,0">
+
                 <Image x:Name="InputImage" Source="ms-appx:///InputData/hummingbird.jpg"
                        Margin="0,1,0,0"
-                       Stretch="UniformToFill" Height="228" Width="228" VerticalAlignment="Top" HorizontalAlignment="Left"/>
+                       Stretch="UniformToFill" Height="226" Width="226" VerticalAlignment="Top" HorizontalAlignment="Left"/>
 
                 <ListView Grid.Row="2"
                           Padding="1,0,0,0"

@@ -41,8 +41,6 @@ namespace WinMLSamplesGallery.Samples
         private LearningModelSession _tensorizationSession;
         private LearningModelSession _postProcessingSession;
 
-        private static Dictionary<long, string> _imagenetLabels;
-
         private WinMLSamplesGalleryNative.OpenCVImage Original { get; set; }
         private WinMLSamplesGalleryNative.OpenCVImage Noisy { get; set; }
         private WinMLSamplesGalleryNative.OpenCVImage Denoised { get; set; }
@@ -115,7 +113,6 @@ namespace WinMLSamplesGallery.Samples
             this.InitializeComponent();
             CurrentImagePath = null;
             InferenceChoice = ClassifyChoice.Denoised;
-            _imagenetLabels = LoadLabels("ms-appx:///InputData/sysnet.txt");
             _inferenceSession = CreateLearningModelSession("ms-appx:///Models/squeezenet1.1-7.onnx");
             _postProcessingSession = CreateLearningModelSession(TensorizationModels.SoftMaxThenTopK(TopK));
 
@@ -157,7 +154,7 @@ namespace WinMLSamplesGallery.Samples
             // Return results
             var probabilities = topKValues.GetAsVectorView();
             var indices = topKIndices.GetAsVectorView();
-            var labels = indices.Select((index) => _imagenetLabels[index]);
+            var labels = indices.Select((index) => ClassificationLabels.ImageNet[index]);
             stop = HighResolutionClock.UtcNow();
             var postProcessDuration = HighResolutionClock.DurationInMs(start, stop);
 
@@ -218,24 +215,6 @@ namespace WinMLSamplesGallery.Samples
             return LearningModel.LoadFromStorageFileAsync(file).GetAwaiter().GetResult();
         }
 #pragma warning restore CA1416 // Validate platform compatibility
-
-        private static Dictionary<long, string> LoadLabels(string csvFile)
-        {
-            var file = StorageFile.GetFileFromApplicationUriAsync(new Uri(csvFile)).GetAwaiter().GetResult();
-            var text = Windows.Storage.FileIO.ReadTextAsync(file).GetAwaiter().GetResult();
-            var labels = new Dictionary<long, string>();
-            var records = text.Split(Environment.NewLine);
-            foreach (var record in records)
-            {
-                var fields = record.Split(",", 2);
-                if (fields.Length == 2)
-                {
-                    var index = long.Parse(fields[0]);
-                    labels[index] = fields[1];
-                }
-            }
-            return labels;
-        }
 
         private void TryPerformInference(bool reloadImages = true)
         {

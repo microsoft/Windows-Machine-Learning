@@ -64,8 +64,6 @@ namespace WinMLSamplesGallery.Samples
         private Dictionary<Classifier, Func<LearningModel>> _preProcessorDictionary;
 
         private static Dictionary<long, string> _labels;
-        private static Dictionary<long, string> _imagenetLabels;
-        private static Dictionary<long, string> _ilsvrc2013Labels;
 
         private BitmapDecoder CurrentImageDecoder { get; set; }
 
@@ -131,16 +129,6 @@ namespace WinMLSamplesGallery.Samples
 
         private void EnsureInitialized()
         {
-            if (_imagenetLabels == null)
-            {
-                _imagenetLabels = LoadLabels("ms-appx:///InputData/sysnet.txt");
-            }
-
-            if (_ilsvrc2013Labels == null)
-            {
-                _ilsvrc2013Labels = LoadLabels("ms-appx:///InputData/ilsvrc2013.txt");
-            }
-
             if (_modelDictionary == null)
             {
                 _modelDictionary = new Dictionary<Classifier, string>{
@@ -168,10 +156,10 @@ namespace WinMLSamplesGallery.Samples
             if (_postProcessorDictionary == null)
             {
                 _postProcessorDictionary = new Dictionary<Classifier, Func<LearningModel>>{
-                    { Classifier.DenseNet121,       () => TensorizationModels.ReshapeThenSoftmaxThenTopK(new long[] { BatchSize, _imagenetLabels.Count, 1, 1 },
+                    { Classifier.DenseNet121,       () => TensorizationModels.ReshapeThenSoftmaxThenTopK(new long[] { BatchSize, ClassificationLabels.ImageNet.Count, 1, 1 },
                                                                                                     TopK,
                                                                                                     BatchSize,
-                                                                                                    _imagenetLabels.Count) },
+                                                                                                    ClassificationLabels.ImageNet.Count) },
                     { Classifier.EfficientNetLite4, () => TensorizationModels.SoftMaxThenTopK(TopK) },
                     { Classifier.ShuffleNet_V1,     () => TensorizationModels.TopK(TopK) },
                     { Classifier.SqueezeNet,        () => TensorizationModels.SoftMaxThenTopK(TopK) },
@@ -257,11 +245,11 @@ namespace WinMLSamplesGallery.Samples
 
                 if (model == Classifier.RCNN_ILSVRC13)
                 {
-                    _labels = _ilsvrc2013Labels;
+                    _labels = ClassificationLabels.ILSVRC2013;
                 }
                 else
                 {
-                    _labels = _imagenetLabels;
+                    _labels = ClassificationLabels.ImageNet;
                 }
 
                 CurrentModel = model;
@@ -395,24 +383,6 @@ namespace WinMLSamplesGallery.Samples
             return LearningModel.LoadFromStorageFileAsync(file).GetAwaiter().GetResult();
         }
 #pragma warning restore CA1416 // Validate platform compatibility
-
-        private static Dictionary<long, string> LoadLabels(string csvFile)
-        {
-            var file = StorageFile.GetFileFromApplicationUriAsync(new Uri(csvFile)).GetAwaiter().GetResult();
-            var text = Windows.Storage.FileIO.ReadTextAsync(file).GetAwaiter().GetResult();
-            var labels = new Dictionary<long, string>();
-            var records = text.Split(Environment.NewLine);
-            foreach (var record in records)
-            {
-                var fields = record.Split(",", 2);
-                if (fields.Length == 2)
-                {
-                    var index = long.Parse(fields[0]);
-                    labels[index] = fields[1];
-                }
-            }
-            return labels;
-        }
 
         private void TryPerformInference()
         {

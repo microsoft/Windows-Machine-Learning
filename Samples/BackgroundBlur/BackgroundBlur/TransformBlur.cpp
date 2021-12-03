@@ -1308,10 +1308,7 @@ HRESULT TransformBlur::OnProcessOutput(IMFSample** ppOut)
 
     // TODO: Find a way to make this resource shareable
     hr = pSrc->GetResource(IID_PPV_ARGS(&pTextSrc));
-    pTextSrc->GetDesc(&desc);
-    desc.MiscFlags |= D3D11_RESOURCE_MISC_SHARED_KEYEDMUTEX
-        | D3D11_RESOURCE_MISC_SHARED_NTHANDLE;
-    //m_pD3DDevice->CreateTexture2D(&desc, NULL, &pTextInterm);
+    pTextSrc->GetDesc(&desc); // Won't have any MiscFlags set!
 
     pTextSrc->GetDevice(&srcDevice); // Debugging
 

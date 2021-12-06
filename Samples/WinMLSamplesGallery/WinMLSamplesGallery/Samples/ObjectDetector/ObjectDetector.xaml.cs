@@ -6,6 +6,7 @@ using Microsoft.UI.Xaml.Media.Imaging;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.WindowsRuntime;
@@ -156,15 +157,12 @@ namespace WinMLSamplesGallery.Samples
             dmlDevice = new LearningModelDevice(LearningModelDeviceKind.DirectX);
             cpuDevice = new LearningModelDevice(LearningModelDeviceKind.Cpu);
 
-            _session = CreateLearningModelSession("ms-appx:///Models/yolov4.onnx");
-            initialized_ = true;
-        }
+            var modelName = "yolov4.onnx";
+            var modelPath = Path.Join(Windows.ApplicationModel.Package.Current.InstalledLocation.Path, "Models", modelName);
+            var model = LearningModel.LoadFromFilePath(modelPath);
+            _session = CreateLearningModelSession(model);
 
-        private LearningModelSession CreateLearningModelSession(string modelPath)
-        {
-            var model = CreateLearningModel(modelPath);
-            var session = CreateLearningModelSession(model);
-            return session;
+            initialized_ = true;
         }
 
         private LearningModelSession CreateLearningModelSession(LearningModel model)
@@ -180,13 +178,6 @@ namespace WinMLSamplesGallery.Samples
             };
             var session = new LearningModelSession(model, device, options);
             return session;
-        }
-
-        private static LearningModel CreateLearningModel(string modelPath)
-        {
-            var uri = new Uri(modelPath);
-            var file = StorageFile.GetFileFromApplicationUriAsync(uri).GetAwaiter().GetResult();
-            return LearningModel.LoadFromStorageFileAsync(file).GetAwaiter().GetResult();
         }
 
         private void DeviceComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)

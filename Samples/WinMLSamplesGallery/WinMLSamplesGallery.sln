@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.31112.23
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31919.166
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{C7167F0D-BC9F-4E6E-AFE1-012C56B48DB5}") = "WinMLSamplesGallery (Package)", "WinMLSamplesGallery (Package)\WinMLSamplesGallery (Package).wapproj", "{DEA7791F-55CF-4ED5-BC99-3870997B1242}"
 EndProject
@@ -10,6 +10,11 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "WinMLSamplesGalleryNative", "WinMLSamplesGalleryNative\WinMLSamplesGalleryNative.vcxproj", "{69E284E8-4542-4B92-A8CF-AD84D44FE553}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WinMLSamplesGalleryNative.Interop", "WinMLSamplesGalleryNative.Interop\WinMLSamplesGalleryNative.Interop.csproj", "{8E1F2E33-58A3-4454-926E-1C98B93A2A30}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{7EDD189E-04E6-432A-80A6-7811E157E9F6}"
+	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

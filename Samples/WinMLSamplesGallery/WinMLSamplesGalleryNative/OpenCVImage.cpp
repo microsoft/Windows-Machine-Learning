@@ -7,8 +7,10 @@
 #include "winrt/Microsoft.AI.MachineLearning.h"
 
 #include "WeakBuffer.h"
+
 #include <wrl.h>
 #include <sstream>
+#include <fstream>
 
 namespace wrl = ::Microsoft::WRL;
 namespace details = ::Microsoft::AI::MachineLearning::Details;

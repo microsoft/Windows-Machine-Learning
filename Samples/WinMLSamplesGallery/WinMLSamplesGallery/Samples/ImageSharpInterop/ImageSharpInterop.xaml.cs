@@ -20,6 +20,7 @@ using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using ImageSharpExtensionMethods;
 using SixLabors.ImageSharp.Processing;
+using System.IO;
 
 namespace WinMLSamplesGallery.Samples
 {
@@ -38,11 +39,8 @@ namespace WinMLSamplesGallery.Samples
         private LearningModelSession _tensorizationSession;
         private LearningModelSession _postProcessingSession;
 
-        private static Dictionary<long, string> _imagenetLabels;
-
         private Image<Bgra32> CurrentImage { get; set; }
 
-#pragma warning disable CA1416 // Validate platform compatibility
         private LearningModelDeviceKind SelectedDeviceKind
         {
             get
@@ -52,22 +50,25 @@ namespace WinMLSamplesGallery.Samples
                             LearningModelDeviceKind.DirectXHighPerformance;
             }
         }
-#pragma warning restore CA1416 // Validate platform compatibility
 
         public ImageSharpInterop()
         {
             this.InitializeComponent();
 
-            _imagenetLabels = LoadLabels("ms-appx:///InputData/sysnet.txt");
             var tensorizationModel = TensorizationModels.BasicTensorization(Height, Width, BatchSize, Channels, Height, Width, "nearest");
             _tensorizationSession = CreateLearningModelSession(tensorizationModel, SelectedDeviceKind);
-            _inferenceSession = CreateLearningModelSession("ms-appx:///Models/squeezenet1.1-7.onnx");
-            _postProcessingSession = CreateLearningModelSession(TensorizationModels.SoftMaxThenTopK(TopK));
+
+            var inferenceModelName = "squeezenet1.1-7.onnx";
+            var inferenceModelPath = Path.Join(Windows.ApplicationModel.Package.Current.InstalledLocation.Path, "Models", inferenceModelName);
+            var inferenceModel = LearningModel.LoadFromFilePath(inferenceModelPath);
+            _inferenceSession = CreateLearningModelSession(inferenceModel);
+
+            var postProcessingModel = TensorizationModels.SoftMaxThenTopK(TopK);
+            _postProcessingSession = CreateLearningModelSession(postProcessingModel);
 
             BasicGridView.SelectedIndex = 0;
         }
 
-#pragma warning disable CA1416 // Validate platform compatibility
         private (IEnumerable<string>, IReadOnlyList<float>) Classify(Image<Bgra32> image, float angle)
         {
             long start, stop;
@@ -104,7 +105,7 @@ namespace WinMLSamplesGallery.Samples
             // Return results
             var probabilities = topKValues.GetAsVectorView();
             var indices = topKIndices.GetAsVectorView();
-            var labels = indices.Select((index) => _imagenetLabels[index]);
+            var labels = indices.Select((index) => ClassificationLabels.ImageNet[index]);
             stop = HighResolutionClock.UtcNow();
             var postProcessDuration = HighResolutionClock.DurationInMs(start, stop);
 
@@ -142,13 +143,6 @@ namespace WinMLSamplesGallery.Samples
             return session.Evaluate(binding, "");
         }
 
-        private LearningModelSession CreateLearningModelSession(string modelPath)
-        {
-            var model = CreateLearningModel(modelPath);
-            var session =  CreateLearningModelSession(model);
-            return session;
-        }
-
         private LearningModelSession CreateLearningModelSession(LearningModel model, Nullable<LearningModelDeviceKind> kind = null)
         {
             var device = new LearningModelDevice(kind ?? SelectedDeviceKind);
@@ -158,32 +152,6 @@ namespace WinMLSamplesGallery.Samples
             };
             var session = new LearningModelSession(model, device, options);
             return session;
-        }
-
-        private static LearningModel CreateLearningModel(string modelPath)
-        {
-            var uri = new Uri(modelPath);
-            var file = StorageFile.GetFileFromApplicationUriAsync(uri).GetAwaiter().GetResult();
-            return LearningModel.LoadFromStorageFileAsync(file).GetAwaiter().GetResult();
-        }
-#pragma warning restore CA1416 // Validate platform compatibility
-
-        private static Dictionary<long, string> LoadLabels(string csvFile)
-        {
-            var file = StorageFile.GetFileFromApplicationUriAsync(new Uri(csvFile)).GetAwaiter().GetResult();
-            var text = Windows.Storage.FileIO.ReadTextAsync(file).GetAwaiter().GetResult();
-            var labels = new Dictionary<long, string>();
-            var records = text.Split(Environment.NewLine);
-            foreach (var record in records)
-            {
-                var fields = record.Split(",", 2);
-                if (fields.Length == 2)
-                {
-                    var index = long.Parse(fields[0]);
-                    labels[index] = fields[1];
-                }
-            }
-            return labels;
         }
 
         private void TryPerformInference(bool reloadImages = true)

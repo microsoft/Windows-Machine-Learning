@@ -17,7 +17,9 @@
             AlwaysShowHeader="False"
             PaneTitle="Windows ML"
             FontFamily="Arial"
-            IsSettingsVisible="False">
+            IsSettingsVisible="False"
+            PaneClosing="nvSample_PaneClosing"
+            PaneOpening="nvSample_PaneOpening">
             <NavigationView.Resources>
                 <SolidColorBrush x:Key="NavigationViewExpandedPaneBackground" Color="#f5f5f5"/>
                 <SolidColorBrush x:Key="NavigationViewDefaultPaneBackground" Color="#f5f5f5" />
@@ -26,11 +28,13 @@
                 <NavigationViewItem Icon="Flag" Content="Home" Tag="home" />
                 <NavigationViewItem Icon="Library" Content="All samples" Tag="all_samples" />
                 <NavigationViewItemSeparator />
-                <TextBlock>
-                    <Hyperlink TextDecorations="None" NavigateUri="https://docs.microsoft.com/en-us/windows/ai/windows-ml/">
-                        Learn more about Windows ML
-                    </Hyperlink>
-                </TextBlock>
+                <Grid>
+                    <TextBlock x:Name="LearnMoreLink">
+                        <Hyperlink  TextDecorations="None" NavigateUri="https://docs.microsoft.com/en-us/windows/ai/windows-ml/">
+                            Learn more about Windows ML
+                        </Hyperlink>
+                    </TextBlock>
+                </Grid>
             </NavigationView.MenuItems>
             <Frame x:Name="contentFrame" Navigated="contentFrame_Navigated" BorderBrush="#dbdbdb" BorderThickness="1,1,0,0" Margin="0,40,0,0"
                    CornerRadius="5,0,0,0" Background="White" FontFamily="Arial"/>

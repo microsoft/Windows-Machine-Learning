@@ -128,7 +128,6 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <None Include="$(SolutionDir)$(Platform)\$(Configuration)\WinMLSamplesGalleryNative\*.dll" Link="%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
     <None Include="$(SolutionDir)..\..\build\external\opencv\cmake_config\$(Platform)\bin\$(Configuration)\*.dll" Link="%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
   <Import Project="$(WapProjPath)\Microsoft.DesktopBridge.targets" />

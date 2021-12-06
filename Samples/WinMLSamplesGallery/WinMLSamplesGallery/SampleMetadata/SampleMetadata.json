@@ -8,7 +8,8 @@
       "Tag": "ImageClassifier",
       "XAMLGithubLink": "https://github.com/microsoft/Windows-Machine-Learning/blob/master/Samples/WinMLSamplesGallery/WinMLSamplesGallery/Samples/ImageClassifier/ImageClassifier.xaml",
       "CSharpGithubLink": "https://github.com/microsoft/Windows-Machine-Learning/blob/master/Samples/WinMLSamplesGallery/WinMLSamplesGallery/Samples/ImageClassifier/ImageClassifier.xaml.cs",
-      "Docs": []
+      "Docs": [],
+      "IsRecentlyAdded": true
     },
     {
       "Title": "Image Effects",
@@ -18,7 +19,8 @@
       "Tag": "ImageEffects",
       "XAMLGithubLink": "https://github.com/microsoft/Windows-Machine-Learning/blob/master/Samples/WinMLSamplesGallery/WinMLSamplesGallery/Samples/ImageEffects/ImageEffects.xaml",
       "CSharpGithubLink": "https://github.com/microsoft/Windows-Machine-Learning/blob/master/Samples/WinMLSamplesGallery/WinMLSamplesGallery/Samples/ImageEffects/ImageEffects.xaml.cs",
-      "Docs": []
+      "Docs": [],
+      "IsRecentlyAdded": true
     },
     {
       "Title": "Batched Inputs",
@@ -33,7 +35,8 @@
           "name": "BatchSizeOverride - API",
           "link": "https://docs.microsoft.com/en-us/uwp/api/windows.ai.machinelearning.learningmodelsessionoptions.batchsizeoverride?view=winrt-20348"
         }
-      ]
+      ],
+      "IsRecentlyAdded": true
     },
     {
       "Title": "OpenCV",
@@ -43,7 +46,8 @@
       "Tag": "OpenCVInterop",
       "XAMLGithubLink": "https://github.com/microsoft/Windows-Machine-Learning/blob/master/Samples/WinMLSamplesGallery/WinMLSamplesGallery/Samples/OpenCVInterop/OpenCVInterop.xaml",
       "CSharpGithubLink": "https://github.com/microsoft/Windows-Machine-Learning/blob/master/Samples/WinMLSamplesGallery/WinMLSamplesGallery/Samples/OpenCVInterop/OpenCVInterop.xaml.cs",
-      "Docs": []
+      "Docs": [],
+      "IsRecentlyAdded": true
     },
     {
       "Title": "ImageSharp",
@@ -53,7 +57,20 @@
       "Tag": "ImageSharpInterop",
       "XAMLGithubLink": "https://github.com/microsoft/Windows-Machine-Learning/blob/master/Samples/WinMLSamplesGallery/WinMLSamplesGallery/Samples/ImageSharpInterop/ImageSharpInterop.xaml",
       "CSharpGithubLink": "https://github.com/microsoft/Windows-Machine-Learning/blob/master/Samples/WinMLSamplesGallery/WinMLSamplesGallery/Samples/ImageSharpInterop/ImageSharpInterop.xaml.cs",
-      "Docs": []
+      "Docs": [],
+      "IsRecentlyAdded": true
+
+    },
+    {
+      "Title": "Encrypted Models",
+      "DescriptionShort": "The sample shows how to use Windows ML to load encrypted models from embedded resources.",
+      "Description": "The sample shows how to use Windows ML to load encrypted models from embedded resources. Enter the correct key to decrypt the model and classify the hummingbird.",
+      "Icon": "\uE155",
+      "Tag": "EncryptedModel",
+      "XAMLGithubLink": "https://github.com/microsoft/Windows-Machine-Learning/blob/master/Samples/WinMLSamplesGallery/WinMLSamplesGallery/Samples/EncryptedModel/EncryptedModel.xaml",
+      "CSharpGithubLink": "https://github.com/microsoft/Windows-Machine-Learning/blob/master/Samples/WinMLSamplesGallery/WinMLSamplesGallery/Samples/EncryptedModel/EncryptedModel.xaml.cs",
+      "Docs": [],
+      "IsRecentlyAdded": true
     }
   ]
 }

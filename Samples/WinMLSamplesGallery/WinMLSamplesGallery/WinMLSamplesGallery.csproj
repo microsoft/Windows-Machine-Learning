@@ -19,6 +19,12 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Remove="Samples\EncryptedResource\**" />
+    <EmbeddedResource Remove="Samples\EncryptedResource\**" />
+    <None Remove="Samples\EncryptedResource\**" />
+    <Page Remove="Samples\EncryptedResource\**" />
+  </ItemGroup>
+  <ItemGroup>
     <Compile Remove="Samples\ObjectDetector\ImageEffects.xaml.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -80,6 +86,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Include="..\.editorconfig" Link=".editorconfig" />
     <None Include="Samples\ImageEffects\ImageEffects.xaml.cs" />
     <None Include="Samples\ImageClassifier\ImageClassifier.xaml.cs" />
     <None Include="Samples\OpenCVInterop\OpenCVInterop.xaml.cs" />
@@ -152,7 +159,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Models\" />
     <Folder Include="LargeModels\" />
   </ItemGroup>
 

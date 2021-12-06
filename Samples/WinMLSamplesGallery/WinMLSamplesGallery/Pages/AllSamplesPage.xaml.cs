@@ -10,7 +10,7 @@ namespace WinMLSamplesGallery
         public AllSamplesPage()
         {
             this.InitializeComponent();
-            SamplesGrid.Navigate(typeof(SamplesGrid));
+            SamplesGrid.Navigate(typeof(SamplesGrid), typeof(AllSamplesPage));
         }
     }
 }

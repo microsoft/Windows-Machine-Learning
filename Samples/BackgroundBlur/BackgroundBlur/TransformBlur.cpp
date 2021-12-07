@@ -1,6 +1,13 @@
 #include "TransformBlur.h"
+#include <winrt/windows.media.h>
 #include <windows.graphics.directx.direct3d11.interop.h>
+#include <windows.media.core.interop.h>
 #include "common.h"
+
+#include <windows.graphics.imaging.interop.h>
+
+using namespace winrt::Windows::Media;
+
 
 // Video FOURCC codes.
 const FOURCC FOURCC_YUY2 = MAKEFOURCC('Y', 'U', 'Y', '2');
@@ -1285,7 +1292,7 @@ HRESULT TransformBlur::OnProcessOutput(IMFSample** ppOut)
     HRESULT hr = S_OK;
 
     // Extract resources from sample
-    CComPtr<IMFMediaBuffer> pBuffOut;
+    /*CComPtr<IMFMediaBuffer> pBuffOut;
     CComPtr<IMFMediaBuffer> pBuffIn;
     CComPtr<IMFDXGIBuffer> pSrc;
     CComPtr<ID3D11Texture2D> pTextSrc;
@@ -1315,37 +1322,44 @@ HRESULT TransformBlur::OnProcessOutput(IMFSample** ppOut)
     hr = pTextSrc->QueryInterface(IID_PPV_ARGS(&pSurfaceSrc));
 
     hr = CreateDirect3D11SurfaceFromDXGISurface(pSurfaceSrc, pSurfaceInspectable.put());
-    pD3DSurfaceSrc = pSurfaceInspectable.as<IDirect3DSurface>();
+    pD3DSurfaceSrc = pSurfaceInspectable.as<IDirect3DSurface>();*/
+    IDirect3DSurface pD3DSurfaceDest;
+    CComPtr<ID3D11Texture2D> pTextDest;
+    CComPtr<IMFMediaBuffer> pBuffOut;
+
+    CComPtr<IVideoFrameNativeFactory> factory;
+    winrt::com_ptr<IVideoFrameNative> frameNative;
+    winrt::com_ptr<IVideoFrameNative> frameNative2;
+    winrt::com_ptr<IVideoFrame> frameOut;
+    CComPtr<IMFSample> sample;
+    hr = CoCreateInstance(CLSID_VideoFrameNativeFactory, NULL, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&factory));
+    hr = factory->CreateFromMFSample(m_pSample,
+        __uuidof(m_pInputType),
+        m_imageWidthInPixels,
+        m_imageHeightInPixels,
+        true,
+        NULL,
+        m_pD3DDeviceManager,
+        IID_PPV_ARGS(&frameNative)
+    );
+
 
     // Invoke the image transform function.
     if (SUCCEEDED(hr))
     {
-        // Lock the device so renderer won't try and use the surface at the same time
-        HANDLE localHandle = NULL;
-        m_pD3DDevice.Release();
-        hr = LockDevice(m_pD3DDeviceManager, TRUE, &m_pD3DDevice, &localHandle);
-
-        pD3DSurfaceDest = m_segmentModel.Run(pD3DSurfaceSrc, m_cbImageSize);
-
-        // Build an output sample from the output surface
+        VideoFrame vf = frameNative.try_as<VideoFrame>();
+        pD3DSurfaceDest = m_segmentModel.RunTestDXGI(vf, m_cbImageSize);
         auto spDxgiInterfaceAccess = pD3DSurfaceDest.as<Windows::Graphics::DirectX::Direct3D11::IDirect3DDxgiInterfaceAccess>();
         hr = spDxgiInterfaceAccess->GetInterface(IID_PPV_ARGS(&pTextDest));
         hr = MFCreateDXGISurfaceBuffer(IID_ID3D11Texture2D, pTextDest, 0, TRUE, &pBuffOut);
         MFCreateSample(ppOut);
         hr = (*ppOut)->AddBuffer(pBuffOut);
-
-        // Signal to renderer that it can continue rendering surfaces to screen
-        hr = m_pD3DDeviceManager->UnlockDevice(localHandle, FALSE);
-        //pTextDest->GetDevice(&destDevice);
     }
-
     else
     {
         CHECK_HR(hr = E_UNEXPECTED);
     }
 
-    // Set the data size on the output buffer.
-    CHECK_HR(hr = pBuffOut->SetCurrentLength(m_cbImageSize));
 
     // The VideoBufferLock class automatically unlocks the buffers.
 done:

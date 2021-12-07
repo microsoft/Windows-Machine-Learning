@@ -9,8 +9,6 @@ using winrt::Windows::Foundation::PropertyValue;
 using winrt::hstring;
 using namespace winrt;
 using namespace Windows::Foundation::Collections;
-using namespace Windows::Media;
-
 
 enum OnnxDataType : long {
 	ONNX_UNDEFINED = 0,
@@ -164,31 +162,29 @@ void SegmentModel::RunTest(const BYTE** pSrc, BYTE** pDest, const DWORD cbImageS
 	}
 }
 
-IDirect3DSurface SegmentModel::RunTestDXGI(const IDirect3DSurface& pSrc,  const DWORD cbImageSize)
+IDirect3DSurface SegmentModel::RunTestDXGI(IVideoFrame src,  const DWORD cbImageSize)
 {
-	VideoFrame input = VideoFrame::CreateWithDirect3D11Surface(pSrc);
-	auto desc = input.Direct3DSurface().Description(); // B8G8R8X8UIntNormalized
+	//VideoFrame input = VideoFrame::CreateWithDirect3D11Surface(src);
+	auto desc = src.Direct3DSurface().Description(); // B8G8R8X8UIntNormalized
 
 	VideoFrame output = VideoFrame::CreateAsDirect3D11SurfaceBacked(desc.Format, desc.Width, desc.Height);
 	VideoFrame input2 = VideoFrame::CreateAsDirect3D11SurfaceBacked(desc.Format, desc.Width, desc.Height);
-	input.CopyToAsync(input2).get(); // TODO: I'm guessing it's this copy that's causing issues... 
+	src.CopyToAsync(input2).get(); // TODO: I'm guessing it's this copy that's causing issues... 
 	desc = input2.Direct3DSurface().Description();
 	auto binding = LearningModelBinding(m_sess);
 
 	hstring inputName = m_sess.Model().InputFeatures().GetAt(0).Name();
-	binding.Bind(inputName, input);			// Fails in VideoFrameToTensorConverer::ShareD3D11Texture
-	// binding.Bind(inputName, inpu2);		// Succeeds in VideoFrameToTensorConverer::ShareD3D11Texture
-	
+	binding.Bind(inputName, input2);		
 	hstring outputName = m_sess.Model().OutputFeatures().GetAt(0).Name();
 
 	auto outputBindProperties = PropertySet();
 	binding.Bind(outputName, output);
-	/*auto results = m_sess.Evaluate(binding, L"");
-	auto resultFrame = results.Outputs().Lookup(outputName).try_as<VideoFrame>();
+	auto results = m_sess.Evaluate(binding, L"");
+	/*auto resultFrame = results.Outputs().Lookup(outputName).try_as<VideoFrame>();
 	auto desc2 = resultFrame.Direct3DSurface().Description();*/
 
-	output.CopyToAsync(input).get(); // Copy back to input frame so MFT uses the same surface
-	return input.Direct3DSurface();
+	// output.CopyToAsync(src).get(); // Copy back to input frame so MFT uses the same surface
+	return input2.Direct3DSurface();
 }
 
 LearningModel SegmentModel::Invert(long n, long c, long h, long w)

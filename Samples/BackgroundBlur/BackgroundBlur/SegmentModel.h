@@ -2,6 +2,7 @@
 #include <winrt/Microsoft.AI.MachineLearning.Experimental.h>
 #include <winrt/Microsoft.AI.MachineLearning.h>
 #include <Windows.AI.MachineLearning.native.h>
+#include <windows.media.core.interop.h>
 #include <strsafe.h>
 #include <wtypes.h>
 #include <winrt/base.h>
@@ -11,6 +12,7 @@
 using namespace winrt::Microsoft::AI::MachineLearning;
 using namespace winrt::Microsoft::AI::MachineLearning::Experimental;
 using namespace winrt::Windows::Graphics::DirectX::Direct3D11;
+using namespace winrt::Windows::Media;
 
 class SegmentModel {
 public:
@@ -21,7 +23,7 @@ public:
 	IDirect3DSurface Run(const IDirect3DSurface& pSrc, const DWORD cbImageSize);
 	
 	void RunTest(const BYTE** pSrc, BYTE** pDest, const DWORD cbImageSize);
-	IDirect3DSurface RunTestDXGI(const IDirect3DSurface& pSrc, const DWORD cbImageSize);
+	IDirect3DSurface RunTestDXGI(IVideoFrame src, const DWORD cbImageSize);
 
 	LearningModelSession CreateLearningModelSession(const LearningModel& model, bool closedModel=true);
 	void SetImageSize(UINT32 w, UINT32 h);

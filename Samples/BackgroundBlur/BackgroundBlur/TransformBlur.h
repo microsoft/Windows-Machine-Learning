@@ -171,7 +171,7 @@ private:
     ~TransformBlur();
 
     // HasPendingOutput: Returns TRUE if the MFT is holding an input sample.
-    BOOL HasPendingOutput() const { return m_pSample != NULL; }
+    BOOL HasPendingOutput() const { return m_spSample != NULL; }
 
     // IsValidInputStream: Returns TRUE if dwInputStreamID is a valid input stream identifier.
     BOOL IsValidInputStream(DWORD dwInputStreamID) const
@@ -196,15 +196,20 @@ private:
 
     HRESULT OnSetD3DManager(ULONG_PTR ulParam);
     HRESULT UpdateFormatInfo();
+    HRESULT SetupAlloc();
+    HRESULT CheckDX11Device(); // Do we need to check the dx11 device in ProcessOutput? 
 
     long                        m_nRefCount;                // reference count
     CritSec                     m_critSec;
+    bool                        m_bStreamingInitialized;
 
-    IMFAttributes*      m_pAttributes;
 
-    CComPtr<IMFSample> m_pSample;                           // Input sample.
-    CComPtr<IMFMediaType> m_pInputType;                     // Input media type.
-    CComPtr<IMFMediaType> m_pOutputType;                    // Output media type.
+    IMFAttributes*          m_pAttributes;  // MFT Attributes
+    CComPtr<IMFAttributes>  m_spOutputAttributes;
+
+    CComPtr<IMFSample>      m_spSample;                           // Input sample.
+    CComPtr<IMFMediaType>   m_spInputType;                     // Input media type.
+    CComPtr<IMFMediaType>   m_spOutputType;                    // Output media type.
 
     // Fomat information
     FOURCC                      m_videoFOURCC;
@@ -213,10 +218,12 @@ private:
     DWORD                       m_cbImageSize;              // Image size, in bytes.
 
     // D3D fields
-    CComPtr<IMFDXGIDeviceManager>       m_pD3DDeviceManager;
-    CComPtr<ID3D11Device>               m_pD3DDevice;
-    CComPtr<ID3D11VideoDevice>          m_pD3DVideoDevice;
-    HANDLE                              m_pHandle;          // Handle to the current device
+    CComPtr<IMFDXGIDeviceManager>       m_spDeviceManager;
+    CComPtr<ID3D11Device>               m_spDevice;
+    CComPtr<ID3D11VideoDevice>          m_spVideoDevice;
+    CComPtr<ID3D11DeviceContext>        m_spContext;
+    HANDLE                              m_hDeviceHandle;          // Handle to the current device
+    CComPtr<IMFVideoSampleAllocatorEx> m_spOutputSampleAllocator;
 
     // Model fields
     SegmentModel  m_segmentModel;

@@ -167,6 +167,7 @@ IDirect3DSurface SegmentModel::RunTestDXGI(VideoFrame src,  const DWORD cbImageS
 	//VideoFrame input = VideoFrame::CreateWithDirect3D11Surface(src);
 	auto desc = src.Direct3DSurface().Description(); // B8G8R8X8UIntNormalized
 
+	// TODO: Make output from the same surface as what we allocated in MFT
 	VideoFrame output = VideoFrame::CreateAsDirect3D11SurfaceBacked(desc.Format, desc.Width, desc.Height);
 	VideoFrame input2 = VideoFrame::CreateAsDirect3D11SurfaceBacked(desc.Format, desc.Width, desc.Height);
 	src.CopyToAsync(input2).get(); // TODO: I'm guessing it's this copy that's causing issues... 

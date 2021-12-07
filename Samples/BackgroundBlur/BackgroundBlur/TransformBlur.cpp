@@ -1,13 +1,14 @@
 #include "TransformBlur.h"
 #include <winrt/windows.media.h>
+#include <winrt/windows.foundation.h>
 #include <windows.graphics.directx.direct3d11.interop.h>
 #include <windows.media.core.interop.h>
 #include "common.h"
+#include <unknwn.h>
 
 #include <windows.graphics.imaging.interop.h>
 
 using namespace winrt::Windows::Media;
-
 
 // Video FOURCC codes.
 const FOURCC FOURCC_YUY2 = MAKEFOURCC('Y', 'U', 'Y', '2');
@@ -67,22 +68,24 @@ done:
 // Constructor
 TransformBlur::TransformBlur(HRESULT& hr) :
     m_nRefCount(1),
-    m_pSample(NULL),
-    m_pInputType(NULL),
-    m_pOutputType(NULL),
+    m_spSample(NULL),
+    m_spInputType(NULL),
+    m_spOutputType(NULL),
     m_videoFOURCC(0),
     m_imageWidthInPixels(0),
     m_imageHeightInPixels(0),
     m_cbImageSize(0),
-    m_pD3DDeviceManager(NULL),
-    m_pHandle(NULL),
-    m_pD3DDevice(NULL),
-    m_pD3DVideoDevice(NULL),
+    m_spDeviceManager(NULL),
+    m_hDeviceHandle(NULL),
+    m_spDevice(NULL),
+    m_spVideoDevice(NULL),
     m_pAttributes(NULL)
 {
     hr = MFCreateAttributes(&m_pAttributes, 2);
     hr = m_pAttributes->SetUINT32(MF_SA_D3D_AWARE, TRUE);
     hr = m_pAttributes->SetUINT32(MF_SA_D3D11_AWARE, TRUE);
+
+    MFCreateAttributes(&m_spOutputAttributes, 3);
 
 }
 
@@ -91,7 +94,7 @@ TransformBlur::~TransformBlur()
 {
     assert(m_nRefCount == 0);
 
-    m_pD3DDeviceManager->CloseDeviceHandle(m_pHandle);
+    m_spDeviceManager->CloseDeviceHandle(m_hDeviceHandle);
     SAFE_RELEASE(m_pAttributes);
 }
 
@@ -235,7 +238,7 @@ HRESULT TransformBlur::GetInputStreamInfo(
     pStreamInfo->hnsMaxLatency = 0;
     pStreamInfo->dwFlags = MFT_INPUT_STREAM_WHOLE_SAMPLES | MFT_INPUT_STREAM_SINGLE_SAMPLE_PER_BUFFER;
 
-    if (m_pInputType == NULL)
+    if (m_spInputType == NULL)
     {
         pStreamInfo->cbSize = 0;
     }
@@ -283,7 +286,7 @@ HRESULT TransformBlur::GetOutputStreamInfo(
         MFT_OUTPUT_STREAM_PROVIDES_SAMPLES
         ;
 
-    if (m_pOutputType == NULL)
+    if (m_spOutputType == NULL)
     {
         pStreamInfo->cbSize = 0;
     }
@@ -398,14 +401,14 @@ HRESULT TransformBlur::GetInputAvailableType(
     HRESULT hr = S_OK;
 
     // If the output type is set, return that type as our preferred input type.
-    if (this->m_pOutputType)
+    if (this->m_spOutputType)
     {
         if (dwTypeIndex > 0)
         {
             return MF_E_NO_MORE_TYPES;
         }
 
-        *ppType = m_pOutputType;
+        *ppType = m_spOutputType;
         (*ppType)->AddRef();
     }
     else
@@ -445,14 +448,14 @@ HRESULT TransformBlur::GetOutputAvailableType(
     HRESULT hr = S_OK;
 
     // If the input type is set, return that type as our preferred output type.
-    if (this->m_pInputType)
+    if (this->m_spInputType)
     {
         if (dwTypeIndex > 0)
         {
             return MF_E_NO_MORE_TYPES;
         }
 
-        *ppType = m_pInputType;
+        *ppType = m_spInputType;
         (*ppType)->AddRef();
     }
     else
@@ -508,27 +511,6 @@ HRESULT TransformBlur::SetInputType(
     if (pType)
     {
         CHECK_HR(hr = OnCheckInputType(pType));
-    }
-
-    // Find a decoder configuration
-    if (false && m_pD3DDeviceManager) 
-    {
-        UINT numProfiles = m_pD3DVideoDevice->GetVideoDecoderProfileCount();
-        for (UINT i = 0; i < numProfiles; i++)
-        {
-            GUID pDecoderProfile = GUID_NULL;
-            CHECK_HR(hr = m_pD3DVideoDevice->GetVideoDecoderProfile(i, &pDecoderProfile));
-
-            BOOL rgbSupport; 
-            hr = m_pD3DVideoDevice->CheckVideoDecoderFormat(&pDecoderProfile, DXGI_FORMAT_AYUV, &rgbSupport);
-            // DXGI_FORMAT_R8G8B8A8_UNORM or DXGI_FORMAT_B8G8R8X8_UNORM
-            hr = m_pD3DVideoDevice->CheckVideoDecoderFormat(&pDecoderProfile, DXGI_FORMAT_B8G8R8X8_UNORM, &rgbSupport);
-            if (rgbSupport) {
-                // D3D11_DECODER_PROFILE_H264_VLD_NOFGT
-                OutputDebugString(L"supports RGB32!\n");
-            }
-
-        }
     }
 
     // The type is OK. 
@@ -623,12 +605,12 @@ HRESULT TransformBlur::GetInputCurrentType(
         return MF_E_INVALIDSTREAMNUMBER;
     }
 
-    if (!m_pInputType)
+    if (!m_spInputType)
     {
         return MF_E_TRANSFORM_TYPE_NOT_SET;
     }
 
-    *ppType = m_pInputType;
+    *ppType = m_spInputType;
     (*ppType)->AddRef();
 
     return S_OK;
@@ -659,12 +641,12 @@ HRESULT TransformBlur::GetOutputCurrentType(
         return MF_E_INVALIDSTREAMNUMBER;
     }
 
-    if (!m_pOutputType)
+    if (!m_spOutputType)
     {
         return MF_E_TRANSFORM_TYPE_NOT_SET;
     }
 
-    *ppType = m_pOutputType;
+    *ppType = m_spOutputType;
     (*ppType)->AddRef();
 
     return S_OK;
@@ -699,7 +681,7 @@ HRESULT TransformBlur::GetInputStatus(
 
     // If we already have an input sample, we don't accept
     // another one until the client calls ProcessOutput or Flush.
-    if (m_pSample == NULL)
+    if (m_spSample == NULL)
     {
         *pdwFlags = MFT_INPUT_STATUS_ACCEPT_DATA;
     }
@@ -731,7 +713,7 @@ HRESULT TransformBlur::GetOutputStatus(DWORD* pdwFlags)
 
     // We can produce an output sample if (and only if)
     // we have an input sample.
-    if (m_pSample != NULL)
+    if (m_spSample != NULL)
     {
         *pdwFlags = MFT_OUTPUT_STATUS_SAMPLE_READY;
     }
@@ -814,6 +796,8 @@ HRESULT TransformBlur::ProcessMessage(
 
         // The remaining messages do not require any action from this MFT.
     case MFT_MESSAGE_NOTIFY_BEGIN_STREAMING:
+        SetupAlloc();
+        break;
     case MFT_MESSAGE_NOTIFY_END_STREAMING:
     case MFT_MESSAGE_NOTIFY_END_OF_STREAM:
     case MFT_MESSAGE_NOTIFY_START_OF_STREAM:
@@ -826,47 +810,42 @@ HRESULT TransformBlur::ProcessMessage(
 // TODO: Change param to be IUnknown* so can use from different locations
 HRESULT TransformBlur::OnSetD3DManager(ULONG_PTR ulParam)
 {
-    // If ulParam is NULL, reset the device
-    // If ulParam has a value, set up the DXGI Device Manager
-    m_pD3DDeviceManager.Release();
-    m_pD3DDevice.Release();
-    m_pD3DVideoDevice.Release();
-    if (ulParam == NULL) 
-    {
-        return S_OK;
+    HRESULT hr = S_OK;
+    CComPtr<IUnknown> pUnk;
+    CComPtr<IMFDXGIDeviceManager> pDXGIDeviceManager;
+    if (ulParam != NULL) {
+        pUnk = (IUnknown*)ulParam;
+        hr = pUnk->QueryInterface(&pDXGIDeviceManager);
+        if (SUCCEEDED(hr) && m_spDeviceManager != pDXGIDeviceManager) {
+            // Invalidate dx11 resources
+            m_spDeviceManager.Release();
+            m_spContext.Release();
+
+            // Update dx11 device and resources
+            m_spDeviceManager = pDXGIDeviceManager;
+            CHECK_HR(hr = m_spDeviceManager->OpenDeviceHandle(&m_hDeviceHandle));
+            CHECK_HR(hr = m_spDeviceManager->GetVideoService(m_hDeviceHandle, IID_PPV_ARGS(&m_spDevice)));
+            m_spDevice->GetImmediateContext(&m_spContext);
+
+            // Hand off the new device to the sample allocator, if it exists
+            if (m_spOutputSampleAllocator)
+            {
+                CHECK_HR(hr = m_spOutputSampleAllocator->SetDirectXManager(pUnk.p));
+            }
+        }
+
+        // TODO: Do we know input/output types by now? 
+
     }
-
-    // Get the Device Manager sent from the  topology loader
-    IUnknown* ptr = (IUnknown*) ulParam;
-
-    HRESULT hr = ptr->QueryInterface(IID_IMFDXGIDeviceManager, (void**)&m_pD3DDeviceManager);
-    if (FAILED(hr))
+    else 
     {
-        goto done;
+        // Invalidate dx11 resources
+        m_spDeviceManager.Release();
+        m_spContext.Release();
     }
-
-    // Get a handle to the DXVA decoder service
-    // TODO: Change to give to the field instead of local variable
-    hr = m_pD3DDeviceManager->OpenDeviceHandle(&m_pHandle);
-
-    // Get the d3d11 device
-    m_pD3DDeviceManager->GetVideoService(m_pHandle, IID_ID3D11Device, (void**) &m_pD3DDevice);
-    
-    // Get the d3d11 video device
-    // TODO: ID3D11VideoDevice::CreateVideoProcessor to get a video processor
-    //hr = m_pD3DDeviceManager->GetVideoService(p_deviceHandle, IID_ID3D11VideoDevice, (void**) &m_pD3DVideoDevice);
-
-    if (FAILED(hr)) 
-    {
-        OutputDebugString(L"Failed to get DXVA decoder service");
-        ProcessMessage(MFT_MESSAGE_SET_D3D_MANAGER, NULL);
-    }
-
-    // TOOD: Get the ID3D11DeviceContext and use to add multi-thread protection on the device context
 
 done:
     //TODO: Safe release anything as needed
-    SAFE_RELEASE(ptr);
     //SAFE_RELEASE(p_deviceHandle);
     return hr;
 }
@@ -883,7 +862,8 @@ HRESULT TransformBlur::ProcessInput(
 )
 {
     AutoLock lock(m_critSec);
-   
+    HRESULT hr = S_OK;
+
     // TODO: If not null, but no actual new sample from engine? 
     if (pSample == NULL)
     {
@@ -900,17 +880,18 @@ HRESULT TransformBlur::ProcessInput(
         return E_INVALIDARG; // dwFlags is reserved and must be zero.
     }
 
-    if (!m_pInputType || !m_pOutputType)
+    if (!m_spInputType || !m_spOutputType)
     {
         return MF_E_NOTACCEPTING;   // Client must set input and output types.
     }
 
-    if (m_pSample != NULL)
+    if (m_spSample != NULL)
     {
         return MF_E_NOTACCEPTING;   // We already have an input sample.
     }
 
-    HRESULT hr = S_OK;
+    CHECK_HR(hr = SetupAlloc()); // Ensure allocator set up
+
     DWORD dwBufferCount = 0;
 
     // Validate the number of buffers. There should only be a single buffer to hold the video frame. 
@@ -926,7 +907,7 @@ HRESULT TransformBlur::ProcessInput(
     }
 
     // Cache the sample. We do the actual work in ProcessOutput.
-    m_pSample = pSample;
+    m_spSample = pSample;
 done:
     //pSample->Release();
     return hr;
@@ -946,7 +927,7 @@ HRESULT TransformBlur::ProcessOutput(
     DWORD* pdwStatus
 )
 {
-    AutoLock lock(m_critSec);
+    AutoLock lock(m_critSec); // TODO: Move closer to critsec stuff below
     LONGLONG hnsDuration = 0;
     LONGLONG hnsTime = 0;
 
@@ -973,24 +954,36 @@ HRESULT TransformBlur::ProcessOutput(
         return E_INVALIDARG;
     }
 
-    // It must contain a sample. - EDIT: We're allocating now, so it doesn't have to!
-    if (false && pOutputSamples[0].pSample == NULL)
+    // It must contain a sample if no device manager to allocate ourselves. 
+    if (pOutputSamples[0].pSample == NULL && m_spDeviceManager == nullptr)
     {
         return E_INVALIDARG;
     }
 
     // If we don't have an input sample, we need some input before
     // we can generate any output.
-    if (m_pSample == NULL)
+    if (m_spSample == NULL)
     {
         return MF_E_TRANSFORM_NEED_MORE_INPUT;
     }
 
     HRESULT hr = S_OK;
+    CHECK_HR(hr = SetupAlloc()); // Ensure allocator is set up
 
-    // This MFT allocates its own samples, so pass a new IMFSample to fill in
-    CComPtr<IMFSample> pOutput;
-    CHECK_HR(hr = OnProcessOutput(&pOutput));
+    // We allocate samples when have a dx device
+    if (m_spDeviceManager != nullptr)
+    {
+        CHECK_HR(hr = m_spOutputSampleAllocator->AllocateSample(&(pOutputSamples[0].pSample)));
+    }
+    // We should have a sample now, whether or not we have a dx device
+    if (pOutputSamples[0].pSample == nullptr)
+    {
+        hr = E_INVALIDARG;
+        goto done;
+    }
+
+    // TODO: Hand over DXGI buffers/ surfaces to onprocessoutput? 
+    CHECK_HR(hr = OnProcessOutput(&pOutputSamples[0].pSample));
 
     // Set status flags.
     pOutputSamples[0].dwStatus = 0;
@@ -998,12 +991,12 @@ HRESULT TransformBlur::ProcessOutput(
  
     // Copy the duration and time stamp from the input sample,
     // if present.
-    if (SUCCEEDED(m_pSample->GetSampleDuration(&hnsDuration)))
+    if (SUCCEEDED(m_spSample->GetSampleDuration(&hnsDuration)))
     {
         CHECK_HR(hr = pOutput->SetSampleDuration(hnsDuration));
     }
 
-    if (SUCCEEDED(m_pSample->GetSampleTime(&hnsTime)))
+    if (SUCCEEDED(m_spSample->GetSampleTime(&hnsTime)))
     {
         CHECK_HR(hr = pOutput->SetSampleTime(hnsTime));
     }
@@ -1012,13 +1005,51 @@ HRESULT TransformBlur::ProcessOutput(
     pOutputSamples->pSample = pOutput.Detach(); // IS this correct? 
 
 done:
-    m_pSample.Release(); // Explicitly release to get a new sample in ProcessInput
+    m_spSample.Release(); // Explicitly release to get a new sample in ProcessInput
     return hr;
 }
 
-
-
 /// PRIVATE METHODS
+HRESULT TransformBlur::SetupAlloc()
+{
+    HRESULT hr = S_OK;
+    // Fail fast if already set up 
+    if (!m_bStreamingInitialized)
+    {
+        // Check if device the same? 
+
+        // If we have a device manager, we need to set up sample allocator
+        if (m_spDeviceManager != nullptr)
+        {
+            // Set up allocator attributes
+            DWORD dwBindFlags = MFGetAttributeUINT32(m_spOutputAttributes.p, MF_SA_D3D11_BINDFLAGS, D3D11_BIND_RENDER_TARGET);
+            dwBindFlags |= D3D11_BIND_RENDER_TARGET;        // Must always set as render target! (works but why?) 
+            CHECK_HR(hr = m_spOutputAttributes->SetUINT32(MF_SA_D3D11_BINDFLAGS, dwBindFlags));
+            CHECK_HR(hr = m_spOutputAttributes->SetUINT32(MF_SA_BUFFERS_PER_SAMPLE, 1));
+            CHECK_HR(hr = m_spOutputAttributes->SetUINT32(MF_SA_D3D11_USAGE, D3D11_USAGE_DEFAULT));
+
+            // Set up the output sample allocator if needed
+            if (NULL == m_spOutputSampleAllocator)
+            {
+                CComPtr<IMFVideoSampleAllocatorEx> spVideoSampleAllocator;
+                CComPtr<IUnknown> spDXGIManagerUnk;
+
+                CHECK_HR(hr = MFCreateVideoSampleAllocatorEx(IID_PPV_ARGS(&spVideoSampleAllocator)));
+                CHECK_HR(hr = m_spDeviceManager->QueryInterface(&spDXGIManagerUnk));
+
+                CHECK_HR(hr = spVideoSampleAllocator->SetDirectXManager(spDXGIManagerUnk));
+
+                m_spOutputSampleAllocator.Attach(spVideoSampleAllocator.Detach());
+            }
+
+            CHECK_HR(hr = m_spOutputSampleAllocator->InitializeSampleAllocatorEx(2, 15, m_spOutputAttributes, m_spOutputType));
+        }
+        m_bStreamingInitialized = true;
+
+    }
+done:
+    return hr;
+}
 
 //-------------------------------------------------------------------
 // Name: OnGetPartialType
@@ -1067,10 +1098,10 @@ HRESULT TransformBlur::OnCheckInputType(IMFMediaType* pmt)
     HRESULT hr = S_OK;
 
     // If the output type is set, see if they match.
-    if (m_pOutputType != NULL)
+    if (m_spOutputType != NULL)
     {
         DWORD flags = 0;
-        hr = pmt->IsEqual(m_pOutputType, &flags);
+        hr = pmt->IsEqual(m_spOutputType, &flags);
 
         // IsEqual can return S_FALSE. Treat this as failure.
 
@@ -1102,10 +1133,10 @@ HRESULT TransformBlur::OnCheckOutputType(IMFMediaType* pmt)
     HRESULT hr = S_OK;
 
     // If the input type is set, see if they match.
-    if (m_pInputType != NULL)
+    if (m_spInputType != NULL)
     {
         DWORD flags = 0;
-        hr = pmt->IsEqual(m_pInputType, &flags);
+        hr = pmt->IsEqual(m_spInputType, &flags);
 
         // IsEqual can return S_FALSE. Treat this as failure.
 
@@ -1195,11 +1226,11 @@ HRESULT TransformBlur::OnSetInputType(IMFMediaType* pmt)
     // if pmt is NULL, clear the type.
     // if pmt is non-NULL, set the type.
 
-    m_pInputType.Release();
-    m_pInputType = pmt; // TODO: Do we need this to addref, or should we attach? 
-    /*if (m_pInputType)
+    m_spInputType.Release();
+    m_spInputType = pmt; // TODO: Do we need this to addref, or should we attach? 
+    /*if (m_spInputType)
     {
-        m_pInputType->AddRef();
+        m_spInputType->AddRef();
     }*/
 
     // Update the format information.
@@ -1224,11 +1255,11 @@ HRESULT TransformBlur::OnSetOutputType(IMFMediaType* pmt)
     // if pmt is NULL, clear the type.
     // if pmt is non-NULL, set the type.
 
-    m_pOutputType.Release();
-    m_pOutputType = pmt;
-    /*if (m_pOutputType)
+    m_spOutputType.Release();
+    m_spOutputType = pmt;
+    /*if (m_spOutputType)
     {
-        m_pOutputType->AddRef();
+        m_spOutputType->AddRef();
     }*/
 
     return S_OK;
@@ -1310,7 +1341,7 @@ HRESULT TransformBlur::OnProcessOutput(IMFSample** ppOut)
     CComPtr<ID3D11Device> destDevice;
     CComPtr<ID3D11Device> srcDevice;
 
-    hr = m_pSample->ConvertToContiguousBuffer(&pBuffIn);
+    hr = m_spSample->ConvertToContiguousBuffer(&pBuffIn);
     hr = pBuffIn->QueryInterface(__uuidof(IMFDXGIBuffer), (LPVOID*)(&pSrc));
 
     // TODO: Find a way to make this resource shareable
@@ -1333,13 +1364,13 @@ HRESULT TransformBlur::OnProcessOutput(IMFSample** ppOut)
     winrt::com_ptr<IVideoFrame> frameOut;
     CComPtr<IMFSample> sample;
     hr = CoCreateInstance(CLSID_VideoFrameNativeFactory, NULL, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&factory));
-    hr = factory->CreateFromMFSample(m_pSample,
-        __uuidof(m_pInputType),
+    hr = factory->CreateFromMFSample(m_spSample,
+        __uuidof(m_spInputType),
         m_imageWidthInPixels,
         m_imageHeightInPixels,
         true,
         NULL,
-        m_pD3DDeviceManager,
+        m_spDeviceManager,
         IID_PPV_ARGS(&frameNative)
     );
 
@@ -1374,7 +1405,7 @@ done:
 HRESULT TransformBlur::OnFlush()
 {
     // For this MFT, flushing just means releasing the input sample.
-    m_pSample.Release();
+    m_spSample.Release();
     return S_OK;
 }
 
@@ -1397,14 +1428,14 @@ HRESULT TransformBlur::UpdateFormatInfo()
     m_videoFOURCC = 0;
     m_cbImageSize = 0;
 
-    if (m_pInputType != NULL)
+    if (m_spInputType != NULL)
     {
-        CHECK_HR(hr = m_pInputType->GetGUID(MF_MT_SUBTYPE, &subtype));
+        CHECK_HR(hr = m_spInputType->GetGUID(MF_MT_SUBTYPE, &subtype));
 
         m_videoFOURCC = subtype.Data1;
 
         CHECK_HR(hr = MFGetAttributeSize(
-            m_pInputType,
+            m_spInputType,
             MF_MT_FRAME_SIZE,
             &m_imageWidthInPixels,
             &m_imageHeightInPixels

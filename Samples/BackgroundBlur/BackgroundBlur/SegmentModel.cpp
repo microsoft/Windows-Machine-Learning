@@ -162,13 +162,14 @@ void SegmentModel::RunTest(const BYTE** pSrc, BYTE** pDest, const DWORD cbImageS
 	}
 }
 
-IDirect3DSurface SegmentModel::RunTestDXGI(VideoFrame src,  const DWORD cbImageSize)
+void SegmentModel::RunTestDXGI(VideoFrame src, VideoFrame dest)
 {
 	//VideoFrame input = VideoFrame::CreateWithDirect3D11Surface(src);
 	auto desc = src.Direct3DSurface().Description(); // B8G8R8X8UIntNormalized
+	auto descOut = dest.Direct3DSurface().Description();
 
 	// TODO: Make output from the same surface as what we allocated in MFT
-	VideoFrame output = VideoFrame::CreateAsDirect3D11SurfaceBacked(desc.Format, desc.Width, desc.Height);
+	//VideoFrame output = VideoFrame::CreateAsDirect3D11SurfaceBacked(desc.Format, desc.Width, desc.Height);
 	VideoFrame input2 = VideoFrame::CreateAsDirect3D11SurfaceBacked(desc.Format, desc.Width, desc.Height);
 	src.CopyToAsync(input2).get(); // TODO: I'm guessing it's this copy that's causing issues... 
 	desc = input2.Direct3DSurface().Description();
@@ -179,13 +180,11 @@ IDirect3DSurface SegmentModel::RunTestDXGI(VideoFrame src,  const DWORD cbImageS
 	hstring outputName = m_sess.Model().OutputFeatures().GetAt(0).Name();
 
 	auto outputBindProperties = PropertySet();
-	binding.Bind(outputName, output);
+	binding.Bind(outputName, dest); // TODO: See if can bind videoframe from MFT
 	auto results = m_sess.Evaluate(binding, L"");
-	/*auto resultFrame = results.Outputs().Lookup(outputName).try_as<VideoFrame>();
-	auto desc2 = resultFrame.Direct3DSurface().Description();*/
 
 	//output.CopyToAsync(src).get(); // Error- src is read-only, no matter the input VF type
-	return output.Direct3DSurface();
+	// return output.Direct3DSurface();
 }
 
 LearningModel SegmentModel::Invert(long n, long c, long h, long w)

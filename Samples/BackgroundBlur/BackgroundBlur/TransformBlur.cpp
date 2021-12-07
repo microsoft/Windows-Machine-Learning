@@ -22,8 +22,6 @@ const GUID* g_MediaSubtypes[] =
 {
     &MFVideoFormat_RGB32,
     //&MFVideoFormat_NV12,
-    //&MEDIASUBTYPE_YUY2,
-    //&MEDIASUBTYPE_UYVY
 };
 
 // Number of media types in the aray.
@@ -993,16 +991,15 @@ HRESULT TransformBlur::ProcessOutput(
     // if present.
     if (SUCCEEDED(m_spSample->GetSampleDuration(&hnsDuration)))
     {
-        CHECK_HR(hr = pOutput->SetSampleDuration(hnsDuration));
+        CHECK_HR(hr = pOutputSamples[0].pSample->SetSampleDuration(hnsDuration));
     }
 
     if (SUCCEEDED(m_spSample->GetSampleTime(&hnsTime)))
     {
-        CHECK_HR(hr = pOutput->SetSampleTime(hnsTime));
+        CHECK_HR(hr = pOutputSamples[0].pSample->SetSampleTime(hnsTime));
     }
 
-    // TODO: if this way works, add the sample to output buff
-    pOutputSamples->pSample = pOutput.Detach(); // IS this correct? 
+
 
 done:
     m_spSample.Release(); // Explicitly release to get a new sample in ProcessInput
@@ -1308,6 +1305,22 @@ HRESULT LockDevice(
     return hr;
 }
 
+
+VideoFrame TransformBlur::SampleToVideoFrame(IMFSample* sample, CComPtr<IVideoFrameNativeFactory> factory)
+{
+    winrt::com_ptr<IVideoFrameNative> vfNative;
+    factory->CreateFromMFSample(sample,
+        __uuidof(m_spInputType),
+        m_imageWidthInPixels,
+        m_imageHeightInPixels,
+        true,
+        NULL,
+        m_spDeviceManager,
+        IID_PPV_ARGS(&vfNative)
+    );
+
+    return vfNative.try_as<VideoFrame>();
+}
 //-------------------------------------------------------------------
 // Name: OnProcessOutput
 // Description: Generates output data.
@@ -1322,76 +1335,37 @@ HRESULT TransformBlur::OnProcessOutput(IMFSample** ppOut)
 {
     HRESULT hr = S_OK;
 
-    // Extract resources from sample
-    /*CComPtr<IMFMediaBuffer> pBuffOut;
-    CComPtr<IMFMediaBuffer> pBuffIn;
-    CComPtr<IMFDXGIBuffer> pSrc;
-    CComPtr<ID3D11Texture2D> pTextSrc;
-    CComPtr<ID3D11Texture2D> pTextDest;
-    CComPtr<IDXGISurface> pSurfaceSrc;
-    CComPtr<IDXGISurface> pSurfaceDest;
-    D3D11_TEXTURE2D_DESC desc{};
-
-    // Surfaces that model uses
-    IDirect3DSurface pD3DSurfaceSrc; // IDirect3DSurface objects are winrt objects
-    IDirect3DSurface pD3DSurfaceDest;
-    winrt::com_ptr<IInspectable> pSurfaceInspectable;
-
-    // Testing where each texture ends up
-    CComPtr<ID3D11Device> destDevice;
-    CComPtr<ID3D11Device> srcDevice;
-
-    hr = m_spSample->ConvertToContiguousBuffer(&pBuffIn);
-    hr = pBuffIn->QueryInterface(__uuidof(IMFDXGIBuffer), (LPVOID*)(&pSrc));
-
-    // TODO: Find a way to make this resource shareable
-    hr = pSrc->GetResource(IID_PPV_ARGS(&pTextSrc));
-    pTextSrc->GetDesc(&desc); // Won't have any MiscFlags set!
-
-    pTextSrc->GetDevice(&srcDevice); // Debugging
-
-    hr = pTextSrc->QueryInterface(IID_PPV_ARGS(&pSurfaceSrc));
-
-    hr = CreateDirect3D11SurfaceFromDXGISurface(pSurfaceSrc, pSurfaceInspectable.put());
-    pD3DSurfaceSrc = pSurfaceInspectable.as<IDirect3DSurface>();*/
-    IDirect3DSurface pD3DSurfaceDest;
-    CComPtr<ID3D11Texture2D> pTextDest;
-    CComPtr<IMFMediaBuffer> pBuffOut;
-
+    // Create video frame from input and output samples
+    // Pass in video frame to model 
+    // Run 
+    // Make sure that output gets the correct surface still
     CComPtr<IVideoFrameNativeFactory> factory;
-    winrt::com_ptr<IVideoFrameNative> frameNative;
-    winrt::com_ptr<IVideoFrameNative> frameNative2;
-    winrt::com_ptr<IVideoFrame> frameOut;
-    CComPtr<IMFSample> sample;
     hr = CoCreateInstance(CLSID_VideoFrameNativeFactory, NULL, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&factory));
-    hr = factory->CreateFromMFSample(m_spSample,
-        __uuidof(m_spInputType),
-        m_imageWidthInPixels,
-        m_imageHeightInPixels,
-        true,
-        NULL,
-        m_spDeviceManager,
-        IID_PPV_ARGS(&frameNative)
-    );
+    VideoFrame src = SampleToVideoFrame(m_spSample, factory);
+    VideoFrame dest = SampleToVideoFrame(*ppOut, factory);
+
+    // Get the d3d surfaces instead
+
+
 
     // Invoke the image transform function.
     if (SUCCEEDED(hr))
     {
-        VideoFrame vf = frameNative.try_as<VideoFrame>();
-        pD3DSurfaceDest = m_segmentModel.RunTestDXGI(vf, m_cbImageSize);
-        auto spDxgiInterfaceAccess = pD3DSurfaceDest.as<Windows::Graphics::DirectX::Direct3D11::IDirect3DDxgiInterfaceAccess>();
-        hr = spDxgiInterfaceAccess->GetInterface(IID_PPV_ARGS(&pTextDest));
-        hr = MFCreateDXGISurfaceBuffer(IID_ID3D11Texture2D, pTextDest, 0, TRUE, &pBuffOut);
-        MFCreateSample(ppOut);
-        hr = (*ppOut)->AddBuffer(pBuffOut);
+        // Video frames are set up to be read-only (only with RGB?)
+        // TOOD: Lock the device agian? 
+        m_segmentModel.RunTestDXGI(src, dest);
+        
     }
     else
     {
         CHECK_HR(hr = E_UNEXPECTED);
     }
-
+    // Always set the output buffer size
+    // TODO: Move to ProcessOutput? 
+    // CHECK_HR(hr = pBuffOut->SetCurrentLength(m_cbImageSize));
 
     // The VideoBufferLock class automatically unlocks the buffers.
+    // TODO: Does above still apply? 
 done:
     return S_OK;
 }

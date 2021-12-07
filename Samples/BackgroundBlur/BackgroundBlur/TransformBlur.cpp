@@ -1343,7 +1343,6 @@ HRESULT TransformBlur::OnProcessOutput(IMFSample** ppOut)
         IID_PPV_ARGS(&frameNative)
     );
 
-
     // Invoke the image transform function.
     if (SUCCEEDED(hr))
     {

@@ -162,17 +162,19 @@ void SegmentModel::RunTest(const BYTE** pSrc, BYTE** pDest, const DWORD cbImageS
 	}
 }
 
-void SegmentModel::RunTestDXGI(VideoFrame src, VideoFrame dest)
+void SegmentModel::RunTestDXGI(IDirect3DSurface src, IDirect3DSurface dest)
 {
-	//VideoFrame input = VideoFrame::CreateWithDirect3D11Surface(src);
-	auto desc = src.Direct3DSurface().Description(); // B8G8R8X8UIntNormalized
-	auto descOut = dest.Direct3DSurface().Description();
+	VideoFrame input = VideoFrame::CreateWithDirect3D11Surface(src);
+	VideoFrame output = VideoFrame::CreateWithDirect3D11Surface(dest);
+	
+	auto desc = input.Direct3DSurface().Description(); // B8G8R8X8UIntNormalized
+	auto descOut = output.Direct3DSurface().Description();
 
 	// TODO: Make output from the same surface as what we allocated in MFT
-	VideoFrame output = VideoFrame::CreateAsDirect3D11SurfaceBacked(desc.Format, desc.Width, desc.Height);
+	VideoFrame output2 = VideoFrame::CreateAsDirect3D11SurfaceBacked(descOut.Format, descOut.Width, descOut.Height);
 	VideoFrame input2 = VideoFrame::CreateAsDirect3D11SurfaceBacked(desc.Format, desc.Width, desc.Height);
-	src.CopyToAsync(input2).get(); // TODO: I'm guessing it's this copy that's causing issues... 
-	dest.CopyToAsync(output).get();
+	input.CopyToAsync(input2).get(); // TODO: Can input stay the same if NV12? 
+	output.CopyToAsync(output2).get();
 	desc = input2.Direct3DSurface().Description();
 	auto binding = LearningModelBinding(m_sess);
 	
@@ -181,11 +183,12 @@ void SegmentModel::RunTestDXGI(VideoFrame src, VideoFrame dest)
 	hstring outputName = m_sess.Model().OutputFeatures().GetAt(0).Name();
 
 	auto outputBindProperties = PropertySet();
-	binding.Bind(outputName, output); // TODO: See if can bind videoframe from MFT
+	binding.Bind(outputName, output2); // TODO: See if can bind videoframe from MFT
 	auto results = m_sess.Evaluate(binding, L"");
 
 	//output.CopyToAsync(src).get(); // Error- src is read-only, no matter the input VF type
 	// return output.Direct3DSurface();
+	output2.CopyToAsync(output).get(); // Should put onto the correct surface now? Make sure, can return the surface instead later
 }
 
 LearningModel SegmentModel::Invert(long n, long c, long h, long w)

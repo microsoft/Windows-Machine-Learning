@@ -20,8 +20,8 @@ const FOURCC FOURCC_RGB32 = 22;
 // Static array of media types (preferred and accepted).
 const GUID* g_MediaSubtypes[] =
 {
-    //&MFVideoFormat_RGB32,
-    &MFVideoFormat_NV12,
+    &MFVideoFormat_RGB32,
+    //&MFVideoFormat_NV12,
 };
 
 // Number of media types in the aray.
@@ -966,6 +966,8 @@ HRESULT TransformBlur::ProcessOutput(
     }
 
     HRESULT hr = S_OK;
+    CComPtr<IMFMediaBuffer> pMediaBuffer;
+
     CHECK_HR(hr = SetupAlloc()); // Ensure allocator is set up
 
     // We allocate samples when have a dx device
@@ -998,11 +1000,13 @@ HRESULT TransformBlur::ProcessOutput(
     {
         CHECK_HR(hr = pOutputSamples[0].pSample->SetSampleTime(hnsTime));
     }
-
-
+    
+    // Always set the output buffer size!
+    CHECK_HR(hr = pOutputSamples[0].pSample->GetBufferByIndex(0, &pMediaBuffer));
+    CHECK_HR(hr = pMediaBuffer->SetCurrentLength(m_cbImageSize));
 
 done:
-    m_spSample.Release(); // Explicitly release to get a new sample in ProcessInput
+    m_spSample.Release(); // TODO: Should we release if we failed?
     return hr;
 }
 
@@ -1342,9 +1346,9 @@ IDirect3DSurface TransformBlur::SampleToD3Dsurface(IMFSample* sample)
     
     winrt::com_ptr<IInspectable> pSurfaceInspectable;
 
-    sample->GetBufferByIndex(0, &pBuffIn); //converttocontiguousbuffer
+    sample->ConvertToContiguousBuffer(&pBuffIn);
     pBuffIn->QueryInterface(IID_PPV_ARGS(&pSrc));
-    pBuffIn->QueryInterface(IID_PPV_ARGS(&pTextSrc));
+    pSrc->GetResource(IID_PPV_ARGS(&pTextSrc));
     pTextSrc->QueryInterface(IID_PPV_ARGS(&pSurfaceSrc));
 
     CreateDirect3D11SurfaceFromDXGISurface(pSurfaceSrc, pSurfaceInspectable.put());
@@ -1368,13 +1372,18 @@ HRESULT TransformBlur::OnProcessOutput(IMFSample** ppOut)
     VideoFrame srcVF = SampleToVideoFrame(m_spSample, factory);
     VideoFrame destVF = SampleToVideoFrame(*ppOut, factory);
 
+    IDirect3DSurface src = SampleToD3Dsurface(m_spSample);
+    IDirect3DSurface dest = SampleToD3Dsurface(*ppOut);
+
     // Invoke the image transform function.
     if (SUCCEEDED(hr))
     {
-        // Video frames are set up to be read-only (only with RGB?)
-        // TOOD: Lock the device agian? 
-        m_segmentModel.RunTestDXGI(srcVF, destVF);
-        
+        HANDLE localHandle = NULL;
+        m_spDevice.Release();
+        CHECK_HR(hr = LockDevice(m_spDeviceManager, true, &m_spDevice, &localHandle));
+        // Do the copies inside runtest
+        m_segmentModel.RunTestDXGI(src, dest);
+        hr = m_spDeviceManager->UnlockDevice(localHandle, FALSE);
     }
     else
     {

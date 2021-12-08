@@ -23,7 +23,7 @@ public:
 	IDirect3DSurface Run(const IDirect3DSurface& pSrc, const DWORD cbImageSize);
 	
 	void RunTest(const BYTE** pSrc, BYTE** pDest, const DWORD cbImageSize);
-	void RunTestDXGI(VideoFrame src, VideoFrame dest);
+	void RunTestDXGI(IDirect3DSurface src, IDirect3DSurface dest);
 
 	LearningModelSession CreateLearningModelSession(const LearningModel& model, bool closedModel=true);
 	void SetImageSize(UINT32 w, UINT32 h);

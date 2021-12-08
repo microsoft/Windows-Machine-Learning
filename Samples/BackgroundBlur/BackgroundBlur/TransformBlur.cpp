@@ -1398,23 +1398,26 @@ HRESULT TransformBlur::OnProcessOutput(IMFSample** ppOut)
     CComPtr<ID3D11Device> deviceTemp;
     CComPtr<ID3D11Device> deviceDest;
 
-    auto spDxgiInterfaceAccess = src.as<Windows::Graphics::DirectX::Direct3D11::IDirect3DDxgiInterfaceAccess>();
-    hr = spDxgiInterfaceAccess->GetInterface(IID_PPV_ARGS(&pTextSrc));
-    pTextSrc->GetDevice(&deviceSrc);
+    // Debugging: All 3 devices will be the same, which makes me think i'm getting a race condition 
+    // When I create temporary video frames in RunTestDXGI
+    {
+        auto spDxgiInterfaceAccess = src.as<Windows::Graphics::DirectX::Direct3D11::IDirect3DDxgiInterfaceAccess>();
+        hr = spDxgiInterfaceAccess->GetInterface(IID_PPV_ARGS(&pTextSrc));
+        pTextSrc->GetDevice(&deviceSrc); // Device 1
 
-    VideoFrame vfSrc = VideoFrame::CreateWithDirect3D11Surface(src);
-    spDxgiInterfaceAccess = vfSrc.Direct3DSurface().as<Windows::Graphics::DirectX::Direct3D11::IDirect3DDxgiInterfaceAccess>();
-    hr = spDxgiInterfaceAccess->GetInterface(IID_PPV_ARGS(&pTextCreate));
-    pTextCreate->GetDevice(&deviceTemp);
+        VideoFrame vfSrc = VideoFrame::CreateWithDirect3D11Surface(src);
+        spDxgiInterfaceAccess = vfSrc.Direct3DSurface().as<Windows::Graphics::DirectX::Direct3D11::IDirect3DDxgiInterfaceAccess>();
+        hr = spDxgiInterfaceAccess->GetInterface(IID_PPV_ARGS(&pTextCreate));
+        pTextCreate->GetDevice(&deviceTemp); // Device 2
 
-    auto desc = vfSrc.Direct3DSurface().Description();
-    VideoFrame vfDesc = VideoFrame::CreateAsDirect3D11SurfaceBacked(desc.Format, desc.Width, desc.Height);
-    vfSrc.CopyToAsync(vfDesc).get();
-    spDxgiInterfaceAccess = vfDesc.Direct3DSurface().as<Windows::Graphics::DirectX::Direct3D11::IDirect3DDxgiInterfaceAccess>();
-    hr = spDxgiInterfaceAccess->GetInterface(IID_PPV_ARGS(&pTextDest));
-    pTextCreate->GetDevice(&deviceDest);
-
-
+        auto desc = vfSrc.Direct3DSurface().Description();
+        VideoFrame vfDesc = VideoFrame::CreateAsDirect3D11SurfaceBacked(desc.Format, desc.Width, desc.Height);
+        vfSrc.CopyToAsync(vfDesc).get();
+        spDxgiInterfaceAccess = vfDesc.Direct3DSurface().as<Windows::Graphics::DirectX::Direct3D11::IDirect3DDxgiInterfaceAccess>();
+        hr = spDxgiInterfaceAccess->GetInterface(IID_PPV_ARGS(&pTextDest));
+        pTextCreate->GetDevice(&deviceDest);// Device 3
+    }
+    
 
     // Invoke the image transform function.
     if (SUCCEEDED(hr))

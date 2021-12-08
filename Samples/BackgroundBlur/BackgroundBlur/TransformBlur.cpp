@@ -2,6 +2,9 @@
 #include <winrt/windows.media.h>
 #include <winrt/windows.foundation.h>
 #include <windows.graphics.directx.direct3d11.interop.h>
+//#include <windows.graphics.directx.direct3d11.h>
+#include <winrt/Windows.Graphics.DirectX.Direct3D11.h>
+
 #include <windows.media.core.interop.h>
 #include "common.h"
 #include <unknwn.h>
@@ -967,6 +970,8 @@ HRESULT TransformBlur::ProcessOutput(
 
     HRESULT hr = S_OK;
     CComPtr<IMFMediaBuffer> pMediaBuffer;
+    CComPtr<ID3D11Device> spDevice;
+    bool bDeviceLocked = false;
 
     CHECK_HR(hr = SetupAlloc()); // Ensure allocator is set up
 
@@ -980,6 +985,13 @@ HRESULT TransformBlur::ProcessOutput(
     {
         hr = E_INVALIDARG;
         goto done;
+    }
+
+    // Attempt to lock the device if necessary
+    if (false && m_spDeviceManager != nullptr)
+    {
+        CHECK_HR(hr = m_spDeviceManager->LockDevice(m_hDeviceHandle, IID_PPV_ARGS(&spDevice), TRUE));
+        bDeviceLocked = true;
     }
 
     // TODO: Hand over DXGI buffers/ surfaces to onprocessoutput? 
@@ -1006,7 +1018,11 @@ HRESULT TransformBlur::ProcessOutput(
     CHECK_HR(hr = pMediaBuffer->SetCurrentLength(m_cbImageSize));
 
 done:
-    m_spSample.Release(); // TODO: Should we release if we failed?
+    m_spSample.Release(); 
+    if (false && bDeviceLocked)
+    {
+        hr = m_spDeviceManager->UnlockDevice(m_hDeviceHandle, FALSE);
+    }
     return hr;
 }
 
@@ -1369,21 +1385,42 @@ HRESULT TransformBlur::OnProcessOutput(IMFSample** ppOut)
     // Make sure that output gets the correct surface still
     CComPtr<IVideoFrameNativeFactory> factory;
     hr = CoCreateInstance(CLSID_VideoFrameNativeFactory, NULL, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&factory));
-    VideoFrame srcVF = SampleToVideoFrame(m_spSample, factory);
-    VideoFrame destVF = SampleToVideoFrame(*ppOut, factory);
+    //VideoFrame srcVF = SampleToVideoFrame(m_spSample, factory);
+    //VideoFrame destVF = SampleToVideoFrame(*ppOut, factory);
 
     IDirect3DSurface src = SampleToD3Dsurface(m_spSample);
     IDirect3DSurface dest = SampleToD3Dsurface(*ppOut);
 
+    winrt::com_ptr<ID3D11Texture2D> pTextSrc;
+    winrt::com_ptr<ID3D11Texture2D> pTextCreate;
+    winrt::com_ptr<ID3D11Texture2D> pTextDest;
+    CComPtr<ID3D11Device> deviceSrc;
+    CComPtr<ID3D11Device> deviceTemp;
+    CComPtr<ID3D11Device> deviceDest;
+
+    auto spDxgiInterfaceAccess = src.as<Windows::Graphics::DirectX::Direct3D11::IDirect3DDxgiInterfaceAccess>();
+    hr = spDxgiInterfaceAccess->GetInterface(IID_PPV_ARGS(&pTextSrc));
+    pTextSrc->GetDevice(&deviceSrc);
+
+    VideoFrame vfSrc = VideoFrame::CreateWithDirect3D11Surface(src);
+    spDxgiInterfaceAccess = vfSrc.Direct3DSurface().as<Windows::Graphics::DirectX::Direct3D11::IDirect3DDxgiInterfaceAccess>();
+    hr = spDxgiInterfaceAccess->GetInterface(IID_PPV_ARGS(&pTextCreate));
+    pTextCreate->GetDevice(&deviceTemp);
+
+    auto desc = vfSrc.Direct3DSurface().Description();
+    VideoFrame vfDesc = VideoFrame::CreateAsDirect3D11SurfaceBacked(desc.Format, desc.Width, desc.Height);
+    vfSrc.CopyToAsync(vfDesc).get();
+    spDxgiInterfaceAccess = vfDesc.Direct3DSurface().as<Windows::Graphics::DirectX::Direct3D11::IDirect3DDxgiInterfaceAccess>();
+    hr = spDxgiInterfaceAccess->GetInterface(IID_PPV_ARGS(&pTextDest));
+    pTextCreate->GetDevice(&deviceDest);
+
+
+
     // Invoke the image transform function.
     if (SUCCEEDED(hr))
     {
-        HANDLE localHandle = NULL;
-        m_spDevice.Release();
-        CHECK_HR(hr = LockDevice(m_spDeviceManager, true, &m_spDevice, &localHandle));
         // Do the copies inside runtest
         m_segmentModel.RunTestDXGI(src, dest);
-        hr = m_spDeviceManager->UnlockDevice(localHandle, FALSE);
     }
     else
     {

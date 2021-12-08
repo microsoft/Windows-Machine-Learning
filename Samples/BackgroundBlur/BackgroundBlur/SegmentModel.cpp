@@ -2,6 +2,7 @@
 #include <winrt/windows.foundation.collections.h>
 #include <winrt/Windows.Media.h>
 #include <winrt/Windows.Graphics.DirectX.Direct3D11.h>
+
 #include <iostream>
 #include <filesystem>
 
@@ -167,15 +168,15 @@ void SegmentModel::RunTestDXGI(IDirect3DSurface src, IDirect3DSurface dest)
 	VideoFrame input = VideoFrame::CreateWithDirect3D11Surface(src);
 	VideoFrame output = VideoFrame::CreateWithDirect3D11Surface(dest);
 	
-	auto desc = input.Direct3DSurface().Description(); // B8G8R8X8UIntNormalized
+	auto desc = input.Direct3DSurface().Description(); 
 	auto descOut = output.Direct3DSurface().Description();
 
-	// TODO: Make output from the same surface as what we allocated in MFT
 	VideoFrame output2 = VideoFrame::CreateAsDirect3D11SurfaceBacked(descOut.Format, descOut.Width, descOut.Height);
 	VideoFrame input2 = VideoFrame::CreateAsDirect3D11SurfaceBacked(desc.Format, desc.Width, desc.Height);
 	input.CopyToAsync(input2).get(); // TODO: Can input stay the same if NV12? 
 	output.CopyToAsync(output2).get();
 	desc = input2.Direct3DSurface().Description();
+
 	auto binding = LearningModelBinding(m_sess);
 	
 	hstring inputName = m_sess.Model().InputFeatures().GetAt(0).Name();

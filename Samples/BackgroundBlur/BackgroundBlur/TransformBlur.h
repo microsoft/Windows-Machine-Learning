@@ -199,6 +199,7 @@ private:
     HRESULT SetupAlloc();
     HRESULT CheckDX11Device(); // Do we need to check the dx11 device in ProcessOutput? 
     VideoFrame SampleToVideoFrame(IMFSample* sample, CComPtr<IVideoFrameNativeFactory> factory);
+    IDirect3DSurface SampleToD3Dsurface(IMFSample* sample);
 
     long                        m_nRefCount;                // reference count
     CritSec                     m_critSec;

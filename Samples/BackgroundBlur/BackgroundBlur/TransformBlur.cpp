@@ -20,8 +20,8 @@ const FOURCC FOURCC_RGB32 = 22;
 // Static array of media types (preferred and accepted).
 const GUID* g_MediaSubtypes[] =
 {
-    &MFVideoFormat_RGB32,
-    //&MFVideoFormat_NV12,
+    //&MFVideoFormat_RGB32,
+    &MFVideoFormat_NV12,
 };
 
 // Number of media types in the aray.
@@ -1321,15 +1321,39 @@ VideoFrame TransformBlur::SampleToVideoFrame(IMFSample* sample, CComPtr<IVideoFr
 
     return vfNative.try_as<VideoFrame>();
 }
+
 //-------------------------------------------------------------------
-// Name: OnProcessOutput
-// Description: Generates output data.
+// Name: SampleToD3DSurface
+// Description: Convert an IMFSample to an IDirect3DSurface
 // 
 // IMFSample -> IMFMediaBuffer          Get underlying buffer
 // IMFMediaBuffer -> IMFDXGIBuffer      QI to get the DXGI-backed buffer
 // IMFDXGIBuffer -> ID3D11Texture2D     Get texture resources from DXGI-backed buffer
 // ID3D11Texture2D -> IDXGISurface      QI to get DXGI surface from texture resource
 // IDXGISurface -> IDirect3DSurface     DXGI-D3D interop so can create a VideoFrame for WinML
+//
+//-------------------------------------------------------------------
+IDirect3DSurface TransformBlur::SampleToD3Dsurface(IMFSample* sample)
+{
+    CComPtr<IMFMediaBuffer> pBuffIn;
+    CComPtr<IMFDXGIBuffer> pSrc;
+    CComPtr<ID3D11Texture2D> pTextSrc;
+    CComPtr<IDXGISurface> pSurfaceSrc;
+    
+    winrt::com_ptr<IInspectable> pSurfaceInspectable;
+
+    sample->GetBufferByIndex(0, &pBuffIn); //converttocontiguousbuffer
+    pBuffIn->QueryInterface(IID_PPV_ARGS(&pSrc));
+    pBuffIn->QueryInterface(IID_PPV_ARGS(&pTextSrc));
+    pTextSrc->QueryInterface(IID_PPV_ARGS(&pSurfaceSrc));
+
+    CreateDirect3D11SurfaceFromDXGISurface(pSurfaceSrc, pSurfaceInspectable.put());
+    return pSurfaceInspectable.try_as<IDirect3DSurface>();
+}
+//-------------------------------------------------------------------
+// Name: OnProcessOutput
+// Description: Generates output data.
+// 
 //-------------------------------------------------------------------
 HRESULT TransformBlur::OnProcessOutput(IMFSample** ppOut)
 {
@@ -1341,19 +1365,15 @@ HRESULT TransformBlur::OnProcessOutput(IMFSample** ppOut)
     // Make sure that output gets the correct surface still
     CComPtr<IVideoFrameNativeFactory> factory;
     hr = CoCreateInstance(CLSID_VideoFrameNativeFactory, NULL, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&factory));
-    VideoFrame src = SampleToVideoFrame(m_spSample, factory);
-    VideoFrame dest = SampleToVideoFrame(*ppOut, factory);
-
-    // Get the d3d surfaces instead
-
-
+    VideoFrame srcVF = SampleToVideoFrame(m_spSample, factory);
+    VideoFrame destVF = SampleToVideoFrame(*ppOut, factory);
 
     // Invoke the image transform function.
     if (SUCCEEDED(hr))
     {
         // Video frames are set up to be read-only (only with RGB?)
         // TOOD: Lock the device agian? 
-        m_segmentModel.RunTestDXGI(src, dest);
+        m_segmentModel.RunTestDXGI(srcVF, destVF);
         
     }
     else

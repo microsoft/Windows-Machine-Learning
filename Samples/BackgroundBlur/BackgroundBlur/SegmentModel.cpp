@@ -169,9 +169,10 @@ void SegmentModel::RunTestDXGI(VideoFrame src, VideoFrame dest)
 	auto descOut = dest.Direct3DSurface().Description();
 
 	// TODO: Make output from the same surface as what we allocated in MFT
-	//VideoFrame output = VideoFrame::CreateAsDirect3D11SurfaceBacked(desc.Format, desc.Width, desc.Height);
+	VideoFrame output = VideoFrame::CreateAsDirect3D11SurfaceBacked(desc.Format, desc.Width, desc.Height);
 	VideoFrame input2 = VideoFrame::CreateAsDirect3D11SurfaceBacked(desc.Format, desc.Width, desc.Height);
 	src.CopyToAsync(input2).get(); // TODO: I'm guessing it's this copy that's causing issues... 
+	dest.CopyToAsync(output).get();
 	desc = input2.Direct3DSurface().Description();
 	auto binding = LearningModelBinding(m_sess);
 	
@@ -180,7 +181,7 @@ void SegmentModel::RunTestDXGI(VideoFrame src, VideoFrame dest)
 	hstring outputName = m_sess.Model().OutputFeatures().GetAt(0).Name();
 
 	auto outputBindProperties = PropertySet();
-	binding.Bind(outputName, dest); // TODO: See if can bind videoframe from MFT
+	binding.Bind(outputName, output); // TODO: See if can bind videoframe from MFT
 	auto results = m_sess.Evaluate(binding, L"");
 
 	//output.CopyToAsync(src).get(); // Error- src is read-only, no matter the input VF type

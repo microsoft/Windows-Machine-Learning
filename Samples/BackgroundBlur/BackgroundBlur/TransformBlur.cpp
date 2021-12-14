@@ -1411,7 +1411,7 @@ HRESULT TransformBlur::OnProcessOutput(IMFSample** ppOut)
         pTextCreate->GetDevice(&deviceTemp); // Device 2
 
         auto desc = vfSrc.Direct3DSurface().Description();
-        VideoFrame vfDesc = VideoFrame::CreateAsDirect3D11SurfaceBacked(desc.Format, desc.Width, desc.Height);
+        VideoFrame vfDesc = VideoFrame::CreateAsDirect3D11SurfaceBacked(desc.Format, desc.Width, desc.Height); // Does it fail here first now? 
         vfSrc.CopyToAsync(vfDesc).get();
         spDxgiInterfaceAccess = vfDesc.Direct3DSurface().as<Windows::Graphics::DirectX::Direct3D11::IDirect3DDxgiInterfaceAccess>();
         hr = spDxgiInterfaceAccess->GetInterface(IID_PPV_ARGS(&pTextDest));

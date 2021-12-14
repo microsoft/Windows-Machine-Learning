@@ -11,6 +11,7 @@ using winrt::hstring;
 using namespace winrt;
 using namespace Windows::Foundation::Collections;
 
+int i = 0;
 enum OnnxDataType : long {
 	ONNX_UNDEFINED = 0,
 	// Basic types.
@@ -137,34 +138,10 @@ IDirect3DSurface SegmentModel::Run(const IDirect3DSurface& pSrc, const DWORD cbI
 	return input.Direct3DSurface();
 }
 
-void SegmentModel::RunTest(const BYTE** pSrc, BYTE** pDest, const DWORD cbImageSize) 
-{
-	// Right now the single input type I allow is topdown, this should work
-	winrt::array_view<const byte> source{*pSrc, *pSrc + cbImageSize}; // TODO: Does this work when topdown vs. bottomup
-	std::vector<int64_t> shape = { 1, m_imageHeightInPixels, m_imageWidthInPixels, 4 };
-
-	ITensor inputRawTensor = TensorUInt8Bit::CreateFromArray(std::vector<int64_t>{1, cbImageSize}, source);
-	ITensor outputTensor = TensorUInt8Bit::Create(shape);
-	auto binding = Evaluate(m_sess, { &inputRawTensor }, &outputTensor, true);
-
-	UINT32 outCapacity = 0;
-	if (m_useGPU)
-	{
-		// v1: just get the reference- should fail
-		auto reference = outputTensor.as<TensorUInt8Bit>().CreateReference().data();
-		CopyMemory(*pDest, reference, cbImageSize);
-
-		// v3: get from a d3dresource
-		/*ID3D12Resource* res = NULL;
-		HRESULT hr = outputTensor.as<ITensorNative>()->GetD3D12Resource(&res);
-		UINT DstRowPitch = 0, DstDepthPitch = 0, SrcSubresource = 0;
-		hr = res->ReadFromSubresource((void*)*pDest, DstRowPitch, DstDepthPitch, SrcSubresource, NULL);*/
-		return;
-	}
-}
-
 void SegmentModel::RunTestDXGI(IDirect3DSurface src, IDirect3DSurface dest)
 {
+
+	OutputDebugString(L"\n [ Starting runTest | "); i++;
 	VideoFrame input = VideoFrame::CreateWithDirect3D11Surface(src);
 	VideoFrame output = VideoFrame::CreateWithDirect3D11Surface(dest);
 	
@@ -189,7 +166,14 @@ void SegmentModel::RunTestDXGI(IDirect3DSurface src, IDirect3DSurface dest)
 
 	//output.CopyToAsync(src).get(); // Error- src is read-only, no matter the input VF type
 	// return output.Direct3DSurface();
+
 	output2.CopyToAsync(output).get(); // Should put onto the correct surface now? Make sure, can return the surface instead later
+
+	input.Close();
+	input2.Close();
+	output2.Close();
+
+	OutputDebugString(L" Ending runTest ]");
 }
 
 LearningModel SegmentModel::Invert(long n, long c, long h, long w)

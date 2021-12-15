@@ -198,6 +198,8 @@ private:
     HRESULT UpdateFormatInfo();
     HRESULT SetupAlloc();
     HRESULT CheckDX11Device(); // Do we need to check the dx11 device in ProcessOutput? 
+    HRESULT UpdateDX11Device();
+    void InvalidateDX11Resources();
     VideoFrame SampleToVideoFrame(IMFSample* sample, CComPtr<IVideoFrameNativeFactory> factory);
     IDirect3DSurface SampleToD3Dsurface(IMFSample* sample);
 
@@ -210,6 +212,7 @@ private:
     CComPtr<IMFAttributes>  m_spOutputAttributes;
 
     CComPtr<IMFSample>      m_spSample;                           // Input sample.
+    // TODO: Keep an output sample buffer? 
     CComPtr<IMFMediaType>   m_spInputType;                     // Input media type.
     CComPtr<IMFMediaType>   m_spOutputType;                    // Output media type.
 

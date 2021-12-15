@@ -973,7 +973,10 @@ HRESULT TransformBlur::ProcessOutput(
     CComPtr<ID3D11Device> spDevice;
     bool bDeviceLocked = false;
 
-    CHECK_HR(hr = SetupAlloc()); // Ensure allocator is set up
+    // Ensure allocator is set up
+    CHECK_HR(hr = SetupAlloc()); 
+    // Ensure we still a valid DX11 device
+    CHECK_HR(hr = CheckDX11Device());
 
     // We allocate samples when have a dx device
     if (m_spDeviceManager != nullptr)
@@ -1027,6 +1030,14 @@ done:
 }
 
 /// PRIVATE METHODS
+
+// TODO: Is setting to nullptr enough? 
+void TransformBlur::InvalidateDX11Resources()
+{
+    m_spDevice = nullptr;
+    m_spContext = nullptr;
+}
+
 HRESULT TransformBlur::SetupAlloc()
 {
     HRESULT hr = S_OK;
@@ -1066,6 +1077,49 @@ HRESULT TransformBlur::SetupAlloc()
     }
 done:
     return hr;
+}
+
+HRESULT TransformBlur::UpdateDX11Device()
+{
+    HRESULT hr = S_OK;
+
+    if (m_spDeviceManager != nullptr)
+    {
+        CHECK_HR(hr = m_spDeviceManager->OpenDeviceHandle(&m_hDeviceHandle));
+
+
+        CHECK_HR(hr = m_spDeviceManager->GetVideoService(m_hDeviceHandle, __uuidof(m_spDevice), (void**)&m_spDevice));
+        if (FAILED(hr))
+
+        m_spDevice->GetImmediateContext(&m_spContext);
+    }
+    return hr; 
+
+done: 
+    InvalidateDX11Resources();
+    return hr; 
+}
+
+HRESULT TransformBlur::CheckDX11Device()
+{
+    HRESULT hr = S_OK;
+
+    if (m_spDeviceManager != nullptr && m_hDeviceHandle)
+    {
+        if (m_spDeviceManager->TestDevice(m_hDeviceHandle) != S_OK)
+        {
+            InvalidateDX11Resources();
+
+            hr = UpdateDX11Device();
+            if (FAILED(hr))
+            {
+                return hr;
+            }
+
+        }
+    }
+
+    return S_OK;
 }
 
 //-------------------------------------------------------------------

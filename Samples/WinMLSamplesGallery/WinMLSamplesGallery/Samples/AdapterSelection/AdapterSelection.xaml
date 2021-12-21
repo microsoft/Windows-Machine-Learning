@@ -1,0 +1,22 @@
+<Page
+    x:Class="WinMLSamplesGallery.Samples.AdapterSelection"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:local_controls="using:WinMLSamplesGallery.Controls"
+    xmlns:local_samples="using:WinMLSamplesGallery.Samples"
+    mc:Ignorable="d"
+    FontFamily="Arial">
+
+    <StackPanel>
+        <ComboBox x:Name="DeviceBox" SelectedIndex="0">
+            <x:String>CPU</x:String>
+            <x:String>DirectX</x:String>
+            <x:String>DirectXHighPerformance</x:String>
+            <x:String>DirectXMinPower</x:String>
+            <x:String>Intel Iris Plus Graphics</x:String>
+            <x:String>NVIDIA GeForce GTX 1650</x:String>
+        </ComboBox>
+    </StackPanel>
+</Page>

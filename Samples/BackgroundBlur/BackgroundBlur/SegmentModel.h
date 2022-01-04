@@ -20,10 +20,8 @@ public:
 	SegmentModel();
 	SegmentModel(UINT32 w, UINT32 h);
 
-	IDirect3DSurface Run(const IDirect3DSurface& pSrc, const DWORD cbImageSize);
-	
-	void RunTest(const BYTE** pSrc, BYTE** pDest, const DWORD cbImageSize);
-	void RunTestDXGI(IDirect3DSurface src, IDirect3DSurface dest);
+	void Run(IDirect3DSurface src, IDirect3DSurface dest, IDirect3DDevice device);
+	void RunTestDXGI(IDirect3DSurface src, IDirect3DSurface dest, IDirect3DDevice device);
 
 	LearningModelSession CreateLearningModelSession(const LearningModel& model, bool closedModel=true);
 	void SetImageSize(UINT32 w, UINT32 h);

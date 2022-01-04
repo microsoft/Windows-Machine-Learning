@@ -910,7 +910,6 @@ HRESULT TransformBlur::ProcessInput(
     // Cache the sample. We do the actual work in ProcessOutput.
     m_spSample = pSample;
 done:
-    //pSample->Release();
     return hr;
 }
 
@@ -1432,15 +1431,9 @@ IDirect3DSurface TransformBlur::SampleToD3Dsurface(IMFSample* sample)
 HRESULT TransformBlur::OnProcessOutput(IMFSample** ppOut)
 {
     HRESULT hr = S_OK;
-
-    // Create video frame from input and output samples
-    // Pass in video frame to model 
-    // Run 
-    // Make sure that output gets the correct surface still
+ 
     CComPtr<IVideoFrameNativeFactory> factory;
     hr = CoCreateInstance(CLSID_VideoFrameNativeFactory, NULL, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&factory));
-    //VideoFrame srcVF = SampleToVideoFrame(m_spSample, factory);
-    //VideoFrame destVF = SampleToVideoFrame(*ppOut, factory);
 
     IDirect3DSurface src = SampleToD3Dsurface(m_spSample);
     IDirect3DSurface dest = SampleToD3Dsurface(*ppOut);
@@ -1471,21 +1464,27 @@ HRESULT TransformBlur::OnProcessOutput(IMFSample** ppOut)
         hr = spDxgiInterfaceAccess->GetInterface(IID_PPV_ARGS(&pTextDest));
         pTextCreate->GetDevice(&deviceDest);// Device 3
     }
-    
+
+    // Extract the device 
+    CComPtr<IDXGIDevice> pDXGIDevice;
+    hr = m_spDevice.QueryInterface((&pDXGIDevice));
+    winrt::Windows::Graphics::DirectX::Direct3D11::IDirect3DDevice d3dDevice2{ nullptr };
+    hr = CreateDirect3D11DeviceFromDXGIDevice(pDXGIDevice, reinterpret_cast<::IInspectable**>(winrt::put_abi(d3dDevice2)));
 
     // Invoke the image transform function.
     if (SUCCEEDED(hr))
     {
+        
         // Do the copies inside runtest
-        m_segmentModel.RunTestDXGI(src, dest);
+        m_segmentModel.Run(src, dest, d3dDevice2);
     }
     else
     {
         CHECK_HR(hr = E_UNEXPECTED);
     }
-    // Always set the output buffer size
-    // TODO: Move to ProcessOutput? 
-    // CHECK_HR(hr = pBuffOut->SetCurrentLength(m_cbImageSize));
+
+    src.Close();
+    dest.Close();
 
     // The VideoBufferLock class automatically unlocks the buffers.
     // TODO: Does above still apply? 

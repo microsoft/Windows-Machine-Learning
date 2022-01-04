@@ -88,15 +88,21 @@ void SegmentModel::SetImageSize(UINT32 w, UINT32 h)
 	m_imageHeightInPixels = h;
 }
 
-IDirect3DSurface SegmentModel::Run(const IDirect3DSurface& pSrc, const DWORD cbImageSize)
+void SegmentModel::Run(IDirect3DSurface src, IDirect3DSurface dest, IDirect3DDevice device)
 {
-	// 1. Get input buffer as a VideoFrame
-	VideoFrame input = VideoFrame::CreateWithDirect3D11Surface(pSrc);
-	auto desc = input.Direct3DSurface().Description(); // B8G8R8X8UIntNormalized
+	OutputDebugString(L"\n [ Starting runTest | "); i++;
 
-	VideoFrame output = VideoFrame::CreateAsDirect3D11SurfaceBacked(desc.Format, desc.Width, desc.Height);
-	VideoFrame input2 = VideoFrame::CreateAsDirect3D11SurfaceBacked(desc.Format, desc.Width, desc.Height);
+	// 1. Get input buffer as a VideoFrame
+	VideoFrame input = VideoFrame::CreateWithDirect3D11Surface(src);
+	VideoFrame output = VideoFrame::CreateWithDirect3D11Surface(dest);
+
+	auto desc = input.Direct3DSurface().Description();
+	auto descOut = output.Direct3DSurface().Description();
+	VideoFrame input2 = VideoFrame::CreateAsDirect3D11SurfaceBacked(desc.Format, desc.Width, desc.Height, device);
+	VideoFrame output2 = VideoFrame::CreateAsDirect3D11SurfaceBacked(descOut.Format, descOut.Width, descOut.Height, device);
+
 	input.CopyToAsync(input2).get(); // TODO: I'm guessing it's this copy that's causing issues... 
+	output.CopyToAsync(output2).get(); 
 	std::vector<int64_t> shape = { 1, 3, m_imageHeightInPixels, m_imageWidthInPixels };
 	// TODO: Make sure input surface still has the same shape as m_imageHeight and m_imageWidth? 
 
@@ -123,33 +129,38 @@ IDirect3DSurface SegmentModel::Run(const IDirect3DSurface& pSrc, const DWORD cbI
 	outputBindProperties.Insert(L"DisableTensorCpuSync", PropertyValue::CreateBoolean(false));
 	m_bindPostprocess.Bind(m_sessPostprocess.Model().InputFeatures().GetAt(0).Name(), input2); // InputImage
 	m_bindPostprocess.Bind(m_sessPostprocess.Model().InputFeatures().GetAt(1).Name(), FCNResnetOutput); // InputScores
-	m_bindPostprocess.Bind(m_sessPostprocess.Model().OutputFeatures().GetAt(0).Name(), output); // TODO: DisableTensorCPUSync to false now? 
+	m_bindPostprocess.Bind(m_sessPostprocess.Model().OutputFeatures().GetAt(0).Name(), output2); // TODO: DisableTensorCPUSync to false now? 
 	// Retrieve final output
 	m_sessPostprocess.EvaluateAsync(m_bindPostprocess, L"").get(); 
 
 	// Copy back to the correct surface for MFT
-	output.CopyToAsync(input).get(); 
+	output2.CopyToAsync(output).get(); 
 
 	// Clean up bindings before returning
 	m_bindPreprocess.Clear();
 	m_bindFCN.Clear();
-	m_bindPostprocess.Clear(); 
-
-	return input.Direct3DSurface();
+	m_bindPostprocess.Clear();
+	input.Close();
+	input2.Close();
+	output2.Close();
+	output.Close();
+	OutputDebugString(L" Ending runTest ]");
 }
 
-void SegmentModel::RunTestDXGI(IDirect3DSurface src, IDirect3DSurface dest)
+void SegmentModel::RunTestDXGI(IDirect3DSurface src, IDirect3DSurface dest, IDirect3DDevice device)
 {
 
 	OutputDebugString(L"\n [ Starting runTest | "); i++;
+	printf("[ Starting runtest %d| ", i);
 	VideoFrame input = VideoFrame::CreateWithDirect3D11Surface(src);
 	VideoFrame output = VideoFrame::CreateWithDirect3D11Surface(dest);
 	
 	auto desc = input.Direct3DSurface().Description(); 
 	auto descOut = output.Direct3DSurface().Description();
 
-	VideoFrame output2 = VideoFrame::CreateAsDirect3D11SurfaceBacked(descOut.Format, descOut.Width, descOut.Height);
-	VideoFrame input2 = VideoFrame::CreateAsDirect3D11SurfaceBacked(desc.Format, desc.Width, desc.Height);
+	//  TODO: Use a specific device to create so not piling up on resources? 
+	VideoFrame output2 = VideoFrame::CreateAsDirect3D11SurfaceBacked(descOut.Format, descOut.Width, descOut.Height, device);
+	VideoFrame input2 = VideoFrame::CreateAsDirect3D11SurfaceBacked(desc.Format, desc.Width, desc.Height, device);
 	input.CopyToAsync(input2).get(); // TODO: Can input stay the same if NV12? 
 	output.CopyToAsync(output2).get();
 	desc = input2.Direct3DSurface().Description();
@@ -169,11 +180,14 @@ void SegmentModel::RunTestDXGI(IDirect3DSurface src, IDirect3DSurface dest)
 
 	output2.CopyToAsync(output).get(); // Should put onto the correct surface now? Make sure, can return the surface instead later
 
+	binding.Clear();
 	input.Close();
 	input2.Close();
 	output2.Close();
-
+	output.Close();
 	OutputDebugString(L" Ending runTest ]");
+	//printf(" Ending runtest %d]", i);
+
 }
 
 LearningModel SegmentModel::Invert(long n, long c, long h, long w)

@@ -1,9 +1,10 @@
 #include "pch.h"
 #include "AdapterList.h"
+#include "AdapterList.g.cpp"
 
 namespace winrt::WinMLSamplesGalleryNative::implementation
 {
-    void AdapterList::GetAdapters(hstring const& path) {
-        return;
+    winrt::WinMLSamplesGalleryNative::AdapterList AdapterList::GetAdapters() {
+        return winrt::make<AdapterList>();
     }
 }

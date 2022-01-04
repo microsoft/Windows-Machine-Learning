@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Windows.Graphics.Imaging;
 using Windows.Media;
 using Windows.Storage;
+using WinMLSamplesGalleryNative;
 
 namespace WinMLSamplesGallery.Samples
 {
@@ -18,6 +19,8 @@ namespace WinMLSamplesGallery.Samples
         {
             this.InitializeComponent();
             System.Diagnostics.Debug.WriteLine("Initialized Adapter Selection");
+            var AdapterList = WinMLSamplesGalleryNative.AdapterList.GetAdapters();
+            System.Diagnostics.Debug.WriteLine("Called GetAdapters", AdapterList);
         }
     }
 }

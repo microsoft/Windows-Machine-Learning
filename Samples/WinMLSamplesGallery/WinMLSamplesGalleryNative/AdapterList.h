@@ -6,7 +6,7 @@ namespace winrt::WinMLSamplesGalleryNative::implementation
     struct AdapterList : AdapterListT<AdapterList>
     {
         AdapterList() = default;
-        static void GetAdapters(hstring const& path);
+        static winrt::WinMLSamplesGalleryNative::AdapterList GetAdapters();
     };
 }
 namespace winrt::WinMLSamplesGalleryNative::factory_implementation

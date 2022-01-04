@@ -218,7 +218,7 @@ LearningModel SegmentModel::PostProcess(long n, long c, long h, long w, long axi
 	auto builder = LearningModelBuilder::Create(12)
 		.Inputs().Add(LearningModelBuilder::CreateTensorFeatureDescriptor(L"InputImage", TensorKind::Float, { n, c, h, w }))
 		.Inputs().Add(LearningModelBuilder::CreateTensorFeatureDescriptor(L"InputScores", TensorKind::Float, { -1, -1, h, w })) // Different input type? 
-		.Outputs().Add(LearningModelBuilder::CreateTensorFeatureDescriptor(L"OutputImage", TensorKind::Float, { n, c, h, w })) 
+		.Outputs().Add(LearningModelBuilder::CreateTensorFeatureDescriptor(L"OutputImage", TensorKind::Float, { n, c, h, w }))
 		// Argmax Model Outputs
 		.Operators().Add(LearningModelOperator(L"ArgMax")
 			.SetInput(L"data", L"InputScores")
@@ -237,6 +237,31 @@ LearningModel SegmentModel::PostProcess(long n, long c, long h, long w, long axi
 		.Operators().Add(LearningModelOperator(L"Mul")
 			.SetInput(L"A", L"InputImage")
 			.SetInput(L"B", L"MaskBinary")
+			.SetOutput(L"C", L"ForegroundImage"))
+
+		// Extract the blurred background using the negation of the foreground mask
+		.Operators().Add(LearningModelOperator(L"AveragePool") // AveragePool to create blurred background
+			.SetInput(L"X", L"InputImage")
+			.SetAttribute(L"kernel_shape", TensorInt64Bit::CreateFromArray(std::vector<int64_t>{2}, std::array<int64_t, 2>{20, 20}))
+			.SetAttribute(L"auto_pad", TensorString::CreateFromArray(std::vector<int64_t>{1}, std::array<hstring, 1>{L"SAME_UPPER"}))
+			.SetOutput(L"Y", L"BlurredImage"))
+		.Operators().Add(LearningModelOperator(L"Mul")
+			.SetInput(L"A", L"MaskBinary")
+			.SetConstant(L"B", TensorFloat::CreateFromIterable({ 1 }, { -1.f }))
+			.SetOutput(L"C", L"NegMask"))
+		.Operators().Add(LearningModelOperator(L"Add") // BackgroundMask = (1- foreground Mask)
+			.SetConstant(L"A", TensorFloat::CreateFromIterable({ 1 }, { 1.f }))
+			.SetInput(L"B", L"NegMask")
+			.SetOutput(L"C", L"BackgroundMask"))
+		.Operators().Add(LearningModelOperator(L"Mul") // Extract the blurred background
+			.SetInput(L"A", L"BlurredImage")
+			.SetInput(L"B", L"BackgroundMask")
+			.SetOutput(L"C", L"BackgroundImage"))
+
+		// Combine foreground and background
+		.Operators().Add(LearningModelOperator(L"Add")
+			.SetInput(L"A", L"ForegroundImage")
+			.SetInput(L"B", L"BackgroundImage")
 			.SetOutput(L"C", L"OutputImage"))
 		;
 

@@ -267,108 +267,12 @@ LearningModel SegmentModel::PostProcess(long n, long c, long h, long w, long axi
 
 	return builder.CreateModel();
 }
-LearningModel SegmentModel::Argmax(long axis, long h, long w)
-{
-	auto builder = LearningModelBuilder::Create(12)
-		.Inputs().Add(LearningModelBuilder::CreateTensorFeatureDescriptor(L"Data", TensorKind::Float, { -1, -1, h, w })) // Different input type? 
-		.Outputs().Add(LearningModelBuilder::CreateTensorFeatureDescriptor(L"Output", TensorKind::Float, { -1, -1, h, w })) // Output of int64? 
-		.Operators().Add( LearningModelOperator(L"ArgMax")
-			.SetInput(L"data", L"Data")
-			.SetAttribute(L"keepdims", TensorInt64Bit::CreateFromArray({1}, { 1 }))
-			.SetAttribute(L"axis", TensorInt64Bit::CreateFromIterable({1}, { axis })) // Correct way of passing axis? 
-			.SetOutput(L"reduced", L"Reduced"))
-		.Operators().Add( LearningModelOperator(L"Cast")
-			.SetInput(L"input", L"Reduced")
-			.SetAttribute(L"to", TensorInt64Bit::CreateFromIterable({}, {OnnxDataType::ONNX_FLOAT}))
-			.SetOutput(L"output", L"Output"))
-		;
-
-	return builder.CreateModel();
-}
 
 LearningModel SegmentModel::FCNResnet()
 {
 	auto rel = std::filesystem::current_path();
 	rel.append("Assets\\fcn-resnet50-11.onnx");
 	return LearningModel::LoadFromFilePath(rel + L"");
-}
-
-LearningModel SegmentModel::GetBackground(long n, long c, long h, long w)
-{
-	auto builder = LearningModelBuilder::Create(12)
-		.Inputs().Add(LearningModelBuilder::CreateTensorFeatureDescriptor(L"InputImage", TensorKind::Float, { n, c, h, w }))
-		.Inputs().Add(LearningModelBuilder::CreateTensorFeatureDescriptor(L"InputMask", TensorKind::Float, { n, 1, h, w })) // Broadcast to each color channel
-		.Outputs().Add(LearningModelBuilder::CreateTensorFeatureDescriptor(L"Output", TensorKind::Float, { n, c, h, w }))
-		// Averagepool input image
-		/*.Operators().Add(LearningModelOperator(L"AveragePool")
-			.SetInput(L"X", L"InputImage")
-			.SetAttribute(L"kernel_shape", TensorInt64Bit::CreateFromArray(std::vector<int64_t>{2}, std::array<int64_t,2>{10, 10}))
-			.SetAttribute(L"auto_pad", TensorString::CreateFromArray(std::vector<int64_t>{1}, std::array<hstring,1>{L"SAME_UPPER"}))
-			.SetOutput(L"Y", L"BlurredImage"))*/
-		// Make mask
-		.Operators().Add(LearningModelOperator(L"Clip")
-			.SetInput(L"input", L"InputMask")
-			.SetConstant(L"max", TensorFloat::CreateFromIterable({ 1 }, { 1.f }))
-			.SetOutput(L"output", L"MaskBinary"))
-		.Operators().Add(LearningModelOperator(L"Mul")
-			.SetInput(L"A", L"MaskBinary")
-			.SetConstant(L"B", TensorFloat::CreateFromIterable({1}, {-1.f}))
-			.SetOutput(L"C", L"NegMask"))
-		.Operators().Add(LearningModelOperator(L"Add") // BackgroundMask = (1- foreground Mask)
-			.SetConstant(L"A", TensorFloat::CreateFromIterable({1}, {1.f}))
-			.SetInput(L"B", L"NegMask")
-			.SetOutput(L"C", L"BackgroundMask"))
-		// Extract blurred background 
-		.Operators().Add(LearningModelOperator(L"Mul")
-			.SetInput(L"A", L"InputImage")
-			.SetInput(L"B", L"BackgroundMask")
-			.SetOutput(L"C", L"Output"))
-		// TODO: REmove once compose w foreground
-		/*.Operators().Add(LearningModelOperator(L"Transpose")
-			.SetInput(L"data", L"Background")
-			.SetAttribute(L"perm", TensorInt64Bit::CreateFromArray({ 4 }, { 0, 2, 3, 1 }))
-			.SetOutput(L"transposed", L"TransposeOutput"))
-		.Operators().Add(LearningModelOperator(L"Cast")
-			.SetInput(L"input", L"TransposeOutput")
-			.SetOutput(L"output", L"Output")
-			.SetAttribute(L"to",
-				TensorInt64Bit::CreateFromIterable({}, {OnnxDataType::ONNX_UINT8})))*/
-		;
-
-	return builder.CreateModel();
-}
-
-LearningModel SegmentModel::GetForeground(long n, long c, long h, long w)
-{
-	auto builder = LearningModelBuilder::Create(12)
-		.Inputs().Add(LearningModelBuilder::CreateTensorFeatureDescriptor(L"InputImage", TensorKind::Float, { n, c, h, w }))
-		.Inputs().Add(LearningModelBuilder::CreateTensorFeatureDescriptor(L"InputMask", TensorKind::Float, { n, 1, h, w })) // Broadcast to each color channel
-		.Outputs().Add(LearningModelBuilder::CreateTensorFeatureDescriptor(L"Output", TensorKind::Float, { n, c, h, w }))
-		.Operators().Add(LearningModelOperator(L"Clip")
-			.SetInput(L"input", L"InputMask")
-			.SetConstant(L"max", TensorFloat::CreateFromIterable({ 1 }, { 1.f }))
-			.SetOutput(L"output", L"MaskBinary"))
-		.Operators().Add(LearningModelOperator(L"Mul")
-			.SetInput(L"A", L"InputImage")
-			.SetInput(L"B", L"MaskBinary")
-			.SetOutput(L"C", L"Output"))
-		// Convert to buffer output- detensorization? 
-		/*.Operators().Add(LearningModelOperator(L"Transpose")
-			.SetInput(L"data", L"Foreground")
-			.SetAttribute(L"perm", TensorInt64Bit::CreateFromArray({ 4 }, { 0, 2, 3, 1 }))
-			.SetOutput(L"transposed", L"TransposeOutput"))
-		.Operators().Add(LearningModelOperator(L"Reshape")
-			.SetInput(L"data", L"TransposeOutput")
-			.SetConstant(L"shape", TensorInt64Bit::CreateFromIterable({ 2 }, { 1, n*c*h*w }))
-			.SetOutput(L"reshaped", L"ReshapeOutput"))
-		.Operators().Add(LearningModelOperator(L"Cast")
-			.SetInput(L"input", L"TransposeOutput")
-			.SetOutput(L"output", L"Output")
-			.SetAttribute(L"to",
-				TensorInt64Bit::CreateFromIterable({}, {OnnxDataType::ONNX_UINT8}))) */
-		;
-
-	return builder.CreateModel();
 }
 
 LearningModel SegmentModel::Normalize0_1ThenZScore(long h, long w, long c, const std::array<float, 3>& means, const std::array<float, 3>& stddev)
@@ -425,50 +329,6 @@ LearningModel SegmentModel::ReshapeFlatBufferToNCHW(long n, long c, long h, long
 	return builder.CreateModel();
 }
 
-
-
-LearningModel SegmentModel::ReshapeFlatBufferToNCHWAndInvert(long n, long c, long h, long w) {
-	auto size = { 1 };
-	//TensorInt64Bit::CreateFromIterable(winrt::param::iterable<int64_t>({ 1,2,3 }), size);
-	auto builder = LearningModelBuilder::Create(11)
-		.Inputs().Add(LearningModelBuilder::CreateTensorFeatureDescriptor(L"Input", TensorKind::UInt8, { 1, n * c * h * w }))
-		// Remove the alpha channel
-		.Outputs().Add(LearningModelBuilder::CreateTensorFeatureDescriptor(L"Output", TensorKind::UInt8, {n, h, w, c}))
-		.Operators().Add(LearningModelOperator((L"Cast"))
-			.SetInput(L"input", L"Input")
-			.SetOutput(L"output", L"CastOutput")
-			.SetAttribute(L"to",
-				TensorInt64Bit::CreateFromIterable({}, {OnnxDataType::ONNX_FLOAT})))
-		.Operators().Add(LearningModelOperator(L"Reshape")
-			.SetInput(L"data", L"CastOutput")
-			.SetConstant(L"shape", TensorInt64Bit::CreateFromIterable({4}, {n, h, w, c}))
-			.SetOutput(L"reshaped", L"ReshapeOutput"))
-		/*.Operators().Add(LearningModelOperator(L"Slice")
-			.SetInput(L"data", L"ReshapeOutput")
-			.SetConstant(L"starts", TensorInt64Bit::CreateFromIterable({ 4 }, { 0, 0, 0, 0 }))
-			.SetConstant(L"ends", TensorInt64Bit::CreateFromIterable({ 4 }, { n, h, w, c - 1 }))
-			.SetOutput(L"output", L"SliceOutput"))*/
-		// Now shape NCHW
-		.Operators().Add(LearningModelOperator(L"Mul")
-			.SetInput(L"A", L"ReshapeOutput")
-			.SetConstant(L"B", TensorFloat::CreateFromIterable({1}, {-1.f}))
-			//.SetConstant(L"B", TensorFloat::CreateFromIterable({3}, {0.114f, 0.587f, 0.299f}))
-			.SetOutput(L"C", L"MulOutput")
-		)
-		.Operators().Add(LearningModelOperator(L"Add")
-			.SetConstant(L"A", TensorFloat::CreateFromIterable({1}, {255.f}))
-			.SetInput(L"B", L"MulOutput")
-			.SetOutput(L"C", L"AddOutput")
-		)
-		.Operators().Add(LearningModelOperator((L"Cast"))
-			.SetInput(L"input", L"AddOutput")
-			.SetOutput(L"output", L"Output")
-			.SetAttribute(L"to",
-				TensorInt64Bit::CreateFromIterable({}, {OnnxDataType::ONNX_UINT8})))
-		;
-	return builder.CreateModel();
-}
-
 LearningModelSession SegmentModel::CreateLearningModelSession(const LearningModel& model, bool closeModel) {
 	auto device = m_useGPU ? LearningModelDevice(LearningModelDeviceKind::DirectX) : LearningModelDevice(LearningModelDeviceKind::Default); // Todo: Have a toggle between GPU/ CPU? 
 	auto options = LearningModelSessionOptions(); 
@@ -477,7 +337,6 @@ LearningModelSession SegmentModel::CreateLearningModelSession(const LearningMode
 	auto session = LearningModelSession(model, device);
 	return session;
 }
-
 
 void SegmentModel::EvaluateInternal(LearningModelSession sess, LearningModelBinding bind, bool wait)
 {
@@ -497,7 +356,6 @@ LearningModelBinding SegmentModel::Evaluate(LearningModelSession& sess,const std
 		hstring inputName = sess.Model().InputFeatures().GetAt(i).Name();
 		binding.Bind(inputName, *input[i]);
 	}
-	//hstring inputName = sess.Model().InputFeatures().GetAt(0).Name();
 	hstring outputName = sess.Model().OutputFeatures().GetAt(0).Name();
 
 	auto outputBindProperties = PropertySet();

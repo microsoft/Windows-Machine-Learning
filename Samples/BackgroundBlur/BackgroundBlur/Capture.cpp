@@ -390,14 +390,14 @@ HRESULT CaptureManager::StartPreview()
             goto done;
         }
 
-        CComPtr<TransformBlur> blur ;
-        CComPtr<IMFTransform> pMFT ;
+        winrt::com_ptr<TransformBlur> blur ;
+        winrt::com_ptr<IMFTransform> pMFT ;
 
         hr = TransformBlur::CreateInstance(NULL, __uuidof(IMFTransform), (void**)(&blur));
         hr = blur->QueryInterface(__uuidof(IMFTransform), (void**)(&pMFT));
 
         // IMFCaptureSource
-        hr = pSource->AddEffect(0, pMFT);
+        hr = pSource->AddEffect(0, pMFT.get());
         if (FAILED(hr))
         {
             goto done;

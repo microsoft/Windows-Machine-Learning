@@ -32,7 +32,6 @@
 #include <commctrl.h>
 #include <d3d11.h>
 #include <initguid.h>
-#include <atlbase.h>
 
 const UINT WM_APP_CAPTURE_EVENT = WM_APP + 1;
 

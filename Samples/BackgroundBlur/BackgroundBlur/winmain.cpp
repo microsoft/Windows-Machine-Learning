@@ -14,6 +14,7 @@
 #include <powrprof.h>
 #include <KnownFolders.h>
 
+
 CaptureManager* g_pEngine = NULL;
 HPOWERNOTIFY    g_hPowerNotify = NULL;
 HPOWERNOTIFY    g_hPowerNotifyMonitor = NULL;
@@ -208,7 +209,7 @@ namespace MainWindow
     HWND hStatus = NULL;
     bool bRecording = false;
     bool bPreviewing = false;
-    CComPtr<IMFActivate> pSelectedDevice;
+    winrt::com_ptr<IMFActivate> pSelectedDevice;
 
     wchar_t PhotoFileName[MAX_PATH];
 
@@ -284,7 +285,7 @@ namespace MainWindow
     BOOL OnCreate(HWND hwnd, LPCREATESTRUCT /*lpCreateStruct*/)
     {
         BOOL                fSuccess = FALSE;
-        CComPtr<IMFAttributes> pAttributes;
+        winrt::com_ptr<IMFAttributes> pAttributes;
         HRESULT             hr = S_OK;
 
         hPreview = CreatePreviewWindow(GetModuleHandle(NULL), hwnd);
@@ -301,7 +302,7 @@ namespace MainWindow
 
         CHECK_HR(hr = CaptureManager::CreateInstance(hwnd, &g_pEngine));
 
-        hr = g_pEngine->InitializeCaptureManager(hPreview, pSelectedDevice);
+        hr = g_pEngine->InitializeCaptureManager(hPreview, pSelectedDevice.get());
         if (FAILED(hr))
         {
             ShowError(hwnd, IDS_ERR_SET_DEVICE, hr);
@@ -366,10 +367,10 @@ namespace MainWindow
     {
         ChooseDeviceParam param;
 
-        CComPtr<IMFAttributes> pAttributes;
+        winrt::com_ptr<IMFAttributes> pAttributes;
         INT_PTR result = NULL;
 
-        HRESULT hr = MFCreateAttributes(&pAttributes, 1);
+        HRESULT hr = MFCreateAttributes(pAttributes.put(), 1);
         if (FAILED(hr))
         {
             goto done;
@@ -380,7 +381,7 @@ namespace MainWindow
             MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE_VIDCAP_GUID));
 
         // Enumerate devices.
-        CHECK_HR(hr = MFEnumDeviceSources(pAttributes, &param.ppDevices, &param.count));
+        CHECK_HR(hr = MFEnumDeviceSources(pAttributes.get(), &param.ppDevices, &param.count));
 
         // Ask the user to select one.
         result = DialogBoxParam(GetModuleHandle(NULL),
@@ -399,8 +400,8 @@ namespace MainWindow
 
             CHECK_HR(hr = g_pEngine->InitializeCaptureManager(hPreview, param.ppDevices[iDevice]));
 
-            pSelectedDevice.Release();
-            pSelectedDevice = param.ppDevices[iDevice];
+            pSelectedDevice.detach(); // TODO: detach instead of release? 
+            pSelectedDevice.attach(param.ppDevices[iDevice]);
         }
 
     done:
@@ -529,7 +530,7 @@ namespace MainWindow
         LPTSTR path;
 
         // Get the path to the Documents folder.
-        CComPtr<IShellItem> psi;
+        winrt::com_ptr<IShellItem> psi;
         PWSTR pszFolderPath = NULL;
 
         HRESULT hr = SHCreateItemInKnownFolder(FOLDERID_Documents, 0, NULL, IID_PPV_ARGS(&psi));
@@ -653,7 +654,7 @@ namespace MainWindow
                 DbgPrint(L"++WM_POWERBROADCAST++ Reinitializing capture engine.\n");
                 g_fSleepState = false;
                 g_pEngine->SleepState(g_fSleepState);
-                g_pEngine->InitializeCaptureManager(hPreview, pSelectedDevice);
+                g_pEngine->InitializeCaptureManager(hPreview, pSelectedDevice.get());
                 break;
             case PBT_POWERSETTINGCHANGE:
             {
@@ -683,7 +684,7 @@ namespace MainWindow
                         DbgPrint(L"++WM_POWERBROADCAST++ Reinitializing capture engine.\n");
                         g_fSleepState = false;
                         g_pEngine->SleepState(g_fSleepState);
-                        g_pEngine->InitializeCaptureManager(hPreview, pSelectedDevice);
+                        g_pEngine->InitializeCaptureManager(hPreview, pSelectedDevice.get());
                     }
                 }
             }

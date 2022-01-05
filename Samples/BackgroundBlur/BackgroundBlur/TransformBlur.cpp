@@ -86,7 +86,7 @@ TransformBlur::TransformBlur(HRESULT& hr) :
     hr = m_pAttributes->SetUINT32(MF_SA_D3D_AWARE, TRUE);
     hr = m_pAttributes->SetUINT32(MF_SA_D3D11_AWARE, TRUE);
 
-    MFCreateAttributes(&m_spOutputAttributes, 3);
+    MFCreateAttributes(m_spOutputAttributes.put(), 3);
 
 }
 
@@ -409,7 +409,7 @@ HRESULT TransformBlur::GetInputAvailableType(
             return MF_E_NO_MORE_TYPES;
         }
 
-        *ppType = m_spOutputType;
+        *ppType = m_spOutputType.get();
         (*ppType)->AddRef();
     }
     else
@@ -456,7 +456,7 @@ HRESULT TransformBlur::GetOutputAvailableType(
             return MF_E_NO_MORE_TYPES;
         }
 
-        *ppType = m_spInputType;
+        *ppType = m_spInputType.get();
         (*ppType)->AddRef();
     }
     else
@@ -611,7 +611,7 @@ HRESULT TransformBlur::GetInputCurrentType(
         return MF_E_TRANSFORM_TYPE_NOT_SET;
     }
 
-    *ppType = m_spInputType;
+    *ppType = m_spInputType.get();
     (*ppType)->AddRef();
 
     return S_OK;
@@ -647,7 +647,7 @@ HRESULT TransformBlur::GetOutputCurrentType(
         return MF_E_TRANSFORM_TYPE_NOT_SET;
     }
 
-    *ppType = m_spOutputType;
+    *ppType = m_spOutputType.get();
     (*ppType)->AddRef();
 
     return S_OK;
@@ -812,26 +812,26 @@ HRESULT TransformBlur::ProcessMessage(
 HRESULT TransformBlur::OnSetD3DManager(ULONG_PTR ulParam)
 {
     HRESULT hr = S_OK;
-    CComPtr<IUnknown> pUnk;
-    CComPtr<IMFDXGIDeviceManager> pDXGIDeviceManager;
+    winrt::com_ptr<IUnknown> pUnk;
+    winrt::com_ptr<IMFDXGIDeviceManager> pDXGIDeviceManager;
     if (ulParam != NULL) {
-        pUnk = (IUnknown*)ulParam;
-        hr = pUnk->QueryInterface(&pDXGIDeviceManager);
-        if (SUCCEEDED(hr) && m_spDeviceManager != pDXGIDeviceManager) {
+        pUnk.attach((IUnknown*)ulParam);
+        pDXGIDeviceManager = pUnk.try_as<IMFDXGIDeviceManager>();
+        if (pDXGIDeviceManager && m_spDeviceManager != pDXGIDeviceManager) {
             // Invalidate dx11 resources
-            m_spDeviceManager.Release();
-            m_spContext.Release();
+            m_spDeviceManager.detach();
+            m_spContext.detach();
 
             // Update dx11 device and resources
             m_spDeviceManager = pDXGIDeviceManager;
             CHECK_HR(hr = m_spDeviceManager->OpenDeviceHandle(&m_hDeviceHandle));
             CHECK_HR(hr = m_spDeviceManager->GetVideoService(m_hDeviceHandle, IID_PPV_ARGS(&m_spDevice)));
-            m_spDevice->GetImmediateContext(&m_spContext);
+            m_spDevice->GetImmediateContext(m_spContext.put());
 
             // Hand off the new device to the sample allocator, if it exists
             if (m_spOutputSampleAllocator)
             {
-                CHECK_HR(hr = m_spOutputSampleAllocator->SetDirectXManager(pUnk.p));
+                CHECK_HR(hr = m_spOutputSampleAllocator->SetDirectXManager(pUnk.get()));
             }
         }
 
@@ -841,8 +841,8 @@ HRESULT TransformBlur::OnSetD3DManager(ULONG_PTR ulParam)
     else 
     {
         // Invalidate dx11 resources
-        m_spDeviceManager.Release();
-        m_spContext.Release();
+        m_spDeviceManager.detach();
+        m_spContext.detach();
     }
 
 done:
@@ -908,7 +908,7 @@ HRESULT TransformBlur::ProcessInput(
     }
 
     // Cache the sample. We do the actual work in ProcessOutput.
-    m_spSample = pSample;
+    m_spSample.attach(pSample);
 done:
     return hr;
 }
@@ -968,8 +968,8 @@ HRESULT TransformBlur::ProcessOutput(
     }
 
     HRESULT hr = S_OK;
-    CComPtr<IMFMediaBuffer> pMediaBuffer;
-    CComPtr<ID3D11Device> spDevice;
+    winrt::com_ptr<IMFMediaBuffer> pMediaBuffer;
+    winrt::com_ptr<ID3D11Device> spDevice;
     bool bDeviceLocked = false;
 
     // Ensure allocator is set up
@@ -1016,11 +1016,11 @@ HRESULT TransformBlur::ProcessOutput(
     }
     
     // Always set the output buffer size!
-    CHECK_HR(hr = pOutputSamples[0].pSample->GetBufferByIndex(0, &pMediaBuffer));
+    CHECK_HR(hr = pOutputSamples[0].pSample->GetBufferByIndex(0, pMediaBuffer.put()));
     CHECK_HR(hr = pMediaBuffer->SetCurrentLength(m_cbImageSize));
 
 done:
-    m_spSample.Release(); 
+    m_spSample.detach(); 
     if (false && bDeviceLocked)
     {
         hr = m_spDeviceManager->UnlockDevice(m_hDeviceHandle, FALSE);
@@ -1049,7 +1049,7 @@ HRESULT TransformBlur::SetupAlloc()
         if (m_spDeviceManager != nullptr)
         {
             // Set up allocator attributes
-            DWORD dwBindFlags = MFGetAttributeUINT32(m_spOutputAttributes.p, MF_SA_D3D11_BINDFLAGS, D3D11_BIND_RENDER_TARGET);
+            DWORD dwBindFlags = MFGetAttributeUINT32(m_spOutputAttributes.get(), MF_SA_D3D11_BINDFLAGS, D3D11_BIND_RENDER_TARGET);
             dwBindFlags |= D3D11_BIND_RENDER_TARGET;        // Must always set as render target! (works but why?) 
             CHECK_HR(hr = m_spOutputAttributes->SetUINT32(MF_SA_D3D11_BINDFLAGS, dwBindFlags));
             CHECK_HR(hr = m_spOutputAttributes->SetUINT32(MF_SA_BUFFERS_PER_SAMPLE, 1));
@@ -1058,18 +1058,19 @@ HRESULT TransformBlur::SetupAlloc()
             // Set up the output sample allocator if needed
             if (NULL == m_spOutputSampleAllocator)
             {
-                CComPtr<IMFVideoSampleAllocatorEx> spVideoSampleAllocator;
-                CComPtr<IUnknown> spDXGIManagerUnk;
+                winrt::com_ptr<IMFVideoSampleAllocatorEx> spVideoSampleAllocator;
+                winrt::com_ptr<IUnknown> spDXGIManagerUnk;
 
                 CHECK_HR(hr = MFCreateVideoSampleAllocatorEx(IID_PPV_ARGS(&spVideoSampleAllocator)));
-                CHECK_HR(hr = m_spDeviceManager->QueryInterface(&spDXGIManagerUnk));
+                // TODO: Wrap in try/catch? 
+                spDXGIManagerUnk = m_spDeviceManager.as<IUnknown>();
 
-                CHECK_HR(hr = spVideoSampleAllocator->SetDirectXManager(spDXGIManagerUnk));
+                CHECK_HR(hr = spVideoSampleAllocator->SetDirectXManager(spDXGIManagerUnk.get()));
 
-                m_spOutputSampleAllocator.Attach(spVideoSampleAllocator.Detach());
+                m_spOutputSampleAllocator.attach(spVideoSampleAllocator.detach());
             }
 
-            CHECK_HR(hr = m_spOutputSampleAllocator->InitializeSampleAllocatorEx(2, 15, m_spOutputAttributes, m_spOutputType));
+            CHECK_HR(hr = m_spOutputSampleAllocator->InitializeSampleAllocatorEx(2, 15, m_spOutputAttributes.get(), m_spOutputType.get()));
         }
         m_bStreamingInitialized = true;
 
@@ -1090,7 +1091,7 @@ HRESULT TransformBlur::UpdateDX11Device()
         CHECK_HR(hr = m_spDeviceManager->GetVideoService(m_hDeviceHandle, __uuidof(m_spDevice), (void**)&m_spDevice));
         if (FAILED(hr))
 
-        m_spDevice->GetImmediateContext(&m_spContext);
+        m_spDevice->GetImmediateContext(m_spContext.put());
     }
     return hr; 
 
@@ -1171,7 +1172,7 @@ HRESULT TransformBlur::OnCheckInputType(IMFMediaType* pmt)
     if (m_spOutputType != NULL)
     {
         DWORD flags = 0;
-        hr = pmt->IsEqual(m_spOutputType, &flags);
+        hr = pmt->IsEqual(m_spOutputType.get(), &flags);
 
         // IsEqual can return S_FALSE. Treat this as failure.
 
@@ -1206,7 +1207,7 @@ HRESULT TransformBlur::OnCheckOutputType(IMFMediaType* pmt)
     if (m_spInputType != NULL)
     {
         DWORD flags = 0;
-        hr = pmt->IsEqual(m_spInputType, &flags);
+        hr = pmt->IsEqual(m_spInputType.get(), &flags);
 
         // IsEqual can return S_FALSE. Treat this as failure.
 
@@ -1296,8 +1297,8 @@ HRESULT TransformBlur::OnSetInputType(IMFMediaType* pmt)
     // if pmt is NULL, clear the type.
     // if pmt is non-NULL, set the type.
 
-    m_spInputType.Release();
-    m_spInputType = pmt; // TODO: Do we need this to addref, or should we attach? 
+    m_spInputType.detach();
+    m_spInputType.attach(pmt); // TODO: Do we need this to addref, or should we attach? 
     /*if (m_spInputType)
     {
         m_spInputType->AddRef();
@@ -1325,8 +1326,8 @@ HRESULT TransformBlur::OnSetOutputType(IMFMediaType* pmt)
     // if pmt is NULL, clear the type.
     // if pmt is non-NULL, set the type.
 
-    m_spOutputType.Release();
-    m_spOutputType = pmt;
+    m_spOutputType.detach();
+    m_spOutputType.attach(pmt);
     /*if (m_spOutputType)
     {
         m_spOutputType->AddRef();
@@ -1378,23 +1379,6 @@ HRESULT LockDevice(
     return hr;
 }
 
-
-VideoFrame TransformBlur::SampleToVideoFrame(IMFSample* sample, CComPtr<IVideoFrameNativeFactory> factory)
-{
-    winrt::com_ptr<IVideoFrameNative> vfNative;
-    factory->CreateFromMFSample(sample,
-        __uuidof(m_spInputType),
-        m_imageWidthInPixels,
-        m_imageHeightInPixels,
-        true,
-        NULL,
-        m_spDeviceManager,
-        IID_PPV_ARGS(&vfNative)
-    );
-
-    return vfNative.try_as<VideoFrame>();
-}
-
 //-------------------------------------------------------------------
 // Name: SampleToD3DSurface
 // Description: Convert an IMFSample to an IDirect3DSurface
@@ -1408,19 +1392,19 @@ VideoFrame TransformBlur::SampleToVideoFrame(IMFSample* sample, CComPtr<IVideoFr
 //-------------------------------------------------------------------
 IDirect3DSurface TransformBlur::SampleToD3Dsurface(IMFSample* sample)
 {
-    CComPtr<IMFMediaBuffer> pBuffIn;
-    CComPtr<IMFDXGIBuffer> pSrc;
-    CComPtr<ID3D11Texture2D> pTextSrc;
-    CComPtr<IDXGISurface> pSurfaceSrc;
+    winrt::com_ptr<IMFMediaBuffer> pBuffIn;
+    winrt::com_ptr<IMFDXGIBuffer> pSrc;
+    winrt::com_ptr<ID3D11Texture2D> pTextSrc;
+    winrt::com_ptr<IDXGISurface> pSurfaceSrc;
     
     winrt::com_ptr<IInspectable> pSurfaceInspectable;
 
-    sample->ConvertToContiguousBuffer(&pBuffIn);
+    sample->ConvertToContiguousBuffer(pBuffIn.put());
     pBuffIn->QueryInterface(IID_PPV_ARGS(&pSrc));
     pSrc->GetResource(IID_PPV_ARGS(&pTextSrc));
     pTextSrc->QueryInterface(IID_PPV_ARGS(&pSurfaceSrc));
 
-    CreateDirect3D11SurfaceFromDXGISurface(pSurfaceSrc, pSurfaceInspectable.put());
+    CreateDirect3D11SurfaceFromDXGISurface(pSurfaceSrc.get(), pSurfaceInspectable.put());
     return pSurfaceInspectable.try_as<IDirect3DSurface>();
 }
 //-------------------------------------------------------------------
@@ -1432,51 +1416,27 @@ HRESULT TransformBlur::OnProcessOutput(IMFSample** ppOut)
 {
     HRESULT hr = S_OK;
  
-    CComPtr<IVideoFrameNativeFactory> factory;
+    winrt::com_ptr<IVideoFrameNativeFactory> factory;
     hr = CoCreateInstance(CLSID_VideoFrameNativeFactory, NULL, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&factory));
 
-    IDirect3DSurface src = SampleToD3Dsurface(m_spSample);
+    IDirect3DSurface src = SampleToD3Dsurface(m_spSample.get());
     IDirect3DSurface dest = SampleToD3Dsurface(*ppOut);
 
     winrt::com_ptr<ID3D11Texture2D> pTextSrc;
     winrt::com_ptr<ID3D11Texture2D> pTextCreate;
     winrt::com_ptr<ID3D11Texture2D> pTextDest;
-    CComPtr<ID3D11Device> deviceSrc;
-    CComPtr<ID3D11Device> deviceTemp;
-    CComPtr<ID3D11Device> deviceDest;
-
-    // Debugging: All 3 devices will be the same, which makes me think i'm getting a race condition 
-    // When I create temporary video frames in RunTestDXGI
-    {
-        auto spDxgiInterfaceAccess = src.as<Windows::Graphics::DirectX::Direct3D11::IDirect3DDxgiInterfaceAccess>();
-        hr = spDxgiInterfaceAccess->GetInterface(IID_PPV_ARGS(&pTextSrc));
-        pTextSrc->GetDevice(&deviceSrc); // Device 1
-
-        VideoFrame vfSrc = VideoFrame::CreateWithDirect3D11Surface(src);
-        spDxgiInterfaceAccess = vfSrc.Direct3DSurface().as<Windows::Graphics::DirectX::Direct3D11::IDirect3DDxgiInterfaceAccess>();
-        hr = spDxgiInterfaceAccess->GetInterface(IID_PPV_ARGS(&pTextCreate));
-        pTextCreate->GetDevice(&deviceTemp); // Device 2
-
-        auto desc = vfSrc.Direct3DSurface().Description();
-        VideoFrame vfDesc = VideoFrame::CreateAsDirect3D11SurfaceBacked(desc.Format, desc.Width, desc.Height); // Does it fail here first now? 
-        vfSrc.CopyToAsync(vfDesc).get();
-        spDxgiInterfaceAccess = vfDesc.Direct3DSurface().as<Windows::Graphics::DirectX::Direct3D11::IDirect3DDxgiInterfaceAccess>();
-        hr = spDxgiInterfaceAccess->GetInterface(IID_PPV_ARGS(&pTextDest));
-        pTextCreate->GetDevice(&deviceDest);// Device 3
-    }
 
     // Extract the device 
-    CComPtr<IDXGIDevice> pDXGIDevice;
-    hr = m_spDevice.QueryInterface((&pDXGIDevice));
-    winrt::Windows::Graphics::DirectX::Direct3D11::IDirect3DDevice d3dDevice2{ nullptr };
-    hr = CreateDirect3D11DeviceFromDXGIDevice(pDXGIDevice, reinterpret_cast<::IInspectable**>(winrt::put_abi(d3dDevice2)));
+    winrt::com_ptr<IDXGIDevice> pDXGIDevice{ m_spDevice.as<IDXGIDevice>() };
+    IDirect3DDevice direct3DDevice{ nullptr };
+    hr = CreateDirect3D11DeviceFromDXGIDevice(pDXGIDevice.get(), reinterpret_cast<IInspectable**>(winrt::put_abi(direct3DDevice)));
 
     // Invoke the image transform function.
     if (SUCCEEDED(hr))
     {
         
         // Do the copies inside runtest
-        m_segmentModel.Run(src, dest, d3dDevice2);
+        m_segmentModel.RunTestDXGI(src, dest, direct3DDevice);
     }
     else
     {
@@ -1501,7 +1461,7 @@ done:
 HRESULT TransformBlur::OnFlush()
 {
     // For this MFT, flushing just means releasing the input sample.
-    m_spSample.Release();
+    m_spSample.detach();
     return S_OK;
 }
 
@@ -1531,7 +1491,7 @@ HRESULT TransformBlur::UpdateFormatInfo()
         m_videoFOURCC = subtype.Data1;
 
         CHECK_HR(hr = MFGetAttributeSize(
-            m_spInputType,
+            m_spInputType.get(),
             MF_MT_FRAME_SIZE,
             &m_imageWidthInPixels,
             &m_imageHeightInPixels

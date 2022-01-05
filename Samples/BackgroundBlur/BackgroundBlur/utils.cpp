@@ -30,9 +30,9 @@ HRESULT CopyAttribute(IMFAttributes *pSrc, IMFAttributes *pDest, const GUID& key
 
 HRESULT CloneVideoMediaType(IMFMediaType *pSrcMediaType, REFGUID guidSubType, IMFMediaType **ppNewMediaType)
 {
-    CComPtr<IMFMediaType> pNewMediaType;
+    winrt::com_ptr<IMFMediaType> pNewMediaType;
 
-    HRESULT hr = MFCreateMediaType(&pNewMediaType);
+    HRESULT hr = MFCreateMediaType(pNewMediaType.put());
     if (FAILED(hr))
     {
         return hr;
@@ -50,31 +50,31 @@ HRESULT CloneVideoMediaType(IMFMediaType *pSrcMediaType, REFGUID guidSubType, IM
         goto done;
     }
 
-    hr = CopyAttribute(pSrcMediaType, pNewMediaType, MF_MT_FRAME_SIZE);
+    hr = CopyAttribute(pSrcMediaType, pNewMediaType.get(), MF_MT_FRAME_SIZE);
     if (FAILED(hr))
     {
         goto done;
     }
 
-    hr = CopyAttribute(pSrcMediaType, pNewMediaType, MF_MT_FRAME_RATE);
+    hr = CopyAttribute(pSrcMediaType, pNewMediaType.get(), MF_MT_FRAME_RATE);
     if (FAILED(hr))
     {
         goto done;
     }
 
-    hr = CopyAttribute(pSrcMediaType, pNewMediaType, MF_MT_PIXEL_ASPECT_RATIO);
+    hr = CopyAttribute(pSrcMediaType, pNewMediaType.get(), MF_MT_PIXEL_ASPECT_RATIO);
     if (FAILED(hr))
     {
         goto done;
     }
 
-    hr = CopyAttribute(pSrcMediaType, pNewMediaType, MF_MT_INTERLACE_MODE);
+    hr = CopyAttribute(pSrcMediaType, pNewMediaType.get(), MF_MT_INTERLACE_MODE);
     if (FAILED(hr))
     {
         goto done;
     }
 
-    *ppNewMediaType = pNewMediaType;
+    *ppNewMediaType = pNewMediaType.get();
     (*ppNewMediaType)->AddRef();
 
 done:

@@ -1,6 +1,5 @@
 #pragma once
 
-
 #include <mftransform.h>
 #include <mfapi.h>
 #include <mftransform.h>
@@ -8,7 +7,6 @@
 #include <mferror.h>
 #include <strsafe.h>
 #include <shlwapi.h> // registry stuff
-#include <atlbase.h>
 #include <assert.h>
 #include <evr.h>
 #include <mfobjects.h>
@@ -18,7 +16,6 @@
 #include <d3d9types.h>
 #include <d3d11.h>
 #include <dxva2api.h>
-
 
 #define USE_LOGGING
 #include "common/common.h"
@@ -200,7 +197,6 @@ private:
     HRESULT CheckDX11Device(); // Do we need to check the dx11 device in ProcessOutput? 
     HRESULT UpdateDX11Device();
     void InvalidateDX11Resources();
-    VideoFrame SampleToVideoFrame(IMFSample* sample, CComPtr<IVideoFrameNativeFactory> factory);
     IDirect3DSurface SampleToD3Dsurface(IMFSample* sample);
 
     long                        m_nRefCount;                // reference count
@@ -209,12 +205,12 @@ private:
 
 
     IMFAttributes*          m_pAttributes;  // MFT Attributes
-    CComPtr<IMFAttributes>  m_spOutputAttributes;
+    winrt::com_ptr<IMFAttributes>  m_spOutputAttributes;
 
-    CComPtr<IMFSample>      m_spSample;                           // Input sample.
+    winrt::com_ptr<IMFSample>      m_spSample;                           // Input sample.
     // TODO: Keep an output sample buffer? 
-    CComPtr<IMFMediaType>   m_spInputType;                     // Input media type.
-    CComPtr<IMFMediaType>   m_spOutputType;                    // Output media type.
+    winrt::com_ptr<IMFMediaType>   m_spInputType;                     // Input media type.
+    winrt::com_ptr<IMFMediaType>   m_spOutputType;                    // Output media type.
 
     // Fomat information
     FOURCC                      m_videoFOURCC;
@@ -223,12 +219,12 @@ private:
     DWORD                       m_cbImageSize;              // Image size, in bytes.
 
     // D3D fields
-    CComPtr<IMFDXGIDeviceManager>       m_spDeviceManager;
-    CComPtr<ID3D11Device>               m_spDevice;
-    CComPtr<ID3D11VideoDevice>          m_spVideoDevice;
-    CComPtr<ID3D11DeviceContext>        m_spContext;
+    winrt::com_ptr<IMFDXGIDeviceManager>       m_spDeviceManager;
+    winrt::com_ptr<ID3D11Device>               m_spDevice;
+    winrt::com_ptr<ID3D11VideoDevice>          m_spVideoDevice;
+    winrt::com_ptr<ID3D11DeviceContext>        m_spContext;
     HANDLE                              m_hDeviceHandle;          // Handle to the current device
-    CComPtr<IMFVideoSampleAllocatorEx> m_spOutputSampleAllocator;
+    winrt::com_ptr<IMFVideoSampleAllocatorEx> m_spOutputSampleAllocator;
 
     // Model fields
     SegmentModel  m_segmentModel;

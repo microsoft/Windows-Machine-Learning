@@ -4,7 +4,9 @@
 
 namespace winrt::WinMLSamplesGalleryNative::implementation
 {
-    winrt::WinMLSamplesGalleryNative::AdapterList AdapterList::GetAdapters() {
-        return winrt::make<AdapterList>();
+    winrt::hstring AdapterList::GetAdapters() {
+        //return winrt::make<AdapterList>();
+        hstring w = L"hello world";
+        return w;
     }
 }

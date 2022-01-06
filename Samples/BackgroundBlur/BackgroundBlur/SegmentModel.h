@@ -22,6 +22,7 @@ public:
 
 	void Run(IDirect3DSurface src, IDirect3DSurface dest, IDirect3DDevice device);
 	void RunTestDXGI(IDirect3DSurface src, IDirect3DSurface dest, IDirect3DDevice device);
+	void RunStyleTransfer(IDirect3DSurface src, IDirect3DSurface dest, IDirect3DDevice device);
 
 	LearningModelSession CreateLearningModelSession(const LearningModel& model, bool closedModel=true);
 	void SetImageSize(UINT32 w, UINT32 h);
@@ -36,6 +37,7 @@ private:
 	// Debugging models 
 	LearningModel ReshapeFlatBufferToNCHW(long n, long c, long h, long w);
 	LearningModel Invert(long n, long c, long h, long w);
+	LearningModel StyleTransfer();
 
 	LearningModelBinding Evaluate(LearningModelSession& sess, const std::vector<ITensor*>& input, ITensor* output, bool wait = false);
 	void EvaluateInternal(LearningModelSession sess, LearningModelBinding bind, bool wait = false);
@@ -47,9 +49,11 @@ private:
 	LearningModelSession m_sessPreprocess;
 	LearningModelSession m_sessFCN;
 	LearningModelSession m_sessPostprocess;
+	LearningModelSession m_sessStyleTransfer;
 
 	LearningModelBinding m_bindPreprocess;
 	LearningModelBinding m_bindFCN;
 	LearningModelBinding m_bindPostprocess;
+	LearningModelBinding m_bindStyleTransfer;
 
 };

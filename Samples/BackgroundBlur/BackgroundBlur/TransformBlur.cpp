@@ -1379,6 +1379,9 @@ HRESULT LockDevice(
     return hr;
 }
 
+
+
+
 //-------------------------------------------------------------------
 // Name: SampleToD3DSurface
 // Description: Convert an IMFSample to an IDirect3DSurface
@@ -1434,9 +1437,8 @@ HRESULT TransformBlur::OnProcessOutput(IMFSample** ppOut)
     // Invoke the image transform function.
     if (SUCCEEDED(hr))
     {
-        
         // Do the copies inside runtest
-        m_segmentModel.RunTestDXGI(src, dest, direct3DDevice);
+        m_segmentModel.RunStyleTransfer(src, dest, direct3DDevice);
     }
     else
     {

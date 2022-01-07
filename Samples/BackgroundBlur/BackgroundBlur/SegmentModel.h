@@ -8,17 +8,31 @@
 #include <winrt/base.h>
 #include <dxgi.h>
 #include <d3d11.h>
+#include <mutex>
 
 using namespace winrt::Microsoft::AI::MachineLearning;
 using namespace winrt::Microsoft::AI::MachineLearning::Experimental;
 using namespace winrt::Windows::Graphics::DirectX::Direct3D11;
 using namespace winrt::Windows::Media;
 
+// Threading fields for style transfer
+struct SwapChainEntry {
+	LearningModelBinding binding; // Just one for style transfer, for now
+	winrt::Windows::Foundation::IAsyncOperation<LearningModelEvaluationResult> activetask;
+	VideoFrame outputCache;
+	SwapChainEntry() :
+		binding(nullptr),
+		activetask(nullptr),
+		outputCache(VideoFrame(winrt::Windows::Graphics::Imaging::BitmapPixelFormat::Bgra8, 720, 720)) {}
+};
+
+
 class SegmentModel {
 public:
 	LearningModelSession m_sess; 
 	SegmentModel();
 	SegmentModel(UINT32 w, UINT32 h);
+	void SetModels(UINT32 w, UINT32 h);
 
 	void Run(IDirect3DSurface src, IDirect3DSurface dest, IDirect3DDevice device);
 	void RunTestDXGI(IDirect3DSurface src, IDirect3DSurface dest, IDirect3DDevice device);
@@ -27,6 +41,8 @@ public:
 	LearningModelSession CreateLearningModelSession(const LearningModel& model, bool closedModel=true);
 	void SetImageSize(UINT32 w, UINT32 h);
 	bool m_useGPU = true;
+	std::mutex Processing;
+
 
 private: 
 	// Stages of image blurring
@@ -55,5 +71,13 @@ private:
 	LearningModelBinding m_bindFCN;
 	LearningModelBinding m_bindPostprocess;
 	LearningModelBinding m_bindStyleTransfer;
+
+	// Threaded style transfer fields
+	void SubmitEval(VideoFrame, VideoFrame);
+	winrt::Windows::Foundation::IAsyncOperation<LearningModelEvaluationResult> evalStatus;
+	std::vector < std::unique_ptr<SwapChainEntry>> bindings;
+	int swapChainIndex = 0;
+	int swapChainEntryCount = 5;
+	int finishedFrameIndex = 0;
 
 };

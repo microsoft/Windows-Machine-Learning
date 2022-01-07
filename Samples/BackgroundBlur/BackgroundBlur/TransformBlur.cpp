@@ -1005,6 +1005,7 @@ HRESULT TransformBlur::ProcessOutput(
  
     // Copy the duration and time stamp from the input sample,
     // if present.
+    // TODO: Change these values to reflect playback framerate? 
     if (SUCCEEDED(m_spSample->GetSampleDuration(&hnsDuration)))
     {
         CHECK_HR(hr = pOutputSamples[0].pSample->SetSampleDuration(hnsDuration));
@@ -1505,7 +1506,7 @@ HRESULT TransformBlur::UpdateFormatInfo()
         CHECK_HR(hr = GetImageSize(m_videoFOURCC, m_imageWidthInPixels, m_imageHeightInPixels, &m_cbImageSize));
 
         // Set the size of the SegmentModel
-        m_segmentModel = SegmentModel(m_imageWidthInPixels, m_imageHeightInPixels);
+        m_segmentModel.SetModels(m_imageWidthInPixels, m_imageHeightInPixels);
     }
     
 done:

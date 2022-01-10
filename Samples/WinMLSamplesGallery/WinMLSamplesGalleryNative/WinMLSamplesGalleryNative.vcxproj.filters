@@ -9,6 +9,9 @@
     <ClCompile Include="OpenCVImage.cpp">
       <Filter>OpenCVInterop</Filter>
     </ClCompile>
+    <ClCompile Include="StreamEffect.cpp">
+      <Filter>StreamEffect</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -23,6 +26,9 @@
     </ClInclude>
     <ClInclude Include="WeakBuffer.h">
       <Filter>AbiHelpers</Filter>
+    </ClInclude>
+    <ClInclude Include="StreamEffect.h">
+      <Filter>StreamEffect</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -50,6 +56,9 @@
     </Filter>
     <Filter Include="AbiHelpers">
       <UniqueIdentifier>{ed4f3871-4514-4b93-9ace-1315cad5491e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="StreamEffect">
+      <UniqueIdentifier>{91675ea9-10e7-4490-af40-762311cf5ba9}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

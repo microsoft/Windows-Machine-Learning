@@ -94,8 +94,7 @@ TransformBlur::TransformBlur(HRESULT& hr) :
 TransformBlur::~TransformBlur()
 {
     assert(m_nRefCount == 0);
-
-    m_spDeviceManager->CloseDeviceHandle(m_hDeviceHandle);
+    if(m_spDeviceManager) m_spDeviceManager->CloseDeviceHandle(m_hDeviceHandle);
     SAFE_RELEASE(m_pAttributes);
 }
 
@@ -1005,6 +1004,7 @@ HRESULT TransformBlur::ProcessOutput(
  
     // Copy the duration and time stamp from the input sample,
     // if present.
+    // TODO: Change these values to reflect playback framerate? 
     if (SUCCEEDED(m_spSample->GetSampleDuration(&hnsDuration)))
     {
         CHECK_HR(hr = pOutputSamples[0].pSample->SetSampleDuration(hnsDuration));
@@ -1379,6 +1379,9 @@ HRESULT LockDevice(
     return hr;
 }
 
+
+
+
 //-------------------------------------------------------------------
 // Name: SampleToD3DSurface
 // Description: Convert an IMFSample to an IDirect3DSurface
@@ -1434,9 +1437,8 @@ HRESULT TransformBlur::OnProcessOutput(IMFSample** ppOut)
     // Invoke the image transform function.
     if (SUCCEEDED(hr))
     {
-        
         // Do the copies inside runtest
-        m_segmentModel.RunTestDXGI(src, dest, direct3DDevice);
+        m_segmentModel.RunStyleTransfer(src, dest, direct3DDevice);
     }
     else
     {
@@ -1503,7 +1505,7 @@ HRESULT TransformBlur::UpdateFormatInfo()
         CHECK_HR(hr = GetImageSize(m_videoFOURCC, m_imageWidthInPixels, m_imageHeightInPixels, &m_cbImageSize));
 
         // Set the size of the SegmentModel
-        m_segmentModel = SegmentModel(m_imageWidthInPixels, m_imageHeightInPixels);
+        m_segmentModel.SetModels(m_imageWidthInPixels, m_imageHeightInPixels);
     }
     
 done:

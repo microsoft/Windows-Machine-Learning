@@ -46,15 +46,19 @@ std::array<float, 3> mean = { 0.485f, 0.456f, 0.406f };
 std::array<float, 3> stddev = { 0.229f, 0.224f, 0.225f };
 auto outputBindProperties = PropertySet();
 
+
 SegmentModel::SegmentModel() :
 	m_sess(NULL),
 	m_sessPreprocess(NULL),
 	m_sessFCN(NULL),
 	m_sessPostprocess(NULL),
+	m_sessStyleTransfer(NULL),
 	m_useGPU(true),
 	m_bindPreprocess(NULL),
 	m_bindFCN(NULL),
-	m_bindPostprocess(NULL)
+	m_bindPostprocess(NULL),
+	m_bindStyleTransfer(NULL), 
+	bindings(swapChainEntryCount)
 {
 }
 
@@ -63,13 +67,19 @@ SegmentModel::SegmentModel(UINT32 w, UINT32 h) :
 	m_sessPreprocess(NULL),
 	m_sessFCN(NULL),
 	m_sessPostprocess(NULL),
+	m_sessStyleTransfer(NULL),
 	m_useGPU(true),
 	m_bindPreprocess(NULL),
 	m_bindFCN(NULL),
-	m_bindPostprocess(NULL)
+	m_bindPostprocess(NULL),
+	m_bindStyleTransfer(NULL),
+	bindings(swapChainEntryCount)
 {
+
 	SetImageSize(w, h);
 	m_sess = CreateLearningModelSession(Invert(1, 3, h, w));
+	m_sessStyleTransfer = CreateLearningModelSession(StyleTransfer());
+	m_bindStyleTransfer = LearningModelBinding(m_sessStyleTransfer);
 
 	// Initialize segmentation learningmodelsessions
 	m_sessPreprocess = CreateLearningModelSession(Normalize0_1ThenZScore(h, w, 3, mean, stddev));
@@ -81,7 +91,41 @@ SegmentModel::SegmentModel(UINT32 w, UINT32 h) :
 	m_bindFCN = LearningModelBinding(m_sessFCN);
 	m_bindPostprocess = LearningModelBinding(m_sessPostprocess);
 
+	// Create set of bindings to cycle through
+	for (int i = 0; i < swapChainEntryCount; i++) {
+		bindings.push_back(std::make_unique<SwapChainEntry>());
+		bindings[i]->binding = LearningModelBinding(m_sessStyleTransfer);
+		bindings[i]->binding.Bind(L"outputImage",
+			VideoFrame(Windows::Graphics::Imaging::BitmapPixelFormat::Bgra8, 720, 720));
+	}
+
 }
+
+void SegmentModel::SetModels(UINT32 w, UINT32 h) {
+	SetImageSize(w, h);
+	m_sess = CreateLearningModelSession(Invert(1, 3, h, w));
+	m_sessStyleTransfer = CreateLearningModelSession(StyleTransfer());
+	m_bindStyleTransfer = LearningModelBinding(m_sessStyleTransfer);
+
+	// Initialize segmentation learningmodelsessions
+	m_sessPreprocess = CreateLearningModelSession(Normalize0_1ThenZScore(h, w, 3, mean, stddev));
+	m_sessFCN = CreateLearningModelSession(FCNResnet());
+	m_sessPostprocess = CreateLearningModelSession(PostProcess(1, 3, h, w, 1));
+
+	// Initialize segmentation bindings
+	m_bindPreprocess = LearningModelBinding(m_sessPreprocess);
+	m_bindFCN = LearningModelBinding(m_sessFCN);
+	m_bindPostprocess = LearningModelBinding(m_sessPostprocess);
+
+	// Create set of bindings to cycle through
+	for (int i = 0; i < swapChainEntryCount; i++) {
+		bindings.push_back(std::make_unique<SwapChainEntry>());
+		bindings[i]->binding = LearningModelBinding(m_sessStyleTransfer);
+		bindings[i]->binding.Bind(L"outputImage",
+			VideoFrame(Windows::Graphics::Imaging::BitmapPixelFormat::Bgra8, 720, 720));
+	}
+ }
+
 void SegmentModel::SetImageSize(UINT32 w, UINT32 h)
 {
 	m_imageWidthInPixels = w;
@@ -147,6 +191,105 @@ void SegmentModel::Run(IDirect3DSurface src, IDirect3DSurface dest, IDirect3DDev
 	OutputDebugString(L" Ending runTest ]");
 }
 
+void SegmentModel::SubmitEval(VideoFrame input, VideoFrame output) {
+	auto currentBinding = bindings[0].get();
+	if (currentBinding->activetask == nullptr
+		|| currentBinding->activetask.Status() != Windows::Foundation::AsyncStatus::Started)
+	{
+		auto now = std::chrono::high_resolution_clock::now();
+		OutputDebugString(L"PF Start new Eval ");
+		OutputDebugString(std::to_wstring(swapChainIndex).c_str());
+		OutputDebugString(L" | ");
+		// submit an eval and wait for it to finish submitting work
+
+		{
+			std::lock_guard<std::mutex> guard{ Processing };
+			currentBinding->binding.Bind(L"inputImage", input);
+		}
+		std::rotate(bindings.begin(), bindings.begin() + 1, bindings.end());
+		finishedFrameIndex = (finishedFrameIndex - 1 + swapChainEntryCount) % swapChainEntryCount;
+		currentBinding->activetask = m_sessStyleTransfer.EvaluateAsync(
+			currentBinding->binding,
+			std::to_wstring(swapChainIndex).c_str());
+		currentBinding->activetask.Completed([&, currentBinding, now](auto&& asyncInfo, winrt::Windows::Foundation::AsyncStatus const) {
+			OutputDebugString(L"PF Eval completed |");
+			VideoFrame evalOutput = asyncInfo.GetResults()
+				.Outputs()
+				.Lookup(L"outputImage")
+				.try_as<VideoFrame>();
+			int bindingIdx;
+			bool finishedFrameUpdated;
+			{
+				std::lock_guard<std::mutex> guard{ Processing };
+				auto binding = std::find_if(bindings.begin(),
+					bindings.end(),
+					[currentBinding](const auto& b)
+					{
+						return b.get() == currentBinding;
+					});
+				bindingIdx = std::distance(bindings.begin(), binding);
+				finishedFrameUpdated = bindingIdx >= finishedFrameIndex;
+				finishedFrameIndex = finishedFrameUpdated ? bindingIdx : finishedFrameIndex;
+			}
+			if (finishedFrameUpdated)
+			{
+				OutputDebugString(L"PF Copy | ");
+				evalOutput.CopyToAsync(currentBinding->outputCache);
+			}
+
+			auto timePassed = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - now);
+			// Convert to FPS: milli to seconds, invert
+			OutputDebugString(L"PF End ");
+			});
+	}
+	if (bindings[finishedFrameIndex]->outputCache != nullptr) {
+		OutputDebugString(L"\nStart CopyAsync ");
+		OutputDebugString(std::to_wstring(finishedFrameIndex).c_str());
+		{
+			// Lock so that don't have multiple sources copying to output at once
+			std::lock_guard<std::mutex> guard{ Processing };
+			bindings[finishedFrameIndex]->outputCache.CopyToAsync(output).get();
+		}
+		OutputDebugString(L" | Stop CopyAsync\n");
+	}
+	// return without waiting for the submit to finish, setup the completion handler
+}
+
+void SegmentModel::RunStyleTransfer(IDirect3DSurface src, IDirect3DSurface dest, IDirect3DDevice device) 
+{
+	VideoFrame input = VideoFrame::CreateWithDirect3D11Surface(src);
+	VideoFrame output = VideoFrame::CreateWithDirect3D11Surface(dest);
+
+	auto desc = input.Direct3DSurface().Description();
+	auto descOut = output.Direct3DSurface().Description();
+
+	VideoFrame output2 = VideoFrame::CreateAsDirect3D11SurfaceBacked(descOut.Format, 720, 720, device);
+	VideoFrame input2 = VideoFrame::CreateAsDirect3D11SurfaceBacked(desc.Format, 720,720, device);
+	input.CopyToAsync(input2).get(); // TODO: Can input stay the same if NV12? 
+	output.CopyToAsync(output2).get();
+	desc = input2.Direct3DSurface().Description();
+
+	//TODO: If want to use swapchain comment out these two lines. 
+	/*SubmitEval(input2, output);
+	swapChainIndex = (++swapChainIndex) % swapChainEntryCount;*/
+
+	hstring inputName = m_sessStyleTransfer.Model().InputFeatures().GetAt(0).Name();
+	m_bindStyleTransfer.Bind(inputName, input2);
+	hstring outputName = m_sessStyleTransfer.Model().OutputFeatures().GetAt(0).Name();
+
+	auto outputBindProperties = PropertySet();
+	m_bindStyleTransfer.Bind(outputName, output2); // TODO: See if can bind videoframe from MFT
+	auto results = m_sessStyleTransfer.Evaluate(m_bindStyleTransfer, L"");
+
+	output2.CopyToAsync(output).get(); // Should put onto the correct surface now? Make sure, can return the surface instead later
+	m_bindStyleTransfer.Clear();
+	input.Close();
+	input2.Close();
+	output2.Close();
+	output.Close();
+}
+
+
 void SegmentModel::RunTestDXGI(IDirect3DSurface src, IDirect3DSurface dest, IDirect3DDevice device)
 {
 
@@ -174,9 +317,6 @@ void SegmentModel::RunTestDXGI(IDirect3DSurface src, IDirect3DSurface dest, IDir
 	auto outputBindProperties = PropertySet();
 	binding.Bind(outputName, output2); // TODO: See if can bind videoframe from MFT
 	auto results = m_sess.Evaluate(binding, L"");
-
-	//output.CopyToAsync(src).get(); // Error- src is read-only, no matter the input VF type
-	// return output.Direct3DSurface();
 
 	output2.CopyToAsync(output).get(); // Should put onto the correct surface now? Make sure, can return the surface instead later
 
@@ -272,6 +412,13 @@ LearningModel SegmentModel::FCNResnet()
 {
 	auto rel = std::filesystem::current_path();
 	rel.append("Assets\\fcn-resnet50-11.onnx");
+	return LearningModel::LoadFromFilePath(rel + L"");
+}
+
+LearningModel SegmentModel::StyleTransfer()
+{
+	auto rel = std::filesystem::current_path();
+	rel.append("Assets\\mosaic.onnx");
 	return LearningModel::LoadFromFilePath(rel + L"");
 }
 

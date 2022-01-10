@@ -4,6 +4,7 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Data;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.Foundation;
@@ -64,8 +65,6 @@ namespace WinMLSamplesGallery.Samples
         private Dictionary<Classifier, Func<LearningModel>> _preProcessorDictionary;
 
         private static Dictionary<long, string> _labels;
-        private static Dictionary<long, string> _imagenetLabels;
-        private static Dictionary<long, string> _ilsvrc2013Labels;
 
         private BitmapDecoder CurrentImageDecoder { get; set; }
 
@@ -125,40 +124,33 @@ namespace WinMLSamplesGallery.Samples
             AllModelsGrid.ItemsSource = allModels;
             AllModelsGrid.SelectRange(new ItemIndexRange(0, 1));
             AllModelsGrid.SelectionChanged += AllModelsGrid_SelectionChanged;
+
+            BasicGridView.SelectedIndex = 0;
         }
 
         private void EnsureInitialized()
         {
-            if (_imagenetLabels == null)
-            {
-                _imagenetLabels = LoadLabels("ms-appx:///InputData/sysnet.txt");
-            }
-
-            if (_ilsvrc2013Labels == null)
-            {
-                _ilsvrc2013Labels = LoadLabels("ms-appx:///InputData/ilsvrc2013.txt");
-            }
-
             if (_modelDictionary == null)
             {
+                var installPath = Windows.ApplicationModel.Package.Current.InstalledLocation.Path;
                 _modelDictionary = new Dictionary<Classifier, string>{
-                    { Classifier.DenseNet121,       "ms-appx:///Models/densenet-9.onnx"},
-                    { Classifier.EfficientNetLite4, "ms-appx:///Models/efficientnet-lite4-11.onnx"},
-                    { Classifier.ShuffleNet_V1,     "ms-appx:///Models/shufflenet-9.onnx"},
-                    { Classifier.SqueezeNet,        "ms-appx:///Models/squeezenet1.1-7.onnx" },
+                    { Classifier.DenseNet121,       Path.Combine(installPath, "Models\\densenet-9.onnx") },
+                    { Classifier.EfficientNetLite4, Path.Combine(installPath, "Models\\efficientnet-lite4-11.onnx") },
+                    { Classifier.ShuffleNet_V1,     Path.Combine(installPath, "Models\\shufflenet-9.onnx") },
+                    { Classifier.SqueezeNet,        Path.Combine(installPath, "Models\\squeezenet1.1-7.onnx") },
 #if USE_LARGE_MODELS
                     // Large Models
-                    { Classifier.AlexNet,           "ms-appx:///LargeModels/bvlcalexnet-9.onnx"},
-                    { Classifier.CaffeNet,          "ms-appx:///LargeModels/caffenet-9.onnx"},
-                    { Classifier.GoogleNet,         "ms-appx:///LargeModels/googlenet-9.onnx"},
-                    { Classifier.Inception_V1,      "ms-appx:///LargeModels/inception-v1-9.onnx"},
-                    { Classifier.Inception_V2,      "ms-appx:///LargeModels/inception-v2-9.onnx"},
-                    { Classifier.MobileNet,         "ms-appx:///LargeModels/mobilenetv2-7.onnx" },
-                    { Classifier.ShuffleNet_V2,     "ms-appx:///LargeModels/shufflenet-v2-10.onnx"},
-                    { Classifier.RCNN_ILSVRC13,     "ms-appx:///LargeModels/rcnn-ilsvrc13-9.onnx"},
-                    { Classifier.ResNet,            "ms-appx:///LargeModels/resnet50-caffe2-v1-9.onnx"},
-                    { Classifier.VGG,               "ms-appx:///LargeModels/vgg19-7.onnx"},
-                    { Classifier.ZFNet512,          "ms-appx:///LargeModels/zfnet512-9.onnx"},
+                    { Classifier.AlexNet,           Path.Combine(installPath, "LargeModels\\bvlcalexnet-9.onnx") },
+                    { Classifier.CaffeNet,          Path.Combine(installPath, "LargeModels\\caffenet-9.onnx") },
+                    { Classifier.GoogleNet,         Path.Combine(installPath, "LargeModels\\googlenet-9.onnx") },
+                    { Classifier.Inception_V1,      Path.Combine(installPath, "LargeModels\\inception-v1-9.onnx") },
+                    { Classifier.Inception_V2,      Path.Combine(installPath, "LargeModels\\inception-v2-9.onnx") },
+                    { Classifier.MobileNet,         Path.Combine(installPath, "LargeModels\\mobilenetv2-7.onnx" },
+                    { Classifier.ShuffleNet_V2,     Path.Combine(installPath, "LargeModels\\shufflenet-v2-10.onnx") },
+                    { Classifier.RCNN_ILSVRC13,     Path.Combine(installPath, "LargeModels\\rcnn-ilsvrc13-9.onnx") },
+                    { Classifier.ResNet,            Path.Combine(installPath, "LargeModels\\resnet50-caffe2-v1-9.onnx") },
+                    { Classifier.VGG,               Path.Combine(installPath, "LargeModels\\vgg19-7.onnx") },
+                    { Classifier.ZFNet512,          Path.Combine(installPath, "LargeModels\\zfnet512-9.onnx") },
 #endif
                 };
             }
@@ -166,10 +158,11 @@ namespace WinMLSamplesGallery.Samples
             if (_postProcessorDictionary == null)
             {
                 _postProcessorDictionary = new Dictionary<Classifier, Func<LearningModel>>{
-                    { Classifier.DenseNet121,       () => TensorizationModels.ReshapeThenSoftmaxThenTopK(new long[] { BatchSize, _imagenetLabels.Count, 1, 1 },
-                                                                                                    TopK,
-                                                                                                    BatchSize,
-                                                                                                    _imagenetLabels.Count) },
+                    { Classifier.DenseNet121,       () => TensorizationModels.ReshapeThenSoftmaxThenTopK(
+                                                              new long[] { BatchSize, ClassificationLabels.ImageNet.Count, 1, 1 },
+                                                              TopK,
+                                                              BatchSize,
+                                                              ClassificationLabels.ImageNet.Count) },
                     { Classifier.EfficientNetLite4, () => TensorizationModels.SoftMaxThenTopK(TopK) },
                     { Classifier.ShuffleNet_V1,     () => TensorizationModels.TopK(TopK) },
                     { Classifier.SqueezeNet,        () => TensorizationModels.SoftMaxThenTopK(TopK) },
@@ -195,13 +188,15 @@ namespace WinMLSamplesGallery.Samples
                 // Preprocessing values are described in the ONNX Model Zoo:
                 // https://github.com/onnx/models/tree/master/vision/classification/mobilenet
                 _preProcessorDictionary = new Dictionary<Classifier, Func<LearningModel>>{
-                    { Classifier.DenseNet121,       () => TensorizationModels.Normalize0_1ThenZScore(Height, Width, Channels,
-                                                                                                new float[] { 0.485f, 0.456f, 0.406f },
-                                                                                                new float[] { 0.229f, 0.224f, 0.225f}) },
+                    { Classifier.DenseNet121,       () => TensorizationModels.Normalize0_1ThenZScore(
+                                                              Height, Width, Channels,
+                                                              new float[] { 0.485f, 0.456f, 0.406f },
+                                                              new float[] { 0.229f, 0.224f, 0.225f}) },
                     { Classifier.EfficientNetLite4, () => TensorizationModels.NormalizeMinusOneToOneThenTransposeNHWC() },
-                    { Classifier.ShuffleNet_V1,     () => TensorizationModels.Normalize0_1ThenZScore(Height, Width, Channels,
-                                                                                                new float[] { 0.485f, 0.456f, 0.406f },
-                                                                                                new float[] { 0.229f, 0.224f, 0.225f}) },
+                    { Classifier.ShuffleNet_V1,     () => TensorizationModels.Normalize0_1ThenZScore(
+                                                              Height, Width, Channels,
+                                                              new float[] { 0.485f, 0.456f, 0.406f },
+                                                              new float[] { 0.229f, 0.224f, 0.225f}) },
                     { Classifier.SqueezeNet,        null }, // No preprocessing required
 #if USE_LARGE_MODELS
                     // Large Models
@@ -210,19 +205,23 @@ namespace WinMLSamplesGallery.Samples
                     { Classifier.GoogleNet,         null },
                     { Classifier.Inception_V1,      null }, // No preprocessing required
                     { Classifier.Inception_V2,      null }, // ????
-                    { Classifier.MobileNet,         () => TensorizationModels.Normalize0_1ThenZScore(Height, Width, Channels,
-                                                                                                new float[] { 0.485f, 0.456f, 0.406f },
-                                                                                                new float[] { 0.229f, 0.224f, 0.225f}) },
+                    { Classifier.MobileNet,         () => TensorizationModels.Normalize0_1ThenZScore(
+                                                              Height, Width, Channels,
+                                                              new float[] { 0.485f, 0.456f, 0.406f },
+                                                              new float[] { 0.229f, 0.224f, 0.225f}) },
                     { Classifier.RCNN_ILSVRC13,     null }, // No preprocessing required
-                    { Classifier.ResNet,            () => TensorizationModels.Normalize0_1ThenZScore(224, 224, 4,
-                                                                                                new float[] { 0.485f, 0.456f, 0.406f },
-                                                                                                new float[] { 0.229f, 0.224f, 0.225f}) },
-                    { Classifier.ShuffleNet_V2,     () => TensorizationModels.Normalize0_1ThenZScore(Height, Width, Channels,
-                                                                                                new float[] { 0.485f, 0.456f, 0.406f },
-                                                                                                new float[] { 0.229f, 0.224f, 0.225f}) },
-                    { Classifier.VGG,               () => TensorizationModels.Normalize0_1ThenZScore(224, 224, 4,
-                                                                                                new float[] { 0.485f, 0.456f, 0.406f },
-                                                                                                new float[] { 0.229f, 0.224f, 0.225f}) },
+                    { Classifier.ResNet,            () => TensorizationModels.Normalize0_1ThenZScore(
+                                                              224, 224, 4,
+                                                              new float[] { 0.485f, 0.456f, 0.406f },
+                                                              new float[] { 0.229f, 0.224f, 0.225f}) },
+                    { Classifier.ShuffleNet_V2,     () => TensorizationModels.Normalize0_1ThenZScore(
+                                                              Height, Width, Channels,
+                                                              new float[] { 0.485f, 0.456f, 0.406f },
+                                                              new float[] { 0.229f, 0.224f, 0.225f}) },
+                    { Classifier.VGG,               () => TensorizationModels.Normalize0_1ThenZScore(
+                                                              224, 224, 4,
+                                                              new float[] { 0.485f, 0.456f, 0.406f },
+                                                              new float[] { 0.229f, 0.224f, 0.225f}) },
                     { Classifier.ZFNet512,          null }, // No preprocessing required
 #endif
                 };
@@ -233,17 +232,18 @@ namespace WinMLSamplesGallery.Samples
 
         private void InitializeWindowsMachineLearning()
         {
-            _tensorizationSession = CreateLearningModelSession(TensorizationModels.BasicTensorization(
-                Height, Width,
-                BatchSize, Channels, CurrentImageDecoder.PixelHeight, CurrentImageDecoder.PixelWidth,
-                "nearest"),
-                LearningModelDeviceKind.Cpu);
+            var tensorizationModel = TensorizationModels.BasicTensorization(
+                                         Height, Width,
+                                         BatchSize, Channels, CurrentImageDecoder.PixelHeight, CurrentImageDecoder.PixelWidth,
+                                         "nearest");
+            _tensorizationSession = CreateLearningModelSession(tensorizationModel, LearningModelDeviceKind.Cpu);
 
             var model = SelectedModel;
             if (model != CurrentModel)
             {
                 var modelPath = _modelDictionary[model];
-                _inferenceSession = CreateLearningModelSession(modelPath);
+                var inferenceModel = LearningModel.LoadFromFilePath(modelPath);
+                _inferenceSession = CreateLearningModelSession(inferenceModel);
 
                 var preProcessor = _preProcessorDictionary[model];
                 var hasPreProcessor = preProcessor != null;
@@ -255,11 +255,11 @@ namespace WinMLSamplesGallery.Samples
 
                 if (model == Classifier.RCNN_ILSVRC13)
                 {
-                    _labels = _ilsvrc2013Labels;
+                    _labels = ClassificationLabels.ILSVRC2013;
                 }
                 else
                 {
-                    _labels = _imagenetLabels;
+                    _labels = ClassificationLabels.ImageNet;
                 }
 
                 CurrentModel = model;
@@ -351,7 +351,7 @@ namespace WinMLSamplesGallery.Samples
             var binding = new LearningModelBinding(session);
 
             // Create an emoty output, that will keep the output resources on the GPU
-            // It will be chained into a the post processing on the GPU as well
+            // It will be chained into post processing on the GPU as well
             var output = TensorFloat.Create();
 
             // Bind inputs and outputs
@@ -368,13 +368,6 @@ namespace WinMLSamplesGallery.Samples
             return session.Evaluate(binding, "");
         }
 
-        private LearningModelSession CreateLearningModelSession(string modelPath)
-        {
-            var model = CreateLearningModel(modelPath);
-            var session =  CreateLearningModelSession(model);
-            return session;
-        }
-
         private LearningModelSession CreateLearningModelSession(LearningModel model, Nullable<LearningModelDeviceKind> kind = null)
         {
             var device = new LearningModelDevice(kind ?? SelectedDeviceKind);
@@ -386,32 +379,7 @@ namespace WinMLSamplesGallery.Samples
             return session;
         }
 
-        private static LearningModel CreateLearningModel(string modelPath)
-        {
-            var uri = new Uri(modelPath);
-            var file = StorageFile.GetFileFromApplicationUriAsync(uri).GetAwaiter().GetResult();
-            return LearningModel.LoadFromStorageFileAsync(file).GetAwaiter().GetResult();
-        }
 #pragma warning restore CA1416 // Validate platform compatibility
-
-        private static Dictionary<long, string> LoadLabels(string csvFile)
-        {
-            var file = StorageFile.GetFileFromApplicationUriAsync(new Uri(csvFile)).GetAwaiter().GetResult();
-            var text = Windows.Storage.FileIO.ReadTextAsync(file).GetAwaiter().GetResult();
-            var labels = new Dictionary<long, string>();
-            var records = text.Split(Environment.NewLine);
-            foreach (var record in records)
-            {
-                var fields = record.Split(",", 2);
-                if (fields.Length == 2)
-                {
-                    var index = long.Parse(fields[0]);
-                    labels[index] = fields[1];
-                }
-            }
-            return labels;
-        }
-
         private void TryPerformInference()
         {
             if (CurrentImageDecoder != null)

@@ -1,0 +1,55 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="pch.cpp" />
+    <ClCompile Include="$(GeneratedFilesDir)module.g.cpp" />
+    <ClCompile Include="EncryptedModels.cpp">
+      <Filter>EncryptedModels</Filter>
+    </ClCompile>
+    <ClCompile Include="OpenCVImage.cpp">
+      <Filter>OpenCVInterop</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="pch.h" />
+    <ClInclude Include="EncryptedModels.h">
+      <Filter>EncryptedModels</Filter>
+    </ClInclude>
+    <ClInclude Include="OpenCVImage.h">
+      <Filter>OpenCVInterop</Filter>
+    </ClInclude>
+    <ClInclude Include="RandomAccessStream.h">
+      <Filter>AbiHelpers</Filter>
+    </ClInclude>
+    <ClInclude Include="WeakBuffer.h">
+      <Filter>AbiHelpers</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Resource.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Midl Include="WinMLSamplesGalleryNative.idl" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="datafile.bin" />
+    <None Include="packages.config" />
+    <None Include="squeezenet1.1-7-batched.onnx" />
+    <None Include="WinMLSamplesGalleryNative.def" />
+    <None Include="PropertySheet.props" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="readme.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="EncryptedModels">
+      <UniqueIdentifier>{bacd2f7a-1e95-444f-9447-25f28f21effe}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="OpenCVInterop">
+      <UniqueIdentifier>{c4ac812b-72fd-49d8-891b-a5764f445fc8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AbiHelpers">
+      <UniqueIdentifier>{ed4f3871-4514-4b93-9ace-1315cad5491e}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

@@ -24,6 +24,7 @@ namespace WinMLSamplesGallery
         public string XAMLGithubLink { get; set; }
         public string CSharpGithubLink { get; set; }
         public List<SampleDoc> Docs { get; set; }
+        public bool IsRecentlyAdded { get; set; }
 
         // Grabs all the sample metadata from the SampleMetadata.json file
         // and returns it as a List<SampleMetadata>
@@ -59,7 +60,8 @@ namespace WinMLSamplesGallery
                     Tag = currentSampleMetadata["Tag"].GetString(),
                     XAMLGithubLink = currentSampleMetadata["XAMLGithubLink"].GetString(),
                     CSharpGithubLink = currentSampleMetadata["CSharpGithubLink"].GetString(),
-                    Docs = ConvertJsonArrayToSampleDocList(currentSampleMetadata["Docs"].GetArray())
+                    Docs = ConvertJsonArrayToSampleDocList(currentSampleMetadata["Docs"].GetArray()),
+                    IsRecentlyAdded = currentSampleMetadata["IsRecentlyAdded"].GetBoolean(),
                 });
             }
             return allSampleMetadata;

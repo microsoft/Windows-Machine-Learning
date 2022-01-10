@@ -1,4 +1,4 @@
-﻿# WinML Samples Gallery
+﻿# Windows ML Samples Gallery
 
 Demonstrates different machine learning scenarios and features using [Windows ML](https://docs.microsoft.com/en-us/windows/ai/windows-ml/) in an interactive format. This app is the interactive companion shows the integration of [Windows Machine Learning Library APIs](https://docs.microsoft.com/en-us/uwp/api/windows.ai.machinelearning) into a desktop [WinUI 3](https://github.com/microsoft/microsoft-ui-xaml) application.
 
@@ -12,14 +12,14 @@ Demonstrates different machine learning scenarios and features using [Windows ML
 
 
 ## Getting Started
-- The WinML Samples Gallery is available in the Microsoft Store. Click [here](./) to download.
+- The WinML Samples Gallery is available in the Microsoft Store. Click [here](https://www.microsoft.com/store/apps/9PKBFQKBCLM9) to download.
 - Check out the [source](https://github.com/microsoft/Windows-Machine-Learning/tree/master/Samples/WinMLSamplesGallery/WinMLSamplesGallery/Samples) for each sample.
 
 ## Build From Source
 To learn how to implement these features in your application, or unlock additional functionality that may not be available in the Store Application, you may need to build the WinML Samples Gallery from source. Follow these instructions to build from source.
 
 ### Prerequisites
-- [Visual Studio 2017 Version 15.7.4 or Newer](https://developer.microsoft.com/en-us/windows/downloads)
+- [Visual Studio 2022](https://developer.microsoft.com/en-us/windows/downloads)
 - [Windows SDK - Build 18362 or Newer](https://developer.microsoft.com/en-us/windows/downloads/sdk-archive/)
 
 ### Build
@@ -39,6 +39,9 @@ To learn how to implement these features in your application, or unlock addition
 - [OpenCV](./WinMLSamplesGallery/Samples/OpenCVInterop): See how to integrate [Windows ML](https://docs.microsoft.com/en-us/windows/ai/windows-ml/) with [OpenCV](https://github.com/opencv/opencv).
 
 - [ImageSharp](./WinMLSamplesGallery/Samples/ImageSharpInterop): See how to integrate [Windows ML](https://docs.microsoft.com/en-us/windows/ai/windows-ml/) with [ImageSharp](https://docs.sixlabors.com/articles/imagesharp/index.html).
+
+- [Encrypted Model](./WinMLSamplesGallery/Samples/EncryptedModel): how to use [Windows ML](https://docs.microsoft.com/en-us/windows/ai/windows-ml/) to load encrypted models from embedded resources.
+
 ## Feedback
 Please file an issue [here](https://github.com/microsoft/Windows-Machine-Learning/issues/new) if you encounter any issues with the WinML Samples Gallery or wish to request a new sample.
 

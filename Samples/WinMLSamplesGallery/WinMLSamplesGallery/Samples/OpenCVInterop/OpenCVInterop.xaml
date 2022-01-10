@@ -6,9 +6,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:local_controls="using:WinMLSamplesGallery.Controls"
     xmlns:local_samples="using:WinMLSamplesGallery.Samples"
-    mc:Ignorable="d"
-    
-    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+    mc:Ignorable="d">
 
     <Page.Resources>
         <DataTemplate x:Key="ImageTemplate" x:DataType="local_controls:Thumbnail">
@@ -17,7 +15,7 @@
 
         <DataTemplate x:Name="InferenceResultsTemplate" x:DataType="local_controls:Prediction">
             <StackPanel Orientation="Horizontal">
-                <TextBlock Width="414"
+                <TextBlock Width="410"
                     FontSize="14"
                     Foreground="Black"
                     Padding="0,1,1,1"
@@ -29,7 +27,7 @@
                     <Run Text="] " /> 
                     <Run Text="{Binding Name}" />
                 </TextBlock>
-                <TextBlock Width="120"
+                <TextBlock Width="112"
                     FontSize="14"
                     Foreground="Black"
                     Padding="0,1,1,1"
@@ -70,9 +68,13 @@
                 <StackPanel Grid.Row="0" Orientation="Horizontal" Padding="0,10,0,0">
                     <StackPanel Orientation="Vertical">
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
-                            <Button FontFamily="Segoe MDL2 Assets" Content="&#xE1A5;" Width="55" Height="50" HorizontalAlignment="Left" Click="OpenButton_Clicked" />
+                            <Button FontFamily="Segoe MDL2 Assets" Content="&#xE1A5;"
+                                    Background="{ThemeResource ButtonBackgroundThemeBrush}"
+                                    Width="55" Height="50" HorizontalAlignment="Left" Click="OpenButton_Clicked" />
                             <Grid Padding="5,0,0,0">
-                                <ComboBox x:Name="DeviceComboBox" SelectedIndex="0" Background="LightGray" PlaceholderText="Device" Height="50" Width="139"
+                                <ComboBox x:Name="DeviceComboBox" SelectedIndex="0"
+                                          Background="{ThemeResource ButtonBackgroundThemeBrush}"
+                                          PlaceholderText="Device" Height="50" Width="139"
                                           SelectionChanged="DeviceComboBox_SelectionChanged">
                                     <TextBlock Text="CPU" FontSize="18" Typography.Capitals="AllSmallCaps" Typography.StylisticSet4="True"/>
                                     <TextBlock Text="DirectML" FontSize="18" Typography.Capitals="AllSmallCaps" Typography.StylisticSet4="True"/>
@@ -99,7 +101,7 @@
                     </StackPanel>
 
                     <StackPanel Orientation="Horizontal">
-                        <StackPanel Orientation="Vertical" Margin="11,0,0,0">
+                        <StackPanel Orientation="Vertical" Margin="7,0,0,0">
                             <Border x:Name="OriginalBorder" Background="LightGray" BorderBrush="LightGray" CornerRadius="5,5,0,0" Padding="0,5,0,5">
                                 <Grid Width="200">
                                     <TextBlock Text="Original" FontSize="18" Typography.Capitals="AllSmallCaps" Typography.StylisticSet4="True" HorizontalAlignment="Center"/>
@@ -113,7 +115,7 @@
                                     Click="InferOriginal_Click"/>
                         </StackPanel>
 
-                        <StackPanel Orientation="Vertical" Margin="11,0,0,0">
+                        <StackPanel Orientation="Vertical" Margin="7,0,0,0">
                             <Border x:Name="NoisyBorder" Background="LightGray" BorderBrush="LightGray" CornerRadius="5,5,0,0" Padding="0,5,0,5">
                                 <Grid Width="200">
                                     <TextBlock Text="Noisy" FontSize="18" Typography.Capitals="AllSmallCaps" Typography.StylisticSet4="True" HorizontalAlignment="Center"/>
@@ -127,7 +129,7 @@
                                     Click="InferNoisy_Click"/>
                         </StackPanel>
 
-                        <StackPanel Orientation="Vertical" Margin="11,0,0,0">
+                        <StackPanel Orientation="Vertical" Margin="7,0,0,0">
                             <Border x:Name="DenoisedBorder" Background="LightGray" BorderBrush="LightGray" CornerRadius="5,5,0,0" Padding="0,5,0,5">
                                 <Grid Width="200">
                                     <TextBlock Text="Denoised" FontSize="18" Typography.Capitals="AllSmallCaps" Typography.StylisticSet4="True" HorizontalAlignment="Center"/>

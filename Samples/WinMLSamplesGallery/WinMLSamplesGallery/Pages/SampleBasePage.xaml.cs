@@ -34,6 +34,9 @@ namespace WinMLSamplesGallery
                 case "ImageSharpInterop":
                     SampleFrame.Navigate(typeof(Samples.ImageSharpInterop));
                     break;
+                case "EncryptedModel":
+                    SampleFrame.Navigate(typeof(Samples.EncryptedModel));
+                    break;
             }
             if (sampleMetadata.Docs.Count > 0)
                 DocsHeader.Visibility = Visibility.Visible;

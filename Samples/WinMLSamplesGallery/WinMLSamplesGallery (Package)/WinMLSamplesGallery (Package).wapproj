@@ -37,6 +37,7 @@
   <PropertyGroup>
     <ProjectGuid>dea7791f-55cf-4ed5-bc99-3870997b1242</ProjectGuid>
     <TargetPlatformVersion>10.0.18362.0</TargetPlatformVersion>
+    <AppxAutoIncrementPackageRevision>True</AppxAutoIncrementPackageRevision>
     <AssetTargetFallback>net5.0-windows$(TargetPlatformVersion);$(AssetTargetFallback)</AssetTargetFallback>
     <TargetPlatformMinVersion>10.0.18362.0</TargetPlatformMinVersion>
     <DefaultLanguage>en-US</DefaultLanguage>
@@ -127,17 +128,11 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <None Include="$(SolutionDir)$(Platform)\$(Configuration)\WinMLSamplesGalleryNative\*.dll" Link="%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
     <None Include="$(SolutionDir)..\..\build\external\opencv\cmake_config\$(Platform)\bin\$(Configuration)\*.dll" Link="%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
   <Import Project="$(WapProjPath)\Microsoft.DesktopBridge.targets" />
   <ItemGroup>
     <PackageReference Include="Microsoft.AI.MachineLearning" Version="1.9.1" />
-    <PackageReference Include="Microsoft.ProjectReunion" Version="0.8.4">
-      <IncludeAssets>build</IncludeAssets>
-    </PackageReference>
-    <PackageReference Include="Microsoft.ProjectReunion.WinUI" Version="[0.8.0]">
-      <IncludeAssets>build</IncludeAssets>
-    </PackageReference>
+    <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.0.0-stable" />
   </ItemGroup>
 </Project>

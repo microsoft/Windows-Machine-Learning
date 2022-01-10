@@ -98,13 +98,11 @@
       <ModuleDefinitionFile>WinMLSamplesGalleryNative.def</ModuleDefinitionFile>
     </Link>
   </ItemDefinitionGroup>
-
   <ItemDefinitionGroup>
     <ClCompile>
       <AdditionalIncludeDirectories>$(MSBuildThisFileDirectory)../../build/native/include/;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
   </ItemDefinitionGroup>
-
   <!-- OpenCV -->
   <PropertyGroup>
     <OpenCVLib Condition="'$(Configuration)'=='Debug'">opencv_world454d.lib</OpenCVLib>
@@ -123,11 +121,13 @@
       <AdditionalDependencies>$(OpenCVLib);%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
-  
   <ItemDefinitionGroup Condition="'$(Configuration)'=='Debug'">
     <ClCompile>
       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
+    <ResourceCompile>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(MSBuildThisFileDirectory)../WinMLSamplesGallery/Models/;$(MSBuildThisFileDirectory)../../build/native/include/;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)'=='Release'">
     <ClCompile>
@@ -137,13 +137,19 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
     </Link>
+    <ResourceCompile>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(MSBuildThisFileDirectory)../WinMLSamplesGallery/Models/;$(MSBuildThisFileDirectory)../../build/native/include/;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="EncryptedModels.h" />
     <ClInclude Include="OpenCVImage.h" />
     <ClInclude Include="pch.h" />
+    <ClInclude Include="RandomAccessStream.h" />
     <ClInclude Include="WeakBuffer.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="EncryptedModels.cpp" />
     <ClCompile Include="OpenCVImage.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>
@@ -154,7 +160,9 @@
     <Midl Include="WinMLSamplesGalleryNative.idl" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="datafile.bin" />
     <None Include="packages.config" />
+    <None Include="squeezenet1.1-7-batched.onnx" />
     <None Include="WinMLSamplesGalleryNative.def" />
   </ItemGroup>
   <ItemGroup>
@@ -162,6 +170,9 @@
     <Text Include="readme.txt">
       <DeploymentContent>false</DeploymentContent>
     </Text>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Resource.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

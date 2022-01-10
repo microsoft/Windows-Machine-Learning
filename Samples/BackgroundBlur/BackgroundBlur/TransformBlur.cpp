@@ -94,8 +94,7 @@ TransformBlur::TransformBlur(HRESULT& hr) :
 TransformBlur::~TransformBlur()
 {
     assert(m_nRefCount == 0);
-
-    m_spDeviceManager->CloseDeviceHandle(m_hDeviceHandle);
+    if(m_spDeviceManager) m_spDeviceManager->CloseDeviceHandle(m_hDeviceHandle);
     SAFE_RELEASE(m_pAttributes);
 }
 

@@ -257,39 +257,36 @@ void SegmentModel::SubmitEval(VideoFrame input, VideoFrame output) {
 
 void SegmentModel::RunStyleTransfer(IDirect3DSurface src, IDirect3DSurface dest, IDirect3DDevice device) 
 {
-	OutputDebugString(L"\n [ Starting runStyleTransfer | "); i++;
 	VideoFrame input = VideoFrame::CreateWithDirect3D11Surface(src);
 	VideoFrame output = VideoFrame::CreateWithDirect3D11Surface(dest);
 
 	auto desc = input.Direct3DSurface().Description();
 	auto descOut = output.Direct3DSurface().Description();
 
-	//  TODO: Use a specific device to create so not piling up on resources? 
-	// VideoFrame output2 = VideoFrame::CreateAsDirect3D11SurfaceBacked(descOut.Format, 720, 720, device);
+	VideoFrame output2 = VideoFrame::CreateAsDirect3D11SurfaceBacked(descOut.Format, 720, 720, device);
 	VideoFrame input2 = VideoFrame::CreateAsDirect3D11SurfaceBacked(desc.Format, 720,720, device);
 	input.CopyToAsync(input2).get(); // TODO: Can input stay the same if NV12? 
-	//output.CopyToAsync(output2).get();
+	output.CopyToAsync(output2).get();
 	desc = input2.Direct3DSurface().Description();
 
-	SubmitEval(input2, output);
-	swapChainIndex = (++swapChainIndex) % swapChainEntryCount;
+	//TODO: If want to use swapchain comment out these two lines. 
+	/*SubmitEval(input2, output);
+	swapChainIndex = (++swapChainIndex) % swapChainEntryCount;*/
 
-
-	/*hstring inputName = m_sessStyleTransfer.Model().InputFeatures().GetAt(0).Name();
+	hstring inputName = m_sessStyleTransfer.Model().InputFeatures().GetAt(0).Name();
 	m_bindStyleTransfer.Bind(inputName, input2);
 	hstring outputName = m_sessStyleTransfer.Model().OutputFeatures().GetAt(0).Name();
 
 	auto outputBindProperties = PropertySet();
 	m_bindStyleTransfer.Bind(outputName, output2); // TODO: See if can bind videoframe from MFT
-	auto results = m_sessStyleTransfer.Evaluate(m_bindStyleTransfer, L"");*/
+	auto results = m_sessStyleTransfer.Evaluate(m_bindStyleTransfer, L"");
 
-	//output2.CopyToAsync(output).get(); // Should put onto the correct surface now? Make sure, can return the surface instead later
-	//m_bindStyleTransfer.Clear();
-	//input.Close();
-	//input2.Close();
-	//output2.Close();
-	//output.Close();
-	OutputDebugString(L" Ending runStyleTransfer ]");
+	output2.CopyToAsync(output).get(); // Should put onto the correct surface now? Make sure, can return the surface instead later
+	m_bindStyleTransfer.Clear();
+	input.Close();
+	input2.Close();
+	output2.Close();
+	output.Close();
 }
 
 
@@ -320,9 +317,6 @@ void SegmentModel::RunTestDXGI(IDirect3DSurface src, IDirect3DSurface dest, IDir
 	auto outputBindProperties = PropertySet();
 	binding.Bind(outputName, output2); // TODO: See if can bind videoframe from MFT
 	auto results = m_sess.Evaluate(binding, L"");
-
-	//output.CopyToAsync(src).get(); // Error- src is read-only, no matter the input VF type
-	// return output.Direct3DSurface();
 
 	output2.CopyToAsync(output).get(); // Should put onto the correct surface now? Make sure, can return the surface instead later
 
@@ -424,7 +418,7 @@ LearningModel SegmentModel::FCNResnet()
 LearningModel SegmentModel::StyleTransfer()
 {
 	auto rel = std::filesystem::current_path();
-	rel.append("Assets\\la_muse.onnx");
+	rel.append("Assets\\mosaic.onnx");
 	return LearningModel::LoadFromFilePath(rel + L"");
 }
 

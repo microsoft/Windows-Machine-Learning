@@ -504,7 +504,11 @@ namespace winrt::WinMLSamplesGalleryNative::implementation
         HWND galleryHwnd = GetActiveWindow();
         HRESULT hr = S_OK;
         BOOL bMFStartup = false;
-        HMODULE hmodule = GetModuleHandle(NULL);
+        HMODULE hmodule =NULL;
+        GetModuleHandleEx(
+            GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS,
+            (LPCTSTR)"GetCurrentModule",
+            &hmodule);
         
         // Initialize the common controls
         const INITCOMMONCONTROLSEX icex = { sizeof(INITCOMMONCONTROLSEX), ICC_WIN95_CLASSES };
@@ -523,17 +527,37 @@ namespace winrt::WinMLSamplesGalleryNative::implementation
         WNDCLASS wc = { 0 };
 
         wc.lpfnWndProc = MainWindow::WindowProc;
-        wc.hInstance = GetModuleHandle(NULL);
+        wc.hInstance = hmodule;
         wc.lpszClassName = CLASS_NAME;
         wc.lpszMenuName = MAKEINTRESOURCE(IDR_MENU1);
 
         RegisterClass(&wc);
-        HMENU menu = LoadMenu(NULL, MAKEINTRESOURCE(IDR_MENU1));
+        HMENU menu = LoadMenu(hmodule, MAKEINTRESOURCE(IDR_MENU1));
+        if (!menu) {
+            LPVOID lpMsgBuf;
+            LPVOID lpDisplayBuf;
 
+            DWORD errCode = GetLastError();
+            FormatMessage(
+                FORMAT_MESSAGE_ALLOCATE_BUFFER |
+                FORMAT_MESSAGE_FROM_SYSTEM |
+                FORMAT_MESSAGE_IGNORE_INSERTS,
+                NULL,
+                errCode,
+                MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+                (LPTSTR)&lpMsgBuf,
+                0, NULL);
+            lpDisplayBuf = (LPVOID)LocalAlloc(LMEM_ZEROINIT,
+                (lstrlen((LPCTSTR)lpMsgBuf) + lstrlen((LPCTSTR)"error") + 40) * sizeof(TCHAR));
+            StringCchPrintf((LPTSTR)lpDisplayBuf,
+                LocalSize(lpDisplayBuf) / sizeof(TCHAR),
+                TEXT("%s failed with error %d: %s"),
+                "errpr", errCode, lpMsgBuf);
+        }
 
         hwnd = CreateWindowEx(
             0, CLASS_NAME, L"Capture Application", WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT,
-            CW_USEDEFAULT, CW_USEDEFAULT, galleryHwnd, NULL, NULL, NULL
+            CW_USEDEFAULT, CW_USEDEFAULT, galleryHwnd, NULL, hmodule, NULL
         );
 
         if (hwnd == 0)

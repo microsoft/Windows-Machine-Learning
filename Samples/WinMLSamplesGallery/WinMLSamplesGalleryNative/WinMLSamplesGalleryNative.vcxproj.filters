@@ -12,6 +12,19 @@
     <ClCompile Include="StreamEffect.cpp">
       <Filter>StreamEffect</Filter>
     </ClCompile>
+    <ClCompile Include="utils.cpp">
+      <Filter>StreamEffect</Filter>
+    </ClCompile>
+    <ClCompile Include="Capture.cpp">
+      <Filter>StreamEffect</Filter>
+    </ClCompile>
+    <ClCompile Include="PreviewWnd.cpp">
+      <Filter>StreamEffect</Filter>
+    </ClCompile>
+    <ClCompile Include="SegmentModel.cpp">
+      <Filter>StreamEffect</Filter>
+    </ClCompile>
+    <ClCompile Include="TransformBlur.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -30,6 +43,19 @@
     <ClInclude Include="StreamEffect.h">
       <Filter>StreamEffect</Filter>
     </ClInclude>
+    <ClInclude Include="Capture.h">
+      <Filter>StreamEffect</Filter>
+    </ClInclude>
+    <ClInclude Include="common.h">
+      <Filter>StreamEffect</Filter>
+    </ClInclude>
+    <ClInclude Include="SegmentModel.h">
+      <Filter>StreamEffect</Filter>
+    </ClInclude>
+    <ClInclude Include="TransformBlur.h">
+      <Filter>StreamEffect</Filter>
+    </ClInclude>
+    <ClInclude Include="resource.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Resource.rc" />
@@ -43,6 +69,7 @@
     <None Include="squeezenet1.1-7-batched.onnx" />
     <None Include="WinMLSamplesGalleryNative.def" />
     <None Include="PropertySheet.props" />
+    <None Include="encrypted.onnx" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="readme.txt" />

@@ -9,17 +9,20 @@
 namespace winrt::WinMLSamplesGalleryNative::implementation
 {
     LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
-        switch (uMsg) {
+        /*switch (uMsg) {
         default:
             return 1;
-        }
+        }*/
+        return DefWindowProc(hwnd, uMsg, wParam, lParam);
     };
 
     void StreamEffect::LaunchNewWindow()
     {
         HWND hwnd;
+        HWND galleryHwnd = GetActiveWindow();
         HRESULT hr = S_OK;
         BOOL bMFStartup = false;
+        HMODULE hmodule = GetModuleHandle(NULL);
         
         // Initialize the common controls
         const INITCOMMONCONTROLSEX icex = { sizeof(INITCOMMONCONTROLSEX), ICC_WIN95_CLASSES };
@@ -45,7 +48,7 @@ namespace winrt::WinMLSamplesGalleryNative::implementation
 
         hwnd = CreateWindowEx(
             0, CLASS_NAME, L"Capture Application", WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT,
-            CW_USEDEFAULT, CW_USEDEFAULT, NULL, NULL, GetModuleHandle(NULL), NULL
+            CW_USEDEFAULT, CW_USEDEFAULT, galleryHwnd, NULL, NULL, NULL
         );
 
         if (hwnd == 0)

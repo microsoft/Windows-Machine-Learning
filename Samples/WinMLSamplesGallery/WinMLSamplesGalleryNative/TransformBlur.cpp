@@ -80,7 +80,8 @@ TransformBlur::TransformBlur(HRESULT& hr) :
     m_hDeviceHandle(NULL),
     m_spDevice(NULL),
     m_spVideoDevice(NULL),
-    m_pAttributes(NULL)
+    m_pAttributes(NULL),
+    m_bStreamingInitialized(false)
 {
     hr = MFCreateAttributes(&m_pAttributes, 2);
     hr = m_pAttributes->SetUINT32(MF_SA_D3D_AWARE, TRUE);

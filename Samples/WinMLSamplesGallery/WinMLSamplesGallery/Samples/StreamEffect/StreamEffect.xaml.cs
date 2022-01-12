@@ -88,7 +88,15 @@ namespace WinMLSamplesGallery.Samples
 
             //var modelName = "mosaic.onnx";
             var modelPath = Path.Join(Windows.ApplicationModel.Package.Current.InstalledLocation.Path, "Models");
+            
+            // Running as a task ensures that the samples gallery window isn't blocked.
             Task.Run(()=>WinMLSamplesGalleryNative.StreamEffect.LaunchNewWindow(modelPath));
+        }
+
+        // TODO: If keep in a separate window, send a task to shut down all stream effect processes
+        public void ShutDownWindow() 
+        {
+            return; 
         }
 
     }

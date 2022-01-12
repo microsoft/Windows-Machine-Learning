@@ -25,6 +25,17 @@ INT_PTR CALLBACK ChooseDeviceDlgProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM
 HRESULT OnInitDialog(HWND hwnd, ChooseDeviceParam* pParam);
 HRESULT OnOK(HWND hwnd, ChooseDeviceParam* pParam);
 
+static HMODULE GetCurrentModule()
+{ // NB: XP+ solution!
+    HMODULE hModule = NULL;
+    GetModuleHandleEx(
+        GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS,
+        (LPCTSTR)GetCurrentModule,
+        &hModule);
+
+    return hModule;
+}
+
 INT_PTR CALLBACK ChooseDeviceDlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
     static ChooseDeviceParam* pParam = NULL;
@@ -217,7 +228,8 @@ namespace MainWindow
         winrt::com_ptr<IMFAttributes> pAttributes;
         HRESULT             hr = S_OK;
 
-        hPreview = CreatePreviewWindow(GetModuleHandle(NULL), hwnd);
+        // TODO: GetModuleHandle(NULL)
+        hPreview = CreatePreviewWindow(GetCurrentModule(), hwnd);
         if (hPreview == NULL)
         {
             goto done;
@@ -313,7 +325,7 @@ namespace MainWindow
         CHECK_HR(hr = MFEnumDeviceSources(pAttributes.get(), &param.ppDevices, &param.count));
 
         // Ask the user to select one.
-        result = DialogBoxParam(GetModuleHandle(NULL),
+        result = DialogBoxParam(GetCurrentModule(),
             MAKEINTRESOURCE(IDD_CHOOSE_DEVICE), hwnd,
             ChooseDeviceDlgProc, (LPARAM)&param);
 

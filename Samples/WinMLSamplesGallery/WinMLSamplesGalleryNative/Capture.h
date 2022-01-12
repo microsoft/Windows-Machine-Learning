@@ -237,7 +237,7 @@ public:
 
     HRESULT OnCaptureEvent(WPARAM wParam, LPARAM lParam); 
     HRESULT SetVideoDevice(IUnknown *pUnk);
-    HRESULT StartPreview();
+    HRESULT StartPreview(winrt::hstring modelPath);
     HRESULT StopPreview();
     HRESULT StartRecord(PCWSTR pszDestinationFile);
     HRESULT StopRecord();

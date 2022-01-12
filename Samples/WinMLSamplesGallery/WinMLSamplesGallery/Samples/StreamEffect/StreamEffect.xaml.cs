@@ -3,24 +3,17 @@ using System.Collections.Generic;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Windows.Storage;
-using Windows.Graphics.Imaging;
-using Windows.Media;
-using Microsoft.AI.MachineLearning;
-using Microsoft.AI.MachineLearning.Experimental;
+
 using System.Threading.Tasks;
 using System.Diagnostics;
 using System.Linq;
-using Windows.Storage.Streams;
 using System.Runtime.InteropServices.WindowsRuntime;
-using Windows.Foundation.Collections;
-using Windows.Foundation;
-using Microsoft.UI.Xaml.Media.Imaging;
+
 using Windows.Devices.Enumeration;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
-using Windows.Media.Capture;
-using WinMLSamplesGallery.Controls;
-using Windows.System.Display;
+using System.IO;
+
 
 using Windows.Media.Editing;
 using Windows.Media.Core;
@@ -87,10 +80,16 @@ namespace WinMLSamplesGallery.Samples
         public StreamEffect()
         {
             this.InitializeComponent();
-            WinMLSamplesGalleryNative.StreamEffect.LaunchNewWindow();
+            // TODO: Currently the WinMLSamplesGalleryNative component will load
+            // the wrong version of the Microsoft.AI.MachineLearning.dll.
+            // To work around this, we make a dummy call to the builder to
+            // ensure that the dll is loaded.
+            var builder = Microsoft.AI.MachineLearning.Experimental.LearningModelBuilder.Create(11);
+
+            //var modelName = "mosaic.onnx";
+            var modelPath = Path.Join(Windows.ApplicationModel.Package.Current.InstalledLocation.Path, "Models");
+            Task.Run(()=>WinMLSamplesGalleryNative.StreamEffect.LaunchNewWindow(modelPath));
         }
-
-
 
     }
 }

@@ -366,7 +366,7 @@ LearningModel SegmentModel::PostProcess(long n, long c, long h, long w, long axi
 			.SetAttribute(L"axis", TensorInt64Bit::CreateFromIterable({ 1 }, { axis })) // Correct way of passing axis? 
 			.SetOutput(L"reduced", L"Reduced"))
 		.Operators().Add(LearningModelOperator(L"Cast")
-			.SetInput(L"input", L"Reduced")
+			.SetInput(L"input", L"Reduced")	 
 			.SetAttribute(L"to", TensorInt64Bit::CreateFromIterable({}, { OnnxDataType::ONNX_FLOAT }))
 			.SetOutput(L"output", L"ArgmaxOutput"))
 		// Extract the foreground using the argmax scores to create a mask

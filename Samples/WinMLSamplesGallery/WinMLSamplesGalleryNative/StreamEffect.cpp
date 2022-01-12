@@ -12,6 +12,7 @@
 #include "Resource.h"
 
 CaptureManager* g_pEngine = NULL;
+winrt::hstring         g_modelPath = L"";
 HPOWERNOTIFY    g_hPowerNotify = NULL;
 HPOWERNOTIFY    g_hPowerNotifyMonitor = NULL;
 SYSTEM_POWER_CAPABILITIES   g_pwrCaps{};
@@ -351,7 +352,7 @@ namespace MainWindow
     }
     void OnStartPreview(HWND hwnd)
     {
-        HRESULT hr = g_pEngine->StartPreview();
+        HRESULT hr = g_pEngine->StartPreview(g_modelPath);
         if (FAILED(hr))
         {
             ShowError(hwnd, IDS_ERR_RECORD, hr);
@@ -498,7 +499,7 @@ namespace winrt::WinMLSamplesGalleryNative::implementation
         return DefWindowProc(hwnd, uMsg, wParam, lParam);
     };
 
-    void StreamEffect::LaunchNewWindow()
+    void StreamEffect::LaunchNewWindow(hstring modelPath)
     {
         HWND hwnd;
         HWND galleryHwnd = GetActiveWindow();
@@ -509,7 +510,8 @@ namespace winrt::WinMLSamplesGalleryNative::implementation
             GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS,
             (LPCTSTR)"GetCurrentModule",
             &hmodule);
-        
+        g_modelPath = modelPath;
+
         // Initialize the common controls
         const INITCOMMONCONTROLSEX icex = { sizeof(INITCOMMONCONTROLSEX), ICC_WIN95_CLASSES };
         InitCommonControlsEx(&icex);

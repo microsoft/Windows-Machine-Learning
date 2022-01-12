@@ -162,6 +162,8 @@ public:
         DWORD* pdwStatus
     );
 
+    void SetSegmentModelPath(winrt::hstring modelpath);
+
 private: 
     TransformBlur(HRESULT &hr);
 

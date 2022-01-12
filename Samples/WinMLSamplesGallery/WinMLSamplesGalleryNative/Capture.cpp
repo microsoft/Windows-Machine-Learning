@@ -337,7 +337,7 @@ void CaptureManager::OnRecordStopped(HRESULT& hrStatus)
 }
 
 
-HRESULT CaptureManager::StartPreview()
+HRESULT CaptureManager::StartPreview(winrt::hstring modelPath)
 {
     if (m_pEngine == NULL)
     {
@@ -349,6 +349,7 @@ HRESULT CaptureManager::StartPreview()
         return S_OK;
     }
 
+    // TODO: not raw pointers
     IMFCaptureSink *pSink = NULL;
     IMFMediaType *pMediaType = NULL;
     IMFMediaType *pMediaType2 = NULL;
@@ -394,6 +395,7 @@ HRESULT CaptureManager::StartPreview()
         winrt::com_ptr<IMFTransform> pMFT ;
 
         hr = TransformBlur::CreateInstance(NULL, __uuidof(IMFTransform), (void**)(&blur));
+        blur->SetSegmentModelPath(modelPath);
         hr = blur->QueryInterface(__uuidof(IMFTransform), (void**)(&pMFT));
 
         // IMFCaptureSource

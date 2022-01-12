@@ -58,8 +58,8 @@ SegmentModel::SegmentModel() :
 	m_bindPreprocess(NULL),
 	m_bindFCN(NULL),
 	m_bindPostprocess(NULL),
-	m_bindStyleTransfer(NULL), 
-	bindings(swapChainEntryCount)
+	m_bindStyleTransfer(NULL)
+	//bindings(swapChainEntryCount)
 {
 }
 
@@ -73,12 +73,12 @@ SegmentModel::SegmentModel(UINT32 w, UINT32 h) :
 	m_bindPreprocess(NULL),
 	m_bindFCN(NULL),
 	m_bindPostprocess(NULL),
-	m_bindStyleTransfer(NULL),
-	bindings(swapChainEntryCount)
+	m_bindStyleTransfer(NULL)
+	//bindings(swapChainEntryCount)
 {
 
 	SetImageSize(w, h);
-	m_sess = CreateLearningModelSession(Invert(1, 3, h, w));
+	m_sess = nullptr;//CreateLearningModelSession(Invert(1, 3, h, w));
 	m_sessStyleTransfer = CreateLearningModelSession(StyleTransfer());
 	m_bindStyleTransfer = LearningModelBinding(m_sessStyleTransfer);
 
@@ -93,18 +93,18 @@ SegmentModel::SegmentModel(UINT32 w, UINT32 h) :
 	m_bindPostprocess = LearningModelBinding(m_sessPostprocess);
 
 	// Create set of bindings to cycle through
-	for (int i = 0; i < swapChainEntryCount; i++) {
+	/*for (int i = 0; i < swapChainEntryCount; i++) {
 		bindings.push_back(std::make_unique<SwapChainEntry>());
 		bindings[i]->binding = LearningModelBinding(m_sessStyleTransfer);
 		bindings[i]->binding.Bind(L"outputImage",
 			VideoFrame(Windows::Graphics::Imaging::BitmapPixelFormat::Bgra8, 720, 720));
-	}
+	}*/
 
 }
 
 void SegmentModel::SetModels(UINT32 w, UINT32 h) {
 	SetImageSize(w, h);
-	m_sess = CreateLearningModelSession(Invert(1, 3, h, w));
+	m_sess = nullptr;//CreateLearningModelSession(Invert(1, 3, h, w));
 	m_sessStyleTransfer = CreateLearningModelSession(StyleTransfer());
 	m_bindStyleTransfer = LearningModelBinding(m_sessStyleTransfer);
 
@@ -119,12 +119,12 @@ void SegmentModel::SetModels(UINT32 w, UINT32 h) {
 	m_bindPostprocess = LearningModelBinding(m_sessPostprocess);
 
 	// Create set of bindings to cycle through
-	for (int i = 0; i < swapChainEntryCount; i++) {
+	/*for (int i = 0; i < swapChainEntryCount; i++) {
 		bindings.push_back(std::make_unique<SwapChainEntry>());
 		bindings[i]->binding = LearningModelBinding(m_sessStyleTransfer);
 		bindings[i]->binding.Bind(L"outputImage",
 			VideoFrame(Windows::Graphics::Imaging::BitmapPixelFormat::Bgra8, 720, 720));
-	}
+	}*/
  }
 
 void SegmentModel::SetImageSize(UINT32 w, UINT32 h)
@@ -192,69 +192,69 @@ void SegmentModel::Run(IDirect3DSurface src, IDirect3DSurface dest, IDirect3DDev
 	OutputDebugString(L" Ending runTest ]");
 }
 
-void SegmentModel::SubmitEval(VideoFrame input, VideoFrame output) {
-	auto currentBinding = bindings[0].get();
-	if (currentBinding->activetask == nullptr
-		|| currentBinding->activetask.Status() != Windows::Foundation::AsyncStatus::Started)
-	{
-		auto now = std::chrono::high_resolution_clock::now();
-		OutputDebugString(L"PF Start new Eval ");
-		OutputDebugString(std::to_wstring(swapChainIndex).c_str());
-		OutputDebugString(L" | ");
-		// submit an eval and wait for it to finish submitting work
-
-		{
-			std::lock_guard<std::mutex> guard{ Processing };
-			currentBinding->binding.Bind(L"inputImage", input);
-		}
-		std::rotate(bindings.begin(), bindings.begin() + 1, bindings.end());
-		finishedFrameIndex = (finishedFrameIndex - 1 + swapChainEntryCount) % swapChainEntryCount;
-		currentBinding->activetask = m_sessStyleTransfer.EvaluateAsync(
-			currentBinding->binding,
-			std::to_wstring(swapChainIndex).c_str());
-		currentBinding->activetask.Completed([&, currentBinding, now](auto&& asyncInfo, winrt::Windows::Foundation::AsyncStatus const) {
-			OutputDebugString(L"PF Eval completed |");
-			VideoFrame evalOutput = asyncInfo.GetResults()
-				.Outputs()
-				.Lookup(L"outputImage")
-				.try_as<VideoFrame>();
-			int bindingIdx;
-			bool finishedFrameUpdated;
-			{
-				std::lock_guard<std::mutex> guard{ Processing };
-				auto binding = std::find_if(bindings.begin(),
-					bindings.end(),
-					[currentBinding](const auto& b)
-					{
-						return b.get() == currentBinding;
-					});
-				bindingIdx = std::distance(bindings.begin(), binding);
-				finishedFrameUpdated = bindingIdx >= finishedFrameIndex;
-				finishedFrameIndex = finishedFrameUpdated ? bindingIdx : finishedFrameIndex;
-			}
-			if (finishedFrameUpdated)
-			{
-				OutputDebugString(L"PF Copy | ");
-				evalOutput.CopyToAsync(currentBinding->outputCache);
-			}
-
-			auto timePassed = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - now);
-			// Convert to FPS: milli to seconds, invert
-			OutputDebugString(L"PF End ");
-			});
-	}
-	if (bindings[finishedFrameIndex]->outputCache != nullptr) {
-		OutputDebugString(L"\nStart CopyAsync ");
-		OutputDebugString(std::to_wstring(finishedFrameIndex).c_str());
-		{
-			// Lock so that don't have multiple sources copying to output at once
-			std::lock_guard<std::mutex> guard{ Processing };
-			bindings[finishedFrameIndex]->outputCache.CopyToAsync(output).get();
-		}
-		OutputDebugString(L" | Stop CopyAsync\n");
-	}
-	// return without waiting for the submit to finish, setup the completion handler
-}
+//void SegmentModel::SubmitEval(VideoFrame input, VideoFrame output) {
+//	auto currentBinding = bindings[0].get();
+//	if (currentBinding->activetask == nullptr
+//		|| currentBinding->activetask.Status() != Windows::Foundation::AsyncStatus::Started)
+//	{
+//		auto now = std::chrono::high_resolution_clock::now();
+//		OutputDebugString(L"PF Start new Eval ");
+//		OutputDebugString(std::to_wstring(swapChainIndex).c_str());
+//		OutputDebugString(L" | ");
+//		// submit an eval and wait for it to finish submitting work
+//
+//		{
+//			std::lock_guard<std::mutex> guard{ Processing };
+//			currentBinding->binding.Bind(L"inputImage", input);
+//		}
+//		std::rotate(bindings.begin(), bindings.begin() + 1, bindings.end());
+//		finishedFrameIndex = (finishedFrameIndex - 1 + swapChainEntryCount) % swapChainEntryCount;
+//		currentBinding->activetask = m_sessStyleTransfer.EvaluateAsync(
+//			currentBinding->binding,
+//			std::to_wstring(swapChainIndex).c_str());
+//		currentBinding->activetask.Completed([&, currentBinding, now](auto&& asyncInfo, winrt::Windows::Foundation::AsyncStatus const) {
+//			OutputDebugString(L"PF Eval completed |");
+//			VideoFrame evalOutput = asyncInfo.GetResults()
+//				.Outputs()
+//				.Lookup(L"outputImage")
+//				.try_as<VideoFrame>();
+//			int bindingIdx;
+//			bool finishedFrameUpdated;
+//			{
+//				std::lock_guard<std::mutex> guard{ Processing };
+//				auto binding = std::find_if(bindings.begin(),
+//					bindings.end(),
+//					[currentBinding](const auto& b)
+//					{
+//						return b.get() == currentBinding;
+//					});
+//				bindingIdx = std::distance(bindings.begin(), binding);
+//				finishedFrameUpdated = bindingIdx >= finishedFrameIndex;
+//				finishedFrameIndex = finishedFrameUpdated ? bindingIdx : finishedFrameIndex;
+//			}
+//			if (finishedFrameUpdated)
+//			{
+//				OutputDebugString(L"PF Copy | ");
+//				evalOutput.CopyToAsync(currentBinding->outputCache);
+//			}
+//
+//			auto timePassed = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - now);
+//			// Convert to FPS: milli to seconds, invert
+//			OutputDebugString(L"PF End ");
+//			});
+//	}
+//	if (bindings[finishedFrameIndex]->outputCache != nullptr) {
+//		OutputDebugString(L"\nStart CopyAsync ");
+//		OutputDebugString(std::to_wstring(finishedFrameIndex).c_str());
+//		{
+//			// Lock so that don't have multiple sources copying to output at once
+//			std::lock_guard<std::mutex> guard{ Processing };
+//			bindings[finishedFrameIndex]->outputCache.CopyToAsync(output).get();
+//		}
+//		OutputDebugString(L" | Stop CopyAsync\n");
+//	}
+//	// return without waiting for the submit to finish, setup the completion handler
+//}
 
 void SegmentModel::RunStyleTransfer(IDirect3DSurface src, IDirect3DSurface dest, IDirect3DDevice device) 
 {
@@ -411,15 +411,15 @@ LearningModel SegmentModel::PostProcess(long n, long c, long h, long w, long axi
 
 LearningModel SegmentModel::FCNResnet()
 {
-	auto rel = std::filesystem::current_path();
-	rel.append("Assets\\fcn-resnet50-11.onnx");
-	return LearningModel::LoadFromFilePath(rel + L"");
+	// TODO: Add FCN-resnet to LargeModels if want to use for published streaming sample, or remove. 
+	return LearningModel::LoadFromFilePath(L"C:\\Windows-Machine-Learning\\Samples\\BackgroundBlur\\BackgroundBlur\\Assets\\fcn-resnet50-11.onnx");
 }
+
 
 LearningModel SegmentModel::StyleTransfer()
 {
-	auto rel = std::filesystem::current_path();
-	rel.append("Assets\\mosaic.onnx");
+	auto rel = std::filesystem::path(modelPath.c_str());
+	rel.append("mosaic.onnx");
 	return LearningModel::LoadFromFilePath(rel + L"");
 }
 

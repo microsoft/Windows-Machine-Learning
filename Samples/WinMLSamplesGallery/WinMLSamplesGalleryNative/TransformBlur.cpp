@@ -137,6 +137,12 @@ HRESULT TransformBlur::QueryInterface(REFIID iid, void** ppv)
     return S_OK;
 }
 
+void TransformBlur::SetSegmentModelPath(winrt::hstring modelpath) 
+{
+    m_segmentModel.modelPath = modelpath;
+}
+
+
 // IMFTransform Methods. 
 
 //-------------------------------------------------------------------

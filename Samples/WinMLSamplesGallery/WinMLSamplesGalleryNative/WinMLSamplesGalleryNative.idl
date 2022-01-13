@@ -20,6 +20,6 @@ namespace WinMLSamplesGalleryNative
     [default_interface]
     runtimeclass AdapterList
     {
-        static String GetAdapters();
+        static String[] GetAdapters();
     }
 }

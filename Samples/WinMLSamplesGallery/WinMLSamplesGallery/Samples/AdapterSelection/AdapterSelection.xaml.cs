@@ -19,9 +19,16 @@ namespace WinMLSamplesGallery.Samples
         {
             this.InitializeComponent();
             System.Diagnostics.Debug.WriteLine("Initialized Adapter Selection");
-            var some_str = WinMLSamplesGalleryNative.AdapterList.GetAdapters();
-            System.Diagnostics.Debug.WriteLine("Called GetAdapters");
-            System.Diagnostics.Debug.WriteLine(some_str);
+            var string_arr = WinMLSamplesGalleryNative.AdapterList.GetAdapters();
+            var some_strings = new List<string>(string_arr);
+            System.Diagnostics.Debug.WriteLine("Num Elements {0}", some_strings.Count);
+            for(int i = 0; i < some_strings.Count; i++)
+            {
+                System.Diagnostics.Debug.WriteLine(some_strings[i]);
+            }
+
+            //System.Diagnostics.Debug.WriteLine("Called GetAdapters");
+            //System.Diagnostics.Debug.WriteLine(some_str);
         }
     }
 }

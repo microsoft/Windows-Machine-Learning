@@ -22,5 +22,6 @@ namespace WinMLSamplesGalleryNative
     {
         static String[] GetAdapters();
         static String GetAdapterByDriverDescription(String description);
+        static Microsoft.AI.MachineLearning.LearningModelDevice CreateLearningModelDeviceFromAdapter(String description);
     }
 }

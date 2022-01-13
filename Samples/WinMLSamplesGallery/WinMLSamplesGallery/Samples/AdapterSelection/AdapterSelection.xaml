@@ -10,13 +10,7 @@
     FontFamily="Arial">
 
     <StackPanel>
-        <ComboBox x:Name="DeviceBox" SelectedIndex="0">
-            <x:String>CPU</x:String>
-            <x:String>DirectX</x:String>
-            <x:String>DirectXHighPerformance</x:String>
-            <x:String>DirectXMinPower</x:String>
-            <x:String>Intel Iris Plus Graphics</x:String>
-            <x:String>NVIDIA GeForce GTX 1650</x:String>
-        </ComboBox>
+        <ListView x:Name="AdapterListView" SelectedIndex="0" SelectionChanged="ChangeAdapter">
+        </ListView>
     </StackPanel>
 </Page>

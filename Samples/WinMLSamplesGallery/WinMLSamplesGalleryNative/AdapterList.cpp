@@ -41,4 +41,33 @@ namespace winrt::WinMLSamplesGalleryNative::implementation
 
         return driver_descriptions;
     }
+
+    winrt::hstring AdapterList::GetAdapterByDriverDescription(winrt::hstring description) {
+        hstring str1 = L"string1";
+
+        winrt::com_ptr<IDXCoreAdapterFactory> adapterFactory;
+        winrt::check_hresult(::DXCoreCreateAdapterFactory(adapterFactory.put()));
+        winrt::com_ptr<IDXCoreAdapterList> d3D12CoreComputeAdapters;
+        GUID attributes[]{ DXCORE_ADAPTER_ATTRIBUTE_D3D12_CORE_COMPUTE };
+        winrt::check_hresult(
+            adapterFactory->CreateAdapterList(_countof(attributes),
+                attributes,
+                d3D12CoreComputeAdapters.put()));
+
+        const uint32_t count{ d3D12CoreComputeAdapters->GetAdapterCount() };
+        hstring found_adapter = L"Not found";
+        for (uint32_t i = 0; i < count; ++i)
+        {
+            winrt::com_ptr<IDXCoreAdapter> candidateAdapter;
+            winrt::check_hresult(
+                d3D12CoreComputeAdapters->GetAdapter(i, candidateAdapter.put()));
+            CHAR driver_description[128];
+            candidateAdapter->GetProperty(DXCoreAdapterProperty::DriverDescription, sizeof(driver_description), driver_description);
+            hstring hstr_driver_description = to_hstring(driver_description);
+            if(description == hstr_driver_description)
+                found_adapter = L"Found it";
+        }
+
+        return found_adapter;
+    }
 }

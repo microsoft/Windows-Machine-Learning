@@ -21,5 +21,6 @@ namespace WinMLSamplesGalleryNative
     runtimeclass AdapterList
     {
         static String[] GetAdapters();
+        static String GetAdapterByDriverDescription(String description);
     }
 }

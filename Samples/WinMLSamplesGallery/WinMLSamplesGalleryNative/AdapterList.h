@@ -7,6 +7,7 @@ namespace winrt::WinMLSamplesGalleryNative::implementation
     {
         AdapterList() = default;
         static winrt::com_array<hstring> GetAdapters();
+        static winrt::hstring GetAdapterByDriverDescription(winrt::hstring description);
     };
 }
 namespace winrt::WinMLSamplesGalleryNative::factory_implementation

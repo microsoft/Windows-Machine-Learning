@@ -12,15 +12,15 @@ using WinMLSamplesGalleryNative;
 
 namespace WinMLSamplesGallery.Samples
 {
-
     public sealed partial class AdapterSelection : Page
     {
+        List<string> adapter_options;
         public AdapterSelection()
         {
             this.InitializeComponent();
             System.Diagnostics.Debug.WriteLine("Initialized Adapter Selection");
 
-            List<string> adapter_options = new List<string> {
+            adapter_options = new List<string> {
                 "CPU",
                 "DirectX",
                 "DirectXHighPerformance",
@@ -45,7 +45,10 @@ namespace WinMLSamplesGallery.Samples
 
         private void ChangeAdapter(object sender, RoutedEventArgs e)
         {
-            System.Diagnostics.Debug.WriteLine("Changed selection {0}", AdapterListView.SelectedIndex);
+            var description = adapter_options[AdapterListView.SelectedIndex];
+            System.Diagnostics.Debug.WriteLine("Changed selection {0}", description);
+            var retreived_adapter = WinMLSamplesGalleryNative.AdapterList.GetAdapterByDriverDescription(description);
+            System.Diagnostics.Debug.WriteLine("Retrieved adapter? {0}", retreived_adapter);
         }
     }
 }

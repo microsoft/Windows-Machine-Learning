@@ -76,6 +76,8 @@ namespace WinMLSamplesGallery.Samples
 
     public sealed partial class StreamEffect : Page
     {
+        string modelPath;
+        bool isPreviewing = false;
        
         public StreamEffect()
         {
@@ -87,16 +89,38 @@ namespace WinMLSamplesGallery.Samples
             var builder = Microsoft.AI.MachineLearning.Experimental.LearningModelBuilder.Create(11);
 
             //var modelName = "mosaic.onnx";
-            var modelPath = Path.Join(Windows.ApplicationModel.Package.Current.InstalledLocation.Path, "Models");
+            modelPath = Path.Join(Windows.ApplicationModel.Package.Current.InstalledLocation.Path, "Models");
             
-            // Running as a task ensures that the samples gallery window isn't blocked.
-            Task.Run(()=>WinMLSamplesGalleryNative.StreamEffect.LaunchNewWindow(modelPath));
         }
 
         // TODO: If keep in a separate window, send a task to shut down all stream effect processes
         public void ShutDownWindow() 
         {
             return; 
+        }
+        async private void ToggleInference(object sender, RoutedEventArgs e)
+        {
+            //isPreviewing = true;
+            isPreviewing = !isPreviewing; // Toggle the previewing bool
+
+            if (isPreviewing)
+            {
+                // Change the button text/symbol on the button to prompt user to close window on next click
+                //ToggleInferenceBtn.Content = (StackPanel) this.Resources["StopInference"];
+                ToggleInferenceBtnText.Text = "Stop Inference";
+                ToggleInferenceBtnIcon.Symbol = Symbol.Cancel;
+
+                // Running as a task ensures that the samples gallery window isn't blocked.
+                Task.Run(() => WinMLSamplesGalleryNative.StreamEffect.LaunchNewWindow(modelPath));
+            }
+            else if(!isPreviewing)
+            {
+                ToggleInferenceBtnText.Text = "Start Inference";
+                ToggleInferenceBtnIcon.Symbol = Symbol.NewWindow;
+
+                // TODO: Implement the ShutDownWindow function
+            }
+            
         }
 
     }

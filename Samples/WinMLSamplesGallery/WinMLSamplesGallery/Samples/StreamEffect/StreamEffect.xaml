@@ -13,50 +13,26 @@
         <Style x:Key="TextBlockStyling" TargetType="TextBlock">
             <Setter Property="Foreground" Value="Black" />
         </Style>
+
+        <StackPanel Orientation="Horizontal" x:Key="StartInference">
+            <TextBlock Margin="5,0">Start Stream</TextBlock>
+            <SymbolIcon Symbol="NewWindow"/>
+        </StackPanel>
+        
+        <StackPanel Orientation="Horizontal" x:Key="StopInference">
+            <TextBlock Margin="5,0">Stop Stream</TextBlock>
+            <SymbolIcon Symbol="Cancel"/>
+        </StackPanel>
+        
     </Page.Resources>
 
-    <TextBlock FontFamily="Segoe UI Light" FontSize="14" Margin="0,15,0,0" Text="TEST TEST" TextWrapping="Wrap" />
-
-
-    <!--<StackPanel>
-        <StackPanel
-                Name="UICameraSelectionControls"
-                Grid.Row="1"
-                HorizontalAlignment="Left"
-                VerticalAlignment="Bottom"
-                Orientation="Horizontal"
-                Margin="0,20">
-            <ComboBox
-                    Name="UICmbCamera"
-                    Foreground="White"
-                    ItemsSource="{x:Bind streamEffectViewModel.CameraNamesList}"
-                    SelectedIndex="{x:Bind streamEffectViewModel.SelectedCameraIndex, Mode=TwoWay}"
-                    Margin="0,0,10,0"
-                >
-                --><!--<i:Interaction.Behaviors>
-                    <core:EventTriggerBehavior EventName="SelectionChanged">
-                        <core:InvokeCommandAction Command="{Binding ChangeLiveStreamCommand}" />
-                    </core:EventTriggerBehavior>
-                </i:Interaction.Behaviors>!--><!--
-                <ComboBox.Background>
-                    <SolidColorBrush Opacity="0.3" Color="Black" />
-                </ComboBox.Background>
-            </ComboBox>
-            <local_controls:DeviceComboBox x:Name="DeviceCmbBox" />
-            --><!--TODO: Change button to be start/restart stream as needed. ie. if changing sources. -->
-            <!--TODO: Disable until a media source is selected. --><!--
-            <Button x:Name="StartInferenceBtn"
-                ToolTipService.ToolTip="Start Stream"
-                Click="ChangeLiveStream">
-                <Button.Content>
-                    <SymbolIcon Symbol="Play" />
-                </Button.Content>
-            </Button>
+    <Button x:Name="ToggleInferenceBtn" Style="{StaticResource AccentButtonStyle}" Click="ToggleInference" Margin="0,20,0,0">
+        <StackPanel Orientation="Horizontal">
+            <TextBlock x:Name="ToggleInferenceBtnText" Margin="5,0">Start Stream</TextBlock>
+            <SymbolIcon x:Name="ToggleInferenceBtnIcon" Symbol="NewWindow"/>
         </StackPanel>
-        <Image x:Name="InputImage"  VerticalAlignment="Top" HorizontalAlignment="Left" Source="ms-appx:///InputData/stream.png">
-        </Image>
-    </StackPanel>-->
-    
+    </Button>
+
 
 
 </Page>

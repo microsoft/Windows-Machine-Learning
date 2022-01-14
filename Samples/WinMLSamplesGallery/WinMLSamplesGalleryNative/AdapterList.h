@@ -7,7 +7,6 @@ namespace winrt::WinMLSamplesGalleryNative::implementation
     {
         AdapterList() = default;
         static winrt::com_array<hstring> GetAdapters();
-        static winrt::hstring GetAdapterByDriverDescription(winrt::hstring description);
         static winrt::Microsoft::AI::MachineLearning::LearningModelDevice CreateLearningModelDeviceFromAdapter(winrt::hstring description);
     };
 }

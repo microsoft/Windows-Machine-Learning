@@ -15,42 +15,49 @@ namespace WinMLSamplesGallery.Samples
     public sealed partial class AdapterSelection : Page
     {
         List<string> adapter_options;
+        LearningModelDevice device;
         public AdapterSelection()
         {
             this.InitializeComponent();
-            System.Diagnostics.Debug.WriteLine("Initialized Adapter Selection");
-
             adapter_options = new List<string> {
                 "CPU",
                 "DirectX",
                 "DirectXHighPerformance",
                 "DirectXMinPower"
             };
+            device = new LearningModelDevice(LearningModelDeviceKind.Cpu);
 
-            var string_arr = WinMLSamplesGalleryNative.AdapterList.GetAdapters();
-            var some_strings = new List<string>(string_arr);
-            System.Diagnostics.Debug.WriteLine("Num Elements {0}", some_strings.Count);
-            for(int i = 0; i < some_strings.Count; i++)
-            {
-                System.Diagnostics.Debug.WriteLine(some_strings[i]);
-            }
+            var adapters_arr = WinMLSamplesGalleryNative.AdapterList.GetAdapters();
+            var adapters = new List<string>(adapters_arr);
 
-            adapter_options.AddRange(some_strings);
+            adapter_options.AddRange(adapters);
             AdapterListView.ItemsSource = adapter_options;
-
-
-            //System.Diagnostics.Debug.WriteLine("Called GetAdapters");
-            //System.Diagnostics.Debug.WriteLine(some_str);
         }
 
         private void ChangeAdapter(object sender, RoutedEventArgs e)
         {
-            var description = adapter_options[AdapterListView.SelectedIndex];
-            System.Diagnostics.Debug.WriteLine("Changed selection {0}", description);
-            var retreived_adapter = WinMLSamplesGalleryNative.AdapterList.GetAdapterByDriverDescription(description);
-            System.Diagnostics.Debug.WriteLine("Retrieved adapter? {0}", retreived_adapter);
-            var adapter_device = WinMLSamplesGalleryNative.AdapterList.CreateLearningModelDeviceFromAdapter(description);
-            System.Diagnostics.Debug.WriteLine("Adapter Device {0}", adapter_device);
+            var device_kind_str = adapter_options[AdapterListView.SelectedIndex];
+            if (AdapterListView.SelectedIndex < 4)
+            {
+                device = new LearningModelDevice(
+                    GetLearningModelDeviceKind(device_kind_str));
+            }
+            else
+            {
+                device = WinMLSamplesGalleryNative.AdapterList.CreateLearningModelDeviceFromAdapter(device_kind_str);
+            }
+        }
+
+        private LearningModelDeviceKind GetLearningModelDeviceKind(string device_kind_str)
+        {
+            if (device_kind_str == "CPU")
+                return LearningModelDeviceKind.Cpu;
+            else if (device_kind_str == "DirectX")
+                return LearningModelDeviceKind.DirectX;
+            else if (device_kind_str == "DirectXHighPerformance")
+                return LearningModelDeviceKind.DirectXHighPerformance;
+            else
+                return LearningModelDeviceKind.DirectXMinPower;
         }
     }
 }

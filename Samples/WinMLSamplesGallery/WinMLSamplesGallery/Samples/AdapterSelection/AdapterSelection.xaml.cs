@@ -49,6 +49,8 @@ namespace WinMLSamplesGallery.Samples
             System.Diagnostics.Debug.WriteLine("Changed selection {0}", description);
             var retreived_adapter = WinMLSamplesGalleryNative.AdapterList.GetAdapterByDriverDescription(description);
             System.Diagnostics.Debug.WriteLine("Retrieved adapter? {0}", retreived_adapter);
+            var adapter_device = WinMLSamplesGalleryNative.AdapterList.CreateLearningModelDeviceFromAdapter(description);
+            System.Diagnostics.Debug.WriteLine("Adapter Device {0}", adapter_device);
         }
     }
 }

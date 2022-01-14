@@ -75,7 +75,9 @@ namespace winrt::WinMLSamplesGalleryNative::implementation
         return found_adapter;
     }
 
-    winrt::Microsoft::AI::MachineLearning::LearningModelDevice CreateLearningModelDeviceFromAdapter(winrt::hstring description) {
+    winrt::Microsoft::AI::MachineLearning::LearningModelDevice AdapterList::CreateLearningModelDeviceFromAdapter(winrt::hstring description) {
+   /*     hstring some_string = L"some string";
+        return some_string;*/
         winrt::com_ptr<IDXCoreAdapterFactory> adapterFactory;
         winrt::check_hresult(::DXCoreCreateAdapterFactory(adapterFactory.put()));
         winrt::com_ptr<IDXCoreAdapterList> d3D12CoreComputeAdapters;

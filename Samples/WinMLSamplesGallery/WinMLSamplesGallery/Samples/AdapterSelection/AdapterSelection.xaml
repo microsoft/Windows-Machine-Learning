@@ -9,8 +9,16 @@
     mc:Ignorable="d"
     FontFamily="Arial">
 
-    <StackPanel>
-        <ListView x:Name="AdapterListView" SelectedIndex="0" SelectionChanged="ChangeAdapter">
-        </ListView>
+    <StackPanel Margin="0,20,0,0">
+        <Border BorderBrush="Gray" BorderThickness="2" CornerRadius="5">
+            <ListView x:Name="AdapterListView" SelectedIndex="0" SelectionChanged="ChangeAdapter">
+                <ListView.ItemContainerStyle>
+                    <Style TargetType="ListViewItem">
+                        <Setter Property="BorderBrush" Value="LightGray" />
+                        <Setter Property="BorderThickness" Value="0,0,0,1" />
+                    </Style>
+                </ListView.ItemContainerStyle>
+            </ListView>
+        </Border>
     </StackPanel>
 </Page>

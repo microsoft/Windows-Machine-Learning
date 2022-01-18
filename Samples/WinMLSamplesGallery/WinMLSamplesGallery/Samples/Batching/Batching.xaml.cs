@@ -3,7 +3,6 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Threading.Tasks;
 using Windows.Graphics.Imaging;
 using Windows.Media;
@@ -20,15 +19,14 @@ namespace WinMLSamplesGallery.Samples
 
     public sealed partial class Batching : Page
     {
-        const int NumInputImages = 50;
-        const int NumEvalIterations = 100;
+        const int numInputImages = 50;
+        const int numEvalIterations = 100;
 
-        private LearningModel _model = null;
-        private LearningModelSession _nonBatchingSession = null;
-        private LearningModelSession _batchingSession = null;
+        private LearningModelSession nonBatchingSession_;
+        private LearningModelSession batchingSession_;
 
-        float _avgNonBatchedDuration = 0;
-        float _avgBatchDuration = 0;
+        float avgNonBatchedDuration_ = 0;
+        float avgBatchDuration_ = 0;
 
         // Marked volatile since it's updated across threads
         static volatile bool navigatingAwayFromPage = false;
@@ -39,34 +37,27 @@ namespace WinMLSamplesGallery.Samples
             this.InitializeComponent();
             // Ensure static variable is always false on page initialization
             navigatingAwayFromPage = false;
-
-            // Load the model
-            var modelName = "squeezenet1.1-7-batched.onnx";
-            var modelPath = Path.Join(Windows.ApplicationModel.Package.Current.InstalledLocation.Path, "Models", modelName);
-            _model = LearningModel.LoadFromFilePath(modelPath);
         }
 
         async private void StartInference(object sender, RoutedEventArgs e)
         {
-            ShowStatus();
-            ResetMetrics();
+            ShowEvalUI();
+            ResetEvalMetrics();
 
             var inputImages = await GetInputImages();
             int batchSize = GetBatchSizeFromBatchSizeSlider();
+            await CreateSessions(batchSize);
 
-            _nonBatchingSession = await CreateLearningModelSession(_model);
-            _batchingSession = await CreateLearningModelSession(_model, batchSize);
-
-            UpdateStatus(false);
+            UpdateEvalText(false);
             await Classify(inputImages);
 
-            UpdateStatus(true);
+            UpdateEvalText(true);
             await ClassifyBatched(inputImages, batchSize);
 
-            ShowUI();
+            GenerateEvalResultAndUI();
         }
 
-        private void ShowStatus()
+        private void ShowEvalUI()
         {
             StartInferenceBtn.IsEnabled = false;
             BatchSizeSlider.IsEnabled = false;
@@ -75,10 +66,10 @@ namespace WinMLSamplesGallery.Samples
             LoadingContainer.Visibility = Visibility.Visible;
         }
 
-        private void ResetMetrics()
+        private void ResetEvalMetrics()
         {
-            _avgNonBatchedDuration = 0;
-            _avgBatchDuration = 0;
+            avgNonBatchedDuration_ = 0;
+            avgBatchDuration_ = 0;
         }
 
         // Test input consists of 50 images (25 bird and 25 cat)
@@ -89,7 +80,7 @@ namespace WinMLSamplesGallery.Samples
             var birdImage = await CreateSoftwareBitmapFromStorageFile(birdFile);
             var catImage = await CreateSoftwareBitmapFromStorageFile(catFile);
             var inputImages = new List<VideoFrame>();
-            for (int i = 0; i < NumInputImages / 2; i++)
+            for (int i = 0; i < numInputImages / 2; i++)
             {
                 inputImages.Add(VideoFrame.CreateWithSoftwareBitmap(birdImage));
                 inputImages.Add(VideoFrame.CreateWithSoftwareBitmap(catImage));
@@ -105,23 +96,30 @@ namespace WinMLSamplesGallery.Samples
             return bitmap;
         }
 
-        private void UpdateStatus(bool isBatchingEval)
+        private void UpdateEvalText(bool isBatchingEval)
         {
             if (isBatchingEval)
-            {
                 EvalText.Text = "Inferencing Batched Inputs:";
-            }
             else
-            {
                 EvalText.Text = "Inferencing Non-Batched Inputs:";
-            }
         }
 
-        private async Task<LearningModelSession> CreateLearningModelSession(LearningModel model, int batchSizeOverride=-1)
+        private async Task CreateSessions(int batchSizeOverride)
         {
+            var modelPath = "ms-appx:///Models/squeezenet1.1-7-batched.onnx";
+            nonBatchingSession_ = await CreateLearningModelSession(modelPath);
+            batchingSession_ = await CreateLearningModelSession(modelPath, batchSizeOverride);
+        }
+
+        private async Task<LearningModelSession> CreateLearningModelSession(string modelPath, int batchSizeOverride=-1)
+        {
+            var model = await CreateLearningModel(modelPath);
             var deviceKind = DeviceComboBox.GetDeviceKind();
             var device = new LearningModelDevice(deviceKind);
-            var options = new LearningModelSessionOptions();
+            var options = new LearningModelSessionOptions()
+            {
+                CloseModelOnSessionCreation = true // Close the model to prevent extra memory usage
+            };
             if (batchSizeOverride > 0)
             {
                 options.BatchSizeOverride = (uint)batchSizeOverride;
@@ -130,21 +128,26 @@ namespace WinMLSamplesGallery.Samples
             return session;
         }
 
+        private static async Task<LearningModel> CreateLearningModel(string modelPath)
+        {
+            var uri = new Uri(modelPath);
+            var file = await StorageFile.GetFileFromApplicationUriAsync(uri);
+            var model = await LearningModel.LoadFromStorageFileAsync(file);
+            return model;
+        }
+
         async private Task Classify(List<VideoFrame> inputImages)
         {
             float totalEvalDurations = 0;
-            for (int i = 0; i < NumEvalIterations; i++)
+            for (int i = 0; i < numEvalIterations; i++)
             {
                 if (navigatingAwayFromPage)
-                {
                     break;
-                }
-
-                UpdateProgress(i);
-                float evalDuration = await Task.Run(() => Evaluate(_nonBatchingSession, inputImages));
+                UpdateEvalProgressUI(i);
+                float evalDuration = await Task.Run(() => Evaluate(nonBatchingSession_, inputImages));
                 totalEvalDurations += evalDuration;
             }
-            _avgNonBatchedDuration = totalEvalDurations / NumEvalIterations;
+            avgNonBatchedDuration_ = totalEvalDurations / numEvalIterations;
         }
 
         private static float Evaluate(LearningModelSession session, List<VideoFrame> input)
@@ -155,10 +158,7 @@ namespace WinMLSamplesGallery.Samples
             for (int j = 0; j < input.Count; j++)
             {
                 if (navigatingAwayFromPage)
-                {
                     break;
-                }
-
                 var start = HighResolutionClock.UtcNow();
                 binding.Bind(inputName, input[j]);
                 session.Evaluate(binding, "");
@@ -172,15 +172,15 @@ namespace WinMLSamplesGallery.Samples
         async private Task ClassifyBatched(List<VideoFrame> inputImages, int batchSize)
         {
             float totalEvalDurations = 0;
-            for (int i = 0; i < NumEvalIterations; i++)
+            for (int i = 0; i < numEvalIterations; i++)
             {
                 if (navigatingAwayFromPage)
                     break;
-                UpdateProgress(i);
-                float evalDuration = await Task.Run(() => EvaluateBatched(_batchingSession, inputImages, batchSize));
+                UpdateEvalProgressUI(i);
+                float evalDuration = await Task.Run(() => EvaluateBatched(batchingSession_, inputImages, batchSize));
                 totalEvalDurations += evalDuration;
             }
-            _avgBatchDuration = totalEvalDurations / NumEvalIterations;
+            avgBatchDuration_ = totalEvalDurations / numEvalIterations;
         }
 
         private static float EvaluateBatched(LearningModelSession session, List<VideoFrame> input, int batchSize)
@@ -192,10 +192,7 @@ namespace WinMLSamplesGallery.Samples
             for (int i = 0; i < numBatches; i++)
             {
                 if (navigatingAwayFromPage)
-                {
                     break;
-                }
-
                 int rangeStart = batchSize * i;
                 List<VideoFrame> batch;
                 // Add padding to the last batch if necessary
@@ -225,19 +222,19 @@ namespace WinMLSamplesGallery.Samples
             return int.Parse(BatchSizeSlider.Value.ToString());
         }
 
-        private void UpdateProgress(int attemptNumber)
+        private void UpdateEvalProgressUI(int attemptNumber)
         {
-            EvalProgressText.Text = "Attempt " + attemptNumber.ToString() + "/" + NumEvalIterations.ToString();
+            EvalProgressText.Text = "Attempt " + attemptNumber.ToString() + "/" + numEvalIterations.ToString();
             EvalProgressBar.Value = attemptNumber + 1;
         }
 
-        private void ShowUI()
+        private void GenerateEvalResultAndUI()
         {
-            float ratio = (1 - (_avgBatchDuration / _avgNonBatchedDuration)) * 100;
+            float ratio = (1 - (avgBatchDuration_ / avgNonBatchedDuration_)) * 100;
             var evalResult = new EvalResult
             {
-                nonBatchedAvgTime = _avgNonBatchedDuration.ToString("0.00"),
-                batchedAvgTime = _avgBatchDuration.ToString("0.00"),
+                nonBatchedAvgTime = avgNonBatchedDuration_.ToString("0.00"),
+                batchedAvgTime = avgBatchDuration_.ToString("0.00"),
                 timeRatio = ratio.ToString("0.0")
             };
             List<EvalResult> results = new List<EvalResult>();

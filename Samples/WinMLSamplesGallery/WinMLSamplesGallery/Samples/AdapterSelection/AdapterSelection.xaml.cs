@@ -42,10 +42,12 @@ namespace WinMLSamplesGallery.Samples
             {
                 device = new LearningModelDevice(
                     GetLearningModelDeviceKind(device_kind_str));
+                toggleCodeSnippet(true);
             }
             else
             {
                 device = WinMLSamplesGalleryNative.AdapterList.CreateLearningModelDeviceFromAdapter(device_kind_str);
+                toggleCodeSnippet(false);
             }
         }
 
@@ -70,6 +72,21 @@ namespace WinMLSamplesGallery.Samples
             {
                 selectedDeviceKind.Text = "DirectXMinPower";
                 return LearningModelDeviceKind.DirectXMinPower;
+            }
+        }
+
+        private void toggleCodeSnippet(bool show)
+        {
+            if (show)
+            {
+                CodeSnippet.Visibility = Visibility.Visible;
+                CodeSnippetComboBox.Visibility = Visibility.Visible;
+                ViewSourCodeText.Visibility = Visibility.Collapsed;
+            } else
+            {
+                CodeSnippet.Visibility = Visibility.Collapsed;
+                CodeSnippetComboBox.Visibility = Visibility.Collapsed;
+                ViewSourCodeText.Visibility = Visibility.Visible;
             }
         }
     }

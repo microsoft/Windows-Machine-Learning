@@ -9,6 +9,10 @@
     mc:Ignorable="d"
     FontFamily="Arial">
 
+    <Page.Resources>
+        <x:String x:Key="SourceCode">https://github.com/Microsoft/Windows-Machine-Learning/tree/master/Tools/WinMLDashboard</x:String>
+    </Page.Resources>
+
     <StackPanel Margin="0,20,0,0">
         <Border BorderBrush="Gray" BorderThickness="2" CornerRadius="5">
             <ListView x:Name="AdapterListView" SelectedIndex="0" SelectionChanged="ChangeAdapter">
@@ -20,12 +24,12 @@
                 </ListView.ItemContainerStyle>
             </ListView>
         </Border>
-        <ComboBox SelectedIndex="0" BorderBrush="#dbdbdb" Header="" Width="70" FontSize="18" Margin="0,20,0,0"
+        <ComboBox x:Name="CodeSnippetComboBox" SelectedIndex="0" BorderBrush="#dbdbdb" Header="" Width="70" FontSize="18" Margin="0,20,0,0"
                   Typography.Capitals="AllSmallCaps" Typography.StylisticSet4="True"
                   HorizontalAlignment="Right">
             <x:String>C#</x:String>
         </ComboBox>
-        <Grid Background="#F6F6F6" BorderBrush="#dbdbdb" BorderThickness="1" CornerRadius="5" Padding="15,20,15,22">
+        <Grid x:Name="CodeSnippet" Background="#F6F6F6" BorderBrush="#dbdbdb" BorderThickness="1" CornerRadius="5" Padding="15,20,15,22">
             <TextBlock x:Name="TestName" FontSize="14" FontFamily="Consolas">
                 <Run Foreground="#3562FF">var </Run>
                 <Run Foreground="#1684B2">device</Run>
@@ -34,5 +38,11 @@
                 <Run Foreground="#1F9D00">LearningModelDevice</Run><Run>(</Run><Run Foreground="#005c11">LearningModelDeviceKind.</Run><Run x:Name="selectedDeviceKind" Foreground="#1684B2"></Run><Run>);</Run>
             </TextBlock>
         </Grid>
+        <TextBlock x:Name="ViewSourCodeText" Visibility="Collapsed" Margin="0,30,0,0" FontWeight="Bold">
+            For information on how to use a custom adapter with Windows ML
+            <Hyperlink TextDecorations="None" NavigateUri="{StaticResource SourceCode}" ToolTipService.ToolTip="{StaticResource SourceCode}">
+                view source code.
+            </Hyperlink>
+        </TextBlock>
     </StackPanel>
 </Page>

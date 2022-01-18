@@ -20,5 +20,19 @@
                 </ListView.ItemContainerStyle>
             </ListView>
         </Border>
+        <ComboBox SelectedIndex="0" BorderBrush="#dbdbdb" Header="" Width="70" FontSize="18" Margin="0,20,0,0"
+                  Typography.Capitals="AllSmallCaps" Typography.StylisticSet4="True"
+                  HorizontalAlignment="Right">
+            <x:String>C#</x:String>
+        </ComboBox>
+        <Grid Background="#F6F6F6" BorderBrush="#dbdbdb" BorderThickness="1" CornerRadius="5" Padding="15,20,15,22">
+            <TextBlock x:Name="TestName" FontSize="14" FontFamily="Consolas">
+                <Run Foreground="#3562FF">var </Run>
+                <Run Foreground="#1684B2">device</Run>
+                <Run> = </Run>
+                <Run Foreground="#3562FF">new </Run>
+                <Run Foreground="#1F9D00">LearningModelDevice</Run><Run>(</Run><Run Foreground="#005c11">LearningModelDeviceKind.</Run><Run x:Name="selectedDeviceKind" Foreground="#1684B2"></Run><Run>);</Run>
+            </TextBlock>
+        </Grid>
     </StackPanel>
 </Page>

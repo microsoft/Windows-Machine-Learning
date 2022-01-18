@@ -26,6 +26,7 @@ namespace WinMLSamplesGallery.Samples
                 "DirectXMinPower"
             };
             device = new LearningModelDevice(LearningModelDeviceKind.Cpu);
+            selectedDeviceKind.Text = "Cpu";
 
             var adapters_arr = WinMLSamplesGalleryNative.AdapterList.GetAdapters();
             var adapters = new List<string>(adapters_arr);
@@ -51,13 +52,25 @@ namespace WinMLSamplesGallery.Samples
         private LearningModelDeviceKind GetLearningModelDeviceKind(string device_kind_str)
         {
             if (device_kind_str == "CPU")
+            {
+                selectedDeviceKind.Text = "Cpu";
                 return LearningModelDeviceKind.Cpu;
+            }
             else if (device_kind_str == "DirectX")
+            {
+                selectedDeviceKind.Text = "DirectX";
                 return LearningModelDeviceKind.DirectX;
+            }
             else if (device_kind_str == "DirectXHighPerformance")
+            {
+                selectedDeviceKind.Text = "DirectXHighPerformance";
                 return LearningModelDeviceKind.DirectXHighPerformance;
+            }
             else
+            {
+                selectedDeviceKind.Text = "DirectXMinPower";
                 return LearningModelDeviceKind.DirectXMinPower;
+            }
         }
     }
 }

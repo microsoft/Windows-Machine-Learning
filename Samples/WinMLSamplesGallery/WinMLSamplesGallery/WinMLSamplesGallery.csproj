@@ -160,6 +160,7 @@
 
   <ItemGroup>
     <Folder Include="LargeModels\" />
+    <Folder Include="Samples\AdapterSelection\Docs\" />
   </ItemGroup>
 
   <Target Name="DownloadContentFiles" BeforeTargets="BeforeBuild">

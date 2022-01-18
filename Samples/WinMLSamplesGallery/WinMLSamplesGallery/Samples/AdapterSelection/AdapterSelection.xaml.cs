@@ -43,11 +43,13 @@ namespace WinMLSamplesGallery.Samples
                 device = new LearningModelDevice(
                     GetLearningModelDeviceKind(device_kind_str));
                 toggleCodeSnippet(true);
+                testEvaluation(device);
             }
             else
             {
                 device = WinMLSamplesGalleryNative.AdapterList.CreateLearningModelDeviceFromAdapter(device_kind_str);
                 toggleCodeSnippet(false);
+                testEvaluation(device);
             }
         }
 
@@ -89,5 +91,31 @@ namespace WinMLSamplesGallery.Samples
                 ViewSourCodeText.Visibility = Visibility.Visible;
             }
         }
+
+        private async Task testEvaluation(LearningModelDevice device)
+        {
+            var modelName = "squeezenet1.1-7-batched.onnx";
+            var modelPath = Path.Join(Windows.ApplicationModel.Package.Current.InstalledLocation.Path, "Models", modelName);
+            LearningModel model = LearningModel.LoadFromFilePath(modelPath);
+            var options = new LearningModelSessionOptions();
+            var session = new LearningModelSession(model, device, options);
+            var birdFile = await StorageFile.GetFileFromApplicationUriAsync(new Uri("ms-appx:///InputData/hummingbird.jpg"));
+            var birdBitMap = await CreateSoftwareBitmapFromStorageFile(birdFile);
+            var birdVideoFrame = VideoFrame.CreateWithSoftwareBitmap(birdBitMap);
+            var binding = new LearningModelBinding(session);
+            string inputName = session.Model.InputFeatures[0].Name;
+            binding.Bind(inputName, birdVideoFrame);
+            var result = session.Evaluate(binding, "");
+            System.Diagnostics.Debug.WriteLine("Result {0}", result.Succeeded);
+        }
+
+        private async Task<SoftwareBitmap> CreateSoftwareBitmapFromStorageFile(StorageFile file)
+        {
+            var stream = await file.OpenAsync(FileAccessMode.Read);
+            var decoder = await BitmapDecoder.CreateAsync(stream);
+            var bitmap = await decoder.GetSoftwareBitmapAsync();
+            return bitmap;
+        }
+
     }
 }

@@ -10,7 +10,7 @@
     FontFamily="Arial">
 
     <Page.Resources>
-        <x:String x:Key="SourceCode">https://github.com/Microsoft/Windows-Machine-Learning/tree/master/Tools/WinMLDashboard</x:String>
+        <x:String x:Key="SourceGitHubURL">https://github.com/Microsoft/Windows-Machine-Learning/tree/master/Tools/WinMLDashboard</x:String>
     </Page.Resources>
 
     <StackPanel Margin="0,20,0,0">
@@ -35,12 +35,13 @@
                 <Run Foreground="#1684B2">device</Run>
                 <Run> = </Run>
                 <Run Foreground="#3562FF">new </Run>
-                <Run Foreground="#1F9D00">LearningModelDevice</Run><Run>(</Run><Run Foreground="#005c11">LearningModelDeviceKind.</Run><Run x:Name="selectedDeviceKind" Foreground="#1684B2"></Run><Run>);</Run>
+                <Run Foreground="#1F9D00">LearningModelDevice</Run><Run>(</Run><Run Foreground="#005c11">
+                    LearningModelDeviceKind.</Run><Run x:Name="selectedDeviceKind" Foreground="#1684B2"></Run><Run>);</Run>
             </TextBlock>
         </Grid>
-        <TextBlock x:Name="ViewSourCodeText" Visibility="Collapsed" Margin="0,30,0,0" FontWeight="Bold">
+        <TextBlock x:Name="ViewSourCodeText" Visibility="Collapsed" Margin="0,40,0,0" FontWeight="Bold" TextWrapping="Wrap">
             For information on how to use a custom adapter with Windows ML
-            <Hyperlink TextDecorations="None" NavigateUri="{StaticResource SourceCode}" ToolTipService.ToolTip="{StaticResource SourceCode}">
+            <Hyperlink TextDecorations="None" NavigateUri="{StaticResource SourceGitHubURL}" ToolTipService.ToolTip="{StaticResource SourceGitHubURL}">
                 view source code.
             </Hyperlink>
         </TextBlock>

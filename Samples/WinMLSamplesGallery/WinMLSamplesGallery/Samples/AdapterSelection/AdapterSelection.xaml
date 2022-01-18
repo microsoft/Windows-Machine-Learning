@@ -10,7 +10,9 @@
     FontFamily="Arial">
 
     <Page.Resources>
-        <x:String x:Key="SourceGitHubURL">https://github.com/Microsoft/Windows-Machine-Learning/tree/master/Tools/WinMLDashboard</x:String>
+        <x:String x:Key="SourceGitHubURL">
+            https://github.com/microsoft/Windows-Machine-Learning/blob/user/numform/adapter_selection/Samples/WinMLSamplesGallery/WinMLSamplesGalleryNative/AdapterList.cpp
+        </x:String>
     </Page.Resources>
 
     <StackPanel Margin="0,20,0,0">

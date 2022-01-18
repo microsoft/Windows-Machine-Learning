@@ -134,8 +134,7 @@ void SegmentModel::SetImageSize(UINT32 w, UINT32 h)
 
 void SegmentModel::Run(IDirect3DSurface src, IDirect3DSurface dest, IDirect3DDevice device)
 {
-	OutputDebugString(L"\n [ Starting runTest | "); i++;
-
+	OutputDebugString(L"\n [ Starting run | "); 
 	// 1. Get input buffer as a VideoFrame
 	VideoFrame input = VideoFrame::CreateWithDirect3D11Surface(src);
 	VideoFrame output = VideoFrame::CreateWithDirect3D11Surface(dest);
@@ -151,6 +150,7 @@ void SegmentModel::Run(IDirect3DSurface src, IDirect3DSurface dest, IDirect3DDev
 	// TODO: Make sure input surface still has the same shape as m_imageHeight and m_imageWidth? 
 
 	// 2. Preprocessing: z-score normalization 
+	auto now = std::chrono::high_resolution_clock::now();
 	ITensor intermediateTensor = TensorFloat::Create(shape);
 	hstring inputName = m_sessPreprocess.Model().InputFeatures().GetAt(0).Name();
 	hstring outputName = m_sessPreprocess.Model().OutputFeatures().GetAt(0).Name();
@@ -158,17 +158,25 @@ void SegmentModel::Run(IDirect3DSurface src, IDirect3DSurface dest, IDirect3DDev
 	m_bindPreprocess.Bind(inputName, input2);
 	outputBindProperties.Insert(L"DisableTensorCpuSync", PropertyValue::CreateBoolean(true));
 	m_bindPreprocess.Bind(outputName, intermediateTensor, outputBindProperties);
-	m_sessPreprocess.EvaluateAsync(m_bindPreprocess, L"");
+	m_sessPreprocess.EvaluateAsync(m_bindPreprocess, L"").get();
+	auto timePassed = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - now);
+	OutputDebugString(L"Pre: ");
+	OutputDebugString(std::to_wstring(timePassed.count()).c_str());
 
 	// 3. Run through actual model
+	now = std::chrono::high_resolution_clock::now();
 	std::vector<int64_t> FCNResnetOutputShape = { 1, 21, m_imageHeightInPixels, m_imageWidthInPixels };
 	ITensor FCNResnetOutput = TensorFloat::Create(FCNResnetOutputShape);
 
 	m_bindFCN.Bind(m_sessFCN.Model().InputFeatures().GetAt(0).Name(), intermediateTensor);
 	m_bindFCN.Bind(m_sessFCN.Model().OutputFeatures().GetAt(0).Name(), FCNResnetOutput, outputBindProperties);
-	m_sessFCN.EvaluateAsync(m_bindFCN, L"");
+	m_sessFCN.EvaluateAsync(m_bindFCN, L"").get();
+	timePassed = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - now);
+	OutputDebugString(L" | Model: ");
+	OutputDebugString(std::to_wstring(timePassed.count()).c_str());
 
 	// 4.Postprocessing: extract labels from FCN scores and use to compose background-blurred image
+	now = std::chrono::high_resolution_clock::now();
 	ITensor rawLabels = TensorFloat::Create({1, 1, m_imageHeightInPixels, m_imageWidthInPixels});
 	outputBindProperties.Insert(L"DisableTensorCpuSync", PropertyValue::CreateBoolean(false));
 	m_bindPostprocess.Bind(m_sessPostprocess.Model().InputFeatures().GetAt(0).Name(), input2); // InputImage
@@ -176,6 +184,9 @@ void SegmentModel::Run(IDirect3DSurface src, IDirect3DSurface dest, IDirect3DDev
 	m_bindPostprocess.Bind(m_sessPostprocess.Model().OutputFeatures().GetAt(0).Name(), output2); // TODO: DisableTensorCPUSync to false now? 
 	// Retrieve final output
 	m_sessPostprocess.EvaluateAsync(m_bindPostprocess, L"").get(); 
+	timePassed = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - now);
+	OutputDebugString(L" | Post: ");
+	OutputDebugString(std::to_wstring(timePassed.count()).c_str());
 
 	// Copy back to the correct surface for MFT
 	output2.CopyToAsync(output).get(); 
@@ -188,7 +199,8 @@ void SegmentModel::Run(IDirect3DSurface src, IDirect3DSurface dest, IDirect3DDev
 	input2.Close();
 	output2.Close();
 	output.Close();
-	OutputDebugString(L" Ending runTest ]");
+	OutputDebugString(L" | Ending run ]");
+
 }
 
 void SegmentModel::SubmitEval(VideoFrame input, VideoFrame output) {
@@ -257,6 +269,8 @@ void SegmentModel::SubmitEval(VideoFrame input, VideoFrame output) {
 
 void SegmentModel::RunStyleTransfer(IDirect3DSurface src, IDirect3DSurface dest, IDirect3DDevice device) 
 {
+	OutputDebugString(L"\n[Starting RunStyleTransfer | ");
+
 	VideoFrame input = VideoFrame::CreateWithDirect3D11Surface(src);
 	VideoFrame output = VideoFrame::CreateWithDirect3D11Surface(dest);
 
@@ -287,6 +301,8 @@ void SegmentModel::RunStyleTransfer(IDirect3DSurface src, IDirect3DSurface dest,
 	input2.Close();
 	output2.Close();
 	output.Close();
+	OutputDebugString(L" Ending RunStyleTransfer]");
+
 }
 
 
@@ -411,7 +427,7 @@ LearningModel SegmentModel::PostProcess(long n, long c, long h, long w, long axi
 LearningModel SegmentModel::FCNResnet()
 {
 	auto rel = std::filesystem::current_path();
-	rel.append("Assets\\fcn-resnet50-11.onnx");
+	rel.append("Assets\\fcn-resnet50-12-int8.onnx");
 	return LearningModel::LoadFromFilePath(rel + L"");
 }
 

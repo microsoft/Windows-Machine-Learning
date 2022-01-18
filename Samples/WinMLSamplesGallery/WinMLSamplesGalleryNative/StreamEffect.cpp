@@ -12,12 +12,12 @@
 #include "Resource.h"
 
 CaptureManager* g_pEngine = NULL;
-winrt::hstring         g_modelPath = L"";
+winrt::hstring  g_modelPath = L"";
 HPOWERNOTIFY    g_hPowerNotify = NULL;
 HPOWERNOTIFY    g_hPowerNotifyMonitor = NULL;
 SYSTEM_POWER_CAPABILITIES   g_pwrCaps{};
 bool            g_fSleepState = false;
-
+HWND            g_hwnd = NULL;
 
 // Forward declarations
 INT_PTR CALLBACK ChooseDeviceDlgProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
@@ -149,7 +149,6 @@ namespace MainWindow
 {
     HWND hPreview = NULL;
     HWND hStatus = NULL;
-    bool bRecording = false;
     bool bPreviewing = false;
     winrt::com_ptr<IMFActivate> pSelectedDevice;
 
@@ -170,19 +169,6 @@ namespace MainWindow
 
     void UpdateUI(HWND hwnd)
     {
-        /*if (g_pEngine->IsRecording() != bRecording)
-        {
-            bRecording = g_pEngine->IsRecording();
-            if (bRecording)
-            {
-                SetMenuItemText(GetMenu(hwnd), ID_CAPTURE_RECORD, L"Stop Recording");
-            }
-            else
-            {
-                SetMenuItemText(GetMenu(hwnd), ID_CAPTURE_RECORD, L"Start Recording");
-            }
-        }*/
-
         if (g_pEngine->IsPreviewing() != bPreviewing)
         {
             bPreviewing = g_pEngine->IsPreviewing();
@@ -195,27 +181,23 @@ namespace MainWindow
                 SetMenuItemText(GetMenu(hwnd), ID_CAPTURE_PREVIEW, L"Start Preview");
             }
         }
-        BOOL bEnableRecording = TRUE;
-        BOOL bEnablePhoto = TRUE;
+        /*BOOL bEnableRecording = TRUE;
+        BOOL bEnablePhoto = TRUE;*/
 
-        if (bRecording)
-        {
-            _SetStatusText(L"Recording");
-        }
-        else if (g_pEngine->IsPreviewing())
+        if (g_pEngine->IsPreviewing())
         {
             _SetStatusText(L"Previewing");
         }
         else
         {
             _SetStatusText(L"Please select a device or start preview (using the default device).");
-            bEnableRecording = FALSE;
+            //bEnableRecording = FALSE;
         }
 
-        if (!g_pEngine->IsPreviewing() || g_pEngine->IsPhotoPending())
+        /*if (!g_pEngine->IsPreviewing() || g_pEngine->IsPhotoPending())
         {
             bEnablePhoto = FALSE;
-        }
+        }*/
 
         /*EnableMenuItem(GetMenu(hwnd), ID_CAPTURE_RECORD, bEnableRecording ? MF_ENABLED : MF_GRAYED);
         EnableMenuItem(GetMenu(hwnd), ID_CAPTURE_TAKEPHOTO, bEnablePhoto ? MF_ENABLED : MF_GRAYED);*/
@@ -228,7 +210,6 @@ namespace MainWindow
         winrt::com_ptr<IMFAttributes> pAttributes;
         HRESULT             hr = S_OK;
 
-        // TODO: GetModuleHandle(NULL)
         hPreview = CreatePreviewWindow(GetCurrentModule(), hwnd);
         if (hPreview == NULL)
         {
@@ -379,21 +360,6 @@ namespace MainWindow
         case ID_CAPTURE_CHOOSEDEVICE:
             OnChooseDevice(hwnd);
             break;
-
-        /*case ID_CAPTURE_RECORD:
-            if (g_pEngine->IsRecording())
-            {
-                OnStopRecord(hwnd);
-            }
-            else
-            {
-                OnStartRecord(hwnd);
-            }
-            break;
-
-        case ID_CAPTURE_TAKEPHOTO:
-            OnTakePhoto(hwnd);
-            break;*/
         case ID_CAPTURE_PREVIEW:
             if (g_pEngine->IsPreviewing())
             {
@@ -417,6 +383,7 @@ namespace MainWindow
             HANDLE_MSG(hwnd, WM_SIZE, OnSize);
             HANDLE_MSG(hwnd, WM_DESTROY, OnDestroy);
             HANDLE_MSG(hwnd, WM_COMMAND, OnCommand);
+        
 
         case WM_ERASEBKGND:
             return 1;
@@ -505,11 +472,10 @@ namespace MainWindow
 
 namespace winrt::WinMLSamplesGalleryNative::implementation
 {
-    LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
+    void StreamEffect::ShutDownWindow()
     {
-
-        return DefWindowProc(hwnd, uMsg, wParam, lParam);
-    };
+        MainWindow::WindowProc(g_hwnd, WM_DESTROY, NULL, NULL);
+    }
 
     void StreamEffect::LaunchNewWindow(hstring modelPath)
     {
@@ -517,11 +483,7 @@ namespace winrt::WinMLSamplesGalleryNative::implementation
         HWND galleryHwnd = GetActiveWindow();
         HRESULT hr = S_OK;
         BOOL bMFStartup = false;
-        HMODULE hmodule =NULL;
-        GetModuleHandleEx(
-            GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS,
-            (LPCTSTR)"GetCurrentModule",
-            &hmodule);
+        HMODULE hmodule = GetCurrentModule();
         g_modelPath = modelPath;
 
         // Initialize the common controls
@@ -546,40 +508,18 @@ namespace winrt::WinMLSamplesGalleryNative::implementation
         wc.lpszMenuName = MAKEINTRESOURCE(IDR_MENU1);
 
         RegisterClass(&wc);
-        HMENU menu = LoadMenu(hmodule, MAKEINTRESOURCE(IDR_MENU1));
-        if (!menu) {
-            LPVOID lpMsgBuf;
-            LPVOID lpDisplayBuf;
 
-            DWORD errCode = GetLastError();
-            FormatMessage(
-                FORMAT_MESSAGE_ALLOCATE_BUFFER |
-                FORMAT_MESSAGE_FROM_SYSTEM |
-                FORMAT_MESSAGE_IGNORE_INSERTS,
-                NULL,
-                errCode,
-                MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-                (LPTSTR)&lpMsgBuf,
-                0, NULL);
-            lpDisplayBuf = (LPVOID)LocalAlloc(LMEM_ZEROINIT,
-                (lstrlen((LPCTSTR)lpMsgBuf) + lstrlen((LPCTSTR)"error") + 40) * sizeof(TCHAR));
-            StringCchPrintf((LPTSTR)lpDisplayBuf,
-                LocalSize(lpDisplayBuf) / sizeof(TCHAR),
-                TEXT("%s failed with error %d: %s"),
-                "errpr", errCode, lpMsgBuf);
-        }
-
-        hwnd = CreateWindowEx(
+        g_hwnd = CreateWindowEx(
             0, CLASS_NAME, L"Capture Application", WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT,
             CW_USEDEFAULT, CW_USEDEFAULT, galleryHwnd, NULL, hmodule, NULL
         );
 
-        if (hwnd == 0)
+        if (g_hwnd == 0)
         {
             throw_hresult(E_FAIL);
         }
 
-        ShowWindow(hwnd, 10);
+        ShowWindow(g_hwnd, 10);
 
         // Run the main message loop
         MSG msg;

@@ -1438,7 +1438,10 @@ HRESULT TransformBlur::OnProcessOutput(IMFSample** ppOut)
     if (SUCCEEDED(hr))
     {
         // Do the copies inside runtest
-        m_segmentModel.RunStyleTransfer(src, dest, direct3DDevice);
+        auto now = std::chrono::high_resolution_clock::now();
+        m_segmentModel.Run(src, dest, direct3DDevice);
+        auto timePassed = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - now);
+        OutputDebugString(std::to_wstring(timePassed.count()).c_str());
     }
     else
     {

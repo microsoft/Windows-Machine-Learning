@@ -13,17 +13,6 @@
         <Style x:Key="TextBlockStyling" TargetType="TextBlock">
             <Setter Property="Foreground" Value="Black" />
         </Style>
-
-        <StackPanel Orientation="Horizontal" x:Key="StartInference">
-            <TextBlock Margin="5,0">Start Stream</TextBlock>
-            <SymbolIcon Symbol="NewWindow"/>
-        </StackPanel>
-        
-        <StackPanel Orientation="Horizontal" x:Key="StopInference">
-            <TextBlock Margin="5,0">Stop Stream</TextBlock>
-            <SymbolIcon Symbol="Cancel"/>
-        </StackPanel>
-        
     </Page.Resources>
 
     <Button x:Name="ToggleInferenceBtn" Style="{StaticResource AccentButtonStyle}" Click="ToggleInference" Margin="0,20,0,0">

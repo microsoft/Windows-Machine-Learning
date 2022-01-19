@@ -1418,28 +1418,20 @@ IDirect3DSurface TransformBlur::SampleToD3Dsurface(IMFSample* sample)
 HRESULT TransformBlur::OnProcessOutput(IMFSample** ppOut)
 {
     HRESULT hr = S_OK;
- 
+    
+    // TODO: Cache so don't have to create each time
     winrt::com_ptr<IVideoFrameNativeFactory> factory;
     hr = CoCreateInstance(CLSID_VideoFrameNativeFactory, NULL, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&factory));
 
     IDirect3DSurface src = SampleToD3Dsurface(m_spSample.get());
     IDirect3DSurface dest = SampleToD3Dsurface(*ppOut);
 
-    winrt::com_ptr<ID3D11Texture2D> pTextSrc;
-    winrt::com_ptr<ID3D11Texture2D> pTextCreate;
-    winrt::com_ptr<ID3D11Texture2D> pTextDest;
-
-    // Extract the device 
-    winrt::com_ptr<IDXGIDevice> pDXGIDevice{ m_spDevice.as<IDXGIDevice>() };
-    IDirect3DDevice direct3DDevice{ nullptr };
-    hr = CreateDirect3D11DeviceFromDXGIDevice(pDXGIDevice.get(), reinterpret_cast<IInspectable**>(winrt::put_abi(direct3DDevice)));
-
     // Invoke the image transform function.
     if (SUCCEEDED(hr))
     {
         // Do the copies inside runtest
         auto now = std::chrono::high_resolution_clock::now();
-        m_segmentModel.Run(src, dest, direct3DDevice);
+        m_segmentModel.Run(src, dest);
         auto timePassed = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - now);
         OutputDebugString(std::to_wstring(timePassed.count()).c_str());
     }

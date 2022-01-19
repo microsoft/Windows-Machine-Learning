@@ -102,6 +102,8 @@ SegmentModel::SegmentModel(UINT32 w, UINT32 h) :
 }
 
 void SegmentModel::SetModels(UINT32 w, UINT32 h) {
+
+	w /= 4; h /= 4;
 	SetImageSize(w, h);
 	m_sess = CreateLearningModelSession(Invert(1, 3, h, w));
 	m_sessStyleTransfer = CreateLearningModelSession(StyleTransfer());
@@ -132,17 +134,19 @@ void SegmentModel::SetImageSize(UINT32 w, UINT32 h)
 	m_imageHeightInPixels = h;
 }
 
-void SegmentModel::Run(IDirect3DSurface src, IDirect3DSurface dest, IDirect3DDevice device)
+void SegmentModel::Run(IDirect3DSurface src, IDirect3DSurface dest)
 {
 	OutputDebugString(L"\n [ Starting run | "); 
 	// 1. Get input buffer as a VideoFrame
 	VideoFrame input = VideoFrame::CreateWithDirect3D11Surface(src);
 	VideoFrame output = VideoFrame::CreateWithDirect3D11Surface(dest);
 
+
+	auto device = m_sessFCN.Device().Direct3D11Device();
 	auto desc = input.Direct3DSurface().Description();
 	auto descOut = output.Direct3DSurface().Description();
-	VideoFrame input2 = VideoFrame::CreateAsDirect3D11SurfaceBacked(desc.Format, desc.Width, desc.Height, device);
-	VideoFrame output2 = VideoFrame::CreateAsDirect3D11SurfaceBacked(descOut.Format, descOut.Width, descOut.Height, device);
+	VideoFrame input2 = VideoFrame::CreateAsDirect3D11SurfaceBacked(desc.Format, desc.Width/4, desc.Height/4, device);
+	VideoFrame output2 = VideoFrame::CreateAsDirect3D11SurfaceBacked(descOut.Format, descOut.Width/4, descOut.Height/4, device);
 
 	input.CopyToAsync(input2).get(); // TODO: I'm guessing it's this copy that's causing issues... 
 	output.CopyToAsync(output2).get(); 
@@ -191,14 +195,6 @@ void SegmentModel::Run(IDirect3DSurface src, IDirect3DSurface dest, IDirect3DDev
 	// Copy back to the correct surface for MFT
 	output2.CopyToAsync(output).get(); 
 
-	// Clean up bindings before returning
-	m_bindPreprocess.Clear();
-	m_bindFCN.Clear();
-	m_bindPostprocess.Clear();
-	input.Close();
-	input2.Close();
-	output2.Close();
-	output.Close();
 	OutputDebugString(L" | Ending run ]");
 
 }
@@ -267,7 +263,7 @@ void SegmentModel::SubmitEval(VideoFrame input, VideoFrame output) {
 	// return without waiting for the submit to finish, setup the completion handler
 }
 
-void SegmentModel::RunStyleTransfer(IDirect3DSurface src, IDirect3DSurface dest, IDirect3DDevice device) 
+void SegmentModel::RunStyleTransfer(IDirect3DSurface src, IDirect3DSurface dest) 
 {
 	OutputDebugString(L"\n[Starting RunStyleTransfer | ");
 
@@ -277,8 +273,9 @@ void SegmentModel::RunStyleTransfer(IDirect3DSurface src, IDirect3DSurface dest,
 	auto desc = input.Direct3DSurface().Description();
 	auto descOut = output.Direct3DSurface().Description();
 
-	VideoFrame output2 = VideoFrame::CreateAsDirect3D11SurfaceBacked(descOut.Format, 720, 720, device);
-	VideoFrame input2 = VideoFrame::CreateAsDirect3D11SurfaceBacked(desc.Format, 720,720, device);
+	auto sessdevice = m_sessStyleTransfer.Device().Direct3D11Device();
+	VideoFrame output2 = VideoFrame::CreateAsDirect3D11SurfaceBacked(descOut.Format, 720, 720, sessdevice);
+	VideoFrame input2 = VideoFrame::CreateAsDirect3D11SurfaceBacked(desc.Format, 720,720, sessdevice);
 	input.CopyToAsync(input2).get(); // TODO: Can input stay the same if NV12? 
 	output.CopyToAsync(output2).get();
 	desc = input2.Direct3DSurface().Description();
@@ -296,17 +293,13 @@ void SegmentModel::RunStyleTransfer(IDirect3DSurface src, IDirect3DSurface dest,
 	auto results = m_sessStyleTransfer.Evaluate(m_bindStyleTransfer, L"");
 
 	output2.CopyToAsync(output).get(); // Should put onto the correct surface now? Make sure, can return the surface instead later
-	m_bindStyleTransfer.Clear();
-	input.Close();
-	input2.Close();
-	output2.Close();
-	output.Close();
+
 	OutputDebugString(L" Ending RunStyleTransfer]");
 
 }
 
 
-void SegmentModel::RunTestDXGI(IDirect3DSurface src, IDirect3DSurface dest, IDirect3DDevice device)
+void SegmentModel::RunTestDXGI(IDirect3DSurface src, IDirect3DSurface dest)
 {
 
 	OutputDebugString(L"\n [ Starting runTest | "); i++;
@@ -317,7 +310,8 @@ void SegmentModel::RunTestDXGI(IDirect3DSurface src, IDirect3DSurface dest, IDir
 	auto desc = input.Direct3DSurface().Description(); 
 	auto descOut = output.Direct3DSurface().Description();
 
-	//  TODO: Use a specific device to create so not piling up on resources? 
+	//  TODO: Use a specific device to create so not piling up on resources?
+	auto device = m_sess.Device().Direct3D11Device();
 	VideoFrame output2 = VideoFrame::CreateAsDirect3D11SurfaceBacked(descOut.Format, descOut.Width, descOut.Height, device);
 	VideoFrame input2 = VideoFrame::CreateAsDirect3D11SurfaceBacked(desc.Format, desc.Width, desc.Height, device);
 	input.CopyToAsync(input2).get(); // TODO: Can input stay the same if NV12? 
@@ -493,7 +487,7 @@ LearningModel SegmentModel::ReshapeFlatBufferToNCHW(long n, long c, long h, long
 }
 
 LearningModelSession SegmentModel::CreateLearningModelSession(const LearningModel& model, bool closeModel) {
-	auto device = m_useGPU ? LearningModelDevice(LearningModelDeviceKind::DirectX) : LearningModelDevice(LearningModelDeviceKind::Default); // Todo: Have a toggle between GPU/ CPU? 
+	auto device = m_useGPU ? LearningModelDevice(LearningModelDeviceKind::DirectXHighPerformance) : LearningModelDevice(LearningModelDeviceKind::Default); // Todo: Have a toggle between GPU/ CPU? 
 	auto options = LearningModelSessionOptions(); 
 	options.BatchSizeOverride(0);
 	options.CloseModelOnSessionCreation(closeModel);

@@ -34,9 +34,9 @@ public:
 	SegmentModel(UINT32 w, UINT32 h);
 	void SetModels(UINT32 w, UINT32 h);
 
-	void Run(IDirect3DSurface src, IDirect3DSurface dest, IDirect3DDevice device);
-	void RunTestDXGI(IDirect3DSurface src, IDirect3DSurface dest, IDirect3DDevice device);
-	void RunStyleTransfer(IDirect3DSurface src, IDirect3DSurface dest, IDirect3DDevice device);
+	void Run(IDirect3DSurface src, IDirect3DSurface dest);
+	void RunTestDXGI(IDirect3DSurface src, IDirect3DSurface dest);
+	void RunStyleTransfer(IDirect3DSurface src, IDirect3DSurface dest);
 
 	LearningModelSession CreateLearningModelSession(const LearningModel& model, bool closedModel=true);
 	void SetImageSize(UINT32 w, UINT32 h);

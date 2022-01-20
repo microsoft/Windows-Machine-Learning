@@ -71,6 +71,17 @@
       "CSharpGithubLink": "https://github.com/microsoft/Windows-Machine-Learning/blob/master/Samples/WinMLSamplesGallery/WinMLSamplesGallery/Samples/EncryptedModel/EncryptedModel.xaml.cs",
       "Docs": [],
       "IsRecentlyAdded": true
+    },
+    {
+      "Title": "Object Detection",
+      "DescriptionShort": "Detect objects using YOLO.",
+      "Description": "The sample shows how to detect objects using YOLO.",
+      "Icon": "\uE155",
+      "Tag": "ObjectDetector",
+      "XAMLGithubLink": "https://github.com/microsoft/Windows-Machine-Learning/blob/master/Samples/WinMLSamplesGallery/WinMLSamplesGallery/Samples/EncryptedModel/EncryptedModel.xaml",
+      "CSharpGithubLink": "https://github.com/microsoft/Windows-Machine-Learning/blob/master/Samples/WinMLSamplesGallery/WinMLSamplesGallery/Samples/EncryptedModel/EncryptedModel.xaml.cs",
+      "Docs": [],
+      "IsRecentlyAdded": true
     }
   ]
 }

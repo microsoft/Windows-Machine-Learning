@@ -121,14 +121,14 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>Default</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\Users\linneamay\.nuget\packages\microsoft.ai.machinelearning\1.9.1\build\native\include\abi;common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>C:\Program Files %28x86%29\Windows Kits\10\Lib\10.0.19041.0\um\$(PlatformShortName);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>C:\Program Files (x86)\Windows Kits\10\Lib\10.0.19041.0\um\x64\Mfplat.lib;C:\Program Files (x86)\Windows Kits\10\Lib\10.0.19041.0\um\x64\Mf.lib;C:\Program Files (x86)\Windows Kits\10\Lib\10.0.19041.0\um\x64\Mfcore.lib;C:\Program Files (x86)\Windows Kits\10\Lib\10.0.19041.0\um\x64\evr.lib;C:\Program Files (x86)\Windows Kits\10\Lib\10.0.19041.0\um\x64\mfuuid.lib;powrprof.lib;d3d11.lib;mf.lib;mfplat.lib;mfuuid.lib;shlwapi.lib;Comctl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Mfplat.lib;Mf.lib;Mfcore.lib;evr.lib;mfuuid.lib;powrprof.lib;d3d11.lib;mf.lib;mfplat.lib;shlwapi.lib;Comctl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">

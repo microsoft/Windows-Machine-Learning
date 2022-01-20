@@ -1,7 +1,4 @@
 #include "SegmentModel.h"
-#include <winrt/windows.foundation.collections.h>
-#include <winrt/Windows.Media.h>
-#include <winrt/Windows.Graphics.DirectX.Direct3D11.h>
 
 #include <iostream>
 #include <filesystem>
@@ -11,7 +8,7 @@ using winrt::hstring;
 using namespace winrt;
 using namespace Windows::Foundation::Collections;
 
-int i = 0;
+int g_scale = 5;
 enum OnnxDataType : long {
 	ONNX_UNDEFINED = 0,
 	// Basic types.
@@ -47,6 +44,35 @@ std::array<float, 3> stddev = { 0.229f, 0.224f, 0.225f };
 auto outputBindProperties = PropertySet();
 
 
+
+void StyleTransfer::SetModels(int w, int h)
+{
+	SetImageSize(w, h);
+	m_session = CreateLearningModelSession(GetModel());
+	m_binding = LearningModelBinding(m_session);
+}
+void StyleTransfer::Run(IDirect3DSurface src, IDirect3DSurface dest)
+{
+	VideoFrame inVideoFrame = VideoFrame::CreateWithDirect3D11Surface(src);
+	VideoFrame outVideoFrame = VideoFrame::CreateWithDirect3D11Surface(dest);
+	SetVideoFrames(inVideoFrame, outVideoFrame);
+
+	hstring inputName = m_session.Model().InputFeatures().GetAt(0).Name();
+	m_binding.Bind(inputName, m_inputVideoFrame);
+	hstring outputName = m_session.Model().OutputFeatures().GetAt(0).Name();
+
+	auto outputBindProperties = PropertySet();
+	m_binding.Bind(outputName, m_outputVideoFrame); // TODO: See if can bind videoframe from MFT
+	auto results = m_session.Evaluate(m_binding, L"");
+
+	m_outputVideoFrame.CopyToAsync(outVideoFrame).get();
+}
+LearningModel StyleTransfer::GetModel()
+{
+	auto rel = std::filesystem::current_path();
+	rel.append("Assets\\mosaic.onnx");
+	return LearningModel::LoadFromFilePath(rel + L"");
+}
 SegmentModel::SegmentModel() :
 	m_sess(NULL),
 	m_sessPreprocess(NULL),
@@ -103,7 +129,10 @@ SegmentModel::SegmentModel(UINT32 w, UINT32 h) :
 
 void SegmentModel::SetModels(UINT32 w, UINT32 h) {
 
-	w /= 4; h /= 4;
+	
+ 	m_sessFCN = CreateLearningModelSession(FCNResnet());
+
+	w /= g_scale; h /= g_scale;
 	SetImageSize(w, h);
 	m_sess = CreateLearningModelSession(Invert(1, 3, h, w));
 	m_sessStyleTransfer = CreateLearningModelSession(StyleTransfer());
@@ -111,7 +140,6 @@ void SegmentModel::SetModels(UINT32 w, UINT32 h) {
 
 	// Initialize segmentation learningmodelsessions
 	m_sessPreprocess = CreateLearningModelSession(Normalize0_1ThenZScore(h, w, 3, mean, stddev));
-	m_sessFCN = CreateLearningModelSession(FCNResnet());
 	m_sessPostprocess = CreateLearningModelSession(PostProcess(1, 3, h, w, 1));
 
 	// Initialize segmentation bindings
@@ -136,7 +164,7 @@ void SegmentModel::SetImageSize(UINT32 w, UINT32 h)
 
 void SegmentModel::Run(IDirect3DSurface src, IDirect3DSurface dest)
 {
-	OutputDebugString(L"\n [ Starting run | "); 
+	//OutputDebugString(L"\n [ Starting run | "); 
 	// 1. Get input buffer as a VideoFrame
 	VideoFrame input = VideoFrame::CreateWithDirect3D11Surface(src);
 	VideoFrame output = VideoFrame::CreateWithDirect3D11Surface(dest);
@@ -145,13 +173,12 @@ void SegmentModel::Run(IDirect3DSurface src, IDirect3DSurface dest)
 	auto device = m_sessFCN.Device().Direct3D11Device();
 	auto desc = input.Direct3DSurface().Description();
 	auto descOut = output.Direct3DSurface().Description();
-	VideoFrame input2 = VideoFrame::CreateAsDirect3D11SurfaceBacked(desc.Format, desc.Width/4, desc.Height/4, device);
-	VideoFrame output2 = VideoFrame::CreateAsDirect3D11SurfaceBacked(descOut.Format, descOut.Width/4, descOut.Height/4, device);
+	VideoFrame input2 = VideoFrame::CreateAsDirect3D11SurfaceBacked(desc.Format, desc.Width/g_scale, desc.Height/g_scale, device);
+	VideoFrame output2 = VideoFrame::CreateAsDirect3D11SurfaceBacked(descOut.Format, descOut.Width/g_scale, descOut.Height/g_scale, device);
 
 	input.CopyToAsync(input2).get(); // TODO: I'm guessing it's this copy that's causing issues... 
 	output.CopyToAsync(output2).get(); 
 	std::vector<int64_t> shape = { 1, 3, m_imageHeightInPixels, m_imageWidthInPixels };
-	// TODO: Make sure input surface still has the same shape as m_imageHeight and m_imageWidth? 
 
 	// 2. Preprocessing: z-score normalization 
 	auto now = std::chrono::high_resolution_clock::now();
@@ -162,7 +189,7 @@ void SegmentModel::Run(IDirect3DSurface src, IDirect3DSurface dest)
 	m_bindPreprocess.Bind(inputName, input2);
 	outputBindProperties.Insert(L"DisableTensorCpuSync", PropertyValue::CreateBoolean(true));
 	m_bindPreprocess.Bind(outputName, intermediateTensor, outputBindProperties);
-	m_sessPreprocess.EvaluateAsync(m_bindPreprocess, L"").get();
+	m_sessPreprocess.EvaluateAsync(m_bindPreprocess, L"");
 	auto timePassed = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - now);
 	OutputDebugString(L"Pre: ");
 	OutputDebugString(std::to_wstring(timePassed.count()).c_str());
@@ -174,7 +201,7 @@ void SegmentModel::Run(IDirect3DSurface src, IDirect3DSurface dest)
 
 	m_bindFCN.Bind(m_sessFCN.Model().InputFeatures().GetAt(0).Name(), intermediateTensor);
 	m_bindFCN.Bind(m_sessFCN.Model().OutputFeatures().GetAt(0).Name(), FCNResnetOutput, outputBindProperties);
-	m_sessFCN.EvaluateAsync(m_bindFCN, L"").get();
+	m_sessFCN.EvaluateAsync(m_bindFCN, L"");
 	timePassed = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - now);
 	OutputDebugString(L" | Model: ");
 	OutputDebugString(std::to_wstring(timePassed.count()).c_str());
@@ -263,6 +290,8 @@ void SegmentModel::SubmitEval(VideoFrame input, VideoFrame output) {
 	// return without waiting for the submit to finish, setup the completion handler
 }
 
+
+
 void SegmentModel::RunStyleTransfer(IDirect3DSurface src, IDirect3DSurface dest) 
 {
 	OutputDebugString(L"\n[Starting RunStyleTransfer | ");
@@ -302,8 +331,7 @@ void SegmentModel::RunStyleTransfer(IDirect3DSurface src, IDirect3DSurface dest)
 void SegmentModel::RunTestDXGI(IDirect3DSurface src, IDirect3DSurface dest)
 {
 
-	OutputDebugString(L"\n [ Starting runTest | "); i++;
-	printf("[ Starting runtest %d| ", i);
+	OutputDebugString(L"\n [ Starting runTest | "); 
 	VideoFrame input = VideoFrame::CreateWithDirect3D11Surface(src);
 	VideoFrame output = VideoFrame::CreateWithDirect3D11Surface(dest);
 	

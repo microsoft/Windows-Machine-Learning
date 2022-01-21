@@ -81,7 +81,7 @@ private:
 	// Threaded style transfer fields
 	void SubmitEval(VideoFrame, VideoFrame);
 	winrt::Windows::Foundation::IAsyncOperation<LearningModelEvaluationResult> evalStatus;
-	std::vector < std::unique_ptr<SwapChainEntry>> bindings;
+	std::vector <std::unique_ptr<SwapChainEntry>> bindings;
 	int swapChainIndex = 0;
 	int swapChainEntryCount = 5;
 	int finishedFrameIndex = 0;
@@ -97,20 +97,18 @@ public:
 		m_session(NULL),
 		m_binding(NULL)
 	{}
-	IStreamModel(int w, int h):
+	IStreamModel(int w, int h) :
 		m_inputVideoFrame(NULL),
 		m_outputVideoFrame(NULL),
 		m_session(NULL),
-		m_binding(NULL) 
-	{
-		SetModels(w, h);
-	}
+		m_binding(NULL)
+	{}
 	~IStreamModel() {
-		m_session.Close();
-		m_binding.Clear();
+		if(m_session) m_session.Close();
+		if(m_binding) m_binding.Clear();
 	};
-	virtual void SetModels(int w, int h) = 0;
-	virtual void Run(IDirect3DSurface src, IDirect3DSurface dest) = 0;
+	virtual void SetModels(int w, int h) =0;
+	virtual void Run(IDirect3DSurface src, IDirect3DSurface dest) =0;
 
 	void SetUseGPU(bool use) { 
 		m_bUseGPU = use;
@@ -131,8 +129,9 @@ protected:
 			auto inDesc = inVideoFrame.Direct3DSurface().Description();
 			auto outDesc = outVideoFrame.Direct3DSurface().Description();
 			// TODO: field width/heigh instead? 
-			m_inputVideoFrame = VideoFrame::CreateAsDirect3D11SurfaceBacked(inDesc.Format, inDesc.Width, inDesc.Height, m_device);
-			m_outputVideoFrame = VideoFrame::CreateAsDirect3D11SurfaceBacked(outDesc.Format, outDesc.Width, outDesc.Height, m_device);
+			// TODO: Set width/height for style transfer manually
+			m_inputVideoFrame = VideoFrame::CreateAsDirect3D11SurfaceBacked(inDesc.Format, 720, 720, m_device);
+			m_outputVideoFrame = VideoFrame::CreateAsDirect3D11SurfaceBacked(outDesc.Format, 720, 720, m_device);
 			m_bVideoFramesSet = true;
 		}
 		// TODO: Fix bug in WinML so that the surfaces from capture engine are shareable, remove copy. 
@@ -168,9 +167,11 @@ protected:
 	LearningModelBinding m_binding;
 
 }; 
-class StyleTransfer : public IStreamModel{
+
+class StyleTransfer : public IStreamModel {
 public:
-	StyleTransfer(int w, int h): IStreamModel(w, h){}
+	StyleTransfer(int w, int h) : IStreamModel(w, h) {
+		SetModels(w, h); }
 	void SetModels(int w, int h);
 	void Run(IDirect3DSurface src, IDirect3DSurface dest);
 private: 

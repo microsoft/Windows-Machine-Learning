@@ -214,7 +214,10 @@ void SegmentModel::Run(IDirect3DSurface src, IDirect3DSurface dest)
 	m_bindPostprocess.Bind(m_sessPostprocess.Model().InputFeatures().GetAt(1).Name(), FCNResnetOutput); // InputScores
 	m_bindPostprocess.Bind(m_sessPostprocess.Model().OutputFeatures().GetAt(0).Name(), output2); // TODO: DisableTensorCPUSync to false now? 
 	// Retrieve final output
-	m_sessPostprocess.EvaluateAsync(m_bindPostprocess, L"").get(); 
+	//m_sessPostprocess.EvaluateAsync(m_bindPostprocess, L"").get(); 
+	auto finalResults = m_sessPostprocess.EvaluateAsync(m_bindPostprocess, L"");
+	output2 = finalResults.get().Outputs().Lookup(L"OutputImage").try_as<VideoFrame>();
+
 	timePassed = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - now);
 	OutputDebugString(L" | Post: ");
 	OutputDebugString(std::to_wstring(timePassed.count()).c_str());
@@ -225,6 +228,11 @@ void SegmentModel::Run(IDirect3DSurface src, IDirect3DSurface dest)
 	OutputDebugString(L" | Ending run ]");
 
 }
+
+//winrt::Windows::Foundation::IAsyncOperation<LearningModelEvaluationResult> BindInputs()
+//{
+//
+//}
 
 void SegmentModel::SubmitEval(VideoFrame input, VideoFrame output) {
 	auto currentBinding = bindings[0].get();

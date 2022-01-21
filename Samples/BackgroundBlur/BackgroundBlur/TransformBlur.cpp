@@ -80,8 +80,7 @@ TransformBlur::TransformBlur(HRESULT& hr) :
     m_hDeviceHandle(NULL),
     m_spDevice(NULL),
     m_spVideoDevice(NULL),
-    m_pAttributes(NULL),
-    m_segmentModel()
+    m_pAttributes(NULL)
 {
     hr = MFCreateAttributes(&m_pAttributes, 2);
     hr = m_pAttributes->SetUINT32(MF_SA_D3D_AWARE, TRUE);
@@ -1431,7 +1430,7 @@ HRESULT TransformBlur::OnProcessOutput(IMFSample** ppOut)
     {
         // Do the copies inside runtest
         auto now = std::chrono::high_resolution_clock::now();
-        m_segmentModel.Run(src, dest);
+        m_segmentModel->Run(src, dest);
         auto timePassed = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - now);
         OutputDebugString(std::to_wstring(timePassed.count()).c_str());
     }
@@ -1498,8 +1497,8 @@ HRESULT TransformBlur::UpdateFormatInfo()
         CHECK_HR(hr = GetImageSize(m_videoFOURCC, m_imageWidthInPixels, m_imageHeightInPixels, &m_cbImageSize));
 
         // Set the size of the SegmentModel
-        m_segmentModel.SetModels(m_imageWidthInPixels, m_imageHeightInPixels);
-        //m_segmentModel = (StyleTransfer(m_imageWidthInPixels, m_imageHeightInPixels));
+        // m_segmentModel.SetModels(m_imageWidthInPixels, m_imageHeightInPixels);
+        m_segmentModel = new StyleTransfer(m_imageWidthInPixels, m_imageHeightInPixels);
     }
     
 done:

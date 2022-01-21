@@ -227,5 +227,7 @@ private:
     winrt::com_ptr<IMFVideoSampleAllocatorEx> m_spOutputSampleAllocator;
 
     // Model fields
-    IStreamModel*  m_segmentModel;
+    SegmentModel                   m_segmentModel;
+    std::unique_ptr<IStreamModel>  m_streamModel;
+
 };

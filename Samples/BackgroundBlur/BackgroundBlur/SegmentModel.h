@@ -21,13 +21,17 @@ using namespace winrt::Windows::Media;
 
 // Threading fields for style transfer
 struct SwapChainEntry {
-	LearningModelBinding binding; // Just one for style transfer, for now
+	LearningModelBinding bind_pre; 
+	LearningModelBinding binding_model; 
+	LearningModelBinding binding_post; 
 	winrt::Windows::Foundation::IAsyncOperation<LearningModelEvaluationResult> activetask;
 	VideoFrame outputCache;
 	SwapChainEntry() :
-		binding(nullptr),
+		bind_pre(nullptr),
+		binding_model(nullptr),
+		binding_post(nullptr),
 		activetask(nullptr),
-		outputCache(VideoFrame(winrt::Windows::Graphics::Imaging::BitmapPixelFormat::Bgra8, 720, 720)) {}
+		outputCache(NULL) {}
 };
 
 
@@ -76,8 +80,6 @@ private:
 	LearningModelBinding m_bindPostprocess;
 	LearningModelBinding m_bindStyleTransfer;
 
-	
-
 	// Threaded style transfer fields
 	void SubmitEval(VideoFrame, VideoFrame);
 	winrt::Windows::Foundation::IAsyncOperation<LearningModelEvaluationResult> evalStatus;
@@ -116,7 +118,9 @@ public:
 	void SetDevice() {
 		m_device = m_session.Device().Direct3D11Device();
 	}
+
 protected:
+	//virtual winrt::Windows::Foundation::IAsyncOperation<LearningModelEvaluationResult> BindInputs(VideoFrame input) = 0;
 
 	void SetVideoFrames(VideoFrame inVideoFrame, VideoFrame outVideoFrame) 
 	{
@@ -152,6 +156,15 @@ protected:
 		auto session = LearningModelSession(model, device);
 		return session;
 	}
+
+
+	//// Threaded style transfer fields
+	//void SubmitEval(VideoFrame, VideoFrame);
+	//winrt::Windows::Foundation::IAsyncOperation<LearningModelEvaluationResult> evalStatus;
+	//std::vector <std::unique_ptr<SwapChainEntry>> bindings;
+	//int swapChainIndex = 0;
+	//int swapChainEntryCount = 5;
+	//int finishedFrameIndex = 0;
 
 	bool						m_bUseGPU = true;
 	bool						m_bVideoFramesSet = false;

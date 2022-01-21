@@ -9,7 +9,7 @@
 
 namespace winrt::WinMLSamplesGalleryNative::implementation
 {
-    winrt::com_array<hstring> AdapterList::GetAdapters() {
+    winrt::com_ptr<IDXCoreAdapterList> GetDXCoreAdapterList() {
         // Create an adapter factory
         winrt::com_ptr<IDXCoreAdapterFactory> adapterFactory;
         winrt::check_hresult(::DXCoreCreateAdapterFactory(adapterFactory.put()));
@@ -21,6 +21,11 @@ namespace winrt::WinMLSamplesGalleryNative::implementation
             adapterFactory->CreateAdapterList(_countof(attributes),
                 attributes,
                 d3D12CoreComputeAdapters.put()));
+        return d3D12CoreComputeAdapters;
+    }
+
+    winrt::com_array<hstring> AdapterList::GetAdapters() {
+        winrt::com_ptr<IDXCoreAdapterList> d3D12CoreComputeAdapters = GetDXCoreAdapterList();
 
         // Get the adapter descriptions from the adapters in the list
         const uint32_t count{ d3D12CoreComputeAdapters->GetAdapterCount() };
@@ -39,17 +44,7 @@ namespace winrt::WinMLSamplesGalleryNative::implementation
     }
 
     winrt::Microsoft::AI::MachineLearning::LearningModelDevice AdapterList::CreateLearningModelDeviceFromAdapter(winrt::hstring description) {
-        // Create an adapter factory
-        winrt::com_ptr<IDXCoreAdapterFactory> adapterFactory;
-        winrt::check_hresult(::DXCoreCreateAdapterFactory(adapterFactory.put()));
-
-        // Retrieve an adapter list
-        winrt::com_ptr<IDXCoreAdapterList> d3D12CoreComputeAdapters;
-        GUID attributes[]{ DXCORE_ADAPTER_ATTRIBUTE_D3D12_CORE_COMPUTE };
-        winrt::check_hresult(
-            adapterFactory->CreateAdapterList(_countof(attributes),
-                attributes,
-                d3D12CoreComputeAdapters.put()));
+        winrt::com_ptr<IDXCoreAdapterList> d3D12CoreComputeAdapters = GetDXCoreAdapterList();
 
         // Find the adapter in the list with the matching description
         const uint32_t count{ d3D12CoreComputeAdapters->GetAdapterCount() };

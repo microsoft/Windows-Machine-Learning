@@ -22,7 +22,7 @@ namespace winrt::WinMLSamplesGalleryNative::implementation
                 attributes,
                 d3D12CoreComputeAdapters.put()));
 
-        // Get the driver descriptions from the adapters in the list
+        // Get the adapter descriptions from the adapters in the list
         const uint32_t count{ d3D12CoreComputeAdapters->GetAdapterCount() };
         com_array<hstring> driver_descriptions = com_array<hstring>(count);
         for (uint32_t i = 0; i < count; ++i)
@@ -51,7 +51,7 @@ namespace winrt::WinMLSamplesGalleryNative::implementation
                 attributes,
                 d3D12CoreComputeAdapters.put()));
 
-        // Find the driver in the list with the matching description
+        // Find the adapter in the list with the matching description
         const uint32_t count{ d3D12CoreComputeAdapters->GetAdapterCount() };
         int found_driver = 0;
         for (uint32_t i = 0; i < count; ++i)

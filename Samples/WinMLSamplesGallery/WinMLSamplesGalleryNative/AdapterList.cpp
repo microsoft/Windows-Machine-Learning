@@ -48,7 +48,6 @@ namespace winrt::WinMLSamplesGalleryNative::implementation
 
         // Find the adapter in the list with the matching description
         const uint32_t count{ d3D12CoreComputeAdapters->GetAdapterCount() };
-        int found_driver = 0;
         for (uint32_t i = 0; i < count; ++i)
         {
             winrt::com_ptr<IDXCoreAdapter> candidateAdapter;
@@ -59,8 +58,6 @@ namespace winrt::WinMLSamplesGalleryNative::implementation
             hstring hstr_driver_description = to_hstring(driver_description);
 
             if (description == hstr_driver_description) {
-                found_driver = 1;
-
                 // create D3D12Device
                 com_ptr<IUnknown> spIUnknownAdapter;
                 candidateAdapter->QueryInterface(IID_IUnknown, spIUnknownAdapter.put_void());

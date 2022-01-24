@@ -78,8 +78,8 @@
       "Description": "The sample showcases how to use Windows ML with different adapters that have tradeoffs between power and performance.",
       "Icon": "\uE155",
       "Tag": "AdapterSelection",
-      "XAMLGithubLink": "https://github.com/microsoft/Windows-Machine-Learning/blob/user/numform/adapter_selection/Samples/WinMLSamplesGallery/WinMLSamplesGallery/Samples/AdapterSelection/AdapterSelection.xaml",
-      "CSharpGithubLink": "https://github.com/microsoft/Windows-Machine-Learning/blob/user/numform/adapter_selection/Samples/WinMLSamplesGallery/WinMLSamplesGallery/Samples/AdapterSelection/AdapterSelection.xaml.cs",
+      "XAMLGithubLink": "https://github.com/microsoft/Windows-Machine-Learning/blob/master/adapter_selection/Samples/WinMLSamplesGallery/WinMLSamplesGallery/Samples/AdapterSelection/AdapterSelection.xaml",
+      "CSharpGithubLink": "https://github.com/microsoft/Windows-Machine-Learning/blob/master/adapter_selection/Samples/WinMLSamplesGallery/WinMLSamplesGallery/Samples/AdapterSelection/AdapterSelection.xaml.cs",
       "Docs": [],
       "IsRecentlyAdded": true
     }

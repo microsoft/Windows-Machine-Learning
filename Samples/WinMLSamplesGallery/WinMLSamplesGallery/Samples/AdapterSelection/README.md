@@ -10,9 +10,9 @@ The sample showcases how to use Windows ML with different adapters that have tra
 - [External Links](#external-links)
 
 ## Getting Started
-- Check out the [source](https://github.com/microsoft/Windows-Machine-Learning/blob/user/numform/adapter_selection/Samples/WinMLSamplesGallery/WinMLSamplesGallery/Samples/AdapterSelection/AdapterSelection.xaml.cs).
-- Learn how to [get a list of adapters using DXCore](https://github.com/microsoft/Windows-Machine-Learning/blob/user/numform/adapter_selection/Samples/WinMLSamplesGallery/WinMLSamplesGalleryNative/AdapterList.cpp#L12) to your session.
-- Learn how to [create learning model devices from adapters](https://github.com/microsoft/Windows-Machine-Learning/blob/user/numform/adapter_selection/Samples/WinMLSamplesGallery/WinMLSamplesGalleryNative/AdapterList.cpp#L41).
+- Check out the [source](https://github.com/microsoft/Windows-Machine-Learning/blob/master/adapter_selection/Samples/WinMLSamplesGallery/WinMLSamplesGallery/Samples/AdapterSelection/AdapterSelection.xaml.cs).
+- Learn how to [get a list of adapters using DXCore](https://github.com/microsoft/Windows-Machine-Learning/blob/master/adapter_selection/Samples/WinMLSamplesGallery/WinMLSamplesGalleryNative/AdapterList.cpp#L12) to your session.
+- Learn how to [create learning model devices from adapters](https://github.com/microsoft/Windows-Machine-Learning/blob/master/adapter_selection/Samples/WinMLSamplesGallery/WinMLSamplesGalleryNative/AdapterList.cpp#L41).
 
 ## Feedback
 Please file an issue [here](https://github.com/microsoft/Windows-Machine-Learning/issues/new) if you encounter any issues with the Windows ML Samples Gallery or wish to request a new sample.

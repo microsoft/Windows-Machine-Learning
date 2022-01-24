@@ -29,7 +29,7 @@ namespace WinMLSamplesGallery.Samples
             selectedDeviceKind.Text = "Cpu";
 
             var adapters_arr = WinMLSamplesGalleryNative.AdapterList.GetAdapters();
-            var adapters = new List<string>(adapters_arr);
+            var adapters = RemoveMicrosoftBasicRenderDriver(adapters_arr);
 
             adapter_options.AddRange(adapters);
             AdapterListView.ItemsSource = adapter_options;
@@ -88,6 +88,20 @@ namespace WinMLSamplesGallery.Samples
                 CodeSnippetComboBox.Visibility = Visibility.Collapsed;
                 ViewSourCodeText.Visibility = Visibility.Visible;
             }
+        }
+
+        private List<string> RemoveMicrosoftBasicRenderDriver(string[] adapters_arr)
+        {
+            List<string> adapters = new List<string>(adapters_arr);
+            for (int i = 0; i < adapters.Count; i++)
+            {
+                if(adapters[i] == "Microsoft Basic Render Driver")
+                {
+                    adapters.RemoveAt(i);
+                    break;
+                }
+            }
+            return adapters;
         }
     }
 }

@@ -37,6 +37,9 @@ namespace WinMLSamplesGallery
                 case "EncryptedModel":
                     SampleFrame.Navigate(typeof(Samples.EncryptedModel));
                     break;
+                case "AdapterSelection":
+                    SampleFrame.Navigate(typeof(Samples.AdapterSelection));
+                    break;
             }
             if (sampleMetadata.Docs.Count > 0)
                 DocsHeader.Visibility = Visibility.Visible;

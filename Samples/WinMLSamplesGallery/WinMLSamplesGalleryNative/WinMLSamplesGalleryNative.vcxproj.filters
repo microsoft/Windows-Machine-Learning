@@ -9,6 +9,9 @@
     <ClCompile Include="OpenCVImage.cpp">
       <Filter>OpenCVInterop</Filter>
     </ClCompile>
+    <ClCompile Include="AdapterList.cpp">
+      <Filter>AdapterList</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -23,6 +26,9 @@
     </ClInclude>
     <ClInclude Include="WeakBuffer.h">
       <Filter>AbiHelpers</Filter>
+    </ClInclude>
+    <ClInclude Include="AdapterList.h">
+      <Filter>AdapterList</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -50,6 +56,9 @@
     </Filter>
     <Filter Include="AbiHelpers">
       <UniqueIdentifier>{ed4f3871-4514-4b93-9ace-1315cad5491e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AdapterList">
+      <UniqueIdentifier>{9df6a233-c2c6-4062-b738-31f7ba631acd}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

@@ -11,7 +11,7 @@
 
     <Page.Resources>
         <x:String x:Key="SourceGitHubURL">
-            https://github.com/microsoft/Windows-Machine-Learning/blob/master/adapter_selection/Samples/WinMLSamplesGallery/WinMLSamplesGalleryNative/AdapterList.cpp
+            https://github.com/microsoft/Windows-Machine-Learning/blob/master/Samples/WinMLSamplesGallery/WinMLSamplesGalleryNative/AdapterList.cpp
         </x:String>
     </Page.Resources>
 

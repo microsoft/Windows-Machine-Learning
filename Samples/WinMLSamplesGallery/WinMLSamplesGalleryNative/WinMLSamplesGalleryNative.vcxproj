@@ -162,7 +162,6 @@
     <Midl Include="WinMLSamplesGalleryNative.idl" />
   </ItemGroup>
   <ItemGroup>
-    <None Include=".editorconfig" />
     <None Include="datafile.bin" />
     <None Include="packages.config" />
     <None Include="squeezenet1.1-7-batched.onnx" />

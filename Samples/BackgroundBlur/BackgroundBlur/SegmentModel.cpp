@@ -109,13 +109,24 @@ SegmentModel::SegmentModel(UINT32 w, UINT32 h) :
 	SetModels(w, h);
 }
 
-void SegmentModel::SetModels(UINT32 w, UINT32 h) {
-
-	
- 	m_sessFCN = CreateLearningModelSession(FCNResnet());
-
+void SegmentModel::SetModels(UINT32 w, UINT32 h) 
+{
 	w /= g_scale; h /= g_scale;
 	SetImageSize(w, h);
+
+	auto fcnDevice = m_useGPU ? LearningModelDevice(LearningModelDeviceKind::DirectXHighPerformance) : LearningModelDevice(LearningModelDeviceKind::Default); // Todo: Have a toggle between GPU/ CPU? 
+	auto model = FCNResnet();
+	auto options = LearningModelSessionOptions();
+	options.BatchSizeOverride(0);
+	options.CloseModelOnSessionCreation(true);
+	// TODO: Input name vs. dimension name? 
+	// Because input name is "input" but I want to set dim 2 & 3 of that input 
+	options.OverrideNamedDimension(L"height", m_imageHeightInPixels);
+	options.OverrideNamedDimension(L"width", m_imageWidthInPixels);
+	auto session = LearningModelSession(model, fcnDevice);
+ 	m_sessFCN = CreateLearningModelSession(FCNResnet());
+
+
 	m_sess = CreateLearningModelSession(Invert(1, 3, h, w));
 	m_sessStyleTransfer = CreateLearningModelSession(StyleTransfer());
 	m_bindStyleTransfer = LearningModelBinding(m_sessStyleTransfer);

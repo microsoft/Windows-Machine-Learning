@@ -7,7 +7,7 @@
 
 #include "Capture.h"
 #include "resource.h"
-#include "TransformBlur.h"
+#include "TransformAsync.h"
 
 IMFDXGIDeviceManager* g_pDXGIMan = NULL;
 ID3D11Device*         g_pDX11Device = NULL;
@@ -390,11 +390,14 @@ HRESULT CaptureManager::StartPreview()
             goto done;
         }
 
-        winrt::com_ptr<TransformBlur> blur ;
+        /*winrt::com_ptr<TransformBlur> blur ;
         winrt::com_ptr<IMFTransform> pMFT ;
 
         hr = TransformBlur::CreateInstance(NULL, __uuidof(IMFTransform), (void**)(&blur));
-        hr = blur->QueryInterface(__uuidof(IMFTransform), (void**)(&pMFT));
+        hr = blur->QueryInterface(__uuidof(IMFTransform), (void**)(&pMFT));*/
+
+        winrt::com_ptr<IMFTransform> pMFT;
+        hr = TransformAsync::CreateInstance(pMFT.put());
 
         // IMFCaptureSource
         hr = pSource->AddEffect(0, pMFT.get());

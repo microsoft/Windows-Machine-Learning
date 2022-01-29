@@ -96,6 +96,7 @@ TransformBlur::~TransformBlur()
     assert(m_nRefCount == 0);
     if(m_spDeviceManager) m_spDeviceManager->CloseDeviceHandle(m_hDeviceHandle);
     SAFE_RELEASE(m_pAttributes);
+    // TODO: Will the CriticalSec
 }
 
 // IUnknown methods
@@ -236,7 +237,8 @@ HRESULT TransformBlur::GetInputStreamInfo(
     //       a valid media type.
 
     pStreamInfo->hnsMaxLatency = 0;
-    pStreamInfo->dwFlags = MFT_INPUT_STREAM_WHOLE_SAMPLES | MFT_INPUT_STREAM_SINGLE_SAMPLE_PER_BUFFER;
+    pStreamInfo->dwFlags = MFT_INPUT_STREAM_WHOLE_SAMPLES 
+                            | MFT_INPUT_STREAM_SINGLE_SAMPLE_PER_BUFFER;
 
     if (m_spInputType == NULL)
     {
@@ -479,11 +481,16 @@ HRESULT TransformBlur::SetInputType(
     DWORD           dwFlags
 )
 {
+    // TODO:
     TRACE((L"TransformBlur::SetInputType\n"));
 
     AutoLock lock(m_critSec);
     GUID g = GUID_NULL;
 
+    if (pType == NULL) 
+    {
+        return E_POINTER;
+    }
     if (!IsValidInputStream(dwInputStreamID))
     {
         return MF_E_INVALIDSTREAMNUMBER;
@@ -686,7 +693,6 @@ HRESULT TransformBlur::GetInputStatus(
     }
     else
     {
-        *pdwFlags = 0;
     }
 
     return S_OK;
@@ -1378,9 +1384,6 @@ HRESULT LockDevice(
     return hr;
 }
 
-
-
-
 //-------------------------------------------------------------------
 // Name: SampleToD3DSurface
 // Description: Convert an IMFSample to an IDirect3DSurface
@@ -1409,6 +1412,8 @@ IDirect3DSurface TransformBlur::SampleToD3Dsurface(IMFSample* sample)
     CreateDirect3D11SurfaceFromDXGISurface(pSurfaceSrc.get(), pSurfaceInspectable.put());
     return pSurfaceInspectable.try_as<IDirect3DSurface>();
 }
+
+
 //-------------------------------------------------------------------
 // Name: OnProcessOutput
 // Description: Generates output data.
@@ -1462,48 +1467,6 @@ HRESULT TransformBlur::OnFlush()
 }
 
 
-//-------------------------------------------------------------------
-// Name: UpdateFormatInfo
-// Description: After the input type is set, update our format 
-//              information.
-//-------------------------------------------------------------------
-HRESULT TransformBlur::UpdateFormatInfo()
-{
-    HRESULT hr = S_OK;
-
-    GUID subtype = GUID_NULL;
-
-    m_imageWidthInPixels = 0;
-    m_imageHeightInPixels = 0;
-    m_videoFOURCC = 0;
-    m_cbImageSize = 0;
-
-    if (m_spInputType != NULL)
-    {
-        CHECK_HR(hr = m_spInputType->GetGUID(MF_MT_SUBTYPE, &subtype));
-
-        m_videoFOURCC = subtype.Data1;
-
-        CHECK_HR(hr = MFGetAttributeSize(
-            m_spInputType.get(),
-            MF_MT_FRAME_SIZE,
-            &m_imageWidthInPixels,
-            &m_imageHeightInPixels
-        ));
-
-        TRACE((L"Frame size: %d x %d\n", m_imageWidthInPixels, m_imageHeightInPixels));
-
-        // Calculate the image size (not including padding)
-        CHECK_HR(hr = GetImageSize(m_videoFOURCC, m_imageWidthInPixels, m_imageHeightInPixels, &m_cbImageSize));
-
-        // Set the size of the SegmentModel
-        m_segmentModel.SetModels(m_imageWidthInPixels, m_imageHeightInPixels);
-        m_streamModel = std::make_unique<StyleTransfer>(m_imageWidthInPixels, m_imageHeightInPixels);
-    }
-    
-done:
-    return hr;
-}
 
 
 //-------------------------------------------------------------------

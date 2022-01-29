@@ -153,7 +153,7 @@ protected:
 		auto options = LearningModelSessionOptions();
 		options.BatchSizeOverride(0);
 		options.CloseModelOnSessionCreation(closedModel);
-		auto session = LearningModelSession(model, device);
+		auto session = LearningModelSession(model, device, options);
 		return session;
 	}
 
@@ -185,6 +185,7 @@ class StyleTransfer : public IStreamModel {
 public:
 	StyleTransfer(int w, int h) : IStreamModel(w, h) {
 		SetModels(w, h); }
+	StyleTransfer() : IStreamModel() {};
 	void SetModels(int w, int h);
 	void Run(IDirect3DSurface src, IDirect3DSurface dest);
 private: 

@@ -43,6 +43,7 @@ public:
     STDMETHODIMP_(ULONG) AddRef();
     STDMETHODIMP_(ULONG) Release();
 
+#pragma region IMFTransform
     // IMFTransform
     STDMETHODIMP GetStreamLimits(
         DWORD* pdwInputMinimum,
@@ -160,7 +161,7 @@ public:
         MFT_OUTPUT_DATA_BUFFER* pOutputSamples, // one per stream
         DWORD* pdwStatus
     );
-
+#pragma endregion IMFTransform
 private: 
     TransformBlur(HRESULT &hr);
 

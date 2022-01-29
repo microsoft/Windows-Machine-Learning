@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="..\packages\Microsoft.AI.MachineLearning.1.10.0\build\native\Microsoft.AI.MachineLearning.props" Condition="Exists('..\packages\Microsoft.AI.MachineLearning.1.10.0\build\native\Microsoft.AI.MachineLearning.props')" />
   <Import Project="..\packages\Microsoft.AI.DirectML.1.8.0\build\Microsoft.AI.DirectML.props" Condition="Exists('..\packages\Microsoft.AI.DirectML.1.8.0\build\Microsoft.AI.DirectML.props')" />
@@ -150,15 +150,30 @@
   <ItemGroup>
     <ClInclude Include="Capture.h" />
     <ClInclude Include="common.h" />
+    <ClInclude Include="common\CAutoLock.h" />
+    <ClInclude Include="common\CHWMFT_DebugLogger.h" />
+    <ClInclude Include="common\critsec.h">
+      <DeploymentContent>true</DeploymentContent>
+    </ClInclude>
+    <ClInclude Include="common\CSampleQueue.h" />
+    <ClInclude Include="common\GrowArray.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="SegmentModel.h" />
-    <ClInclude Include="TransformBlur.h" />
+    <ClInclude Include="StreamModel.h" />
+    <ClInclude Include="TransformAsync.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Capture.cpp" />
+    <ClCompile Include="common\CAutoLock.cpp" />
+    <ClCompile Include="common\CHWMFT_DebugLogger.cpp" />
+    <ClCompile Include="common\CSampleQueue.cpp" />
     <ClCompile Include="PreviewWnd.cpp" />
     <ClCompile Include="SegmentModel.cpp" />
-    <ClCompile Include="TransformBlur.cpp" />
+    <ClCompile Include="TransformAsync.cpp" />
+    <ClCompile Include="TransformAsync_IMFAsyncCallback.cpp" />
+    <ClCompile Include="TransformAsync_IMFMediaEventGenerator.cpp" />
+    <ClCompile Include="TransformAsync_IMFShutdown.cpp" />
+    <ClCompile Include="TransformAsync_IMFTransform.cpp" />
     <ClCompile Include="utils.cpp" />
     <ClCompile Include="winmain.cpp" />
   </ItemGroup>

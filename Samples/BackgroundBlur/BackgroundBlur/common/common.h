@@ -121,3 +121,6 @@ bool AreComObjectsEqual(T1 *p1, T2 *p2)
 #include "mediatype.h"
 #include "trace.h"
 #include "logmediatype.h"
+//#include "CAutoLock.h"
+//#include "CSampleQueue.h"
+//#include "CHWMFT_DebugLogger.h"

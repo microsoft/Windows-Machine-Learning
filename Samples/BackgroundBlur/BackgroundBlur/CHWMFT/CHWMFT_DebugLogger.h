@@ -1,5 +1,5 @@
 #pragma once
-#define _HMFTLOGGING_
+
 #include <windows.h>
 #ifdef  _HMFTLOGGING_
 #include <Evntprov.h>

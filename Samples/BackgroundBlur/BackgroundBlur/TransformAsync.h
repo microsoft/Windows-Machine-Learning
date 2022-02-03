@@ -219,14 +219,7 @@ public:
     );
 #pragma endregion IMFAsyncCallback
 
-    // Frame transform function
-    // TODO: This will actually be in segmentmodel
-    HRESULT DoProcessSample(
-    DWORD dwFlags,
-        IMFSample** ppOutputSample,
-        DWORD* pdwSampleStatus,
-        DWORD* pdwOutputStatus
-        );
+    HRESULT             SubmitEval(IMFSample* pInputSample);
 
 protected: 
     TransformAsync(HRESULT& hr);
@@ -234,6 +227,7 @@ protected:
     // Destructor is private. The object deletes itself when the reference count is zero.
     ~TransformAsync();
     HRESULT InitializeTransform(void);
+    HRESULT             ShutdownEventQueue(void);
 
     /******* MFT Helpers **********/
     HRESULT OnGetPartialType(DWORD dwTypeIndex, IMFMediaType** ppmt);
@@ -250,7 +244,7 @@ protected:
     HRESULT UpdateDX11Device();
     void InvalidateDX11Resources();
     IDirect3DSurface SampleToD3Dsurface(IMFSample* sample);
-    HRESULT             ShutdownEventQueue(void);
+
 
     /******* MFT Media Event Handlers **********/
     HRESULT             OnStartOfStream(void);
@@ -269,7 +263,6 @@ protected:
     );
     HRESULT             FlushSamples(void);
     HRESULT             ScheduleFrameInference(void);
-    HRESULT             SubmitEval(IMFSample* pInputSample);
     HRESULT             SendEvent(void);
     BOOL                IsLocked(void);
     BOOL                IsMFTReady(void); // TODO: Add calls in ProcessOutput, SetInput/OutputType

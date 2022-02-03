@@ -1,11 +1,10 @@
 #include "CHWMFT_DebugLogger.h"
-
 #ifdef  _HMFTLOGGING_
 #include <evntrace.h>
 #include <strsafe.h>
 
 REGHANDLE    g_ETWHandle    = NULL;
-BOOL         g_bEnabled     = TRUE;
+BOOL         g_bEnabled     = FALSE;
 UCHAR        g_ucLevel      = 0;
 
 void NTAPI EventRegisterCallback(

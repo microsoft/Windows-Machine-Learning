@@ -6,14 +6,20 @@
     <ClCompile Include="PreviewWnd.cpp" />
     <ClCompile Include="utils.cpp" />
     <ClCompile Include="winmain.cpp" />
-    <ClCompile Include="TransformAsync_IMFMediaEventGenerator.cpp" />
-    <ClCompile Include="TransformAsync_IMFTransform.cpp" />
-    <ClCompile Include="TransformAsync.cpp" />
-    <ClCompile Include="TransformAsync_IMFAsyncCallback.cpp" />
-    <ClCompile Include="TransformAsync_IMFShutdown.cpp" />
     <ClCompile Include="common\CSampleQueue.cpp" />
     <ClCompile Include="common\CHWMFT_DebugLogger.cpp" />
     <ClCompile Include="common\CAutoLock.cpp" />
+    <ClCompile Include="CHWMFT\CAutoLock.cpp" />
+    <ClCompile Include="CHWMFT\CHWMFT.cpp" />
+    <ClCompile Include="CHWMFT\CHWMFT_DebugLogger.cpp" />
+    <ClCompile Include="CHWMFT\CHWMFT_DecodeTask.cpp" />
+    <ClCompile Include="CHWMFT\CHWMFT_IMFAsyncCallback_Impl.cpp" />
+    <ClCompile Include="CHWMFT\CHWMFT_IMFMediaEventGenerator_Impl.cpp" />
+    <ClCompile Include="CHWMFT\CHWMFT_IMFShutdown_Impl.cpp" />
+    <ClCompile Include="CHWMFT\CHWMFT_IMFTransform_Impl.cpp" />
+    <ClCompile Include="CHWMFT\CHWMFT_IUnknown_Impl.cpp" />
+    <ClCompile Include="CHWMFT\CSampleQueue.cpp" />
+    <ClCompile Include="CHWMFT\dllmain.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="SegmentModel.h" />
@@ -21,12 +27,17 @@
     <ClInclude Include="Resource.h" />
     <ClInclude Include="common.h" />
     <ClInclude Include="StreamModel.h" />
-    <ClInclude Include="TransformAsync.h" />
     <ClInclude Include="common\CHWMFT_DebugLogger.h" />
     <ClInclude Include="common\CAutoLock.h" />
     <ClInclude Include="common\CSampleQueue.h" />
     <ClInclude Include="common\GrowArray.h" />
     <ClInclude Include="common\critsec.h" />
+    <ClInclude Include="CHWMFT\CAutoLock.h" />
+    <ClInclude Include="CHWMFT\CHWMFT.h" />
+    <ClInclude Include="CHWMFT\CHWMFT_DebugLogger.h" />
+    <ClInclude Include="CHWMFT\CHWMFT_DecodeTask.h" />
+    <ClInclude Include="CHWMFT\CSampleQueue.h" />
+    <ClInclude Include="CHWMFT\IMYMFT.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

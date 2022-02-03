@@ -21,6 +21,7 @@ const FOURCC FOURCC_RGB32 = 22;
 // static array of media types (preferred and accepted).
 const GUID* g_MediaSubtypes[] =
 {
+    &MFVideoFormat_YUY2,
     &MFVideoFormat_RGB32
 };
 
@@ -101,10 +102,6 @@ HRESULT TransformAsync::QueryInterface(REFIID iid, void** ppv)
         return E_POINTER;
     }
 
-    if (iid == IID_IUnknown)
-    {
-        *ppv = static_cast<IUnknown*>(this);
-    }
     else if (iid == __uuidof(IMFTransform))
     {
         *ppv = static_cast<IMFTransform*>(this);
@@ -120,11 +117,17 @@ HRESULT TransformAsync::QueryInterface(REFIID iid, void** ppv)
     }
     else if (iid == IID_IMFMediaEventGenerator)
     {
-        *ppv = static_cast<IMFMediaEventGenerator*>(this);
+        *ppv = (IMFMediaEventGenerator*)this;
+        // TODO: QI Correctly? 
+        //*ppv = static_cast<IMFMediaEventGenerator*>(this);
     }
     else if (iid == IID_IMFAsyncCallback)
     {
         *ppv = static_cast<IMFAsyncCallback*>(this);
+    }
+    else if (iid == IID_IUnknown)
+    {
+        *ppv = static_cast<IUnknown*>(this);
     }
     else
     {
@@ -695,71 +698,40 @@ HRESULT TransformAsync::InitializeTransform(void)
 
     HRESULT hr = S_OK;
 
-    do
-    {
-        hr = MFCreateAttributes(m_spAttributes.put(), MFT_NUM_DEFAULT_ATTRIBUTES);
-        if (FAILED(hr))
-        {
-            break;
-        }
+    CHECK_HR(hr = MFCreateAttributes(m_spAttributes.put(), MFT_NUM_DEFAULT_ATTRIBUTES));
+    CHECK_HR(hr = m_spAttributes->SetUINT32(MF_TRANSFORM_ASYNC, TRUE));
+    CHECK_HR(hr = m_spAttributes->SetUINT32(MFT_SUPPORT_DYNAMIC_FORMAT_CHANGE, TRUE));
+    /*CHECK_HR(hr = m_spAttributes->SetUINT32(MF_SA_D3D_AWARE, TRUE));
+    CHECK_HR(hr = m_spAttributes->SetUINT32(MF_SA_D3D11_AWARE, TRUE));*/
 
-        hr = m_spAttributes->SetUINT32(MF_TRANSFORM_ASYNC, TRUE);
-        if (FAILED(hr))
-        {
-            break;
-        }
+    // Initialize attributes for output sample allocator
+    CHECK_HR(hr = MFCreateAttributes(m_spOutputAttributes.put(), 3));
 
-        hr = m_spAttributes->SetUINT32(MFT_SUPPORT_DYNAMIC_FORMAT_CHANGE, TRUE);
-        if (FAILED(hr))
-        {
-            break;
-        }
-        hr = m_spAttributes->SetUINT32(MF_SA_D3D_AWARE, TRUE);
-        hr = m_spAttributes->SetUINT32(MF_SA_D3D11_AWARE, TRUE);
+    /**********************************
+    ** Since this is an Async MFT, an
+    ** event queue is required
+    ** MF Provides a standard implementation
+    **********************************/
+    CHECK_HR(hr = MFCreateEventQueue(m_pEventQueue.put()));
 
-        /**********************************
-        ** Since this is an Async MFT, an
-        ** event queue is required
-        ** MF Provides a standard implementation
-        **********************************/
-        hr = MFCreateEventQueue(m_pEventQueue.put());
-        if (FAILED(hr))
-        {
-            break;
-        }
+    CHECK_HR(hr = CSampleQueue::Create(&m_pInputSampleQueue));
 
-        hr = CSampleQueue::Create(&m_pInputSampleQueue);
-        if (FAILED(hr))
-        {
-            break;
-        }
+    CHECK_HR(hr = CSampleQueue::Create(&m_pOutputSampleQueue));
 
-        hr = CSampleQueue::Create(&m_pOutputSampleQueue);
-        if (FAILED(hr))
-        {
-            break;
-        }
+    /**********************************
+    ** Since this is an Async MFT, all
+    ** work will be done using standard
+    ** MF Work Queues
+    **********************************/
+    hr = MFAllocateWorkQueueEx(MF_STANDARD_WORKQUEUE, &m_dwDecodeWorkQueueID);
 
-        /**********************************
-        ** Since this is an Async MFT, all
-        ** work will be done using standard
-        ** MF Work Queues
-        **********************************/
-        hr = MFAllocateWorkQueueEx(MF_STANDARD_WORKQUEUE, &m_dwDecodeWorkQueueID);
-        if (FAILED(hr))
-        {
-            break;
-        }
+    // Set up circular queue of IStreamModels
+    for (int i = 0; i < m_numThreads; i++) {
+        // TODO: maybe styletransfer is the default model but have this change w/user input
+        m_models.push_back(std::make_unique<StyleTransfer>());
+    }
 
-        // Set up circular queue of IStreamModels
-        for (int i = 0; i < m_numThreads; i++) {
-            // TODO: maybe styletransfer is the default model but have this change w/user input
-            m_models.push_back(std::make_unique<StyleTransfer>());
-        }
-
-    } while (false);
-
-
+done: 
     return hr;
 }
 
@@ -886,7 +858,6 @@ done:
 HRESULT TransformAsync::ShutdownEventQueue(void)
 {
     HRESULT hr = S_OK;
-
     do
     {
         /***************************************
@@ -901,7 +872,7 @@ HRESULT TransformAsync::ShutdownEventQueue(void)
             break;
         }
     } while (false);
-
+    LOG_HRESULT(hr);
     return hr;
 }
 
@@ -931,7 +902,7 @@ HRESULT TransformAsync::OnStartOfStream(void)
         }
     } while (false);
 
-
+    LOG_HRESULT(hr);
     return hr;
 }
 
@@ -954,7 +925,7 @@ HRESULT TransformAsync::OnEndOfStream(void)
         m_dwNeedInputCount = 0;
     } while (false);
 
-
+    LOG_HRESULT(hr);
     return hr;
 }
 
@@ -1053,6 +1024,10 @@ HRESULT TransformAsync::RequestSample(
         if (FAILED(hr))
         {
             break;
+        }
+        if (pEvent == NULL)
+        {
+            TRACE((L"RequestSample: pEvent null not queueing anything!"));
         }
 
         hr = pEvent->SetUINT32(MF_EVENT_MFT_INPUT_STREAM_ID, un32StreamID);
@@ -1200,8 +1175,5 @@ HRESULT DuplicateAttributes(
     } while (false);
 
     PropVariantClear(&pv);
-
-    //TraceString(CHMFTTracing::TRACE_INFORMATION, L"%S(): Exit(hr=0x%x)", __FUNCTION__, hr);
-
     return hr;
 }

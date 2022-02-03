@@ -178,7 +178,7 @@ HRESULT TransformAsync::GetAttributes(IMFAttributes** ppAttributes)
 
     AutoLock lock(m_critSec);
 
-    *ppAttributes = m_spAttributes.detach();
+    *ppAttributes = m_spAttributes.get();
     if ((*ppAttributes) == NULL)
     {
         return E_UNEXPECTED;
@@ -846,7 +846,6 @@ HRESULT TransformAsync::ProcessInput(
     CHECK_HR(hr = m_pInputSampleQueue->AddSample(pSample));
 
     // Now schedule the work to decode the sample
-    // TODO: WHAT DO
     CHECK_HR(hr = ScheduleFrameInference());
 
 done:

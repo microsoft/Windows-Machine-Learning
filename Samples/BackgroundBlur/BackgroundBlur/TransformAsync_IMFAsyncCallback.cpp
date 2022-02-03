@@ -64,7 +64,7 @@ HRESULT TransformAsync::Invoke(
 
     // Now that scheduler has told us to process this sample, call SubmitEval with next
     // Available set of bindings, session. 
-    // hr = pMFT->SubmitEval(m_p);
+    hr = pMFT->SubmitEval(pInputSample.get());
 
     // hr = pAsyncResult->SetStatus(hr)
     // TOOD: finish 

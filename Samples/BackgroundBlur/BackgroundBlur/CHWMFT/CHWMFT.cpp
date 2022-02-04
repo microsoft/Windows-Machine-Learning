@@ -492,27 +492,56 @@ HRESULT CHWMFT::OnDrain(
     const UINT32 un32StreamID)
 {
     HRESULT hr = S_OK;
-
     TraceString(CHMFTTracing::TRACE_INFORMATION, L"%S(): Enter", __FUNCTION__);
-
     do
     {
         CAutoLock lock(&m_csLock);
-                
-        m_dwStatus |= (MYMFT_STATUS_DRAINING);
-
+        if (m_pOutputSampleQueue->IsQueueEmpty())
+        {
+            IMFMediaEvent* pDrainCompleteEvent = NULL;
+            hr = MFCreateMediaEvent(METransformDrainComplete, GUID_NULL, S_OK, NULL, &pDrainCompleteEvent);
+            if (FAILED(hr))
+            {
+                break;
+            }
+            /*******************************
+            ** Todo: This MFT only has one
+            ** input stream, so the drain
+            ** is always on stream zero.
+            ** Update this is your MFT
+            ** has more than one stream
+            *******************************/
+            hr = pDrainCompleteEvent->SetUINT32(MF_EVENT_MFT_INPUT_STREAM_ID, 0);
+            if (FAILED(hr))
+            {
+                break;
+            }
+            /***************************************
+            ** Since this in an internal function
+            ** we know m_pEventQueue can never be
+            ** NULL due to InitializeTransform()
+            ***************************************/
+            hr = m_pEventQueue->QueueEvent(pDrainCompleteEvent);
+            SAFERELEASE(pDrainCompleteEvent);
+            if (FAILED(hr))
+            {
+                break;
+            }
+        }
+        else
+        {
+            m_dwStatus |= (MYMFT_STATUS_DRAINING);
+        }
         /*******************************
         ** Todo: This MFT only has one
         ** input stream, so it does not
-        ** track the stream being drained. 
+        ** track the stream being drained.
         ** If your MFT has more than one
         ** input stream, you will
         ** have to change this logic
         *******************************/
-    }while(false);
-
+    } while (false);
     TraceString(CHMFTTracing::TRACE_INFORMATION, L"%S(): Exit(hr=0x%x)", __FUNCTION__, hr);
-
     return hr;
 }
 

@@ -823,7 +823,7 @@ HRESULT CHWMFT::ProcessInput(
     ** See http://msdn.microsoft.com/en-us/library/ms703131(v=VS.85).aspx
     *****************************************/
 
-    HRESULT hr = S_OK;
+     HRESULT hr = S_OK;
 
     TraceString(CHMFTTracing::TRACE_INFORMATION, L"%S(): Enter",  __FUNCTION__);
 

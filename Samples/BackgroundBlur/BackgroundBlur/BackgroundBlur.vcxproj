@@ -165,7 +165,6 @@
     <ClInclude Include="common\GrowArray.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="SegmentModel.h" />
-    <ClInclude Include="StreamModel.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Capture.cpp" />

@@ -10,6 +10,7 @@
 #include "CHWMFT/CHWMFT.h"
 #include <winrt/Windows.Foundation.h>
 #include <winrt/base.h>
+#include <mfreadwrite.h>
 
 IMFDXGIDeviceManager* g_pDXGIMan = NULL;
 ID3D11Device*         g_pDX11Device = NULL;
@@ -392,13 +393,16 @@ HRESULT CaptureManager::StartPreview()
             goto done;
         }
 
-        /*winrt::com_ptr<TransformBlur> blur ;
-        winrt::com_ptr<IMFTransform> pMFT ;
+        // TODO: Look at the source reader, does it have a callback? 
+        winrt::com_ptr<IMFSourceReader> pSourceReader;
+        hr = pSource->GetService(IID_IMFSourceReader, IID_IMFSourceReader, pSourceReader.try_as<IUnknown>().put());
+        if (FAILED(hr))
+        {
+            goto done;
+        }
+        winrt::com_ptr<IUnknown> pCallback; 
 
-        hr = TransformBlur::CreateInstance(NULL, __uuidof(IMFTransform), (void**)(&blur));
-        hr = blur->QueryInterface(__uuidof(IMFTransform), (void**)(&pMFT));*/
-
-        //winrt::com_ptr<CHWMFT> pMFT;
+        // Add the transform 
         winrt::com_ptr<IMFTransform>pMFT;
         hr = CHWMFT::CreateInstance(pMFT.put());
 

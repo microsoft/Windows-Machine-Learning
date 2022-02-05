@@ -125,6 +125,10 @@ HRESULT TransformAsync::QueryInterface(REFIID iid, void** ppv)
     {
         *ppv = static_cast<IMFAsyncCallback*>(this);
     }
+    else if (iid == __uuidof(TransformAsync))
+    {
+        *ppv = (TransformAsync*)this;
+    }
     else if (iid == IID_IUnknown)
     {
         *ppv = static_cast<IUnknown*>(this);
@@ -164,10 +168,14 @@ HRESULT TransformAsync::ScheduleFrameInference(void)
         ** we know m_pInputSampleQueue can never be
         ** NULL due to InitializeTransform()
         ***************************************/
+
     CHECK_HR(hr = m_pInputSampleQueue->GetNextSample(pInputSample.put()));
     
     // Create a pInferenceTask based on the chosen segmentModel, pass input sample
     // TODO: punkObject as an IMFSample? 
+    // TODO: Check to make sure pInputSample isn't null
+
+
     CHECK_HR(hr = MFCreateAsyncResult(pInputSample.get(), // Pointer to object stored in async result
                         this, // Pointer to IMFAsyncCallback interface
                         this, // Pointer to IUnkonwn of state object
@@ -200,7 +208,8 @@ HRESULT TransformAsync::SubmitEval(IMFSample* pInputSample)
     // Ensure we still have a valid d3d device
     CHECK_HR(hr = CheckDX11Device());
 
-    // Use the IMFSampleAllocator to allocate d3d11 video samples
+    // Use the IMFSampleAllocator to allocate d3d11 video samples'
+    // TODO: Is the the right way to get sample? 
     CHECK_HR(hr = MFCreateSample(pOutputSample.put()));
 
     // We allocate samples when have a dx device
@@ -216,6 +225,7 @@ HRESULT TransformAsync::SubmitEval(IMFSample* pInputSample)
 
     // **** 2. Run inference on input sample
     src = SampleToD3Dsurface(pInputSample);
+    // TODO: Fix device manager because pOutputSample isn't d3d backed, this call fails
     dest = SampleToD3Dsurface(pOutputSample.get());
     {
         // Do the copies inside runtest
@@ -701,8 +711,8 @@ HRESULT TransformAsync::InitializeTransform(void)
     CHECK_HR(hr = MFCreateAttributes(m_spAttributes.put(), MFT_NUM_DEFAULT_ATTRIBUTES));
     CHECK_HR(hr = m_spAttributes->SetUINT32(MF_TRANSFORM_ASYNC, TRUE));
     CHECK_HR(hr = m_spAttributes->SetUINT32(MFT_SUPPORT_DYNAMIC_FORMAT_CHANGE, TRUE));
-    /*CHECK_HR(hr = m_spAttributes->SetUINT32(MF_SA_D3D_AWARE, TRUE));
-    CHECK_HR(hr = m_spAttributes->SetUINT32(MF_SA_D3D11_AWARE, TRUE));*/
+    CHECK_HR(hr = m_spAttributes->SetUINT32(MF_SA_D3D_AWARE, TRUE));
+    CHECK_HR(hr = m_spAttributes->SetUINT32(MF_SA_D3D11_AWARE, TRUE));
 
     // Initialize attributes for output sample allocator
     CHECK_HR(hr = MFCreateAttributes(m_spOutputAttributes.put(), 3));
@@ -934,13 +944,46 @@ HRESULT TransformAsync::OnDrain(
 {
     HRESULT hr = S_OK;
 
-
     do
     {
         AutoLock lock(m_critSec);
+        if (m_pOutputSampleQueue->IsQueueEmpty())
+        {
+            IMFMediaEvent* pDrainCompleteEvent = NULL;
+            hr = MFCreateMediaEvent(METransformDrainComplete, GUID_NULL, S_OK, NULL, &pDrainCompleteEvent);
+            if (FAILED(hr))
+            {
+                break;
+            }
+            /*******************************
+            ** Todo: This MFT only has one
+            ** input stream, so the drain
+            ** is always on stream zero.
+            ** Update this is your MFT
+            ** has more than one stream
+            *******************************/
+            hr = pDrainCompleteEvent->SetUINT32(MF_EVENT_MFT_INPUT_STREAM_ID, 0);
+            if (FAILED(hr))
+            {
+                break;
+            }
+            /***************************************
+            ** Since this in an internal function
+            ** we know m_pEventQueue can never be
+            ** NULL due to InitializeTransform()
+            ***************************************/
+            hr = m_pEventQueue->QueueEvent(pDrainCompleteEvent);
+            SAFE_RELEASE(pDrainCompleteEvent);
+            if (FAILED(hr))
+            {
+                break;
+            }
+        }
+        else
+        {
+            m_dwStatus |= (MYMFT_STATUS_DRAINING);
 
-        m_dwStatus |= (MYMFT_STATUS_DRAINING);
-
+        }
         /*******************************
         ** Todo: This MFT only has one
         ** input stream, so it does not

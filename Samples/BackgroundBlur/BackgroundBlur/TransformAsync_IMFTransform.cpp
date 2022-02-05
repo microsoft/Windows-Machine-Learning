@@ -836,13 +836,26 @@ HRESULT TransformAsync::ProcessInput(
         hr = E_POINTER;
         return hr;
     }
+
+    /*****************************************
+        ** Todo: If your MFT supports more than one
+        ** stream, make sure you modify
+        ** MFT_MAX_STREAMS and adjust this function
+        ** accordingly
+        *****************************************/
+    if (dwInputStreamID >= 1)
+    {
+        hr = MF_E_INVALIDSTREAMNUMBER;
+        return hr;
+    }
+
     // First, put sample into the input Queue
 
-        /***************************************
-        ** Since this in an internal function
-        ** we know m_pInputSampleQueue can never be
-        ** NULL due to InitializeTransform()
-        ***************************************/
+    /***************************************
+    ** Since this in an internal function
+    ** we know m_pInputSampleQueue can never be
+    ** NULL due to InitializeTransform()
+    ***************************************/
     CHECK_HR(hr = m_pInputSampleQueue->AddSample(pSample));
 
     // Now schedule the work to decode the sample

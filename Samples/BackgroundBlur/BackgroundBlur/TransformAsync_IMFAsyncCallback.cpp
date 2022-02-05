@@ -44,23 +44,26 @@ HRESULT TransformAsync::Invoke(
         return hr;
     }
 
+    // Get the IMFSample tied to this specific Invoke call
+    CHECK_HR(hr = pAsyncResult->GetObjectW(pObjectUnk.put()));
+    pInputSample = pObjectUnk.try_as<IMFSample>();
+    if (!pInputSample)
+    {
+        hr = E_NOINTERFACE;
+        return hr;
+    }
+
     // Get the pMFT current state
+    // TODO: pStateUnk isn't a TransformAsync>? 
     CHECK_HR(hr = pAsyncResult->GetState(pStateUnk.put()));
-    pMFT = pStateUnk.try_as<TransformAsync>();
+    hr = pStateUnk->QueryInterface(__uuidof(TransformAsync), pMFT.put_void());
+    //pMFT = pStateUnk.try_as<TransformAsync>();
     if (!pMFT)
     {
         hr = E_NOINTERFACE;
         return hr;
     }
 
-    // Get the IMFSample tied to this specific Invoke call
-    CHECK_HR(hr = pAsyncResult->GetObjectW(pObjectUnk.put()));
-    pInputSample.try_as<IMFSample>();
-    if (!pInputSample)
-    {
-        hr = E_NOINTERFACE;
-        return hr;
-    }
 
     // Now that scheduler has told us to process this sample, call SubmitEval with next
     // Available set of bindings, session. 

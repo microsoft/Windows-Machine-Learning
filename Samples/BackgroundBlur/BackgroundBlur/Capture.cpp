@@ -7,7 +7,7 @@
 
 #include "Capture.h"
 #include "resource.h"
-#include "CHWMFT/CHWMFT.h"
+#include "TransformAsync.h"
 #include <winrt/Windows.Foundation.h>
 #include <winrt/base.h>
 #include <mfreadwrite.h>
@@ -404,7 +404,7 @@ HRESULT CaptureManager::StartPreview()
 
         // Add the transform 
         winrt::com_ptr<IMFTransform>pMFT;
-        hr = CHWMFT::CreateInstance(pMFT.put());
+        hr = TransformAsync::CreateInstance(pMFT.put());
 
         // IMFCaptureSource
         hr = pSource->AddEffect(0, pMFT.get());

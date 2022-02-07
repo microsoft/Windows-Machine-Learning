@@ -742,7 +742,7 @@ HRESULT TransformAsync::ProcessOutput(
     {
         // The MFT is providing it's own samples
         // TODO: Detach correct? 
-        (pOutputSamples[0].pSample) = pSample.detach();
+        (pOutputSamples[0].pSample) = pSample.get();
         (pOutputSamples[0].pSample)->AddRef();
     }
     else

@@ -21,7 +21,7 @@ const FOURCC FOURCC_RGB32 = 22;
 // static array of media types (preferred and accepted).
 const GUID* g_MediaSubtypes[] =
 {
-    &MFVideoFormat_YUY2,
+    //&MFVideoFormat_YUY2,
     &MFVideoFormat_RGB32
 };
 
@@ -194,12 +194,14 @@ HRESULT TransformAsync::SubmitEval(IMFSample* pInputSample)
     HRESULT hr = S_OK; 
     winrt::com_ptr<IMFSample> pOutputSample; 
     winrt::com_ptr<IMFMediaEvent> pHaveOutputEvent;
-    DWORD dwCurrentSample = InterlockedIncrement(&m_ulSampleCounter);
-    int modelIndex = dwCurrentSample % m_numThreads;
+    DWORD dwCurrentSample = InterlockedIncrement(&m_ulSampleCounter); // todo: set at the end of a call 
+    int modelIndex = dwCurrentSample % m_numThreads; 
     LONGLONG hnsDuration = 0;
     LONGLONG hnsTime = 0;
     UINT64 pun64MarkerID = 0;
     IDirect3DSurface src, dest;
+    winrt::com_ptr<IMFMediaBuffer> pMediaBuffer;
+
 
     // **** 1. Allocate the output sample 
   
@@ -208,15 +210,16 @@ HRESULT TransformAsync::SubmitEval(IMFSample* pInputSample)
     // Ensure we still have a valid d3d device
     CHECK_HR(hr = CheckDX11Device());
 
-    // Use the IMFSampleAllocator to allocate d3d11 video samples'
-    // TODO: Is the the right way to get sample? 
-    CHECK_HR(hr = MFCreateSample(pOutputSample.put()));
-
     // We allocate samples when have a dx device
     if (m_spDeviceManager != nullptr)
     {
         CHECK_HR(hr = m_spOutputSampleAllocator->AllocateSample(pOutputSample.put()));
     }
+    // If we don't have an outputAllocator, create a non-d3d backed sample
+    else {
+        CHECK_HR(hr = MFCreateSample(pOutputSample.put()));
+    }
+
     // We should have a sample now, whether or not we have a dx device
     if (pOutputSample == nullptr)
     {
@@ -238,7 +241,7 @@ HRESULT TransformAsync::SubmitEval(IMFSample* pInputSample)
     dest.Close();
 
     // **** 3. Set up the output sample
-    CHECK_HR(hr = DuplicateAttributes(pOutputSample.get(), pInputSample));
+    // CHECK_HR(hr = DuplicateAttributes(pOutputSample.get(), pInputSample));
     if (SUCCEEDED(pInputSample->GetSampleDuration(&hnsDuration))) 
     {
         CHECK_HR(hr = pOutputSample->SetSampleDuration(hnsDuration));
@@ -246,10 +249,17 @@ HRESULT TransformAsync::SubmitEval(IMFSample* pInputSample)
     if (SUCCEEDED(pInputSample->GetSampleTime(&hnsTime)))
     {
         CHECK_HR(hr = pOutputSample->SetSampleTime(hnsTime));
+        // todo: incrememt m_
     }
+
+    // Always set the output buffer size!
+    CHECK_HR(hr = pOutputSample->GetBufferByIndex(0, pMediaBuffer.put()));
+    CHECK_HR(hr = pMediaBuffer->SetCurrentLength(m_cbImageSize));
+
     if(m_bFirstSample != FALSE)
     {
-        CHECK_HR(hr = pOutputSample->SetUINT32(MFSampleExtension_Discontinuity, TRUE));
+        // TODO: What if make not discontinuity? 
+        // CHECK_HR(hr = pOutputSample->SetUINT32(MFSampleExtension_Discontinuity, TRUE));
         m_bFirstSample = FALSE;
     }
 
@@ -947,6 +957,7 @@ HRESULT TransformAsync::OnDrain(
     do
     {
         AutoLock lock(m_critSec);
+        // TODO: Should this call PI to get rid of any queued inputs? because do have one going
         if (m_pOutputSampleQueue->IsQueueEmpty())
         {
             IMFMediaEvent* pDrainCompleteEvent = NULL;

@@ -7,6 +7,9 @@
 #include <windows.media.core.interop.h>
 #include "common.h"
 #include <unknwn.h>
+#include <stdio.h>
+#include <wchar.h>
+
 
 #define MFT_NUM_DEFAULT_ATTRIBUTES  4
 
@@ -202,6 +205,7 @@ HRESULT TransformAsync::SubmitEval(IMFSample* pInputSample)
     IDirect3DSurface src, dest;
     winrt::com_ptr<IMFMediaBuffer> pMediaBuffer;
 
+    TRACE((L"\n[Sample: %d | model: %d | ", dwCurrentSample, modelIndex));
 
     // **** 1. Allocate the output sample 
   
@@ -235,7 +239,8 @@ HRESULT TransformAsync::SubmitEval(IMFSample* pInputSample)
         auto now = std::chrono::high_resolution_clock::now();
         m_models[modelIndex]->Run(src, dest);
         auto timePassed = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - now);
-        OutputDebugString(std::to_wstring(timePassed.count()).c_str());
+        OutputDebugString((L"Runtime: "));
+        OutputDebugString((std::to_wstring(timePassed.count()).c_str()));
     }
     src.Close();
     dest.Close();
@@ -288,6 +293,7 @@ HRESULT TransformAsync::SubmitEval(IMFSample* pInputSample)
     CHECK_HR(hr = RequestSample(0));
 
 done: 
+    
     return hr; 
 }
 

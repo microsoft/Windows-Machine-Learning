@@ -55,7 +55,7 @@ public:
 protected:
 	void SetVideoFrames(VideoFrame inVideoFrame, VideoFrame outVideoFrame) 
 	{
-		if (!m_bVideoFramesSet)
+		if (true || !m_bVideoFramesSet)
 		{
 			if (m_device == NULL)
 			{

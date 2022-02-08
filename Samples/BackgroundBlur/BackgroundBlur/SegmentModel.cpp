@@ -147,6 +147,8 @@ void BackgroundBlur::Run(IDirect3DSurface src, IDirect3DSurface dest)
 	m_sessionPostprocess.EvaluateAsync(m_bindingPostprocess, L"").get();
 
 	m_outputVideoFrame.CopyToAsync(outVideoFrame).get();
+	m_inputVideoFrame.Close();
+	m_outputVideoFrame.Close();
 }
 
 LearningModel BackgroundBlur::PostProcess(long n, long c, long h, long w, long axis)

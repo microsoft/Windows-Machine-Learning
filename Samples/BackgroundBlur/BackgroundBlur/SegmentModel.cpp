@@ -43,11 +43,11 @@ std::array<float, 3> mean = { 0.485f, 0.456f, 0.406f };
 std::array<float, 3> stddev = { 0.229f, 0.224f, 0.225f };
 auto outputBindProperties = PropertySet();
 
-
-
+/****	Style transfer model	****/
 void StyleTransfer::SetModels(int w, int h)
 {
-	SetImageSize(w, h);
+	// TODO: Use w/h or use the 720x720 of the mode
+	SetImageSize(720, 720); // SIze model input sizes fixed to 720x720
 	m_session = CreateLearningModelSession(GetModel());
 	m_binding = LearningModelBinding(m_session);
 }
@@ -74,316 +74,82 @@ LearningModel StyleTransfer::GetModel()
 	return LearningModel::LoadFromFilePath(rel + L"");
 }
 
-
-
-
-/******* Start of old Segment Model stuff *******/
-SegmentModel::SegmentModel() :
-	m_sess(NULL),
-	m_sessPreprocess(NULL),
-	m_sessFCN(NULL),
-	m_sessPostprocess(NULL),
-	m_sessStyleTransfer(NULL),
-	m_useGPU(true),
-	m_bindPreprocess(NULL),
-	m_bindFCN(NULL),
-	m_bindPostprocess(NULL),
-	m_bindStyleTransfer(NULL), 
-	bindings(swapChainEntryCount)
-{
-}
-
-SegmentModel::SegmentModel(UINT32 w, UINT32 h) :
-	m_sess(NULL),
-	m_sessPreprocess(NULL),
-	m_sessFCN(NULL),
-	m_sessPostprocess(NULL),
-	m_sessStyleTransfer(NULL),
-	m_useGPU(true),
-	m_bindPreprocess(NULL),
-	m_bindFCN(NULL),
-	m_bindPostprocess(NULL),
-	m_bindStyleTransfer(NULL),
-	bindings(swapChainEntryCount)
-{
-	SetModels(w, h);
-}
-
-void SegmentModel::SetModels(UINT32 w, UINT32 h) 
+/****	Background blur model	****/
+void BackgroundBlur::SetModels(int w, int h)
 {
 	w /= g_scale; h /= g_scale;
 	SetImageSize(w, h);
 
-	auto fcnDevice = m_useGPU ? LearningModelDevice(LearningModelDeviceKind::DirectXHighPerformance) : LearningModelDevice(LearningModelDeviceKind::Default); // Todo: Have a toggle between GPU/ CPU? 
-	auto model = FCNResnet();
+	m_sessionPreprocess = CreateLearningModelSession(Normalize0_1ThenZScore(h, w, 3, mean, stddev));
+	m_sessionPostprocess = CreateLearningModelSession(PostProcess(1, 3, h, w, 1));
+	// Named dim override of FCN-Resnet so that unlock optimizations of fixed input size
+	auto fcnDevice = m_bUseGPU ? LearningModelDevice(LearningModelDeviceKind::DirectXHighPerformance) : LearningModelDevice(LearningModelDeviceKind::Default); // Todo: Have a toggle between GPU/ CPU? 
+	auto model = GetModel();
 	auto options = LearningModelSessionOptions();
 	options.BatchSizeOverride(0);
 	options.CloseModelOnSessionCreation(true);
-	// TODO: Input name vs. dimension name? 
+	// ****** TODO: Input name vs. dimension name? *****
 	// Because input name is "input" but I want to set dim 2 & 3 of that input 
 	options.OverrideNamedDimension(L"height", m_imageHeightInPixels);
 	options.OverrideNamedDimension(L"width", m_imageWidthInPixels);
-	auto session = LearningModelSession(model, fcnDevice);
- 	m_sessFCN = CreateLearningModelSession(FCNResnet());
+	m_session = LearningModelSession(model, fcnDevice, options);
 
-
-	m_sess = CreateLearningModelSession(Invert(1, 3, h, w));
-	m_sessStyleTransfer = CreateLearningModelSession(StyleTransfer());
-	m_bindStyleTransfer = LearningModelBinding(m_sessStyleTransfer);
-
-	// Initialize segmentation learningmodelsessions
-	m_sessPreprocess = CreateLearningModelSession(Normalize0_1ThenZScore(h, w, 3, mean, stddev));
-	m_sessPostprocess = CreateLearningModelSession(PostProcess(1, 3, h, w, 1));
-
-	// Initialize segmentation bindings
-	m_bindPreprocess = LearningModelBinding(m_sessPreprocess);
-	m_bindFCN = LearningModelBinding(m_sessFCN);
-	m_bindPostprocess = LearningModelBinding(m_sessPostprocess);
-
-	auto device = m_sessFCN.Device().Direct3D11Device();
-
-	// Create set of bindings to cycle through
-	for (int i = 0; i < swapChainEntryCount; i++) {
-		bindings.push_back(std::make_unique<SwapChainEntry>());
-		bindings[i]->binding_model = LearningModelBinding(m_sessFCN);
-		bindings[i]->binding_post = LearningModelBinding(m_sessPostprocess);
-		bindings[i]->bind_pre = LearningModelBinding(m_sessPreprocess);
-		bindings[i]->binding_post.Bind(L"OutputImage",
-			VideoFrame::CreateAsDirect3D11SurfaceBacked(Windows::Graphics::DirectX::DirectXPixelFormat::B8G8R8X8UIntNormalized, m_imageWidthInPixels , m_imageHeightInPixels ));
-		bindings[i]->outputCache = VideoFrame::CreateAsDirect3D11SurfaceBacked(Windows::Graphics::DirectX::DirectXPixelFormat::B8G8R8X8UIntNormalized, m_imageWidthInPixels , m_imageHeightInPixels );
-	}
- }
-
-void SegmentModel::SetImageSize(UINT32 w, UINT32 h)
-{
-	m_imageWidthInPixels = w;
-	m_imageHeightInPixels = h;
+	m_bindingPreprocess = LearningModelBinding(m_sessionPreprocess);
+	m_binding = LearningModelBinding(m_session);
+	m_bindingPostprocess = LearningModelBinding(m_sessionPostprocess);
 }
-
-void SegmentModel::Run(IDirect3DSurface src, IDirect3DSurface dest)
+LearningModel BackgroundBlur::GetModel()
 {
-	//OutputDebugString(L"\n [ Starting run | "); 
-	// 1. Get input buffer as a VideoFrame
-	VideoFrame input = VideoFrame::CreateWithDirect3D11Surface(src);
-	VideoFrame output = VideoFrame::CreateWithDirect3D11Surface(dest);
+	auto rel = std::filesystem::current_path();
+	rel.append("Assets\\fcn-resnet50-12-int8.onnx");
+	return LearningModel::LoadFromFilePath(rel + L"");
+}
+void BackgroundBlur::Run(IDirect3DSurface src, IDirect3DSurface dest)
+{
+	VideoFrame inVideoFrame = VideoFrame::CreateWithDirect3D11Surface(src);
+	VideoFrame outVideoFrame = VideoFrame::CreateWithDirect3D11Surface(dest);
+	SetVideoFrames(inVideoFrame, outVideoFrame);
 
-	auto device = m_sessFCN.Device().Direct3D11Device();
-	auto desc = input.Direct3DSurface().Description();
-	auto descOut = output.Direct3DSurface().Description();
-	VideoFrame input2 = VideoFrame::CreateAsDirect3D11SurfaceBacked(desc.Format, desc.Width/g_scale, desc.Height/g_scale, device);
-	VideoFrame output2 = VideoFrame::CreateAsDirect3D11SurfaceBacked(descOut.Format, descOut.Width/g_scale, descOut.Height/g_scale, device);
+	// Shape validation
+	OutputDebugString(std::to_wstring(m_inputVideoFrame.Direct3DSurface().Description().Height).c_str());
+	OutputDebugString(std::to_wstring(m_inputVideoFrame.Direct3DSurface().Description().Width).c_str());
+	assert((UINT32)m_inputVideoFrame.Direct3DSurface().Description().Height == m_imageHeightInPixels);
+	assert((UINT32)m_inputVideoFrame.Direct3DSurface().Description().Width == m_imageWidthInPixels);
 
-	input.CopyToAsync(input2).get(); // TODO: I'm guessing it's this copy that's causing issues... 
-	output.CopyToAsync(output2).get(); 
+	// 2. Preprocessing: z-score normalization 
 	std::vector<int64_t> shape = { 1, 3, m_imageHeightInPixels, m_imageWidthInPixels };
+	ITensor intermediateTensor = TensorFloat::Create(shape);
+	hstring inputName = m_sessionPreprocess.Model().InputFeatures().GetAt(0).Name();
+	hstring outputName = m_sessionPreprocess.Model().OutputFeatures().GetAt(0).Name();
 
-	SubmitEval(input2, output);
-	swapChainIndex = (++swapChainIndex) % swapChainEntryCount;
+	m_bindingPreprocess.Bind(inputName, m_inputVideoFrame);
+	outputBindProperties.Insert(L"DisableTensorCpuSync", PropertyValue::CreateBoolean(true));
+	m_bindingPreprocess.Bind(outputName, intermediateTensor, outputBindProperties);
+	m_sessionPreprocess.EvaluateAsync(m_bindingPreprocess, L""); 
 
-	//timePassed = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - now);
-	/*OutputDebugString(L" | Post: ");
-	OutputDebugString(std::to_wstring(timePassed.count()).c_str());*/
+	// 3. Run through actual model
+	std::vector<int64_t> FCNResnetOutputShape = { 1, 21, m_imageHeightInPixels, m_imageWidthInPixels };
+	ITensor FCNResnetOutput = TensorFloat::Create(FCNResnetOutputShape);
 
-	// Copy back to the correct surface for MFT
-	//output2.CopyToAsync(output).get(); 
+	m_binding.Bind(m_session.Model().InputFeatures().GetAt(0).Name(), intermediateTensor);
+	m_binding.Bind(m_session.Model().OutputFeatures().GetAt(0).Name(), FCNResnetOutput, outputBindProperties);
+	m_session.EvaluateAsync(m_binding, L""); 
 
-	OutputDebugString(L" | Ending run ]");
+	// Shape validation 
+	assert(m_outputVideoFrame.Direct3DSurface().Description().Height == m_imageHeightInPixels);
+	assert(m_outputVideoFrame.Direct3DSurface().Description().Width == m_imageWidthInPixels);
 
+	// 4. Postprocessing
+	outputBindProperties.Insert(L"DisableTensorCpuSync", PropertyValue::CreateBoolean(false));
+	m_bindingPostprocess.Bind(m_sessionPostprocess.Model().InputFeatures().GetAt(0).Name(), m_inputVideoFrame); // InputImage
+	m_bindingPostprocess.Bind(m_sessionPostprocess.Model().InputFeatures().GetAt(1).Name(), FCNResnetOutput); // InputScores
+	m_bindingPostprocess.Bind(m_sessionPostprocess.Model().OutputFeatures().GetAt(0).Name(), m_outputVideoFrame);
+	m_sessionPostprocess.EvaluateAsync(m_bindingPostprocess, L"").get();
+
+	m_outputVideoFrame.CopyToAsync(outVideoFrame).get();
 }
 
-void SegmentModel::SubmitEval(VideoFrame input, VideoFrame output) {
-	auto currentBinding = bindings[0].get();
-	if (currentBinding->activetask == nullptr
-		|| currentBinding->activetask.Status() != Windows::Foundation::AsyncStatus::Started)
-	{
-		auto now = std::chrono::high_resolution_clock::now();
-		OutputDebugString(L"PF Start new Eval ");
-		OutputDebugString(std::to_wstring(swapChainIndex).c_str());
-		OutputDebugString(L" | ");
-		// submit an eval and wait for it to finish submitting work
-		{
-			std::lock_guard<std::mutex> guard{ Processing };
-
-			// 2. Preprocessing: z-score normalization 
-			std::vector<int64_t> shape = { 1, 3, m_imageHeightInPixels, m_imageWidthInPixels };
-			ITensor intermediateTensor = TensorFloat::Create(shape);
-			hstring inputName = m_sessPreprocess.Model().InputFeatures().GetAt(0).Name();
-			hstring outputName = m_sessPreprocess.Model().OutputFeatures().GetAt(0).Name();
-
-			currentBinding->bind_pre.Bind(inputName, input);
-			outputBindProperties.Insert(L"DisableTensorCpuSync", PropertyValue::CreateBoolean(true));
-			currentBinding->bind_pre.Bind(outputName, intermediateTensor, outputBindProperties);
-			m_sessPreprocess.EvaluateAsync(currentBinding->bind_pre, L"");
-			auto timePassed = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - now);
-			OutputDebugString(L"Pre: ");
-
-			// 3. Run through actual model
-			std::vector<int64_t> FCNResnetOutputShape = { 1, 21, m_imageHeightInPixels, m_imageWidthInPixels };
-			ITensor FCNResnetOutput = TensorFloat::Create(FCNResnetOutputShape);
-
-			currentBinding->binding_model.Bind(m_sessFCN.Model().InputFeatures().GetAt(0).Name(), intermediateTensor);
-			currentBinding->binding_model.Bind(m_sessFCN.Model().OutputFeatures().GetAt(0).Name(), FCNResnetOutput, outputBindProperties);
-			m_sessFCN.EvaluateAsync(currentBinding->binding_model, L"");
-			OutputDebugString(L" | Model: ");
-
-			// 4. Postprocessing
-			ITensor rawLabels = TensorFloat::Create({ 1, 1, m_imageHeightInPixels, m_imageWidthInPixels });
-			outputBindProperties.Insert(L"DisableTensorCpuSync", PropertyValue::CreateBoolean(false));
-			currentBinding->binding_post.Bind(m_sessPostprocess.Model().InputFeatures().GetAt(0).Name(), input); // InputImage
-			currentBinding->binding_post.Bind(m_sessPostprocess.Model().InputFeatures().GetAt(1).Name(), FCNResnetOutput); // InputScores
-
-		}
-		std::rotate(bindings.begin(), bindings.begin() + 1, bindings.end());
-		finishedFrameIndex = (finishedFrameIndex - 1 + swapChainEntryCount) % swapChainEntryCount;
-		// Wait only for the last evalasync
-		currentBinding->activetask = m_sessPostprocess.EvaluateAsync(
-			currentBinding->binding_post,
-			std::to_wstring(swapChainIndex).c_str());
-		currentBinding->activetask.Completed([&, currentBinding, now](auto&& asyncInfo, winrt::Windows::Foundation::AsyncStatus const) {
-			OutputDebugString(L"PF Eval completed |");
-			//auto results = asyncInfo.GetResults().Outputs().Lookup(L"OutputImage");
-			VideoFrame evalOutput = asyncInfo.GetResults()
-				.Outputs()
-				.Lookup(L"OutputImage")
-				.try_as<VideoFrame>(); // Must have a VF bound to output for winml to cast to VF
-			int bindingIdx;
-			bool finishedFrameUpdated;
-			{
-				std::lock_guard<std::mutex> guard{ Processing };
-				auto binding = std::find_if(bindings.begin(),
-					bindings.end(),
-					[currentBinding](const auto& b)
-					{
-						return b.get() == currentBinding;
-					});
-				bindingIdx = std::distance(bindings.begin(), binding);
-				finishedFrameUpdated = bindingIdx >= finishedFrameIndex;
-				finishedFrameIndex = finishedFrameUpdated ? bindingIdx : finishedFrameIndex;
-			}
-			if (finishedFrameUpdated)
-			{
-				OutputDebugString(L"PF Copy | ");
-				evalOutput.CopyToAsync(currentBinding->outputCache);
-			}
-
-			auto timePassed = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - now);
-			// Convert to FPS: milli to seconds, invert
-			OutputDebugString(L"PF End ");
-			});
-	}
-	if (bindings[finishedFrameIndex]->outputCache != nullptr) {
-		OutputDebugString(L"\nStart CopyAsync ");
-		OutputDebugString(std::to_wstring(finishedFrameIndex).c_str());
-		{
-			// Lock so that don't have multiple sources copying to output at once
-			std::lock_guard<std::mutex> guard{ Processing };
-			bindings[finishedFrameIndex]->outputCache.CopyToAsync(output).get();
-		}
-		OutputDebugString(L" | Stop CopyAsync\n");
-	}
-	// return without waiting for the submit to finish, setup the completion handler
-}
-
-void SegmentModel::RunStyleTransfer(IDirect3DSurface src, IDirect3DSurface dest) 
-{
-	OutputDebugString(L"\n[Starting RunStyleTransfer | ");
-
-	VideoFrame input = VideoFrame::CreateWithDirect3D11Surface(src);
-	VideoFrame output = VideoFrame::CreateWithDirect3D11Surface(dest);
-
-	auto desc = input.Direct3DSurface().Description();
-	auto descOut = output.Direct3DSurface().Description();
-
-	auto sessdevice = m_sessStyleTransfer.Device().Direct3D11Device();
-	VideoFrame output2 = VideoFrame::CreateAsDirect3D11SurfaceBacked(descOut.Format, 720, 720, sessdevice);
-	VideoFrame input2 = VideoFrame::CreateAsDirect3D11SurfaceBacked(desc.Format, 720,720, sessdevice);
-	input.CopyToAsync(input2).get(); // TODO: Can input stay the same if NV12? 
-	output.CopyToAsync(output2).get();
-	desc = input2.Direct3DSurface().Description();
-
-	//TODO: If want to use swapchain comment out these two lines. 
-	/*SubmitEval(input2, output);
-	swapChainIndex = (++swapChainIndex) % swapChainEntryCount;*/
-
-	hstring inputName = m_sessStyleTransfer.Model().InputFeatures().GetAt(0).Name();
-	m_bindStyleTransfer.Bind(inputName, input2);
-	hstring outputName = m_sessStyleTransfer.Model().OutputFeatures().GetAt(0).Name();
-
-	auto outputBindProperties = PropertySet();
-	m_bindStyleTransfer.Bind(outputName, output2); // TODO: See if can bind videoframe from MFT
-	auto results = m_sessStyleTransfer.Evaluate(m_bindStyleTransfer, L"");
-
-	output2.CopyToAsync(output).get(); // Should put onto the correct surface now? Make sure, can return the surface instead later
-
-	OutputDebugString(L" Ending RunStyleTransfer]");
-
-}
-
-
-void SegmentModel::RunTestDXGI(IDirect3DSurface src, IDirect3DSurface dest)
-{
-
-	OutputDebugString(L"\n [ Starting runTest | "); 
-	VideoFrame input = VideoFrame::CreateWithDirect3D11Surface(src);
-	VideoFrame output = VideoFrame::CreateWithDirect3D11Surface(dest);
-	
-	auto desc = input.Direct3DSurface().Description(); 
-	auto descOut = output.Direct3DSurface().Description();
-
-	//  TODO: Use a specific device to create so not piling up on resources?
-	auto device = m_sess.Device().Direct3D11Device();
-	VideoFrame output2 = VideoFrame::CreateAsDirect3D11SurfaceBacked(descOut.Format, descOut.Width, descOut.Height, device);
-	VideoFrame input2 = VideoFrame::CreateAsDirect3D11SurfaceBacked(desc.Format, desc.Width, desc.Height, device);
-	input.CopyToAsync(input2).get(); // TODO: Can input stay the same if NV12? 
-	output.CopyToAsync(output2).get();
-	desc = input2.Direct3DSurface().Description();
-
-	auto binding = LearningModelBinding(m_sess);
-	
-	hstring inputName = m_sess.Model().InputFeatures().GetAt(0).Name();
-	binding.Bind(inputName, input2);		
-	hstring outputName = m_sess.Model().OutputFeatures().GetAt(0).Name();
-
-	auto outputBindProperties = PropertySet();
-	binding.Bind(outputName, output2); // TODO: See if can bind videoframe from MFT
-	auto results = m_sess.Evaluate(binding, L"");
-
-	output2.CopyToAsync(output).get(); // Should put onto the correct surface now? Make sure, can return the surface instead later
-
-	binding.Clear();
-	input.Close();
-	input2.Close();
-	output2.Close();
-	output.Close();
-	OutputDebugString(L" Ending runTest ]");
-	//printf(" Ending runtest %d]", i);
-
-}
-
-LearningModel SegmentModel::Invert(long n, long c, long h, long w)
-{
-	
-	auto builder = LearningModelBuilder::Create(11)
-		// Loading in buffers and reshape
-		.Inputs().Add(LearningModelBuilder::CreateTensorFeatureDescriptor(L"Input", TensorKind::Float, { n, c, h, w }))
-		.Outputs().Add(LearningModelBuilder::CreateTensorFeatureDescriptor(L"Output", TensorKind::Float, { n, c, h, w }))
-		.Operators().Add(LearningModelOperator(L"Mul")
-			.SetInput(L"A", L"Input")
-			.SetConstant(L"B", TensorFloat::CreateFromIterable({ 1 }, { -1.f }))
-			//.SetConstant(L"B", TensorFloat::CreateFromIterable({3}, {0.114f, 0.587f, 0.299f}))
-			.SetOutput(L"C", L"MulOutput")
-		)
-		.Operators().Add(LearningModelOperator(L"Add")
-			.SetConstant(L"A", TensorFloat::CreateFromIterable({ 1 }, { 255.f }))
-			.SetInput(L"B", L"MulOutput")
-			.SetOutput(L"C", L"Output")
-		)
-		;
-
-	return builder.CreateModel();
-}
-
-LearningModel SegmentModel::PostProcess(long n, long c, long h, long w, long axis)
+LearningModel BackgroundBlur::PostProcess(long n, long c, long h, long w, long axis)
 {
 	auto builder = LearningModelBuilder::Create(12)
 		.Inputs().Add(LearningModelBuilder::CreateTensorFeatureDescriptor(L"InputImage", TensorKind::Float, { n, c, h, w }))
@@ -396,7 +162,7 @@ LearningModel SegmentModel::PostProcess(long n, long c, long h, long w, long axi
 			.SetAttribute(L"axis", TensorInt64Bit::CreateFromIterable({ 1 }, { axis })) // Correct way of passing axis? 
 			.SetOutput(L"reduced", L"Reduced"))
 		.Operators().Add(LearningModelOperator(L"Cast")
-			.SetInput(L"input", L"Reduced")	 
+			.SetInput(L"input", L"Reduced")
 			.SetAttribute(L"to", TensorInt64Bit::CreateFromIterable({}, { OnnxDataType::ONNX_FLOAT }))
 			.SetOutput(L"output", L"ArgmaxOutput"))
 		// Extract the foreground using the argmax scores to create a mask
@@ -438,21 +204,32 @@ LearningModel SegmentModel::PostProcess(long n, long c, long h, long w, long axi
 	return builder.CreateModel();
 }
 
-LearningModel SegmentModel::FCNResnet()
+
+
+LearningModel Invert(long n, long c, long h, long w)
 {
-	auto rel = std::filesystem::current_path();
-	rel.append("Assets\\fcn-resnet50-12-int8.onnx");
-	return LearningModel::LoadFromFilePath(rel + L"");
+	
+	auto builder = LearningModelBuilder::Create(11)
+		// Loading in buffers and reshape
+		.Inputs().Add(LearningModelBuilder::CreateTensorFeatureDescriptor(L"Input", TensorKind::Float, { n, c, h, w }))
+		.Outputs().Add(LearningModelBuilder::CreateTensorFeatureDescriptor(L"Output", TensorKind::Float, { n, c, h, w }))
+		.Operators().Add(LearningModelOperator(L"Mul")
+			.SetInput(L"A", L"Input")
+			.SetConstant(L"B", TensorFloat::CreateFromIterable({ 1 }, { -1.f }))
+			//.SetConstant(L"B", TensorFloat::CreateFromIterable({3}, {0.114f, 0.587f, 0.299f}))
+			.SetOutput(L"C", L"MulOutput")
+		)
+		.Operators().Add(LearningModelOperator(L"Add")
+			.SetConstant(L"A", TensorFloat::CreateFromIterable({ 1 }, { 255.f }))
+			.SetInput(L"B", L"MulOutput")
+			.SetOutput(L"C", L"Output")
+		)
+		;
+
+	return builder.CreateModel();
 }
 
-LearningModel SegmentModel::StyleTransfer()
-{
-	auto rel = std::filesystem::current_path();
-	rel.append("Assets\\mosaic.onnx");
-	return LearningModel::LoadFromFilePath(rel + L"");
-}
-
-LearningModel SegmentModel::Normalize0_1ThenZScore(long h, long w, long c, const std::array<float, 3>& means, const std::array<float, 3>& stddev)
+LearningModel Normalize0_1ThenZScore(long h, long w, long c, const std::array<float, 3>& means, const std::array<float, 3>& stddev)
 {
 	assert(means.size() == c);
 	assert(stddev.size() == c);
@@ -483,7 +260,7 @@ LearningModel SegmentModel::Normalize0_1ThenZScore(long h, long w, long c, const
 	return builder.CreateModel();
 }
 
-LearningModel SegmentModel::ReshapeFlatBufferToNCHW(long n, long c, long h, long w)
+LearningModel ReshapeFlatBufferToNCHW(long n, long c, long h, long w)
 {
 	auto builder = LearningModelBuilder::Create(11)
 		// Loading in buffers and reshape
@@ -504,50 +281,5 @@ LearningModel SegmentModel::ReshapeFlatBufferToNCHW(long n, long c, long h, long
 			.SetOutput(L"transposed", L"Output"))
 	;
 	return builder.CreateModel();
-}
-
-LearningModelSession SegmentModel::CreateLearningModelSession(const LearningModel& model, bool closeModel) {
-	auto device = m_useGPU ? LearningModelDevice(LearningModelDeviceKind::DirectXHighPerformance) : LearningModelDevice(LearningModelDeviceKind::Default); // Todo: Have a toggle between GPU/ CPU? 
-	auto options = LearningModelSessionOptions(); 
-	options.BatchSizeOverride(0);
-	options.CloseModelOnSessionCreation(closeModel);
-	auto session = LearningModelSession(model, device);
-	return session;
-}
-
-void SegmentModel::EvaluateInternal(LearningModelSession sess, LearningModelBinding bind, bool wait)
-{
-	auto results = sess.Evaluate(bind, L"");
-	/*auto results = sess.EvaluateAsync(bind, L"");
-	if (wait) {
-		results.GetResults(); // TODO: Will this actually wait?
-	}*/
-}
-
-LearningModelBinding SegmentModel::Evaluate(LearningModelSession& sess,const std::vector<ITensor*>& input, ITensor* output, bool wait) 
-{
-	auto binding = LearningModelBinding(sess);
-
-	for (int i = 0; i < input.size(); i++)
-	{
-		hstring inputName = sess.Model().InputFeatures().GetAt(i).Name();
-		binding.Bind(inputName, *input[i]);
-	}
-	hstring outputName = sess.Model().OutputFeatures().GetAt(0).Name();
-
-	auto outputBindProperties = PropertySet();
-	outputBindProperties.Insert(L"DisableTensorCpuSync", PropertyValue::CreateBoolean(!wait));
-	binding.Bind(outputName, *output, outputBindProperties);
-	//EvaluateInternal(sess, binding);
-
-	/*auto results = sess.Evaluate(binding, L"");
-	auto resultTensor = results.Outputs().Lookup(outputName).try_as<TensorFloat>();
-	float testPixels[6];
-	if (resultTensor) {
-		auto resultVector = resultTensor.GetAsVectorView();
-		resultVector.GetMany(0, testPixels);
-	}*/
-
-	return binding;
 }
 

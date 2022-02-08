@@ -748,7 +748,7 @@ HRESULT TransformAsync::InitializeTransform(void)
     // Set up circular queue of IStreamModels
     for (int i = 0; i < m_numThreads; i++) {
         // TODO: maybe styletransfer is the default model but have this change w/user input
-        m_models.push_back(std::make_unique<StyleTransfer>());
+        m_models.push_back(std::make_unique<BackgroundBlur>());
     }
 
 done: 

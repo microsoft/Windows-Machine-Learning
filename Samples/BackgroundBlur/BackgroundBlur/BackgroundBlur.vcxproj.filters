@@ -33,4 +33,8 @@
   <ItemGroup>
     <ResourceCompile Include="Capture.rc" />
   </ItemGroup>
+  <ItemGroup>
+    <CopyFileToFolders Include="Assets\mosaic.onnx" />
+    <CopyFileToFolders Include="Assets\fcn-resnet50-12-int8.onnx" />
+  </ItemGroup>
 </Project>

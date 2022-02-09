@@ -210,12 +210,11 @@ HRESULT TransformAsync::SubmitEval(IMFSample* pInputSample)
     TRACE((L"\n[Sample: %d | model: %d | ", dwCurrentSample, modelIndex));
 
     // **** 1. Allocate the output sample 
-  
+      // Ensure we still have a valid d3d device
+    CHECK_HR(hr = CheckDX11Device());
     // Ensure the allocator is set up 
     CHECK_HR(hr = SetupAlloc());
-    // Ensure we still have a valid d3d device
-    CHECK_HR(hr = CheckDX11Device());
-
+    
     // We allocate samples when have a dx device
     if (m_spDeviceManager != nullptr)
     {
@@ -243,6 +242,7 @@ HRESULT TransformAsync::SubmitEval(IMFSample* pInputSample)
         auto timePassed = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - now);
         OutputDebugString((L"Runtime: "));
         OutputDebugString((std::to_wstring(timePassed.count()).c_str()));
+        TRACE((L"%d]\n", modelIndex));
         std::rotate(m_models.begin(), m_models.begin() + 1, m_models.end()); // Put most recently used model at the back
     }
     src.Close();
@@ -759,8 +759,6 @@ HRESULT TransformAsync::InitializeTransform(void)
         // TODO: maybe styletransfer is the default model but have this change w/user input
         m_models.push_back(std::make_unique<BackgroundBlur>());
     }
-
-
 
 done: 
     return hr;

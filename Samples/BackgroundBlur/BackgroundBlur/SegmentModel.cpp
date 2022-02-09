@@ -53,6 +53,7 @@ void StyleTransfer::SetModels(int w, int h)
 }
 void StyleTransfer::Run(IDirect3DSurface src, IDirect3DSurface dest)
 {
+	assert(m_session.Device().AdapterId() == nvidia);
 	VideoFrame inVideoFrame = VideoFrame::CreateWithDirect3D11Surface(src);
 	VideoFrame outVideoFrame = VideoFrame::CreateWithDirect3D11Surface(dest);
 	SetVideoFrames(inVideoFrame, outVideoFrame);
@@ -62,7 +63,9 @@ void StyleTransfer::Run(IDirect3DSurface src, IDirect3DSurface dest)
 	hstring outputName = m_session.Model().OutputFeatures().GetAt(0).Name();
 
 	auto outputBindProperties = PropertySet();
-	m_binding.Bind(outputName, m_outputVideoFrame); // TODO: See if can bind videoframe from MFT
+	outputBindProperties.Insert(L"DisableTensorCpuSync", PropertyValue::CreateBoolean(true));
+
+	m_binding.Bind(outputName, m_outputVideoFrame, outputBindProperties); // TODO: See if can bind videoframe from MFT
 	auto results = m_session.Evaluate(m_binding, L"");
 
 	m_outputVideoFrame.CopyToAsync(outVideoFrame).get();
@@ -136,6 +139,9 @@ winrt::Windows::Foundation::IAsyncOperation<LearningModelEvaluationResult> Backg
 	// Shape validation
 	assert((UINT32)m_inputVideoFrame.Direct3DSurface().Description().Height == m_imageHeightInPixels);
 	assert((UINT32)m_inputVideoFrame.Direct3DSurface().Description().Width == m_imageWidthInPixels);
+
+	assert(m_sessionPreprocess.Device().AdapterId() == nvidia);
+	assert(m_sessionPostprocess.Device().AdapterId() == nvidia);
 
 	// 2. Preprocessing: z-score normalization 
 	std::vector<int64_t> shape = { 1, 3, m_imageHeightInPixels, m_imageWidthInPixels };

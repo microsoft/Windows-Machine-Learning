@@ -4,6 +4,7 @@
 #include <Windows.AI.MachineLearning.native.h>
 #include <winrt/Windows.Graphics.DirectX.Direct3D11.h>
 #include <windows.media.core.interop.h>
+#include <winrt/Windows.Devices.Display.Core.h>
 #include <strsafe.h>
 #include <wtypes.h>
 #include <winrt/base.h>
@@ -22,6 +23,7 @@ using namespace winrt::Windows::Media;
 LearningModel Normalize0_1ThenZScore(long height, long width, long channels, const std::array<float, 3>& means, const std::array<float, 3>& stddev);
 LearningModel ReshapeFlatBufferToNCHW(long n, long c, long h, long w);
 LearningModel Invert(long n, long c, long h, long w);
+
 
 class IStreamModel
 {
@@ -49,10 +51,15 @@ public:
 		m_bUseGPU = use;
 	}
 	void SetDevice() {
+		assert(m_session.Device().AdapterId() == nvidia);
+		assert(m_session.Device().Direct3D11Device() != NULL);
 		m_device = m_session.Device().Direct3D11Device();
+		auto device = m_session.Device().AdapterId();
 	}
 
 protected:
+	winrt::Windows::Graphics::DisplayAdapterId nvidia{};
+
 	void SetVideoFrames(VideoFrame inVideoFrame, VideoFrame outVideoFrame) 
 	{
 		if (true || !m_bVideoFramesSet)
@@ -83,6 +90,8 @@ protected:
 
 	LearningModelSession CreateLearningModelSession(const LearningModel& model, bool closedModel = true) {
 		auto device = m_bUseGPU ? LearningModelDevice(LearningModelDeviceKind::DirectXHighPerformance) : LearningModelDevice(LearningModelDeviceKind::Default);
+		auto displayAdapter = winrt::Windows::Devices::Display::Core::DisplayAdapter::FromId(device.AdapterId());
+		nvidia = device.AdapterId();
 		auto options = LearningModelSessionOptions();
 		options.BatchSizeOverride(0);
 		options.CloseModelOnSessionCreation(closedModel);

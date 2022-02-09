@@ -23,9 +23,46 @@ bool            g_fSleepState = false;
 
 INT_PTR CALLBACK ChooseDeviceDlgProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
+#include <filesystem>
+#include <shlobj.h>
+
+static std::wstring GetLatestWinPixGpuCapturerPath_Cpp17()
+{
+    LPWSTR programFilesPath = nullptr;
+    SHGetKnownFolderPath(FOLDERID_ProgramFiles, KF_FLAG_DEFAULT, NULL, &programFilesPath);
+
+    std::filesystem::path pixInstallationPath = programFilesPath;
+    pixInstallationPath /= "Microsoft PIX";
+
+    std::wstring newestVersionFound;
+
+    for (auto const& directory_entry : std::filesystem::directory_iterator(pixInstallationPath))
+    {
+        if (directory_entry.is_directory())
+        {
+            if (newestVersionFound.empty() || newestVersionFound < directory_entry.path().filename().c_str())
+            {
+                newestVersionFound = directory_entry.path().filename().c_str();
+            }
+        }
+    }
+
+    if (newestVersionFound.empty())
+    {
+        // TODO: Error, no PIX installation found
+    }
+
+    return pixInstallationPath / newestVersionFound / L"WinPixGpuCapturer.dll";
+}
 
 INT WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance*/, _In_ LPWSTR /*lpCmdLine*/, _In_ INT nCmdShow)
 {
+    // Check to see if a copy of WinPixGpuCapturer.dll has already been injected into the application.
+    // This may happen if the application is launched through the PIX UI. 
+    if (GetModuleHandle(L"WinPixGpuCapturer.dll") == 0)
+    {
+        LoadLibrary(GetLatestWinPixGpuCapturerPath_Cpp17().c_str());
+    }
     bool bCoInit = false, bMFStartup = false;
     HWND hwnd;
     // Initialize the common controls

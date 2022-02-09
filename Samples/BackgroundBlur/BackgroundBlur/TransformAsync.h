@@ -308,7 +308,7 @@ protected:
     std::unique_ptr<IStreamModel> m_streamModel; // TODO: Keep a vector of stream models? 
     // TODO: Prob needs to be a vector so can dynamically allocate based on what numThreads ends up as.
     std::vector<std::unique_ptr<IStreamModel>> m_models; 
-    int m_numThreads = 5;
+    int m_numThreads = 8;
 
     // Pseudocode
     // int numThreads; needs to be configured by constructor

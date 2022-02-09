@@ -139,9 +139,13 @@ public:
 	{};
 	void SetModels(int w, int h);
 	void Run(IDirect3DSurface src, IDirect3DSurface dest);
+	winrt::Windows::Foundation::IAsyncOperation<LearningModelEvaluationResult> RunAsync();
 private:
 	LearningModel GetModel();
 	LearningModel PostProcess(long n, long c, long h, long w, long axis);
+
+	std::mutex Processing; // Ensure only one access to a BB model at a time? 
+	winrt::Windows::Foundation::IAsyncOperation<LearningModelEvaluationResult> m_evalResult;
 
 	// Background blur-specific sessions, bindings 
 	LearningModelSession m_sessionPreprocess; 

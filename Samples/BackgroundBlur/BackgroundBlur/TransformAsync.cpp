@@ -205,6 +205,8 @@ HRESULT TransformAsync::SubmitEval(IMFSample* pInputSample)
     IDirect3DSurface src, dest;
     winrt::com_ptr<IMFMediaBuffer> pMediaBuffer;
 
+    auto model = m_models[0].get(); // Lock on? 
+
     TRACE((L"\n[Sample: %d | model: %d | ", dwCurrentSample, modelIndex));
 
     // **** 1. Allocate the output sample 
@@ -237,10 +239,11 @@ HRESULT TransformAsync::SubmitEval(IMFSample* pInputSample)
     {
         // Do the copies inside runtest
         auto now = std::chrono::high_resolution_clock::now();
-        m_models[modelIndex]->Run(src, dest);
+        model->Run(src, dest);
         auto timePassed = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - now);
         OutputDebugString((L"Runtime: "));
         OutputDebugString((std::to_wstring(timePassed.count()).c_str()));
+        std::rotate(m_models.begin(), m_models.begin() + 1, m_models.end()); // Put most recently used model at the back
     }
     src.Close();
     dest.Close();
@@ -756,6 +759,8 @@ HRESULT TransformAsync::InitializeTransform(void)
         // TODO: maybe styletransfer is the default model but have this change w/user input
         m_models.push_back(std::make_unique<BackgroundBlur>());
     }
+
+
 
 done: 
     return hr;

@@ -106,13 +106,34 @@ LearningModel BackgroundBlur::GetModel()
 }
 void BackgroundBlur::Run(IDirect3DSurface src, IDirect3DSurface dest)
 {
-	VideoFrame inVideoFrame = VideoFrame::CreateWithDirect3D11Surface(src);
-	VideoFrame outVideoFrame = VideoFrame::CreateWithDirect3D11Surface(dest);
-	SetVideoFrames(inVideoFrame, outVideoFrame);
+	// TODO: Lock so only one call to each IStreamModel at a time? 
+	if (m_evalResult == nullptr || m_evalResult.Status() != Windows::Foundation::AsyncStatus::Started) {
+		VideoFrame outVideoFrame=NULL;
+		{
+			std::lock_guard<std::mutex> guard{ Processing };
+			VideoFrame inVideoFrame = VideoFrame::CreateWithDirect3D11Surface(src);
+			outVideoFrame = VideoFrame::CreateWithDirect3D11Surface(dest);
+			SetVideoFrames(inVideoFrame, outVideoFrame);
+			m_evalResult = RunAsync();
+
+		}
+		
+		m_evalResult.Completed([&](auto&& asyncInfo, winrt::Windows::Foundation::AsyncStatus const) {
+			// Ensure only one call to copy out at a time
+			std::lock_guard<std::mutex> guard{ Processing };
+			OutputDebugString(L"Eval Completed");
+			// StyleTransferEffect copies to a member outputCache video frame and then copies to output outside of first condition
+			m_outputVideoFrame.CopyToAsync(outVideoFrame).get();
+			m_inputVideoFrame.Close();
+			m_outputVideoFrame.Close();
+			});
+	}
+}
+
+winrt::Windows::Foundation::IAsyncOperation<LearningModelEvaluationResult> BackgroundBlur::RunAsync()
+{
 
 	// Shape validation
-	OutputDebugString(std::to_wstring(m_inputVideoFrame.Direct3DSurface().Description().Height).c_str());
-	OutputDebugString(std::to_wstring(m_inputVideoFrame.Direct3DSurface().Description().Width).c_str());
 	assert((UINT32)m_inputVideoFrame.Direct3DSurface().Description().Height == m_imageHeightInPixels);
 	assert((UINT32)m_inputVideoFrame.Direct3DSurface().Description().Width == m_imageWidthInPixels);
 
@@ -140,15 +161,12 @@ void BackgroundBlur::Run(IDirect3DSurface src, IDirect3DSurface dest)
 	assert(m_outputVideoFrame.Direct3DSurface().Description().Width == m_imageWidthInPixels);
 
 	// 4. Postprocessing
-	outputBindProperties.Insert(L"DisableTensorCpuSync", PropertyValue::CreateBoolean(false));
+	outputBindProperties.Insert(L"DisableTensorCpuSync", PropertyValue::CreateBoolean(true));
 	m_bindingPostprocess.Bind(m_sessionPostprocess.Model().InputFeatures().GetAt(0).Name(), m_inputVideoFrame); // InputImage
 	m_bindingPostprocess.Bind(m_sessionPostprocess.Model().InputFeatures().GetAt(1).Name(), FCNResnetOutput); // InputScores
 	m_bindingPostprocess.Bind(m_sessionPostprocess.Model().OutputFeatures().GetAt(0).Name(), m_outputVideoFrame);
-	m_sessionPostprocess.EvaluateAsync(m_bindingPostprocess, L"").get();
-
-	m_outputVideoFrame.CopyToAsync(outVideoFrame).get();
-	m_inputVideoFrame.Close();
-	m_outputVideoFrame.Close();
+	// TODO: Make this async as well, and add a completed 
+	return m_sessionPostprocess.EvaluateAsync(m_bindingPostprocess, L"");
 }
 
 LearningModel BackgroundBlur::PostProcess(long n, long c, long h, long w, long axis)

@@ -34,9 +34,6 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="packages.config" />
-  </ItemGroup>
-  <ItemGroup>
     <CopyFileToFolders Include="..\..\..\SharedContent\media\fish.png">
       <Filter>Resource Files</Filter>
     </CopyFileToFolders>
@@ -52,5 +49,8 @@
     <CopyFileToFolders Include="..\..\SqueezeNetObjectDetection\Desktop\cpp\Labels.txt">
       <Filter>Resource Files</Filter>
     </CopyFileToFolders>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
   </ItemGroup>
 </Project>

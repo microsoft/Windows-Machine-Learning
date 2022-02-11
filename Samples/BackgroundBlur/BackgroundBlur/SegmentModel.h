@@ -114,6 +114,14 @@ protected:
 }; 
 
 // TODO: Make an even more Invert IStreamModel? 
+//class Invert : public IStreamModel
+//{
+//public: 
+//	Invert(int w, int h) : IStreamModel(w, h) { SetModels(w, h); }
+//	Invert() : IStreamModel() {}
+//	void SetModels(int w, int h); 
+//	void Run(IDirect3DSurface src, IDirect3DSurface dest);
+//};
 
 class StyleTransfer : public IStreamModel {
 public:

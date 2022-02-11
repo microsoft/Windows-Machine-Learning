@@ -106,10 +106,32 @@ HRESULT CreateDX11Device(_Out_ ID3D11Device** ppDevice, _Out_ ID3D11DeviceContex
         D3D_FEATURE_LEVEL_9_1
     };
 
-    
+    // Find the adapter with the most video memory
+    UINT i = 0;
+
+    std::vector <IDXGIAdapter*> vAdapters;
+    winrt::com_ptr<IDXGIAdapter> pBestAdapter;
+
+    winrt::com_ptr<IDXGIAdapter> spAdapter;
+    winrt::com_ptr<IDXGIFactory> spFactory;
+    DXGI_ADAPTER_DESC desc;
+    hr = CreateDXGIFactory1(IID_PPV_ARGS(spFactory.put()));
+    size_t maxVideoMem = 0;
+    while (spFactory->EnumAdapters(i, spAdapter.put()) != DXGI_ERROR_NOT_FOUND) 
+    {
+        spAdapter->GetDesc(&desc);
+        if (desc.DedicatedVideoMemory > maxVideoMem)
+        {
+            spAdapter.copy_to(pBestAdapter.put());
+            maxVideoMem = desc.DedicatedVideoMemory;
+        }
+        spAdapter = nullptr;
+        ++i;
+    }
+
     hr = D3D11CreateDevice(
-        nullptr,
-        D3D_DRIVER_TYPE_HARDWARE,
+        pBestAdapter.get(),
+        D3D_DRIVER_TYPE_UNKNOWN,
         nullptr,
         D3D11_CREATE_DEVICE_VIDEO_SUPPORT,
         levels,

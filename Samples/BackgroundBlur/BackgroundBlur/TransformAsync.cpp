@@ -205,6 +205,10 @@ HRESULT TransformAsync::SubmitEval(IMFSample* pInputSample)
     IDirect3DSurface src, dest;
     winrt::com_ptr<IMFMediaBuffer> pMediaBuffer;
 
+    winrt::com_ptr<IDXGIDevice> pDXGIDevice{ m_spDevice.as<IDXGIDevice>() };
+    winrt::com_ptr<IDXGIAdapter> pAdapter;
+    DXGI_ADAPTER_DESC desc;
+
     auto model = m_models[0].get(); // Lock on? 
 
     TRACE((L"\n[Sample: %d | model: %d | ", dwCurrentSample, modelIndex));
@@ -233,8 +237,12 @@ HRESULT TransformAsync::SubmitEval(IMFSample* pInputSample)
 
     // **** 2. Run inference on input sample
     src = SampleToD3Dsurface(pInputSample);
-    // TODO: Fix device manager because pOutputSample isn't d3d backed, this call fails
     dest = SampleToD3Dsurface(pOutputSample.get());
+
+    // Extract the device 
+
+    pDXGIDevice->GetAdapter(pAdapter.put());
+    pAdapter->GetDesc(&desc);
     {
         // Do the copies inside runtest
         auto now = std::chrono::high_resolution_clock::now();

@@ -126,7 +126,7 @@ void BackgroundBlur::Run(IDirect3DSurface src, IDirect3DSurface dest)
 			std::lock_guard<std::mutex> guard{ Processing };
 			OutputDebugString(L"Eval Completed");
 			// StyleTransferEffect copies to a member outputCache video frame and then copies to output outside of first condition
-			m_outputVideoFrame.CopyToAsync(outVideoFrame).get();
+			m_outputVideoFrame.CopyToAsync(outVideoFrame).get(); // TODO: Still threading bug here methinks
 			m_inputVideoFrame.Close();
 			m_outputVideoFrame.Close();
 			});

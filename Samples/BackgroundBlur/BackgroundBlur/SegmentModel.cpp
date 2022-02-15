@@ -38,6 +38,18 @@ enum OnnxDataType : long {
 	ONNX_BFLOAT16 = 16,
 }OnnxDataType;
 
+interface DECLSPEC_UUID("9f251514-9d4d-4902-9d60-18988ab7d4b5") DECLSPEC_NOVTABLE
+	IDXGraphicsAnalysis : public IUnknown
+{
+
+	STDMETHOD_(void, BeginCapture)() PURE;
+
+	STDMETHOD_(void, EndCapture)() PURE;
+
+}; 
+IDXGraphicsAnalysis* pGraphicsAnalysis;
+
+
 // TODO: Probably don't need to be globals
 std::array<float, 3> mean = { 0.485f, 0.456f, 0.406f };
 std::array<float, 3> stddev = { 0.229f, 0.224f, 0.225f };
@@ -83,6 +95,8 @@ void BackgroundBlur::SetModels(int w, int h)
 	w /= g_scale; h /= g_scale;
 	SetImageSize(w, h);
 
+	HRESULT getAnalysis = DXGIGetDebugInterface1(0, __uuidof(pGraphicsAnalysis), reinterpret_cast<void**>(&pGraphicsAnalysis));
+
 	m_sessionPreprocess = CreateLearningModelSession(Normalize0_1ThenZScore(h, w, 3, mean, stddev));
 	m_sessionPostprocess = CreateLearningModelSession(PostProcess(1, 3, h, w, 1));
 	// Named dim override of FCN-Resnet so that unlock optimizations of fixed input size
@@ -109,28 +123,51 @@ LearningModel BackgroundBlur::GetModel()
 }
 void BackgroundBlur::Run(IDirect3DSurface src, IDirect3DSurface dest)
 {
-	// TODO: Lock so only one call to each IStreamModel at a time? 
-	if (m_evalResult == nullptr || m_evalResult.Status() != Windows::Foundation::AsyncStatus::Started) {
-		VideoFrame outVideoFrame=NULL;
-		{
-			std::lock_guard<std::mutex> guard{ Processing };
-			VideoFrame inVideoFrame = VideoFrame::CreateWithDirect3D11Surface(src);
-			outVideoFrame = VideoFrame::CreateWithDirect3D11Surface(dest);
-			SetVideoFrames(inVideoFrame, outVideoFrame);
-			m_evalResult = RunAsync();
+	pGraphicsAnalysis->BeginCapture();
+	assert(m_session.Device().AdapterId() == nvidia);
+	VideoFrame inVideoFrame = VideoFrame::CreateWithDirect3D11Surface(src);
+	VideoFrame outVideoFrame = VideoFrame::CreateWithDirect3D11Surface(dest);
+	SetVideoFrames(inVideoFrame, outVideoFrame);
 
-		}
-		
-		m_evalResult.Completed([&](auto&& asyncInfo, winrt::Windows::Foundation::AsyncStatus const) {
-			// Ensure only one call to copy out at a time
-			std::lock_guard<std::mutex> guard{ Processing };
-			OutputDebugString(L"Eval Completed");
-			// StyleTransferEffect copies to a member outputCache video frame and then copies to output outside of first condition
-			m_outputVideoFrame.CopyToAsync(outVideoFrame).get(); // TODO: Still threading bug here methinks
-			m_inputVideoFrame.Close();
-			m_outputVideoFrame.Close();
-			});
-	}
+	// Shape validation
+	assert((UINT32)m_inputVideoFrame.Direct3DSurface().Description().Height == m_imageHeightInPixels);
+	assert((UINT32)m_inputVideoFrame.Direct3DSurface().Description().Width == m_imageWidthInPixels);
+
+	assert(m_sessionPreprocess.Device().AdapterId() == nvidia);
+	assert(m_sessionPostprocess.Device().AdapterId() == nvidia);
+
+	// 2. Preprocessing: z-score normalization 
+	std::vector<int64_t> shape = { 1, 3, m_imageHeightInPixels, m_imageWidthInPixels };
+	ITensor intermediateTensor = TensorFloat::Create(shape);
+	hstring inputName = m_sessionPreprocess.Model().InputFeatures().GetAt(0).Name();
+	hstring outputName = m_sessionPreprocess.Model().OutputFeatures().GetAt(0).Name();
+
+	m_bindingPreprocess.Bind(inputName, m_inputVideoFrame);
+	outputBindProperties.Insert(L"DisableTensorCpuSync", PropertyValue::CreateBoolean(true));
+	m_bindingPreprocess.Bind(outputName, intermediateTensor, outputBindProperties);
+	m_sessionPreprocess.EvaluateAsync(m_bindingPreprocess, L"");
+
+	// 3. Run through actual model
+	std::vector<int64_t> FCNResnetOutputShape = { 1, 21, m_imageHeightInPixels, m_imageWidthInPixels };
+	ITensor FCNResnetOutput = TensorFloat::Create(FCNResnetOutputShape);
+
+	m_binding.Bind(m_session.Model().InputFeatures().GetAt(0).Name(), intermediateTensor);
+	m_binding.Bind(m_session.Model().OutputFeatures().GetAt(0).Name(), FCNResnetOutput, outputBindProperties);
+	m_session.EvaluateAsync(m_binding, L"");
+
+	// Shape validation 
+	assert(m_outputVideoFrame.Direct3DSurface().Description().Height == m_imageHeightInPixels);
+	assert(m_outputVideoFrame.Direct3DSurface().Description().Width == m_imageWidthInPixels);
+
+	// 4. Postprocessing
+	outputBindProperties.Insert(L"DisableTensorCpuSync", PropertyValue::CreateBoolean(false));
+	m_bindingPostprocess.Bind(m_sessionPostprocess.Model().InputFeatures().GetAt(0).Name(), m_inputVideoFrame); // InputImage
+	m_bindingPostprocess.Bind(m_sessionPostprocess.Model().InputFeatures().GetAt(1).Name(), FCNResnetOutput); // InputScores
+	m_bindingPostprocess.Bind(m_sessionPostprocess.Model().OutputFeatures().GetAt(0).Name(), m_outputVideoFrame);
+	// TODO: Make this async as well, and add a completed 
+	m_sessionPostprocess.EvaluateAsync(m_bindingPostprocess, L"").get();
+	m_outputVideoFrame.CopyToAsync(outVideoFrame).get();
+	pGraphicsAnalysis->EndCapture();
 }
 
 winrt::Windows::Foundation::IAsyncOperation<LearningModelEvaluationResult> BackgroundBlur::RunAsync()

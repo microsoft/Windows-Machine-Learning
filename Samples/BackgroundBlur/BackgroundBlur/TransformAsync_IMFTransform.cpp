@@ -4,6 +4,7 @@
 #include <Mfapi.h>
 #include "common/CHWMFT_DebugLogger.h"
 
+
 //-------------------------------------------------------------------
 // Name: GetStreamLimits
 // Returns the minimum and maximum number of streams.
@@ -15,7 +16,6 @@ HRESULT TransformAsync::GetStreamLimits(
     DWORD* pdwOutputMaximum
 )
 {
-
     if ((pdwInputMinimum == NULL) ||
         (pdwInputMaximum == NULL) ||
         (pdwOutputMinimum == NULL) ||

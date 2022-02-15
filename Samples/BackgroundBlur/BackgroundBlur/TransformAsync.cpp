@@ -918,10 +918,12 @@ HRESULT TransformAsync::OnStartOfStream(void)
     HRESULT hr = S_OK;
     do
     {
+
         {
             AutoLock lock(m_critSec);
 
             m_dwStatus |= MYMFT_STATUS_STREAM_STARTED;
+
         }
 
         /*******************************
@@ -1031,6 +1033,7 @@ HRESULT TransformAsync::OnFlush(void)
     HRESULT hr = S_OK;
     do
     {
+
         AutoLock lock(m_critSec);
 
         m_dwStatus &= (~MYMFT_STATUS_STREAM_STARTED);
@@ -1043,6 +1046,7 @@ HRESULT TransformAsync::OnFlush(void)
 
         m_llCurrentSampleTime = 0;    // Reset our sample time to 0 on a flush
     } while (false);
+
     return hr;
 }
 

@@ -1,4 +1,6 @@
-#pragma once
+#define USE_PIX
+#define DBG
+
 #include <winrt/Microsoft.AI.MachineLearning.Experimental.h>
 #include <winrt/Microsoft.AI.MachineLearning.h>
 #include <Windows.AI.MachineLearning.native.h>
@@ -13,17 +15,25 @@
 #include <mutex>
 #include <winrt/windows.foundation.collections.h>
 #include <winrt/Windows.Media.h>
+//#include <DXProgrammableCapture.h>
+#include "common.h"
+#include <DXGItype.h>
+#include <dxgi1_2.h>
+#include <dxgi1_3.h>
 
 using namespace winrt::Microsoft::AI::MachineLearning;
 using namespace winrt::Microsoft::AI::MachineLearning::Experimental;
 using namespace winrt::Windows::Graphics::DirectX::Direct3D11;
 using namespace winrt::Windows::Media;
 
+
+
 // Model-agnostic helper LearningModels
 LearningModel Normalize0_1ThenZScore(long height, long width, long channels, const std::array<float, 3>& means, const std::array<float, 3>& stddev);
 LearningModel ReshapeFlatBufferToNCHW(long n, long c, long h, long w);
 LearningModel Invert(long n, long c, long h, long w);
 
+//winrt::com_ptr<IDXGraphicsAnalysis> pGraphicsAnalysis;
 
 class IStreamModel
 {

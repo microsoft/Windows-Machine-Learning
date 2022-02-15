@@ -1,5 +1,4 @@
 #pragma once
-
 #include "common/CSampleQueue.h"
 #include <Mfidl.h>
 #include <mftransform.h>
@@ -13,6 +12,7 @@
 #include <evr.h>
 #include <mfobjects.h>
 
+#include "common.h"
 #include <initguid.h>
 #include <uuids.h>      // DirectShow GUIDs
 #include <d3d9types.h>
@@ -23,6 +23,8 @@
 #include "common/common.h"
 using namespace MediaFoundationSamples;
 #include "SegmentModel.h"
+
+
 
 // TODO: Do we need the extension marker? 
 // {1F620607-A7FF-4B94-82F4-993F2E17B497}
@@ -308,7 +310,7 @@ protected:
     std::unique_ptr<IStreamModel> m_streamModel; // TODO: Keep a vector of stream models? 
     // TODO: Prob needs to be a vector so can dynamically allocate based on what numThreads ends up as.
     std::vector<std::unique_ptr<IStreamModel>> m_models; 
-    int m_numThreads = 2;
+    int m_numThreads =2;
 
     // Pseudocode
     // int numThreads; needs to be configured by constructor

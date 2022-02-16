@@ -4,6 +4,21 @@
 #include <Mfapi.h>
 #include "common/CHWMFT_DebugLogger.h"
 
+#include <DXGItype.h>
+#include <dxgi1_2.h>
+#include <dxgi1_3.h>
+
+
+interface DECLSPEC_UUID("9f251514-9d4d-4902-9d60-18988ab7d4b5") DECLSPEC_NOVTABLE
+    IDXGraphicsAnalysis : public IUnknown
+{
+
+    STDMETHOD_(void, BeginCapture)() PURE;
+
+    STDMETHOD_(void, EndCapture)() PURE;
+
+};
+IDXGraphicsAnalysis* pGraphicsAnalysis;
 
 //-------------------------------------------------------------------
 // Name: GetStreamLimits
@@ -683,8 +698,11 @@ HRESULT TransformAsync::ProcessMessage(
 
     // TODO: Old messages
     case MFT_MESSAGE_NOTIFY_BEGIN_STREAMING:
+    {
+        HRESULT getAnalysis = DXGIGetDebugInterface1(0, __uuidof(pGraphicsAnalysis), reinterpret_cast<void**>(&pGraphicsAnalysis));
         SetupAlloc();
         break;
+    }
     case MFT_MESSAGE_NOTIFY_END_STREAMING:
     default:
         break;
@@ -808,6 +826,7 @@ HRESULT TransformAsync::ProcessOutput(
         }
     }
 done:
+    //pGraphicsAnalysis->EndCapture();
     return hr;
 }
 
@@ -818,6 +837,7 @@ HRESULT TransformAsync::ProcessInput(
 {
     HRESULT hr = S_OK;
     {
+        //pGraphicsAnalysis->BeginCapture();
         AutoLock lock(m_critSec);
 
         if (m_dwNeedInputCount == 0)

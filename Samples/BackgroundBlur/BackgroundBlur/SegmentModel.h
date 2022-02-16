@@ -17,9 +17,7 @@
 #include <winrt/Windows.Media.h>
 //#include <DXProgrammableCapture.h>
 #include "common.h"
-#include <DXGItype.h>
-#include <dxgi1_2.h>
-#include <dxgi1_3.h>
+
 
 using namespace winrt::Microsoft::AI::MachineLearning;
 using namespace winrt::Microsoft::AI::MachineLearning::Experimental;

@@ -38,16 +38,7 @@ enum OnnxDataType : long {
 	ONNX_BFLOAT16 = 16,
 }OnnxDataType;
 
-interface DECLSPEC_UUID("9f251514-9d4d-4902-9d60-18988ab7d4b5") DECLSPEC_NOVTABLE
-	IDXGraphicsAnalysis : public IUnknown
-{
 
-	STDMETHOD_(void, BeginCapture)() PURE;
-
-	STDMETHOD_(void, EndCapture)() PURE;
-
-}; 
-IDXGraphicsAnalysis* pGraphicsAnalysis;
 
 
 // TODO: Probably don't need to be globals
@@ -95,8 +86,6 @@ void BackgroundBlur::SetModels(int w, int h)
 	w /= g_scale; h /= g_scale;
 	SetImageSize(w, h);
 
-	HRESULT getAnalysis = DXGIGetDebugInterface1(0, __uuidof(pGraphicsAnalysis), reinterpret_cast<void**>(&pGraphicsAnalysis));
-
 	m_sessionPreprocess = CreateLearningModelSession(Normalize0_1ThenZScore(h, w, 3, mean, stddev));
 	m_sessionPostprocess = CreateLearningModelSession(PostProcess(1, 3, h, w, 1));
 	// Named dim override of FCN-Resnet so that unlock optimizations of fixed input size
@@ -118,12 +107,11 @@ void BackgroundBlur::SetModels(int w, int h)
 LearningModel BackgroundBlur::GetModel()
 {
 	auto rel = std::filesystem::current_path();
-	rel.append("Assets\\fcn-resnet50-12-int8.onnx");
+	rel.append("Assets\\fcn-resnet50-11.onnx");
 	return LearningModel::LoadFromFilePath(rel + L"");
 }
 void BackgroundBlur::Run(IDirect3DSurface src, IDirect3DSurface dest)
 {
-	pGraphicsAnalysis->BeginCapture();
 	assert(m_session.Device().AdapterId() == nvidia);
 	VideoFrame inVideoFrame = VideoFrame::CreateWithDirect3D11Surface(src);
 	VideoFrame outVideoFrame = VideoFrame::CreateWithDirect3D11Surface(dest);
@@ -167,7 +155,6 @@ void BackgroundBlur::Run(IDirect3DSurface src, IDirect3DSurface dest)
 	// TODO: Make this async as well, and add a completed 
 	m_sessionPostprocess.EvaluateAsync(m_bindingPostprocess, L"").get();
 	m_outputVideoFrame.CopyToAsync(outVideoFrame).get();
-	pGraphicsAnalysis->EndCapture();
 }
 
 winrt::Windows::Foundation::IAsyncOperation<LearningModelEvaluationResult> BackgroundBlur::RunAsync()

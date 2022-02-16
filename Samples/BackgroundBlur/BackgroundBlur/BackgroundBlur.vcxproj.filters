@@ -36,5 +36,6 @@
   <ItemGroup>
     <CopyFileToFolders Include="Assets\mosaic.onnx" />
     <CopyFileToFolders Include="Assets\fcn-resnet50-12-int8.onnx" />
+    <CopyFileToFolders Include="Assets\fcn-resnet50-11.onnx" />
   </ItemGroup>
 </Project>

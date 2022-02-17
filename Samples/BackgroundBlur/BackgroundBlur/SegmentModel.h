@@ -54,6 +54,7 @@ public:
 	};
 	virtual void SetModels(int w, int h) =0;
 	virtual void Run(IDirect3DSurface src, IDirect3DSurface dest) =0;
+	virtual void RunAsync(IDirect3DSurface src, IDirect3DSurface dest) = 0;
 
 	void SetUseGPU(bool use) { 
 		m_bUseGPU = use;
@@ -64,6 +65,8 @@ public:
 		m_device = m_session.Device().Direct3D11Device();
 		auto device = m_session.Device().AdapterId();
 	}
+	winrt::Windows::Foundation::IAsyncOperation<LearningModelEvaluationResult> m_evalStatus;
+	VideoFrame m_outputVideoFrame;
 
 protected:
 	winrt::Windows::Graphics::DisplayAdapterId nvidia{};
@@ -109,10 +112,12 @@ protected:
 	bool						m_bUseGPU = true;
 	bool						m_bVideoFramesSet = false;
 	VideoFrame					m_inputVideoFrame,
-								m_outputVideoFrame;
+								
 	UINT32                      m_imageWidthInPixels;
 	UINT32                      m_imageHeightInPixels;
 	IDirect3DDevice				m_device;
+
+	// TODO: IAsyncOperation<LearningModelResult> that RunAsync sets, TransformAsync can query to see if this model is doing work
 
 	// Learning Model Binding and Session. 
 	// Derived classes can add more as needed for chaining? 
@@ -138,6 +143,7 @@ public:
 	StyleTransfer() : IStreamModel() {};
 	void SetModels(int w, int h);
 	void Run(IDirect3DSurface src, IDirect3DSurface dest);
+	winrt::Windows::Foundation::IAsyncOperation<LearningModelEvaluationResult> RunAsync(IDirect3DSurface src, IDirect3DSurface dest);
 private: 
 	LearningModel GetModel();
 };
@@ -164,13 +170,13 @@ public:
 	{};
 	void SetModels(int w, int h);
 	void Run(IDirect3DSurface src, IDirect3DSurface dest);
-	winrt::Windows::Foundation::IAsyncOperation<LearningModelEvaluationResult> RunAsync();
+	virtual void RunAsync(IDirect3DSurface src, IDirect3DSurface dest) = 0;
+
 private:
 	LearningModel GetModel();
 	LearningModel PostProcess(long n, long c, long h, long w, long axis);
 
 	std::mutex Processing; // Ensure only one access to a BB model at a time? 
-	winrt::Windows::Foundation::IAsyncOperation<LearningModelEvaluationResult> m_evalResult;
 
 	// Background blur-specific sessions, bindings 
 	LearningModelSession m_sessionPreprocess; 

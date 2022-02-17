@@ -222,6 +222,8 @@ public:
 #pragma endregion IMFAsyncCallback
 
     HRESULT             SubmitEval(IMFSample* pInputSample);
+    HRESULT             FinishEval(IMFSample* pInputSample, winrt::com_ptr<IMFSample> pOutputSample,
+        IDirect3DSurface src, IDirect3DSurface dest);
 
 protected: 
     TransformAsync(HRESULT& hr);
@@ -310,7 +312,9 @@ protected:
     std::unique_ptr<IStreamModel> m_streamModel; // TODO: Keep a vector of stream models? 
     // TODO: Prob needs to be a vector so can dynamically allocate based on what numThreads ends up as.
     std::vector<std::unique_ptr<IStreamModel>> m_models; 
-    int m_numThreads =5;
+    int m_numThreads =3;
+    int finishedFrameIndex = 0;
+    std::mutex Processing;
 
     // Pseudocode
     // int numThreads; needs to be configured by constructor

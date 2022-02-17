@@ -94,11 +94,16 @@ void BackgroundBlur::SetModels(int w, int h)
 	auto options = LearningModelSessionOptions();
 	options.BatchSizeOverride(0);
 	options.CloseModelOnSessionCreation(true);
-	// ****** TODO: Input name vs. dimension name? *****
-	// Because input name is "input" but I want to set dim 2 & 3 of that input 
 	options.OverrideNamedDimension(L"height", m_imageHeightInPixels);
 	options.OverrideNamedDimension(L"width", m_imageWidthInPixels);
 	m_session = LearningModelSession(model, fcnDevice, options);
+
+	/*std::array<_int64, 4>inputVector;
+	m_session.Model().InputFeatures().GetAt(0).as<TensorFeatureDescriptor>().Shape().GetMany(0, inputVector);
+	LearningModelSessionExperimental experimental_session(m_session);
+	auto experimental_options = experimental_session.Options();
+	auto internal_overrides = experimental_options.GetNamedDimensionOverrides();
+	auto height = internal_overrides.Lookup(L"height");*/
 
 	m_bindingPreprocess = LearningModelBinding(m_sessionPreprocess);
 	m_binding = LearningModelBinding(m_session);
@@ -107,7 +112,7 @@ void BackgroundBlur::SetModels(int w, int h)
 LearningModel BackgroundBlur::GetModel()
 {
 	auto rel = std::filesystem::current_path();
-	rel.append("Assets\\fcn-resnet50-11.onnx");
+	rel.append("Assets\\fcn-resnet50-12.onnx");
 	return LearningModel::LoadFromFilePath(rel + L"");
 }
 void BackgroundBlur::Run(IDirect3DSurface src, IDirect3DSurface dest)
@@ -157,8 +162,12 @@ void BackgroundBlur::Run(IDirect3DSurface src, IDirect3DSurface dest)
 	m_outputVideoFrame.CopyToAsync(outVideoFrame).get();
 }
 
-winrt::Windows::Foundation::IAsyncOperation<LearningModelEvaluationResult> BackgroundBlur::RunAsync()
+winrt::Windows::Foundation::IAsyncOperation<LearningModelEvaluationResult> BackgroundBlur::RunAsync(IDirect3DSurface src, IDirect3DSurface dest)
 {
+	assert(m_session.Device().AdapterId() == nvidia);
+	VideoFrame inVideoFrame = VideoFrame::CreateWithDirect3D11Surface(src);
+	VideoFrame outVideoFrame = VideoFrame::CreateWithDirect3D11Surface(dest);
+	SetVideoFrames(inVideoFrame, outVideoFrame);
 
 	// Shape validation
 	assert((UINT32)m_inputVideoFrame.Direct3DSurface().Description().Height == m_imageHeightInPixels);
@@ -176,7 +185,7 @@ winrt::Windows::Foundation::IAsyncOperation<LearningModelEvaluationResult> Backg
 	m_bindingPreprocess.Bind(inputName, m_inputVideoFrame);
 	outputBindProperties.Insert(L"DisableTensorCpuSync", PropertyValue::CreateBoolean(true));
 	m_bindingPreprocess.Bind(outputName, intermediateTensor, outputBindProperties);
-	m_sessionPreprocess.EvaluateAsync(m_bindingPreprocess, L""); 
+	m_sessionPreprocess.EvaluateAsync(m_bindingPreprocess, L"");
 
 	// 3. Run through actual model
 	std::vector<int64_t> FCNResnetOutputShape = { 1, 21, m_imageHeightInPixels, m_imageWidthInPixels };
@@ -184,19 +193,19 @@ winrt::Windows::Foundation::IAsyncOperation<LearningModelEvaluationResult> Backg
 
 	m_binding.Bind(m_session.Model().InputFeatures().GetAt(0).Name(), intermediateTensor);
 	m_binding.Bind(m_session.Model().OutputFeatures().GetAt(0).Name(), FCNResnetOutput, outputBindProperties);
-	m_session.EvaluateAsync(m_binding, L""); 
+	m_session.EvaluateAsync(m_binding, L"");
 
 	// Shape validation 
 	assert(m_outputVideoFrame.Direct3DSurface().Description().Height == m_imageHeightInPixels);
 	assert(m_outputVideoFrame.Direct3DSurface().Description().Width == m_imageWidthInPixels);
 
 	// 4. Postprocessing
-	outputBindProperties.Insert(L"DisableTensorCpuSync", PropertyValue::CreateBoolean(true));
+	outputBindProperties.Insert(L"DisableTensorCpuSync", PropertyValue::CreateBoolean(false));
 	m_bindingPostprocess.Bind(m_sessionPostprocess.Model().InputFeatures().GetAt(0).Name(), m_inputVideoFrame); // InputImage
 	m_bindingPostprocess.Bind(m_sessionPostprocess.Model().InputFeatures().GetAt(1).Name(), FCNResnetOutput); // InputScores
 	m_bindingPostprocess.Bind(m_sessionPostprocess.Model().OutputFeatures().GetAt(0).Name(), m_outputVideoFrame);
-	// TODO: Make this async as well, and add a completed 
-	return m_sessionPostprocess.EvaluateAsync(m_bindingPostprocess, L"");
+	m_evalStatus = m_sessionPostprocess.EvaluateAsync(m_bindingPostprocess, L"");
+	//return m_outputVideoFrame.CopyToAsync(outVideoFrame);
 }
 
 LearningModel BackgroundBlur::PostProcess(long n, long c, long h, long w, long axis)
@@ -289,7 +298,7 @@ LearningModel Normalize0_1ThenZScore(long h, long w, long c, const std::array<fl
 		.Outputs().Add(LearningModelBuilder::CreateTensorFeatureDescriptor(L"Output", L"The NCHW image normalized with mean and stddev.", TensorKind::Float, {1, c, h, w}))
 		.Operators().Add(LearningModelOperator(L"Div") // Normalize from 0-255 to 0-1 by dividing by 255
 			.SetInput(L"A", L"Input")
-			.SetConstant(L"B", TensorFloat::CreateFromArray({}, std::array<const float,1>{ 255.f }))
+			.SetConstant(L"B", TensorFloat::CreateFromArray({}, { 255.f }))
 			.SetOutput(L"C", L"DivOutput"))
 		.Operators().Add(LearningModelOperator(L"Reshape")
 			.SetConstant(L"data", TensorFloat::CreateFromArray({ c }, means))

@@ -128,7 +128,7 @@
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>C:\Program Files %28x86%29\Windows Kits\10\Lib\10.0.19041.0\um\$(PlatformShortName);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>Mfplat.lib;Mf.lib;Mfcore.lib;evr.lib;mfuuid.lib;powrprof.lib;d3d11.lib;mf.lib;mfplat.lib;shlwapi.lib;Comctl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Mfplat.lib;Mf.lib;Mfcore.lib;evr.lib;mfuuid.lib;powrprof.lib;d3d11.lib;mf.lib;mfplat.lib;shlwapi.lib;Comctl32.lib;DXGI.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">

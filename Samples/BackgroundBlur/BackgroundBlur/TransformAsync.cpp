@@ -20,6 +20,7 @@ const FOURCC FOURCC_UYVY = MAKEFOURCC('U', 'Y', 'V', 'Y');
 const FOURCC FOURCC_NV12 = MAKEFOURCC('N', 'V', '1', '2');
 const FOURCC FOURCC_RGB24 = 20;
 const FOURCC FOURCC_RGB32 = 22;
+float runningAverage = 0.0f;
 
 // static array of media types (preferred and accepted).
 const GUID* g_MediaSubtypes[] =
@@ -194,16 +195,11 @@ done:
 
 HRESULT TransformAsync::SubmitEval(IMFSample* pInputSample)
 {
-    HRESULT hr = S_OK; 
-    winrt::com_ptr<IMFSample> pOutputSample; 
-    winrt::com_ptr<IMFMediaEvent> pHaveOutputEvent;
+    HRESULT hr = S_OK;
+    winrt::com_ptr<IMFSample> pOutputSample;
     DWORD dwCurrentSample = InterlockedIncrement(&m_ulSampleCounter); // todo: set at the end of a call 
-    int modelIndex = dwCurrentSample % m_numThreads; 
-    LONGLONG hnsDuration = 0;
-    LONGLONG hnsTime = 0;
-    UINT64 pun64MarkerID = 0;
+    int modelIndex = dwCurrentSample % m_numThreads;
     IDirect3DSurface src, dest;
-    winrt::com_ptr<IMFMediaBuffer> pMediaBuffer;
 
     winrt::com_ptr<IDXGIDevice> pDXGIDevice{ m_spDevice.as<IDXGIDevice>() };
     winrt::com_ptr<IDXGIAdapter> pAdapter;
@@ -218,7 +214,7 @@ HRESULT TransformAsync::SubmitEval(IMFSample* pInputSample)
     CHECK_HR(hr = CheckDX11Device());
     // Ensure the allocator is set up 
     CHECK_HR(hr = SetupAlloc());
-    
+
     // We allocate samples when have a dx device
     if (m_spDeviceManager != nullptr)
     {
@@ -238,21 +234,72 @@ HRESULT TransformAsync::SubmitEval(IMFSample* pInputSample)
     // **** 2. Run inference on input sample
     src = SampleToD3Dsurface(pInputSample);
     dest = SampleToD3Dsurface(pOutputSample.get());
+    VideoFrame outVideoFrame = VideoFrame::CreateWithDirect3D11Surface(dest);
 
-    // Extract the device 
-
-    pDXGIDevice->GetAdapter(pAdapter.put());
-    pAdapter->GetDesc(&desc);
+    // Check if model already has an active task going
+    if(model->m_evalStatus == nullptr || model->m_evalStatus.Status() != winrt::Windows::Foundation::AsyncStatus::Started)
     {
         // Do the copies inside runtest
         auto now = std::chrono::high_resolution_clock::now();
-        model->Run(src, dest);
-        auto timePassed = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - now);
-        OutputDebugString((L"Runtime: "));
-        OutputDebugString((std::to_wstring(timePassed.count()).c_str()));
-        TRACE((L"%d]\n", modelIndex));
+        // TODO: Keep track of finishedFrameIndex
+
+        model->RunAsync(src, dest); // TODO: Do I need a lock on this because of binding?  
         std::rotate(m_models.begin(), m_models.begin() + 1, m_models.end()); // Put most recently used model at the back
+        finishedFrameIndex = (finishedFrameIndex - 1 + m_numThreads) % m_numThreads;
+        model->m_evalStatus.Completed([&](auto&& asyncInfo, winrt::Windows::Foundation::AsyncStatus const) {
+            OutputDebugString(L"Eval Complete");
+            VideoFrame output = asyncInfo.GetResults().Outputs().Lookup(L"OutputImage").try_as<VideoFrame>();
+
+            // TODO: Do I need all this finished frame check stuff? 
+            // TODO: Can just call copytoasync synchronously? 
+            int bindingIdx; 
+            bool finishedFrameUpdated;
+            {
+                std::lock_guard<mutex> guard{ Processing };
+                auto modelFind = std::find_if(m_models.begin(), m_models.end(),
+                    [model](const auto& b) {
+                        return b.get() == model;
+                    }
+                bindingIdx = std::distance(bindings.begin(), modelFind);
+                finishedFrameUpdated = bindingIdx >= finishedFrameIndex;
+                finishedFrameIndex = finishedFrameUpdated ? bindingIdx : finishedFrameIndex;
+            }
+            if (finishedFrameUpdated)
+            {
+                output.CopyToAsync(model->m_outputVideoFrame); // keeps async here so maybe that's why we need 
+            }
+
+            auto timePassed = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - now);
+            if (dwCurrentSample > 1) runningAverage += (timePassed.count() - runningAverage) / dwCurrentSample;
+            TRACE((L"Runtime : %f", runningAverage));
+            //output.CopyToAsync(model->m_outputVideoFrame).get(); // TODO: will this link correctly with dest id3d? 
+            });
     }
+    if (model->m_outputVideoFrame != nullptr)
+    {
+        // TODO: I don't think this needs a lock bc each call to submit eval is specific to a frame
+        // Lock so that don't have multiple sources copying to output at once
+        // std::lock_guard<std::mutex> guard{ Processing }; 
+        model->m_outputVideoFrame.CopyToAsync(outVideoFrame).get();
+        // TODO: Does this need to be locked? 
+        FinishEval(pInputSample, pOutputSample, src, dest);
+    }
+
+done:
+    return hr;
+}
+
+HRESULT TransformAsync::FinishEval(IMFSample* pInputSample, winrt::com_ptr<IMFSample> pOutputSample,
+    IDirect3DSurface src, IDirect3DSurface dest)
+{
+    LONGLONG hnsDuration = 0;
+    LONGLONG hnsTime = 0;
+    UINT64 pun64MarkerID = 0;
+    HRESULT hr = S_OK;
+    winrt::com_ptr<IMFMediaBuffer> pMediaBuffer;
+    winrt::com_ptr<IMFMediaEvent> pHaveOutputEvent;
+
+
     src.Close();
     dest.Close();
 

@@ -242,7 +242,6 @@ namespace WinMLSamplesGallery.Samples
             if (model != CurrentModel)
             {
                 var modelPath = _modelDictionary[model];
-
                 var inferenceModel = LearningModel.LoadFromFilePath(modelPath);
                 _inferenceSession = CreateLearningModelSession(inferenceModel);
 

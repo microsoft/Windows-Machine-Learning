@@ -242,6 +242,9 @@ namespace WinMLSamplesGallery.Samples
             if (model != CurrentModel)
             {
                 var modelPath = _modelDictionary[model];
+                System.Diagnostics.Debug.WriteLine("Model Path");
+                System.Diagnostics.Debug.WriteLine(modelPath);
+
                 var inferenceModel = LearningModel.LoadFromFilePath(modelPath);
                 _inferenceSession = CreateLearningModelSession(inferenceModel);
 

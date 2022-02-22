@@ -193,19 +193,21 @@ done:
 
 }
 
-HRESULT TransformAsync::SubmitEval(IMFSample* pInputSample)
+HRESULT TransformAsync::SubmitEval(IMFSample* pInput)
 {
     HRESULT hr = S_OK;
     winrt::com_ptr<IMFSample> pOutputSample;
     DWORD dwCurrentSample = InterlockedIncrement(&m_ulSampleCounter); // todo: set at the end of a call 
     int modelIndex = dwCurrentSample % m_numThreads;
     IDirect3DSurface src, dest;
+    VideoFrame outVideoFrame = NULL;
+    winrt::com_ptr<IMFSample> pInputSample;
+    pInputSample.copy_from(pInput); // TODO: Attach or copy_from? 
 
-    winrt::com_ptr<IDXGIDevice> pDXGIDevice{ m_spDevice.as<IDXGIDevice>() };
-    winrt::com_ptr<IDXGIAdapter> pAdapter;
-    DXGI_ADAPTER_DESC desc;
-
-    auto model = m_models[0].get(); // Lock on? 
+    //pInputSample attributes to copy over to pOutputSample
+    LONGLONG hnsDuration = 0;
+    LONGLONG hnsTime = 0;
+    UINT64 pun64MarkerID = 0;
 
     TRACE((L"\n[Sample: %d | model: %d | ", dwCurrentSample, modelIndex));
 
@@ -231,10 +233,16 @@ HRESULT TransformAsync::SubmitEval(IMFSample* pInputSample)
         CHECK_HR(hr = E_INVALIDARG);
     }
 
+    // Explicitly copy out pInput attributes, since copy doesn't do this for us
+    CHECK_HR(pInputSample->GetSampleDuration(&hnsDuration));
+    CHECK_HR(pInputSample->GetSampleTime(&hnsTime));
+    pInputSample->GetUINT64(TransformAsync_MFSampleExtension_Marker, &pun64MarkerID);
+
     // **** 2. Run inference on input sample
-    src = SampleToD3Dsurface(pInputSample);
+    src = SampleToD3Dsurface(pInputSample.get());
     dest = SampleToD3Dsurface(pOutputSample.get());
-    VideoFrame outVideoFrame = VideoFrame::CreateWithDirect3D11Surface(dest);
+    outVideoFrame = VideoFrame::CreateWithDirect3D11Surface(dest);
+    auto model = m_models[0].get(); // Lock on? 
 
     // Check if model already has an active task going
     if(model->m_evalStatus == nullptr || model->m_evalStatus.Status() != winrt::Windows::Foundation::AsyncStatus::Started)
@@ -242,78 +250,56 @@ HRESULT TransformAsync::SubmitEval(IMFSample* pInputSample)
         // Do the copies inside runtest
         auto now = std::chrono::high_resolution_clock::now();
         // TODO: Keep track of finishedFrameIndex
-
-        model->RunAsync(src, dest); // TODO: Do I need a lock on this because of binding?  
+        {
+            // Lock on model specifically instead? 
+            std::lock_guard<std::mutex> guard{ model->Processing };
+            model->RunAsync(src, dest); // TODO: Do I need a lock on this because of binding? Probably: what if n=1 and try again to bind? 
+        }
         std::rotate(m_models.begin(), m_models.begin() + 1, m_models.end()); // Put most recently used model at the back
         finishedFrameIndex = (finishedFrameIndex - 1 + m_numThreads) % m_numThreads;
-        model->m_evalStatus.Completed([&](auto&& asyncInfo, winrt::Windows::Foundation::AsyncStatus const) {
+        model->m_evalStatus.Completed([this, src, dest, raw=pOutputSample.get(), pInputSample, hnsDuration, hnsTime, pun64MarkerID, outVideoFrame] (auto&& asyncInfo, winrt::Windows::Foundation::AsyncStatus const) mutable {
+
             OutputDebugString(L"Eval Complete");
-            VideoFrame output = asyncInfo.GetResults().Outputs().Lookup(L"OutputImage").try_as<VideoFrame>();
-
-            // TODO: Do I need all this finished frame check stuff? 
-            // TODO: Can just call copytoasync synchronously? 
-            int bindingIdx; 
-            bool finishedFrameUpdated;
+            VideoFrame output = asyncInfo.GetResults().Outputs()
+                .Lookup(L"OutputImage")
+                .try_as<VideoFrame>();; // Will it have copied to the correct surface? 
+            if (output)
             {
-                std::lock_guard<mutex> guard{ Processing };
-                auto modelFind = std::find_if(m_models.begin(), m_models.end(),
-                    [model](const auto& b) {
-                        return b.get() == model;
-                    }
-                bindingIdx = std::distance(bindings.begin(), modelFind);
-                finishedFrameUpdated = bindingIdx >= finishedFrameIndex;
-                finishedFrameIndex = finishedFrameUpdated ? bindingIdx : finishedFrameIndex;
-            }
-            if (finishedFrameUpdated)
-            {
-                output.CopyToAsync(model->m_outputVideoFrame); // keeps async here so maybe that's why we need 
+                output.CopyToAsync(outVideoFrame).get(); 
+                outVideoFrame.Close();
             }
 
-            auto timePassed = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - now);
-            if (dwCurrentSample > 1) runningAverage += (timePassed.count() - runningAverage) / dwCurrentSample;
-            TRACE((L"Runtime : %f", runningAverage));
-            //output.CopyToAsync(model->m_outputVideoFrame).get(); // TODO: will this link correctly with dest id3d? 
+
+            // TODO: Can set pOutputSample as well so that just copy everything by value in lambda capture clause
+            FinishEval(pInputSample, raw, src, dest, hnsDuration, hnsTime, pun64MarkerID); // Trying to maintain the lifetime of the whole sample
             });
     }
-    if (model->m_outputVideoFrame != nullptr)
-    {
-        // TODO: I don't think this needs a lock bc each call to submit eval is specific to a frame
-        // Lock so that don't have multiple sources copying to output at once
-        // std::lock_guard<std::mutex> guard{ Processing }; 
-        model->m_outputVideoFrame.CopyToAsync(outVideoFrame).get();
-        // TODO: Does this need to be locked? 
-        FinishEval(pInputSample, pOutputSample, src, dest);
-    }
+    
+
 
 done:
     return hr;
 }
 
-HRESULT TransformAsync::FinishEval(IMFSample* pInputSample, winrt::com_ptr<IMFSample> pOutputSample,
-    IDirect3DSurface src, IDirect3DSurface dest)
+// Try as const ref
+HRESULT TransformAsync::FinishEval(winrt::com_ptr<IMFSample> pInputSample, IMFSample* pOutput,
+    IDirect3DSurface src, IDirect3DSurface dest, LONGLONG hnsDuration, LONGLONG hnsTime, UINT64 pun64MarkerID)
 {
-    LONGLONG hnsDuration = 0;
-    LONGLONG hnsTime = 0;
-    UINT64 pun64MarkerID = 0;
+
     HRESULT hr = S_OK;
     winrt::com_ptr<IMFMediaBuffer> pMediaBuffer;
     winrt::com_ptr<IMFMediaEvent> pHaveOutputEvent;
-
+    winrt::com_ptr<IMFSample> pOutputSample;
+    pOutputSample.copy_from(pOutput);
 
     src.Close();
     dest.Close();
 
     // **** 3. Set up the output sample
     // CHECK_HR(hr = DuplicateAttributes(pOutputSample.get(), pInputSample));
-    if (SUCCEEDED(pInputSample->GetSampleDuration(&hnsDuration))) 
-    {
-        CHECK_HR(hr = pOutputSample->SetSampleDuration(hnsDuration));
-    }
-    if (SUCCEEDED(pInputSample->GetSampleTime(&hnsTime)))
-    {
-        CHECK_HR(hr = pOutputSample->SetSampleTime(hnsTime));
-        // todo: incrememt m_
-    }
+    CHECK_HR(hr = pOutputSample->SetSampleDuration(hnsDuration));
+    CHECK_HR(hr = pOutputSample->SetSampleTime(hnsTime));
+
 
     // Always set the output buffer size!
     CHECK_HR(hr = pOutputSample->GetBufferByIndex(0, pMediaBuffer.put()));
@@ -322,7 +308,7 @@ HRESULT TransformAsync::FinishEval(IMFSample* pInputSample, winrt::com_ptr<IMFSa
     if(m_bFirstSample != FALSE)
     {
         // TODO: What if make not discontinuity? 
-        // CHECK_HR(hr = pOutputSample->SetUINT32(MFSampleExtension_Discontinuity, TRUE));
+        CHECK_HR(hr = pOutputSample->SetUINT32(MFSampleExtension_Discontinuity, TRUE));
         m_bFirstSample = FALSE;
     }
 
@@ -338,7 +324,7 @@ HRESULT TransformAsync::FinishEval(IMFSample* pInputSample, winrt::com_ptr<IMFSa
         m_dwStatus |= MYMFT_STATUS_OUTPUT_SAMPLE_READY;
     }
 
-    if (pInputSample->GetUINT64(TransformAsync_MFSampleExtension_Marker, &pun64MarkerID) == S_OK)
+    if (pun64MarkerID)
     {
         // This input sample is flagged as a marker
         winrt::com_ptr<IMFMediaEvent> pMarkerEvent;
@@ -351,7 +337,7 @@ HRESULT TransformAsync::FinishEval(IMFSample* pInputSample, winrt::com_ptr<IMFSa
     CHECK_HR(hr = RequestSample(0));
 
 done: 
-    
+    // TODO: Close pInput/pOutput
     return hr; 
 }
 

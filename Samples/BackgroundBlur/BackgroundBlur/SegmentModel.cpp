@@ -73,6 +73,11 @@ void StyleTransfer::Run(IDirect3DSurface src, IDirect3DSurface dest)
 
 	m_outputVideoFrame.CopyToAsync(outVideoFrame).get();
 }
+void StyleTransfer::RunAsync(IDirect3DSurface& src, IDirect3DSurface& dest)
+{
+	// TODO: Implement async StyleTransfer
+	m_evalStatus = NULL;
+}
 LearningModel StyleTransfer::GetModel()
 {
 	auto rel = std::filesystem::current_path();
@@ -162,7 +167,7 @@ void BackgroundBlur::Run(IDirect3DSurface src, IDirect3DSurface dest)
 	m_outputVideoFrame.CopyToAsync(outVideoFrame).get();
 }
 
-winrt::Windows::Foundation::IAsyncOperation<LearningModelEvaluationResult> BackgroundBlur::RunAsync(IDirect3DSurface src, IDirect3DSurface dest)
+void BackgroundBlur::RunAsync(IDirect3DSurface& src, IDirect3DSurface& dest)
 {
 	assert(m_session.Device().AdapterId() == nvidia);
 	VideoFrame inVideoFrame = VideoFrame::CreateWithDirect3D11Surface(src);
@@ -205,6 +210,11 @@ winrt::Windows::Foundation::IAsyncOperation<LearningModelEvaluationResult> Backg
 	m_bindingPostprocess.Bind(m_sessionPostprocess.Model().InputFeatures().GetAt(1).Name(), FCNResnetOutput); // InputScores
 	m_bindingPostprocess.Bind(m_sessionPostprocess.Model().OutputFeatures().GetAt(0).Name(), m_outputVideoFrame);
 	m_evalStatus = m_sessionPostprocess.EvaluateAsync(m_bindingPostprocess, L"");
+	// m_evalStatus = m_outputVideoFrame.CopyToAsync(outVideoFrame);
+	/*auto makeOutput = [&outVideoFrame]() -> winrt::Windows::Foundation::IAsyncOperation<VideoFrame> { co_return outVideoFrame; };
+	m_evalStatus = makeOutput();*/
+
+	// todo: go back to have this return AsyncStatus for when done with copytoasync? 
 	//return m_outputVideoFrame.CopyToAsync(outVideoFrame);
 }
 

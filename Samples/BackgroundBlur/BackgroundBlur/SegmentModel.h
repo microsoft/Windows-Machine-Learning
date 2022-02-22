@@ -54,7 +54,7 @@ public:
 	};
 	virtual void SetModels(int w, int h) =0;
 	virtual void Run(IDirect3DSurface src, IDirect3DSurface dest) =0;
-	virtual void RunAsync(IDirect3DSurface src, IDirect3DSurface dest) = 0;
+	virtual void RunAsync(IDirect3DSurface& src, IDirect3DSurface& dest) = 0;
 
 	void SetUseGPU(bool use) { 
 		m_bUseGPU = use;
@@ -67,6 +67,7 @@ public:
 	}
 	winrt::Windows::Foundation::IAsyncOperation<LearningModelEvaluationResult> m_evalStatus;
 	VideoFrame m_outputVideoFrame;
+	std::mutex Processing;
 
 protected:
 	winrt::Windows::Graphics::DisplayAdapterId nvidia{};
@@ -109,9 +110,10 @@ protected:
 		auto session = LearningModelSession(model, device, options);
 		return session;
 	}
+
 	bool						m_bUseGPU = true;
 	bool						m_bVideoFramesSet = false;
-	VideoFrame					m_inputVideoFrame,
+	VideoFrame					m_inputVideoFrame;
 								
 	UINT32                      m_imageWidthInPixels;
 	UINT32                      m_imageHeightInPixels;
@@ -143,7 +145,7 @@ public:
 	StyleTransfer() : IStreamModel() {};
 	void SetModels(int w, int h);
 	void Run(IDirect3DSurface src, IDirect3DSurface dest);
-	winrt::Windows::Foundation::IAsyncOperation<LearningModelEvaluationResult> RunAsync(IDirect3DSurface src, IDirect3DSurface dest);
+	void RunAsync(IDirect3DSurface& src, IDirect3DSurface& dest);
 private: 
 	LearningModel GetModel();
 };
@@ -170,7 +172,7 @@ public:
 	{};
 	void SetModels(int w, int h);
 	void Run(IDirect3DSurface src, IDirect3DSurface dest);
-	virtual void RunAsync(IDirect3DSurface src, IDirect3DSurface dest) = 0;
+	void RunAsync(IDirect3DSurface& src, IDirect3DSurface& dest);
 
 private:
 	LearningModel GetModel();

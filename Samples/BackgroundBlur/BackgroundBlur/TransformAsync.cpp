@@ -198,7 +198,7 @@ HRESULT TransformAsync::SubmitEval(IMFSample* pInput)
     HRESULT hr = S_OK;
     winrt::com_ptr<IMFSample> pOutputSample;
     DWORD dwCurrentSample = InterlockedIncrement(&m_ulSampleCounter); // todo: set at the end of a call 
-    int modelIndex = dwCurrentSample % m_numThreads;
+    swapChainEntry = (swapChainEntry++) % m_numThreads;
     IDirect3DSurface src, dest;
     VideoFrame outVideoFrame = NULL;
     winrt::com_ptr<IMFSample> pInputSample;
@@ -209,7 +209,7 @@ HRESULT TransformAsync::SubmitEval(IMFSample* pInput)
     LONGLONG hnsTime = 0;
     UINT64 pun64MarkerID = 0;
 
-    TRACE((L"\n[Sample: %d | model: %d | ", dwCurrentSample, modelIndex));
+    TRACE((L"\n[Sample: %d | model: %d | ", dwCurrentSample, swapChainEntry));
 
     // **** 1. Allocate the output sample 
       // Ensure we still have a valid d3d device
@@ -247,19 +247,18 @@ HRESULT TransformAsync::SubmitEval(IMFSample* pInput)
     // Check if model already has an active task going
     if(model->m_evalStatus == nullptr || model->m_evalStatus.Status() != winrt::Windows::Foundation::AsyncStatus::Started)
     {
-        // Do the copies inside runtest
         auto now = std::chrono::high_resolution_clock::now();
         // TODO: Keep track of finishedFrameIndex
         {
-            // Lock on model specifically instead? 
+            // Will this protect the shared resource of src/dest for later bindings than just the first? 
             std::lock_guard<std::mutex> guard{ model->Processing };
-            model->RunAsync(src, dest); // TODO: Do I need a lock on this because of binding? Probably: what if n=1 and try again to bind? 
+            model->RunAsync(src, dest); 
         }
         std::rotate(m_models.begin(), m_models.begin() + 1, m_models.end()); // Put most recently used model at the back
         finishedFrameIndex = (finishedFrameIndex - 1 + m_numThreads) % m_numThreads;
-        model->m_evalStatus.Completed([this, src, dest, raw=pOutputSample.get(), pInputSample, hnsDuration, hnsTime, pun64MarkerID, outVideoFrame] (auto&& asyncInfo, winrt::Windows::Foundation::AsyncStatus const) mutable {
+        model->m_evalStatus.Completed([=] (auto&& asyncInfo, winrt::Windows::Foundation::AsyncStatus const) mutable {
 
-            OutputDebugString(L"Eval Complete");
+            TRACE((L"Eval %d ", swapChainEntry));
             VideoFrame output = asyncInfo.GetResults().Outputs()
                 .Lookup(L"OutputImage")
                 .try_as<VideoFrame>();; // Will it have copied to the correct surface? 
@@ -268,10 +267,11 @@ HRESULT TransformAsync::SubmitEval(IMFSample* pInput)
                 output.CopyToAsync(outVideoFrame).get(); 
                 outVideoFrame.Close();
             }
-
+            auto timePassed = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - now);
+            TRACE((L"Runtime: %d", timePassed.count()));
 
             // TODO: Can set pOutputSample as well so that just copy everything by value in lambda capture clause
-            FinishEval(pInputSample, raw, src, dest, hnsDuration, hnsTime, pun64MarkerID); // Trying to maintain the lifetime of the whole sample
+            FinishEval(pInputSample, pOutputSample, src, dest, hnsDuration, hnsTime, pun64MarkerID); // Trying to maintain the lifetime of the whole sample
             });
     }
     
@@ -282,15 +282,13 @@ done:
 }
 
 // Try as const ref
-HRESULT TransformAsync::FinishEval(winrt::com_ptr<IMFSample> pInputSample, IMFSample* pOutput,
+HRESULT TransformAsync::FinishEval(winrt::com_ptr<IMFSample> pInputSample, winrt::com_ptr<IMFSample> pOutputSample,
     IDirect3DSurface src, IDirect3DSurface dest, LONGLONG hnsDuration, LONGLONG hnsTime, UINT64 pun64MarkerID)
 {
 
     HRESULT hr = S_OK;
     winrt::com_ptr<IMFMediaBuffer> pMediaBuffer;
     winrt::com_ptr<IMFMediaEvent> pHaveOutputEvent;
-    winrt::com_ptr<IMFSample> pOutputSample;
-    pOutputSample.copy_from(pOutput);
 
     src.Close();
     dest.Close();

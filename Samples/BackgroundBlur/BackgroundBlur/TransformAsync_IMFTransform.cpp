@@ -836,7 +836,10 @@ HRESULT TransformAsync::ProcessInput(
     DWORD       dwFlags)
 {
     HRESULT hr = S_OK;
+    DWORD currFrameLocal = 0;
     {
+        TRACE((L"\n PI Thread %d | ", std::hash<std::thread::id>()(std::this_thread::get_id())));
+
         //pGraphicsAnalysis->BeginCapture();
         AutoLock lock(m_critSec);
 
@@ -850,6 +853,7 @@ HRESULT TransformAsync::ProcessInput(
         {
             m_dwNeedInputCount--;
         }
+        currFrameLocal = m_currFrameNumber++;
     }
     if (pSample == NULL)
     {
@@ -880,6 +884,13 @@ HRESULT TransformAsync::ProcessInput(
 
     // Now schedule the work to decode the sample
     CHECK_HR(hr = ScheduleFrameInference());
+    // If not at the max number of Need Input count, fire off another request
+    // TODO: Use NeedInputCount, or currFrameNum math from Christian? 
+    if ((m_pInputSampleQueue->GetLength()) < MAX_NUM_INPUT_SAMPLES)
+    {
+        RequestSample(0);
+    }
+
 
 done:
     return hr;

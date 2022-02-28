@@ -73,10 +73,11 @@ void StyleTransfer::Run(IDirect3DSurface src, IDirect3DSurface dest)
 
 	m_outputVideoFrame.CopyToAsync(outVideoFrame).get();
 }
-void StyleTransfer::RunAsync(IDirect3DSurface& src, IDirect3DSurface& dest)
+VideoFrame StyleTransfer::RunAsync(IDirect3DSurface src, IDirect3DSurface dest)
 {
 	// TODO: Implement async StyleTransfer
-	m_evalStatus = NULL;
+	//m_evalStatus = NULL;
+	return NULL;
 }
 LearningModel StyleTransfer::GetModel()
 {
@@ -103,12 +104,10 @@ void BackgroundBlur::SetModels(int w, int h)
 	options.OverrideNamedDimension(L"width", m_imageWidthInPixels);
 	m_session = LearningModelSession(model, fcnDevice, options);
 
-	/*std::array<_int64, 4>inputVector;
-	m_session.Model().InputFeatures().GetAt(0).as<TensorFeatureDescriptor>().Shape().GetMany(0, inputVector);
-	LearningModelSessionExperimental experimental_session(m_session);
-	auto experimental_options = experimental_session.Options();
-	auto internal_overrides = experimental_options.GetNamedDimensionOverrides();
-	auto height = internal_overrides.Lookup(L"height");*/
+	//auto joinOptions = LearningModelJoinOptions();
+	//joinOptions.CloseModelOnJoin(true);
+	//auto stageOne = LearningModelExperimental(Normalize0_1ThenZScore(h, w, 3, mean, stddev));
+	//stageOne.JoinModel(GetModel(), joinOptions);
 
 	m_bindingPreprocess = LearningModelBinding(m_sessionPreprocess);
 	m_binding = LearningModelBinding(m_session);
@@ -122,6 +121,7 @@ LearningModel BackgroundBlur::GetModel()
 }
 void BackgroundBlur::Run(IDirect3DSurface src, IDirect3DSurface dest)
 {
+	m_bSyncStarted = true;
 	assert(m_session.Device().AdapterId() == nvidia);
 	VideoFrame inVideoFrame = VideoFrame::CreateWithDirect3D11Surface(src);
 	VideoFrame outVideoFrame = VideoFrame::CreateWithDirect3D11Surface(dest);
@@ -165,9 +165,11 @@ void BackgroundBlur::Run(IDirect3DSurface src, IDirect3DSurface dest)
 	// TODO: Make this async as well, and add a completed 
 	m_sessionPostprocess.EvaluateAsync(m_bindingPostprocess, L"").get();
 	m_outputVideoFrame.CopyToAsync(outVideoFrame).get();
+	m_bSyncStarted = false;
+	m_canRunEval.notify_one();
 }
 
-void BackgroundBlur::RunAsync(IDirect3DSurface& src, IDirect3DSurface& dest)
+VideoFrame BackgroundBlur::RunAsync(IDirect3DSurface src, IDirect3DSurface dest)
 {
 	assert(m_session.Device().AdapterId() == nvidia);
 	VideoFrame inVideoFrame = VideoFrame::CreateWithDirect3D11Surface(src);
@@ -215,7 +217,8 @@ void BackgroundBlur::RunAsync(IDirect3DSurface& src, IDirect3DSurface& dest)
 	m_evalStatus = makeOutput();*/
 
 	// todo: go back to have this return AsyncStatus for when done with copytoasync? 
-	//return m_outputVideoFrame.CopyToAsync(outVideoFrame);
+	m_outputVideoFrame.CopyToAsync(outVideoFrame);
+	return outVideoFrame;
 }
 
 LearningModel BackgroundBlur::PostProcess(long n, long c, long h, long w, long axis)

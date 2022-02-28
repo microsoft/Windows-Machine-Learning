@@ -24,13 +24,12 @@
 using namespace MediaFoundationSamples;
 #include "SegmentModel.h"
 
-
+#define MAX_NUM_INPUT_SAMPLES 5
 
 // TODO: Do we need the extension marker? 
 // {1F620607-A7FF-4B94-82F4-993F2E17B497}
 DEFINE_GUID(TransformAsync_MFSampleExtension_Marker,
     0x1f620607, 0xa7ff, 0x4b94, 0x82, 0xf4, 0x99, 0x3f, 0x2e, 0x17, 0xb4, 0x97);
-
 
 enum eMFTStatus
 {
@@ -280,6 +279,10 @@ protected:
     winrt::com_ptr<IMFAttributes>   m_spOutputAttributes;   // TODO: Sample allocator attributes
     bool                            m_bStreamingInitialized;
     volatile    ULONG               m_ulSampleCounter;      // Frame number, can use to pick a IStreamModel
+    volatile ULONG m_processedFrameNum; // Number of frames we've processed
+    volatile ULONG m_currFrameNumber; // The current frame to be processing
+
+
 
     // Event fields
     DWORD                           m_dwStatus;
@@ -309,11 +312,13 @@ protected:
     winrt::com_ptr<IMFVideoSampleAllocatorEx>  m_spOutputSampleAllocator;
 
     // Model Inference fields
-    std::unique_ptr<IStreamModel> m_streamModel; // TODO: Keep a vector of stream models? 
     // TODO: Prob needs to be a vector so can dynamically allocate based on what numThreads ends up as.
     std::vector<std::unique_ptr<IStreamModel>> m_models; 
-    int m_numThreads =5;
-    int finishedFrameIndex = 0;
+    std::vector<std::thread> m_threads;
+    std::condition_variable thread; // Used to notify a thread of an available job
+    int m_numThreads = 5;//std::thread::hardware_concurrency(); // TODO: See if this actually is helpful
+
+
     int swapChainEntry = 0;
     std::mutex Processing;
 

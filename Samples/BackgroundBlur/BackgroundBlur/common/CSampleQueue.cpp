@@ -176,6 +176,8 @@ HRESULT CSampleQueue::AddSample(
 
                 TraceString(CHMFTTracing::TRACE_INFORMATION, L"%S(): Sample @%p added to back of Queue @%p",  __FUNCTION__, pSample, this);
             }
+
+            m_length++;
         }
     }while(false);
 
@@ -215,6 +217,7 @@ HRESULT CSampleQueue::GetNextSample(
                 break;
             }
             
+            m_length--;
             pCurrentNode = m_pHead;
 
             (*ppSample) = pCurrentNode->pSample;
@@ -260,6 +263,7 @@ HRESULT CSampleQueue::RemoveAllSamples(void)
         }
 
         m_pTail = NULL;
+        m_length = 0;
     }while(false);
 
     return hr;
@@ -286,6 +290,11 @@ BOOL CSampleQueue::IsQueueEmpty(void)
     AutoLock lock(m_critSec);
 
     return (m_pHead == NULL) ? TRUE : FALSE;
+}
+
+ULONG CSampleQueue::GetLength()
+{
+    return m_length;
 }
 
 CSampleQueue::CSampleQueue(void)

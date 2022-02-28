@@ -9,6 +9,7 @@
 #include <unknwn.h>
 #include <stdio.h>
 #include <wchar.h>
+#include <future>
 
 
 #define MFT_NUM_DEFAULT_ATTRIBUTES  4
@@ -178,14 +179,20 @@ HRESULT TransformAsync::ScheduleFrameInference(void)
     // Create a pInferenceTask based on the chosen segmentModel, pass input sample
     // TODO: punkObject as an IMFSample? 
     // TODO: Check to make sure pInputSample isn't null
+    //MFPutWorkItemEx(MFASYNC_CALLBACK_QUEUE_MULTITHREADED, 
+    //    [this, pInputSample]() {
+    //    this->SubmitEval(pInputSample.get()); 
+    //});
 
 
     CHECK_HR(hr = MFCreateAsyncResult(pInputSample.get(), // Pointer to object stored in async result
                         this, // Pointer to IMFAsyncCallback interface
                         this, // Pointer to IUnkonwn of state object
                         pResult.put()));
-    // Begin the inference task. Will complete async TransformAsync::Invoke
-    CHECK_HR(hr = MFPutWorkItemEx(m_dwDecodeWorkQueueID, pResult.get()));
+
+
+    //// Begin the inference task. Will complete async TransformAsync::Invoke
+    CHECK_HR(hr = MFPutWorkItemEx(MFASYNC_CALLBACK_QUEUE_MULTITHREADED, pResult.get()));
 
 done:
     //SAFE_RELEASE(model); // TODO: Make into a smart pointer
@@ -198,11 +205,13 @@ HRESULT TransformAsync::SubmitEval(IMFSample* pInput)
     HRESULT hr = S_OK;
     winrt::com_ptr<IMFSample> pOutputSample;
     DWORD dwCurrentSample = InterlockedIncrement(&m_ulSampleCounter); // todo: set at the end of a call 
-    swapChainEntry = (swapChainEntry++) % m_numThreads;
+    swapChainEntry = (++swapChainEntry) % m_numThreads;
     IDirect3DSurface src, dest;
-    VideoFrame outVideoFrame = NULL;
     winrt::com_ptr<IMFSample> pInputSample;
     pInputSample.copy_from(pInput); // TODO: Attach or copy_from? 
+
+    auto model = m_models[swapChainEntry].get(); // Lock on? 
+    std::unique_lock<std::mutex> lock(model->m_runMutex);
 
     //pInputSample attributes to copy over to pOutputSample
     LONGLONG hnsDuration = 0;
@@ -210,6 +219,7 @@ HRESULT TransformAsync::SubmitEval(IMFSample* pInput)
     UINT64 pun64MarkerID = 0;
 
     TRACE((L"\n[Sample: %d | model: %d | ", dwCurrentSample, swapChainEntry));
+    TRACE((L" | SE Thread %d | ", std::hash<std::thread::id>()(std::this_thread::get_id())));
 
     // **** 1. Allocate the output sample 
       // Ensure we still have a valid d3d device
@@ -241,41 +251,26 @@ HRESULT TransformAsync::SubmitEval(IMFSample* pInput)
     // **** 2. Run inference on input sample
     src = SampleToD3Dsurface(pInputSample.get());
     dest = SampleToD3Dsurface(pOutputSample.get());
-    outVideoFrame = VideoFrame::CreateWithDirect3D11Surface(dest);
-    auto model = m_models[0].get(); // Lock on? 
 
-    // Check if model already has an active task going
-    if(model->m_evalStatus == nullptr || model->m_evalStatus.Status() != winrt::Windows::Foundation::AsyncStatus::Started)
+    // TODO: Wait on a CV that signals when this model is ready to run? 
+    while (model->m_bSyncStarted == TRUE)
     {
-        auto now = std::chrono::high_resolution_clock::now();
-        // TODO: Keep track of finishedFrameIndex
-        {
-            // Will this protect the shared resource of src/dest for later bindings than just the first? 
-            std::lock_guard<std::mutex> guard{ model->Processing };
-            model->RunAsync(src, dest); 
-        }
-        std::rotate(m_models.begin(), m_models.begin() + 1, m_models.end()); // Put most recently used model at the back
-        finishedFrameIndex = (finishedFrameIndex - 1 + m_numThreads) % m_numThreads;
-        model->m_evalStatus.Completed([=] (auto&& asyncInfo, winrt::Windows::Foundation::AsyncStatus const) mutable {
+        TRACE((L"Model %d already running, block?", swapChainEntry));
 
-            TRACE((L"Eval %d ", swapChainEntry));
-            VideoFrame output = asyncInfo.GetResults().Outputs()
-                .Lookup(L"OutputImage")
-                .try_as<VideoFrame>();; // Will it have copied to the correct surface? 
-            if (output)
-            {
-                output.CopyToAsync(outVideoFrame).get(); 
-                outVideoFrame.Close();
-            }
-            auto timePassed = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - now);
-            TRACE((L"Runtime: %d", timePassed.count()));
-
-            // TODO: Can set pOutputSample as well so that just copy everything by value in lambda capture clause
-            FinishEval(pInputSample, pOutputSample, src, dest, hnsDuration, hnsTime, pun64MarkerID); // Trying to maintain the lifetime of the whole sample
-            });
+        model->m_canRunEval.wait(lock);
     }
-    
 
+    // TODO: Still need this check? 
+    if(model->m_bSyncStarted == FALSE)
+    {
+        
+        auto now = std::chrono::high_resolution_clock::now();
+
+        model->Run(src, dest); // TODO: Should this be async? 
+        auto timePassed = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - now);
+        TRACE((L"Eval: %d", timePassed.count()));
+        FinishEval(pInputSample, pOutputSample, src, dest, hnsDuration, hnsTime, pun64MarkerID); // Trying to maintain the lifetime of the whole sample
+    }
 
 done:
     return hr;
@@ -332,7 +327,7 @@ HRESULT TransformAsync::FinishEval(winrt::com_ptr<IMFSample> pInputSample, winrt
     }
 
     // **** 5. Done processing this sample, request another
-    CHECK_HR(hr = RequestSample(0));
+    //CHECK_HR(hr = RequestSample(0));
 
 done: 
     // TODO: Close pInput/pOutput
@@ -797,6 +792,7 @@ HRESULT TransformAsync::InitializeTransform(void)
     for (int i = 0; i < m_numThreads; i++) {
         // TODO: maybe styletransfer is the default model but have this change w/user input
         m_models.push_back(std::make_unique<BackgroundBlur>());
+        m_threads.push_back(std::thread());
     }
 
 done: 

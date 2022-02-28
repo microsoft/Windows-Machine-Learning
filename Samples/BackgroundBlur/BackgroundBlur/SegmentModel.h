@@ -40,13 +40,15 @@ public:
 		m_inputVideoFrame(NULL),
 		m_outputVideoFrame(NULL),
 		m_session(NULL),
-		m_binding(NULL)
+		m_binding(NULL), 
+		m_bSyncStarted(FALSE)
 	{}
 	IStreamModel(int w, int h) :
 		m_inputVideoFrame(NULL),
 		m_outputVideoFrame(NULL),
 		m_session(NULL),
-		m_binding(NULL)
+		m_binding(NULL),
+		m_bSyncStarted(FALSE)
 	{}
 	~IStreamModel() {
 		if(m_session) m_session.Close();
@@ -54,7 +56,7 @@ public:
 	};
 	virtual void SetModels(int w, int h) =0;
 	virtual void Run(IDirect3DSurface src, IDirect3DSurface dest) =0;
-	virtual void RunAsync(IDirect3DSurface& src, IDirect3DSurface& dest) = 0;
+	virtual VideoFrame RunAsync(IDirect3DSurface src, IDirect3DSurface dest) = 0;
 
 	void SetUseGPU(bool use) { 
 		m_bUseGPU = use;
@@ -66,8 +68,10 @@ public:
 		auto device = m_session.Device().AdapterId();
 	}
 	winrt::Windows::Foundation::IAsyncOperation<LearningModelEvaluationResult> m_evalStatus;
+	BOOL m_bSyncStarted; // TODO: Construct an IStreamModel as sync/async, then have a GetStatus to query this or m_evalStatus
 	VideoFrame m_outputVideoFrame;
-	std::mutex Processing;
+	std::condition_variable m_canRunEval;
+	std::mutex m_runMutex;
 
 protected:
 	winrt::Windows::Graphics::DisplayAdapterId nvidia{};
@@ -145,7 +149,7 @@ public:
 	StyleTransfer() : IStreamModel() {};
 	void SetModels(int w, int h);
 	void Run(IDirect3DSurface src, IDirect3DSurface dest);
-	void RunAsync(IDirect3DSurface& src, IDirect3DSurface& dest);
+	VideoFrame RunAsync(IDirect3DSurface src, IDirect3DSurface dest);
 private: 
 	LearningModel GetModel();
 };
@@ -172,7 +176,7 @@ public:
 	{};
 	void SetModels(int w, int h);
 	void Run(IDirect3DSurface src, IDirect3DSurface dest);
-	void RunAsync(IDirect3DSurface& src, IDirect3DSurface& dest);
+	VideoFrame RunAsync(IDirect3DSurface src, IDirect3DSurface dest);
 
 private:
 	LearningModel GetModel();

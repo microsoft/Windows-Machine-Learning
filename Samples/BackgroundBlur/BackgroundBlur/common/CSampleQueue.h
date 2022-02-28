@@ -39,6 +39,7 @@ public:
                             );
             BOOL    IsQueueEmpty(void);
 
+            ULONG GetLength();
 protected:
                 class CNode;
 
@@ -51,6 +52,7 @@ protected:
                 BOOL                m_bAddMarker;
                 ULONG_PTR           m_pulMarkerID;
                 CritSec             m_critSec;
+                ULONG               m_length;
 
 };
 

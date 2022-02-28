@@ -42,6 +42,8 @@ To learn how to implement these features in your application, or unlock addition
 
 - [Encrypted Model](./WinMLSamplesGallery/Samples/EncryptedModel): how to use [Windows ML](https://docs.microsoft.com/en-us/windows/ai/windows-ml/) to load encrypted models from embedded resources.
 
+- [Adapter Selection](./WinMLSamplesGallery/Samples/AdapterSelection): Learn how to use [Windows ML](https://docs.microsoft.com/en-us/windows/ai/windows-ml/) with different adapters based on your power and performance needs.
+
 ## Feedback
 Please file an issue [here](https://github.com/microsoft/Windows-Machine-Learning/issues/new) if you encounter any issues with the WinML Samples Gallery or wish to request a new sample.
 

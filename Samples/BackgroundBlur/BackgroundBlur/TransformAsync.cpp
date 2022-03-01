@@ -228,12 +228,14 @@ HRESULT TransformAsync::SubmitEval(IMFSample* pInput)
     CHECK_HR(hr = SetupAlloc());
 
     // We allocate samples when have a dx device
+    // TODO: We want to know when device manager craps itself!
     if (m_spDeviceManager != nullptr)
     {
         CHECK_HR(hr = m_spOutputSampleAllocator->AllocateSample(pOutputSample.put()));
     }
     // If we don't have an outputAllocator, create a non-d3d backed sample
     else {
+        // TOOD: Should cause problems if we expect to have d3d-backed sample
         CHECK_HR(hr = MFCreateSample(pOutputSample.put()));
     }
 
@@ -256,27 +258,30 @@ HRESULT TransformAsync::SubmitEval(IMFSample* pInput)
     while (model->m_bSyncStarted == TRUE)
     {
         TRACE((L"Model %d already running, block?", swapChainEntry));
-
         model->m_canRunEval.wait(lock);
     }
 
     // TODO: Still need this check? 
     if(model->m_bSyncStarted == FALSE)
     {
-        
         auto now = std::chrono::high_resolution_clock::now();
 
         model->Run(src, dest); // TODO: Should this be async? 
         auto timePassed = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - now);
         TRACE((L"Eval: %d", timePassed.count()));
-        FinishEval(pInputSample, pOutputSample, src, dest, hnsDuration, hnsTime, pun64MarkerID); // Trying to maintain the lifetime of the whole sample
+
+        FinishEval(pInputSample, pOutputSample, src, dest, hnsDuration, hnsTime, pun64MarkerID); 
+    }
+    else {
+        TRACE((L"Model %d already running, DROP", swapChainEntry));
+
     }
 
 done:
     return hr;
 }
 
-// Try as const ref
+// TODO: Try as const ref
 HRESULT TransformAsync::FinishEval(winrt::com_ptr<IMFSample> pInputSample, winrt::com_ptr<IMFSample> pOutputSample,
     IDirect3DSurface src, IDirect3DSurface dest, LONGLONG hnsDuration, LONGLONG hnsTime, UINT64 pun64MarkerID)
 {
@@ -327,7 +332,8 @@ HRESULT TransformAsync::FinishEval(winrt::com_ptr<IMFSample> pInputSample, winrt
     }
 
     // **** 5. Done processing this sample, request another
-    //CHECK_HR(hr = RequestSample(0));
+    CHECK_HR(hr = RequestSample(0));
+    InterlockedIncrement(&m_ulProcessedFrameNum); 
 
 done: 
     // TODO: Close pInput/pOutput
@@ -792,7 +798,6 @@ HRESULT TransformAsync::InitializeTransform(void)
     for (int i = 0; i < m_numThreads; i++) {
         // TODO: maybe styletransfer is the default model but have this change w/user input
         m_models.push_back(std::make_unique<BackgroundBlur>());
-        m_threads.push_back(std::thread());
     }
 
 done: 

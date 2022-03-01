@@ -71,6 +71,7 @@ public:
 	BOOL m_bSyncStarted; // TODO: Construct an IStreamModel as sync/async, then have a GetStatus to query this or m_evalStatus
 	VideoFrame m_outputVideoFrame;
 	std::condition_variable m_canRunEval;
+	std::mutex Processing;
 	std::mutex m_runMutex;
 
 protected:

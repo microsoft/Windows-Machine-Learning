@@ -884,9 +884,10 @@ HRESULT TransformAsync::ProcessInput(
 
     // Now schedule the work to decode the sample
     CHECK_HR(hr = ScheduleFrameInference());
+
     // If not at the max number of Need Input count, fire off another request
-    // TODO: Use NeedInputCount, or currFrameNum math from Christian? 
-    if ((m_pInputSampleQueue->GetLength()) < MAX_NUM_INPUT_SAMPLES)
+    // If we're less than MAX_NUM_INPUT_SAMPLES ahead of the number of process samples, request another
+    if ((currFrameLocal - m_ulProcessedFrameNum) < MAX_NUM_INPUT_SAMPLES)
     {
         RequestSample(0);
     }

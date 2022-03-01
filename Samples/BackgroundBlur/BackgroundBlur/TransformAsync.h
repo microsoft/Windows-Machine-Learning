@@ -279,7 +279,7 @@ protected:
     winrt::com_ptr<IMFAttributes>   m_spOutputAttributes;   // TODO: Sample allocator attributes
     bool                            m_bStreamingInitialized;
     volatile    ULONG               m_ulSampleCounter;      // Frame number, can use to pick a IStreamModel
-    volatile ULONG m_processedFrameNum; // Number of frames we've processed
+    volatile ULONG m_ulProcessedFrameNum; // Number of frames we've processed
     volatile ULONG m_currFrameNumber; // The current frame to be processing
 
 
@@ -314,7 +314,6 @@ protected:
     // Model Inference fields
     // TODO: Prob needs to be a vector so can dynamically allocate based on what numThreads ends up as.
     std::vector<std::unique_ptr<IStreamModel>> m_models; 
-    std::vector<std::thread> m_threads;
     std::condition_variable thread; // Used to notify a thread of an available job
     int m_numThreads = 5;//std::thread::hardware_concurrency(); // TODO: See if this actually is helpful
 

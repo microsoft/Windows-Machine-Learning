@@ -56,6 +56,8 @@ void StyleTransfer::SetModels(int w, int h)
 }
 void StyleTransfer::Run(IDirect3DSurface src, IDirect3DSurface dest)
 {
+	m_bSyncStarted = TRUE;
+
 	assert(m_session.Device().AdapterId() == nvidia);
 	VideoFrame inVideoFrame = VideoFrame::CreateWithDirect3D11Surface(src);
 	VideoFrame outVideoFrame = VideoFrame::CreateWithDirect3D11Surface(dest);
@@ -72,6 +74,9 @@ void StyleTransfer::Run(IDirect3DSurface src, IDirect3DSurface dest)
 	auto results = m_session.Evaluate(m_binding, L"");
 
 	m_outputVideoFrame.CopyToAsync(outVideoFrame).get();
+
+	m_bSyncStarted = FALSE;
+	m_canRunEval.notify_one();
 }
 VideoFrame StyleTransfer::RunAsync(IDirect3DSurface src, IDirect3DSurface dest)
 {
@@ -119,9 +124,11 @@ LearningModel BackgroundBlur::GetModel()
 	rel.append("Assets\\fcn-resnet50-12.onnx");
 	return LearningModel::LoadFromFilePath(rel + L"");
 }
+
 void BackgroundBlur::Run(IDirect3DSurface src, IDirect3DSurface dest)
 {
-	m_bSyncStarted = true;
+	std::lock_guard<std::mutex> lock(Processing);
+	m_bSyncStarted = TRUE;
 	assert(m_session.Device().AdapterId() == nvidia);
 	VideoFrame inVideoFrame = VideoFrame::CreateWithDirect3D11Surface(src);
 	VideoFrame outVideoFrame = VideoFrame::CreateWithDirect3D11Surface(dest);
@@ -165,7 +172,7 @@ void BackgroundBlur::Run(IDirect3DSurface src, IDirect3DSurface dest)
 	// TODO: Make this async as well, and add a completed 
 	m_sessionPostprocess.EvaluateAsync(m_bindingPostprocess, L"").get();
 	m_outputVideoFrame.CopyToAsync(outVideoFrame).get();
-	m_bSyncStarted = false;
+	m_bSyncStarted = FALSE;
 	m_canRunEval.notify_one();
 }
 

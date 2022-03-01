@@ -219,13 +219,6 @@ jobs:
         script: 'mv Samples/WinMLSamplesGallery/"WinMLSamplesGallery (Package)"/AppPackages $(Build.ArtifactStagingDirectory)\$(BuildPlatform)\$(BuildConfiguration)\AppPackages'
       condition: and(succeededOrFailed(), eq(variables['BuildConfiguration'], 'Release'))
 
-    - task: CopyFiles@2
-      inputs:
-        targetFolder: '$(Build.ArtifactStagingDirectory)\$(BuildPlatform)\$(BuildConfiguration)\SharedContent'
-        sourceFolder: 'SharedContent'
-        contents: '**\*'
-      condition: succeededOrFailed()
-
     - task: PublishBuildArtifacts@1
       displayName: 'Publish Artifact: Samples'
       inputs:

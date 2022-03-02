@@ -16,8 +16,6 @@ static hstring pixCaptureFilePath = L".\\PIXCapture\\capture.wpix";
 ID3D12Device* m_d3d12Device;
 ID3D12CommandList* m_commandList;
 ID3D12CommandQueue* m_commandQueue;
-ID3D12PipelineState* m_pipelineState;
-ID3D12Fence* m_fence;
 
 void GetHardwareAdapter(IDXGIFactory4* pFactory, IDXGIAdapter1** ppAdapter)
 {
@@ -71,8 +69,7 @@ void GetD3D12CommandAssets()
         IID_PPV_ARGS(&commandAllocator)
     );
     m_d3d12Device->CreateCommandQueue(&queueDesc, IID_PPV_ARGS(&m_commandQueue));
-    m_d3d12Device->CreateCommandList(0, type, commandAllocator, m_pipelineState, __uuidof(ID3D12CommandList), (void**)&m_commandList);
-    m_d3d12Device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&m_fence));
+    m_d3d12Device->CreateCommandList(0, type, commandAllocator, nullptr, __uuidof(ID3D12CommandList), (void**)&m_commandList);
 }
 
 void LoadAndEvaluate(ID3D12CommandQueue* commandQueue)
@@ -123,4 +120,7 @@ int main()
     TryEnsurePIXFunctions();
     init_apartment();
     CaptureWithUserSetMarker();
+    m_commandList->Release();
+    m_commandQueue->Release();
+    m_d3d12Device->Release();
 }

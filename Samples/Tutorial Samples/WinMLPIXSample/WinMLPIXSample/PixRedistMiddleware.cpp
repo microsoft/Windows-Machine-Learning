@@ -83,7 +83,7 @@ void LoadPIXGpuCapturer()
         exit(1);
     }
     dir += subDirs[0] + L"\\WinPixGpuCapturer.dll";
-    HMODULE pixGPURuntime = LoadLibrary(dir.c_str());
+    LoadLibrary(dir.c_str());
 }
 
 void PIXBeginEvent(ID3D12CommandQueue* commandQueue, UINT64 color, _In_ PCSTR string)

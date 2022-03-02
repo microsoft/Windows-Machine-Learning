@@ -23,6 +23,10 @@ static std::mutex g_mutex;
 
 void TryEnsurePIXFunctions();
 
+void GetSubdirs(std::vector<std::wstring>& output, const std::wstring& path);
+
+void LoadPIXGpuCapturer();
+
 void PIXBeginEvent(ID3D12CommandQueue* commandQueue, UINT64 color, _In_ PCSTR string);
 
 void PIXEndEvent(ID3D12CommandQueue* commandQueue);

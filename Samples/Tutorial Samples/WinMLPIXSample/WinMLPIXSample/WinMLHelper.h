@@ -14,14 +14,14 @@ using namespace winrt::Windows::Storage;
 using namespace std;
 
 // Global variables
-static hstring modelPath = L"C:\\WinMLPIXSample\\SqueezeNet.onnx";
+static hstring modelPath = L".\\Assets\\SqueezeNet.onnx";
 static string deviceName = "default";
-static hstring imagePath = L"C:\\WinMLPIXSample\\kitten_224.png";
+static hstring imagePath = L"\\Assets\\kitten_224.png";
 static LearningModel model = nullptr;
 static LearningModelSession session = nullptr;
 static LearningModelBinding binding = nullptr;
 static VideoFrame imageFrame = nullptr;
-static string labelsFilePath = "C:\\WinMLPIXSample\\Labels.txt";
+static string labelsFilePath = ".\\Assets\\Labels.txt";
 static vector<string> labels;
 
 // Forward declarations

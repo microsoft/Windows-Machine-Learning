@@ -26,7 +26,7 @@ VideoFrame LoadImageFile(hstring filePath)
     try
     {
         // open the file
-        StorageFile file = StorageFile::GetFileFromPathAsync(filePath).get();
+        StorageFile file = StorageFile::GetFileFromPathAsync(dir).get();
         // get a stream on it
         auto stream = file.OpenAsync(FileAccessMode::Read).get();
         // Create the decoder from the stream

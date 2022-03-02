@@ -75,7 +75,7 @@ void GetD3D12CommandAssets()
     m_d3d12Device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&m_fence));
 }
 
-void LoadAndEvaluate(ID3D12CommandQueue* commandQueue, ID3D12CommandList* commandList, ID3D12Fence* m_fence)
+void LoadAndEvaluate(ID3D12CommandQueue* commandQueue)
 {
     // Setting markers for each step, these markers will split the commands into sections for easier debugging
     PIXSetMarker(commandQueue, 0, "Start loading model...");
@@ -109,7 +109,7 @@ void CaptureWithUserSetMarker()
     PIXBeginEvent(m_commandQueue, 0, "WinMLPIXSample");
 
     // Do the ML computation
-    LoadAndEvaluate(m_commandQueue, m_commandList, m_fence);
+    LoadAndEvaluate(m_commandQueue);
 
     // End PIX event
     PIXEndEvent(m_commandQueue);

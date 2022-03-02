@@ -53,6 +53,9 @@ public:
 	~IStreamModel() {
 		if(m_session) m_session.Close();
 		if(m_binding) m_binding.Clear();
+		if (m_inputVideoFrame) m_inputVideoFrame.Close();
+		if (m_outputVideoFrame) m_outputVideoFrame.Close();
+		if (m_device) m_device.Close();
 	};
 	virtual void SetModels(int w, int h) =0;
 	virtual void Run(IDirect3DSurface src, IDirect3DSurface dest) =0;
@@ -148,6 +151,7 @@ public:
 	StyleTransfer(int w, int h) : IStreamModel(w, h) {
 		SetModels(w, h); }
 	StyleTransfer() : IStreamModel() {};
+	~StyleTransfer(){};
 	void SetModels(int w, int h);
 	void Run(IDirect3DSurface src, IDirect3DSurface dest);
 	VideoFrame RunAsync(IDirect3DSurface src, IDirect3DSurface dest);
@@ -164,7 +168,9 @@ public:
 		m_sessionPreprocess(NULL),
 		m_sessionPostprocess(NULL),
 		m_bindingPreprocess(NULL),
-		m_bindingPostprocess(NULL)
+		m_bindingPostprocess(NULL), 
+		m_sessionFused(NULL),
+		m_bindFused(NULL)
 	{
 		SetModels(w, h);
 	}
@@ -173,8 +179,11 @@ public:
 		m_sessionPreprocess(NULL),
 		m_sessionPostprocess(NULL),
 		m_bindingPreprocess(NULL),
-		m_bindingPostprocess(NULL)
+		m_bindingPostprocess(NULL),
+		m_sessionFused(NULL),
+		m_bindFused(NULL)
 	{};
+	~BackgroundBlur();
 	void SetModels(int w, int h);
 	void Run(IDirect3DSurface src, IDirect3DSurface dest);
 	VideoFrame RunAsync(IDirect3DSurface src, IDirect3DSurface dest);
@@ -184,6 +193,10 @@ private:
 	LearningModel PostProcess(long n, long c, long h, long w, long axis);
 
 	std::mutex Processing; // Ensure only one access to a BB model at a time? 
+
+	// Trying to used a fused learningmodelexperimental 
+	LearningModelSession m_sessionFused; 
+	LearningModelBinding m_bindFused;
 
 	// Background blur-specific sessions, bindings 
 	LearningModelSession m_sessionPreprocess; 

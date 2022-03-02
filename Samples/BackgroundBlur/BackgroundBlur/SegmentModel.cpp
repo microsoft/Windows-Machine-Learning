@@ -91,6 +91,12 @@ LearningModel StyleTransfer::GetModel()
 	return LearningModel::LoadFromFilePath(rel + L"");
 }
 
+BackgroundBlur::~BackgroundBlur() {
+	if (m_sessionFused) m_sessionFused.Close();
+	if (m_sessionPostprocess) m_sessionPostprocess.Close();
+	if (m_sessionPreprocess) m_sessionPreprocess.Close();
+	//if (m_bindFused) m_bindFused.Clear();
+}
 /****	Background blur model	****/
 void BackgroundBlur::SetModels(int w, int h)
 {
@@ -109,10 +115,15 @@ void BackgroundBlur::SetModels(int w, int h)
 	options.OverrideNamedDimension(L"width", m_imageWidthInPixels);
 	m_session = LearningModelSession(model, fcnDevice, options);
 
-	//auto joinOptions = LearningModelJoinOptions();
-	//joinOptions.CloseModelOnJoin(true);
-	//auto stageOne = LearningModelExperimental(Normalize0_1ThenZScore(h, w, 3, mean, stddev));
-	//stageOne.JoinModel(GetModel(), joinOptions);
+	auto joinOptions = LearningModelJoinOptions();
+	joinOptions.CloseModelOnJoin(true);
+	auto modelExperimental = LearningModelExperimental(Normalize0_1ThenZScore(h, w, 3, mean, stddev));
+	LearningModel stageOne = modelExperimental.JoinModel(GetModel(), joinOptions);
+
+	modelExperimental = LearningModelExperimental(stageOne);
+	LearningModel modelFused = modelExperimental.JoinModel(PostProcess(1, 3, h, w, 1), joinOptions);
+	m_sessionFused = CreateLearningModelSession(stageOne);
+	m_bindFused = LearningModelBinding(m_sessionFused);
 
 	m_bindingPreprocess = LearningModelBinding(m_sessionPreprocess);
 	m_binding = LearningModelBinding(m_session);
@@ -127,7 +138,6 @@ LearningModel BackgroundBlur::GetModel()
 
 void BackgroundBlur::Run(IDirect3DSurface src, IDirect3DSurface dest)
 {
-	std::lock_guard<std::mutex> lock(Processing);
 	m_bSyncStarted = TRUE;
 	assert(m_session.Device().AdapterId() == nvidia);
 	VideoFrame inVideoFrame = VideoFrame::CreateWithDirect3D11Surface(src);

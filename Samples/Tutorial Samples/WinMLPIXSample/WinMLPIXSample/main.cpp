@@ -1,0 +1,126 @@
+﻿#include "pch.h"
+#include "PixRedistMiddleware.h"
+#include "WinMLHelper.h"
+
+using namespace winrt;
+using namespace Microsoft::WRL;
+using namespace Microsoft::WRL::Wrappers;
+using namespace std;
+
+#ifndef USE_PIX
+#define USE_PIX
+#endif
+
+static hstring pixCaptureFilePath = L".\\PIXCapture\\capture.wpix";
+
+ID3D12Device* m_d3d12Device;
+ID3D12CommandList* m_commandList;
+ID3D12CommandQueue* m_commandQueue;
+ID3D12PipelineState* m_pipelineState;
+ID3D12Fence* m_fence;
+
+void GetHardwareAdapter(IDXGIFactory4* pFactory, IDXGIAdapter1** ppAdapter)
+{
+    *ppAdapter = nullptr;
+    for (UINT adapterIndex = 0; ; ++adapterIndex)
+    {
+        IDXGIAdapter1* pAdapter = nullptr;
+        if (DXGI_ERROR_NOT_FOUND == pFactory->EnumAdapters1(adapterIndex, &pAdapter))
+        {
+            // No more adapters to enumerate.
+            break;
+        }
+
+        // Check to see if the adapter supports Direct3D 12, but don't create the
+        // actual device yet.
+        if (SUCCEEDED(D3D12CreateDevice(pAdapter, D3D_FEATURE_LEVEL_12_0, _uuidof(ID3D12Device), nullptr)))
+        {
+            *ppAdapter = pAdapter;
+            return;
+        }
+        pAdapter->Release();
+    }
+}
+
+PIXCaptureParameters GetCap()
+{
+    PIXCaptureParameters cap;
+    cap.GpuCaptureParameters.FileName = pixCaptureFilePath.c_str();
+    return cap;
+}
+
+// Create command queue & command list to be used by WinML
+void GetD3D12CommandAssets()
+{
+    D3D12_COMMAND_LIST_TYPE type = D3D12_COMMAND_LIST_TYPE_DIRECT;
+    D3D12_COMMAND_QUEUE_DESC queueDesc = {};
+    queueDesc.Type = type;
+    queueDesc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;
+    ID3D12CommandAllocator* commandAllocator;
+
+    IDXGIFactory4* factory;
+    CreateDXGIFactory1(IID_PPV_ARGS(&factory));
+
+    IDXGIAdapter1* hardwareAdapter;
+    GetHardwareAdapter(factory, &hardwareAdapter);
+
+    D3D12CreateDevice(hardwareAdapter, D3D_FEATURE_LEVEL_12_0, _uuidof(ID3D12Device), (void**)&m_d3d12Device);
+
+    m_d3d12Device->CreateCommandAllocator(
+        type,
+        IID_PPV_ARGS(&commandAllocator)
+    );
+    m_d3d12Device->CreateCommandQueue(&queueDesc, IID_PPV_ARGS(&m_commandQueue));
+    m_d3d12Device->CreateCommandList(0, type, commandAllocator, m_pipelineState, __uuidof(ID3D12CommandList), (void**)&m_commandList);
+    m_d3d12Device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&m_fence));
+}
+
+void LoadAndEvaluate(ID3D12CommandQueue* commandQueue, ID3D12CommandList* commandList, ID3D12Fence* m_fence)
+{
+    // Setting markers for each step, these markers will split the commands into sections for easier debugging
+    PIXSetMarker(commandQueue, 0, "Start loading model...");
+    LoadModel();
+
+    PIXSetMarker(commandQueue, 0, "Start loading image...");
+    LoadImageFile(imagePath);
+
+    PIXSetMarker(commandQueue, 0, "Start binding model...");
+    BindModel(commandQueue);
+
+    PIXSetMarker(commandQueue, 0, "Start evaluating model...");
+    EvaluateModel();
+
+}
+
+void CaptureWithUserSetMarker()
+{
+    // Create command queue and command list, this command queue will be passed into PIXBeginEvent, 
+    // PIXEndEvent and PIXSetMarker methods. We can either fetched the command queue from learning 
+    // model or create a learning model with our own command queue to allow users to set markers in 
+    // between the DX commands; creating a new queue will set the marker in a separate command queue
+    GetD3D12CommandAssets();
+
+    PIXCaptureParameters capParams = GetCap();
+
+    // Start the GPU capture
+    PIXBeginCaptureRedist(PIX_CAPTURE_GPU, &capParams);
+
+    // Start PIX event, markers can only be set within Being and End event sections
+    PIXBeginEvent(m_commandQueue, 0, "WinMLPIXSample");
+
+    // Do the ML computation
+    LoadAndEvaluate(m_commandQueue, m_commandList, m_fence);
+
+    // End PIX event
+    PIXEndEvent(m_commandQueue);
+
+    // End capture
+    PIXEndCaptureRedist(FALSE);
+}
+
+int main()
+{
+    TryEnsurePIXFunctions();
+    init_apartment();
+    CaptureWithUserSetMarker();
+}

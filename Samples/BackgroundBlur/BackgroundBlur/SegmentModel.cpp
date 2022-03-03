@@ -108,6 +108,7 @@ void BackgroundBlur::SetModels(int w, int h)
 	// Named dim override of FCN-Resnet so that unlock optimizations of fixed input size
 	auto fcnDevice = m_bUseGPU ? LearningModelDevice(LearningModelDeviceKind::DirectXHighPerformance) : LearningModelDevice(LearningModelDeviceKind::Default); // Todo: Have a toggle between GPU/ CPU? 
 	auto model = GetModel();
+	auto FCNInputName = model.OutputFeatures().GetAt(0).Name();
 	auto options = LearningModelSessionOptions();
 	options.BatchSizeOverride(0);
 	options.CloseModelOnSessionCreation(true);
@@ -115,14 +116,26 @@ void BackgroundBlur::SetModels(int w, int h)
 	options.OverrideNamedDimension(L"width", m_imageWidthInPixels);
 	m_session = LearningModelSession(model, fcnDevice, options);
 
-	auto joinOptions = LearningModelJoinOptions();
-	joinOptions.CloseModelOnJoin(true);
+	auto joinOptions1 = LearningModelJoinOptions();
+	joinOptions1.CloseModelOnJoin(true);
+	joinOptions1.Link(L"Output", L"input");
+	joinOptions1.JoinedNodePrefix(L"FCN_");
+	joinOptions1.PromoteUnlinkedOutputsToFusedOutputs(true);
 	auto modelExperimental = LearningModelExperimental(Normalize0_1ThenZScore(h, w, 3, mean, stddev));
-	LearningModel stageOne = modelExperimental.JoinModel(GetModel(), joinOptions);
+	LearningModel stageOne = modelExperimental.JoinModel(GetModel(), joinOptions1);
 
-	modelExperimental = LearningModelExperimental(stageOne);
-	LearningModel modelFused = modelExperimental.JoinModel(PostProcess(1, 3, h, w, 1), joinOptions);
-	m_sessionFused = CreateLearningModelSession(stageOne);
+	auto joinOptions2 = LearningModelJoinOptions();
+	joinOptions2.CloseModelOnJoin(true);
+	joinOptions2.Link(L"FCN_out", L"InputScores");
+	joinOptions2.Link(L"OutputImageForward", L"InputImage");
+	joinOptions2.JoinedNodePrefix(L"Post_");
+	//joinOptions2.PromoteUnlinkedOutputsToFusedOutputs(false); // Don't need aux from FCN-Resnet
+	auto modelTwo = LearningModelExperimental(stageOne);
+	LearningModel modelFused = modelTwo.JoinModel(PostProcess(1, 3, h, w, 1), joinOptions2);
+
+	modelTwo.Save(L"modelTwo.onnx");
+
+	m_sessionFused = CreateLearningModelSession(modelFused);
 	m_bindFused = LearningModelBinding(m_sessionFused);
 
 	m_bindingPreprocess = LearningModelBinding(m_sessionPreprocess);
@@ -326,6 +339,7 @@ LearningModel Normalize0_1ThenZScore(long h, long w, long c, const std::array<fl
 	auto builder = LearningModelBuilder::Create(12)
 		.Inputs().Add(LearningModelBuilder::CreateTensorFeatureDescriptor(L"Input", L"The NCHW image", TensorKind::Float, {1, c, h, w}))
 		.Outputs().Add(LearningModelBuilder::CreateTensorFeatureDescriptor(L"Output", L"The NCHW image normalized with mean and stddev.", TensorKind::Float, {1, c, h, w}))
+		.Outputs().Add(LearningModelBuilder::CreateTensorFeatureDescriptor(L"OutputImageForward", L"The NCHW image forwarded through the model.", TensorKind::Float, {1, c, h, w}))
 		.Operators().Add(LearningModelOperator(L"Div") // Normalize from 0-255 to 0-1 by dividing by 255
 			.SetInput(L"A", L"Input")
 			.SetConstant(L"B", TensorFloat::CreateFromArray({}, { 255.f }))
@@ -345,7 +359,10 @@ LearningModel Normalize0_1ThenZScore(long h, long w, long c, const std::array<fl
 		.Operators().Add(LearningModelOperator(L"Div")  // Divide by stddev
 			.SetInput(L"A", L"SubOutput")
 			.SetInput(L"B", L"StdDevReshaped")
-			.SetOutput(L"C", L"Output"));
+			.SetOutput(L"C", L"Output"))
+		.Operators().Add(LearningModelOperator(L"Identity")
+			.SetInput(L"input", L"Input")
+			.SetOutput(L"output", L"OutputImageForward"));
 	return builder.CreateModel();
 }
 

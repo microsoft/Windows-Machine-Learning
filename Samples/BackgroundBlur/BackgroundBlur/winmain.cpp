@@ -59,10 +59,10 @@ INT WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 {
     // Check to see if a copy of WinPixGpuCapturer.dll has already been injected into the application.
     // This may happen if the application is launched through the PIX UI. 
-    if (GetModuleHandle(L"WinPixGpuCapturer.dll") == 0)
+    /*if (GetModuleHandle(L"WinPixGpuCapturer.dll") == 0)
     {
         LoadLibrary(GetLatestWinPixGpuCapturerPath_Cpp17().c_str());
-    }
+    }*/
     bool bCoInit = false, bMFStartup = false;
     HWND hwnd;
     // Initialize the common controls

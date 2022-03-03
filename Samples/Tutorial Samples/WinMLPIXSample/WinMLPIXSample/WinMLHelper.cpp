@@ -48,18 +48,23 @@ VideoFrame LoadImageFile(hstring filePath)
     return imageFrame;
 }
 
-void BindModel(ID3D12CommandQueue* commandQueue)
+void CreateSession(ID3D12CommandQueue* commandQueue)
 {
     printf("Binding the model...\n");
-    DWORD ticks = GetTickCount();
 
     winrt::com_ptr<::IUnknown> spUnk;
     auto factory = winrt::get_activation_factory<LearningModelDevice, ILearningModelDeviceFactoryNative>();
     factory->CreateFromD3D12CommandQueue(commandQueue, spUnk.put());
     LearningModelDevice dmlDeviceCustom = spUnk.as<LearningModelDevice>();
 
-    // now create a session and binding
+    // now create a session
     session = LearningModelSession{ model, dmlDeviceCustom };
+}
+
+void BindModel(ID3D12CommandQueue* commandQueue)
+{
+    printf("Binding the model...\n");
+    DWORD ticks = GetTickCount();
     binding = LearningModelBinding{ session };
     // bind the intput image
     binding.Bind(L"data_0", ImageFeatureValue::CreateFromVideoFrame(imageFrame));

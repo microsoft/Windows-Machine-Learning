@@ -16,6 +16,7 @@ static hstring pixCaptureFilePath = L".\\PIXCapture\\capture.wpix";
 ID3D12Device* m_d3d12Device;
 ID3D12CommandList* m_commandList;
 ID3D12CommandQueue* m_commandQueue;
+UINT m_color = PIX_COLOR(255, 0, 0);
 
 void GetHardwareAdapter(IDXGIFactory4* pFactory, IDXGIAdapter1** ppAdapter)
 {
@@ -75,16 +76,19 @@ void GetD3D12CommandAssets()
 void LoadAndEvaluate(ID3D12CommandQueue* commandQueue)
 {
     // Setting markers for each step, these markers will split the commands into sections for easier debugging
-    PIXSetMarker(commandQueue, 0, "Start loading model...");
+    PIXSetMarker(commandQueue, m_color, "Start loading model...");
     LoadModel();
 
-    PIXSetMarker(commandQueue, 0, "Start loading image...");
+    PIXSetMarker(commandQueue, m_color, "Start loading image...");
     LoadImageFile(imagePath);
 
-    PIXSetMarker(commandQueue, 0, "Start binding model...");
+    PIXSetMarker(commandQueue, m_color, "Start creating session...");
+    CreateSession(commandQueue);
+
+    PIXSetMarker(commandQueue, m_color, "Start binding model...");
     BindModel(commandQueue);
 
-    PIXSetMarker(commandQueue, 0, "Start evaluating model...");
+    PIXSetMarker(commandQueue, m_color, "Start evaluating model...");
     EvaluateModel();
 
 }
@@ -103,7 +107,7 @@ void CaptureWithUserSetMarker()
     PIXBeginCaptureRedist(PIX_CAPTURE_GPU, &capParams);
 
     // Start PIX event, markers can only be set within Being and End event sections
-    PIXBeginEvent(m_commandQueue, 0, "WinMLPIXSample");
+    PIXBeginEvent(m_commandQueue, m_color, "WinMLPIXSample");
 
     // Do the ML computation
     LoadAndEvaluate(m_commandQueue);

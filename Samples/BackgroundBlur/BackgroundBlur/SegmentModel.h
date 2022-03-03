@@ -94,8 +94,9 @@ protected:
 				NOTE: VideoFrame::CreateAsDirect3D11SurfaceBacked takes arguments in (width, height) order
 				whereas every model created with LearningModelBuilder takes arguments in (height, width) order. 
 			*/ 
-			m_inputVideoFrame = VideoFrame::CreateAsDirect3D11SurfaceBacked(inDesc.Format, m_imageWidthInPixels, m_imageHeightInPixels, m_device);
-			m_outputVideoFrame = VideoFrame::CreateAsDirect3D11SurfaceBacked(outDesc.Format, m_imageWidthInPixels, m_imageHeightInPixels, m_device);
+			auto format = winrt::Windows::Graphics::DirectX::DirectXPixelFormat::B8G8R8X8UIntNormalized;
+			m_inputVideoFrame = VideoFrame::CreateAsDirect3D11SurfaceBacked(format, m_imageWidthInPixels, m_imageHeightInPixels, m_device);
+			m_outputVideoFrame = VideoFrame::CreateAsDirect3D11SurfaceBacked(format, m_imageWidthInPixels, m_imageHeightInPixels, m_device);
 			m_bVideoFramesSet = true;
 		}
 		// TODO: Fix bug in WinML so that the surfaces from capture engine are shareable, remove copy. 

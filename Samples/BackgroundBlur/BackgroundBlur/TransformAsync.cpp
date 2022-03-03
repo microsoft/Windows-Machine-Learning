@@ -26,8 +26,8 @@ float runningAverage = 0.0f;
 // static array of media types (preferred and accepted).
 const GUID* g_MediaSubtypes[] =
 {
-    //&MFVideoFormat_YUY2,
-    &MFVideoFormat_RGB32
+    &MFVideoFormat_NV12,
+    //&MFVideoFormat_RGB32
 };
 
 // number of media types in the aray.
@@ -95,6 +95,12 @@ TransformAsync::~TransformAsync()
     }
     if (m_spInputType) m_spInputType->Release();
     if (m_spOutputType) m_spOutputType->Release();
+    if (m_spOutputSampleAllocator) {
+        m_spOutputSampleAllocator->UninitializeSampleAllocator();
+        m_spOutputSampleAllocator->Release();
+    }
+    m_pEventQueue->Shutdown();
+    // TODO: Look at AsyncWrapper to see if anything else to clean up
 }
 
 #pragma region IUnknown

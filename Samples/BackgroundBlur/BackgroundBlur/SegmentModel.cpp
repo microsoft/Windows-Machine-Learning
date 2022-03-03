@@ -129,7 +129,7 @@ void BackgroundBlur::SetModels(int w, int h)
 	joinOptions2.Link(L"FCN_out", L"InputScores");
 	joinOptions2.Link(L"OutputImageForward", L"InputImage");
 	joinOptions2.JoinedNodePrefix(L"Post_");
-	//joinOptions2.PromoteUnlinkedOutputsToFusedOutputs(false); // Causing  
+	joinOptions2.PromoteUnlinkedOutputsToFusedOutputs(false); // Causes winrt originate error in FusedGraphKernel.cpp, but works on CPU
 	auto modelTwo = LearningModelExperimental(stageOne);
 	LearningModel modelFused = modelTwo.JoinModel(PostProcess(1, 3, h, w, 1), joinOptions2);
 
@@ -162,7 +162,7 @@ void BackgroundBlur::Run(IDirect3DSurface src, IDirect3DSurface dest)
 	assert((UINT32)m_inputVideoFrame.Direct3DSurface().Description().Width == m_imageWidthInPixels);
 
 	hstring inputName = m_sessionFused.Model().InputFeatures().GetAt(0).Name();
-	hstring outputName = m_sessionFused.Model().OutputFeatures().GetAt(1).Name();
+	hstring outputName = m_sessionFused.Model().OutputFeatures().GetAt(0).Name();
 
 	m_bindFused.Bind(inputName, m_inputVideoFrame);
 	m_bindFused.Bind(outputName, m_outputVideoFrame);

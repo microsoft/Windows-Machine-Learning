@@ -26,8 +26,8 @@ float runningAverage = 0.0f;
 // static array of media types (preferred and accepted).
 const GUID* g_MediaSubtypes[] =
 {
-    &MFVideoFormat_NV12,
-    //&MFVideoFormat_RGB32
+    //&MFVideoFormat_NV12,
+    &MFVideoFormat_RGB32
 };
 
 // number of media types in the aray.

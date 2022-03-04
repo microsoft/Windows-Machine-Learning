@@ -8,7 +8,6 @@
 #include <dxgi1_2.h>
 #include <dxgi1_3.h>
 
-
 interface DECLSPEC_UUID("9f251514-9d4d-4902-9d60-18988ab7d4b5") DECLSPEC_NOVTABLE
     IDXGraphicsAnalysis : public IUnknown
 {
@@ -623,9 +622,10 @@ HRESULT TransformAsync::ProcessEvent(
 )
 {
     // This MFT does not handle any stream events, so the method can 
-    // return E_NOTIMPL. This tells the pipeline that it can stop 
-    // sending any more events to this MFT.
-    return E_NOTIMPL;
+    // return S_OK. 
+    HRESULT hr = S_OK;
+    return hr;
+
 }
 
 //-------------------------------------------------------------------
@@ -669,6 +669,7 @@ HRESULT TransformAsync::ProcessMessage(
         hr = OnSetD3DManager(ulParam);
         break;
     case MFT_MESSAGE_NOTIFY_END_OF_STREAM:
+    case MFT_MESSAGE_NOTIFY_END_STREAMING:
     {
         hr = OnEndOfStream();
         if (FAILED(hr))
@@ -703,7 +704,6 @@ HRESULT TransformAsync::ProcessMessage(
         SetupAlloc();
         break;
     }
-    case MFT_MESSAGE_NOTIFY_END_STREAMING:
     default:
         break;
     }

@@ -85,45 +85,29 @@ TransformAsync::TransformAsync(HRESULT& hr)
 TransformAsync::~TransformAsync()
 {
     assert(m_nRefCount == 0);
-
-    // TODO: Does this need SAFE_RELEASE?
-    //m_spInputType->Release();
-   // m_spOutputType->Release();
-
     Shutdown();
-    /*m_spAttributes->Release();
-    m_spOutputAttributes->Release();*/
+
     m_spInputType.detach();
     m_spOutputType.detach();
-
+   
     if (m_pEventQueue)
     {
         m_pEventQueue->Shutdown();
-        //m_pEventQueue->Release();
     }
 
-    m_pInputSampleQueue->Release();
-    m_pOutputSampleQueue->Release();
-    m_critSec.~CritSec(); // Delete the critical section
+    m_critSec.~CritSec(); // Release the critical section
 
     if (m_spDeviceManager)
     {
         m_spDeviceManager->CloseDeviceHandle(m_hDeviceHandle);
         m_spDeviceManager->Release();
     }
-    if (m_spDevice) {
-        m_spDevice->Release();
-    }
-    if (m_spVideoDevice) m_spVideoDevice->Release();
-    if (m_spContext) m_spContext->Release();
-
 
     if (m_spOutputSampleAllocator) {
         m_spOutputSampleAllocator->UninitializeSampleAllocator();
         m_spOutputSampleAllocator->Release();
     }
 
-    // TODO: Look at AsyncWrapper to see if anything else to clean up
 }
 
 #pragma region IUnknown

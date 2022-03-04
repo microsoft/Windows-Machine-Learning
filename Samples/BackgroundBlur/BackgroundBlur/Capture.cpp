@@ -287,7 +287,7 @@ HRESULT CaptureManager::OnCaptureEvent(WPARAM wParam, LPARAM lParam)
         }
 #endif
 
-        if (guidType == MF_CAPTURE_ENGINE_INITIALIZED)
+         if (guidType == MF_CAPTURE_ENGINE_INITIALIZED)
         {
             OnCaptureEngineInitialized(hrStatus);
             SetErrorID(hrStatus, IDS_ERR_INITIALIZE);
@@ -415,15 +415,6 @@ HRESULT CaptureManager::StartPreview()
         {
             goto done;
         }
-
-        // TODO: Look at the source reader, does it have a callback? 
-        winrt::com_ptr<IMFSourceReader> pSourceReader;
-        hr = pSource->GetService(IID_IMFSourceReader, IID_IMFSourceReader, pSourceReader.try_as<IUnknown>().put());
-        if (FAILED(hr))
-        {
-            goto done;
-        }
-        winrt::com_ptr<IUnknown> pCallback; 
 
         // Add the transform 
         winrt::com_ptr<IMFTransform>pMFT;

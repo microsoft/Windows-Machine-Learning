@@ -40,6 +40,9 @@ namespace WinMLSamplesGallery
                 case "AdapterSelection":
                     SampleFrame.Navigate(typeof(Samples.AdapterSelection));
                     break;
+                case "DXResourceBindingORT":
+                    SampleFrame.Navigate(typeof(Samples.DXResourceBindingORT));
+                    break;
             }
             if (sampleMetadata.Docs.Count > 0)
                 DocsHeader.Visibility = Visibility.Visible;

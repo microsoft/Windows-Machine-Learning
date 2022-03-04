@@ -82,6 +82,17 @@
       "CSharpGithubLink": "https://github.com/microsoft/Windows-Machine-Learning/blob/master/Samples/WinMLSamplesGallery/WinMLSamplesGallery/Samples/AdapterSelection/AdapterSelection.xaml.cs",
       "Docs": [],
       "IsRecentlyAdded": true
+    },
+    {
+      "Title": "DX Resource Binding in ORT",
+      "DescriptionShort": "Learn how to bind DirectX Resources using ONNX Runtime",
+      "Description": "The sample showcases how to create and bind OrtValue objects from ID3D12 Resources using the ONNX Runtime C-API.",
+      "Icon": "\uE155",
+      "Tag": "DXResourceBindingORT",
+      "XAMLGithubLink": "https://github.com/microsoft/Windows-Machine-Learning/blob/master/Samples/WinMLSamplesGallery/WinMLSamplesGallery/Samples/AdapterSelection/AdapterSelection.xaml",
+      "CSharpGithubLink": "https://github.com/microsoft/Windows-Machine-Learning/blob/master/Samples/WinMLSamplesGallery/WinMLSamplesGallery/Samples/AdapterSelection/AdapterSelection.xaml.cs",
+      "Docs": [],
+      "IsRecentlyAdded": true
     }
   ]
 }

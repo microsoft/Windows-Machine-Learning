@@ -35,6 +35,7 @@
 	<None Remove="SamplesGrid.xaml" />
 	<None Remove="SampleBasePage.xaml" />
     <None Remove="Image.xaml" />
+    <None Remove="Samples\DXResourceBindingORT\DXResourceBindingORT.xaml" />
     <None Remove="Samples\ImageClassifier.xaml" />
     <None Remove="Samples\ImageEffects.xaml" />
     <None Remove="Samples\ObjectDetector\ObjectDetector.xaml" />
@@ -161,6 +162,12 @@
   <ItemGroup>
     <Folder Include="LargeModels\" />
     <Folder Include="Samples\AdapterSelection\Docs\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Page Update="Samples\DXResourceBindingORT\DXResourceBindingORT.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
 
   <Target Name="DownloadContentFiles" BeforeTargets="BeforeBuild">

@@ -12,6 +12,9 @@
     <ClCompile Include="AdapterList.cpp">
       <Filter>AdapterList</Filter>
     </ClCompile>
+    <ClCompile Include="DXResourceBinding.cpp">
+      <Filter>DXResourceBinding</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -29,6 +32,9 @@
     </ClInclude>
     <ClInclude Include="AdapterList.h">
       <Filter>AdapterList</Filter>
+    </ClInclude>
+    <ClInclude Include="DXResourceBinding.h">
+      <Filter>DXResourceBinding</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -59,6 +65,9 @@
     </Filter>
     <Filter Include="AdapterList">
       <UniqueIdentifier>{9df6a233-c2c6-4062-b738-31f7ba631acd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="DXResourceBinding">
+      <UniqueIdentifier>{393a0b12-622a-4d4c-b4a6-ed0bb1b2e285}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

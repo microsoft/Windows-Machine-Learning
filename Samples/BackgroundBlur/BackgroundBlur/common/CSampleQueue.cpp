@@ -311,6 +311,6 @@ CSampleQueue::CSampleQueue(void)
 CSampleQueue::~CSampleQueue(void)
 {
     RemoveAllSamples();
-
+    m_critSec.~CritSec();
     //DeleteCriticalSection(&m_csLock);
 }

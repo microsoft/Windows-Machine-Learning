@@ -305,7 +305,7 @@ protected:
 
     // D3D fields
     winrt::com_ptr<IMFDXGIDeviceManager>       m_spDeviceManager;
-    winrt::com_ptr<ID3D11Device>               m_spDevice;
+    winrt::com_ptr<ID3D11Device>               m_spDevice; // TODO: DO I need to keep the device? 
     winrt::com_ptr<ID3D11VideoDevice>          m_spVideoDevice;
     winrt::com_ptr<ID3D11DeviceContext>        m_spContext;
     HANDLE                                     m_hDeviceHandle;          // Handle to the current device

@@ -28,7 +28,7 @@ static vector<string> labels;
 void LoadModel();
 VideoFrame LoadImageFile(hstring filePath);
 void CreateSession(ID3D12CommandQueue* commandQueue);
-void BindModel(ID3D12CommandQueue* commandQueue);
+void BindModel();
 void EvaluateModel();
 void PrintResults(IVectorView<float> results);
 void LoadLabels();

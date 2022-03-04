@@ -61,7 +61,7 @@ void CreateSession(ID3D12CommandQueue* commandQueue)
     session = LearningModelSession{ model, dmlDeviceCustom };
 }
 
-void BindModel(ID3D12CommandQueue* commandQueue)
+void BindModel()
 {
     printf("Binding the model...\n");
     DWORD ticks = GetTickCount();

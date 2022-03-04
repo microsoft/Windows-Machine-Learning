@@ -86,7 +86,7 @@ void LoadAndEvaluate(ID3D12CommandQueue* commandQueue)
     CreateSession(commandQueue);
 
     PIXSetMarker(commandQueue, m_color, "Start binding model...");
-    BindModel(commandQueue);
+    BindModel();
 
     PIXSetMarker(commandQueue, m_color, "Start evaluating model...");
     EvaluateModel();
@@ -95,10 +95,9 @@ void LoadAndEvaluate(ID3D12CommandQueue* commandQueue)
 
 void CaptureWithUserSetMarker()
 {
-    // Create command queue and command list, this command queue will be passed into PIXBeginEvent, 
-    // PIXEndEvent and PIXSetMarker methods. We can either fetched the command queue from learning 
-    // model or create a learning model with our own command queue to allow users to set markers in 
-    // between the DX commands; creating a new queue will set the marker in a separate command queue
+    // Create command queue and command list, this command queue will be used to create model 
+    // device and then passed into PIXBeginEvent, PIXEndEvent and PIXSetMarker methods to set 
+    // markers. 
     GetD3D12CommandAssets();
 
     PIXCaptureParameters capParams = GetCap();

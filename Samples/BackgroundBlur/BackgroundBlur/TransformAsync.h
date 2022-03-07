@@ -1,5 +1,5 @@
 #pragma once
-#include "common/CSampleQueue.h"
+#include "Helpers/CSampleQueue.h"
 #include <Mfidl.h>
 #include <mftransform.h>
 #include <mfapi.h>
@@ -12,7 +12,6 @@
 #include <evr.h>
 #include <mfobjects.h>
 
-#include "common.h"
 #include <initguid.h>
 #include <uuids.h>      // DirectShow GUIDs
 #include <d3d9types.h>
@@ -20,14 +19,12 @@
 #include <dxva2api.h>
 
 #define USE_LOGGING
-#include "common/common.h"
+#include "Helpers/common.h"
 using namespace MediaFoundationSamples;
 #include "SegmentModel.h"
 
 #define MAX_NUM_INPUT_SAMPLES 5
 
-// TODO: Do we need the extension marker? 
-// {1F620607-A7FF-4B94-82F4-993F2E17B497}
 DEFINE_GUID(TransformAsync_MFSampleExtension_Marker,
     0x1f620607, 0xa7ff, 0x4b94, 0x82, 0xf4, 0x99, 0x3f, 0x2e, 0x17, 0xb4, 0x97);
 

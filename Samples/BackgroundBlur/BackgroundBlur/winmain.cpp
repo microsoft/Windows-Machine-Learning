@@ -7,13 +7,12 @@
 
 #include "Capture.h"
 #include "resource.h"
-#include "common.h"
-
+#include "Helpers/common.h"
+#include "Helpers/trace.h"
 #include <shlobj.h>
 #include <Shlwapi.h>
 #include <powrprof.h>
 #include <KnownFolders.h>
-
 
 CaptureManager* g_pEngine = NULL;
 HPOWERNOTIFY    g_hPowerNotify = NULL;
@@ -57,12 +56,16 @@ static std::wstring GetLatestWinPixGpuCapturerPath_Cpp17()
 
 INT WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance*/, _In_ LPWSTR /*lpCmdLine*/, _In_ INT nCmdShow)
 {
+
+#ifdef _DEBUG
     // Check to see if a copy of WinPixGpuCapturer.dll has already been injected into the application.
     // This may happen if the application is launched through the PIX UI. 
     if (GetModuleHandle(L"WinPixGpuCapturer.dll") == 0)
     {
         LoadLibrary(GetLatestWinPixGpuCapturerPath_Cpp17().c_str());
     }
+#endif
+
     bool bCoInit = false, bMFStartup = false;
     HWND hwnd;
     // Initialize the common controls
@@ -244,11 +247,9 @@ namespace MainWindow
 {
     HWND hPreview = NULL;
     HWND hStatus = NULL;
-    bool bRecording = false;
     bool bPreviewing = false;
-    winrt::com_ptr<IMFActivate> pSelectedDevice;
 
-    wchar_t PhotoFileName[MAX_PATH];
+    winrt::com_ptr<IMFActivate> pSelectedDevice;
 
     inline void _SetStatusText(const WCHAR* szStatus)
     {
@@ -261,8 +262,6 @@ namespace MainWindow
     void OnSize(HWND hwnd, UINT state, int cx, int cy);
     void OnDestroy(HWND hwnd);
     void OnChooseDevice(HWND hwnd);
-    void OnStartRecord(HWND hwnd);
-    void OnStopRecord(HWND hwnd);
     void OnCommand(HWND hwnd, int id, HWND hwndCtl, UINT codeNotify);
 
     void UpdateUI(HWND hwnd)
@@ -280,13 +279,6 @@ namespace MainWindow
                 SetMenuItemText(GetMenu(hwnd), ID_CAPTURE_PREVIEW, L"Start Preview");
             }
         }
-        BOOL bEnableRecording = TRUE;
-        BOOL bEnablePhoto = TRUE;
-
-        if (bRecording)
-        {
-            _SetStatusText(L"Recording");
-        }
         else if (g_pEngine->IsPreviewing())
         {
             _SetStatusText(L"Previewing");
@@ -294,11 +286,8 @@ namespace MainWindow
         else
         {
             _SetStatusText(L"Please select a device or start preview (using the default device).");
-            bEnableRecording = FALSE;
         }
 
-        EnableMenuItem(GetMenu(hwnd), ID_CAPTURE_RECORD, bEnableRecording ? MF_ENABLED : MF_GRAYED);
-        EnableMenuItem(GetMenu(hwnd), ID_CAPTURE_TAKEPHOTO, bEnablePhoto ? MF_ENABLED : MF_GRAYED);
     }
 
 
@@ -437,7 +426,7 @@ namespace MainWindow
         HRESULT hr = g_pEngine->StopPreview();
         if (FAILED(hr))
         {
-            ShowError(hwnd, IDS_ERR_RECORD, hr);
+            ShowError(hwnd, IDS_ERR_CAPTURE, hr);
         }
         UpdateUI(hwnd);
     }
@@ -446,7 +435,7 @@ namespace MainWindow
         HRESULT hr = g_pEngine->StartPreview();
         if (FAILED(hr))
         {
-            ShowError(hwnd, IDS_ERR_RECORD, hr);
+            ShowError(hwnd, IDS_ERR_CAPTURE, hr);
         }
         UpdateUI(hwnd);
     }
@@ -506,15 +495,15 @@ namespace MainWindow
             switch (wParam)
             {
             case PBT_APMSUSPEND:
-                DbgPrint(L"++WM_POWERBROADCAST++ Stopping both preview & record stream.\n");
+                TRACE(L"++WM_POWERBROADCAST++ Stopping both preview & record stream.\n");
                 g_fSleepState = true;
                 g_pEngine->SleepState(g_fSleepState);
                 g_pEngine->StopPreview();
                 g_pEngine->DestroyCaptureEngine();
-                DbgPrint(L"++WM_POWERBROADCAST++ streams stopped, capture engine destroyed.\n");
+                TRACE(L"++WM_POWERBROADCAST++ streams stopped, capture engine destroyed.\n");
                 break;
             case PBT_APMRESUMEAUTOMATIC:
-                DbgPrint(L"++WM_POWERBROADCAST++ Reinitializing capture engine.\n");
+                TRACE(L"++WM_POWERBROADCAST++ Reinitializing capture engine.\n");
                 g_fSleepState = false;
                 g_pEngine->SleepState(g_fSleepState);
                 g_pEngine->InitializeCaptureManager(hPreview, pSelectedDevice.get());
@@ -534,16 +523,16 @@ namespace MainWindow
                     if (dwData == 0 && !g_fSleepState)
                     {
                         // This is a AOAC machine, and we're about to turn off our monitor, let's stop recording/preview.
-                        DbgPrint(L"++WM_POWERBROADCAST++ Stopping both preview & record stream.\n");
+                        TRACE(L"++WM_POWERBROADCAST++ Stopping both preview & record stream.\n");
                         g_fSleepState = true;
                         g_pEngine->SleepState(g_fSleepState);
                         g_pEngine->StopPreview();
                         g_pEngine->DestroyCaptureEngine();
-                        DbgPrint(L"++WM_POWERBROADCAST++ streams stopped, capture engine destroyed.\n");
+                        TRACE(L"++WM_POWERBROADCAST++ streams stopped, capture engine destroyed.\n");
                     }
                     else if (dwData != 0 && g_fSleepState)
                     {
-                        DbgPrint(L"++WM_POWERBROADCAST++ Reinitializing capture engine.\n");
+                        TRACE(L"++WM_POWERBROADCAST++ Reinitializing capture engine.\n");
                         g_fSleepState = false;
                         g_pEngine->SleepState(g_fSleepState);
                         g_pEngine->InitializeCaptureManager(hPreview, pSelectedDevice.get());
@@ -555,7 +544,7 @@ namespace MainWindow
             default:
                 // Don't care about this one, we always get the resume automatic so just
                 // latch onto that one.
-                DbgPrint(L"++WM_POWERBROADCAST++ (wParam=%u,lParam=%u)\n", wParam, lParam);
+                TRACE((L"++WM_POWERBROADCAST++ (wParam=%u,lParam=%u)\n", wParam, lParam));
                 break;
             }
         }

@@ -5,12 +5,11 @@
 #include <winrt/Windows.Graphics.DirectX.Direct3D11.h>
 #include <windows.graphics.imaging.interop.h>
 #include <windows.media.core.interop.h>
-#include "common.h"
+#include "Helpers/common.h"
 #include <unknwn.h>
 #include <stdio.h>
 #include <wchar.h>
 #include <future>
-
 
 #define MFT_NUM_DEFAULT_ATTRIBUTES  4
 
@@ -173,6 +172,7 @@ ULONG TransformAsync::Release()
 }
 #pragma endregion IUnknown
 
+// TODO: Clean up!
 HRESULT TransformAsync::ScheduleFrameInference(void)
 {
     HRESULT hr = S_OK; 
@@ -210,7 +210,6 @@ HRESULT TransformAsync::ScheduleFrameInference(void)
     CHECK_HR(hr = MFPutWorkItemEx(MFASYNC_CALLBACK_QUEUE_MULTITHREADED, pResult.get()));
 
 done:
-    //SAFE_RELEASE(model); // TODO: Make into a smart pointer
     return hr;
 
 }
@@ -393,7 +392,6 @@ HRESULT TransformAsync::OnSetD3DManager(ULONG_PTR ulParam)
 
 done:
     //TODO: Safe release anything as needed
-    //SAFE_RELEASE(p_deviceHandle);
     return hr;
 }
 
@@ -507,19 +505,18 @@ HRESULT TransformAsync::OnGetPartialType(DWORD dwTypeIndex, IMFMediaType** ppmt)
         return MF_E_NO_MORE_TYPES;
     }
 
-    IMFMediaType* pmt = NULL;
+    winrt::com_ptr<IMFMediaType> pmt;
 
-    CHECK_HR(hr = MFCreateMediaType(&pmt));
+    CHECK_HR(hr = MFCreateMediaType(pmt.put()));
 
     CHECK_HR(hr = pmt->SetGUID(MF_MT_MAJOR_TYPE, MFMediaType_Video));
 
     CHECK_HR(hr = pmt->SetGUID(MF_MT_SUBTYPE, *g_MediaSubtypes[dwTypeIndex]));
 
-    *ppmt = pmt;
+    *ppmt = pmt.get();
     (*ppmt)->AddRef();
 
 done:
-    SAFE_RELEASE(pmt);
     return hr;
 }
 
@@ -1026,8 +1023,8 @@ HRESULT TransformAsync::OnDrain(
         // TODO: Should this call PI to get rid of any queued inputs? because do have one going
         if (m_pOutputSampleQueue->IsQueueEmpty())
         {
-            IMFMediaEvent* pDrainCompleteEvent = NULL;
-            hr = MFCreateMediaEvent(METransformDrainComplete, GUID_NULL, S_OK, NULL, &pDrainCompleteEvent);
+            winrt::com_ptr<IMFMediaEvent> pDrainCompleteEvent;
+            hr = MFCreateMediaEvent(METransformDrainComplete, GUID_NULL, S_OK, NULL, pDrainCompleteEvent.put());
             if (FAILED(hr))
             {
                 break;
@@ -1049,8 +1046,7 @@ HRESULT TransformAsync::OnDrain(
             ** we know m_pEventQueue can never be
             ** NULL due to InitializeTransform()
             ***************************************/
-            hr = m_pEventQueue->QueueEvent(pDrainCompleteEvent);
-            SAFE_RELEASE(pDrainCompleteEvent);
+            hr = m_pEventQueue->QueueEvent(pDrainCompleteEvent.get());
             if (FAILED(hr))
             {
                 break;

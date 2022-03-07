@@ -16,7 +16,7 @@
 #include <winrt/windows.foundation.collections.h>
 #include <winrt/Windows.Media.h>
 //#include <DXProgrammableCapture.h>
-#include "common.h"
+#include "Helpers/common.h"
 
 
 using namespace winrt::Microsoft::AI::MachineLearning;

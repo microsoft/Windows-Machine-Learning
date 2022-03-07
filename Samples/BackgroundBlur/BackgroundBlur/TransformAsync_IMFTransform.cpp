@@ -1,8 +1,6 @@
 #include "TransformAsync.h"
-//#include "common/CAutoLock.h"
 #include <mferror.h>
 #include <Mfapi.h>
-#include "common/CHWMFT_DebugLogger.h"
 
 #include <DXGItype.h>
 #include <dxgi1_2.h>

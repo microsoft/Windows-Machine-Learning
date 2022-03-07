@@ -8,7 +8,7 @@
 
 // Miscellaneous helper functions.
 
-#include "Capture.h"
+#include "../Capture.h"
 #include <wincodec.h>
 #include "common.h"
 

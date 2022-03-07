@@ -1,22 +1,8 @@
 #include "CSampleQueue.h"
-#include "CAutoLock.h"
-#include "CHWMFT.h"
-#include "CHWMFT_DebugLogger.h"
+// TODO: Maybe move the GUID to root's common.h
+#include "../TransformAsync.h"
+#include "common.h"
 
-// Helper Macros
-#define SAFERELEASE(x) \
-    if((x) != NULL) \
-    { \
-        (x)->Release(); \
-        (x) = NULL; \
-    } \
-
-#define SAFEDELETE(x) \
-    if((x) != NULL) \
-    { \
-        delete (x); \
-        (x) = NULL; \
-    } \
 
 class CSampleQueue::CNode
 {
@@ -31,7 +17,7 @@ public:
     }
     ~CNode(void)
     {
-        SAFERELEASE(pSample);
+        SAFE_RELEASE(pSample);
         pNext   = NULL;
     }
 };
@@ -61,7 +47,7 @@ HRESULT CSampleQueue::Create(
         (*ppQueue)->AddRef();
     }while(false);
 
-    SAFERELEASE(pNewQueue);
+    SAFE_RELEASE(pNewQueue);
 
     return hr;
 }
@@ -125,7 +111,6 @@ HRESULT CSampleQueue::AddSample(
     HRESULT hr          = S_OK;
     CNode*  pNewNode    = NULL;
 
-    TraceString(CHMFTTracing::TRACE_INFORMATION, L"%S(): Enter",  __FUNCTION__);
 
     do
     {
@@ -145,13 +130,14 @@ HRESULT CSampleQueue::AddSample(
         pNewNode->pSample           = pSample;
         pNewNode->pSample->AddRef();
         pNewNode->pNext             = NULL;
+        InterlockedIncrement(&m_length);
 
         {
-            CAutoLock lock(&m_csLock);
+            AutoLock lock(m_critSec);
 
             if(m_bAddMarker != FALSE)
             {
-                hr = pSample->SetUINT64(MYMFT_MFSampleExtension_Marker, m_pulMarkerID);
+                hr = pSample->SetUINT64(TransformAsync_MFSampleExtension_Marker, m_pulMarkerID);
                 if(FAILED(hr))
                 {
                     break;
@@ -167,24 +153,22 @@ HRESULT CSampleQueue::AddSample(
                 m_pHead     = pNewNode;
                 m_pTail     = pNewNode;
 
-                TraceString(CHMFTTracing::TRACE_INFORMATION, L"%S(): Sample @%p is first sample in Queue @%p",  __FUNCTION__, pSample, this);
             }
             else
             {
                 m_pTail->pNext  = pNewNode;
                 m_pTail         = pNewNode;
 
-                TraceString(CHMFTTracing::TRACE_INFORMATION, L"%S(): Sample @%p added to back of Queue @%p",  __FUNCTION__, pSample, this);
             }
+
         }
     }while(false);
 
     if(FAILED(hr))
     {
-        SAFEDELETE(pNewNode);
+        SAFE_DELETE(pNewNode);
     }
 
-    TraceString(CHMFTTracing::TRACE_INFORMATION, L"%S(): Exit (hr=0x%x)",  __FUNCTION__, hr);
 
     return hr;
 }
@@ -204,9 +188,10 @@ HRESULT CSampleQueue::GetNextSample(
         }
 
         *ppSample   = NULL;
+        InterlockedDecrement(&m_length);
 
         {
-            CAutoLock lock(&m_csLock);
+            AutoLock lock(m_critSec);
 
             if(IsQueueEmpty() != FALSE)
             {
@@ -224,19 +209,17 @@ HRESULT CSampleQueue::GetNextSample(
 
             m_pHead = m_pHead->pNext;
 
-            TraceString(CHMFTTracing::TRACE_INFORMATION, L"%S(): Sample @%p removed from queue Queue @%p",  __FUNCTION__, (*ppSample), this);
 
             if(m_pHead == NULL)
             {
                 // This was the last sample in the queue
                 m_pTail = NULL;
 
-                TraceString(CHMFTTracing::TRACE_INFORMATION, L"%S(): Queue @%p is not empty",  __FUNCTION__, this);
             }
         }
     }while(false);
 
-    SAFEDELETE(pCurrentNode);
+    SAFE_DELETE(pCurrentNode);
 
     return hr;
 }
@@ -248,7 +231,7 @@ HRESULT CSampleQueue::RemoveAllSamples(void)
 
     do
     {
-        CAutoLock lock(&m_csLock);
+        AutoLock lock(m_critSec);
 
         while(IsQueueEmpty() == FALSE)
         {
@@ -260,6 +243,7 @@ HRESULT CSampleQueue::RemoveAllSamples(void)
         }
 
         m_pTail = NULL;
+        m_length = 0;
     }while(false);
 
     return hr;
@@ -272,7 +256,7 @@ HRESULT CSampleQueue::MarkerNextSample(
 
     do
     {
-        CAutoLock lock(&m_csLock);
+        AutoLock lock(m_critSec);
 
         m_pulMarkerID   = pulID;
         m_bAddMarker    = TRUE;
@@ -283,9 +267,14 @@ HRESULT CSampleQueue::MarkerNextSample(
 
 BOOL CSampleQueue::IsQueueEmpty(void)
 {
-    CAutoLock lock(&m_csLock);
+    AutoLock lock(m_critSec);
 
     return (m_pHead == NULL) ? TRUE : FALSE;
+}
+
+ULONG CSampleQueue::GetLength()
+{
+    return m_length;
 }
 
 CSampleQueue::CSampleQueue(void)
@@ -296,12 +285,12 @@ CSampleQueue::CSampleQueue(void)
     m_bAddMarker    = FALSE;
     m_pulMarkerID   = 0;
 
-    InitializeCriticalSection(&m_csLock);
+    //InitializeCriticalSection(&m_csLock);
 }
 
 CSampleQueue::~CSampleQueue(void)
 {
     RemoveAllSamples();
-
-    DeleteCriticalSection(&m_csLock);
+    m_critSec.~CritSec();
+    //DeleteCriticalSection(&m_csLock);
 }

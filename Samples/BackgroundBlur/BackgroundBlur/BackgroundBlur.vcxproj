@@ -149,23 +149,24 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="Capture.h" />
-    <ClInclude Include="common.h" />
-    <ClInclude Include="common\CAutoLock.h" />
-    <ClInclude Include="common\CHWMFT_DebugLogger.h" />
-    <ClInclude Include="common\critsec.h">
+    <ClInclude Include="Helpers\CAutoLock.h" />
+    <ClInclude Include="Helpers\common.h" />
+    <ClInclude Include="Helpers\critsec.h">
       <DeploymentContent>true</DeploymentContent>
     </ClInclude>
-    <ClInclude Include="common\CSampleQueue.h" />
-    <ClInclude Include="common\GrowArray.h" />
+    <ClInclude Include="Helpers\CSampleQueue.h" />
+    <ClInclude Include="Helpers\logging.h" />
+    <ClInclude Include="Helpers\logmediatype.h" />
+    <ClInclude Include="Helpers\trace.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="SegmentModel.h" />
     <ClInclude Include="TransformAsync.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Capture.cpp" />
-    <ClCompile Include="common\CAutoLock.cpp" />
-    <ClCompile Include="common\CHWMFT_DebugLogger.cpp" />
-    <ClCompile Include="common\CSampleQueue.cpp" />
+    <ClCompile Include="Helpers\CAutoLock.cpp" />
+    <ClCompile Include="Helpers\CSampleQueue.cpp" />
+    <ClCompile Include="Helpers\utils.cpp" />
     <ClCompile Include="PreviewWnd.cpp" />
     <ClCompile Include="SegmentModel.cpp" />
     <ClCompile Include="TransformAsync.cpp" />
@@ -173,25 +174,13 @@
     <ClCompile Include="TransformAsync_IMFMediaEventGenerator.cpp" />
     <ClCompile Include="TransformAsync_IMFShutdown.cpp" />
     <ClCompile Include="TransformAsync_IMFTransform.cpp" />
-    <ClCompile Include="utils.cpp" />
     <ClCompile Include="winmain.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <CopyFileToFolders Include="Assets\fcn-resnet50-12-int8.onnx">
-      <FileType>Document</FileType>
-      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</DeploymentContent>
-      <DestinationFolders Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(OutDir)/Assets</DestinationFolders>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
-    </CopyFileToFolders>
     <CopyFileToFolders Include="Assets\mosaic.onnx">
       <DeploymentContent>true</DeploymentContent>
       <FileType>Document</FileType>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
-      <DestinationFolders Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(OutDir)/Assets</DestinationFolders>
-    </CopyFileToFolders>
-    <CopyFileToFolders Include="Assets\fcn-resnet50-11.onnx">
-      <DeploymentContent>true</DeploymentContent>
-      <FileType>Document</FileType>
       <DestinationFolders Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(OutDir)/Assets</DestinationFolders>
     </CopyFileToFolders>
     <None Include="packages.config" />
@@ -219,7 +208,7 @@
     <Error Condition="!Exists('..\packages\WinPixEventRuntime.1.0.220124001\build\WinPixEventRuntime.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\WinPixEventRuntime.1.0.220124001\build\WinPixEventRuntime.targets'))" />
   </Target>
   <Target Name="DownloadContentFiles" BeforeTargets="Build">
-    <DownloadFile Condition="!Exists('$(MSBuildProjectDirectory)\Assets\fcn-resnet50-11.onnx')" SourceUrl="https://github.com/onnx/models/raw/master/vision/object_detection_segmentation/fcn/model/fcn-resnet50-11.onnx" DestinationFolder="$(MSBuildProjectDirectory)\Assets">
+    <DownloadFile Condition="!Exists('$(MSBuildProjectDirectory)\Assets\fcn-resnet50-12.onnx')" SourceUrl="https://github.com/onnx/models/raw/main/vision/object_detection_segmentation/fcn/model/fcn-resnet50-12.onnx" DestinationFolder="$(MSBuildProjectDirectory)\Assets">
       <Output TaskParameter="DownloadedFile" ItemName="Content" />
     </DownloadFile>
   </Target>

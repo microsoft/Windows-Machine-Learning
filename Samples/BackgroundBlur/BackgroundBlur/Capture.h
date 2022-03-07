@@ -32,6 +32,7 @@
 #include <commctrl.h>
 #include <d3d11.h>
 #include <initguid.h>
+#include "Helpers/common.h"
 
 const UINT WM_APP_CAPTURE_EVENT = WM_APP + 1;
 
@@ -47,29 +48,11 @@ extern IMFDXGIDeviceManager* g_pDXGIMan;
 extern ID3D11Device*         g_pDX11Device;
 extern UINT                  g_ResetToken;
 
-#ifdef _DEBUG
-#define DBGMSG(x)  { DbgPrint x;}
-#else
-#define DBGMSG(x)
-#endif
-
-VOID DbgPrint(PCTSTR format, ...);
-
-
-template <class T> void SafeRelease(T **ppT)
-{
-    if (*ppT)
-    {
-        (*ppT)->Release();
-        *ppT = NULL;
-    }
-}
-
 // Gets an interface pointer from a Media Foundation collection.
 template <class IFACE>
-HRESULT GetCollectionObject(IMFCollection *pCollection, DWORD index, IFACE **ppObject)
+HRESULT GetCollectionObject(IMFCollection* pCollection, DWORD index, IFACE** ppObject)
 {
-    IUnknown *pUnk;
+    IUnknown* pUnk;
     HRESULT hr = pCollection->GetElement(index, &pUnk);
     if (SUCCEEDED(hr))
     {
@@ -89,12 +72,12 @@ struct ChooseDeviceParam
     {
         for (DWORD i = 0; i < count; i++)
         {
-            SafeRelease(&ppDevices[i]);
+            SAFE_RELEASE(ppDevices[i]);
         }
         CoTaskMemFree(ppDevices);
     }
 
-    IMFActivate **ppDevices;
+    IMFActivate** ppDevices;
     UINT32      count;
     UINT32      selection;
 };
@@ -119,9 +102,9 @@ class CaptureManager
         STDMETHODIMP QueryInterface(REFIID riid, void** ppv);
         STDMETHODIMP_(ULONG) AddRef();
         STDMETHODIMP_(ULONG) Release();
-    
+
         // IMFCaptureEngineOnEventCallback
-        STDMETHODIMP OnEvent( _In_ IMFMediaEvent* pEvent);
+        STDMETHODIMP OnEvent(_In_ IMFMediaEvent* pEvent);
 
         bool m_fSleeping;
         CaptureManager* m_pManager;
@@ -130,10 +113,10 @@ class CaptureManager
     HWND                    m_hwndEvent;
     HWND                    m_hwndPreview;
 
-    IMFCaptureEngine        *m_pEngine;
-    IMFCapturePreviewSink   *m_pPreview;
+    IMFCaptureEngine* m_pEngine;
+    IMFCapturePreviewSink* m_pPreview;
 
-    CaptureEngineCB         *m_pCallback;
+    CaptureEngineCB* m_pCallback;
 
     bool                    m_bPreviewing;
 
@@ -142,16 +125,16 @@ class CaptureManager
     HANDLE                  m_hpwrRequest;
     bool                    m_fPowerRequestSet;
 
-    CaptureManager(HWND hwnd) : 
-        m_hwndEvent(hwnd), m_hwndPreview(NULL), m_pEngine(NULL), m_pPreview(NULL), 
-        m_pCallback(NULL), m_bPreviewing(false), m_errorID(0),m_hEvent(NULL)
-        ,m_hpwrRequest(INVALID_HANDLE_VALUE)
-        ,m_fPowerRequestSet(false)
+    CaptureManager(HWND hwnd) :
+        m_hwndEvent(hwnd), m_hwndPreview(NULL), m_pEngine(NULL), m_pPreview(NULL),
+        m_pCallback(NULL), m_bPreviewing(false), m_errorID(0), m_hEvent(NULL)
+        , m_hpwrRequest(INVALID_HANDLE_VALUE)
+        , m_fPowerRequestSet(false)
     {
         REASON_CONTEXT  pwrCtxt;
 
         pwrCtxt.Version = POWER_REQUEST_CONTEXT_VERSION;
-        pwrCtxt.Flags   = POWER_REQUEST_CONTEXT_SIMPLE_STRING;
+        pwrCtxt.Flags = POWER_REQUEST_CONTEXT_SIMPLE_STRING;
         pwrCtxt.Reason.SimpleReasonString = L"CaptureEngine is recording!";
 
         m_hpwrRequest = PowerCreateRequest(&pwrCtxt);
@@ -176,12 +159,12 @@ public:
         DestroyCaptureEngine();
     }
 
-    static HRESULT CreateInstance(HWND hwndEvent, CaptureManager **ppEngine)
+    static HRESULT CreateInstance(HWND hwndEvent, CaptureManager** ppEngine)
     {
         HRESULT hr = S_OK;
         *ppEngine = NULL;
 
-        CaptureManager *pEngine = new (std::nothrow) CaptureManager(hwndEvent);
+        CaptureManager* pEngine = new (std::nothrow) CaptureManager(hwndEvent);
         if (pEngine == NULL)
         {
             hr = E_OUTOFMEMORY;
@@ -206,16 +189,16 @@ public:
             CloseHandle(m_hEvent);
             m_hEvent = NULL;
         }
-        SafeRelease(&m_pPreview);
-        SafeRelease(&m_pEngine);
-        SafeRelease(&m_pCallback);
+        SAFE_RELEASE(m_pPreview);
+        SAFE_RELEASE(m_pEngine);
+        SAFE_RELEASE(m_pCallback);
 
-        if(g_pDXGIMan)
+        if (g_pDXGIMan)
         {
             g_pDXGIMan->ResetDevice(g_pDX11Device, g_ResetToken);
         }
-        SafeRelease(&g_pDX11Device);
-        SafeRelease(&g_pDXGIMan);
+        SAFE_RELEASE(g_pDX11Device);
+        SAFE_RELEASE(g_pDXGIMan);
 
         m_bPreviewing = false;
         m_errorID = 0;  

@@ -139,15 +139,14 @@ HRESULT CreateDX11Device(_Out_ ID3D11Device** ppDevice, _Out_ ID3D11DeviceContex
     
     if(SUCCEEDED(hr))
     {
-        ID3D10Multithread* pMultithread;
-        hr =  ((*ppDevice)->QueryInterface(IID_PPV_ARGS(&pMultithread)));
+        winrt::com_ptr<ID3D10Multithread> pMultithread;
+        hr =  ((*ppDevice)->QueryInterface(IID_PPV_ARGS(pMultithread.put())));
 
         if(SUCCEEDED(hr))
         {
             pMultithread->SetMultithreadProtected(TRUE);
         }
 
-        SafeRelease(&pMultithread);
         
     }
 
@@ -158,9 +157,9 @@ HRESULT CreateD3DManager()
 {
     HRESULT hr = S_OK;
     D3D_FEATURE_LEVEL FeatureLevel;
-    ID3D11DeviceContext* pDX11DeviceContext;
+    winrt::com_ptr<ID3D11DeviceContext> pDX11DeviceContext;
     
-    hr = CreateDX11Device(&g_pDX11Device, &pDX11DeviceContext, &FeatureLevel);
+    hr = CreateDX11Device(&g_pDX11Device, pDX11DeviceContext.put(), &FeatureLevel);
 
     if(SUCCEEDED(hr))
     {
@@ -171,9 +170,7 @@ HRESULT CreateD3DManager()
     {
         hr = g_pDXGIMan->ResetDevice(g_pDX11Device, g_ResetToken);
     }
-    
-    SafeRelease(&pDX11DeviceContext);
-    
+        
     return hr;
 }
 
@@ -277,7 +274,7 @@ HRESULT CaptureManager::OnCaptureEvent(WPARAM wParam, LPARAM lParam)
         LPOLESTR str;
         if (SUCCEEDED(StringFromCLSID(guidType, &str)))
         {
-            DBGMSG((L"MF_CAPTURE_ENGINE_EVENT: %s (hr = 0x%X)\n", str, hrStatus));
+            TRACE((L"MF_CAPTURE_ENGINE_EVENT: %s (hr = 0x%X)\n", str, hrStatus));
             CoTaskMemFree(str);
         }
 #endif
@@ -346,17 +343,17 @@ HRESULT CaptureManager::StartPreview()
         return S_OK;
     }
 
-    IMFCaptureSink *pSink = NULL;
-    IMFMediaType *pMediaType = NULL;
-    IMFMediaType *pMediaType2 = NULL;
-    IMFCaptureSource *pSource = NULL;
+    winrt::com_ptr<IMFCaptureSink> pSink;
+    winrt::com_ptr<IMFMediaType> pMediaType;
+    winrt::com_ptr<IMFMediaType> pMediaType2;
+    winrt::com_ptr<IMFCaptureSource> pSource;
 
     HRESULT hr = S_OK;
     
     // Get a pointer to the preview sink.
     if (m_pPreview == NULL)
     {
-        hr = m_pEngine->GetSink(MF_CAPTURE_ENGINE_SINK_TYPE_PREVIEW, &pSink);
+        hr = m_pEngine->GetSink(MF_CAPTURE_ENGINE_SINK_TYPE_PREVIEW, pSink.put());
         if (FAILED(hr))
         {
             goto done;
@@ -374,14 +371,14 @@ HRESULT CaptureManager::StartPreview()
             goto done;
         }
 
-        hr = m_pEngine->GetSource(&pSource);
+        hr = m_pEngine->GetSource(pSource.put());
         if (FAILED(hr))
         {
             goto done;
         }
 
         // Configure the video format for the preview sink.
-        hr = pSource->GetCurrentDeviceMediaType((DWORD)MF_CAPTURE_ENGINE_PREFERRED_SOURCE_STREAM_FOR_VIDEO_PREVIEW , &pMediaType);
+        hr = pSource->GetCurrentDeviceMediaType((DWORD)MF_CAPTURE_ENGINE_PREFERRED_SOURCE_STREAM_FOR_VIDEO_PREVIEW , pMediaType.put());
         if (FAILED(hr))
         {
             goto done;
@@ -398,7 +395,7 @@ HRESULT CaptureManager::StartPreview()
             goto done;
         }
 
-        hr = CloneVideoMediaType(pMediaType, MFVideoFormat_RGB32, &pMediaType2);
+        hr = CloneVideoMediaType(pMediaType.get(), MFVideoFormat_RGB32, pMediaType2.put());
         if (FAILED(hr))
         {
             goto done;
@@ -412,7 +409,7 @@ HRESULT CaptureManager::StartPreview()
 
         // Connect the video stream to the preview sink.
         DWORD dwSinkStreamIndex;
-        hr = m_pPreview->AddStream((DWORD)MF_CAPTURE_ENGINE_PREFERRED_SOURCE_STREAM_FOR_VIDEO_PREVIEW,  pMediaType2, NULL, &dwSinkStreamIndex);        
+        hr = m_pPreview->AddStream((DWORD)MF_CAPTURE_ENGINE_PREFERRED_SOURCE_STREAM_FOR_VIDEO_PREVIEW,  pMediaType2.get(), NULL, &dwSinkStreamIndex);        
         if (FAILED(hr))
         {
             goto done;
@@ -433,10 +430,6 @@ HRESULT CaptureManager::StartPreview()
         m_fPowerRequestSet = (TRUE == PowerSetRequest(m_hpwrRequest, PowerRequestExecutionRequired));
     }
 done:
-    SafeRelease(&pSink);
-    SafeRelease(&pMediaType);
-    SafeRelease(&pMediaType2);
-    SafeRelease(&pSource);
 
     return hr;
 }
@@ -518,8 +511,6 @@ done:
 
     return hr;
 }
-
-
 
 
 

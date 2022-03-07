@@ -267,18 +267,6 @@ namespace MainWindow
 
     void UpdateUI(HWND hwnd)
     {
-        if (g_pEngine->IsRecording() != bRecording)
-        {
-            bRecording = g_pEngine->IsRecording();
-            if (bRecording)
-            {
-                SetMenuItemText(GetMenu(hwnd), ID_CAPTURE_RECORD, L"Stop Recording");
-            }
-            else
-            {
-                SetMenuItemText(GetMenu(hwnd), ID_CAPTURE_RECORD, L"Start Recording");
-            }
-        }
 
         if (g_pEngine->IsPreviewing() != bPreviewing)
         {
@@ -307,11 +295,6 @@ namespace MainWindow
         {
             _SetStatusText(L"Please select a device or start preview (using the default device).");
             bEnableRecording = FALSE;
-        }
-
-        if (!g_pEngine->IsPreviewing() || g_pEngine->IsPhotoPending())
-        {
-            bEnablePhoto = FALSE;
         }
 
         EnableMenuItem(GetMenu(hwnd), ID_CAPTURE_RECORD, bEnableRecording ? MF_ENABLED : MF_GRAYED);
@@ -448,101 +431,7 @@ namespace MainWindow
         }
         UpdateUI(hwnd);
     }
-
-    // TODO: Remove record options
-    void OnStartRecord(HWND hwnd)
-    {
-        IFileSaveDialog* pFileSave = NULL;
-        IShellItem* pItem = NULL;
-        PWSTR pszFileName = NULL;
-
-        const COMDLG_FILTERSPEC rgSpec[] =
-        {
-            { L"MP4 (H.264/AAC)", L"*.mp4" },
-            { L"Windows Media Video", L"*.wmv" },
-            { L"All Files", L"*.*" },
-        };
-
-        HRESULT hr = CoCreateInstance(CLSID_FileSaveDialog, NULL, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&pFileSave));
-        if (FAILED(hr))
-        {
-            goto done;
-        }
-        hr = pFileSave->SetTitle(L"Select File Name");
-        if (FAILED(hr))
-        {
-            goto done;
-        }
-
-        hr = pFileSave->SetFileName(L"MyVideo.mp4");
-        if (FAILED(hr))
-        {
-            goto done;
-        }
-
-        hr = pFileSave->SetDefaultExtension(L"mp4");
-        if (FAILED(hr))
-        {
-            goto done;
-        }
-
-        
-        hr = pFileSave->SetFileTypes(ARRAYSIZE(rgSpec), rgSpec);
-        if (FAILED(hr))
-        {
-            goto done;
-        }
-
-        hr = pFileSave->Show(hwnd);
-        if (hr == HRESULT_FROM_WIN32(ERROR_CANCELLED))
-        {
-            hr = S_OK;      // The user canceled the dialog.
-            goto done;
-        }
-        if (FAILED(hr))
-        {
-            goto done;
-        }
-
-        hr = pFileSave->GetResult(&pItem);
-        if (FAILED(hr))
-        {
-            goto done;
-        }
-
-        hr = pItem->GetDisplayName(SIGDN_FILESYSPATH, &pszFileName);
-        if (FAILED(hr))
-        {
-            goto done;
-        }
-
-        hr = g_pEngine->StartRecord(pszFileName);
-        if (FAILED(hr))
-        {
-            goto done;
-        }
-
-    done:
-        CoTaskMemFree(pszFileName);
-        SafeRelease(&pItem);
-        SafeRelease(&pFileSave);
-
-        if (FAILED(hr))
-        {
-            ShowError(hwnd, IDS_ERR_RECORD, hr);
-        }
-        UpdateUI(hwnd);
-    }
-
-    void OnStopRecord(HWND hwnd)
-    {
-        HRESULT hr = g_pEngine->StopRecord();
-        if (FAILED(hr))
-        {
-            ShowError(hwnd, IDS_ERR_RECORD, hr);
-        }
-        UpdateUI(hwnd);
-    }
+   
     void OnStopPreview(HWND hwnd)
     {
         HRESULT hr = g_pEngine->StopPreview();
@@ -561,54 +450,6 @@ namespace MainWindow
         }
         UpdateUI(hwnd);
     }
-    void OnTakePhoto(HWND hwnd)
-    {
-        wchar_t filename[MAX_PATH];
-        LPTSTR path;
-
-        // Get the path to the Documents folder.
-        winrt::com_ptr<IShellItem> psi;
-        PWSTR pszFolderPath = NULL;
-
-        HRESULT hr = SHCreateItemInKnownFolder(FOLDERID_Documents, 0, NULL, IID_PPV_ARGS(&psi));
-        if (FAILED(hr))
-        {
-            goto done;
-        }
-
-        CHECK_HR(hr = psi->GetDisplayName(SIGDN_FILESYSPATH, &pszFolderPath));
-        // Construct a file name based on the current time.
-
-        SYSTEMTIME time;
-        GetLocalTime(&time);
-
-        CHECK_HR(hr = StringCchPrintf(filename, MAX_PATH, L"MyPhoto%04u_%02u%02u_%02u%02u%02u.jpg",
-            time.wYear, time.wMonth, time.wDay, time.wHour, time.wMinute, time.wSecond));
-
-        path = PathCombine(PhotoFileName, pszFolderPath, filename);
-        if (path == NULL)
-        {
-            hr = E_FAIL;
-            goto done;
-        }
-
-        CHECK_HR(hr = g_pEngine->TakePhoto(path));
-        if (FAILED(hr))
-        {
-            goto done;
-        }
-
-        _SetStatusText(path);
-
-    done:
-        CoTaskMemFree(pszFolderPath);
-
-        if (FAILED(hr))
-        {
-            ShowError(hwnd, IDS_ERR_PHOTO, hr);
-        }
-        UpdateUI(hwnd);
-    }
 
     void OnCommand(HWND hwnd, int id, HWND /*hwndCtl*/, UINT /*codeNotify*/)
     {
@@ -618,20 +459,6 @@ namespace MainWindow
             OnChooseDevice(hwnd);
             break;
 
-        case ID_CAPTURE_RECORD:
-            if (g_pEngine->IsRecording())
-            {
-                OnStopRecord(hwnd);
-            }
-            else
-            {
-                OnStartRecord(hwnd);
-            }
-            break;
-
-        case ID_CAPTURE_TAKEPHOTO:
-            OnTakePhoto(hwnd);
-            break;
         case ID_CAPTURE_PREVIEW:
             if (g_pEngine->IsPreviewing())
             {
@@ -682,7 +509,6 @@ namespace MainWindow
                 DbgPrint(L"++WM_POWERBROADCAST++ Stopping both preview & record stream.\n");
                 g_fSleepState = true;
                 g_pEngine->SleepState(g_fSleepState);
-                g_pEngine->StopRecord();
                 g_pEngine->StopPreview();
                 g_pEngine->DestroyCaptureEngine();
                 DbgPrint(L"++WM_POWERBROADCAST++ streams stopped, capture engine destroyed.\n");
@@ -711,7 +537,6 @@ namespace MainWindow
                         DbgPrint(L"++WM_POWERBROADCAST++ Stopping both preview & record stream.\n");
                         g_fSleepState = true;
                         g_pEngine->SleepState(g_fSleepState);
-                        g_pEngine->StopRecord();
                         g_pEngine->StopPreview();
                         g_pEngine->DestroyCaptureEngine();
                         DbgPrint(L"++WM_POWERBROADCAST++ streams stopped, capture engine destroyed.\n");

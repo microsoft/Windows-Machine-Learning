@@ -41,7 +41,6 @@ void    SetMenuItemText(HMENU hMenu, UINT uItem, _In_ PWSTR pszText);
 void    ShowError(HWND hwnd, PCWSTR szMessage, HRESULT hr);
 void    ShowError(HWND hwnd, UINT id, HRESULT hr);
 HRESULT CloneVideoMediaType(IMFMediaType *pSrcMediaType, REFGUID guidSubType, IMFMediaType **ppNewMediaType);
-HRESULT CreatePhotoMediaType(IMFMediaType *pSrcMediaType, IMFMediaType **ppPhotoMediaType);
 
 // DXGI DevManager support
 extern IMFDXGIDeviceManager* g_pDXGIMan;
@@ -137,8 +136,6 @@ class CaptureManager
     CaptureEngineCB         *m_pCallback;
 
     bool                    m_bPreviewing;
-    bool                    m_bRecording;
-    bool                    m_bPhotoPending;
 
     UINT                    m_errorID;
     HANDLE                  m_hEvent;
@@ -147,7 +144,7 @@ class CaptureManager
 
     CaptureManager(HWND hwnd) : 
         m_hwndEvent(hwnd), m_hwndPreview(NULL), m_pEngine(NULL), m_pPreview(NULL), 
-        m_pCallback(NULL), m_bRecording(false), m_bPreviewing(false), m_bPhotoPending(false), m_errorID(0),m_hEvent(NULL)
+        m_pCallback(NULL), m_bPreviewing(false), m_errorID(0),m_hEvent(NULL)
         ,m_hpwrRequest(INVALID_HANDLE_VALUE)
         ,m_fPowerRequestSet(false)
     {
@@ -169,8 +166,6 @@ class CaptureManager
     void OnCaptureEngineInitialized(HRESULT& hrStatus);
     void OnPreviewStarted(HRESULT& hrStatus);
     void OnPreviewStopped(HRESULT& hrStatus);
-    void OnRecordStarted(HRESULT& hrStatus);
-    void OnRecordStopped(HRESULT& hrStatus);
     void WaitForResult()
     {
         WaitForSingleObject(m_hEvent, INFINITE);
@@ -223,25 +218,18 @@ public:
         SafeRelease(&g_pDXGIMan);
 
         m_bPreviewing = false;
-        m_bRecording = false;
-        m_bPhotoPending = false;
         m_errorID = 0;  
     }
 
 
 
     bool    IsPreviewing() const { return m_bPreviewing; }
-    bool    IsRecording() const { return m_bRecording; }
-    bool    IsPhotoPending() const { return m_bPhotoPending; }
     UINT    ErrorID() const { return m_errorID; }
 
     HRESULT OnCaptureEvent(WPARAM wParam, LPARAM lParam); 
     HRESULT SetVideoDevice(IUnknown *pUnk);
     HRESULT StartPreview();
     HRESULT StopPreview();
-    HRESULT StartRecord(PCWSTR pszDestinationFile);
-    HRESULT StopRecord();
-    HRESULT TakePhoto(PCWSTR pszFileName);
 
     void    SleepState(bool fSleeping)
     {

@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
 // Microsoft Visual C++ generated include file.
-// Used by CaptureEngine.rc
+// Used by Capture.rc
 //
 #define IDR_MENU1                       101
 #define IDD_CHOOSE_DEVICE               102

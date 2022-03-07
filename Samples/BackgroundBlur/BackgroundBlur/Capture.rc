@@ -17,6 +17,7 @@
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
 LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+#pragma code_page(1252)
 
 #ifdef APSTUDIO_INVOKED
 /////////////////////////////////////////////////////////////////////////////
@@ -53,10 +54,8 @@ IDR_MENU1 MENU
 BEGIN
     POPUP "Capture"
     BEGIN
-        MENUITEM "Start Preview"                ID_CAPTURE_PREVIEW
+        MENUITEM "Start Preview",               ID_CAPTURE_PREVIEW
         MENUITEM "Choose Device",               ID_CAPTURE_CHOOSEDEVICE
-        MENUITEM "Start Recording",             ID_CAPTURE_RECORD
-        MENUITEM "Take Photo",                  ID_CAPTURE_TAKEPHOTO
     END
 END
 
@@ -106,9 +105,7 @@ BEGIN
     IDS_ERR_SET_DEVICE      "Unable to set the capture device."
     IDS_ERR_INITIALIZE      "Unable to initialize the capture engine."
     IDS_ERR_PREVIEW         "An error occurred during preview."
-    IDS_ERR_RECORD          "An error occurred during recording."
     IDS_ERR_CAPTURE         "An error occurred during capture."
-    IDS_ERR_PHOTO           "Unable to capture still photo."
 END
 
 #endif    // English (United States) resources

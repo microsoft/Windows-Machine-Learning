@@ -87,7 +87,6 @@ STDMETHODIMP CaptureManager::CaptureEngineCB::OnEvent( _In_ IMFMediaEvent* pEven
     return S_OK;
 }
 
-// TODO: See about adding shareable resources flags
 HRESULT CreateDX11Device(_Out_ ID3D11Device** ppDevice, _Out_ ID3D11DeviceContext** ppDeviceContext, _Out_ D3D_FEATURE_LEVEL* pFeatureLevel )
 {
     HRESULT hr = S_OK;

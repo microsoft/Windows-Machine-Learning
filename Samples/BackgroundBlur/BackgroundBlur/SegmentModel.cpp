@@ -8,7 +8,6 @@ using winrt::hstring;
 using namespace winrt;
 using namespace Windows::Foundation::Collections;
 
-int g_scale = 5;
 enum OnnxDataType : long {
 	ONNX_UNDEFINED = 0,
 	// Basic types.
@@ -39,9 +38,7 @@ enum OnnxDataType : long {
 }OnnxDataType;
 
 
-
-
-// TODO: Probably don't need to be globals
+int g_scale = 5;
 std::array<float, 3> mean = { 0.485f, 0.456f, 0.406f };
 std::array<float, 3> stddev = { 0.229f, 0.224f, 0.225f };
 auto outputBindProperties = PropertySet();
@@ -58,7 +55,7 @@ void StyleTransfer::Run(IDirect3DSurface src, IDirect3DSurface dest)
 {
 	m_bSyncStarted = TRUE;
 
-	assert(m_session.Device().AdapterId() == nvidia);
+	assert(m_session.Device().AdapterId() == m_highPerfAdapter);
 	VideoFrame inVideoFrame = VideoFrame::CreateWithDirect3D11Surface(src);
 	VideoFrame outVideoFrame = VideoFrame::CreateWithDirect3D11Surface(dest);
 	SetVideoFrames(inVideoFrame, outVideoFrame);
@@ -152,7 +149,7 @@ LearningModel BackgroundBlur::GetModel()
 void BackgroundBlur::Run(IDirect3DSurface src, IDirect3DSurface dest)
 {
 	m_bSyncStarted = TRUE;
-	assert(m_session.Device().AdapterId() == nvidia);
+	assert(m_session.Device().AdapterId() == m_highPerfAdapter);
 	VideoFrame inVideoFrame = VideoFrame::CreateWithDirect3D11Surface(src);
 	VideoFrame outVideoFrame = VideoFrame::CreateWithDirect3D11Surface(dest);
 	SetVideoFrames(inVideoFrame, outVideoFrame);
@@ -175,7 +172,7 @@ void BackgroundBlur::Run(IDirect3DSurface src, IDirect3DSurface dest)
 //void BackgroundBlur::Run(IDirect3DSurface src, IDirect3DSurface dest)
 //{
 //	m_bSyncStarted = TRUE;
-//	assert(m_session.Device().AdapterId() == nvidia);
+//	assert(m_session.Device().AdapterId() == m_highPerfAdapter);
 //	VideoFrame inVideoFrame = VideoFrame::CreateWithDirect3D11Surface(src);
 //	VideoFrame outVideoFrame = VideoFrame::CreateWithDirect3D11Surface(dest);
 //	SetVideoFrames(inVideoFrame, outVideoFrame);
@@ -184,8 +181,8 @@ void BackgroundBlur::Run(IDirect3DSurface src, IDirect3DSurface dest)
 //	assert((UINT32)m_inputVideoFrame.Direct3DSurface().Description().Height == m_imageHeightInPixels);
 //	assert((UINT32)m_inputVideoFrame.Direct3DSurface().Description().Width == m_imageWidthInPixels);
 //
-//	assert(m_sessionPreprocess.Device().AdapterId() == nvidia);
-//	assert(m_sessionPostprocess.Device().AdapterId() == nvidia);
+//	assert(m_sessionPreprocess.Device().AdapterId() == m_highPerfAdapter);
+//	assert(m_sessionPostprocess.Device().AdapterId() == m_highPerfAdapter);
 //
 //	// 2. Preprocessing: z-score normalization 
 //	std::vector<int64_t> shape = { 1, 3, m_imageHeightInPixels, m_imageWidthInPixels };
@@ -224,7 +221,7 @@ void BackgroundBlur::Run(IDirect3DSurface src, IDirect3DSurface dest)
 
 VideoFrame BackgroundBlur::RunAsync(IDirect3DSurface src, IDirect3DSurface dest)
 {
-	assert(m_session.Device().AdapterId() == nvidia);
+	assert(m_session.Device().AdapterId() == m_highPerfAdapter);
 	VideoFrame inVideoFrame = VideoFrame::CreateWithDirect3D11Surface(src);
 	VideoFrame outVideoFrame = VideoFrame::CreateWithDirect3D11Surface(dest);
 	SetVideoFrames(inVideoFrame, outVideoFrame);
@@ -233,8 +230,8 @@ VideoFrame BackgroundBlur::RunAsync(IDirect3DSurface src, IDirect3DSurface dest)
 	assert((UINT32)m_inputVideoFrame.Direct3DSurface().Description().Height == m_imageHeightInPixels);
 	assert((UINT32)m_inputVideoFrame.Direct3DSurface().Description().Width == m_imageWidthInPixels);
 
-	assert(m_sessionPreprocess.Device().AdapterId() == nvidia);
-	assert(m_sessionPostprocess.Device().AdapterId() == nvidia);
+	assert(m_sessionPreprocess.Device().AdapterId() == m_highPerfAdapter);
+	assert(m_sessionPostprocess.Device().AdapterId() == m_highPerfAdapter);
 
 	// 2. Preprocessing: z-score normalization 
 	std::vector<int64_t> shape = { 1, 3, m_imageHeightInPixels, m_imageWidthInPixels };

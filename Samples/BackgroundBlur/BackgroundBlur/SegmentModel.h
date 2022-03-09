@@ -24,14 +24,10 @@ using namespace winrt::Microsoft::AI::MachineLearning::Experimental;
 using namespace winrt::Windows::Graphics::DirectX::Direct3D11;
 using namespace winrt::Windows::Media;
 
-
-
 // Model-agnostic helper LearningModels
 LearningModel Normalize0_1ThenZScore(long height, long width, long channels, const std::array<float, 3>& means, const std::array<float, 3>& stddev);
 LearningModel ReshapeFlatBufferToNCHW(long n, long c, long h, long w);
 LearningModel Invert(long n, long c, long h, long w);
-
-//winrt::com_ptr<IDXGraphicsAnalysis> pGraphicsAnalysis;
 
 class IStreamModel
 {
@@ -65,7 +61,7 @@ public:
 		m_bUseGPU = use;
 	}
 	void SetDevice() {
-		assert(m_session.Device().AdapterId() == nvidia);
+		assert(m_session.Device().AdapterId() == m_highPerfAdapter);
 		assert(m_session.Device().Direct3D11Device() != NULL);
 		m_device = m_session.Device().Direct3D11Device();
 		auto device = m_session.Device().AdapterId();
@@ -78,7 +74,7 @@ public:
 	std::mutex m_runMutex;
 
 protected:
-	winrt::Windows::Graphics::DisplayAdapterId nvidia{};
+	winrt::Windows::Graphics::DisplayAdapterId m_highPerfAdapter{};
 
 	void SetVideoFrames(VideoFrame inVideoFrame, VideoFrame outVideoFrame) 
 	{
@@ -112,7 +108,7 @@ protected:
 	LearningModelSession CreateLearningModelSession(const LearningModel& model, bool closedModel = true) {
 		auto device = m_bUseGPU ? LearningModelDevice(LearningModelDeviceKind::DirectXHighPerformance) : LearningModelDevice(LearningModelDeviceKind::Default);
 		auto displayAdapter = winrt::Windows::Devices::Display::Core::DisplayAdapter::FromId(device.AdapterId());
-		nvidia = device.AdapterId();
+		m_highPerfAdapter = device.AdapterId();
 		auto options = LearningModelSessionOptions();
 		options.BatchSizeOverride(0);
 		options.CloseModelOnSessionCreation(closedModel);
@@ -128,24 +124,12 @@ protected:
 	UINT32                      m_imageHeightInPixels;
 	IDirect3DDevice				m_device;
 
-	// TODO: IAsyncOperation<LearningModelResult> that RunAsync sets, TransformAsync can query to see if this model is doing work
-
 	// Learning Model Binding and Session. 
-	// Derived classes can add more as needed for chaining? 
 	LearningModelSession m_session;
 	LearningModelBinding m_binding;
 
 }; 
 
-// TODO: Make an even more Invert IStreamModel? 
-//class Invert : public IStreamModel
-//{
-//public: 
-//	Invert(int w, int h) : IStreamModel(w, h) { SetModels(w, h); }
-//	Invert() : IStreamModel() {}
-//	void SetModels(int w, int h); 
-//	void Run(IDirect3DSurface src, IDirect3DSurface dest);
-//};
 
 class StyleTransfer : public IStreamModel {
 public:

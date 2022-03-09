@@ -224,7 +224,6 @@ HRESULT TransformAsync::GetOutputStreamAttributes(
 )
 {
     return E_NOTIMPL;
-    // TODO: Does this screw with output ? 
     HRESULT hr = MFCreateAttributes(ppAttributes, 2);
     hr = (*ppAttributes)->SetUINT32(MF_SA_MINIMUM_OUTPUT_SAMPLE_COUNT, 1);
     hr = (*ppAttributes)->SetUINT32(MF_SA_MINIMUM_OUTPUT_SAMPLE_COUNT_PROGRESSIVE, 1);
@@ -358,7 +357,6 @@ HRESULT TransformAsync::SetInputType(
     DWORD           dwFlags
 )
 {
-    // TODO: Reflect that hasoutput doesn't matter
     TRACE((L"TransformAsync::SetInputType\n"));
 
     AutoLock lock(m_critSec);
@@ -379,12 +377,6 @@ HRESULT TransformAsync::SetInputType(
 
     // Does the caller want us to set the type, or just test it?
     BOOL bReallySet = ((dwFlags & MFT_SET_TYPE_TEST_ONLY) == 0);
-
-    //// If we have an input sample, the client cannot change the type now.
-    //if (HasPendingOutput())
-    //{
-    //    CHECK_HR(hr = MF_E_TRANSFORM_CANNOT_CHANGE_MEDIATYPE_WHILE_PROCESSING);
-    //}
 
     // Validate the type, if non-NULL.
     if (pType)
@@ -426,7 +418,6 @@ HRESULT TransformAsync::SetOutputType(
     }
 
     // Validate flags.
-    // TODO: Do we need? 
     if (dwFlags & ~MFT_SET_TYPE_TEST_ONLY)
     {
         return E_INVALIDARG;
@@ -438,13 +429,6 @@ HRESULT TransformAsync::SetOutputType(
     // Does the caller want us to set the type, or just test it?
     BOOL bReallySet = ((dwFlags & MFT_SET_TYPE_TEST_ONLY) == 0);
 
-    // TODO: Doesn't need to check pendingOutput bc async
-    // If we have an input sample, the client cannot change the type now.
-    //if (HasPendingOutput())
-    //{
-    //    CHECK_HR(hr = MF_E_TRANSFORM_CANNOT_CHANGE_MEDIATYPE_WHILE_PROCESSING);
-    //}
-
     // Validate the type, if non-NULL.
     if (pType)
     {
@@ -453,7 +437,7 @@ HRESULT TransformAsync::SetOutputType(
 
     if (bReallySet)
     {
-        AutoLock lock(m_critSec); // TODO: Scope lock to when setting the output type
+        AutoLock lock(m_critSec); 
         // The type is OK. 
         // Set the type, unless the caller was just testing.
         CHECK_HR(hr = OnSetOutputType(pType));
@@ -694,8 +678,6 @@ HRESULT TransformAsync::ProcessMessage(
         }
     }
     break;
-
-    // TODO: Old messages
     case MFT_MESSAGE_NOTIFY_BEGIN_STREAMING:
     {
         HRESULT getAnalysis = DXGIGetDebugInterface1(0, __uuidof(pGraphicsAnalysis), reinterpret_cast<void**>(&pGraphicsAnalysis));
@@ -731,7 +713,6 @@ HRESULT TransformAsync::ProcessOutput(
             m_dwHaveOutputCount--;
         }
     }
-    // TODO: Do we need? 
     if (IsMFTReady() == FALSE)
     {
         hr = MF_E_TRANSFORM_TYPE_NOT_SET;
@@ -749,7 +730,6 @@ HRESULT TransformAsync::ProcessOutput(
     {
         hr = MF_E_TRANSFORM_NEED_MORE_INPUT;
         return hr;
-        // todo: goto done? anything to clean up?
     }
 
     pOutputSamples[0].dwStreamID = 0;
@@ -757,7 +737,6 @@ HRESULT TransformAsync::ProcessOutput(
     if ((pOutputSamples[0].pSample) == NULL)
     {
         // The MFT is providing it's own samples
-        // TODO: Detach correct? 
         (pOutputSamples[0].pSample) = pSample.get();
         (pOutputSamples[0].pSample)->AddRef();
     }
@@ -790,7 +769,7 @@ HRESULT TransformAsync::ProcessOutput(
                 }
 
                 /*******************************
-                ** Todo: This MFT only has one
+                ** Note: This MFT only has one
                 ** input stream, so the drain
                 ** is always on stream zero.
                 ** Update this is your MFT
@@ -804,10 +783,10 @@ HRESULT TransformAsync::ProcessOutput(
 
                 /***************************************
                 ** Since this in an internal function
-                ** we know m_pEventQueue can never be
+                ** we know m_spEventQueue can never be
                 ** NULL due to InitializeTransform()
                 ***************************************/
-                hr = m_pEventQueue->QueueEvent(pDrainCompleteEvent.get());
+                hr = m_spEventQueue->QueueEvent(pDrainCompleteEvent.get());
                 if (FAILED(hr))
                 {
                     break;
@@ -860,7 +839,7 @@ HRESULT TransformAsync::ProcessInput(
     }
 
     /*****************************************
-        ** Todo: If your MFT supports more than one
+        ** Note: If your MFT supports more than one
         ** stream, make sure you modify
         ** MFT_MAX_STREAMS and adjust this function
         ** accordingly

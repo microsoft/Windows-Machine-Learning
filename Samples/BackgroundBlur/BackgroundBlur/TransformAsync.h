@@ -219,7 +219,7 @@ public:
 
     HRESULT             SubmitEval(IMFSample* pInputSample);
     HRESULT             FinishEval(winrt::com_ptr<IMFSample> pInputSample, winrt::com_ptr<IMFSample> pOutputSample,
-        IDirect3DSurface src, IDirect3DSurface dest, LONGLONG hnsDuration, LONGLONG hnsTime, UINT64 pun64MarkerID);
+                             LONGLONG hnsDuration, LONGLONG hnsTime, UINT64 pun64MarkerID);
 
 protected: 
     TransformAsync(HRESULT& hr);
@@ -283,7 +283,7 @@ protected:
 
     // Event fields
     DWORD                           m_dwStatus;
-    winrt::com_ptr<IMFMediaEventQueue> m_pEventQueue;
+    winrt::com_ptr<IMFMediaEventQueue> m_spEventQueue;
     DWORD               m_dwNeedInputCount;
     DWORD               m_dwHaveOutputCount;
     DWORD               m_dwDecodeWorkQueueID;

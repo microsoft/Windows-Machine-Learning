@@ -39,8 +39,6 @@ enum OnnxDataType : long {
 
 
 int g_scale = 5;
-std::array<float, 3> mean = { 0.485f, 0.456f, 0.406f };
-std::array<float, 3> stddev = { 0.229f, 0.224f, 0.225f };
 auto outputBindProperties = PropertySet();
 
 /****	Style transfer model	****/
@@ -73,14 +71,8 @@ void StyleTransfer::Run(IDirect3DSurface src, IDirect3DSurface dest)
 	m_outputVideoFrame.CopyToAsync(outVideoFrame).get();
 
 	m_bSyncStarted = FALSE;
-	m_canRunEval.notify_one();
 }
-VideoFrame StyleTransfer::RunAsync(IDirect3DSurface src, IDirect3DSurface dest)
-{
-	// TODO: Implement async StyleTransfer
-	//m_evalStatus = NULL;
-	return NULL;
-}
+
 LearningModel StyleTransfer::GetModel()
 {
 	auto rel = std::filesystem::current_path();
@@ -89,37 +81,22 @@ LearningModel StyleTransfer::GetModel()
 }
 
 BackgroundBlur::~BackgroundBlur() {
-	if (m_sessionFused) m_sessionFused.Close();
-	if (m_sessionPostprocess) m_sessionPostprocess.Close();
-	if (m_sessionPreprocess) m_sessionPreprocess.Close();
-	//if (m_bindFused) m_bindFused.Clear();
+	if (m_session) m_session.Close();
 }
+
 /****	Background blur model	****/
 void BackgroundBlur::SetModels(int w, int h)
 {
 	w /= g_scale; h /= g_scale;
 	SetImageSize(w, h);
 
-	m_sessionPreprocess = CreateLearningModelSession(Normalize0_1ThenZScore(h, w, 3, mean, stddev));
-	m_sessionPostprocess = CreateLearningModelSession(PostProcess(1, 3, h, w, 1));
-	// Named dim override of FCN-Resnet so that unlock optimizations of fixed input size
-	auto fcnDevice = m_bUseGPU ? LearningModelDevice(LearningModelDeviceKind::DirectXHighPerformance) : LearningModelDevice(LearningModelDeviceKind::Default); // Todo: Have a toggle between GPU/ CPU? 
-	auto model = GetModel();
-	auto FCNInputName = model.OutputFeatures().GetAt(0).Name();
-	auto options = LearningModelSessionOptions();
-	options.BatchSizeOverride(0);
-	options.CloseModelOnSessionCreation(true);
-	options.OverrideNamedDimension(L"height", m_imageHeightInPixels);
-	options.OverrideNamedDimension(L"width", m_imageWidthInPixels);
-	m_session = LearningModelSession(model, fcnDevice, options);
-
 	auto joinOptions1 = LearningModelJoinOptions();
 	joinOptions1.CloseModelOnJoin(true);
 	joinOptions1.Link(L"Output", L"input");
 	joinOptions1.JoinedNodePrefix(L"FCN_");
 	joinOptions1.PromoteUnlinkedOutputsToFusedOutputs(true);
-	auto modelExperimental = LearningModelExperimental(Normalize0_1ThenZScore(h, w, 3, mean, stddev));
-	LearningModel stageOne = modelExperimental.JoinModel(GetModel(), joinOptions1);
+	auto modelExperimental1 = LearningModelExperimental(Normalize0_1ThenZScore(h, w, 3, m_mean, m_stddev));
+	LearningModel intermediateModel = modelExperimental1.JoinModel(GetModel(), joinOptions1);
 
 	auto joinOptions2 = LearningModelJoinOptions();
 	joinOptions2.CloseModelOnJoin(true);
@@ -127,17 +104,14 @@ void BackgroundBlur::SetModels(int w, int h)
 	joinOptions2.Link(L"OutputImageForward", L"InputImage");
 	joinOptions2.JoinedNodePrefix(L"Post_");
 	//joinOptions2.PromoteUnlinkedOutputsToFusedOutputs(false); // Causes winrt originate error in FusedGraphKernel.cpp, but works on CPU
-	auto modelTwo = LearningModelExperimental(stageOne);
-	LearningModel modelFused = modelTwo.JoinModel(PostProcess(1, 3, h, w, 1), joinOptions2);
+	auto modelExperimental2 = LearningModelExperimental(intermediateModel);
+	LearningModel modelFused = modelExperimental2.JoinModel(PostProcess(1, 3, h, w, 1), joinOptions2);
 
-	modelTwo.Save(L"modelTwo.onnx");
+	// Save the model for debugging purposes
+	//modelExperimental2.Save(L"modelFused.onnx");
 
-	m_sessionFused = CreateLearningModelSession(modelFused);
-	m_bindFused = LearningModelBinding(m_sessionFused);
-
-	m_bindingPreprocess = LearningModelBinding(m_sessionPreprocess);
+	m_session = CreateLearningModelSession(modelFused);
 	m_binding = LearningModelBinding(m_session);
-	m_bindingPostprocess = LearningModelBinding(m_sessionPostprocess);
 }
 LearningModel BackgroundBlur::GetModel()
 {
@@ -149,6 +123,7 @@ LearningModel BackgroundBlur::GetModel()
 void BackgroundBlur::Run(IDirect3DSurface src, IDirect3DSurface dest)
 {
 	m_bSyncStarted = TRUE;
+	// Device validation
 	assert(m_session.Device().AdapterId() == m_highPerfAdapter);
 	VideoFrame inVideoFrame = VideoFrame::CreateWithDirect3D11Surface(src);
 	VideoFrame outVideoFrame = VideoFrame::CreateWithDirect3D11Surface(dest);
@@ -158,117 +133,14 @@ void BackgroundBlur::Run(IDirect3DSurface src, IDirect3DSurface dest)
 	assert((UINT32)m_inputVideoFrame.Direct3DSurface().Description().Height == m_imageHeightInPixels);
 	assert((UINT32)m_inputVideoFrame.Direct3DSurface().Description().Width == m_imageWidthInPixels);
 
-	hstring inputName = m_sessionFused.Model().InputFeatures().GetAt(0).Name();
-	hstring outputName = m_sessionFused.Model().OutputFeatures().GetAt(1).Name();
+	hstring inputName = m_session.Model().InputFeatures().GetAt(0).Name();
+	hstring outputName = m_session.Model().OutputFeatures().GetAt(1).Name();
 
-	m_bindFused.Bind(inputName, m_inputVideoFrame);
-	m_bindFused.Bind(outputName, m_outputVideoFrame);
-	auto results = m_sessionFused.Evaluate(m_bindFused, L"");
+	m_binding.Bind(inputName, m_inputVideoFrame);
+	m_binding.Bind(outputName, m_outputVideoFrame);
+	auto results = m_session.Evaluate(m_binding, L"");
 	m_outputVideoFrame.CopyToAsync(outVideoFrame).get();
 	m_bSyncStarted = FALSE;
-	m_canRunEval.notify_one();
-}
-
-//void BackgroundBlur::Run(IDirect3DSurface src, IDirect3DSurface dest)
-//{
-//	m_bSyncStarted = TRUE;
-//	assert(m_session.Device().AdapterId() == m_highPerfAdapter);
-//	VideoFrame inVideoFrame = VideoFrame::CreateWithDirect3D11Surface(src);
-//	VideoFrame outVideoFrame = VideoFrame::CreateWithDirect3D11Surface(dest);
-//	SetVideoFrames(inVideoFrame, outVideoFrame);
-//
-//	// Shape validation
-//	assert((UINT32)m_inputVideoFrame.Direct3DSurface().Description().Height == m_imageHeightInPixels);
-//	assert((UINT32)m_inputVideoFrame.Direct3DSurface().Description().Width == m_imageWidthInPixels);
-//
-//	assert(m_sessionPreprocess.Device().AdapterId() == m_highPerfAdapter);
-//	assert(m_sessionPostprocess.Device().AdapterId() == m_highPerfAdapter);
-//
-//	// 2. Preprocessing: z-score normalization 
-//	std::vector<int64_t> shape = { 1, 3, m_imageHeightInPixels, m_imageWidthInPixels };
-//	ITensor intermediateTensor = TensorFloat::Create(shape);
-//	hstring inputName = m_sessionPreprocess.Model().InputFeatures().GetAt(0).Name();
-//	hstring outputName = m_sessionPreprocess.Model().OutputFeatures().GetAt(0).Name();
-//
-//	m_bindingPreprocess.Bind(inputName, m_inputVideoFrame);
-//	outputBindProperties.Insert(L"DisableTensorCpuSync", PropertyValue::CreateBoolean(true));
-//	m_bindingPreprocess.Bind(outputName, intermediateTensor, outputBindProperties);
-//	m_sessionPreprocess.EvaluateAsync(m_bindingPreprocess, L"");
-//
-//	// 3. Run through actual model
-//	std::vector<int64_t> FCNResnetOutputShape = { 1, 21, m_imageHeightInPixels, m_imageWidthInPixels };
-//	ITensor FCNResnetOutput = TensorFloat::Create(FCNResnetOutputShape);
-//
-//	m_binding.Bind(m_session.Model().InputFeatures().GetAt(0).Name(), intermediateTensor);
-//	m_binding.Bind(m_session.Model().OutputFeatures().GetAt(0).Name(), FCNResnetOutput, outputBindProperties);
-//	m_session.EvaluateAsync(m_binding, L"");
-//
-//	// Shape validation 
-//	assert(m_outputVideoFrame.Direct3DSurface().Description().Height == m_imageHeightInPixels);
-//	assert(m_outputVideoFrame.Direct3DSurface().Description().Width == m_imageWidthInPixels);
-//
-//	// 4. Postprocessing
-//	outputBindProperties.Insert(L"DisableTensorCpuSync", PropertyValue::CreateBoolean(false));
-//	m_bindingPostprocess.Bind(m_sessionPostprocess.Model().InputFeatures().GetAt(0).Name(), m_inputVideoFrame); // InputImage
-//	m_bindingPostprocess.Bind(m_sessionPostprocess.Model().InputFeatures().GetAt(1).Name(), FCNResnetOutput); // InputScores
-//	m_bindingPostprocess.Bind(m_sessionPostprocess.Model().OutputFeatures().GetAt(0).Name(), m_outputVideoFrame);
-//	// TODO: Make this async as well, and add a completed 
-//	m_sessionPostprocess.EvaluateAsync(m_bindingPostprocess, L"").get();
-//	m_outputVideoFrame.CopyToAsync(outVideoFrame).get();
-//	m_bSyncStarted = FALSE;
-//	m_canRunEval.notify_one();
-//}
-
-VideoFrame BackgroundBlur::RunAsync(IDirect3DSurface src, IDirect3DSurface dest)
-{
-	assert(m_session.Device().AdapterId() == m_highPerfAdapter);
-	VideoFrame inVideoFrame = VideoFrame::CreateWithDirect3D11Surface(src);
-	VideoFrame outVideoFrame = VideoFrame::CreateWithDirect3D11Surface(dest);
-	SetVideoFrames(inVideoFrame, outVideoFrame);
-
-	// Shape validation
-	assert((UINT32)m_inputVideoFrame.Direct3DSurface().Description().Height == m_imageHeightInPixels);
-	assert((UINT32)m_inputVideoFrame.Direct3DSurface().Description().Width == m_imageWidthInPixels);
-
-	assert(m_sessionPreprocess.Device().AdapterId() == m_highPerfAdapter);
-	assert(m_sessionPostprocess.Device().AdapterId() == m_highPerfAdapter);
-
-	// 2. Preprocessing: z-score normalization 
-	std::vector<int64_t> shape = { 1, 3, m_imageHeightInPixels, m_imageWidthInPixels };
-	ITensor intermediateTensor = TensorFloat::Create(shape);
-	hstring inputName = m_sessionPreprocess.Model().InputFeatures().GetAt(0).Name();
-	hstring outputName = m_sessionPreprocess.Model().OutputFeatures().GetAt(0).Name();
-
-	m_bindingPreprocess.Bind(inputName, m_inputVideoFrame);
-	outputBindProperties.Insert(L"DisableTensorCpuSync", PropertyValue::CreateBoolean(true));
-	m_bindingPreprocess.Bind(outputName, intermediateTensor, outputBindProperties);
-	m_sessionPreprocess.EvaluateAsync(m_bindingPreprocess, L"");
-
-	// 3. Run through actual model
-	std::vector<int64_t> FCNResnetOutputShape = { 1, 21, m_imageHeightInPixels, m_imageWidthInPixels };
-	ITensor FCNResnetOutput = TensorFloat::Create(FCNResnetOutputShape);
-
-	m_binding.Bind(m_session.Model().InputFeatures().GetAt(0).Name(), intermediateTensor);
-	m_binding.Bind(m_session.Model().OutputFeatures().GetAt(0).Name(), FCNResnetOutput, outputBindProperties);
-	m_session.EvaluateAsync(m_binding, L"");
-
-	// Shape validation 
-	assert(m_outputVideoFrame.Direct3DSurface().Description().Height == m_imageHeightInPixels);
-	assert(m_outputVideoFrame.Direct3DSurface().Description().Width == m_imageWidthInPixels);
-
-	// 4. Postprocessing
-	outputBindProperties.Insert(L"DisableTensorCpuSync", PropertyValue::CreateBoolean(false));
-	m_bindingPostprocess.Bind(m_sessionPostprocess.Model().InputFeatures().GetAt(0).Name(), m_inputVideoFrame); // InputImage
-	m_bindingPostprocess.Bind(m_sessionPostprocess.Model().InputFeatures().GetAt(1).Name(), FCNResnetOutput); // InputScores
-	m_bindingPostprocess.Bind(m_sessionPostprocess.Model().OutputFeatures().GetAt(0).Name(), m_outputVideoFrame);
-	m_evalStatus = m_sessionPostprocess.EvaluateAsync(m_bindingPostprocess, L"");
-	// m_evalStatus = m_outputVideoFrame.CopyToAsync(outVideoFrame);
-	/*auto makeOutput = [&outVideoFrame]() -> winrt::Windows::Foundation::IAsyncOperation<VideoFrame> { co_return outVideoFrame; };
-	m_evalStatus = makeOutput();*/
-
-	// todo: go back to have this return AsyncStatus for when done with copytoasync? 
-	m_outputVideoFrame.CopyToAsync(outVideoFrame);
-	return outVideoFrame;
 }
 
 LearningModel BackgroundBlur::PostProcess(long n, long c, long h, long w, long axis)

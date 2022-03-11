@@ -53,9 +53,9 @@ public:
 		if (m_outputVideoFrame) m_outputVideoFrame.Close();
 		if (m_device) m_device.Close();
 	};
+
 	virtual void SetModels(int w, int h) =0;
 	virtual void Run(IDirect3DSurface src, IDirect3DSurface dest) =0;
-	virtual VideoFrame RunAsync(IDirect3DSurface src, IDirect3DSurface dest) = 0;
 
 	void SetUseGPU(bool use) { 
 		m_bUseGPU = use;
@@ -66,16 +66,13 @@ public:
 		m_device = m_session.Device().Direct3D11Device();
 		auto device = m_session.Device().AdapterId();
 	}
-	winrt::Windows::Foundation::IAsyncOperation<LearningModelEvaluationResult> m_evalStatus;
-	BOOL m_bSyncStarted; // TODO: Construct an IStreamModel as sync/async, then have a GetStatus to query this or m_evalStatus
+	
+	// Synchronous eval status
+	BOOL m_bSyncStarted; 
 	VideoFrame m_outputVideoFrame;
-	std::condition_variable m_canRunEval;
-	std::mutex Processing;
-	std::mutex m_runMutex;
 
 protected:
-	winrt::Windows::Graphics::DisplayAdapterId m_highPerfAdapter{};
-
+	// Cache input frames into a shareable d3d-backed VideoFrame
 	void SetVideoFrames(VideoFrame inVideoFrame, VideoFrame outVideoFrame) 
 	{
 		if (true || !m_bVideoFramesSet)
@@ -123,23 +120,25 @@ protected:
 	UINT32                      m_imageWidthInPixels;
 	UINT32                      m_imageHeightInPixels;
 	IDirect3DDevice				m_device;
+	// For debugging potential device issues
+	winrt::Windows::Graphics::DisplayAdapterId m_highPerfAdapter{};
 
 	// Learning Model Binding and Session. 
 	LearningModelSession m_session;
 	LearningModelBinding m_binding;
-
 }; 
 
 
 class StyleTransfer : public IStreamModel {
 public:
-	StyleTransfer(int w, int h) : IStreamModel(w, h) {
-		SetModels(w, h); }
+	StyleTransfer(int w, int h) : IStreamModel(w, h) 
+	{
+		SetModels(w, h); 
+	}
 	StyleTransfer() : IStreamModel() {};
 	~StyleTransfer(){};
 	void SetModels(int w, int h);
 	void Run(IDirect3DSurface src, IDirect3DSurface dest);
-	VideoFrame RunAsync(IDirect3DSurface src, IDirect3DSurface dest);
 private: 
 	LearningModel GetModel();
 };
@@ -149,43 +148,24 @@ class BackgroundBlur : public IStreamModel
 {
 public:
 	BackgroundBlur(int w, int h) : 
-		IStreamModel(w, h), 
-		m_sessionPreprocess(NULL),
-		m_sessionPostprocess(NULL),
-		m_bindingPreprocess(NULL),
-		m_bindingPostprocess(NULL), 
-		m_sessionFused(NULL),
-		m_bindFused(NULL)
+		IStreamModel(w, h)
 	{
 		SetModels(w, h);
 	}
 	BackgroundBlur() : 
-		IStreamModel(),
-		m_sessionPreprocess(NULL),
-		m_sessionPostprocess(NULL),
-		m_bindingPreprocess(NULL),
-		m_bindingPostprocess(NULL),
-		m_sessionFused(NULL),
-		m_bindFused(NULL)
+		IStreamModel()
 	{};
 	~BackgroundBlur();
 	void SetModels(int w, int h);
 	void Run(IDirect3DSurface src, IDirect3DSurface dest);
-	VideoFrame RunAsync(IDirect3DSurface src, IDirect3DSurface dest);
 
 private:
 	LearningModel GetModel();
 	LearningModel PostProcess(long n, long c, long h, long w, long axis);
+	
+	// Mean and standard deviation for z-score normalization during preprocessing. 
+	std::array<float, 3> m_mean = { 0.485f, 0.456f, 0.406f };
+	std::array<float, 3> m_stddev = { 0.229f, 0.224f, 0.225f };
 
-	std::mutex Processing; // Ensure only one access to a BB model at a time? 
 
-	// Trying to used a fused learningmodelexperimental 
-	LearningModelSession m_sessionFused; 
-	LearningModelBinding m_bindFused;
-
-	// Background blur-specific sessions, bindings 
-	LearningModelSession m_sessionPreprocess; 
-	LearningModelSession m_sessionPostprocess; 
-	LearningModelBinding m_bindingPreprocess;
-	LearningModelBinding m_bindingPostprocess; 
 };

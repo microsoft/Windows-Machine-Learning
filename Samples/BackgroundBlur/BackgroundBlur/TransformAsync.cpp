@@ -208,7 +208,6 @@ HRESULT TransformAsync::SubmitEval(IMFSample* pInput)
     DWORD dwCurrentSample = InterlockedIncrement(&m_ulSampleCounter);
     swapChainEntry = (++swapChainEntry) % m_numThreads;
     auto model = m_models[swapChainEntry].get();
-    std::unique_lock<std::mutex> lock(model->m_runMutex);
 
     //pInputSample attributes to copy over to pOutputSample
     LONGLONG hnsDuration = 0;

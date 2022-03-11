@@ -45,9 +45,9 @@
     <None Include="Assets\SqueezeNet.onnx">
       <Filter>Resource Files</Filter>
     </None>
+    <None Include="readme.md" />
   </ItemGroup>
   <ItemGroup>
-    <Text Include="readme.txt" />
     <Text Include="Assets\Labels.txt">
       <Filter>Resource Files</Filter>
     </Text>

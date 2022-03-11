@@ -120,10 +120,8 @@
     <None Include="Assets\SqueezeNet.onnx" />
     <None Include="packages.config" />
     <None Include="PropertySheet.props" />
+    <None Include="readme.md" />
     <Text Include="Assets\Labels.txt" />
-    <Text Include="readme.txt">
-      <DeploymentContent>false</DeploymentContent>
-    </Text>
   </ItemGroup>
   <ItemGroup>
     <Image Include="Assets\kitten_224.png" />

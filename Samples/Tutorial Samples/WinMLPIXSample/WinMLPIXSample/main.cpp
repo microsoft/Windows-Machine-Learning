@@ -73,14 +73,14 @@ void GetD3D12CommandAssets()
     d3d12Device->CreateCommandList(0, type, commandAllocator, nullptr, __uuidof(ID3D12CommandList), (void**)&commandList);
 }
 
-void LoadAndEvaluate(ID3D12CommandQueue* commandQueue)
+void LoadAndEvaluate()
 {
     // Setting markers for each step, these markers will split the commands into sections for easier debugging
     PIXSetMarker(commandQueue, color, "Start loading model...");
     LoadModel();
 
     PIXSetMarker(commandQueue, color, "Start loading image...");
-    LoadImageFile(imagePath);
+    LoadImageFile();
 
     PIXSetMarker(commandQueue, color, "Start creating session...");
     CreateSession(commandQueue);
@@ -109,7 +109,7 @@ void CaptureWithUserSetMarker()
     PIXBeginEvent(commandQueue, color, "WinMLPIXSample");
 
     // Do the ML computation
-    LoadAndEvaluate(commandQueue);
+    LoadAndEvaluate();
 
     // End PIX event
     PIXEndEvent(commandQueue);

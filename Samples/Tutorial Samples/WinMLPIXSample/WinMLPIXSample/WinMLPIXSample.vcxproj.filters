@@ -10,7 +10,7 @@
       <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
     </Filter>
     <Filter Include="Resource Files">
-      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <UniqueIdentifier>{5f44b9c5-7076-4e47-ace0-bb83f8c4913b}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
   </ItemGroup>
@@ -42,19 +42,17 @@
   <ItemGroup>
     <None Include="PropertySheet.props" />
     <None Include="packages.config" />
-    <None Include="Assets\SqueezeNet.onnx">
-      <Filter>Resource Files</Filter>
-    </None>
     <None Include="readme.md" />
   </ItemGroup>
   <ItemGroup>
-    <Text Include="Assets\Labels.txt">
+    <CopyFileToFolders Include="..\..\..\..\SharedContent\media\kitten_224.png">
       <Filter>Resource Files</Filter>
-    </Text>
-  </ItemGroup>
-  <ItemGroup>
-    <Image Include="Assets\kitten_224.png">
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="Assets\Labels.txt">
       <Filter>Resource Files</Filter>
-    </Image>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\..\..\..\SharedContent\models\SqueezeNet.onnx">
+      <Filter>Resource Files</Filter>
+    </CopyFileToFolders>
   </ItemGroup>
 </Project>

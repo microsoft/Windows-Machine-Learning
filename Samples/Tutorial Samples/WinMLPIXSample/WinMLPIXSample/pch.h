@@ -17,3 +17,5 @@
 #include <dxgi1_4.h>
 
 #include "pix3.h"
+
+#include "FileHelper.h"

@@ -5,6 +5,7 @@
 void LoadModel()
 {
     // load the model
+    auto modelPath = static_cast<hstring>(FileHelper::GetModulePath().c_str()) + modelName;
     printf("Loading modelfile '%ws' on the '%s' device\n", modelPath.c_str(), deviceName.c_str());
     DWORD ticks = GetTickCount();
     model = LearningModel::LoadFromFilePath(modelPath);
@@ -12,21 +13,18 @@ void LoadModel()
     printf("model file loaded in %d ticks\n", ticks);
 }
 
-VideoFrame LoadImageFile(hstring filePath)
+VideoFrame LoadImageFile()
 {
     printf("Loading the image...\n");
     DWORD ticks = GetTickCount();
     VideoFrame inputImage = nullptr;
 
-    TCHAR buffer[MAX_PATH] = { 0 };
-    wstring dir;
-    GetCurrentDirectory(MAX_PATH, buffer);
-    dir.assign(buffer).append(filePath);
+    auto imagePath = static_cast<hstring>(FileHelper::GetModulePath().c_str()) + imageName;
 
     try
     {
         // open the file
-        StorageFile file = StorageFile::GetFileFromPathAsync(dir).get();
+        StorageFile file = StorageFile::GetFileFromPathAsync(imagePath).get();
         // get a stream on it
         auto stream = file.OpenAsync(FileAccessMode::Read).get();
         // Create the decoder from the stream
@@ -124,10 +122,11 @@ void PrintResults(IVectorView<float> results)
 void LoadLabels()
 {
     // Parse labels from labels file.  We know the file's entries are already sorted in order.
-    ifstream labelFile{ labelsFilePath, ifstream::in };
+    auto labelsFilePath = static_cast<hstring>(FileHelper::GetModulePath().c_str()) + labelsName;
+    ifstream labelFile{ labelsFilePath.c_str(), ifstream::in};
     if (labelFile.fail())
     {
-        printf("failed to load the %s file.  Make sure it exists in the same folder as the app\r\n", labelsFilePath.c_str());
+        printf("failed to load the %s file.  Make sure it exists in the same folder as the app\r\n", labelsName.c_str());
         exit(EXIT_FAILURE);
     }
 

@@ -14,19 +14,19 @@ using namespace winrt::Windows::Storage;
 using namespace std;
 
 // Global variables
-static hstring modelPath = L".\\Assets\\SqueezeNet.onnx";
+static hstring modelName = L"SqueezeNet.onnx";
 static string deviceName = "default";
-static hstring imagePath = L"\\Assets\\kitten_224.png";
+static hstring imageName = L"kitten_224.png";
 static LearningModel model = nullptr;
 static LearningModelSession session = nullptr;
 static LearningModelBinding binding = nullptr;
 static VideoFrame imageFrame = nullptr;
-static string labelsFilePath = ".\\Assets\\Labels.txt";
+static hstring labelsName = L"Labels.txt";
 static vector<string> labels;
 
 // Forward declarations
 void LoadModel();
-VideoFrame LoadImageFile(hstring filePath);
+VideoFrame LoadImageFile();
 void CreateSession(ID3D12CommandQueue* commandQueue);
 void BindModel();
 void EvaluateModel();

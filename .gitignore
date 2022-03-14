@@ -290,3 +290,4 @@ __pycache__/
 
 # UWP Generated files
 **/Generated Files/
+/Samples/StyleTransfer/Assets

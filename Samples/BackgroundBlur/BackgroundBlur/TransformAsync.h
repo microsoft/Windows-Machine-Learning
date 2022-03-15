@@ -42,10 +42,10 @@ enum eMFTStatus
 
 class __declspec(uuid("4D354CAD-AA8D-45AE-B031-A85F10A6C655")) TransformAsync;
 class TransformAsync :
-    public IMFTransform,
-    public IMFShutdown,
-    public IMFMediaEventGenerator,
-    public IMFAsyncCallback,
+    public IMFTransform,                // Main interface to implement for MFT functionality. 
+    public IMFShutdown,                 // Shuts down the MFT event queue when signalled from client. 
+    public IMFMediaEventGenerator,      // Generates NeedInput and HasOutput events for the client to respond to. 
+    public IMFAsyncCallback,            // The callback interface to notify when an async method completes. 
     public IUnknown
 {
 public: 

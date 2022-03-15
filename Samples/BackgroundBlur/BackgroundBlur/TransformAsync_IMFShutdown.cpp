@@ -48,12 +48,6 @@ HRESULT TransformAsync::Shutdown(void)
             break;
         }
 
-        /*hr = MFUnlockWorkQueue(m_dwDecodeWorkQueueID);
-        if (FAILED(hr))
-        {
-            break;
-        }*/
-
         m_bShutdown = TRUE;
     } while (false);
 

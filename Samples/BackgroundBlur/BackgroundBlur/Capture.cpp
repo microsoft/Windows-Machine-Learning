@@ -328,8 +328,10 @@ void CaptureManager::OnPreviewStopped(HRESULT& hrStatus)
     m_bPreviewing = false;
 }
 
-
-
+/*
+* Begins a preview stream by initializing the preview sink, adding a TransformAsync
+* MFT to the preview stream, and signalling the capture engine to begin previewing frames.
+*/
 HRESULT CaptureManager::StartPreview()
 {
     if (m_pEngine == NULL)

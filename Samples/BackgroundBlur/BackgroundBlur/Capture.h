@@ -113,8 +113,8 @@ class CaptureManager
     HWND                    m_hwndEvent;
     HWND                    m_hwndPreview;
 
-    IMFCaptureEngine* m_pEngine;
-    IMFCapturePreviewSink* m_pPreview;
+    IMFCaptureEngine* m_pEngine;        // Manages the capture engine (ie. the camera) 
+    IMFCapturePreviewSink* m_pPreview;  // Manages the preview sink (ie. the video window) 
 
     CaptureEngineCB* m_pCallback;
 

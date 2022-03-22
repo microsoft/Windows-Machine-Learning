@@ -33,11 +33,11 @@ enum eMFTStatus
     MYMFT_STATUS_INPUT_ACCEPT_DATA = 0x00000001,   /* The MFT can accept input data */
     MYMFT_STATUS_OUTPUT_SAMPLE_READY = 0x00000002,
     MYMFT_STATUS_STREAM_STARTED = 0x00000004,
-    MYMFT_STATUS_DRAINING = 0x00000008,   /* See http://msdn.microsoft.com/en-us/library/dd940418(v=VS.85).aspx
-                                                        ** While the MFT is is in this state, it must not send
-                                                        ** any more METransformNeedInput events. It should continue
-                                                        ** to send METransformHaveOutput events until it is out of
-                                                        ** output. At that time, it should send METransformDrainComplete */
+    MYMFT_STATUS_DRAINING = 0x00000008,   /*   See http://msdn.microsoft.com/en-us/library/dd940418(v=VS.85).aspx
+                                            ** While the MFT is is in this state, it must not send
+                                            ** any more METransformNeedInput events. It should continue
+                                            ** to send METransformHaveOutput events until it is out of
+                                            ** output. At that time, it should send METransformDrainComplete */
 };
 
 class __declspec(uuid("4D354CAD-AA8D-45AE-B031-A85F10A6C655")) TransformAsync;
@@ -217,32 +217,59 @@ public:
     );
 #pragma endregion IMFAsyncCallback
 
-    HRESULT             SubmitEval(IMFSample* pInputSample);
-    HRESULT             FinishEval(winrt::com_ptr<IMFSample> pInputSample, winrt::com_ptr<IMFSample> pOutputSample,
-                             LONGLONG hnsDuration, LONGLONG hnsTime, UINT64 pun64MarkerID);
+    
+    // Uses the next available IStreamModel to run inference on pInputSample 
+    // and allocates a transformed output sample. 
+    HRESULT SubmitEval(IMFSample* pInputSample);
+    
+    // Helper function for SubmitEval, sets attributes on the output sample,
+    // adds it to the output sample queue, and queues an MFHasOutput event. 
+    HRESULT FinishEval(com_ptr<IMFSample> pInputSample, 
+                com_ptr<IMFSample> pOutputSample,
+                LONGLONG hnsDuration,
+                LONGLONG hnsTime,
+                UINT64 pun64MarkerID);
 
 protected: 
     TransformAsync(HRESULT& hr);
 
     // Destructor is private. The object deletes itself when the reference count is zero.
     ~TransformAsync();
+
+    // Called by the constructor, intializes sample queues, transform attributes,
+    // and the event queue. 
     HRESULT InitializeTransform(void);
-    HRESULT             ShutdownEventQueue(void);
+    HRESULT ShutdownEventQueue(void);
 
     /******* MFT Helpers **********/
-    HRESULT OnGetPartialType(DWORD dwTypeIndex, IMFMediaType** ppmt);
-    HRESULT OnCheckInputType(IMFMediaType* pmt);
-    HRESULT OnCheckOutputType(IMFMediaType* pmt);
-    HRESULT OnCheckMediaType(IMFMediaType* pmt);
-    HRESULT OnSetInputType(IMFMediaType* pmt);
-    HRESULT OnSetOutputType(IMFMediaType* pmt);
 
+    // Returns the partial media type of the media type in g_MediaSubtypes.
+    HRESULT OnGetPartialType(DWORD dwTypeIndex, IMFMediaType** ppmt);
+
+    // Validates the input media type.
+    HRESULT OnCheckInputType(IMFMediaType* pmt);
+    // Validates the output media type.
+    HRESULT OnCheckOutputType(IMFMediaType* pmt);
+    // Validates the media type against supported types listed in g_MediaSubtypes.
+    HRESULT OnCheckMediaType(IMFMediaType* pmt);
+
+    //  Sets or clears the input media type once input type has been validated. 
+    HRESULT OnSetInputType(IMFMediaType* pmt);
+    // Sets or clears the input media type once output type has been validated. 
+    HRESULT OnSetOutputType(IMFMediaType* pmt);
+    // Sets m_spDeviceManager to the IMFDXGIDeviceManager that ulParam points to. 
     HRESULT OnSetD3DManager(ULONG_PTR ulParam);
-    HRESULT UpdateFormatInfo(); // TODO: We want this prob for model change right? 
-    HRESULT SetupAlloc(); // TODO: Prob don't need allocator anymore right? 
-    HRESULT CheckDX11Device(); // Do we need to check the dx11 device in ProcessOutput? 
+
+    // After the input type is set, update MFT format information and sets
+    // IStreamModel input sizes. 
+    HRESULT UpdateFormatInfo(); 
+
+    // Sets up the output sample allocator.
+    HRESULT SetupAlloc();  
+    // Tests the device manager to ensure it's still available. 
+    HRESULT CheckDX11Device(); 
+    // Updates the device handle if it's no longer valid. 
     HRESULT UpdateDX11Device();
-    void InvalidateDX11Resources();
     IDirect3DSurface SampleToD3Dsurface(IMFSample* sample);
 
 
@@ -257,76 +284,52 @@ protected:
         const ULONG_PTR pulID
     );
 
-    /***********End Event Handlers************/
-    HRESULT             RequestSample(
-        const UINT32 un32StreamID
-    );
+    /*********** End Event Handlers ************/
+    // Queues an MFNeedInput event for the client to respond to. 
+    HRESULT             RequestSample(const UINT32 un32StreamID);
     HRESULT             FlushSamples(void);
+    // Pops a sample from the input queue and schedules an inference job
+    // with the Media Foundation async work queue. 
     HRESULT             ScheduleFrameInference(void);
-    HRESULT             SendEvent(void);
-    BOOL                IsLocked(void);
-    BOOL                IsMFTReady(void); // TODO: Add calls in ProcessOutput, SetInput/OutputType
+    BOOL                IsMFTReady(void); 
 
     // Member variables
-    volatile ULONG                  m_nRefCount;            // reference count
-    CritSec                         m_critSec;
-    winrt::com_ptr<IMFMediaType>    m_spInputType;          // Input media type
-    winrt::com_ptr<IMFMediaType>    m_spOutputType;         // Output media type
-    winrt::com_ptr<IMFAttributes>   m_spAttributes;         // MFT Attributes
-    winrt::com_ptr<IMFAttributes>   m_spOutputAttributes;   // TODO: Sample allocator attributes
-    bool                            m_bStreamingInitialized;
-    volatile    ULONG               m_ulSampleCounter;      // Frame number, can use to pick a IStreamModel
-    volatile ULONG m_ulProcessedFrameNum; // Number of frames we've processed
-    volatile ULONG m_currFrameNumber; // The current frame to be processing
-
-
+    volatile ULONG                  m_nRefCount;            // Reference count.
+    CritSec                         m_critSec;              // Controls access streaming status, input/output sample queue, and event queue. 
+    com_ptr<IMFMediaType>           m_spInputType;          // Input media type.
+    com_ptr<IMFMediaType>           m_spOutputType;         // Output media type.
+    com_ptr<IMFAttributes>          m_spAttributes;         // MFT Attributes.
+    com_ptr<IMFAttributes>          m_spAllocatorAttributes;// Output sample allocator attributes.    
+    bool                            m_bAllocatorInitialized;// True if sample allocator has been initialized. 
+    volatile ULONG                  m_ulSampleCounter;      // Frame number, can use to pick a IStreamModel.
+    volatile ULONG                  m_ulProcessedFrameNum;  // Number of frames we've processed.
+    volatile ULONG                  m_currFrameNumber;      // The current frame to be processed.
 
     // Event fields
-    DWORD                           m_dwStatus;
-    winrt::com_ptr<IMFMediaEventQueue> m_spEventQueue;
-    DWORD               m_dwNeedInputCount;
-    DWORD               m_dwHaveOutputCount;
-    DWORD               m_dwDecodeWorkQueueID;
-    LONGLONG            m_llCurrentSampleTime;
-    BOOL                m_bFirstSample;
-    BOOL                m_bShutdown;
-    CSampleQueue* m_pInputSampleQueue;
-    CSampleQueue* m_pOutputSampleQueue;
-
+    DWORD                           m_dwStatus;             // MFT status. References one of the states defined in enum eMFTStatus.
+    com_ptr<IMFMediaEventQueue>     m_spEventQueue;         // Event queue the client uses to get NeedInput/HaveOutput events via IMFMediaEventGenerator.
+    DWORD                           m_dwNeedInputCount;     // Number of pending NeedInput requests to be resolved by client calling ProcessInput. 0 at end of stream.
+    DWORD                           m_dwHaveOutputCount;    // Number of pending HaveOutput requests to be resolved by client calling ProcessOutput.
+    BOOL                            m_bFirstSample;         // True the incoming sample is the first one after a gap in the stream. 
+    BOOL                            m_bShutdown;            // True if MFT is currently shutting down, signals to client through IMFShutdown. 
+    CSampleQueue*                   m_pInputSampleQueue;    // Queue of input samples to be processed by ProcessInput. 
+    CSampleQueue*                   m_pOutputSampleQueue;   // Queue of output samples to be processed by ProcessOutput. 
 
     // Fomat information
-    FOURCC                          m_videoFOURCC;
+    FOURCC                          m_videoFOURCC;          // Video format code. 
     UINT32                          m_imageWidthInPixels;
     UINT32                          m_imageHeightInPixels;
     DWORD                           m_cbImageSize;          // Image size, in bytes.
 
     // D3D fields
-    winrt::com_ptr<IMFDXGIDeviceManager>       m_spDeviceManager;
-    winrt::com_ptr<ID3D11Device>               m_spDevice; // TODO: DO I need to keep the device? 
-    winrt::com_ptr<ID3D11VideoDevice>          m_spVideoDevice;
-    winrt::com_ptr<ID3D11DeviceContext>        m_spContext;
-    HANDLE                                     m_hDeviceHandle;          // Handle to the current device
-    winrt::com_ptr<IMFVideoSampleAllocatorEx>  m_spOutputSampleAllocator;
+    com_ptr<IMFDXGIDeviceManager>   m_spDeviceManager;      // Device manager, shared with the video renderer. 
+    HANDLE                          m_hDeviceHandle;        // Handle to the current device
+    com_ptr<IMFVideoSampleAllocatorEx>  m_spOutputSampleAllocator;  // Allocates d3d-backed output samples. 
 
     // Model Inference fields
-    // TODO: Prob needs to be a vector so can dynamically allocate based on what numThreads ends up as.
-    std::vector<std::unique_ptr<IStreamModel>> m_models; 
-    std::condition_variable thread; // Used to notify a thread of an available job
-    int m_numThreads = 5;//std::thread::hardware_concurrency(); // TODO: See if this actually is helpful
-
-
-    int swapChainEntry = 0;
-    std::mutex Processing;
-
-    // Pseudocode
-    // int numThreads; needs to be configured by constructor
-    // std::array<unique_ptr<IStreamModel>>(numThreads) one streamModel for each thread
-    // something for desired resolution?? if model has free dimensions
-
+    int m_numThreads =                                      // Number of threads running inference in parallel.
+        max(std::thread::hardware_concurrency() - 2, 5);
+    std::vector<std::unique_ptr<IStreamModel>> m_models;    // m_numThreads number of models to run inference in parallel. 
+    int modelIndex = 0;
 
 };
-
-HRESULT DuplicateAttributes(
-    IMFAttributes* pDest,
-    IMFAttributes* pSource
-);

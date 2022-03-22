@@ -33,7 +33,7 @@ HRESULT GetImageSize(FOURCC fcc, UINT32 width, UINT32 height, DWORD* pcbImage);
 HRESULT TransformAsync::CreateInstance(IMFTransform** ppMFT)
 {
     HRESULT hr = S_OK; 
-    winrt::com_ptr<TransformAsync> pMFT;
+    com_ptr<TransformAsync> pMFT;
     if (ppMFT == NULL)
     {
         return E_POINTER;
@@ -62,8 +62,6 @@ TransformAsync::TransformAsync(HRESULT& hr)
     m_dwStatus = 0;
     m_dwNeedInputCount = 0;
     m_dwHaveOutputCount = 0;
-    m_dwDecodeWorkQueueID = 0;
-    m_llCurrentSampleTime = 0;
     m_bShutdown = FALSE;
     m_bFirstSample = TRUE;
     // m_bDXVA = TRUE; // TODO: Always true to be fast
@@ -74,8 +72,6 @@ TransformAsync::TransformAsync(HRESULT& hr)
     m_imageHeightInPixels = 0;
 
     m_spDeviceManager = NULL;
-    m_spDevice = NULL;
-    m_spVideoDevice = NULL;
 }
 
 TransformAsync::~TransformAsync()
@@ -166,12 +162,13 @@ ULONG TransformAsync::Release()
 }
 #pragma endregion IUnknown
 
+
 HRESULT TransformAsync::ScheduleFrameInference(void)
 {
     HRESULT hr = S_OK; 
-    winrt::com_ptr<IMFSample> pInputSample; 
-    winrt::com_ptr<IMFAsyncCallback> pInferenceTask;
-    winrt::com_ptr<IMFAsyncResult> pResult;
+    com_ptr<IMFSample> pInputSample; 
+    com_ptr<IMFAsyncCallback> pInferenceTask;
+    com_ptr<IMFAsyncResult> pResult;
 
     // No need to lock, sample queues are thread safe
      /***************************************
@@ -199,30 +196,35 @@ done:
 HRESULT TransformAsync::SubmitEval(IMFSample* pInput)
 {
     HRESULT hr = S_OK;
-    winrt::com_ptr<IMFSample> pOutputSample;
-    winrt::com_ptr<IMFSample> pInputSample;
+    com_ptr<IMFSample> pOutputSample;
+    com_ptr<IMFSample> pInputSample;
     IDirect3DSurface src, dest;
     pInputSample.copy_from(pInput); 
 
     // Select the next available model
     DWORD dwCurrentSample = InterlockedIncrement(&m_ulSampleCounter);
-    swapChainEntry = (++swapChainEntry) % m_numThreads;
-    auto model = m_models[swapChainEntry].get();
+    modelIndex = (++modelIndex) % m_numThreads;
+    auto model = m_models[modelIndex].get();
 
     //pInputSample attributes to copy over to pOutputSample
     LONGLONG hnsDuration = 0;
     LONGLONG hnsTime = 0;
     UINT64 pun64MarkerID = 0;
 
-    TRACE((L"\n[Sample: %d | model: %d | ", dwCurrentSample, swapChainEntry));
+    TRACE((L"\n[Sample: %d | model: %d | ", dwCurrentSample, modelIndex));
     TRACE((L" | SE Thread %d | ", std::hash<std::thread::id>()(std::this_thread::get_id())));
 
-      // Ensure we still have a valid d3d device
+     // Ensure we still have a valid d3d device
     CHECK_HR(hr = CheckDX11Device());
     // Ensure the allocator is set up 
     CHECK_HR(hr = SetupAlloc());
     // CheckDX11Device & SetupAlloc ensure we can now allocate a D3D-backed output sample. 
-    CHECK_HR(hr = m_spOutputSampleAllocator->AllocateSample(pOutputSample.put()));
+    (hr = m_spOutputSampleAllocator->AllocateSample(pOutputSample.put()));
+    if (FAILED(hr))
+    {
+        TRACE((L"Can't allocate any more samples, DROP"));
+    }
+
     // We should have a sample now, whether or not we have a dx device
     if (pOutputSample == nullptr)
     {
@@ -252,7 +254,7 @@ HRESULT TransformAsync::SubmitEval(IMFSample* pInput)
         FinishEval(pInputSample, pOutputSample, hnsDuration, hnsTime, pun64MarkerID); 
     }
     else {
-        TRACE((L"Model %d already running, DROP", swapChainEntry));
+        TRACE((L"Model %d already running, DROP", modelIndex));
     }
 
 done:
@@ -260,13 +262,13 @@ done:
 }
 
 // Clean up output sample and schedule MFHaveOutput task
-HRESULT TransformAsync::FinishEval(winrt::com_ptr<IMFSample> pInputSample, winrt::com_ptr<IMFSample> pOutputSample,
+HRESULT TransformAsync::FinishEval(com_ptr<IMFSample> pInputSample, com_ptr<IMFSample> pOutputSample,
     LONGLONG hnsDuration, LONGLONG hnsTime, UINT64 pun64MarkerID)
 {
 
     HRESULT hr = S_OK;
-    winrt::com_ptr<IMFMediaBuffer> pMediaBuffer;
-    winrt::com_ptr<IMFMediaEvent> pHaveOutputEvent;
+    com_ptr<IMFMediaBuffer> pMediaBuffer;
+    com_ptr<IMFMediaEvent> pHaveOutputEvent;
 
 
     // Set up the output sample
@@ -277,6 +279,7 @@ HRESULT TransformAsync::FinishEval(winrt::com_ptr<IMFSample> pInputSample, winrt
     CHECK_HR(hr = pOutputSample->GetBufferByIndex(0, pMediaBuffer.put()));
     CHECK_HR(hr = pMediaBuffer->SetCurrentLength(m_cbImageSize));
 
+    // This is the first sample after a gap in the stream. 
     if(m_bFirstSample != FALSE)
     {
         CHECK_HR(hr = pOutputSample->SetUINT32(MFSampleExtension_Discontinuity, TRUE));
@@ -298,7 +301,7 @@ HRESULT TransformAsync::FinishEval(winrt::com_ptr<IMFSample> pInputSample, winrt
     if (pun64MarkerID)
     {
         // This input sample is flagged as a marker
-        winrt::com_ptr<IMFMediaEvent> pMarkerEvent;
+        com_ptr<IMFMediaEvent> pMarkerEvent;
         CHECK_HR(hr = MFCreateMediaEvent(METransformMarker, GUID_NULL, S_OK, NULL, pMarkerEvent.put()));
         CHECK_HR(hr = pMarkerEvent->SetUINT64(MF_EVENT_MFT_CONTEXT, pun64MarkerID));
         CHECK_HR(hr = m_spEventQueue->QueueEvent(pMarkerEvent.get()));
@@ -315,21 +318,18 @@ done:
 HRESULT TransformAsync::OnSetD3DManager(ULONG_PTR ulParam)
 {
     HRESULT hr = S_OK;
-    winrt::com_ptr<IUnknown> pUnk;
-    winrt::com_ptr<IMFDXGIDeviceManager> pDXGIDeviceManager;
+    com_ptr<IUnknown> pUnk;
+    com_ptr<IMFDXGIDeviceManager> pDXGIDeviceManager;
     if (ulParam != NULL) {
         pUnk.attach((IUnknown*)ulParam);
         pDXGIDeviceManager = pUnk.try_as<IMFDXGIDeviceManager>();
         if (pDXGIDeviceManager && m_spDeviceManager != pDXGIDeviceManager) {
             // Invalidate dx11 resources
             m_spDeviceManager.detach();
-            m_spContext.detach();
 
             // Update dx11 device and resources
             m_spDeviceManager = pDXGIDeviceManager;
             CHECK_HR(hr = m_spDeviceManager->OpenDeviceHandle(&m_hDeviceHandle));
-            CHECK_HR(hr = m_spDeviceManager->GetVideoService(m_hDeviceHandle, IID_PPV_ARGS(&m_spDevice)));
-            m_spDevice->GetImmediateContext(m_spContext.put());
 
             // Hand off the new device to the sample allocator, if it exists
             if (m_spOutputSampleAllocator)
@@ -343,41 +343,33 @@ HRESULT TransformAsync::OnSetD3DManager(ULONG_PTR ulParam)
     {
         // Invalidate dx11 resources
         m_spDeviceManager.detach();
-        m_spContext.detach();
     }
 
 done:
     return hr;
 }
 
-// IMFTransform Helper functions 
-void TransformAsync::InvalidateDX11Resources()
-{
-    m_spDevice = nullptr;
-    m_spContext = nullptr;
-}
-
 HRESULT TransformAsync::SetupAlloc()
 {
     HRESULT hr = S_OK;
     // Fail fast if already set up 
-    if (!m_bStreamingInitialized)
+    if (!m_bAllocatorInitialized)
     {
         // If we have a device manager, we need to set up sample allocator
         if (m_spDeviceManager != nullptr)
         {
             // Set up allocator attributes
-            DWORD dwBindFlags = MFGetAttributeUINT32(m_spOutputAttributes.get(), MF_SA_D3D11_BINDFLAGS, D3D11_BIND_RENDER_TARGET);
+            DWORD dwBindFlags = MFGetAttributeUINT32(m_spAllocatorAttributes.get(), MF_SA_D3D11_BINDFLAGS, D3D11_BIND_RENDER_TARGET);
             dwBindFlags |= D3D11_BIND_RENDER_TARGET; // Must always set as render target!
-            CHECK_HR(hr = m_spOutputAttributes->SetUINT32(MF_SA_D3D11_BINDFLAGS, dwBindFlags));
-            CHECK_HR(hr = m_spOutputAttributes->SetUINT32(MF_SA_BUFFERS_PER_SAMPLE, 1));
-            CHECK_HR(hr = m_spOutputAttributes->SetUINT32(MF_SA_D3D11_USAGE, D3D11_USAGE_DEFAULT));
+            CHECK_HR(hr = m_spAllocatorAttributes->SetUINT32(MF_SA_D3D11_BINDFLAGS, dwBindFlags));
+            CHECK_HR(hr = m_spAllocatorAttributes->SetUINT32(MF_SA_BUFFERS_PER_SAMPLE, 1));
+            CHECK_HR(hr = m_spAllocatorAttributes->SetUINT32(MF_SA_D3D11_USAGE, D3D11_USAGE_DEFAULT));
 
             // Set up the output sample allocator if needed
             if (NULL == m_spOutputSampleAllocator)
             {
-                winrt::com_ptr<IMFVideoSampleAllocatorEx> spVideoSampleAllocator;
-                winrt::com_ptr<IUnknown> spDXGIManagerUnk;
+                com_ptr<IMFVideoSampleAllocatorEx> spVideoSampleAllocator;
+                com_ptr<IUnknown> spDXGIManagerUnk;
 
                 CHECK_HR(hr = MFCreateVideoSampleAllocatorEx(IID_PPV_ARGS(&spVideoSampleAllocator)));
                 spDXGIManagerUnk = m_spDeviceManager.as<IUnknown>();
@@ -387,9 +379,9 @@ HRESULT TransformAsync::SetupAlloc()
                 m_spOutputSampleAllocator.attach(spVideoSampleAllocator.detach());
             }
 
-            CHECK_HR(hr = m_spOutputSampleAllocator->InitializeSampleAllocatorEx(2, 15, m_spOutputAttributes.get(), m_spOutputType.get()));
+            CHECK_HR(hr = m_spOutputSampleAllocator->InitializeSampleAllocatorEx(2, 15, m_spAllocatorAttributes.get(), m_spOutputType.get()));
         }
-        m_bStreamingInitialized = true;
+        m_bAllocatorInitialized = true;
 
     }
 done:
@@ -403,17 +395,10 @@ HRESULT TransformAsync::UpdateDX11Device()
     if (m_spDeviceManager != nullptr)
     {
         CHECK_HR(hr = m_spDeviceManager->OpenDeviceHandle(&m_hDeviceHandle));
-
-
-        CHECK_HR(hr = m_spDeviceManager->GetVideoService(m_hDeviceHandle, __uuidof(m_spDevice), (void**)&m_spDevice));
-        if (FAILED(hr))
-
-            m_spDevice->GetImmediateContext(m_spContext.put());
     }
     return hr;
 
 done:
-    InvalidateDX11Resources();
     return hr;
 }
 
@@ -425,7 +410,6 @@ HRESULT TransformAsync::CheckDX11Device()
     {
         if (m_spDeviceManager->TestDevice(m_hDeviceHandle) != S_OK)
         {
-            InvalidateDX11Resources();
 
             hr = UpdateDX11Device();
             if (FAILED(hr))
@@ -435,17 +419,14 @@ HRESULT TransformAsync::CheckDX11Device()
 
         }
     }
-
-    return S_OK;
+    else 
+    {
+        // We need a d3d device for allocating output samples, so fail if it's lost
+        hr = E_FAIL;
+    }
+    return hr;
 }
 
-//-------------------------------------------------------------------
-// Name: OnGetPartialType
-// Description: Returns a partial media type from our list.
-//
-// dwTypeIndex: Index into the list of peferred media types.
-// ppmt: Receives a pointer to the media type.
-//-------------------------------------------------------------------
 HRESULT TransformAsync::OnGetPartialType(DWORD dwTypeIndex, IMFMediaType** ppmt)
 {
     HRESULT hr = S_OK;
@@ -455,7 +436,7 @@ HRESULT TransformAsync::OnGetPartialType(DWORD dwTypeIndex, IMFMediaType** ppmt)
         return MF_E_NO_MORE_TYPES;
     }
 
-    winrt::com_ptr<IMFMediaType> pmt;
+    com_ptr<IMFMediaType> pmt;
 
     CHECK_HR(hr = MFCreateMediaType(pmt.put()));
 
@@ -469,12 +450,6 @@ HRESULT TransformAsync::OnGetPartialType(DWORD dwTypeIndex, IMFMediaType** ppmt)
 done:
     return hr;
 }
-
-
-//-------------------------------------------------------------------
-// Name: OnCheckInputType
-// Description: Validate an input media type.
-//-------------------------------------------------------------------
 
 HRESULT TransformAsync::OnCheckInputType(IMFMediaType* pmt)
 {
@@ -635,10 +610,6 @@ HRESULT TransformAsync::OnSetOutputType(IMFMediaType* pmt)
 
     m_spOutputType.detach();
     m_spOutputType.attach(pmt);
-    /*if (m_spOutputType)
-    {
-        m_spOutputType->AddRef();
-    }*/
 
     return S_OK;
 }
@@ -699,12 +670,12 @@ HRESULT LockDevice(
 //-------------------------------------------------------------------
 IDirect3DSurface TransformAsync::SampleToD3Dsurface(IMFSample* sample)
 {
-    winrt::com_ptr<IMFMediaBuffer> pBuffIn;
-    winrt::com_ptr<IMFDXGIBuffer> pSrc;
-    winrt::com_ptr<ID3D11Texture2D> pTextSrc;
-    winrt::com_ptr<IDXGISurface> pSurfaceSrc;
+    com_ptr<IMFMediaBuffer> pBuffIn;
+    com_ptr<IMFDXGIBuffer> pSrc;
+    com_ptr<ID3D11Texture2D> pTextSrc;
+    com_ptr<IDXGISurface> pSurfaceSrc;
 
-    winrt::com_ptr<IInspectable> pSurfaceInspectable;
+    com_ptr<IInspectable> pSurfaceInspectable;
 
     sample->ConvertToContiguousBuffer(pBuffIn.put());
     pBuffIn->QueryInterface(IID_PPV_ARGS(&pSrc));
@@ -726,7 +697,7 @@ HRESULT TransformAsync::InitializeTransform(void)
     CHECK_HR(hr = m_spAttributes->SetUINT32(MF_SA_D3D11_AWARE, TRUE));
 
     // Initialize attributes for output sample allocator
-    CHECK_HR(hr = MFCreateAttributes(m_spOutputAttributes.put(), 3));
+    CHECK_HR(hr = MFCreateAttributes(m_spAllocatorAttributes.put(), 3));
 
     /**********************************
     ** Since this is an Async MFT, an
@@ -806,11 +777,6 @@ HRESULT GetImageSize(FOURCC fcc, UINT32 width, UINT32 height, DWORD* pcbImage)
     return hr;
 }
 
-//-------------------------------------------------------------------
-// Name: UpdateFormatInfo
-// Description: After the input type is set, update our format 
-//              information.
-//-------------------------------------------------------------------
 HRESULT TransformAsync::UpdateFormatInfo()
 {
     HRESULT hr = S_OK;
@@ -938,7 +904,7 @@ HRESULT TransformAsync::OnDrain(
         AutoLock lock(m_critSec);
         if (m_pOutputSampleQueue->IsQueueEmpty())
         {
-            winrt::com_ptr<IMFMediaEvent> pDrainCompleteEvent;
+            com_ptr<IMFMediaEvent> pDrainCompleteEvent;
             hr = MFCreateMediaEvent(METransformDrainComplete, GUID_NULL, S_OK, NULL, pDrainCompleteEvent.put());
             if (FAILED(hr))
             {
@@ -1002,7 +968,6 @@ HRESULT TransformAsync::OnFlush(void)
             break;
         }
 
-        m_llCurrentSampleTime = 0;    // Reset our sample time to 0 on a flush
     } while (false);
 
     return hr;
@@ -1038,7 +1003,7 @@ HRESULT TransformAsync::RequestSample(
     const UINT32 un32StreamID)
 {
     HRESULT         hr = S_OK;
-    winrt::com_ptr<IMFMediaEvent> pEvent;
+    com_ptr<IMFMediaEvent> pEvent;
 
     do
     {
@@ -1094,11 +1059,6 @@ HRESULT TransformAsync::RequestSample(
 
 BOOL TransformAsync::IsMFTReady(void)
 {
-    /*******************************
-    ** The purpose of this function
-    ** is to ensure that the MFT is
-    ** ready for processing
-    *******************************/
 
     BOOL bReady = FALSE;
 
@@ -1159,54 +1119,5 @@ HRESULT TransformAsync::FlushSamples(void)
         m_bFirstSample = TRUE; // Be sure to reset our first sample so we know to set discontinuity
     } while (false);
 
-    return hr;
-}
-
-HRESULT DuplicateAttributes(
-    IMFAttributes* pDest,
-    IMFAttributes* pSource)
-{
-    HRESULT     hr = S_OK;
-    GUID        guidKey = GUID_NULL;
-    PROPVARIANT pv = { 0 };
-
-    //TraceString(CHMFTTracing::TRACE_INFORMATION, L"%S(): Enter", __FUNCTION__);
-
-    do
-    {
-        if ((pDest == NULL) || (pSource == NULL))
-        {
-            hr = E_POINTER;
-            break;
-        }
-
-        PropVariantInit(&pv);
-
-        for (UINT32 un32Index = 0; true; un32Index++)
-        {
-            PropVariantClear(&pv);
-            PropVariantInit(&pv);
-
-            hr = pSource->GetItemByIndex(un32Index, &guidKey, &pv);
-            if (FAILED(hr))
-            {
-                if (hr == E_INVALIDARG)
-                {
-                    // all items copied
-                    hr = S_OK;
-                }
-
-                break;
-            }
-
-            hr = pDest->SetItem(guidKey, pv);
-            if (FAILED(hr))
-            {
-                break;
-            }
-        }
-    } while (false);
-
-    PropVariantClear(&pv);
     return hr;
 }

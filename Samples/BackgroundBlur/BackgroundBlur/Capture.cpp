@@ -104,10 +104,10 @@ HRESULT CreateDX11Device(_Out_ ID3D11Device** ppDevice, _Out_ ID3D11DeviceContex
     UINT i = 0;
 
     std::vector <IDXGIAdapter*> vAdapters;
-    winrt::com_ptr<IDXGIAdapter> pBestAdapter;
+    com_ptr<IDXGIAdapter> pBestAdapter;
 
-    winrt::com_ptr<IDXGIAdapter> spAdapter;
-    winrt::com_ptr<IDXGIFactory> spFactory;
+    com_ptr<IDXGIAdapter> spAdapter;
+    com_ptr<IDXGIFactory> spFactory;
     DXGI_ADAPTER_DESC desc;
     hr = CreateDXGIFactory1(IID_PPV_ARGS(spFactory.put()));
     size_t maxVideoMem = 0;
@@ -138,7 +138,7 @@ HRESULT CreateDX11Device(_Out_ ID3D11Device** ppDevice, _Out_ ID3D11DeviceContex
     
     if(SUCCEEDED(hr))
     {
-        winrt::com_ptr<ID3D10Multithread> pMultithread;
+        com_ptr<ID3D10Multithread> pMultithread;
         hr =  ((*ppDevice)->QueryInterface(IID_PPV_ARGS(pMultithread.put())));
 
         if(SUCCEEDED(hr))
@@ -156,7 +156,7 @@ HRESULT CreateD3DManager()
 {
     HRESULT hr = S_OK;
     D3D_FEATURE_LEVEL FeatureLevel;
-    winrt::com_ptr<ID3D11DeviceContext> pDX11DeviceContext;
+    com_ptr<ID3D11DeviceContext> pDX11DeviceContext;
     
     hr = CreateDX11Device(&g_pDX11Device, pDX11DeviceContext.put(), &FeatureLevel);
 
@@ -344,10 +344,10 @@ HRESULT CaptureManager::StartPreview()
         return S_OK;
     }
 
-    winrt::com_ptr<IMFCaptureSink> pSink;
-    winrt::com_ptr<IMFMediaType> pMediaType;
-    winrt::com_ptr<IMFMediaType> pMediaType2;
-    winrt::com_ptr<IMFCaptureSource> pSource;
+    com_ptr<IMFCaptureSink> pSink;
+    com_ptr<IMFMediaType> pMediaType;
+    com_ptr<IMFMediaType> pMediaType2;
+    com_ptr<IMFCaptureSource> pSource;
 
     HRESULT hr = S_OK;
     
@@ -386,7 +386,7 @@ HRESULT CaptureManager::StartPreview()
         }
 
         // Add the transform 
-        winrt::com_ptr<IMFTransform>pMFT;
+        com_ptr<IMFTransform>pMFT;
         hr = TransformAsync::CreateInstance(pMFT.put());
 
         // IMFCaptureSource

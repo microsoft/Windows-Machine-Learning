@@ -177,10 +177,9 @@ HRESULT TransformAsync::GetOutputStreamInfo(
     return S_OK;
 }
 
-//-------------------------------------------------------------------
-// Name: GetAttributes
-// Returns the attributes for the MFT.
-//-------------------------------------------------------------------
+/*
+  Acquires lock on m_critSec so can't modify MFT attributes concurrently.   
+*/
 HRESULT TransformAsync::GetAttributes(IMFAttributes** ppAttributes)
 {
     if (ppAttributes == NULL)
@@ -396,9 +395,7 @@ done:
     return hr;
 }
 
-//-------------------------------------------------------------------
-// Name: SetOutputType
-//-------------------------------------------------------------------
+
 HRESULT TransformAsync::SetOutputType(
     DWORD           dwOutputStreamID,
     IMFMediaType* pType, // Can be NULL to clear the output type.
@@ -406,7 +403,6 @@ HRESULT TransformAsync::SetOutputType(
 )
 {
     TRACE((L"TransformAsync::SetOutputType\n"));
-
 
     if (pType == NULL) 
     {
@@ -424,7 +420,6 @@ HRESULT TransformAsync::SetOutputType(
     }
 
     HRESULT hr = S_OK;
-
 
     // Does the caller want us to set the type, or just test it?
     BOOL bReallySet = ((dwFlags & MFT_SET_TYPE_TEST_ONLY) == 0);
@@ -613,7 +608,6 @@ HRESULT TransformAsync::ProcessEvent(
 //-------------------------------------------------------------------
 // Name: ProcessMessage
 //-------------------------------------------------------------------
-
 HRESULT TransformAsync::ProcessMessage(
     MFT_MESSAGE_TYPE    eMessage,
     ULONG_PTR           ulParam
@@ -646,8 +640,6 @@ HRESULT TransformAsync::ProcessMessage(
     break;
 
     case MFT_MESSAGE_SET_D3D_MANAGER:
-        // The pipeline should never send this message unless the MFT
-        // has the MF_SA_D3D_AWARE attribute set to TRUE. 
         hr = OnSetD3DManager(ulParam);
         break;
     case MFT_MESSAGE_NOTIFY_END_OF_STREAM:
@@ -698,7 +690,7 @@ HRESULT TransformAsync::ProcessOutput(
     DWORD* pdwStatus)
 {
     HRESULT     hr = S_OK;
-    winrt::com_ptr<IMFSample> pSample;
+    com_ptr<IMFSample> pSample;
     {
         AutoLock lock(m_critSec);
         if (m_dwHaveOutputCount == 0)
@@ -758,7 +750,7 @@ HRESULT TransformAsync::ProcessOutput(
         if ((m_dwStatus & MYMFT_STATUS_DRAINING) != 0)
         {
             // We're done draining, time to send the event
-            winrt::com_ptr<IMFMediaEvent> pDrainCompleteEvent;
+            com_ptr<IMFMediaEvent> pDrainCompleteEvent;
 
             do
             {

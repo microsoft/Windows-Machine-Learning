@@ -38,7 +38,7 @@ enum OnnxDataType : long {
 }OnnxDataType;
 
 
-int g_scale = 5;
+int g_scale = 4;
 auto outputBindProperties = PropertySet();
 
 /****	Style transfer model	****/
@@ -80,11 +80,12 @@ LearningModel StyleTransfer::GetModel()
 	return LearningModel::LoadFromFilePath(rel + L"");
 }
 
+
+/****	Background blur model	****/
 BackgroundBlur::~BackgroundBlur() {
 	if (m_session) m_session.Close();
 }
 
-/****	Background blur model	****/
 void BackgroundBlur::SetModels(int w, int h)
 {
 	w /= g_scale; h /= g_scale;

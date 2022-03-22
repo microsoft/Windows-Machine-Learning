@@ -30,7 +30,7 @@ HRESULT CopyAttribute(IMFAttributes *pSrc, IMFAttributes *pDest, const GUID& key
 
 HRESULT CloneVideoMediaType(IMFMediaType *pSrcMediaType, REFGUID guidSubType, IMFMediaType **ppNewMediaType)
 {
-    winrt::com_ptr<IMFMediaType> pNewMediaType;
+    com_ptr<IMFMediaType> pNewMediaType;
 
     HRESULT hr = MFCreateMediaType(pNewMediaType.put());
     if (FAILED(hr))

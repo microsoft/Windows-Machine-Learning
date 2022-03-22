@@ -244,7 +244,7 @@ namespace MainWindow
     HWND hStatus = NULL;
     bool bPreviewing = false;
 
-    winrt::com_ptr<IMFActivate> pSelectedDevice;
+    com_ptr<IMFActivate> pSelectedDevice;
 
     inline void _SetStatusText(const WCHAR* szStatus)
     {
@@ -289,7 +289,7 @@ namespace MainWindow
     BOOL OnCreate(HWND hwnd, LPCREATESTRUCT /*lpCreateStruct*/)
     {
         BOOL                fSuccess = FALSE;
-        winrt::com_ptr<IMFAttributes> pAttributes;
+        com_ptr<IMFAttributes> pAttributes;
         HRESULT             hr = S_OK;
 
         hPreview = CreatePreviewWindow(GetModuleHandle(NULL), hwnd);
@@ -371,7 +371,7 @@ namespace MainWindow
     {
         ChooseDeviceParam param;
 
-        winrt::com_ptr<IMFAttributes> pAttributes;
+        com_ptr<IMFAttributes> pAttributes;
         INT_PTR result = NULL;
 
         HRESULT hr = MFCreateAttributes(pAttributes.put(), 1);

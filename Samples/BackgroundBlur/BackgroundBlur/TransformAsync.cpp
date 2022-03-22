@@ -231,7 +231,7 @@ HRESULT TransformAsync::SubmitEval(IMFSample* pInput)
         CHECK_HR(hr = E_INVALIDARG);
     }
 
-    // Explicitly copy out pInput attributes, since copy doesn't do this for us.
+    // Explicitly copy out pInput attributes, since copying IMFSamples is shallow. 
     CHECK_HR(pInputSample->GetSampleDuration(&hnsDuration));
     CHECK_HR(pInputSample->GetSampleTime(&hnsTime));
     pInputSample->GetUINT64(TransformAsync_MFSampleExtension_Marker, &pun64MarkerID);
@@ -244,13 +244,13 @@ HRESULT TransformAsync::SubmitEval(IMFSample* pInput)
     if(model->m_bSyncStarted == FALSE)
     {
         auto now = std::chrono::high_resolution_clock::now();
-
+        // Run model inference 
         model->Run(src, dest); 
         auto timePassed = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - now);
         TRACE((L"Eval: %d", timePassed.count()));
         src.Close();
         dest.Close();
-
+        // Perform housekeeping out the output sample
         FinishEval(pInputSample, pOutputSample, hnsDuration, hnsTime, pun64MarkerID); 
     }
     else {

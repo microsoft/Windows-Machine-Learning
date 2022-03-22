@@ -652,18 +652,19 @@ HRESULT TransformAsync::ProcessMessage(
         }
     }
     break;
-    case MFT_MESSAGE_NOTIFY_START_OF_STREAM:
+    
+    case MFT_MESSAGE_COMMAND_MARKER:
     {
-        hr = OnStartOfStream();
+        hr = OnMarker(ulParam);
         if (FAILED(hr))
         {
             break;
         }
     }
     break;
-    case MFT_MESSAGE_COMMAND_MARKER:
+    case MFT_MESSAGE_NOTIFY_START_OF_STREAM:
     {
-        hr = OnMarker(ulParam);
+        hr = OnStartOfStream();
         if (FAILED(hr))
         {
             break;

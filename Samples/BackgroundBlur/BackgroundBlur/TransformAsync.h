@@ -242,7 +242,6 @@ protected:
     HRESULT ShutdownEventQueue(void);
 
     /******* MFT Helpers **********/
-
     // Returns the partial media type of the media type in g_MediaSubtypes.
     HRESULT OnGetPartialType(DWORD dwTypeIndex, IMFMediaType** ppmt);
 

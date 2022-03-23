@@ -6,17 +6,14 @@ HRESULT TransformAsync::GetParameters(
 {
     HRESULT hr = S_OK;
 
-    do
+    if ((pdwFlags == NULL) || (pdwQueue == NULL))
     {
-        if ((pdwFlags == NULL) || (pdwQueue == NULL))
-        {
-            hr = E_POINTER;
-            break;
-        }
+        hr = E_POINTER;
+        return hr;
+    }
 
-        (*pdwFlags) = 0;
-        (*pdwQueue) = MFASYNC_CALLBACK_QUEUE_MULTITHREADED;
-    } while (false);
+    (*pdwFlags) = 0;
+    (*pdwQueue) = MFASYNC_CALLBACK_QUEUE_MULTITHREADED;
 
     return hr;
 }
@@ -40,12 +37,12 @@ HRESULT TransformAsync::Invoke(
 
     do
     {
-        TRACE((L"\n Invoke Thread %d | ", std::hash<std::thread::id>()(std::this_thread::get_id())));
+        //TRACE((L"\n Invoke Thread %d | ", std::hash<std::thread::id>()(std::this_thread::get_id())));
 
         if (pAsyncResult == NULL)
         {
             hr = E_POINTER;
-            return hr;
+            break;
         }
 
         // Get the IMFSample tied to this specific Invoke call

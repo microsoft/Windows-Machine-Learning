@@ -692,6 +692,7 @@ HRESULT TransformAsync::ProcessOutput(
 {
     HRESULT     hr = S_OK;
     com_ptr<IMFSample> pSample;
+
     {
         AutoLock lock(m_critSec);
         if (m_dwHaveOutputCount == 0)
@@ -807,8 +808,9 @@ HRESULT TransformAsync::ProcessInput(
 {
     HRESULT hr = S_OK;
     DWORD currFrameLocal = 0;
+    TRACE((L" | PI Thread %d | ", std::hash<std::thread::id>()(std::this_thread::get_id())));
+
     {
-        TRACE((L"\n PI Thread %d | ", std::hash<std::thread::id>()(std::this_thread::get_id())));
 
         //pGraphicsAnalysis->BeginCapture();
         AutoLock lock(m_critSec);

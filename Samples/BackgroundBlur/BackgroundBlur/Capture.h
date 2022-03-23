@@ -168,16 +168,12 @@ public:
         if (pEngine == NULL)
         {
             hr = E_OUTOFMEMORY;
-            goto Exit;
+            delete pEngine;
+            return hr;
         }
         *ppEngine = pEngine;
         pEngine = NULL;
 
-    Exit:
-        if (NULL != pEngine)
-        {
-            delete pEngine;
-        }
         return hr;
     }
 

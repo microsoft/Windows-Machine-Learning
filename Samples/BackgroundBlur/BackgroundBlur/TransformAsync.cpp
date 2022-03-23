@@ -190,7 +190,6 @@ HRESULT TransformAsync::ScheduleFrameInference(void)
 
 done:
     return hr;
-
 }
 
 HRESULT TransformAsync::SubmitEval(IMFSample* pInput)

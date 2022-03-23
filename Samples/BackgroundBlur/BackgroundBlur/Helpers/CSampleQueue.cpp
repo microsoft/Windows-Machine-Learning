@@ -228,8 +228,7 @@ HRESULT CSampleQueue::RemoveAllSamples(void)
 {
     HRESULT hr          = S_OK;
     CNode*  pCurrNode   = NULL;
-
-    do
+    // Scope the lock
     {
         AutoLock lock(m_critSec);
 
@@ -244,7 +243,7 @@ HRESULT CSampleQueue::RemoveAllSamples(void)
 
         m_pTail = NULL;
         m_length = 0;
-    }while(false);
+    }
 
     return hr;
 }
@@ -253,14 +252,13 @@ HRESULT CSampleQueue::MarkerNextSample(
     const ULONG_PTR pulID)
 {
     HRESULT hr = S_OK;
-
-    do
+    // Scope the lock
     {
         AutoLock lock(m_critSec);
 
         m_pulMarkerID   = pulID;
         m_bAddMarker    = TRUE;
-    }while(false);
+    }
 
     return hr;
 }
@@ -285,12 +283,10 @@ CSampleQueue::CSampleQueue(void)
     m_bAddMarker    = FALSE;
     m_pulMarkerID   = 0;
 
-    //InitializeCriticalSection(&m_csLock);
 }
 
 CSampleQueue::~CSampleQueue(void)
 {
     RemoveAllSamples();
     m_critSec.~CritSec();
-    //DeleteCriticalSection(&m_csLock);
 }

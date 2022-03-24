@@ -36,6 +36,12 @@
     <ClInclude Include="DXResourceBinding.h">
       <Filter>DXResourceBinding</Filter>
     </ClInclude>
+    <ClInclude Include="d3dx12.h">
+      <Filter>DXResourceBinding</Filter>
+    </ClInclude>
+    <ClInclude Include="stdafx.h">
+      <Filter>DXResourceBinding</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Resource.rc" />
@@ -69,5 +75,13 @@
     <Filter Include="DXResourceBinding">
       <UniqueIdentifier>{393a0b12-622a-4d4c-b4a6-ed0bb1b2e285}</UniqueIdentifier>
     </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="VertexShader.hlsl">
+      <Filter>DXResourceBinding</Filter>
+    </FxCompile>
+    <FxCompile Include="PixelShader.hlsl">
+      <Filter>DXResourceBinding</Filter>
+    </FxCompile>
   </ItemGroup>
 </Project>

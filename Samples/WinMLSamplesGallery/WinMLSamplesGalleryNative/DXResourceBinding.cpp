@@ -996,9 +996,9 @@ bool InitD3D()
     XMStoreFloat4x4(&cube1RotMat, XMMatrixIdentity()); // initialize cube1's rotation matrix to identity matrix
     XMStoreFloat4x4(&cube1WorldMat, tmpMat); // store cube1's world matrix
 
-    // second cube
-    cube2PositionOffset = XMFLOAT4(1.5f, 0.0f, 0.0f, 0.0f);
-    posVec = XMLoadFloat4(&cube2PositionOffset) + XMLoadFloat4(&cube1Position); // create xmvector for cube2's position
+    //// second cube
+    //cube2PositionOffset = XMFLOAT4(1.5f, 0.0f, 0.0f, 0.0f);
+    //posVec = XMLoadFloat4(&cube2PositionOffset) + XMLoadFloat4(&cube1Position); // create xmvector for cube2's position
                                                                                 // we are rotating around cube1 here, so add cube2's position to cube1
 
     tmpMat = XMMatrixTranslationFromVector(posVec); // create translation matrix from cube2's position offset vector

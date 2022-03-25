@@ -84,4 +84,9 @@
       <Filter>DXResourceBinding</Filter>
     </FxCompile>
   </ItemGroup>
+  <ItemGroup>
+    <Image Include="cat.jpg">
+      <Filter>DXResourceBinding</Filter>
+    </Image>
+  </ItemGroup>
 </Project>

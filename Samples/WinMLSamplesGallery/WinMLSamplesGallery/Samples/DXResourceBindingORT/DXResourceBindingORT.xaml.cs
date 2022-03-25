@@ -17,9 +17,12 @@ namespace WinMLSamplesGallery.Samples
         public DXResourceBindingORT()
         {
             this.InitializeComponent();
-            System.Diagnostics.Debug.WriteLine("Hello I'm in this sample");
-            WinMLSamplesGalleryNative.DXResourceBinding.BindDXResourcesUsingORT();
+            //WinMLSamplesGalleryNative.DXResourceBinding.BindDXResourcesUsingORT();
         }
 
+        private void LaunchWindow(object sender, RoutedEventArgs e)
+        {
+            WinMLSamplesGalleryNative.DXResourceBinding.BindDXResourcesUsingORT();
+        }
     }
 }

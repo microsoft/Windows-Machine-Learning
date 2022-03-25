@@ -13,6 +13,6 @@
     </Page.Resources>
 
 	<StackPanel>
-		<TextBlock>Hello world</TextBlock>
+        <Button Click="LaunchWindow">Launch Window</Button>
 	</StackPanel>
 </Page>

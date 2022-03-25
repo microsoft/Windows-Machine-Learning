@@ -8,6 +8,7 @@
 #include "stdafx.h"
 #include <commctrl.h>
 #include <mfapi.h>
+#include <iostream>
 
 struct Vertex {
     Vertex(float x, float y, float z, float u, float v) : pos(x, y, z), texCoord(u, v) {}
@@ -29,76 +30,13 @@ static HMODULE GetCurrentModule()
 namespace winrt::WinMLSamplesGalleryNative::implementation
 {
 	int DXResourceBinding::BindDXResourcesUsingORT() {
+        OutputDebugString(L"Will this output work?");
         //LaunchNewWindow();
         HINSTANCE hInstance = GetCurrentModule();
-        StartHWind(hInstance, 0);
+        StartHWind(hInstance, 10);
 		return 0;
 	}
 }
-
-//void LaunchNewWindow() {
-//    HWND hwnd;
-//    HWND galleryHwnd = GetActiveWindow();
-//    HRESULT hr = S_OK;
-//    BOOL bMFStartup = false;
-//    HMODULE hmodule = GetCurrentModule();
-//
-//    // Initialize the common controls
-//    const INITCOMMONCONTROLSEX icex = { sizeof(INITCOMMONCONTROLSEX), ICC_WIN95_CLASSES };
-//    InitCommonControlsEx(&icex);
-//
-//    hr = MFStartup(MF_VERSION);
-//    if (FAILED(hr))
-//    {
-//        goto done;
-//    }
-//
-//    // Create window
-//    const wchar_t CLASS_NAME[] = L"Capture Engine Window Class";
-//    INT nCmdShow = 1;
-//
-//    WNDCLASS wc = { 0 };
-//
-//    //wc.lpfnWndProc = MainWindow::WindowProc;
-//    wc.hInstance = hmodule;
-//    wc.lpszClassName = CLASS_NAME;
-//    //wc.lpszMenuName = MAKEINTRESOURCE(IDR_MENU1);
-//
-//    RegisterClass(&wc);
-//
-//    g_hwnd = CreateWindowEx(
-//        0, CLASS_NAME, L"Capture Application", WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT,
-//        CW_USEDEFAULT, CW_USEDEFAULT, galleryHwnd, NULL, hmodule, NULL
-//    );
-//
-//    if (g_hwnd == 0)
-//    {
-//        throw_hresult(E_FAIL);
-//    }
-//
-//    ShowWindow(g_hwnd, 10);
-//
-//    // Run the main message loop
-//    MSG msg;
-//    while (GetMessage(&msg, NULL, 0, 0))
-//    {
-//        TranslateMessage(&msg);
-//        DispatchMessage(&msg);
-//    }
-//
-//
-//done:
-//    if (FAILED(hr))
-//    {
-//        // TODO: Add utils from BackgroundBlur sample utils.cpp
-//        //ShowError(NULL, L"Failed to start application", hr);
-//    }
-//    if (bMFStartup)
-//    {
-//        MFShutdown();
-//    }
-//    return;
-//}
 
 int WINAPI StartHWind(HINSTANCE hInstance,    //Main windows function
     int nShowCmd)
@@ -535,7 +473,7 @@ bool InitD3D()
 
     // compile vertex shader
     ID3DBlob* vertexShader; // d3d blob for holding vertex shader bytecode
-    hr = D3DCompileFromFile(L"VertexShader.hlsl",
+    hr = D3DCompileFromFile(L"C:/Users/numform/Windows-Machine-Learning/Samples/WinMLSamplesGallery/WinMLSamplesGalleryNative/VertexShader.hlsl",
         nullptr,
         nullptr,
         "main",
@@ -559,7 +497,7 @@ bool InitD3D()
 
     // compile pixel shader
     ID3DBlob* pixelShader;
-    hr = D3DCompileFromFile(L"PixelShader.hlsl",
+    hr = D3DCompileFromFile(L"C:/Users/numform/Windows-Machine-Learning/Samples/WinMLSamplesGallery/WinMLSamplesGalleryNative/PixelShader.hlsl",
         nullptr,
         nullptr,
         "main",
@@ -911,7 +849,7 @@ bool InitD3D()
     D3D12_RESOURCE_DESC textureDesc;
     int imageBytesPerRow;
     BYTE* imageData;
-    int imageSize = LoadImageDataFromFile(&imageData, textureDesc, L"cat.jpg", imageBytesPerRow);
+    int imageSize = LoadImageDataFromFile(&imageData, textureDesc, L"C:/Users/numform/Windows-Machine-Learning/Samples/WinMLSamplesGallery/WinMLSamplesGalleryNative/cat.jpg", imageBytesPerRow);
 
     // make sure we have data
     if (imageSize <= 0)

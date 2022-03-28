@@ -1,8 +1,4 @@
 #include "CSampleQueue.h"
-// TODO: Maybe move the GUID to root's common.h
-#include "../TransformAsync.h"
-#include "common.h"
-
 
 class CSampleQueue::CNode
 {
@@ -133,7 +129,7 @@ HRESULT CSampleQueue::AddSample(
         InterlockedIncrement(&m_length);
 
         {
-            AutoLock lock(m_critSec);
+            std::lock_guard<std::recursive_mutex> lock(m_mutex);
 
             if(m_bAddMarker != FALSE)
             {
@@ -191,7 +187,7 @@ HRESULT CSampleQueue::GetNextSample(
         InterlockedDecrement(&m_length);
 
         {
-            AutoLock lock(m_critSec);
+            std::lock_guard<std::recursive_mutex> lock(m_mutex);
 
             if(IsQueueEmpty() != FALSE)
             {
@@ -230,7 +226,7 @@ HRESULT CSampleQueue::RemoveAllSamples(void)
     CNode*  pCurrNode   = NULL;
     // Scope the lock
     {
-        AutoLock lock(m_critSec);
+        std::lock_guard<std::recursive_mutex> lock(m_mutex);
 
         while(IsQueueEmpty() == FALSE)
         {
@@ -254,7 +250,7 @@ HRESULT CSampleQueue::MarkerNextSample(
     HRESULT hr = S_OK;
     // Scope the lock
     {
-        AutoLock lock(m_critSec);
+        std::lock_guard<std::recursive_mutex> lock(m_mutex);
 
         m_pulMarkerID   = pulID;
         m_bAddMarker    = TRUE;
@@ -265,7 +261,7 @@ HRESULT CSampleQueue::MarkerNextSample(
 
 BOOL CSampleQueue::IsQueueEmpty(void)
 {
-    AutoLock lock(m_critSec);
+    std::lock_guard<std::recursive_mutex> lock(m_mutex);
 
     return (m_pHead == NULL) ? TRUE : FALSE;
 }

@@ -25,9 +25,6 @@ using namespace MediaFoundationSamples;
 
 #define MAX_NUM_INPUT_SAMPLES 5
 
-DEFINE_GUID(TransformAsync_MFSampleExtension_Marker,
-    0x1f620607, 0xa7ff, 0x4b94, 0x82, 0xf4, 0x99, 0x3f, 0x2e, 0x17, 0xb4, 0x97);
-
 enum eMFTStatus
 {
     MYMFT_STATUS_INPUT_ACCEPT_DATA = 0x00000001,   /* The MFT can accept input data */
@@ -294,7 +291,7 @@ protected:
 
     // Member variables
     volatile ULONG                  m_nRefCount;            // Reference count.
-    CritSec                         m_critSec;              // Controls access streaming status, input/output sample queue, and event queue. 
+    std::recursive_mutex            m_mutex;                // Controls access streaming status and event queue. 
     com_ptr<IMFMediaType>           m_spInputType;          // Input media type.
     com_ptr<IMFMediaType>           m_spOutputType;         // Output media type.
     com_ptr<IMFAttributes>          m_spAttributes;         // MFT Attributes.

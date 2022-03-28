@@ -17,7 +17,7 @@ HRESULT TransformAsync::GetShutdownStatus(
         }
 
         {
-            AutoLock lock(m_critSec);
+            std::lock_guard<std::recursive_mutex> lock(m_mutex);
 
 
             if (m_bShutdown == FALSE)
@@ -39,7 +39,7 @@ HRESULT TransformAsync::Shutdown(void)
 
     do
     {
-        AutoLock lock(m_critSec);
+        std::lock_guard<std::recursive_mutex> lock(m_mutex);
 
 
         hr = ShutdownEventQueue();

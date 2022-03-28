@@ -94,7 +94,7 @@ HRESULT TransformAsync::GetInputStreamInfo(
 {
     TRACE((L"GetInputStreamInfo\n"));
 
-    AutoLock lock(m_critSec);
+    std::lock_guard<std::recursive_mutex> lock(m_mutex);
 
     if (pStreamInfo == NULL)
     {
@@ -139,7 +139,7 @@ HRESULT TransformAsync::GetOutputStreamInfo(
     MFT_OUTPUT_STREAM_INFO* pStreamInfo
 )
 {
-    AutoLock lock(m_critSec);
+    std::lock_guard<std::recursive_mutex> lock(m_mutex);
 
     if (pStreamInfo == NULL)
     {
@@ -187,7 +187,7 @@ HRESULT TransformAsync::GetAttributes(IMFAttributes** ppAttributes)
         return E_POINTER;
     }
 
-    AutoLock lock(m_critSec);
+    std::lock_guard<std::recursive_mutex> lock(m_mutex);
 
     *ppAttributes = m_spAttributes.get();
     if ((*ppAttributes) == NULL)
@@ -265,7 +265,7 @@ HRESULT TransformAsync::GetInputAvailableType(
 {
     TRACE((L"GetInputAvailableType (stream = %d, type index = %d)\n", dwInputStreamID, dwTypeIndex));
 
-    AutoLock lock(m_critSec);
+    std::lock_guard<std::recursive_mutex> lock(m_mutex);
 
     if (ppType == NULL)
     {
@@ -312,7 +312,7 @@ HRESULT TransformAsync::GetOutputAvailableType(
 {
     TRACE((L"GetOutputAvailableType (stream = %d, type index = %d)\n", dwOutputStreamID, dwTypeIndex));
 
-    AutoLock lock(m_critSec);
+    std::lock_guard<std::recursive_mutex> lock(m_mutex);
 
     if (ppType == NULL)
     {
@@ -358,7 +358,7 @@ HRESULT TransformAsync::SetInputType(
 {
     TRACE((L"TransformAsync::SetInputType\n"));
 
-    AutoLock lock(m_critSec);
+    std::lock_guard<std::recursive_mutex> lock(m_mutex);
     GUID g = GUID_NULL;
 
     if (!IsValidInputStream(dwInputStreamID))
@@ -432,7 +432,7 @@ HRESULT TransformAsync::SetOutputType(
 
     if (bReallySet)
     {
-        AutoLock lock(m_critSec); 
+        std::lock_guard<std::recursive_mutex> lock(m_mutex); 
         // The type is OK. 
         // Set the type, unless the caller was just testing.
         CHECK_HR(hr = OnSetOutputType(pType));
@@ -453,7 +453,7 @@ HRESULT TransformAsync::GetInputCurrentType(
     IMFMediaType** ppType
 )
 {
-    AutoLock lock(m_critSec);
+    std::lock_guard<std::recursive_mutex> lock(m_mutex);
 
     if (ppType == NULL)
     {
@@ -487,7 +487,7 @@ HRESULT TransformAsync::GetOutputCurrentType(
     IMFMediaType** ppType
 )
 {
-    AutoLock lock(m_critSec);
+    std::lock_guard<std::recursive_mutex> lock(m_mutex);
 
     if (ppType == NULL)
     {
@@ -535,7 +535,7 @@ HRESULT TransformAsync::GetInputStatus(
 
     *pdwFlags = 0;
     {
-        AutoLock lock(m_critSec);
+        std::lock_guard<std::recursive_mutex> lock(m_mutex);
 
         if ((m_dwStatus & MYMFT_STATUS_INPUT_ACCEPT_DATA) != 0)
         {
@@ -562,7 +562,7 @@ HRESULT TransformAsync::GetOutputStatus(DWORD* pdwFlags)
 
     (*pdwFlags) = 0;
     {
-        AutoLock lock(m_critSec);
+        std::lock_guard<std::recursive_mutex> lock(m_mutex);
         if ((m_dwStatus & MYMFT_STATUS_OUTPUT_SAMPLE_READY) != 0)
         {
             *pdwFlags = MFT_OUTPUT_STATUS_SAMPLE_READY;
@@ -613,7 +613,7 @@ HRESULT TransformAsync::ProcessMessage(
     ULONG_PTR           ulParam
 )
 {
-    AutoLock lock(m_critSec);
+    std::lock_guard<std::recursive_mutex> lock(m_mutex);
 
     HRESULT hr = S_OK;
 
@@ -694,7 +694,7 @@ HRESULT TransformAsync::ProcessOutput(
     com_ptr<IMFSample> pSample;
 
     {
-        AutoLock lock(m_critSec);
+        std::lock_guard<std::recursive_mutex> lock(m_mutex);
         if (m_dwHaveOutputCount == 0)
         {
             // This call does not correspond to a have output call
@@ -747,7 +747,7 @@ HRESULT TransformAsync::ProcessOutput(
     if (m_pOutputSampleQueue->IsQueueEmpty() != FALSE)
     {
         // We're out of samples in the output queue
-        AutoLock lock(m_critSec);
+        std::lock_guard<std::recursive_mutex> lock(m_mutex);
 
         if ((m_dwStatus & MYMFT_STATUS_DRAINING) != 0)
         {
@@ -813,7 +813,7 @@ HRESULT TransformAsync::ProcessInput(
     {
 
         //pGraphicsAnalysis->BeginCapture();
-        AutoLock lock(m_critSec);
+        std::lock_guard<std::recursive_mutex> lock(m_mutex);
 
         if (m_dwNeedInputCount == 0)
         {

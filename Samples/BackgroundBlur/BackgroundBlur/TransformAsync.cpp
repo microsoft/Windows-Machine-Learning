@@ -87,8 +87,6 @@ TransformAsync::~TransformAsync()
         m_spEventQueue->Shutdown();
     }
 
-    m_critSec.~CritSec(); // Release the critical section
-
     if (m_spDeviceManager)
     {
         m_spDeviceManager->CloseDeviceHandle(m_hDeviceHandle);
@@ -97,7 +95,7 @@ TransformAsync::~TransformAsync()
 
     if (m_spOutputSampleAllocator) {
         m_spOutputSampleAllocator->UninitializeSampleAllocator();
-        m_spOutputSampleAllocator->Release();
+        //m_spOutputSampleAllocator->Release();
     }
 
 }
@@ -264,11 +262,9 @@ done:
 HRESULT TransformAsync::FinishEval(com_ptr<IMFSample> pInputSample, com_ptr<IMFSample> pOutputSample,
     LONGLONG hnsDuration, LONGLONG hnsTime, UINT64 pun64MarkerID)
 {
-
     HRESULT hr = S_OK;
     com_ptr<IMFMediaBuffer> pMediaBuffer;
     com_ptr<IMFMediaEvent> pHaveOutputEvent;
-
 
     // Set up the output sample
     CHECK_HR(hr = pOutputSample->SetSampleDuration(hnsDuration));
@@ -290,7 +286,7 @@ HRESULT TransformAsync::FinishEval(com_ptr<IMFSample> pInputSample, com_ptr<IMFS
     CHECK_HR(hr = MFCreateMediaEvent(METransformHaveOutput, GUID_NULL, S_OK, NULL, pHaveOutputEvent.put()));
     // Scope event queue lock
     {
-        AutoLock lock(m_critSec);
+        std::lock_guard<std::recursive_mutex> lock(m_mutex);
         // TODO: If QueueEvent fails, consider decrementing m_dwHaveOutputCount
         CHECK_HR(hr = m_spEventQueue->QueueEvent(pHaveOutputEvent.get()));
         m_dwHaveOutputCount++;
@@ -845,7 +841,7 @@ HRESULT TransformAsync::OnStartOfStream(void)
     {
 
         {
-            AutoLock lock(m_critSec);
+            std::lock_guard<std::recursive_mutex> lock(m_mutex);
 
             m_dwStatus |= MYMFT_STATUS_STREAM_STARTED;
 
@@ -877,7 +873,7 @@ HRESULT TransformAsync::OnEndOfStream(void)
 
     do
     {
-        AutoLock lock(m_critSec);
+        std::lock_guard<std::recursive_mutex> lock(m_mutex);
 
         m_dwStatus &= (~MYMFT_STATUS_STREAM_STARTED);
 
@@ -900,7 +896,7 @@ HRESULT TransformAsync::OnDrain(
 
     do
     {
-        AutoLock lock(m_critSec);
+        std::lock_guard<std::recursive_mutex> lock(m_mutex);
         if (m_pOutputSampleQueue->IsQueueEmpty())
         {
             com_ptr<IMFMediaEvent> pDrainCompleteEvent;
@@ -957,7 +953,7 @@ HRESULT TransformAsync::OnFlush(void)
     do
     {
 
-        AutoLock lock(m_critSec);
+        std::lock_guard<std::recursive_mutex> lock(m_mutex);
 
         m_dwStatus &= (~MYMFT_STATUS_STREAM_STARTED);
 
@@ -1007,7 +1003,7 @@ HRESULT TransformAsync::RequestSample(
     do
     {
         {
-            AutoLock lock(m_critSec);
+            std::lock_guard<std::recursive_mutex> lock(m_mutex);
 
             if ((m_dwStatus & MYMFT_STATUS_STREAM_STARTED) == 0)
             {
@@ -1040,7 +1036,7 @@ HRESULT TransformAsync::RequestSample(
         ***************************************/
 
         {
-            AutoLock lock(m_critSec);
+            std::lock_guard<std::recursive_mutex> lock(m_mutex);
 
             hr = m_spEventQueue->QueueEvent(pEvent.get());
             if (FAILED(hr))
@@ -1063,7 +1059,7 @@ BOOL TransformAsync::IsMFTReady(void)
 
     do
     {
-        AutoLock lock(m_critSec);
+        std::lock_guard<std::recursive_mutex> lock(m_mutex);
 
         m_dwStatus &= (~MYMFT_STATUS_INPUT_ACCEPT_DATA);
 
@@ -1093,7 +1089,7 @@ HRESULT TransformAsync::FlushSamples(void)
 
     do
     {
-        AutoLock lock(m_critSec);
+        std::lock_guard<std::recursive_mutex> lock(m_mutex);
 
         hr = OnEndOfStream();       // Treat this like an end of stream, don't accept new samples until
         if (FAILED(hr))              // a new stream is started

@@ -1,5 +1,4 @@
 #include "TransformAsync.h"
-#include "Helpers/CAutoLock.h"
 #include <mferror.h>
 #include <mfapi.h>
 

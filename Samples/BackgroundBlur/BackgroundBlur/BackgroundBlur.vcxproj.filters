@@ -6,7 +6,6 @@
     <ClCompile Include="PreviewWnd.cpp" />
     <ClCompile Include="winmain.cpp" />
     <ClCompile Include="Helpers\CSampleQueue.cpp" />
-    <ClCompile Include="Helpers\CAutoLock.cpp" />
     <ClCompile Include="TransformAsync.cpp" />
     <ClCompile Include="TransformAsync_IMFAsyncCallback.cpp" />
     <ClCompile Include="TransformAsync_IMFMediaEventGenerator.cpp" />
@@ -18,9 +17,7 @@
     <ClInclude Include="SegmentModel.h" />
     <ClInclude Include="Capture.h" />
     <ClInclude Include="Resource.h" />
-    <ClInclude Include="Helpers\CAutoLock.h" />
     <ClInclude Include="Helpers\CSampleQueue.h" />
-    <ClInclude Include="Helpers\critsec.h" />
     <ClInclude Include="TransformAsync.h" />
     <ClInclude Include="Helpers\common.h" />
     <ClInclude Include="Helpers\logging.h" />

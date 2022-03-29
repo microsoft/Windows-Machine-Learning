@@ -2,7 +2,6 @@
 
 #include <windows.h>
 #include <Mfidl.h>
-#include "critsec.h"
 #include "common.h"
 #include <mutex> 
 
@@ -53,7 +52,6 @@ protected:
                 CNode*              m_pTail;
                 BOOL                m_bAddMarker;
                 ULONG_PTR           m_pulMarkerID;
-                CritSec             m_critSec;
                 std::recursive_mutex    m_mutex;
                 ULONG               m_length;
 

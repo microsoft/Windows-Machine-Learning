@@ -52,6 +52,8 @@ static std::wstring GetLatestWinPixGpuCapturerPath_Cpp17()
 INT WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance*/, _In_ LPWSTR /*lpCmdLine*/, _In_ INT nCmdShow)
 {
 
+
+
 #ifdef _DEBUG
     // Check to see if a copy of WinPixGpuCapturer.dll has already been injected into the application.
     // This may happen if the application is launched through the PIX UI. 

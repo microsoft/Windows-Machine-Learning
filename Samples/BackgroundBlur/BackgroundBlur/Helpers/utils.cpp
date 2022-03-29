@@ -115,20 +115,3 @@ void SetMenuItemText(HMENU hMenu, UINT uItem, _In_ PWSTR pszText)
     SetMenuItemInfo(hMenu, uItem, FALSE, &mii);
 }
 
-
-VOID DbgPrint(PCTSTR format, ...)
-{
-    va_list args;
-    va_start(args, format);
-
-    TCHAR string[MAX_PATH];
-
-    if (SUCCEEDED(StringCbVPrintf(string, sizeof(string), format, args)))
-    {
-        OutputDebugString(string);
-    }
-    else
-    {
-        DebugBreak();
-    }
-}

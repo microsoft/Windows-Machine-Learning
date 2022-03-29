@@ -149,11 +149,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="Capture.h" />
-    <ClInclude Include="Helpers\CAutoLock.h" />
     <ClInclude Include="Helpers\common.h" />
-    <ClInclude Include="Helpers\critsec.h">
-      <DeploymentContent>true</DeploymentContent>
-    </ClInclude>
     <ClInclude Include="Helpers\CSampleQueue.h" />
     <ClInclude Include="Helpers\logging.h" />
     <ClInclude Include="Helpers\logmediatype.h" />
@@ -164,7 +160,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Capture.cpp" />
-    <ClCompile Include="Helpers\CAutoLock.cpp" />
     <ClCompile Include="Helpers\CSampleQueue.cpp" />
     <ClCompile Include="Helpers\utils.cpp" />
     <ClCompile Include="PreviewWnd.cpp" />

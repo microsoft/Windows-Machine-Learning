@@ -284,5 +284,5 @@ CSampleQueue::CSampleQueue(void)
 CSampleQueue::~CSampleQueue(void)
 {
     RemoveAllSamples();
-    m_critSec.~CritSec();
+    //m_critSec.~CritSec();
 }

@@ -72,7 +72,6 @@ void StyleTransfer::Run(IDirect3DSurface src, IDirect3DSurface dest)
 
 	m_bSyncStarted = FALSE;
 }
-
 LearningModel StyleTransfer::GetModel()
 {
 	auto rel = std::filesystem::current_path();

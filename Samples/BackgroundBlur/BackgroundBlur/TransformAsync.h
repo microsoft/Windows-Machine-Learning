@@ -16,6 +16,8 @@
 #include <uuids.h>      // DirectShow GUIDs
 #include <d3d9types.h>
 #include <d3d11.h>
+#include <d3d11_3.h>
+#include <d3d11_4.h>
 #include <dxva2api.h>
 
 #define USE_LOGGING
@@ -43,7 +45,8 @@ class TransformAsync :
     public IMFShutdown,                 // Shuts down the MFT event queue when signalled from client. 
     public IMFMediaEventGenerator,      // Generates NeedInput and HasOutput events for the client to respond to. 
     public IMFAsyncCallback,            // The callback interface to notify when an async method completes. 
-    public IUnknown
+    public IUnknown,
+    public IMFVideoSampleAllocatorNotify
 {
 public: 
     static HRESULT CreateInstance(IMFTransform** ppMFT);
@@ -214,6 +217,9 @@ public:
     );
 #pragma endregion IMFAsyncCallback
 
+#pragma region IMFVideoSampleAllocatorNotify
+    HRESULT NotifyRelease();
+#pragma endregion IMFVideoSampleAllocatorNotify
     
     // Uses the next available IStreamModel to run inference on pInputSample 
     // and allocates a transformed output sample. 
@@ -266,6 +272,7 @@ protected:
     HRESULT CheckDX11Device(); 
     // Updates the device handle if it's no longer valid. 
     HRESULT UpdateDX11Device();
+    void    InvalidateDX11Resources();
     IDirect3DSurface SampleToD3Dsurface(IMFSample* sample);
 
 
@@ -320,7 +327,14 @@ protected:
     // D3D fields
     com_ptr<IMFDXGIDeviceManager>   m_spDeviceManager;      // Device manager, shared with the video renderer. 
     HANDLE                          m_hDeviceHandle;        // Handle to the current device
+    // Immediate device context
+    com_ptr<ID3D11DeviceContext4>       m_spContext;
+    com_ptr<ID3D11Device5>              m_spDevice;
+    com_ptr<ID3D11Fence>                m_spFence;
     com_ptr<IMFVideoSampleAllocatorEx>  m_spOutputSampleAllocator;  // Allocates d3d-backed output samples. 
+    com_ptr<IMFVideoSampleAllocatorCallback> m_spOutputSampleCallback; // Callback for when a frame is returns to the output sample allocator. 
+
+
 
     // Model Inference fields
     int m_numThreads =                                        // Number of threads running inference in parallel.

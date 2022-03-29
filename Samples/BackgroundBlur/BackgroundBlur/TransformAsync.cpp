@@ -132,6 +132,10 @@ HRESULT TransformAsync::QueryInterface(REFIID iid, void** ppv)
     {
         *ppv = static_cast<IMFAsyncCallback*>(this);
     }
+    if (iid == IID_IMFVideoSampleAllocatorNotify)
+    {
+        *ppv = static_cast<IMFVideoSampleAllocatorNotify*>(this);
+    }
     else if (iid == __uuidof(TransformAsync))
     {
         *ppv = (TransformAsync*)this;
@@ -315,16 +319,23 @@ HRESULT TransformAsync::OnSetD3DManager(ULONG_PTR ulParam)
     HRESULT hr = S_OK;
     com_ptr<IUnknown> pUnk;
     com_ptr<IMFDXGIDeviceManager> pDXGIDeviceManager;
+    com_ptr<ID3D11DeviceContext> pContext;
+    com_ptr<ID3D11Device5> pDevice;
     if (ulParam != NULL) {
         pUnk.attach((IUnknown*)ulParam);
         pDXGIDeviceManager = pUnk.try_as<IMFDXGIDeviceManager>();
         if (pDXGIDeviceManager && m_spDeviceManager != pDXGIDeviceManager) {
             // Invalidate dx11 resources
-            m_spDeviceManager.detach();
+            InvalidateDX11Resources();
 
             // Update dx11 device and resources
             m_spDeviceManager = pDXGIDeviceManager;
-            CHECK_HR(hr = m_spDeviceManager->OpenDeviceHandle(&m_hDeviceHandle));
+            UpdateDX11Device();
+            /*CHECK_HR(hr = m_spDeviceManager->OpenDeviceHandle(&m_hDeviceHandle));
+            CHECK_HR(hr = m_spDeviceManager->GetVideoService(m_hDeviceHandle, IID_PPV_ARGS(&pDevice)));
+            m_spDevice = pDevice.try_as<ID3D11Device5>();
+            m_spDevice->GetImmediateContext(pContext.put());
+            m_spContext = pContext.try_as<ID3D11DeviceContext4>();*/
 
             // Hand off the new device to the sample allocator, if it exists
             if (m_spOutputSampleAllocator)
@@ -332,16 +343,54 @@ HRESULT TransformAsync::OnSetD3DManager(ULONG_PTR ulParam)
                 CHECK_HR(hr = m_spOutputSampleAllocator->SetDirectXManager(pUnk.get()));
             }
         }
-
     }
     else
     {
         // Invalidate dx11 resources
-        m_spDeviceManager.detach();
+        InvalidateDX11Resources();
     }
 
 done:
     return hr;
+}
+
+// TODO: Clean up this function
+HRESULT TransformAsync::UpdateDX11Device()
+{
+    HRESULT hr = S_OK;
+    com_ptr<ID3D11DeviceContext> pContext;
+    com_ptr<ID3D11Device> pDevice;
+
+    if (m_spDeviceManager != nullptr)
+    {
+        CHECK_HR(hr = m_spDeviceManager->OpenDeviceHandle(&m_hDeviceHandle));
+        CHECK_HR(hr = m_spDeviceManager->GetVideoService(m_hDeviceHandle, IID_PPV_ARGS(&pDevice)));
+        m_spDevice = pDevice.try_as<ID3D11Device5>();
+        m_spDevice->GetImmediateContext(pContext.put());
+        m_spContext = pContext.try_as<ID3D11DeviceContext4>();
+
+        // Create a fence to use for tracking framerate
+        UINT64 initFenceValue = 0;
+        D3D11_FENCE_FLAG flag = D3D11_FENCE_FLAG_NONE;
+        m_spDevice->CreateFence(initFenceValue, flag, __uuidof(ID3D11Fence), m_spFence.put_void());
+        // Probably don't need to save the event for the first frame to render, since that will be long anyways w first Eval/Bind. 
+        // Actually prob will be long for the first little bit anyways bc of each IStreamModel to select, but oh well. It'll be fine. 
+    }
+    else 
+    {
+        hr = ERROR_DEVICE_NOT_AVAILABLE; // TODO: Is it ok to raise this? 
+    }
+    return hr;
+
+done:
+    InvalidateDX11Resources();
+    return hr;
+}
+
+void TransformAsync::InvalidateDX11Resources()
+{
+    m_spDevice = nullptr;
+    m_spContext = nullptr;
 }
 
 HRESULT TransformAsync::SetupAlloc()
@@ -375,24 +424,14 @@ HRESULT TransformAsync::SetupAlloc()
             }
 
             CHECK_HR(hr = m_spOutputSampleAllocator->InitializeSampleAllocatorEx(2, 15, m_spAllocatorAttributes.get(), m_spOutputType.get()));
+
+            // Set up IMFVideoSampleAllocatorCallback
+            m_spOutputSampleCallback = m_spOutputSampleAllocator.try_as<IMFVideoSampleAllocatorCallback>();
+            m_spOutputSampleCallback->SetCallback(this); // TODO: Will setCallback QI for Notify ? 
         }
         m_bAllocatorInitialized = true;
 
     }
-done:
-    return hr;
-}
-
-HRESULT TransformAsync::UpdateDX11Device()
-{
-    HRESULT hr = S_OK;
-
-    if (m_spDeviceManager != nullptr)
-    {
-        CHECK_HR(hr = m_spDeviceManager->OpenDeviceHandle(&m_hDeviceHandle));
-    }
-    return hr;
-
 done:
     return hr;
 }
@@ -405,6 +444,7 @@ HRESULT TransformAsync::CheckDX11Device()
     {
         if (m_spDeviceManager->TestDevice(m_hDeviceHandle) != S_OK)
         {
+            InvalidateDX11Resources();
 
             hr = UpdateDX11Device();
             if (FAILED(hr))
@@ -414,14 +454,9 @@ HRESULT TransformAsync::CheckDX11Device()
 
         }
     }
-    else 
-    {
-        // We need a d3d device for allocating output samples, so fail if it's lost
-        hr = E_FAIL;
-    }
-    return hr;
-}
 
+    return S_OK;
+}
 HRESULT TransformAsync::OnGetPartialType(DWORD dwTypeIndex, IMFMediaType** ppmt)
 {
     HRESULT hr = S_OK;

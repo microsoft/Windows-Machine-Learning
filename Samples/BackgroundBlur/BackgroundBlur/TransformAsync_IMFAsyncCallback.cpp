@@ -1,5 +1,17 @@
 #include "TransformAsync.h"
 
+HRESULT TransformAsync::NotifyRelease() 
+{
+    // Update fence value to (n) and queue to command queue- Context signal
+    UINT64 currFenceValue = m_spFence->GetCompletedValue();
+    currFenceValue++;
+    // TODO: Need a new fence each time? In that case don't need to keep track of these indiv fences? 
+
+    // Store current time
+
+    // Set fence event on completion for (n+1) 
+}
+
 HRESULT TransformAsync::GetParameters(
     DWORD* pdwFlags,
     DWORD* pdwQueue)

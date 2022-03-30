@@ -40,3 +40,7 @@ inline void SAFE_RELEASE(T*& p)
 #define CheckPointer(x, hr) if (x == NULL) { return hr; }
 #endif
 
+namespace MainWindow {
+    inline void _SetStatusText(const WCHAR* szStatus);
+
+}

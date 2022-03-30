@@ -12,6 +12,7 @@
 #include <future>
 
 #define MFT_NUM_DEFAULT_ATTRIBUTES  4
+using namespace MainWindow;
 
 // Video FOURCC codes.
 const FOURCC FOURCC_NV12 = MAKEFOURCC('N', 'V', '1', '2');
@@ -132,7 +133,7 @@ HRESULT TransformAsync::QueryInterface(REFIID iid, void** ppv)
     {
         *ppv = static_cast<IMFAsyncCallback*>(this);
     }
-    if (iid == IID_IMFVideoSampleAllocatorNotify)
+    else if (iid == IID_IMFVideoSampleAllocatorNotify)
     {
         *ppv = static_cast<IMFVideoSampleAllocatorNotify*>(this);
     }
@@ -206,6 +207,14 @@ HRESULT TransformAsync::SubmitEval(IMFSample* pInput)
     DWORD dwCurrentSample = InterlockedIncrement(&m_ulSampleCounter);
     modelIndex = (++modelIndex) % m_numThreads;
     auto model = m_models[modelIndex].get();
+
+    if (m_ulSampleCounter % 10 == 0) {
+        MainWindow::_SetStatusText(L"TESTING 456");
+    }
+    else {
+        MainWindow::_SetStatusText(L"TESTING 123");
+
+    }
 
     //pInputSample attributes to copy over to pOutputSample
     LONGLONG hnsDuration = 0;

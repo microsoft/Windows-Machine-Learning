@@ -1,7 +1,10 @@
 #include "TransformAsync.h"
 
+int g_now;
+
 HRESULT TransformAsync::NotifyRelease() 
 {
+    HRESULT hr = S_OK;
     // Update fence value to (n) and queue to command queue- Context signal
     UINT64 currFenceValue = m_spFence->GetCompletedValue();
     currFenceValue++;
@@ -10,6 +13,7 @@ HRESULT TransformAsync::NotifyRelease()
     // Store current time
 
     // Set fence event on completion for (n+1) 
+    return hr;
 }
 
 HRESULT TransformAsync::GetParameters(

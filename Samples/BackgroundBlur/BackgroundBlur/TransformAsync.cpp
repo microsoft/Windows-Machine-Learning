@@ -14,7 +14,7 @@
 #define MFT_NUM_DEFAULT_ATTRIBUTES  4
 using namespace MainWindow;
 
-long long g_now;
+long long g_now; // The time since the last call to FrameThreadProc
 
 // Video FOURCC codes.
 const FOURCC FOURCC_NV12 = MAKEFOURCC('N', 'V', '1', '2');
@@ -342,14 +342,13 @@ DWORD __stdcall FrameThreadProc(LPVOID lpParam)
         // TODO: Capture time and write to preview
         if (g_now == NULL){
             g_now = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now().time_since_epoch()).count();
-            g_now = 500;
             //OutputDebugString(L"First time responding to event!");
         }
         else {
             auto l_now = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now().time_since_epoch()).count();
             auto timePassed = l_now - g_now;
             g_now = l_now;
-            auto fps = 30000 / timePassed;
+            auto fps = 30000 / timePassed; // TODO: marco on num frames to update after? 
             OutputDebugString(L"THREAD: ");
             OutputDebugString(std::to_wstring(fps).c_str());
             OutputDebugString(L"\n");

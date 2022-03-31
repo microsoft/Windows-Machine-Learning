@@ -38,7 +38,7 @@ enum OnnxDataType : long {
 }OnnxDataType;
 
 
-int g_scale = 4;
+int g_scale = 5;
 auto outputBindProperties = PropertySet();
 
 /****	Style transfer model	****/

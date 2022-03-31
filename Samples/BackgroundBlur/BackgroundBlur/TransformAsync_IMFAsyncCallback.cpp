@@ -1,4 +1,5 @@
 #include "TransformAsync.h"
+#include <format>
 
 int g_now;
 
@@ -7,7 +8,7 @@ HRESULT TransformAsync::NotifyRelease()
     HRESULT hr = S_OK;
     const UINT64 currFenceValue = m_fenceValue;
     auto fenceComplete = m_spFence->GetCompletedValue();
-
+    OutputDebugString(std::to_wstring(("NotifyRelease: %d current | %d complete", currFenceValue, fenceComplete)).c_str());
     do {
         DWORD dwThreadID;
         // Scheduel a Signal command in the queue
@@ -15,7 +16,7 @@ HRESULT TransformAsync::NotifyRelease()
         if (FAILED(hr))
             break;
 
-        // MVP: Wait until the next signal is done. Later wait for 5 more fence values for better avg.
+        // MVP: Wait until the next signal is done. Later wait for x more fence values for better avg.
         // if this is a multiple of 5, then we'll take take the next time and average it out. 
         if (currFenceValue % 30 == 0)
         {

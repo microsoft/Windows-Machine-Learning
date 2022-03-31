@@ -343,8 +343,8 @@ protected:
 
 
     // Model Inference fields
-    int m_numThreads = 5;                                    // Number of threads running inference in parallel.
-         //max(std::thread::hardware_concurrency() - 2, 5);
+    int m_numThreads =                                     // Number of threads running inference in parallel.
+         max(std::thread::hardware_concurrency() - 2, 5);
     std::vector<std::unique_ptr<IStreamModel>> m_models;    // m_numThreads number of models to run inference in parallel. 
     int modelIndex = 0;
 

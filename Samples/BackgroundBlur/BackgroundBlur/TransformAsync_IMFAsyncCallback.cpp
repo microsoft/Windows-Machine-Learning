@@ -5,14 +5,28 @@ int g_now;
 HRESULT TransformAsync::NotifyRelease() 
 {
     HRESULT hr = S_OK;
-    // Update fence value to (n) and queue to command queue- Context signal
-    UINT64 currFenceValue = m_spFence->GetCompletedValue();
-    currFenceValue++;
-    // TODO: Need a new fence each time? In that case don't need to keep track of these indiv fences? 
+    const UINT64 currFenceValue = m_fenceValue;
+    auto fenceComplete = m_spFence->GetCompletedValue();
 
-    // Store current time
+    do {
+        DWORD dwThreadID;
+        // Scheduel a Signal command in the queue
+        hr = m_spContext->Signal(m_spFence.get(), currFenceValue);
+        if (FAILED(hr))
+            break;
 
-    // Set fence event on completion for (n+1) 
+        // MVP: Wait until the next signal is done. Later wait for 5 more fence values for better avg.
+        // if this is a multiple of 5, then we'll take take the next time and average it out. 
+        if (currFenceValue % 30 == 0)
+        {
+            m_spFence->SetEventOnCompletion(currFenceValue, m_hFenceEvent); // Raise FenceEvent when done
+            m_hFrameThread = CreateThread(NULL, 0, FrameThreadProc, m_hFenceEvent, 0, &dwThreadID);
+        }
+
+        m_fenceValue = currFenceValue + 1;
+
+    } while (false);
+
     return hr;
 }
 

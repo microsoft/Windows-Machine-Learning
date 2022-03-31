@@ -27,6 +27,8 @@ using namespace MediaFoundationSamples;
 
 #define MAX_NUM_INPUT_SAMPLES 5
 
+DWORD __stdcall FrameThreadProc(LPVOID lpParam);
+
 enum eMFTStatus
 {
     MYMFT_STATUS_INPUT_ACCEPT_DATA = 0x00000001,   /* The MFT can accept input data */
@@ -38,6 +40,7 @@ enum eMFTStatus
                                             ** to send METransformHaveOutput events until it is out of
                                             ** output. At that time, it should send METransformDrainComplete */
 };
+
 
 class __declspec(uuid("4D354CAD-AA8D-45AE-B031-A85F10A6C655")) TransformAsync;
 class TransformAsync :
@@ -330,15 +333,18 @@ protected:
     // Immediate device context
     com_ptr<ID3D11DeviceContext4>       m_spContext;
     com_ptr<ID3D11Device5>              m_spDevice;
-    com_ptr<ID3D11Fence>                m_spFence;
     com_ptr<IMFVideoSampleAllocatorEx>  m_spOutputSampleAllocator;  // Allocates d3d-backed output samples. 
     com_ptr<IMFVideoSampleAllocatorCallback> m_spOutputSampleCallback; // Callback for when a frame is returns to the output sample allocator. 
-
+    // Frame rate synch objects
+    com_ptr<ID3D11Fence>                m_spFence;
+    UINT64 m_fenceValue;
+    HANDLE m_hFrameThread; 
+    HANDLE m_hFenceEvent; // Handle to the fence complete event
 
 
     // Model Inference fields
-    int m_numThreads =                                        // Number of threads running inference in parallel.
-         max(std::thread::hardware_concurrency() - 2, 5);
+    int m_numThreads = 5;                                    // Number of threads running inference in parallel.
+         //max(std::thread::hardware_concurrency() - 2, 5);
     std::vector<std::unique_ptr<IStreamModel>> m_models;    // m_numThreads number of models to run inference in parallel. 
     int modelIndex = 0;
 

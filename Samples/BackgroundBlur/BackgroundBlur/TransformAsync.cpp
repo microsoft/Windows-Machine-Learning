@@ -14,6 +14,8 @@
 #define MFT_NUM_DEFAULT_ATTRIBUTES  4
 using namespace MainWindow;
 
+long long g_now;
+
 // Video FOURCC codes.
 const FOURCC FOURCC_NV12 = MAKEFOURCC('N', 'V', '1', '2');
 const FOURCC FOURCC_RGB24 = 20;
@@ -208,13 +210,13 @@ HRESULT TransformAsync::SubmitEval(IMFSample* pInput)
     modelIndex = (++modelIndex) % m_numThreads;
     auto model = m_models[modelIndex].get();
 
-    if (m_ulSampleCounter % 10 == 0) {
+    /*if (m_ulSampleCounter % 10 == 0) {
         MainWindow::_SetStatusText(L"TESTING 456");
     }
     else {
         MainWindow::_SetStatusText(L"TESTING 123");
 
-    }
+    }*/
 
     //pInputSample attributes to copy over to pOutputSample
     LONGLONG hnsDuration = 0;
@@ -323,6 +325,47 @@ done:
     return hr; 
 }
 
+
+DWORD __stdcall FrameThreadProc(LPVOID lpParam) 
+{
+    DWORD dwWaitResult; 
+    // Get the handle from the lpParam pointer
+    HANDLE hEvent = lpParam;   
+    //OutputDebugString(L"Thread %d waiting for Frame event...");
+    dwWaitResult = WaitForSingleObject(
+        hEvent,         // event handle
+        INFINITE);      // indefinite wait
+   
+
+    switch (dwWaitResult) {
+    case WAIT_OBJECT_0:
+        // TODO: Capture time and write to preview
+        if (g_now == NULL){
+            g_now = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now().time_since_epoch()).count();
+            g_now = 500;
+            //OutputDebugString(L"First time responding to event!");
+        }
+        else {
+            auto l_now = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now().time_since_epoch()).count();
+            auto timePassed = l_now - g_now;
+            g_now = l_now;
+            auto fps = 30000 / timePassed;
+            OutputDebugString(L"THREAD: ");
+            OutputDebugString(std::to_wstring(fps).c_str());
+            OutputDebugString(L"\n");
+            MainWindow::_SetStatusText(std::to_wstring(fps).c_str());
+            //TRACE(("Responded to event and it's been %d miliseconds", timePassed));
+            // TODO: Call Set status text with new framerate
+        }
+
+        break;
+    default: 
+        TRACE(("Wait error (%d)\n", GetLastError()));
+        return 0;
+    }
+    return 1;
+}
+
 HRESULT TransformAsync::OnSetD3DManager(ULONG_PTR ulParam)
 {
     HRESULT hr = S_OK;
@@ -351,6 +394,15 @@ HRESULT TransformAsync::OnSetD3DManager(ULONG_PTR ulParam)
             {
                 CHECK_HR(hr = m_spOutputSampleAllocator->SetDirectXManager(pUnk.get()));
             }
+
+            // Create event and thread for framerate
+            m_hFenceEvent = CreateEvent(NULL,               // Security attributes
+                FALSE,              // Reset token to false means system will auto-reset event object
+                FALSE,              // Initial state is nonsignaled
+                TEXT("FrameEvent"));  // Event object name
+            
+            DWORD dwThreadID;
+            // m_hFrameThread = CreateThread(NULL, 0, FrameThreadProc, m_hFenceEvent, 0, &dwThreadID);
         }
     }
     else
@@ -379,9 +431,9 @@ HRESULT TransformAsync::UpdateDX11Device()
         m_spContext = pContext.try_as<ID3D11DeviceContext4>();
 
         // Create a fence to use for tracking framerate
-        UINT64 initFenceValue = 0;
+        m_fenceValue = 0;
         D3D11_FENCE_FLAG flag = D3D11_FENCE_FLAG_NONE;
-        m_spDevice->CreateFence(initFenceValue, flag, __uuidof(ID3D11Fence), m_spFence.put_void());
+        m_spDevice->CreateFence(m_fenceValue, flag, __uuidof(ID3D11Fence), m_spFence.put_void());
         // Probably don't need to save the event for the first frame to render, since that will be long anyways w first Eval/Bind. 
         // Actually prob will be long for the first little bit anyways bc of each IStreamModel to select, but oh well. It'll be fine. 
     }

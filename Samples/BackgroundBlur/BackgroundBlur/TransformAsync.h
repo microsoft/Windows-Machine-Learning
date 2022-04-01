@@ -25,7 +25,9 @@
 using namespace MediaFoundationSamples;
 #include "SegmentModel.h"
 
-#define MAX_NUM_INPUT_SAMPLES 5
+#define MFT_NUM_DEFAULT_ATTRIBUTES  4
+#define FRAME_RATE_UPDATE 30     // The number of samples to render before update framerate value
+
 
 DWORD __stdcall FrameThreadProc(LPVOID lpParam);
 

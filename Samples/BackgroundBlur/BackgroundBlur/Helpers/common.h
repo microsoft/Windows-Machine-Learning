@@ -6,7 +6,6 @@ using winrt::com_ptr;
 
 DEFINE_GUID(TransformAsync_MFSampleExtension_Marker,
     0x1f620607, 0xa7ff, 0x4b94, 0x82, 0xf4, 0x99, 0x3f, 0x2e, 0x17, 0xb4, 0x97);
-
 // Common macros
 #define CHECK_HR(hr) if (FAILED(hr)) { goto done; }
 

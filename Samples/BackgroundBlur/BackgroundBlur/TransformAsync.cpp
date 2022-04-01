@@ -85,6 +85,8 @@ TransformAsync::~TransformAsync()
     m_spInputType.detach();
     m_spOutputType.detach();
    
+    CloseHandle(m_hFenceEvent);
+
     if (m_spEventQueue)
     {
         m_spEventQueue->Shutdown();
@@ -352,7 +354,9 @@ DWORD __stdcall FrameThreadProc(LPVOID lpParam)
             OutputDebugString(L"THREAD: ");
             OutputDebugString(std::to_wstring(fps).c_str());
             OutputDebugString(L"\n");
-            MainWindow::_SetStatusText(std::to_wstring(fps).c_str());
+
+            auto message = std::wstring(L"Frame Rate: ") + std::to_wstring(fps) + L" FPS";
+            MainWindow::_SetStatusText(message.c_str());
             //TRACE(("Responded to event and it's been %d miliseconds", timePassed));
             // TODO: Call Set status text with new framerate
         }
@@ -382,11 +386,6 @@ HRESULT TransformAsync::OnSetD3DManager(ULONG_PTR ulParam)
             // Update dx11 device and resources
             m_spDeviceManager = pDXGIDeviceManager;
             UpdateDX11Device();
-            /*CHECK_HR(hr = m_spDeviceManager->OpenDeviceHandle(&m_hDeviceHandle));
-            CHECK_HR(hr = m_spDeviceManager->GetVideoService(m_hDeviceHandle, IID_PPV_ARGS(&pDevice)));
-            m_spDevice = pDevice.try_as<ID3D11Device5>();
-            m_spDevice->GetImmediateContext(pContext.put());
-            m_spContext = pContext.try_as<ID3D11DeviceContext4>();*/
 
             // Hand off the new device to the sample allocator, if it exists
             if (m_spOutputSampleAllocator)
@@ -401,7 +400,6 @@ HRESULT TransformAsync::OnSetD3DManager(ULONG_PTR ulParam)
                 TEXT("FrameEvent"));  // Event object name
             
             DWORD dwThreadID;
-            // m_hFrameThread = CreateThread(NULL, 0, FrameThreadProc, m_hFenceEvent, 0, &dwThreadID);
         }
     }
     else

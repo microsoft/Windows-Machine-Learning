@@ -8,18 +8,28 @@ HRESULT TransformAsync::NotifyRelease()
     HRESULT hr = S_OK;
     const UINT64 currFenceValue = m_fenceValue;
     auto fenceComplete = m_spFence->GetCompletedValue();
-    OutputDebugString(std::to_wstring(("NotifyRelease: %d current | %d complete", currFenceValue, fenceComplete)).c_str());
+    
+
     do {
         DWORD dwThreadID;
+
+        // Fail fast if context doesn't exist anymore. 
+        if (m_spContext == nullptr)
+        {
+            //hr = E_FAIL;
+            break;
+        }
+
         // Scheduel a Signal command in the queue
         hr = m_spContext->Signal(m_spFence.get(), currFenceValue);
         if (FAILED(hr))
             break;
 
         // MVP: Wait until the next signal is done. Later wait for x more fence values for better avg.
-        // if this is a multiple of 5, then we'll take take the next time and average it out. 
-        if (currFenceValue % 30 == 0)
+        // if this is a multiple of FRAME_RATE_UPDATE then we'll take take the next time and average it out. 
+        if (currFenceValue % FRAME_RATE_UPDATE == 0)
         {
+            
             m_spFence->SetEventOnCompletion(currFenceValue, m_hFenceEvent); // Raise FenceEvent when done
             m_hFrameThread = CreateThread(NULL, 0, FrameThreadProc, m_hFenceEvent, 0, &dwThreadID);
         }

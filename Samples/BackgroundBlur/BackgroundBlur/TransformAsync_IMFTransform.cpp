@@ -859,7 +859,7 @@ HRESULT TransformAsync::ProcessInput(
 
     // If not at the max number of Need Input count, fire off another request
     // If we're less than MAX_NUM_INPUT_SAMPLES ahead of the number of process samples, request another
-    if ((currFrameLocal - m_ulProcessedFrameNum) < MAX_NUM_INPUT_SAMPLES)
+    if ((currFrameLocal - m_ulProcessedFrameNum) < m_numThreads)
     {
         RequestSample(0);
     }

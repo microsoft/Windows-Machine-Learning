@@ -232,6 +232,7 @@ HRESULT TransformAsync::SubmitEval(IMFSample* pInput)
     CHECK_HR(hr = CheckDX11Device());
     // Ensure the allocator is set up 
     CHECK_HR(hr = SetupAlloc());
+
     // CheckDX11Device & SetupAlloc ensure we can now allocate a D3D-backed output sample. 
     (hr = m_spOutputSampleAllocator->AllocateSample(pOutputSample.put()));
     if (FAILED(hr))
@@ -481,7 +482,7 @@ HRESULT TransformAsync::SetupAlloc()
                 m_spOutputSampleAllocator.attach(spVideoSampleAllocator.detach());
             }
 
-            CHECK_HR(hr = m_spOutputSampleAllocator->InitializeSampleAllocatorEx(2, 15, m_spAllocatorAttributes.get(), m_spOutputType.get()));
+            CHECK_HR(hr = m_spOutputSampleAllocator->InitializeSampleAllocatorEx(2, m_numThreads, m_spAllocatorAttributes.get(), m_spOutputType.get()));
 
             // Set up IMFVideoSampleAllocatorCallback
             m_spOutputSampleCallback = m_spOutputSampleAllocator.try_as<IMFVideoSampleAllocatorCallback>();
@@ -1045,7 +1046,7 @@ HRESULT TransformAsync::OnFlush(void)
     HRESULT hr = S_OK;
     do
     {
-
+        // TODO: Remove fence values so that framerate can restart
         std::lock_guard<std::recursive_mutex> lock(m_mutex);
 
         m_dwStatus &= (~MYMFT_STATUS_STREAM_STARTED);

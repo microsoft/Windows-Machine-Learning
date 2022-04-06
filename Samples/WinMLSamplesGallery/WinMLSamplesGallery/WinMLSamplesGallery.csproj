@@ -31,6 +31,7 @@
     <None Remove="AllSamplesPage.xaml" />
     <None Remove="Controls\PerformanceMonitor.xaml" />
     <None Remove="HomePage.xaml" />
+    <None Remove="Models\fcn-resnet50-12.onnx" />
     <None Remove="Models\mosaic.onnx" />
     <None Remove="Models\squeezenet1.1-7-batched.onnx" />
 	<None Remove="SamplesGrid.xaml" />
@@ -44,7 +45,12 @@
     <None Remove="Video.xaml" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Models\mosaic.onnx" />
+    <Content Include="Models\fcn-resnet50-12.onnx">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Models\mosaic.onnx">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="Models\squeezenet1.1-7-batched.onnx" />
     <Content Include="SampleMetadata\SampleMetadata.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

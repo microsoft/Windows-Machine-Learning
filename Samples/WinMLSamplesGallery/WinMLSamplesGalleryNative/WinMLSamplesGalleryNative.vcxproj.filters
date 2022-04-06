@@ -12,9 +12,6 @@
     <ClCompile Include="StreamEffect.cpp">
       <Filter>StreamEffect</Filter>
     </ClCompile>
-    <ClCompile Include="utils.cpp">
-      <Filter>StreamEffect</Filter>
-    </ClCompile>
     <ClCompile Include="Capture.cpp">
       <Filter>StreamEffect</Filter>
     </ClCompile>
@@ -24,7 +21,13 @@
     <ClCompile Include="SegmentModel.cpp">
       <Filter>StreamEffect</Filter>
     </ClCompile>
-    <ClCompile Include="TransformBlur.cpp" />
+    <ClCompile Include="Helpers\CSampleQueue.cpp" />
+    <ClCompile Include="Helpers\utils.cpp" />
+    <ClCompile Include="TransformAsync.cpp" />
+    <ClCompile Include="TransformAsync_IMFAsyncCallback.cpp" />
+    <ClCompile Include="TransformAsync_IMFMediaEventGenerator.cpp" />
+    <ClCompile Include="TransformAsync_IMFShutdown.cpp" />
+    <ClCompile Include="TransformAsync_IMFTransform.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -35,9 +38,6 @@
       <Filter>OpenCVInterop</Filter>
     </ClInclude>
     <ClInclude Include="RandomAccessStream.h">
-      <Filter>AbiHelpers</Filter>
-    </ClInclude>
-    <ClInclude Include="WeakBuffer.h">
       <Filter>AbiHelpers</Filter>
     </ClInclude>
     <ClInclude Include="StreamEffect.h">
@@ -52,10 +52,14 @@
     <ClInclude Include="SegmentModel.h">
       <Filter>StreamEffect</Filter>
     </ClInclude>
-    <ClInclude Include="TransformBlur.h">
-      <Filter>StreamEffect</Filter>
-    </ClInclude>
     <ClInclude Include="resource.h" />
+    <ClInclude Include="Helpers\common.h" />
+    <ClInclude Include="Helpers\CSampleQueue.h" />
+    <ClInclude Include="Helpers\logging.h" />
+    <ClInclude Include="Helpers\logmediatype.h" />
+    <ClInclude Include="Helpers\trace.h" />
+    <ClInclude Include="TransformAsync.h" />
+    <ClInclude Include="Helpers\pch.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Resource.rc" />

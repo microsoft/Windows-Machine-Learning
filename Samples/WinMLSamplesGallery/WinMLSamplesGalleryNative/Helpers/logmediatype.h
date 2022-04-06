@@ -1,6 +1,7 @@
 #pragma once
 
 #include <mferror.h>
+#include <mfapi.h>
 
 #define USE_LOGGING
 #include "logging.h"

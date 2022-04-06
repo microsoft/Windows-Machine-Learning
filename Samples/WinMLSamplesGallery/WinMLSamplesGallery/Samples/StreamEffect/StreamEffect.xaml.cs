@@ -42,7 +42,7 @@ namespace WinMLSamplesGallery.Samples
         // TODO: If keep in a separate window, send a task to shut down all stream effect processes
         public void ShutDownWindow() 
         {
-            windTask.
+            //windTask.
             WinMLSamplesGalleryNative.StreamEffect.ShutDownWindow();
             return; 
         }

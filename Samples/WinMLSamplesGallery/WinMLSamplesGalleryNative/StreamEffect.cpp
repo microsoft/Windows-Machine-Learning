@@ -6,7 +6,6 @@
 #include <mfapi.h>
 #include <powrprof.h>
 
-
 #include "Capture.h"
 #include "common.h"
 #include "Resource.h"
@@ -64,6 +63,7 @@ INT_PTR CALLBACK ChooseDeviceDlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM 
 
     return FALSE;
 }
+
 // Handler for WM_INITDIALOG
 HRESULT OnInitDialog(HWND hwnd, ChooseDeviceParam* pParam)
 {
@@ -191,16 +191,7 @@ namespace MainWindow
         else
         {
             _SetStatusText(L"Please select a device or start preview (using the default device).");
-            //bEnableRecording = FALSE;
         }
-
-        /*if (!g_pEngine->IsPreviewing() || g_pEngine->IsPhotoPending())
-        {
-            bEnablePhoto = FALSE;
-        }*/
-
-        /*EnableMenuItem(GetMenu(hwnd), ID_CAPTURE_RECORD, bEnableRecording ? MF_ENABLED : MF_GRAYED);
-        EnableMenuItem(GetMenu(hwnd), ID_CAPTURE_TAKEPHOTO, bEnablePhoto ? MF_ENABLED : MF_GRAYED);*/
     }
 
 
@@ -345,7 +336,7 @@ namespace MainWindow
     }
     void OnStartPreview(HWND hwnd)
     {
-        HRESULT hr = g_pEngine->StartPreview(g_modelPath);
+        HRESULT hr = g_pEngine->StartPreview();
         if (FAILED(hr))
         {
             ShowError(hwnd, IDS_ERR_RECORD, hr);
@@ -408,16 +399,15 @@ namespace MainWindow
             switch (wParam)
             {
             case PBT_APMSUSPEND:
-                DbgPrint(L"++WM_POWERBROADCAST++ Stopping both preview & record stream.\n");
+                TRACE(L"++WM_POWERBROADCAST++ Stopping both preview & record stream.\n");
                 g_fSleepState = true;
                 g_pEngine->SleepState(g_fSleepState);
-                g_pEngine->StopRecord();
                 g_pEngine->StopPreview();
                 g_pEngine->DestroyCaptureEngine();
-                DbgPrint(L"++WM_POWERBROADCAST++ streams stopped, capture engine destroyed.\n");
+                TRACE(L"++WM_POWERBROADCAST++ streams stopped, capture engine destroyed.\n");
                 break;
             case PBT_APMRESUMEAUTOMATIC:
-                DbgPrint(L"++WM_POWERBROADCAST++ Reinitializing capture engine.\n");
+                TRACE(L"++WM_POWERBROADCAST++ Reinitializing capture engine.\n");
                 g_fSleepState = false;
                 g_pEngine->SleepState(g_fSleepState);
                 g_pEngine->InitializeCaptureManager(hPreview, pSelectedDevice.get());
@@ -437,17 +427,16 @@ namespace MainWindow
                     if (dwData == 0 && !g_fSleepState)
                     {
                         // This is a AOAC machine, and we're about to turn off our monitor, let's stop recording/preview.
-                        DbgPrint(L"++WM_POWERBROADCAST++ Stopping both preview & record stream.\n");
+                        TRACE(L"++WM_POWERBROADCAST++ Stopping both preview & record stream.\n");
                         g_fSleepState = true;
                         g_pEngine->SleepState(g_fSleepState);
-                        g_pEngine->StopRecord();
                         g_pEngine->StopPreview();
                         g_pEngine->DestroyCaptureEngine();
-                        DbgPrint(L"++WM_POWERBROADCAST++ streams stopped, capture engine destroyed.\n");
+                        TRACE(L"++WM_POWERBROADCAST++ streams stopped, capture engine destroyed.\n");
                     }
                     else if (dwData != 0 && g_fSleepState)
                     {
-                        DbgPrint(L"++WM_POWERBROADCAST++ Reinitializing capture engine.\n");
+                        TRACE(L"++WM_POWERBROADCAST++ Reinitializing capture engine.\n");
                         g_fSleepState = false;
                         g_pEngine->SleepState(g_fSleepState);
                         g_pEngine->InitializeCaptureManager(hPreview, pSelectedDevice.get());
@@ -459,7 +448,7 @@ namespace MainWindow
             default:
                 // Don't care about this one, we always get the resume automatic so just
                 // latch onto that one.
-                DbgPrint(L"++WM_POWERBROADCAST++ (wParam=%u,lParam=%u)\n", wParam, lParam);
+                TRACE(L"++WM_POWERBROADCAST++ (wParam=%u,lParam=%u)\n", wParam, lParam);
                 break;
             }
         }

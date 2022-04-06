@@ -8,7 +8,7 @@
 
 // Miscellaneous helper functions.
 #include "pch.h"
-#include "Capture.h"
+#include "../Capture.h"
 #include <wincodec.h>
 #include "common.h"
 
@@ -30,7 +30,7 @@ HRESULT CopyAttribute(IMFAttributes *pSrc, IMFAttributes *pDest, const GUID& key
 
 HRESULT CloneVideoMediaType(IMFMediaType *pSrcMediaType, REFGUID guidSubType, IMFMediaType **ppNewMediaType)
 {
-    winrt::com_ptr<IMFMediaType> pNewMediaType;
+    com_ptr<IMFMediaType> pNewMediaType;
 
     HRESULT hr = MFCreateMediaType(pNewMediaType.put());
     if (FAILED(hr))
@@ -81,48 +81,6 @@ done:
     return hr;
 }
 
-// Creates a JPEG image type that is compatible with a specified video media type.
-
-HRESULT CreatePhotoMediaType(IMFMediaType *pSrcMediaType, IMFMediaType **ppPhotoMediaType)
-{
-    *ppPhotoMediaType = NULL;
-
-    const UINT32 uiFrameRateNumerator = 30;
-    const UINT32 uiFrameRateDenominator = 1;
-
-    IMFMediaType *pPhotoMediaType = NULL;
-
-    HRESULT hr = MFCreateMediaType(&pPhotoMediaType);
-    if (FAILED(hr))
-    {
-        goto done;
-    }
-
-    hr = pPhotoMediaType->SetGUID(MF_MT_MAJOR_TYPE, MFMediaType_Image);
-    if (FAILED(hr))
-    {
-        goto done;
-    }
-
-    hr = pPhotoMediaType->SetGUID(MF_MT_SUBTYPE, GUID_ContainerFormatJpeg);
-    if (FAILED(hr))
-    {
-        goto done;
-    }
-
-    hr = CopyAttribute(pSrcMediaType, pPhotoMediaType, MF_MT_FRAME_SIZE);
-    if (FAILED(hr))
-    {
-        goto done;
-    }
-
-    *ppPhotoMediaType = pPhotoMediaType;
-    (*ppPhotoMediaType)->AddRef();
-
-done:
-    SafeRelease(&pPhotoMediaType);
-    return hr;
-}
 
 void ShowError(HWND hwnd, PCWSTR szMessage, HRESULT hr)
 {
@@ -157,20 +115,3 @@ void SetMenuItemText(HMENU hMenu, UINT uItem, _In_ PWSTR pszText)
     SetMenuItemInfo(hMenu, uItem, FALSE, &mii);
 }
 
-
-VOID DbgPrint(PCTSTR format, ...)
-{
-    va_list args;
-    va_start(args, format);
-
-    TCHAR string[MAX_PATH];
-
-    if (SUCCEEDED(StringCbVPrintf(string, sizeof(string), format, args)))
-    {
-        OutputDebugString(string);
-    }
-    else
-    {
-        DebugBreak();
-    }
-}

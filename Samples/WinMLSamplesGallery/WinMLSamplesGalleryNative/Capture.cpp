@@ -7,11 +7,15 @@
 #include "pch.h"
 #include "Capture.h"
 #include "resource.h"
-#include "TransformBlur.h"
+#include "TransformAsync.h"
+#include <winrt/Windows.Foundation.h>
+#include <winrt/base.h>
+#include <mfreadwrite.h>
 
 IMFDXGIDeviceManager* g_pDXGIMan = NULL;
 ID3D11Device*         g_pDX11Device = NULL;
 UINT                  g_ResetToken = 0;
+
 
 STDMETHODIMP CaptureManager::CaptureEngineCB::QueryInterface(REFIID riid, void** ppv)
 {
@@ -64,11 +68,6 @@ STDMETHODIMP CaptureManager::CaptureEngineCB::OnEvent( _In_ IMFMediaEvent* pEven
                 m_pManager->OnPreviewStopped(hrStatus);
                 SetEvent(m_pManager->m_hEvent);
             }
-            else if (guidType == MF_CAPTURE_ENGINE_RECORD_STOPPED)
-            {
-                m_pManager->OnRecordStopped(hrStatus);
-                SetEvent(m_pManager->m_hEvent);
-            }
             else
             {
                 // This is an event we don't know about, we don't really care and there's
@@ -88,7 +87,6 @@ STDMETHODIMP CaptureManager::CaptureEngineCB::OnEvent( _In_ IMFMediaEvent* pEven
     return S_OK;
 }
 
-// TODO: See about adding shareable resources flags
 HRESULT CreateDX11Device(_Out_ ID3D11Device** ppDevice, _Out_ ID3D11DeviceContext** ppDeviceContext, _Out_ D3D_FEATURE_LEVEL* pFeatureLevel )
 {
     HRESULT hr = S_OK;
@@ -102,10 +100,32 @@ HRESULT CreateDX11Device(_Out_ ID3D11Device** ppDevice, _Out_ ID3D11DeviceContex
         D3D_FEATURE_LEVEL_9_1
     };
 
-    
+    // Find the adapter with the most video memory
+    UINT i = 0;
+
+    std::vector <IDXGIAdapter*> vAdapters;
+    com_ptr<IDXGIAdapter> pBestAdapter;
+
+    com_ptr<IDXGIAdapter> spAdapter;
+    com_ptr<IDXGIFactory> spFactory;
+    DXGI_ADAPTER_DESC desc;
+    hr = CreateDXGIFactory1(IID_PPV_ARGS(spFactory.put()));
+    size_t maxVideoMem = 0;
+    while (spFactory->EnumAdapters(i, spAdapter.put()) != DXGI_ERROR_NOT_FOUND) 
+    {
+        spAdapter->GetDesc(&desc);
+        if (desc.DedicatedVideoMemory > maxVideoMem)
+        {
+            spAdapter.copy_to(pBestAdapter.put());
+            maxVideoMem = desc.DedicatedVideoMemory;
+        }
+        spAdapter = nullptr;
+        ++i;
+    }
+
     hr = D3D11CreateDevice(
-        nullptr,
-        D3D_DRIVER_TYPE_HARDWARE,
+        pBestAdapter.get(),
+        D3D_DRIVER_TYPE_UNKNOWN,
         nullptr,
         D3D11_CREATE_DEVICE_VIDEO_SUPPORT,
         levels,
@@ -118,15 +138,14 @@ HRESULT CreateDX11Device(_Out_ ID3D11Device** ppDevice, _Out_ ID3D11DeviceContex
     
     if(SUCCEEDED(hr))
     {
-        ID3D10Multithread* pMultithread;
-        hr =  ((*ppDevice)->QueryInterface(IID_PPV_ARGS(&pMultithread)));
+        com_ptr<ID3D10Multithread> pMultithread;
+        hr =  ((*ppDevice)->QueryInterface(IID_PPV_ARGS(pMultithread.put())));
 
         if(SUCCEEDED(hr))
         {
             pMultithread->SetMultithreadProtected(TRUE);
         }
 
-        SafeRelease(&pMultithread);
         
     }
 
@@ -137,9 +156,9 @@ HRESULT CreateD3DManager()
 {
     HRESULT hr = S_OK;
     D3D_FEATURE_LEVEL FeatureLevel;
-    ID3D11DeviceContext* pDX11DeviceContext;
+    com_ptr<ID3D11DeviceContext> pDX11DeviceContext;
     
-    hr = CreateDX11Device(&g_pDX11Device, &pDX11DeviceContext, &FeatureLevel);
+    hr = CreateDX11Device(&g_pDX11Device, pDX11DeviceContext.put(), &FeatureLevel);
 
     if(SUCCEEDED(hr))
     {
@@ -150,9 +169,7 @@ HRESULT CreateD3DManager()
     {
         hr = g_pDXGIMan->ResetDevice(g_pDX11Device, g_ResetToken);
     }
-    
-    SafeRelease(&pDX11DeviceContext);
-    
+        
     return hr;
 }
 
@@ -256,12 +273,12 @@ HRESULT CaptureManager::OnCaptureEvent(WPARAM wParam, LPARAM lParam)
         LPOLESTR str;
         if (SUCCEEDED(StringFromCLSID(guidType, &str)))
         {
-            DBGMSG((L"MF_CAPTURE_ENGINE_EVENT: %s (hr = 0x%X)\n", str, hrStatus));
+            TRACE((L"MF_CAPTURE_ENGINE_EVENT: %s (hr = 0x%X)\n", str, hrStatus));
             CoTaskMemFree(str);
         }
 #endif
 
-        if (guidType == MF_CAPTURE_ENGINE_INITIALIZED)
+         if (guidType == MF_CAPTURE_ENGINE_INITIALIZED)
         {
             OnCaptureEngineInitialized(hrStatus);
             SetErrorID(hrStatus, IDS_ERR_INITIALIZE);
@@ -276,21 +293,6 @@ HRESULT CaptureManager::OnCaptureEvent(WPARAM wParam, LPARAM lParam)
             OnPreviewStopped(hrStatus);
             SetErrorID(hrStatus, IDS_ERR_PREVIEW);
         }
-        else if (guidType == MF_CAPTURE_ENGINE_RECORD_STARTED)
-        {
-            OnRecordStarted(hrStatus);
-            SetErrorID(hrStatus, IDS_ERR_RECORD);
-        }
-        else if (guidType == MF_CAPTURE_ENGINE_RECORD_STOPPED)
-        {
-            OnRecordStopped(hrStatus);
-            SetErrorID(hrStatus, IDS_ERR_RECORD);
-        }
-        /*else if (guidType == MF_CAPTURE_ENGINE_PHOTO_TAKEN)
-        {
-            m_bPhotoPending = false;
-            SetErrorID(hrStatus, IDS_ERR_PHOTO);
-        }*/
         else if (guidType == MF_CAPTURE_ENGINE_ERROR)
         {
             DestroyCaptureEngine();
@@ -326,18 +328,11 @@ void CaptureManager::OnPreviewStopped(HRESULT& hrStatus)
     m_bPreviewing = false;
 }
 
-void CaptureManager::OnRecordStarted(HRESULT& hrStatus)
-{
-    m_bRecording = SUCCEEDED(hrStatus);
-}
-
-void CaptureManager::OnRecordStopped(HRESULT& hrStatus)
-{
-    m_bRecording = false;
-}
-
-
-HRESULT CaptureManager::StartPreview(winrt::hstring modelPath)
+/*
+* Begins a preview stream by initializing the preview sink, adding a TransformAsync
+* MFT to the preview stream, and signalling the capture engine to begin previewing frames.
+*/
+HRESULT CaptureManager::StartPreview()
 {
     if (m_pEngine == NULL)
     {
@@ -349,18 +344,17 @@ HRESULT CaptureManager::StartPreview(winrt::hstring modelPath)
         return S_OK;
     }
 
-    // TODO: not raw pointers
-    IMFCaptureSink *pSink = NULL;
-    IMFMediaType *pMediaType = NULL;
-    IMFMediaType *pMediaType2 = NULL;
-    IMFCaptureSource *pSource = NULL;
+    com_ptr<IMFCaptureSink> pSink;
+    com_ptr<IMFMediaType> pMediaType;
+    com_ptr<IMFMediaType> pMediaType2;
+    com_ptr<IMFCaptureSource> pSource;
 
     HRESULT hr = S_OK;
     
     // Get a pointer to the preview sink.
     if (m_pPreview == NULL)
     {
-        hr = m_pEngine->GetSink(MF_CAPTURE_ENGINE_SINK_TYPE_PREVIEW, &pSink);
+        hr = m_pEngine->GetSink(MF_CAPTURE_ENGINE_SINK_TYPE_PREVIEW, pSink.put());
         if (FAILED(hr))
         {
             goto done;
@@ -378,25 +372,22 @@ HRESULT CaptureManager::StartPreview(winrt::hstring modelPath)
             goto done;
         }
 
-        hr = m_pEngine->GetSource(&pSource);
+        hr = m_pEngine->GetSource(pSource.put());
         if (FAILED(hr))
         {
             goto done;
         }
 
         // Configure the video format for the preview sink.
-        hr = pSource->GetCurrentDeviceMediaType((DWORD)MF_CAPTURE_ENGINE_PREFERRED_SOURCE_STREAM_FOR_VIDEO_PREVIEW , &pMediaType);
+        hr = pSource->GetCurrentDeviceMediaType((DWORD)MF_CAPTURE_ENGINE_PREFERRED_SOURCE_STREAM_FOR_VIDEO_PREVIEW , pMediaType.put());
         if (FAILED(hr))
         {
             goto done;
         }
 
-        winrt::com_ptr<TransformBlur> blur ;
-        winrt::com_ptr<IMFTransform> pMFT ;
-
-        hr = TransformBlur::CreateInstance(NULL, __uuidof(IMFTransform), (void**)(&blur));
-        blur->SetSegmentModelPath(modelPath);
-        hr = blur->QueryInterface(__uuidof(IMFTransform), (void**)(&pMFT));
+        // Add the transform 
+        com_ptr<IMFTransform>pMFT;
+        hr = TransformAsync::CreateInstance(pMFT.put());
 
         // IMFCaptureSource
         hr = pSource->AddEffect(0, pMFT.get());
@@ -405,7 +396,7 @@ HRESULT CaptureManager::StartPreview(winrt::hstring modelPath)
             goto done;
         }
 
-        hr = CloneVideoMediaType(pMediaType, MFVideoFormat_RGB32, &pMediaType2);
+        hr = CloneVideoMediaType(pMediaType.get(), MFVideoFormat_RGB32, pMediaType2.put());
         if (FAILED(hr))
         {
             goto done;
@@ -419,7 +410,7 @@ HRESULT CaptureManager::StartPreview(winrt::hstring modelPath)
 
         // Connect the video stream to the preview sink.
         DWORD dwSinkStreamIndex;
-        hr = m_pPreview->AddStream((DWORD)MF_CAPTURE_ENGINE_PREFERRED_SOURCE_STREAM_FOR_VIDEO_PREVIEW,  pMediaType2, NULL, &dwSinkStreamIndex);        
+        hr = m_pPreview->AddStream((DWORD)MF_CAPTURE_ENGINE_PREFERRED_SOURCE_STREAM_FOR_VIDEO_PREVIEW,  pMediaType2.get(), NULL, &dwSinkStreamIndex);        
         if (FAILED(hr))
         {
             goto done;
@@ -440,10 +431,6 @@ HRESULT CaptureManager::StartPreview(winrt::hstring modelPath)
         m_fPowerRequestSet = (TRUE == PowerSetRequest(m_hpwrRequest, PowerRequestExecutionRequired));
     }
 done:
-    SafeRelease(&pSink);
-    SafeRelease(&pMediaType);
-    SafeRelease(&pMediaType2);
-    SafeRelease(&pSource);
 
     return hr;
 }
@@ -525,320 +512,6 @@ done:
 
     return hr;
 }
-
-HRESULT ConfigureVideoEncoding(IMFCaptureSource *pSource, IMFCaptureRecordSink *pRecord, REFGUID guidEncodingType)
-{
-    IMFMediaType *pMediaType = NULL;
-    IMFMediaType *pMediaType2 = NULL;
-    GUID guidSubType = GUID_NULL;
-
-    // Configure the video format for the recording sink.
-    HRESULT hr = pSource->GetCurrentDeviceMediaType((DWORD)MF_CAPTURE_ENGINE_PREFERRED_SOURCE_STREAM_FOR_VIDEO_RECORD , &pMediaType);
-    if (FAILED(hr))
-    {
-        goto done;
-    }
-
-    hr = CloneVideoMediaType(pMediaType, guidEncodingType, &pMediaType2);
-    if (FAILED(hr))
-    {
-        goto done;
-    }
-
-
-    hr = pMediaType->GetGUID(MF_MT_SUBTYPE, &guidSubType);
-    if(FAILED(hr))
-    {
-        goto done;
-    }
-
-    if(guidSubType == MFVideoFormat_H264_ES || guidSubType == MFVideoFormat_H264)
-    {
-        //When the webcam supports H264_ES or H264, we just bypass the stream. The output from Capture engine shall be the same as the native type supported by the webcam
-        hr = pMediaType2->SetGUID(MF_MT_SUBTYPE, MFVideoFormat_H264);
-    }
-    else
-    {    
-        UINT32 uiEncodingBitrate;
-        hr = GetEncodingBitrate(pMediaType2, &uiEncodingBitrate);
-        if (FAILED(hr))
-        {
-            goto done;
-        }
-
-        hr = pMediaType2->SetUINT32(MF_MT_AVG_BITRATE, uiEncodingBitrate);
-    }
-
-    if (FAILED(hr))
-    {
-        goto done;
-    }
-
-    // Connect the video stream to the recording sink.
-    DWORD dwSinkStreamIndex;
-    hr = pRecord->AddStream((DWORD)MF_CAPTURE_ENGINE_PREFERRED_SOURCE_STREAM_FOR_VIDEO_RECORD, pMediaType2, NULL, &dwSinkStreamIndex);
-
-done:
-    SafeRelease(&pMediaType);
-    SafeRelease(&pMediaType2);
-    return hr;
-}
-
-HRESULT ConfigureAudioEncoding(IMFCaptureSource *pSource, IMFCaptureRecordSink *pRecord, REFGUID guidEncodingType)
-{
-    IMFCollection *pAvailableTypes = NULL;
-    IMFMediaType *pMediaType = NULL;
-    IMFAttributes *pAttributes = NULL;
-
-    // Configure the audio format for the recording sink.
-
-    HRESULT hr = MFCreateAttributes(&pAttributes, 1);
-    if(FAILED(hr))
-    {
-        goto done;
-    }
-
-    // Enumerate low latency media types
-    hr = pAttributes->SetUINT32(MF_LOW_LATENCY, TRUE);
-    if(FAILED(hr))
-    {
-        goto done;
-    }
-
-
-    // Get a list of encoded output formats that are supported by the encoder.
-    hr = MFTranscodeGetAudioOutputAvailableTypes(guidEncodingType, MFT_ENUM_FLAG_ALL | MFT_ENUM_FLAG_SORTANDFILTER,
-        pAttributes, &pAvailableTypes);
-    if (FAILED(hr))
-    {
-        goto done;
-    }
-
-    // Pick the first format from the list.
-    hr = GetCollectionObject(pAvailableTypes, 0, &pMediaType); 
-    if (FAILED(hr))
-    {
-        goto done;
-    }
-
-    // Connect the audio stream to the recording sink.
-    DWORD dwSinkStreamIndex;
-    hr = pRecord->AddStream((DWORD)MF_CAPTURE_ENGINE_PREFERRED_SOURCE_STREAM_FOR_AUDIO, pMediaType, NULL, &dwSinkStreamIndex);
-    if(hr == MF_E_INVALIDSTREAMNUMBER)
-    {
-        //If an audio device is not present, allow video only recording
-        hr = S_OK;
-    }
-done:
-    SafeRelease(&pAvailableTypes);
-    SafeRelease(&pMediaType);
-    SafeRelease(&pAttributes);
-    return hr;
-}
-
-HRESULT CaptureManager::StartRecord(PCWSTR pszDestinationFile)
-{
-    if (m_pEngine == NULL)
-    {
-        return MF_E_NOT_INITIALIZED;
-    }
-
-    if (m_bRecording == true)
-    {
-        return MF_E_INVALIDREQUEST;
-    }
-
-    PWSTR pszExt = PathFindExtension(pszDestinationFile);
-
-    GUID guidVideoEncoding;
-    GUID guidAudioEncoding;
-
-    if (wcscmp(pszExt, L".mp4") == 0)
-    {
-        guidVideoEncoding = MFVideoFormat_H264;
-        guidAudioEncoding = MFAudioFormat_AAC;
-    }
-    else if (wcscmp(pszExt, L".wmv") == 0)
-    {
-        guidVideoEncoding = MFVideoFormat_WMV3;
-        guidAudioEncoding = MFAudioFormat_WMAudioV9;
-    }
-    else if (wcscmp(pszExt, L".wma") == 0)
-    {
-        guidVideoEncoding = GUID_NULL;
-        guidAudioEncoding = MFAudioFormat_WMAudioV9;
-    }
-    else
-    {
-        return MF_E_INVALIDMEDIATYPE;
-    }
-
-    IMFCaptureSink *pSink = NULL;
-    IMFCaptureRecordSink *pRecord = NULL;
-    IMFCaptureSource *pSource = NULL;
-
-    HRESULT hr = m_pEngine->GetSink(MF_CAPTURE_ENGINE_SINK_TYPE_RECORD, &pSink);
-    if (FAILED(hr))
-    {
-        goto done;
-    }
-
-    hr = pSink->QueryInterface(IID_PPV_ARGS(&pRecord));
-    if (FAILED(hr))
-    {
-        goto done;
-    }
-
-    hr = m_pEngine->GetSource(&pSource);
-    if (FAILED(hr))
-    {
-        goto done;
-    }
-
-    // Clear any existing streams from previous recordings.
-    hr = pRecord->RemoveAllStreams();
-    if (FAILED(hr))
-    {
-        goto done;
-    }
-
-    hr = pRecord->SetOutputFileName(pszDestinationFile);
-    if (FAILED(hr))
-    {
-        goto done;
-    }
-
-    // Configure the video and audio streams.
-    if (guidVideoEncoding != GUID_NULL)
-    {
-        hr = ConfigureVideoEncoding(pSource, pRecord, guidVideoEncoding);
-        if (FAILED(hr))
-        {
-            goto done;
-        }
-    }
-
-    if (guidAudioEncoding != GUID_NULL)
-    {
-        hr = ConfigureAudioEncoding(pSource, pRecord, guidAudioEncoding);
-        if (FAILED(hr))
-        {
-            goto done;
-        }
-    }
-
-    hr = m_pEngine->StartRecord();
-    if (FAILED(hr))
-    {
-        goto done;
-    }
-
-    m_bRecording = true;
-    
-done:
-    SafeRelease(&pSink);
-    SafeRelease(&pSource);
-    SafeRelease(&pRecord);
-    
-    return hr;
-}
-
-HRESULT CaptureManager::StopRecord()
-{
-    HRESULT hr = S_OK;
-
-    if (m_bRecording)
-    {
-        hr = m_pEngine->StopRecord(TRUE, FALSE);
-        WaitForResult();
-    }
-
-    return hr;
-}
-
-
-HRESULT CaptureManager::TakePhoto(PCWSTR pszFileName)
-{
-    IMFCaptureSink *pSink = NULL;
-    IMFCapturePhotoSink *pPhoto = NULL;
-    IMFCaptureSource *pSource;
-    IMFMediaType *pMediaType = 0;
-    IMFMediaType *pMediaType2 = 0;
-    bool bHasPhotoStream = true;
-
-    // Get a pointer to the photo sink.
-    HRESULT hr = m_pEngine->GetSink(MF_CAPTURE_ENGINE_SINK_TYPE_PHOTO, &pSink);
-    if (FAILED(hr))
-    {
-        goto done;
-    }
-
-    hr = pSink->QueryInterface(IID_PPV_ARGS(&pPhoto));
-    if (FAILED(hr))
-    {
-        goto done;
-    }
-
-    hr = m_pEngine->GetSource(&pSource);
-    if (FAILED(hr))
-    {
-        goto done;
-    }
-
-    hr = pSource->GetCurrentDeviceMediaType((DWORD)MF_CAPTURE_ENGINE_PREFERRED_SOURCE_STREAM_FOR_PHOTO , &pMediaType);     
-    if (FAILED(hr))
-    {
-        goto done;
-    }
-
-    //Configure the photo format
-    hr = CreatePhotoMediaType(pMediaType, &pMediaType2);
-    if (FAILED(hr))
-    {
-        goto done;
-    }
-
-    hr = pPhoto->RemoveAllStreams();
-    if (FAILED(hr))
-    {
-        goto done;
-    }
-
-    DWORD dwSinkStreamIndex;
-    // Try to connect the first still image stream to the photo sink
-    if(bHasPhotoStream)
-    {
-        hr = pPhoto->AddStream((DWORD)MF_CAPTURE_ENGINE_PREFERRED_SOURCE_STREAM_FOR_PHOTO,  pMediaType2, NULL, &dwSinkStreamIndex);        
-    }    
-
-    if(FAILED(hr))
-    {
-        goto done;
-    }
-
-    hr = pPhoto->SetOutputFileName(pszFileName);
-    if (FAILED(hr))
-    {
-        goto done;
-    }
-
-    hr = m_pEngine->TakePhoto();
-    if (FAILED(hr))
-    {
-        goto done;
-    }
-
-    m_bPhotoPending = true;
-
-done:
-    SafeRelease(&pSink);
-    SafeRelease(&pPhoto);
-    SafeRelease(&pSource);
-    SafeRelease(&pMediaType);
-    SafeRelease(&pMediaType2);
-    return hr;
-}
-
 
 
 

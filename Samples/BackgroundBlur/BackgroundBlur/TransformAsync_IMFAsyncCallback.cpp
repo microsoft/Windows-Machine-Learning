@@ -16,14 +16,15 @@ HRESULT TransformAsync::NotifyRelease()
         // Fail fast if context doesn't exist anymore. 
         if (m_spContext == nullptr)
         {
-            //hr = E_FAIL;
             break;
         }
 
         // Scheduel a Signal command in the queue
         hr = m_spContext->Signal(m_spFence.get(), currFenceValue);
         if (FAILED(hr))
+        {
             break;
+        }
 
         // MVP: Wait until the next signal is done. Later wait for x more fence values for better avg.
         // if this is a multiple of FRAME_RATE_UPDATE then we'll take take the next time and average it out. 

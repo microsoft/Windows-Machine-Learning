@@ -360,37 +360,42 @@ HRESULT TransformAsync::SetInputType(
 
     std::lock_guard<std::recursive_mutex> lock(m_mutex);
     GUID g = GUID_NULL;
-
-    if (!IsValidInputStream(dwInputStreamID))
-    {
-        return MF_E_INVALIDSTREAMNUMBER;
-    }
-
-    // Validate flags.
-    if (dwFlags & ~MFT_SET_TYPE_TEST_ONLY)
-    {
-        return E_INVALIDARG;
-    }
-
     HRESULT hr = S_OK;
 
-    // Does the caller want us to set the type, or just test it?
-    BOOL bReallySet = ((dwFlags & MFT_SET_TYPE_TEST_ONLY) == 0);
+    do {
+        if (!IsValidInputStream(dwInputStreamID))
+        {
+            hr = MF_E_INVALIDSTREAMNUMBER; 
+            break;
+        }
 
-    // Validate the type, if non-NULL.
-    if (pType)
-    {
-        CHECK_HR(hr = OnCheckInputType(pType));
-    }
+        // Validate flags.
+        if (dwFlags & ~MFT_SET_TYPE_TEST_ONLY)
+        {
+            hr = E_INVALIDARG;
+            break;
+        }
 
-    // The type is OK. 
-    // Set the type, unless the caller was just testing.
-    if (bReallySet)
-    {
-        CHECK_HR(hr = OnSetInputType(pType));
-    }
+        // Does the caller want us to set the type, or just test it?
+        BOOL bReallySet = ((dwFlags & MFT_SET_TYPE_TEST_ONLY) == 0);
 
-done:
+        // Validate the type, if non-NULL.
+        if (pType)
+        {
+            hr = OnCheckInputType(pType);
+            if (FAILED(hr))
+                break;
+        }
+
+        // The type is OK. 
+        // Set the type, unless the caller was just testing.
+        if (bReallySet)
+        {
+            hr = OnSetInputType(pType);
+            if (FAILED(hr))
+                break;
+        }
+    } while (false);
 
     return hr;
 }
@@ -403,42 +408,47 @@ HRESULT TransformAsync::SetOutputType(
 )
 {
     TRACE((L"TransformAsync::SetOutputType\n"));
-
-    if (pType == NULL) 
-    {
-        return E_POINTER;
-    }
-    if (!IsValidOutputStream(dwOutputStreamID))
-    {
-        return MF_E_INVALIDSTREAMNUMBER;
-    }
-
-    // Validate flags.
-    if (dwFlags & ~MFT_SET_TYPE_TEST_ONLY)
-    {
-        return E_INVALIDARG;
-    }
-
     HRESULT hr = S_OK;
+    do {
+        if (pType == NULL)
+        {
+            hr = E_POINTER;
+            break;
+        }
+        if (!IsValidOutputStream(dwOutputStreamID))
+        {
+            hr = MF_E_INVALIDSTREAMNUMBER;
+            break;
+        }
 
-    // Does the caller want us to set the type, or just test it?
-    BOOL bReallySet = ((dwFlags & MFT_SET_TYPE_TEST_ONLY) == 0);
+        // Validate flags.
+        if (dwFlags & ~MFT_SET_TYPE_TEST_ONLY)
+        {
+            hr = E_INVALIDARG;
+            break;
+        }
+        // Does the caller want us to set the type, or just test it?
+        BOOL bReallySet = ((dwFlags & MFT_SET_TYPE_TEST_ONLY) == 0);
 
-    // Validate the type, if non-NULL.
-    if (pType)
-    {
-        CHECK_HR(hr = OnCheckOutputType(pType));
-    }
+        // Validate the type, if non-NULL.
+        if (pType)
+        {
+            hr = OnCheckOutputType(pType);
+            if(FAILED(hr)) 
+                break;
+        }
 
-    if (bReallySet)
-    {
-        std::lock_guard<std::recursive_mutex> lock(m_mutex); 
-        // The type is OK. 
-        // Set the type, unless the caller was just testing.
-        CHECK_HR(hr = OnSetOutputType(pType));
-    }
+        if (bReallySet)
+        {
+            std::lock_guard<std::recursive_mutex> lock(m_mutex);
+            // The type is OK. 
+            // Set the type, unless the caller was just testing.
+            hr = OnSetOutputType(pType);
+            if (FAILED(hr))
+                break;
+        }
+    } while (false);
 
-done:
     return hr;
 }
 
@@ -693,69 +703,70 @@ HRESULT TransformAsync::ProcessOutput(
     HRESULT     hr = S_OK;
     com_ptr<IMFSample> pSample;
 
-    {
-        std::lock_guard<std::recursive_mutex> lock(m_mutex);
-        if (m_dwHaveOutputCount == 0)
+    do {
         {
-            // This call does not correspond to a have output call
+            std::lock_guard<std::recursive_mutex> lock(m_mutex);
+            if (m_dwHaveOutputCount == 0)
+            {
+                // This call does not correspond to a have output call
 
-            hr = E_UNEXPECTED;
-            return hr;
+                hr = E_UNEXPECTED;
+                return hr;
+            }
+            else
+            {
+                m_dwHaveOutputCount--;
+            }
+        }
+        if (IsMFTReady() == FALSE)
+        {
+            hr = MF_E_TRANSFORM_TYPE_NOT_SET;
+            break;
+        }
+
+        /***************************************
+            ** Since this in an internal function
+            ** we know m_pOutputSampleQueue can never be
+            ** NULL due to InitializeTransform()
+            ***************************************/
+        hr = m_pOutputSampleQueue->GetNextSample(pSample.put());
+        if (FAILED(hr))
+            break;
+
+        if (pSample == NULL)
+        {
+            hr = MF_E_TRANSFORM_NEED_MORE_INPUT;
+            break;
+        }
+
+        pOutputSamples[0].dwStreamID = 0;
+
+        if ((pOutputSamples[0].pSample) == NULL)
+        {
+            // The MFT is providing it's own samples
+            (pOutputSamples[0].pSample) = pSample.get();
+            (pOutputSamples[0].pSample)->AddRef();
         }
         else
         {
-            m_dwHaveOutputCount--;
+            // TODO: pipeline has allocated samples 
         }
-    }
-    if (IsMFTReady() == FALSE)
-    {
-        hr = MF_E_TRANSFORM_TYPE_NOT_SET;
-        return hr;
-    }
 
-    /***************************************
-        ** Since this in an internal function
-        ** we know m_pOutputSampleQueue can never be
-        ** NULL due to InitializeTransform()
-        ***************************************/
-    CHECK_HR(hr = m_pOutputSampleQueue->GetNextSample(pSample.put()));
-
-    if (pSample == NULL)
-    {
-        hr = MF_E_TRANSFORM_NEED_MORE_INPUT;
-        return hr;
-    }
-
-    pOutputSamples[0].dwStreamID = 0;
-
-    if ((pOutputSamples[0].pSample) == NULL)
-    {
-        // The MFT is providing it's own samples
-        (pOutputSamples[0].pSample) = pSample.get();
-        (pOutputSamples[0].pSample)->AddRef();
-    }
-    else
-    {
-        // TODO: pipeline has allocated samples 
-    }
-
-    /***************************************
-        ** Since this in an internal function
-        ** we know m_pOutputSampleQueue can never be
-        ** NULL due to InitializeTransform()
-        ***************************************/
-    if (m_pOutputSampleQueue->IsQueueEmpty() != FALSE)
-    {
-        // We're out of samples in the output queue
-        std::lock_guard<std::recursive_mutex> lock(m_mutex);
-
-        if ((m_dwStatus & MYMFT_STATUS_DRAINING) != 0)
+        /***************************************
+            ** Since this in an internal function
+            ** we know m_pOutputSampleQueue can never be
+            ** NULL due to InitializeTransform()
+            ***************************************/
+        if (m_pOutputSampleQueue->IsQueueEmpty() != FALSE)
         {
-            // We're done draining, time to send the event
-            com_ptr<IMFMediaEvent> pDrainCompleteEvent;
+            // We're out of samples in the output queue
+            std::lock_guard<std::recursive_mutex> lock(m_mutex);
 
-            do
+            if ((m_dwStatus & MYMFT_STATUS_DRAINING) != 0)
             {
+                // We're done draining, time to send the event
+                com_ptr<IMFMediaEvent> pDrainCompleteEvent;
+
                 hr = MFCreateMediaEvent(METransformDrainComplete, GUID_NULL, S_OK, NULL, pDrainCompleteEvent.put());
                 if (FAILED(hr))
                 {
@@ -785,18 +796,13 @@ HRESULT TransformAsync::ProcessOutput(
                 {
                     break;
                 }
-            } while (false);
 
-
-            if (FAILED(hr))
-            {
-                goto done;
+                m_dwStatus &= (~MYMFT_STATUS_DRAINING);
             }
-
-            m_dwStatus &= (~MYMFT_STATUS_DRAINING);
         }
-    }
-done:
+    } while (false);
+    
+    // Un-comment for programmatic GPU capture
     //pGraphicsAnalysis->EndCapture();
     return hr;
 }
@@ -811,7 +817,7 @@ HRESULT TransformAsync::ProcessInput(
     TRACE((L" | PI Thread %d | ", std::hash<std::thread::id>()(std::this_thread::get_id())));
 
     {
-
+        // Un-comment for programmatic GPU capture
         //pGraphicsAnalysis->BeginCapture();
         std::lock_guard<std::recursive_mutex> lock(m_mutex);
 
@@ -852,10 +858,14 @@ HRESULT TransformAsync::ProcessInput(
     ** we know m_pInputSampleQueue can never be
     ** NULL due to InitializeTransform()
     ***************************************/
-    CHECK_HR(hr = m_pInputSampleQueue->AddSample(pSample));
+    hr = m_pInputSampleQueue->AddSample(pSample);
+    if (FAILED(hr))
+        return hr;
 
     // Now schedule the work to decode the sample
-    CHECK_HR(hr = ScheduleFrameInference());
+    hr = ScheduleFrameInference();
+    if (FAILED(hr))
+        return hr;
 
     // If not at the max number of Need Input count, fire off another request
     // If we're less than MAX_NUM_INPUT_SAMPLES ahead of the number of process samples, request another
@@ -864,7 +874,5 @@ HRESULT TransformAsync::ProcessInput(
         RequestSample(0);
     }
 
-
-done:
     return hr;
 }

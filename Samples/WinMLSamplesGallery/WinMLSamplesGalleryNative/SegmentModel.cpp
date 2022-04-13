@@ -74,8 +74,9 @@ void StyleTransfer::Run(IDirect3DSurface src, IDirect3DSurface dest)
 }
 LearningModel StyleTransfer::GetModel()
 {
-	auto rel = std::filesystem::current_path();
-	rel.append("Assets\\mosaic.onnx");
+	//auto rel = std::filesystem::current_path();
+	auto rel = std::filesystem::path(modelPath.c_str());
+	rel.append("mosaic.onnx");
 	return LearningModel::LoadFromFilePath(rel + L"");
 }
 

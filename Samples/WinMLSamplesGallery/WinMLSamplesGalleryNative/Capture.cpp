@@ -332,7 +332,7 @@ void CaptureManager::OnPreviewStopped(HRESULT& hrStatus)
 * Begins a preview stream by initializing the preview sink, adding a TransformAsync
 * MFT to the preview stream, and signalling the capture engine to begin previewing frames.
 */
-HRESULT CaptureManager::StartPreview()
+HRESULT CaptureManager::StartPreview(winrt::hstring modelPath)
 {
     if (m_pEngine == NULL)
     {
@@ -388,6 +388,7 @@ HRESULT CaptureManager::StartPreview()
         // Add the transform 
         com_ptr<IMFTransform>pMFT;
         hr = TransformAsync::CreateInstance(pMFT.put());
+        pMFT.as<TransformAsync>()->SetModelPath(modelPath);
 
         // IMFCaptureSource
         hr = pSource->AddEffect(0, pMFT.get());

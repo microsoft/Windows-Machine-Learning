@@ -336,7 +336,7 @@ namespace MainWindow
     }
     void OnStartPreview(HWND hwnd)
     {
-        HRESULT hr = g_pEngine->StartPreview();
+        HRESULT hr = g_pEngine->StartPreview(g_modelPath);
         if (FAILED(hr))
         {
             ShowError(hwnd, IDS_ERR_RECORD, hr);

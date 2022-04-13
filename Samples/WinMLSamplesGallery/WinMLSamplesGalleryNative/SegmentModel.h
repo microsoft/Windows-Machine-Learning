@@ -70,6 +70,8 @@ public:
 	// Synchronous eval status
 	BOOL m_bSyncStarted; 
 	VideoFrame m_outputVideoFrame;
+	// Hacky way to pass model path
+	winrt::hstring modelPath = L"";
 
 protected:
 	// Cache input frames into a shareable d3d-backed VideoFrame

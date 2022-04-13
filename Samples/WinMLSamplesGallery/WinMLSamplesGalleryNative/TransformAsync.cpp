@@ -88,6 +88,7 @@ TransformAsync::TransformAsync(HRESULT& hr)
     m_videoFOURCC = 0;
     m_imageWidthInPixels = 0; 
     m_imageHeightInPixels = 0;
+    m_bAllocatorInitialized = FALSE;
 
     m_spDeviceManager = NULL;
 }
@@ -118,6 +119,11 @@ TransformAsync::~TransformAsync()
         //m_spOutputSampleAllocator->Release();
     }
 
+}
+
+void TransformAsync::SetModelPath(winrt::hstring modelpath)
+{
+    m_modelPath = modelpath;
 }
 
 #pragma region IUnknown
@@ -817,7 +823,7 @@ HRESULT TransformAsync::InitializeTransform(void)
     // Set up circular queue of IStreamModels
     for (int i = 0; i < m_numThreads; i++) {
         // TODO: Have a dialogue to select which model to select for real-time inference. 
-        m_models.push_back(std::make_unique<BackgroundBlur>());
+        m_models.push_back(std::make_unique<StyleTransfer>());
     }
 
 done: 
@@ -913,6 +919,7 @@ HRESULT TransformAsync::UpdateFormatInfo()
         // Set the size of the SegmentModel
         for (int i = 0; i < m_numThreads; i++)
         {
+            m_models[i]->modelPath = m_modelPath;
             m_models[i]->SetModels(m_imageWidthInPixels, m_imageHeightInPixels);
         }
     }

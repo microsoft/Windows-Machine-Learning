@@ -238,6 +238,7 @@ public:
                 LONGLONG hnsDuration,
                 LONGLONG hnsTime,
                 UINT64 pun64MarkerID);
+    void SetModelPath(winrt::hstring modelpath);
 
 protected: 
     TransformAsync(HRESULT& hr);
@@ -249,6 +250,7 @@ protected:
     // and the event queue. 
     HRESULT InitializeTransform(void);
     HRESULT ShutdownEventQueue(void);
+
 
     /******* MFT Helpers **********/
     // Returns the partial media type of the media type in g_MediaSubtypes.
@@ -350,5 +352,5 @@ protected:
          max(std::thread::hardware_concurrency(), 5);
     std::vector<std::unique_ptr<IStreamModel>> m_models;    // m_numThreads number of models to run inference in parallel. 
     int modelIndex = 0;
-
+    winrt::hstring m_modelPath;
 };

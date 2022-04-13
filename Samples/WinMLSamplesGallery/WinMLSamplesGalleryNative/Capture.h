@@ -206,8 +206,8 @@ public:
     UINT    ErrorID() const { return m_errorID; }
 
     HRESULT OnCaptureEvent(WPARAM wParam, LPARAM lParam); 
-    HRESULT SetVideoDevice(IUnknown *pUnk);
-    HRESULT StartPreview();
+    HRESULT SetVideoDevice(IUnknown* pUnk);
+    HRESULT StartPreview(winrt::hstring modelPath);
     HRESULT StopPreview();
 
     void    SleepState(bool fSleeping)

@@ -233,14 +233,6 @@ HRESULT TransformAsync::SubmitEval(IMFSample* pInput)
     modelIndex = (++modelIndex) % m_numThreads;
     auto model = m_models[modelIndex].get();
 
-    /*if (m_ulSampleCounter % 10 == 0) {
-        MainWindow::_SetStatusText(L"TESTING 456");
-    }
-    else {
-        MainWindow::_SetStatusText(L"TESTING 123");
-
-    }*/
-
     //pInputSample attributes to copy over to pOutputSample
     LONGLONG hnsDuration = 0;
     LONGLONG hnsTime = 0;
@@ -503,7 +495,7 @@ HRESULT TransformAsync::SetupAlloc()
                 m_spOutputSampleAllocator.attach(spVideoSampleAllocator.detach());
             }
 
-            CHECK_HR(hr = m_spOutputSampleAllocator->InitializeSampleAllocatorEx(2, m_numThreads, m_spAllocatorAttributes.get(), m_spOutputType.get()));
+            CHECK_HR(hr = m_spOutputSampleAllocator->InitializeSampleAllocatorEx(2, 15, m_spAllocatorAttributes.get(), m_spOutputType.get()));
 
             // Set up IMFVideoSampleAllocatorCallback
             m_spOutputSampleCallback = m_spOutputSampleAllocator.try_as<IMFVideoSampleAllocatorCallback>();
@@ -823,7 +815,7 @@ HRESULT TransformAsync::InitializeTransform(void)
     // Set up circular queue of IStreamModels
     for (int i = 0; i < m_numThreads; i++) {
         // TODO: Have a dialogue to select which model to select for real-time inference. 
-        m_models.push_back(std::make_unique<StyleTransfer>());
+        m_models.push_back(std::make_unique<BackgroundBlur>());
     }
 
 done: 

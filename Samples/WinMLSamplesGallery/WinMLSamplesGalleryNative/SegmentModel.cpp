@@ -116,8 +116,8 @@ void BackgroundBlur::SetModels(int w, int h)
 }
 LearningModel BackgroundBlur::GetModel()
 {
-	auto rel = std::filesystem::current_path();
-	rel.append("Assets\\fcn-resnet50-12.onnx");
+	auto rel = std::filesystem::path(modelPath.c_str());
+	rel.append("fcn-resnet50-12.onnx");
 	return LearningModel::LoadFromFilePath(rel + L"");
 }
 

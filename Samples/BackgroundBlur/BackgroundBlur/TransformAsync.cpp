@@ -10,17 +10,16 @@
 #include <stdio.h>
 #include <wchar.h>
 #include <future>
-
-#define MFT_NUM_DEFAULT_ATTRIBUTES  4
 using namespace MainWindow;
 
-long long g_now; // The time since the last call to FrameThreadProc
+#define MFT_NUM_DEFAULT_ATTRIBUTES  4
 
+// The time since the last call to FrameThreadProc
+long long g_now;
 // Video FOURCC codes.
 const FOURCC FOURCC_NV12 = MAKEFOURCC('N', 'V', '1', '2');
 const FOURCC FOURCC_RGB24 = 20;
 const FOURCC FOURCC_RGB32 = 22;
-float runningAverage = 0.0f;
 
 // static array of media types (preferred and accepted).
 const GUID* g_MediaSubtypes[] =
@@ -37,20 +36,31 @@ HRESULT TransformAsync::CreateInstance(IMFTransform** ppMFT)
 {
     HRESULT hr = S_OK; 
     com_ptr<TransformAsync> pMFT;
-    if (ppMFT == NULL)
-    {
-        return E_POINTER;
-    }
-    pMFT.attach(new TransformAsync(hr));
-    if (pMFT == NULL)
-    {
-        CHECK_HR(hr = E_OUTOFMEMORY);
-    }
 
-    CHECK_HR(hr = pMFT->InitializeTransform());
-    CHECK_HR(hr = pMFT->QueryInterface(IID_IMFTransform, (void**)ppMFT))
-
-done: 
+    do {
+        if (ppMFT == NULL)
+        {
+            hr = E_POINTER; 
+            break;
+        }
+        pMFT.attach(new TransformAsync(hr));
+        if (pMFT == NULL)
+        {
+            hr = E_OUTOFMEMORY;
+            break;
+        }
+        hr = pMFT->InitializeTransform();
+        if (FAILED(hr)) 
+        {
+            break;
+        }
+        hr = pMFT->QueryInterface(IID_IMFTransform, (void**)ppMFT);
+        if (FAILED(hr))
+        {
+            break;
+        }
+    } while (false);
+    
     return hr;
 }
 
@@ -67,13 +77,11 @@ TransformAsync::TransformAsync(HRESULT& hr)
     m_dwHaveOutputCount = 0;
     m_bShutdown = FALSE;
     m_bFirstSample = TRUE;
-    // m_bDXVA = TRUE; // TODO: Always true to be fast
     m_pInputSampleQueue = NULL;
     m_pOutputSampleQueue = NULL;
     m_videoFOURCC = 0;
     m_imageWidthInPixels = 0; 
     m_imageHeightInPixels = 0;
-
     m_spDeviceManager = NULL;
 }
 
@@ -100,7 +108,6 @@ TransformAsync::~TransformAsync()
 
     if (m_spOutputSampleAllocator) {
         m_spOutputSampleAllocator->UninitializeSampleAllocator();
-        //m_spOutputSampleAllocator->Release();
     }
 
 }
@@ -110,6 +117,7 @@ ULONG TransformAsync::AddRef(void)
 {
     return InterlockedIncrement(&m_nRefCount);
 }
+
 HRESULT TransformAsync::QueryInterface(REFIID iid, void** ppv)
 {
     if (!ppv)
@@ -183,19 +191,24 @@ HRESULT TransformAsync::ScheduleFrameInference(void)
         ** we know m_pInputSampleQueue can never be
         ** NULL due to InitializeTransform()
         ***************************************/
+    do {
+        hr = m_pInputSampleQueue->GetNextSample(pInputSample.put());
+        if (FAILED(hr)) 
+            break;
 
-    CHECK_HR(hr = m_pInputSampleQueue->GetNextSample(pInputSample.put()));
-    
-    CHECK_HR(hr = MFCreateAsyncResult(pInputSample.get(),   // Pointer to object stored in async result
-                        this,                               // Pointer to IMFAsyncCallback interface
-                        this,                               // Pointer to IUnkonwn of state object
-                        pResult.put()));
+        hr = MFCreateAsyncResult(pInputSample.get(),   // Pointer to object stored in async result
+            this,                               // Pointer to IMFAsyncCallback interface
+            this,                               // Pointer to IUnkonwn of state object
+            pResult.put());
+        if (FAILED(hr))
+            break;
 
+        // Schedule the inference task with the MF async work queue. Will call TransformAsync::Invoke when run.
+        hr = MFPutWorkItemEx(MFASYNC_CALLBACK_QUEUE_MULTITHREADED, pResult.get());
+        if (FAILED(hr))
+            break;
+    } while (false);
 
-    // Schedule the inference task with the MF async work queue. Will call TransformAsync::Invoke when run.
-    CHECK_HR(hr = MFPutWorkItemEx(MFASYNC_CALLBACK_QUEUE_MULTITHREADED, pResult.get()));
-
-done:
     return hr;
 }
 
@@ -212,14 +225,6 @@ HRESULT TransformAsync::SubmitEval(IMFSample* pInput)
     modelIndex = (++modelIndex) % m_numThreads;
     auto model = m_models[modelIndex].get();
 
-    /*if (m_ulSampleCounter % 10 == 0) {
-        MainWindow::_SetStatusText(L"TESTING 456");
-    }
-    else {
-        MainWindow::_SetStatusText(L"TESTING 123");
-
-    }*/
-
     //pInputSample attributes to copy over to pOutputSample
     LONGLONG hnsDuration = 0;
     LONGLONG hnsTime = 0;
@@ -228,51 +233,66 @@ HRESULT TransformAsync::SubmitEval(IMFSample* pInput)
     TRACE((L"\n[Sample: %d | model: %d | ", dwCurrentSample, modelIndex));
     TRACE((L" | SE Thread %d | ", std::hash<std::thread::id>()(std::this_thread::get_id())));
 
-     // Ensure we still have a valid d3d device
-    CHECK_HR(hr = CheckDX11Device());
-    // Ensure the allocator is set up 
-    CHECK_HR(hr = SetupAlloc());
+    do {
+        // Ensure we still have a valid d3d device
+        hr =  CheckDX11Device();
+        if (FAILED(hr))
+            break;
 
-    // CheckDX11Device & SetupAlloc ensure we can now allocate a D3D-backed output sample. 
-    (hr = m_spOutputSampleAllocator->AllocateSample(pOutputSample.put()));
-    if (FAILED(hr))
-    {
-        TRACE((L"Can't allocate any more samples, DROP"));
-    }
+        // Ensure the allocator is set up 
+        hr = SetupAlloc();
+        if (FAILED(hr))
+            break;
 
-    // We should have a sample now, whether or not we have a dx device
-    if (pOutputSample == nullptr)
-    {
-        CHECK_HR(hr = E_INVALIDARG);
-    }
+        // CheckDX11Device & SetupAlloc ensure we can now allocate a D3D-backed output sample. 
+        hr = m_spOutputSampleAllocator->AllocateSample(pOutputSample.put());
+        if (FAILED(hr))
+        {
+            TRACE((L"Can't allocate any more samples, DROP"));
+            break;
+        }
+        // We should have a sample now, whether or not we have a dx device
+        if (pOutputSample == nullptr)
+        {
+            hr = E_INVALIDARG;
+            break;
+        }
 
-    // Explicitly copy out pInput attributes, since copying IMFSamples is shallow. 
-    CHECK_HR(pInputSample->GetSampleDuration(&hnsDuration));
-    CHECK_HR(pInputSample->GetSampleTime(&hnsTime));
-    pInputSample->GetUINT64(TransformAsync_MFSampleExtension_Marker, &pun64MarkerID);
+        // Explicitly copy out pInput attributes, since copying IMFSamples is shallow. 
+        hr = pInputSample->GetSampleDuration(&hnsDuration);
+        if (FAILED(hr))
+            break;
 
-    // Extract an IDirect3DSurface from the input and output samples to use for inference, 
-    src = SampleToD3Dsurface(pInputSample.get());
-    dest = SampleToD3Dsurface(pOutputSample.get());
+        hr = pInputSample->GetSampleTime(&hnsTime);
+        if (FAILED(hr))
+            break;
 
-    // Make sure this model isn't already running, if so drop the frame and move on. 
-    if(model->m_bSyncStarted == FALSE)
-    {
-        auto now = std::chrono::high_resolution_clock::now();
-        // Run model inference 
-        model->Run(src, dest); 
-        auto timePassed = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - now);
-        TRACE((L"Eval: %d", timePassed.count()));
-        src.Close();
-        dest.Close();
-        // Perform housekeeping out the output sample
-        FinishEval(pInputSample, pOutputSample, hnsDuration, hnsTime, pun64MarkerID); 
-    }
-    else {
-        TRACE((L"Model %d already running, DROP", modelIndex));
-    }
+        pInputSample->GetUINT64(TransformAsync_MFSampleExtension_Marker, &pun64MarkerID);
 
-done:
+        // Extract an IDirect3DSurface from the input and output samples to use for inference, 
+        src = SampleToD3Dsurface(pInputSample.get());
+        dest = SampleToD3Dsurface(pOutputSample.get());
+
+        // Make sure this model isn't already running, if so drop the frame and move on. 
+        if (model->m_bSyncStarted == FALSE)
+        {
+            auto now = std::chrono::high_resolution_clock::now();
+            // Run model inference 
+            model->Run(src, dest);
+            auto timePassed = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - now);
+            TRACE((L"Eval: %d", timePassed.count()));
+            src.Close();
+            dest.Close();
+            // Perform housekeeping out the output sample
+            FinishEval(pInputSample, pOutputSample, hnsDuration, hnsTime, pun64MarkerID);
+        }
+        else {
+            TRACE((L"Model %d already running, DROP", modelIndex));
+            break;
+        }
+
+    } while (false);
+
     return hr;
 }
 
@@ -284,47 +304,73 @@ HRESULT TransformAsync::FinishEval(com_ptr<IMFSample> pInputSample, com_ptr<IMFS
     com_ptr<IMFMediaBuffer> pMediaBuffer;
     com_ptr<IMFMediaEvent> pHaveOutputEvent;
 
-    // Set up the output sample
-    CHECK_HR(hr = pOutputSample->SetSampleDuration(hnsDuration));
-    CHECK_HR(hr = pOutputSample->SetSampleTime(hnsTime));
+    do {
+        // Set up the output sample
+        hr = pOutputSample->SetSampleDuration(hnsDuration);
+        if (FAILED(hr))
+            break;
+        hr = pOutputSample->SetSampleTime(hnsTime);
+        if (FAILED(hr))
+            break;
 
-    // Always set the output buffer size!
-    CHECK_HR(hr = pOutputSample->GetBufferByIndex(0, pMediaBuffer.put()));
-    CHECK_HR(hr = pMediaBuffer->SetCurrentLength(m_cbImageSize));
+        // Always set the output buffer size!
+        hr = pOutputSample->GetBufferByIndex(0, pMediaBuffer.put());
+        if (FAILED(hr))
+            break;
+        hr = pMediaBuffer->SetCurrentLength(m_cbImageSize);
+        if (FAILED(hr))
+            break;
 
-    // This is the first sample after a gap in the stream. 
-    if(m_bFirstSample != FALSE)
-    {
-        CHECK_HR(hr = pOutputSample->SetUINT32(MFSampleExtension_Discontinuity, TRUE));
-        m_bFirstSample = FALSE;
-    }
+        // This is the first sample after a gap in the stream. 
+        if (m_bFirstSample != FALSE)
+        {
+            hr = pOutputSample->SetUINT32(MFSampleExtension_Discontinuity, TRUE);
+            if (FAILED(hr))
+                break;
+            m_bFirstSample = FALSE;
+        }
 
-    // Allocate output sample to queue
-    CHECK_HR(hr = m_pOutputSampleQueue->AddSample(pOutputSample.get()));
-    CHECK_HR(hr = MFCreateMediaEvent(METransformHaveOutput, GUID_NULL, S_OK, NULL, pHaveOutputEvent.put()));
-    // Scope event queue lock
-    {
-        std::lock_guard<std::recursive_mutex> lock(m_mutex);
-        // TODO: If QueueEvent fails, consider decrementing m_dwHaveOutputCount
-        CHECK_HR(hr = m_spEventQueue->QueueEvent(pHaveOutputEvent.get()));
-        m_dwHaveOutputCount++;
-        m_dwStatus |= MYMFT_STATUS_OUTPUT_SAMPLE_READY;
-    }
+        // Allocate output sample to queue
+        hr = m_pOutputSampleQueue->AddSample(pOutputSample.get());
+        if (FAILED(hr))
+            break;
+        hr = MFCreateMediaEvent(METransformHaveOutput, GUID_NULL, S_OK, NULL, pHaveOutputEvent.put());
+        if (FAILED(hr))
+            break;
+        // Scope event queue lock
+        {
+            std::lock_guard<std::recursive_mutex> lock(m_mutex);
+            // TODO: If QueueEvent fails, consider decrementing m_dwHaveOutputCount
+            hr = m_spEventQueue->QueueEvent(pHaveOutputEvent.get());
+            if (FAILED(hr))
+                break;
+            m_dwHaveOutputCount++;
+            m_dwStatus |= MYMFT_STATUS_OUTPUT_SAMPLE_READY;
+        }
 
-    if (pun64MarkerID)
-    {
-        // This input sample is flagged as a marker
-        com_ptr<IMFMediaEvent> pMarkerEvent;
-        CHECK_HR(hr = MFCreateMediaEvent(METransformMarker, GUID_NULL, S_OK, NULL, pMarkerEvent.put()));
-        CHECK_HR(hr = pMarkerEvent->SetUINT64(MF_EVENT_MFT_CONTEXT, pun64MarkerID));
-        CHECK_HR(hr = m_spEventQueue->QueueEvent(pMarkerEvent.get()));
-    }
+        if (pun64MarkerID)
+        {
+            // This input sample is flagged as a marker
+            com_ptr<IMFMediaEvent> pMarkerEvent;
+            hr = MFCreateMediaEvent(METransformMarker, GUID_NULL, S_OK, NULL, pMarkerEvent.put());
+            if (FAILED(hr))
+                break;
+            hr = pMarkerEvent->SetUINT64(MF_EVENT_MFT_CONTEXT, pun64MarkerID);
+            if (FAILED(hr))
+                break;
+            hr = m_spEventQueue->QueueEvent(pMarkerEvent.get());
+            if (FAILED(hr))
+                break;
+        }
 
-    // Done processing this sample, request another
-    CHECK_HR(hr = RequestSample(0));
-    InterlockedIncrement(&m_ulProcessedFrameNum); 
+        // Done processing this sample, request another
+        hr = RequestSample(0);
+        if (FAILED(hr))
+            break;
+        InterlockedIncrement(&m_ulProcessedFrameNum);
 
-done: 
+    } while (false);
+
     return hr; 
 }
 
@@ -339,7 +385,6 @@ DWORD __stdcall FrameThreadProc(LPVOID lpParam)
         hEvent,         // event handle
         INFINITE);      // indefinite wait
    
-
     switch (dwWaitResult) {
     case WAIT_OBJECT_0:
         // TODO: Capture time and write to preview
@@ -391,7 +436,9 @@ HRESULT TransformAsync::OnSetD3DManager(ULONG_PTR ulParam)
             // Hand off the new device to the sample allocator, if it exists
             if (m_spOutputSampleAllocator)
             {
-                CHECK_HR(hr = m_spOutputSampleAllocator->SetDirectXManager(pUnk.get()));
+                hr = m_spOutputSampleAllocator->SetDirectXManager(pUnk.get());
+                if (FAILED(hr))
+                    return hr;
             }
 
             // Create event and thread for framerate
@@ -409,7 +456,6 @@ HRESULT TransformAsync::OnSetD3DManager(ULONG_PTR ulParam)
         InvalidateDX11Resources();
     }
 
-done:
     return hr;
 }
 
@@ -420,10 +466,20 @@ HRESULT TransformAsync::UpdateDX11Device()
     com_ptr<ID3D11DeviceContext> pContext;
     com_ptr<ID3D11Device> pDevice;
 
-    if (m_spDeviceManager != nullptr)
-    {
-        CHECK_HR(hr = m_spDeviceManager->OpenDeviceHandle(&m_hDeviceHandle));
-        CHECK_HR(hr = m_spDeviceManager->GetVideoService(m_hDeviceHandle, IID_PPV_ARGS(&pDevice)));
+    do {
+        // Fail fast if device manager not available
+        if (m_spDeviceManager == nullptr) 
+        {
+            hr = ERROR_DEVICE_NOT_AVAILABLE; // TODO: Is it ok to raise this? 
+            break;
+        }
+
+        hr = m_spDeviceManager->OpenDeviceHandle(&m_hDeviceHandle);
+        if (FAILED(hr))
+            break;
+        hr = m_spDeviceManager->GetVideoService(m_hDeviceHandle, IID_PPV_ARGS(&pDevice));
+        if (FAILED(hr))
+            break;
         m_spDevice = pDevice.try_as<ID3D11Device5>();
         m_spDevice->GetImmediateContext(pContext.put());
         m_spContext = pContext.try_as<ID3D11DeviceContext4>();
@@ -431,19 +487,14 @@ HRESULT TransformAsync::UpdateDX11Device()
         // Create a fence to use for tracking framerate
         m_fenceValue = 0;
         D3D11_FENCE_FLAG flag = D3D11_FENCE_FLAG_NONE;
-        m_spDevice->CreateFence(m_fenceValue, flag, __uuidof(ID3D11Fence), m_spFence.put_void());
-        // Probably don't need to save the event for the first frame to render, since that will be long anyways w first Eval/Bind. 
-        // Actually prob will be long for the first little bit anyways bc of each IStreamModel to select, but oh well. It'll be fine. 
-    }
-    else 
-    {
-        hr = ERROR_DEVICE_NOT_AVAILABLE; // TODO: Is it ok to raise this? 
-    }
+        hr = m_spDevice->CreateFence(m_fenceValue, flag, __uuidof(ID3D11Fence), m_spFence.put_void());
+        if (FAILED(hr))
+            break;
+
+    } while (false);
+
     return hr;
 
-done:
-    InvalidateDX11Resources();
-    return hr;
 }
 
 void TransformAsync::InvalidateDX11Resources()
@@ -455,43 +506,53 @@ void TransformAsync::InvalidateDX11Resources()
 HRESULT TransformAsync::SetupAlloc()
 {
     HRESULT hr = S_OK;
-    // Fail fast if already set up 
-    if (!m_bAllocatorInitialized)
-    {
-        // If we have a device manager, we need to set up sample allocator
-        if (m_spDeviceManager != nullptr)
+    do {
+        // Fail fast if already set up allocator or don't have a device manager
+        if (m_bAllocatorInitialized || m_spDeviceManager == nullptr)
+            break;
+
+        // Set up allocator attributes
+        DWORD dwBindFlags = MFGetAttributeUINT32(m_spAllocatorAttributes.get(), MF_SA_D3D11_BINDFLAGS, D3D11_BIND_RENDER_TARGET);
+        dwBindFlags |= D3D11_BIND_RENDER_TARGET; // Must always set as render target!
+        hr = m_spAllocatorAttributes->SetUINT32(MF_SA_D3D11_BINDFLAGS, dwBindFlags);
+        if (FAILED(hr))
+            break;
+        hr = m_spAllocatorAttributes->SetUINT32(MF_SA_BUFFERS_PER_SAMPLE, 1);
+        if (FAILED(hr))
+            break;
+        hr = m_spAllocatorAttributes->SetUINT32(MF_SA_D3D11_USAGE, D3D11_USAGE_DEFAULT);
+        if (FAILED(hr))
+            break;
+
+        // Set up the output sample allocator if not already initialized
+        if (NULL == m_spOutputSampleAllocator)
         {
-            // Set up allocator attributes
-            DWORD dwBindFlags = MFGetAttributeUINT32(m_spAllocatorAttributes.get(), MF_SA_D3D11_BINDFLAGS, D3D11_BIND_RENDER_TARGET);
-            dwBindFlags |= D3D11_BIND_RENDER_TARGET; // Must always set as render target!
-            CHECK_HR(hr = m_spAllocatorAttributes->SetUINT32(MF_SA_D3D11_BINDFLAGS, dwBindFlags));
-            CHECK_HR(hr = m_spAllocatorAttributes->SetUINT32(MF_SA_BUFFERS_PER_SAMPLE, 1));
-            CHECK_HR(hr = m_spAllocatorAttributes->SetUINT32(MF_SA_D3D11_USAGE, D3D11_USAGE_DEFAULT));
+            com_ptr<IMFVideoSampleAllocatorEx> spVideoSampleAllocator;
+            com_ptr<IUnknown> spDXGIManagerUnk;
 
-            // Set up the output sample allocator if needed
-            if (NULL == m_spOutputSampleAllocator)
-            {
-                com_ptr<IMFVideoSampleAllocatorEx> spVideoSampleAllocator;
-                com_ptr<IUnknown> spDXGIManagerUnk;
+            hr = MFCreateVideoSampleAllocatorEx(IID_PPV_ARGS(&spVideoSampleAllocator));
+            if (FAILED(hr))
+                break;
+            spDXGIManagerUnk = m_spDeviceManager.as<IUnknown>();
 
-                CHECK_HR(hr = MFCreateVideoSampleAllocatorEx(IID_PPV_ARGS(&spVideoSampleAllocator)));
-                spDXGIManagerUnk = m_spDeviceManager.as<IUnknown>();
+            hr = spVideoSampleAllocator->SetDirectXManager(spDXGIManagerUnk.get());
+            if (FAILED(hr))
+                break;
 
-                CHECK_HR(hr = spVideoSampleAllocator->SetDirectXManager(spDXGIManagerUnk.get()));
-
-                m_spOutputSampleAllocator.attach(spVideoSampleAllocator.detach());
-            }
-
-            CHECK_HR(hr = m_spOutputSampleAllocator->InitializeSampleAllocatorEx(2, m_numThreads, m_spAllocatorAttributes.get(), m_spOutputType.get()));
-
-            // Set up IMFVideoSampleAllocatorCallback
-            m_spOutputSampleCallback = m_spOutputSampleAllocator.try_as<IMFVideoSampleAllocatorCallback>();
-            m_spOutputSampleCallback->SetCallback(this); // TODO: Will setCallback QI for Notify ? 
+            m_spOutputSampleAllocator.attach(spVideoSampleAllocator.detach());
         }
+
+        hr = m_spOutputSampleAllocator->InitializeSampleAllocatorEx(2, m_numThreads, m_spAllocatorAttributes.get(), m_spOutputType.get());
+        if (FAILED(hr))
+            break;
+
+        // Set up IMFVideoSampleAllocatorCallback
+        m_spOutputSampleCallback = m_spOutputSampleAllocator.try_as<IMFVideoSampleAllocatorCallback>();
+        m_spOutputSampleCallback->SetCallback(this); 
         m_bAllocatorInitialized = true;
 
-    }
-done:
+    } while (false);
+
     return hr;
 }
 
@@ -510,7 +571,6 @@ HRESULT TransformAsync::CheckDX11Device()
             {
                 return hr;
             }
-
         }
     }
 
@@ -520,23 +580,30 @@ HRESULT TransformAsync::OnGetPartialType(DWORD dwTypeIndex, IMFMediaType** ppmt)
 {
     HRESULT hr = S_OK;
 
-    if (dwTypeIndex >= g_cNumSubtypes)
-    {
-        return MF_E_NO_MORE_TYPES;
-    }
+    do {
+        if (dwTypeIndex >= g_cNumSubtypes)
+        {
+            hr = MF_E_NO_MORE_TYPES;
+            break;
+        }
 
-    com_ptr<IMFMediaType> pmt;
+        com_ptr<IMFMediaType> pmt;
 
-    CHECK_HR(hr = MFCreateMediaType(pmt.put()));
+        hr = MFCreateMediaType(pmt.put());
+        if (FAILED(hr))
+            break;
 
-    CHECK_HR(hr = pmt->SetGUID(MF_MT_MAJOR_TYPE, MFMediaType_Video));
+        hr = pmt->SetGUID(MF_MT_MAJOR_TYPE, MFMediaType_Video);
+        if (FAILED(hr))
+            break;
+        hr = pmt->SetGUID(MF_MT_SUBTYPE, *g_MediaSubtypes[dwTypeIndex]);
+        if (FAILED(hr))
+            break;
 
-    CHECK_HR(hr = pmt->SetGUID(MF_MT_SUBTYPE, *g_MediaSubtypes[dwTypeIndex]));
+        *ppmt = pmt.get();
+        (*ppmt)->AddRef();
+    } while (false);
 
-    *ppmt = pmt.get();
-    (*ppmt)->AddRef();
-
-done:
     return hr;
 }
 
@@ -621,42 +688,49 @@ HRESULT TransformAsync::OnCheckMediaType(IMFMediaType* pmt)
 
     HRESULT hr = S_OK;
 
-    // Major type must be video.
-    CHECK_HR(hr = pmt->GetGUID(MF_MT_MAJOR_TYPE, &major_type));
+    do {
+        // Major type must be video.
+        hr = pmt->GetGUID(MF_MT_MAJOR_TYPE, &major_type);
+        if (FAILED(hr))
+            break;
 
-    if (major_type != MFMediaType_Video)
-    {
-        CHECK_HR(hr = MF_E_INVALIDMEDIATYPE);
-    }
-
-    // Subtype must be one of the subtypes in our global list.
-
-    // Get the subtype GUID.
-    CHECK_HR(hr = pmt->GetGUID(MF_MT_SUBTYPE, &subtype));
-
-    // Look for the subtype in our list of accepted types.
-    for (DWORD i = 0; i < g_cNumSubtypes; i++)
-    {
-        if (subtype == *g_MediaSubtypes[i])
+        if (major_type != MFMediaType_Video)
         {
-            bFoundMatchingSubtype = TRUE;
+            hr = MF_E_INVALIDMEDIATYPE;
             break;
         }
-    }
 
-    if (!bFoundMatchingSubtype)
-    {
-        CHECK_HR(hr = MF_E_INVALIDMEDIATYPE);
-    }
+        // Subtype must be one of the subtypes in our global list.
+        // Get the subtype GUID.
+        hr = pmt->GetGUID(MF_MT_SUBTYPE, &subtype);
+        if (FAILED(hr))
+            break;
 
-    // Video must be progressive frames.
-    CHECK_HR(hr = pmt->GetUINT32(MF_MT_INTERLACE_MODE, (UINT32*)&interlace));
-    if (!(interlace == MFVideoInterlace_Progressive /* || interlace == MFVideoInterlace_MixedInterlaceOrProgressive*/))
-    {
-        CHECK_HR(hr = MF_E_INVALIDMEDIATYPE);
-    }
+        // Look for the subtype in our list of accepted types.
+        for (DWORD i = 0; i < g_cNumSubtypes; i++)
+        {
+            if (subtype == *g_MediaSubtypes[i])
+            {
+                bFoundMatchingSubtype = TRUE;
+                break;
+            }
+        }
 
-done:
+        if (!bFoundMatchingSubtype)
+        {
+            hr = MF_E_INVALIDMEDIATYPE;
+            break;
+        }
+
+        // Video must be progressive frames.
+        hr = pmt->GetUINT32(MF_MT_INTERLACE_MODE, (UINT32*)&interlace);
+        if (!(interlace == MFVideoInterlace_Progressive ))
+        {
+            hr = MF_E_INVALIDMEDIATYPE;
+            break;
+        }
+    } while (false);
+
     return hr;
 }
 
@@ -703,48 +777,6 @@ HRESULT TransformAsync::OnSetOutputType(IMFMediaType* pmt)
     return S_OK;
 }
 
-HRESULT LockDevice(
-    IMFDXGIDeviceManager* pDeviceManager,
-    BOOL fBlock,
-    ID3D11Device** ppDevice, // Receives a pointer to the device.
-    HANDLE* pHandle              // Receives a device handle.   
-)
-{
-    *pHandle = NULL;
-    *ppDevice = NULL;
-
-    HANDLE hDevice = 0;
-
-    HRESULT hr = pDeviceManager->OpenDeviceHandle(&hDevice);
-
-    if (SUCCEEDED(hr))
-    {
-        hr = pDeviceManager->LockDevice(hDevice, IID_PPV_ARGS(ppDevice), fBlock);
-    }
-
-    if (hr == DXVA2_E_NEW_VIDEO_DEVICE)
-    {
-        // Invalid device handle. Try to open a new device handle.
-        hr = pDeviceManager->CloseDeviceHandle(hDevice);
-
-        if (SUCCEEDED(hr))
-        {
-            hr = pDeviceManager->OpenDeviceHandle(&hDevice);
-        }
-
-        // Try to lock the device again.
-        if (SUCCEEDED(hr))
-        {
-            hr = pDeviceManager->LockDevice(hDevice, IID_PPV_ARGS(ppDevice), TRUE);
-        }
-    }
-
-    if (SUCCEEDED(hr))
-    {
-        *pHandle = hDevice;
-    }
-    return hr;
-}
 
 //-------------------------------------------------------------------
 // Name: SampleToD3DSurface
@@ -779,33 +811,42 @@ HRESULT TransformAsync::InitializeTransform(void)
 {
     HRESULT hr = S_OK;
 
-    CHECK_HR(hr = MFCreateAttributes(m_spAttributes.put(), MFT_NUM_DEFAULT_ATTRIBUTES));
-    CHECK_HR(hr = m_spAttributes->SetUINT32(MF_TRANSFORM_ASYNC, TRUE));
-    CHECK_HR(hr = m_spAttributes->SetUINT32(MFT_SUPPORT_DYNAMIC_FORMAT_CHANGE, TRUE));
-    CHECK_HR(hr = m_spAttributes->SetUINT32(MF_SA_D3D_AWARE, TRUE));
-    CHECK_HR(hr = m_spAttributes->SetUINT32(MF_SA_D3D11_AWARE, TRUE));
+    do {
+        hr = MFCreateAttributes(m_spAttributes.put(), MFT_NUM_DEFAULT_ATTRIBUTES);
+        if (FAILED(hr))
+            break;
+        m_spAttributes->SetUINT32(MF_TRANSFORM_ASYNC, TRUE);
+        m_spAttributes->SetUINT32(MFT_SUPPORT_DYNAMIC_FORMAT_CHANGE, TRUE);
+        m_spAttributes->SetUINT32(MF_SA_D3D_AWARE, TRUE);
+        m_spAttributes->SetUINT32(MF_SA_D3D11_AWARE, TRUE);
 
-    // Initialize attributes for output sample allocator
-    CHECK_HR(hr = MFCreateAttributes(m_spAllocatorAttributes.put(), 3));
+        // Initialize attributes for output sample allocator
+        hr = MFCreateAttributes(m_spAllocatorAttributes.put(), 3);
+        if (FAILED(hr))
+            break;
 
-    /**********************************
-    ** Since this is an Async MFT, an
-    ** event queue is required
-    ** MF Provides a standard implementation
-    **********************************/
-    CHECK_HR(hr = MFCreateEventQueue(m_spEventQueue.put()));
+        /**********************************
+        ** Since this is an Async MFT, an
+        ** event queue is required
+        ** MF Provides a standard implementation
+        **********************************/
+        hr = MFCreateEventQueue(m_spEventQueue.put());
+        if (FAILED(hr))
+            break;
+        hr = CSampleQueue::Create(&m_pInputSampleQueue);
+        if (FAILED(hr))
+            break;
+        hr = CSampleQueue::Create(&m_pOutputSampleQueue);
+        if (FAILED(hr))
+            break;
 
-    CHECK_HR(hr = CSampleQueue::Create(&m_pInputSampleQueue));
-
-    CHECK_HR(hr = CSampleQueue::Create(&m_pOutputSampleQueue));
-
-    // Set up circular queue of IStreamModels
-    for (int i = 0; i < m_numThreads; i++) {
-        // TODO: Have a dialogue to select which model to select for real-time inference. 
-        m_models.push_back(std::make_unique<BackgroundBlur>());
-    }
-
-done: 
+        // Set up circular queue of IStreamModels
+        for (int i = 0; i < m_numThreads; i++) {
+            // TODO: Have a dialogue to select which model to select for real-time inference. 
+            m_models.push_back(std::make_unique<BackgroundBlur>());
+        }
+    } while (false);
+ 
     return hr;
 }
 
@@ -879,21 +920,23 @@ HRESULT TransformAsync::UpdateFormatInfo()
 
     if (m_spInputType != NULL)
     {
-        CHECK_HR(hr = m_spInputType->GetGUID(MF_MT_SUBTYPE, &subtype));
+        m_spInputType->GetGUID(MF_MT_SUBTYPE, &subtype);
 
         m_videoFOURCC = subtype.Data1;
 
-        CHECK_HR(hr = MFGetAttributeSize(
+        MFGetAttributeSize(
             m_spInputType.get(),
             MF_MT_FRAME_SIZE,
             &m_imageWidthInPixels,
             &m_imageHeightInPixels
-        ));
+        );
 
         TRACE((L"Frame size: %d x %d\n", m_imageWidthInPixels, m_imageHeightInPixels));
 
         // Calculate the image size (not including padding)
-        CHECK_HR(hr = GetImageSize(m_videoFOURCC, m_imageWidthInPixels, m_imageHeightInPixels, &m_cbImageSize));
+        hr = GetImageSize(m_videoFOURCC, m_imageWidthInPixels, m_imageHeightInPixels, &m_cbImageSize);
+        if (FAILED(hr))
+            return hr;
 
         // Set the size of the SegmentModel
         for (int i = 0; i < m_numThreads; i++)
@@ -902,7 +945,6 @@ HRESULT TransformAsync::UpdateFormatInfo()
         }
     }
 
-done:
     return hr;
 }
 
@@ -910,52 +952,36 @@ done:
 HRESULT TransformAsync::ShutdownEventQueue(void)
 {
     HRESULT hr = S_OK;
-    do
-    {
-        /***************************************
-        ** Since this in an internal function
-        ** we know m_spEventQueue can never be
-        ** NULL due to InitializeTransform()
-        ***************************************/
 
-        hr = m_spEventQueue->Shutdown();
-        if (FAILED(hr))
-        {
-            break;
-        }
-    } while (false);
+    /***************************************
+    ** Since this in an internal function
+    ** we know m_spEventQueue can never be
+    ** NULL due to InitializeTransform()
+    ***************************************/
+
+    hr = m_spEventQueue->Shutdown();
     LOG_HRESULT(hr);
     return hr;
 }
 
 HRESULT TransformAsync::OnStartOfStream(void)
 {
-    HRESULT hr = S_OK;
-    do
     {
+        std::lock_guard<std::recursive_mutex> lock(m_mutex);
 
-        {
-            std::lock_guard<std::recursive_mutex> lock(m_mutex);
+        m_dwStatus |= MYMFT_STATUS_STREAM_STARTED;
 
-            m_dwStatus |= MYMFT_STATUS_STREAM_STARTED;
+    }
 
-        }
-
-        /*******************************
-        ** Note: This MFT only has one
-        ** input stream, so RequestSample
-        ** is always called with '0'. If
-        ** your MFT has more than one
-        ** input stream, you will
-        ** have to change this logic
-        *******************************/
-        hr = RequestSample(0);
-        if (FAILED(hr))
-        {
-            break;
-        }
-    } while (false);
-
+    /*******************************
+    ** Note: This MFT only has one
+    ** input stream, so RequestSample
+    ** is always called with '0'. If
+    ** your MFT has more than one
+    ** input stream, you will
+    ** have to change this logic
+    *******************************/
+    HRESULT hr = RequestSample(0);
     LOG_HRESULT(hr);
     return hr;
 }
@@ -963,9 +989,6 @@ HRESULT TransformAsync::OnStartOfStream(void)
 HRESULT TransformAsync::OnEndOfStream(void)
 {
     HRESULT hr = S_OK;
-
-
-    do
     {
         std::lock_guard<std::recursive_mutex> lock(m_mutex);
 
@@ -977,7 +1000,7 @@ HRESULT TransformAsync::OnEndOfStream(void)
         ** input request should be reset to 0
         *****************************************/
         m_dwNeedInputCount = 0;
-    } while (false);
+    } 
 
     LOG_HRESULT(hr);
     return hr;
@@ -1025,7 +1048,6 @@ HRESULT TransformAsync::OnDrain(
         else
         {
             m_dwStatus |= (MYMFT_STATUS_DRAINING);
-
         }
         /*******************************
         ** Note: This MFT only has one
@@ -1037,14 +1059,12 @@ HRESULT TransformAsync::OnDrain(
         *******************************/
     } while (false);
 
-
     return hr;
 }
 
 HRESULT TransformAsync::OnFlush(void)
 {
     HRESULT hr = S_OK;
-    do
     {
         // TODO: Remove fence values so that framerate can restart
         std::lock_guard<std::recursive_mutex> lock(m_mutex);
@@ -1054,10 +1074,10 @@ HRESULT TransformAsync::OnFlush(void)
         hr = FlushSamples();
         if (FAILED(hr))
         {
-            break;
+            return hr;
         }
 
-    } while (false);
+    } 
 
     return hr;
 }
@@ -1065,26 +1085,15 @@ HRESULT TransformAsync::OnFlush(void)
 HRESULT TransformAsync::OnMarker(
     const ULONG_PTR pulID)
 {
-    HRESULT hr = S_OK;
+    // No need to lock, our sample queue is thread safe
 
-    do
-    {
-        // No need to lock, our sample queue is thread safe
+    /***************************************
+    ** Since this in an internal function
+    ** we know m_pInputSampleQueue can never be
+    ** NULL due to InitializeTransform()
+    ***************************************/
 
-        /***************************************
-        ** Since this in an internal function
-        ** we know m_pInputSampleQueue can never be
-        ** NULL due to InitializeTransform()
-        ***************************************/
-
-        hr = m_pInputSampleQueue->MarkerNextSample(pulID);
-        if (FAILED(hr))
-        {
-            break;
-        }
-    } while (false);
-
-
+    HRESULT hr = m_pInputSampleQueue->MarkerNextSample(pulID);
     return hr;
 }
 

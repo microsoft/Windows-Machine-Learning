@@ -38,11 +38,10 @@ enum OnnxDataType : long {
 }OnnxDataType;
 
 
-int g_scale = 5;
-auto outputBindProperties = PropertySet();
+const int32_t opset = 12;
 
 /****	Style transfer model	****/
-void StyleTransfer::SetModels(int w, int h)
+void StyleTransfer::InitializeSession(int w, int h)
 {
 	// TODO: Use w/h or use the 720x720 of the mode
 	SetImageSize(720, 720); // SIze model input sizes fixed to 720x720
@@ -53,7 +52,6 @@ void StyleTransfer::Run(IDirect3DSurface src, IDirect3DSurface dest)
 {
 	m_bSyncStarted = TRUE;
 
-	assert(m_session.Device().AdapterId() == m_highPerfAdapter);
 	VideoFrame inVideoFrame = VideoFrame::CreateWithDirect3D11Surface(src);
 	VideoFrame outVideoFrame = VideoFrame::CreateWithDirect3D11Surface(dest);
 	SetVideoFrames(inVideoFrame, outVideoFrame);
@@ -72,11 +70,12 @@ void StyleTransfer::Run(IDirect3DSurface src, IDirect3DSurface dest)
 
 	m_bSyncStarted = FALSE;
 }
+
 LearningModel StyleTransfer::GetModel()
 {
-	auto rel = std::filesystem::current_path();
-	rel.append("Assets\\mosaic.onnx");
-	return LearningModel::LoadFromFilePath(rel + L"");
+	auto model_path = std::filesystem::current_path();
+	model_path.append("Assets\\mosaic.onnx");
+	return LearningModel::LoadFromFilePath(model_path.c_str());
 }
 
 
@@ -85,9 +84,9 @@ BackgroundBlur::~BackgroundBlur() {
 	if (m_session) m_session.Close();
 }
 
-void BackgroundBlur::SetModels(int w, int h)
+void BackgroundBlur::InitializeSession(int w, int h)
 {
-	w /= g_scale; h /= g_scale;
+	w /= m_scale; h /= m_scale;
 	SetImageSize(w, h);
 
 	auto joinOptions1 = LearningModelJoinOptions();
@@ -103,7 +102,7 @@ void BackgroundBlur::SetModels(int w, int h)
 	joinOptions2.Link(L"FCN_out", L"InputScores");
 	joinOptions2.Link(L"OutputImageForward", L"InputImage");
 	joinOptions2.JoinedNodePrefix(L"Post_");
-	//joinOptions2.PromoteUnlinkedOutputsToFusedOutputs(false); // Causes winrt originate error in FusedGraphKernel.cpp, but works on CPU
+	//joinOptions2.PromoteUnlinkedOutputsToFusedOutputs(false); // TODO: Causes winrt originate error in FusedGraphKernel.cpp, but works on CPU
 	auto modelExperimental2 = LearningModelExperimental(intermediateModel);
 	LearningModel modelFused = modelExperimental2.JoinModel(PostProcess(1, 3, h, w, 1), joinOptions2);
 
@@ -115,16 +114,15 @@ void BackgroundBlur::SetModels(int w, int h)
 }
 LearningModel BackgroundBlur::GetModel()
 {
-	auto rel = std::filesystem::current_path();
-	rel.append("Assets\\fcn-resnet50-12.onnx");
-	return LearningModel::LoadFromFilePath(rel + L"");
+	auto model_path = std::filesystem::current_path();
+	model_path.append("Assets\\fcn-resnet50-12.onnx");
+	return LearningModel::LoadFromFilePath(model_path.c_str());
 }
 
 void BackgroundBlur::Run(IDirect3DSurface src, IDirect3DSurface dest)
 {
 	m_bSyncStarted = TRUE;
 	// Device validation
-	assert(m_session.Device().AdapterId() == m_highPerfAdapter);
 	VideoFrame inVideoFrame = VideoFrame::CreateWithDirect3D11Surface(src);
 	VideoFrame outVideoFrame = VideoFrame::CreateWithDirect3D11Surface(dest);
 	SetVideoFrames(inVideoFrame, outVideoFrame);
@@ -145,7 +143,7 @@ void BackgroundBlur::Run(IDirect3DSurface src, IDirect3DSurface dest)
 
 LearningModel BackgroundBlur::PostProcess(long n, long c, long h, long w, long axis)
 {
-	auto builder = LearningModelBuilder::Create(12)
+	auto builder = LearningModelBuilder::Create(opset)
 		.Inputs().Add(LearningModelBuilder::CreateTensorFeatureDescriptor(L"InputImage", TensorKind::Float, { n, c, h, w }))
 		.Inputs().Add(LearningModelBuilder::CreateTensorFeatureDescriptor(L"InputScores", TensorKind::Float, { -1, -1, h, w })) // Different input type? 
 		.Outputs().Add(LearningModelBuilder::CreateTensorFeatureDescriptor(L"OutputImage", TensorKind::Float, { n, c, h, w }))
@@ -204,8 +202,7 @@ LearningModel BackgroundBlur::PostProcess(long n, long c, long h, long w, long a
 
 LearningModel Invert(long n, long c, long h, long w)
 {
-	
-	auto builder = LearningModelBuilder::Create(11)
+	auto builder = LearningModelBuilder::Create(opset)
 		// Loading in buffers and reshape
 		.Inputs().Add(LearningModelBuilder::CreateTensorFeatureDescriptor(L"Input", TensorKind::Float, { n, c, h, w }))
 		.Outputs().Add(LearningModelBuilder::CreateTensorFeatureDescriptor(L"Output", TensorKind::Float, { n, c, h, w }))
@@ -230,7 +227,7 @@ LearningModel Normalize0_1ThenZScore(long h, long w, long c, const std::array<fl
 	assert(means.size() == c);
 	assert(stddev.size() == c);
 
-	auto builder = LearningModelBuilder::Create(12)
+	auto builder = LearningModelBuilder::Create(opset)
 		.Inputs().Add(LearningModelBuilder::CreateTensorFeatureDescriptor(L"Input", L"The NCHW image", TensorKind::Float, {1, c, h, w}))
 		.Outputs().Add(LearningModelBuilder::CreateTensorFeatureDescriptor(L"Output", L"The NCHW image normalized with mean and stddev.", TensorKind::Float, {1, c, h, w}))
 		.Outputs().Add(LearningModelBuilder::CreateTensorFeatureDescriptor(L"OutputImageForward", L"The NCHW image forwarded through the model.", TensorKind::Float, {1, c, h, w}))
@@ -262,7 +259,7 @@ LearningModel Normalize0_1ThenZScore(long h, long w, long c, const std::array<fl
 
 LearningModel ReshapeFlatBufferToNCHW(long n, long c, long h, long w)
 {
-	auto builder = LearningModelBuilder::Create(11)
+	auto builder = LearningModelBuilder::Create(opset)
 		// Loading in buffers and reshape
 		.Inputs().Add(LearningModelBuilder::CreateTensorFeatureDescriptor(L"Input", TensorKind::UInt8, { 1, n * c * h * w }))
 		.Outputs().Add(LearningModelBuilder::CreateTensorFeatureDescriptor(L"Output", TensorKind::Float, {n, c, h, w}))

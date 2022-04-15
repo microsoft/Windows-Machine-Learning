@@ -433,7 +433,7 @@ HRESULT TransformAsync::UpdateDX11Device()
         D3D11_FENCE_FLAG flag = D3D11_FENCE_FLAG_NONE;
         m_spDevice->CreateFence(m_fenceValue, flag, __uuidof(ID3D11Fence), m_spFence.put_void());
         // Probably don't need to save the event for the first frame to render, since that will be long anyways w first Eval/Bind. 
-        // Actually prob will be long for the first little bit anyways bc of each IStreamModel to select, but oh well. It'll be fine. 
+        // Actually prob will be long for the first little bit anyways bc of each StreamModelBase to select, but oh well. It'll be fine. 
     }
     else 
     {
@@ -799,7 +799,7 @@ HRESULT TransformAsync::InitializeTransform(void)
 
     CHECK_HR(hr = CSampleQueue::Create(&m_pOutputSampleQueue));
 
-    // Set up circular queue of IStreamModels
+    // Set up circular queue of StreamModelBases
     for (int i = 0; i < m_numThreads; i++) {
         // TODO: Have a dialogue to select which model to select for real-time inference. 
         m_models.push_back(std::make_unique<BackgroundBlur>());
@@ -898,7 +898,7 @@ HRESULT TransformAsync::UpdateFormatInfo()
         // Set the size of the SegmentModel
         for (int i = 0; i < m_numThreads; i++)
         {
-            m_models[i]->SetModels(m_imageWidthInPixels, m_imageHeightInPixels);
+            m_models[i]->InitializeSession(m_imageWidthInPixels, m_imageHeightInPixels);
         }
     }
 

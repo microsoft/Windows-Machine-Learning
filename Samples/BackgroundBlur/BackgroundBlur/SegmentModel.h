@@ -29,47 +29,37 @@ LearningModel Normalize0_1ThenZScore(long height, long width, long channels, con
 LearningModel ReshapeFlatBufferToNCHW(long n, long c, long h, long w);
 LearningModel Invert(long n, long c, long h, long w);
 
-class IStreamModel
+class StreamModelBase
 {
 public:
-	IStreamModel(): 
+	StreamModelBase(): 
 		m_inputVideoFrame(NULL),
 		m_outputVideoFrame(NULL),
 		m_session(NULL),
 		m_binding(NULL), 
 		m_bSyncStarted(FALSE)
 	{}
-	IStreamModel(int w, int h) :
+	StreamModelBase(int w, int h) :
 		m_inputVideoFrame(NULL),
 		m_outputVideoFrame(NULL),
 		m_session(NULL),
 		m_binding(NULL),
 		m_bSyncStarted(FALSE)
 	{}
-	~IStreamModel() {
+	virtual ~StreamModelBase() {
 		if(m_session) m_session.Close();
 		if(m_binding) m_binding.Clear();
 		if (m_inputVideoFrame) m_inputVideoFrame.Close();
 		if (m_outputVideoFrame) m_outputVideoFrame.Close();
-		if (m_device) m_device.Close();
 	};
 
-	virtual void SetModels(int w, int h) =0;
+	virtual void InitializeSession(int w, int h) =0;
 	virtual void Run(IDirect3DSurface src, IDirect3DSurface dest) =0;
-
-	void SetUseGPU(bool use) { 
-		m_bUseGPU = use;
-	}
-	void SetDevice() {
-		assert(m_session.Device().AdapterId() == m_highPerfAdapter);
-		assert(m_session.Device().Direct3D11Device() != NULL);
-		m_device = m_session.Device().Direct3D11Device();
-		auto device = m_session.Device().AdapterId();
-	}
 	
 	// Synchronous eval status
 	BOOL m_bSyncStarted; 
 	VideoFrame m_outputVideoFrame;
+	static const int m_scale = 5;
 
 protected:
 	// Cache input frames into a shareable d3d-backed VideoFrame
@@ -77,10 +67,7 @@ protected:
 	{
 		if (true || !m_bVideoFramesSet)
 		{
-			if (m_device == NULL)
-			{
-				SetDevice();
-			}
+			auto device = m_session.Device().Direct3D11Device();
 			auto inDesc = inVideoFrame.Direct3DSurface().Description();
 			auto outDesc = outVideoFrame.Direct3DSurface().Description();
 			/*
@@ -88,8 +75,8 @@ protected:
 				whereas every model created with LearningModelBuilder takes arguments in (height, width) order. 
 			*/ 
 			auto format = winrt::Windows::Graphics::DirectX::DirectXPixelFormat::B8G8R8X8UIntNormalized;
-			m_inputVideoFrame = VideoFrame::CreateAsDirect3D11SurfaceBacked(format, m_imageWidthInPixels, m_imageHeightInPixels, m_device);
-			m_outputVideoFrame = VideoFrame::CreateAsDirect3D11SurfaceBacked(format, m_imageWidthInPixels, m_imageHeightInPixels, m_device);
+			m_inputVideoFrame = VideoFrame::CreateAsDirect3D11SurfaceBacked(format, m_imageWidthInPixels, m_imageHeightInPixels, device);
+			m_outputVideoFrame = VideoFrame::CreateAsDirect3D11SurfaceBacked(format, m_imageWidthInPixels, m_imageHeightInPixels, device);
 			m_bVideoFramesSet = true;
 		}
 		// TODO: Fix bug in WinML so that the surfaces from capture engine are shareable, remove copy. 
@@ -104,8 +91,6 @@ protected:
 
 	LearningModelSession CreateLearningModelSession(const LearningModel& model, bool closedModel = true) {
 		auto device = m_bUseGPU ? LearningModelDevice(LearningModelDeviceKind::DirectXHighPerformance) : LearningModelDevice(LearningModelDeviceKind::Default);
-		auto displayAdapter = winrt::Windows::Devices::Display::Core::DisplayAdapter::FromId(device.AdapterId());
-		m_highPerfAdapter = device.AdapterId();
 		auto options = LearningModelSessionOptions();
 		options.BatchSizeOverride(0);
 		options.CloseModelOnSessionCreation(closedModel);
@@ -119,9 +104,6 @@ protected:
 								
 	UINT32                      m_imageWidthInPixels;
 	UINT32                      m_imageHeightInPixels;
-	IDirect3DDevice				m_device;
-	// For debugging potential device issues
-	winrt::Windows::Graphics::DisplayAdapterId m_highPerfAdapter{};
 
 	// Learning Model Binding and Session. 
 	LearningModelSession m_session;
@@ -129,34 +111,34 @@ protected:
 }; 
 
 
-class StyleTransfer : public IStreamModel {
+class StyleTransfer : public StreamModelBase {
 public:
-	StyleTransfer(int w, int h) : IStreamModel(w, h) 
+	StyleTransfer(int w, int h) : StreamModelBase(w, h) 
 	{
-		SetModels(w, h); 
+		InitializeSession(w, h); 
 	}
-	StyleTransfer() : IStreamModel() {};
-	~StyleTransfer(){};
-	void SetModels(int w, int h);
+	StyleTransfer() : StreamModelBase() {};
+	virtual ~StyleTransfer(){};
+	void InitializeSession(int w, int h);
 	void Run(IDirect3DSurface src, IDirect3DSurface dest);
 private: 
 	LearningModel GetModel();
 };
 
 
-class BackgroundBlur : public IStreamModel
+class BackgroundBlur : public StreamModelBase
 {
 public:
 	BackgroundBlur(int w, int h) : 
-		IStreamModel(w, h)
+		StreamModelBase(w, h)
 	{
-		SetModels(w, h);
+		InitializeSession(w, h);
 	}
 	BackgroundBlur() : 
-		IStreamModel()
+		StreamModelBase()
 	{};
-	~BackgroundBlur();
-	void SetModels(int w, int h);
+	virtual ~BackgroundBlur();
+	void InitializeSession(int w, int h);
 	void Run(IDirect3DSurface src, IDirect3DSurface dest);
 
 private:

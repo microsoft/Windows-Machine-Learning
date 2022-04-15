@@ -226,7 +226,7 @@ public:
     HRESULT NotifyRelease();
 #pragma endregion IMFVideoSampleAllocatorNotify
     
-    // Uses the next available IStreamModel to run inference on pInputSample 
+    // Uses the next available StreamModelBase to run inference on pInputSample 
     // and allocates a transformed output sample. 
     HRESULT SubmitEval(IMFSample* pInputSample);
     
@@ -268,7 +268,7 @@ protected:
     HRESULT OnSetD3DManager(ULONG_PTR ulParam);
 
     // After the input type is set, update MFT format information and sets
-    // IStreamModel input sizes. 
+    // StreamModelBase input sizes. 
     HRESULT UpdateFormatInfo(); 
 
     // Sets up the output sample allocator.
@@ -309,7 +309,7 @@ protected:
     com_ptr<IMFAttributes>          m_spAttributes;         // MFT Attributes.
     com_ptr<IMFAttributes>          m_spAllocatorAttributes;// Output sample allocator attributes.    
     bool                            m_bAllocatorInitialized;// True if sample allocator has been initialized. 
-    volatile ULONG                  m_ulSampleCounter;      // Frame number, can use to pick a IStreamModel.
+    volatile ULONG                  m_ulSampleCounter;      // Frame number, can use to pick a StreamModelBase.
     volatile ULONG                  m_ulProcessedFrameNum;  // Number of frames we've processed.
     volatile ULONG                  m_currFrameNumber;      // The current frame to be processed.
 
@@ -347,7 +347,7 @@ protected:
     // Model Inference fields
     int m_numThreads =                                     // Number of threads running inference in parallel.
          max(std::thread::hardware_concurrency(), 5);
-    std::vector<std::unique_ptr<IStreamModel>> m_models;    // m_numThreads number of models to run inference in parallel. 
+    std::vector<std::unique_ptr<StreamModelBase>> m_models;    // m_numThreads number of models to run inference in parallel. 
     int modelIndex = 0;
 
 };

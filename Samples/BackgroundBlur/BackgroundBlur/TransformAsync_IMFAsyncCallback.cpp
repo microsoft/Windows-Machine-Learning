@@ -30,8 +30,8 @@ HRESULT TransformAsync::NotifyRelease()
         if (currFenceValue % FRAME_RATE_UPDATE == 0)
         {
             
-            m_spFence->SetEventOnCompletion(currFenceValue, m_hFenceEvent); // Raise FenceEvent when done
-            m_hFrameThread = CreateThread(NULL, 0, FrameThreadProc, m_hFenceEvent, 0, &dwThreadID);
+            m_spFence->SetEventOnCompletion(currFenceValue, m_hFenceEvent.get()); // Raise FenceEvent when done
+            m_hFrameThread.reset(CreateThread(NULL, 0, FrameThreadProc, m_hFenceEvent.get(), 0, &dwThreadID));
         }
 
         m_fenceValue = currFenceValue + 1;

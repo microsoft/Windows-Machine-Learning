@@ -85,7 +85,7 @@ TransformAsync::~TransformAsync()
     m_spInputType.detach();
     m_spOutputType.detach();
    
-    CloseHandle(m_hFenceEvent);
+    CloseHandle(m_hFenceEvent.get());
 
     if (m_spEventQueue)
     {
@@ -94,15 +94,9 @@ TransformAsync::~TransformAsync()
 
     if (m_spDeviceManager)
     {
-        m_spDeviceManager->CloseDeviceHandle(m_hDeviceHandle);
+        m_spDeviceManager->CloseDeviceHandle(m_hDeviceHandle.get());
         m_spDeviceManager->Release();
     }
-
-    if (m_spOutputSampleAllocator) {
-        m_spOutputSampleAllocator->UninitializeSampleAllocator();
-        //m_spOutputSampleAllocator->Release();
-    }
-
 }
 
 #pragma region IUnknown
@@ -395,10 +389,10 @@ HRESULT TransformAsync::OnSetD3DManager(ULONG_PTR ulParam)
             }
 
             // Create event and thread for framerate
-            m_hFenceEvent = CreateEvent(NULL,               // Security attributes
+            m_hFenceEvent.reset(CreateEvent(NULL,               // Security attributes
                 FALSE,              // Reset token to false means system will auto-reset event object
                 FALSE,              // Initial state is nonsignaled
-                TEXT("FrameEvent"));  // Event object name
+                TEXT("FrameEvent")));  // Event object name
             
             DWORD dwThreadID;
         }
@@ -423,7 +417,7 @@ HRESULT TransformAsync::UpdateDX11Device()
     if (m_spDeviceManager != nullptr)
     {
         CHECK_HR(hr = m_spDeviceManager->OpenDeviceHandle(&m_hDeviceHandle));
-        CHECK_HR(hr = m_spDeviceManager->GetVideoService(m_hDeviceHandle, IID_PPV_ARGS(&pDevice)));
+        CHECK_HR(hr = m_spDeviceManager->GetVideoService(m_hDeviceHandle.get(), IID_PPV_ARGS(&pDevice)));
         m_spDevice = pDevice.try_as<ID3D11Device5>();
         m_spDevice->GetImmediateContext(pContext.put());
         m_spContext = pContext.try_as<ID3D11DeviceContext4>();
@@ -482,6 +476,7 @@ HRESULT TransformAsync::SetupAlloc()
                 m_spOutputSampleAllocator.attach(spVideoSampleAllocator.detach());
             }
 
+            // TOOD: This should prob raise an error if it doesn't work
             CHECK_HR(hr = m_spOutputSampleAllocator->InitializeSampleAllocatorEx(2, m_numThreads, m_spAllocatorAttributes.get(), m_spOutputType.get()));
 
             // Set up IMFVideoSampleAllocatorCallback
@@ -501,7 +496,7 @@ HRESULT TransformAsync::CheckDX11Device()
 
     if (m_spDeviceManager != nullptr && m_hDeviceHandle)
     {
-        if (m_spDeviceManager->TestDevice(m_hDeviceHandle) != S_OK)
+        if (m_spDeviceManager->TestDevice(m_hDeviceHandle.get()) != S_OK)
         {
             InvalidateDX11Resources();
 

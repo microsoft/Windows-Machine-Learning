@@ -189,6 +189,7 @@
     <Import Project="..\packages\WinPixEventRuntime.1.0.220124001\build\WinPixEventRuntime.targets" Condition="Exists('..\packages\WinPixEventRuntime.1.0.220124001\build\WinPixEventRuntime.targets')" />
     <Import Project="..\packages\Microsoft.AI.MachineLearning.1.10.0\build\native\Microsoft.AI.MachineLearning.targets" Condition="Exists('..\packages\Microsoft.AI.MachineLearning.1.10.0\build\native\Microsoft.AI.MachineLearning.targets')" />
     <Import Project="..\packages\Microsoft.Windows.CppWinRT.2.0.220224.4\build\native\Microsoft.Windows.CppWinRT.targets" Condition="Exists('..\packages\Microsoft.Windows.CppWinRT.2.0.220224.4\build\native\Microsoft.Windows.CppWinRT.targets')" />
+    <Import Project="..\packages\Microsoft.Windows.ImplementationLibrary.1.0.220201.1\build\native\Microsoft.Windows.ImplementationLibrary.targets" Condition="Exists('..\packages\Microsoft.Windows.ImplementationLibrary.1.0.220201.1\build\native\Microsoft.Windows.ImplementationLibrary.targets')" />
   </ImportGroup>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
@@ -201,6 +202,7 @@
     <Error Condition="!Exists('..\packages\Microsoft.AI.MachineLearning.1.10.0\build\native\Microsoft.AI.MachineLearning.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.AI.MachineLearning.1.10.0\build\native\Microsoft.AI.MachineLearning.targets'))" />
     <Error Condition="!Exists('..\packages\Microsoft.Windows.CppWinRT.2.0.220224.4\build\native\Microsoft.Windows.CppWinRT.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Windows.CppWinRT.2.0.220224.4\build\native\Microsoft.Windows.CppWinRT.props'))" />
     <Error Condition="!Exists('..\packages\Microsoft.Windows.CppWinRT.2.0.220224.4\build\native\Microsoft.Windows.CppWinRT.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Windows.CppWinRT.2.0.220224.4\build\native\Microsoft.Windows.CppWinRT.targets'))" />
+    <Error Condition="!Exists('..\packages\Microsoft.Windows.ImplementationLibrary.1.0.220201.1\build\native\Microsoft.Windows.ImplementationLibrary.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Windows.ImplementationLibrary.1.0.220201.1\build\native\Microsoft.Windows.ImplementationLibrary.targets'))" />
   </Target>
   <Target Name="DownloadContentFiles" BeforeTargets="Build">
     <DownloadFile Condition="!Exists('$(MSBuildProjectDirectory)\Assets\fcn-resnet50-12.onnx')" SourceUrl="https://github.com/onnx/models/raw/main/vision/object_detection_segmentation/fcn/model/fcn-resnet50-12.onnx" DestinationFolder="$(MSBuildProjectDirectory)\Assets">

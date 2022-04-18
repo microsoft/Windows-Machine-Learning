@@ -2,6 +2,7 @@
 #include "logging.h"
 #include "logmediatype.h"
 #include <winrt/Windows.Foundation.h>
+#include <wil/resource.h>
 using winrt::com_ptr;
 
 DEFINE_GUID(TransformAsync_MFSampleExtension_Marker,

@@ -44,8 +44,8 @@ void    ShowError(HWND hwnd, UINT id, HRESULT hr);
 HRESULT CloneVideoMediaType(IMFMediaType *pSrcMediaType, REFGUID guidSubType, IMFMediaType **ppNewMediaType);
 
 // DXGI DevManager support
-extern IMFDXGIDeviceManager* g_pDXGIMan;
-extern ID3D11Device*         g_pDX11Device;
+extern com_ptr<IMFDXGIDeviceManager> g_pDXGIMan;
+extern com_ptr<ID3D11Device>         g_pDX11Device;
 extern UINT                  g_ResetToken;
 
 // Gets an interface pointer from a Media Foundation collection.
@@ -113,10 +113,10 @@ class CaptureManager
     HWND                    m_hwndEvent;
     HWND                    m_hwndPreview;
 
-    IMFCaptureEngine* m_pEngine;        // Manages the capture engine (ie. the camera) 
-    IMFCapturePreviewSink* m_pPreview;  // Manages the preview sink (ie. the video window) 
+    com_ptr<IMFCaptureEngine> m_pEngine;        // Manages the capture engine (ie. the camera) 
+    com_ptr<IMFCapturePreviewSink> m_pPreview;  // Manages the preview sink (ie. the video window) 
 
-    CaptureEngineCB* m_pCallback;
+    com_ptr<CaptureEngineCB> m_pCallback;
 
     bool                    m_bPreviewing;
 
@@ -185,16 +185,11 @@ public:
             CloseHandle(m_hEvent);
             m_hEvent = NULL;
         }
-        SAFE_RELEASE(m_pPreview);
-        SAFE_RELEASE(m_pEngine);
-        SAFE_RELEASE(m_pCallback);
 
         if (g_pDXGIMan)
         {
-            g_pDXGIMan->ResetDevice(g_pDX11Device, g_ResetToken);
+            g_pDXGIMan->ResetDevice(g_pDX11Device.get(), g_ResetToken);
         }
-        SAFE_RELEASE(g_pDX11Device);
-        SAFE_RELEASE(g_pDXGIMan);
 
         m_bPreviewing = false;
         m_errorID = 0;  
@@ -206,7 +201,6 @@ public:
     UINT    ErrorID() const { return m_errorID; }
 
     HRESULT OnCaptureEvent(WPARAM wParam, LPARAM lParam); 
-    HRESULT SetVideoDevice(IUnknown *pUnk);
     HRESULT StartPreview();
     HRESULT StopPreview();
 

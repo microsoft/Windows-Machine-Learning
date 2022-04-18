@@ -1,5 +1,5 @@
 #define USE_PIX
-#define DBG
+//#define DBG
 
 #include <winrt/Microsoft.AI.MachineLearning.Experimental.h>
 #include <winrt/Microsoft.AI.MachineLearning.h>

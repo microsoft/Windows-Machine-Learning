@@ -330,8 +330,8 @@ protected:
     DWORD                           m_cbImageSize;          // Image size, in bytes.
 
     // D3D fields
-    com_ptr<IMFDXGIDeviceManager>   m_spDeviceManager;      // Device manager, shared with the video renderer. 
-    HANDLE                          m_hDeviceHandle;        // Handle to the current device
+    com_ptr<IMFDXGIDeviceManager>       m_spDeviceManager;  // Device manager, shared with the video renderer. 
+    wil::unique_handle                  m_hDeviceHandle;    // Handle to the current device
     // Immediate device context
     com_ptr<ID3D11DeviceContext4>       m_spContext;
     com_ptr<ID3D11Device5>              m_spDevice;
@@ -340,14 +340,14 @@ protected:
     // Frame rate synch objects
     com_ptr<ID3D11Fence>                m_spFence;
     UINT64 m_fenceValue;
-    HANDLE m_hFrameThread; 
-    HANDLE m_hFenceEvent; // Handle to the fence complete event
+    wil::unique_handle                  m_hFrameThread; 
+    wil::unique_handle                  m_hFenceEvent;      // Handle to the fence complete event
 
 
     // Model Inference fields
     int m_numThreads =                                     // Number of threads running inference in parallel.
          max(std::thread::hardware_concurrency(), 5);
-    std::vector<std::unique_ptr<StreamModelBase>> m_models;    // m_numThreads number of models to run inference in parallel. 
+    std::vector<std::unique_ptr<StreamModelBase>> m_models; // m_numThreads number of models to run inference in parallel. 
     int modelIndex = 0;
 
 };

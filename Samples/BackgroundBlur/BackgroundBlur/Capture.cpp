@@ -12,8 +12,8 @@
 #include <winrt/base.h>
 #include <mfreadwrite.h>
 
-IMFDXGIDeviceManager* g_pDXGIMan = NULL;
-ID3D11Device*         g_pDX11Device = NULL;
+com_ptr<IMFDXGIDeviceManager> g_pDXGIMan;
+com_ptr<ID3D11Device>         g_pDX11Device;
 UINT                  g_ResetToken = 0;
 
 
@@ -158,16 +158,16 @@ HRESULT CreateD3DManager()
     D3D_FEATURE_LEVEL FeatureLevel;
     com_ptr<ID3D11DeviceContext> pDX11DeviceContext;
     
-    hr = CreateDX11Device(&g_pDX11Device, pDX11DeviceContext.put(), &FeatureLevel);
+    hr = CreateDX11Device(g_pDX11Device.put(), pDX11DeviceContext.put(), &FeatureLevel);
 
     if(SUCCEEDED(hr))
     {
-        hr = MFCreateDXGIDeviceManager(&g_ResetToken, &g_pDXGIMan);
+        hr = MFCreateDXGIDeviceManager(&g_ResetToken, g_pDXGIMan.put());
     }
 
     if(SUCCEEDED(hr))
     {
-        hr = g_pDXGIMan->ResetDevice(g_pDX11Device, g_ResetToken);
+        hr = g_pDXGIMan->ResetDevice(g_pDX11Device.get(), g_ResetToken);
     }
         
     return hr;
@@ -177,10 +177,11 @@ HRESULT
 CaptureManager::InitializeCaptureManager(HWND hwndPreview, IUnknown* pUnk)
 {
     HRESULT                         hr = S_OK;
-    IMFAttributes*                  pAttributes = NULL;
-    IMFCaptureEngineClassFactory*   pFactory = NULL;
+    com_ptr<IMFAttributes>          pAttributes;
+    com_ptr<IMFCaptureEngineClassFactory>   pFactory;
 
     DestroyCaptureEngine();
+
 
     m_hEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
     if (NULL == m_hEvent)
@@ -189,7 +190,8 @@ CaptureManager::InitializeCaptureManager(HWND hwndPreview, IUnknown* pUnk)
         goto Exit;
     }
 
-    m_pCallback = new (std::nothrow) CaptureEngineCB(m_hwndEvent);
+    m_pCallback.attach(new (std::nothrow) CaptureEngineCB(m_hwndEvent));
+    //m_pCallback = new (std::nothrow) CaptureEngineCB(m_hwndEvent);
     if (m_pCallback == NULL)
     {
         hr = E_OUTOFMEMORY;
@@ -205,12 +207,12 @@ CaptureManager::InitializeCaptureManager(HWND hwndPreview, IUnknown* pUnk)
     {
         goto Exit;
     }
-    hr = MFCreateAttributes(&pAttributes, 1); 
+    hr = MFCreateAttributes(pAttributes.put(), 1);
     if (FAILED(hr))
     {
         goto Exit;
     }
-    hr = pAttributes->SetUnknown(MF_CAPTURE_ENGINE_D3D_MANAGER, g_pDXGIMan);
+    hr = pAttributes->SetUnknown(MF_CAPTURE_ENGINE_D3D_MANAGER, g_pDXGIMan.get());
     if (FAILED(hr))
     {
         goto Exit;
@@ -218,35 +220,25 @@ CaptureManager::InitializeCaptureManager(HWND hwndPreview, IUnknown* pUnk)
 
     // Create the factory object for the capture engine.
     hr = CoCreateInstance(CLSID_MFCaptureEngineClassFactory, NULL, 
-        CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&pFactory));
+        CLSCTX_INPROC_SERVER, IID_PPV_ARGS(pFactory.put()));
     if (FAILED(hr))
     {
         goto Exit;
     }
 
     // Create and initialize the capture engine.
-    hr = pFactory->CreateInstance(CLSID_MFCaptureEngine, IID_PPV_ARGS(&m_pEngine));
+    hr = pFactory->CreateInstance(CLSID_MFCaptureEngine, IID_PPV_ARGS(m_pEngine.put()));
     if (FAILED(hr))
     {
         goto Exit;
     }
-    hr = m_pEngine->Initialize(m_pCallback, pAttributes, NULL, pUnk);
+    hr = m_pEngine->Initialize(m_pCallback.get(), pAttributes.get(), NULL, pUnk);
     if (FAILED(hr))
     {
         goto Exit;
     }
 
 Exit:
-    if (NULL != pAttributes)
-    {
-        pAttributes->Release();
-        pAttributes = NULL;
-    }
-    if (NULL != pFactory)
-    {
-        pFactory->Release();
-        pFactory = NULL;
-    }
     return hr;
 }
 
@@ -257,7 +249,8 @@ HRESULT CaptureManager::OnCaptureEvent(WPARAM wParam, LPARAM lParam)
     GUID guidType;
     HRESULT hrStatus;
 
-    IMFMediaEvent *pEvent = reinterpret_cast<IMFMediaEvent*>(wParam);
+    com_ptr<IMFMediaEvent> pEvent;
+    pEvent.copy_from(reinterpret_cast<IMFMediaEvent*>(wParam));
 
     HRESULT hr = pEvent->GetStatus(&hrStatus);
     if (FAILED(hr))
@@ -304,7 +297,6 @@ HRESULT CaptureManager::OnCaptureEvent(WPARAM wParam, LPARAM lParam)
         }
     }
 
-    pEvent->Release();
     SetEvent(m_hEvent);
     return hrStatus;
 }
@@ -360,7 +352,7 @@ HRESULT CaptureManager::StartPreview()
             goto done;
         }
 
-        hr = pSink->QueryInterface(IID_PPV_ARGS(&m_pPreview));
+        hr = pSink->QueryInterface(IID_PPV_ARGS(m_pPreview.put()));
         if (FAILED(hr))
         {
             goto done;

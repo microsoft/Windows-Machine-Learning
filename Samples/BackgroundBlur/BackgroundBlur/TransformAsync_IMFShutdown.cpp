@@ -25,6 +25,10 @@ HRESULT TransformAsync::GetShutdownStatus(
                 break;
             }
 
+            if (m_spOutputSampleAllocator) {
+                m_spOutputSampleAllocator->UninitializeSampleAllocator();
+            }
+
             *pStatus = MFSHUTDOWN_COMPLETED;
         }
     } while (false);

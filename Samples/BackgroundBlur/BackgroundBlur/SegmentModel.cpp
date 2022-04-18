@@ -43,7 +43,6 @@ const int32_t opset = 12;
 /****	Style transfer model	****/
 void StyleTransfer::InitializeSession(int w, int h)
 {
-	// TODO: Use w/h or use the 720x720 of the mode
 	SetImageSize(720, 720); // SIze model input sizes fixed to 720x720
 	m_session = CreateLearningModelSession(GetModel());
 	m_binding = LearningModelBinding(m_session);
@@ -63,7 +62,7 @@ void StyleTransfer::Run(IDirect3DSurface src, IDirect3DSurface dest)
 	auto outputBindProperties = PropertySet();
 	outputBindProperties.Insert(L"DisableTensorCpuSync", PropertyValue::CreateBoolean(true));
 
-	m_binding.Bind(outputName, m_outputVideoFrame, outputBindProperties); // TODO: See if can bind videoframe from MFT
+	m_binding.Bind(outputName, m_outputVideoFrame, outputBindProperties); 
 	auto results = m_session.Evaluate(m_binding, L"");
 
 	m_outputVideoFrame.CopyToAsync(outVideoFrame).get();
@@ -122,7 +121,7 @@ LearningModel BackgroundBlur::GetModel()
 void BackgroundBlur::Run(IDirect3DSurface src, IDirect3DSurface dest)
 {
 	m_bSyncStarted = TRUE;
-	// Device validation
+
 	VideoFrame inVideoFrame = VideoFrame::CreateWithDirect3D11Surface(src);
 	VideoFrame outVideoFrame = VideoFrame::CreateWithDirect3D11Surface(dest);
 	SetVideoFrames(inVideoFrame, outVideoFrame);

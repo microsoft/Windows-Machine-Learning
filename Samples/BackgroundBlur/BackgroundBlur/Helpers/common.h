@@ -1,8 +1,12 @@
 #pragma once
 #include "logging.h"
 #include "logmediatype.h"
+#include <wil/cppwinrt.h> // must be before the first C++ WinRT header
+#include <wil/result.h>
 #include <winrt/Windows.Foundation.h>
 #include <wil/resource.h>
+
+
 using winrt::com_ptr;
 
 DEFINE_GUID(TransformAsync_MFSampleExtension_Marker,

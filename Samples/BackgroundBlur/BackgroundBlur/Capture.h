@@ -69,12 +69,12 @@ struct ChooseDeviceParam
     {
     }
     ~ChooseDeviceParam()
-    {
-        for (DWORD i = 0; i < count; i++)
+    {for (DWORD i = 0; i < count; i++)
         {
             SAFE_RELEASE(ppDevices[i]);
         }
         CoTaskMemFree(ppDevices);
+        
     }
 
     IMFActivate** ppDevices;
@@ -177,7 +177,7 @@ public:
         return hr;
     }
 
-    HRESULT InitializeCaptureManager(HWND hwndPreview, IUnknown* pUnk);
+    HRESULT InitializeCaptureManager(HWND hwndPreview, IUnknown* pUnk) noexcept;
     void DestroyCaptureEngine()
     {
         if (NULL != m_hEvent)

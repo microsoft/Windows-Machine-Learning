@@ -360,6 +360,7 @@ namespace MainWindow
     {
         delete g_pEngine;
         g_pEngine = NULL;
+        pSelectedDevice->ShutdownObject();
 
         if (g_hPowerNotify)
         {
@@ -406,8 +407,8 @@ namespace MainWindow
 
             CHECK_HR(hr = g_pEngine->InitializeCaptureManager(hPreview, param.ppDevices[iDevice]));
 
-            pSelectedDevice.detach(); // TODO: detach instead of release? 
-            pSelectedDevice.attach(param.ppDevices[iDevice]);
+            //pSelectedDevice.detach(); // TODO: detach instead of release? 
+            pSelectedDevice.copy_from(param.ppDevices[iDevice]);
         }
 
     done:
@@ -417,7 +418,7 @@ namespace MainWindow
         }
         UpdateUI(hwnd);
     }
-   
+
     void OnStopPreview(HWND hwnd)
     {
         HRESULT hr = g_pEngine->StopPreview();

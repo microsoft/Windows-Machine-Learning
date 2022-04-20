@@ -14,15 +14,14 @@ using namespace std;
 class EventTraceHelper
 {
 private:
-    TRACEHANDLE traceHandle;
-    TRACEHANDLE sessionHandle;
-    PEVENT_TRACE_PROPERTIES sessionProperties;
-    ThreadPool threadPool;
-    static DWORD PointerSize;
-    static CommandLineArgs commandArgs;
+    TRACEHANDLE m_traceHandle;
+    TRACEHANDLE m_sessionHandle;
+    PEVENT_TRACE_PROPERTIES m_sessionProperties;
+    ThreadPool m_threadPool;
+    CommandLineArgs commandArgs;
 
 public:
-    EventTraceHelper(CommandLineArgs args) : sessionHandle(INVALID_PROCESSTRACE_HANDLE), threadPool(1)
+    EventTraceHelper(CommandLineArgs args) : m_sessionHandle(INVALID_PROCESSTRACE_HANDLE), m_threadPool(1)
     {
         commandArgs = args;
     }

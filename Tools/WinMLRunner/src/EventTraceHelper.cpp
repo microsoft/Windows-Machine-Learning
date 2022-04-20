@@ -1,16 +1,15 @@
 #include "EventTraceHelper.h"
 #include <direct.h>
 
-#define LOGSESSION_NAME _T("winml")
+#define LOGSESSION_NAME L"winml"
 
-struct __declspec(uuid("{BCAD6AEE-C08D-4F66-828C-4C43461A033D}")) DXGKRNL_PROVIDER_GUID_HOLDER;
+struct __declspec(uuid("{BCAD6AEE-C08D-4F66-828C-4C43461A033D}")) WINML_PROVIDER_GUID_HOLDER;
 
-static const auto DXGKRNL_PROVIDER_GUID = __uuidof(DXGKRNL_PROVIDER_GUID_HOLDER);
+static const auto WINML_PROVIDER_GUID = __uuidof(WINML_PROVIDER_GUID_HOLDER);
 
-DWORD EventTraceHelper::PointerSize = 0;
-CommandLineArgs EventTraceHelper::commandArgs;
+DWORD PointerSize = 0;
 
-    /*logman update trace winml -p {BCAD6AEE-C08D-4F66-828C-4C43461A033D} <keyword> <level verbosity> -ets 
+/*logman update trace winml -p {BCAD6AEE-C08D-4F66-828C-4C43461A033D} <keyword> <level verbosity> -ets 
 To capture only WinML Traces replace <keyword> with 0x1 
 To capture only Lotus Profiling Traces replace <keyword> with 0x2 
 	Bit 0: WinML Traces 
@@ -409,8 +408,7 @@ DWORD EventTraceHelper::FormatDataForCPUFallback(_In_ const PEVENT_RECORD EventR
                 return status;
             }
         }
-        if (commandArgs.UseGPU() && 
-            wcscmp(executionProvider.c_str(), L"CPUExecutionProvider") == 0 && 
+        if (wcscmp(executionProvider.c_str(), L"CPUExecutionProvider") == 0 && 
             !operatorName.empty())
         {
             wprintf(L"WARNING: CPU fallback detected for operator %s(%s), duration: %s\n", operatorName.c_str(),
@@ -452,20 +450,19 @@ VOID WINAPI EventTraceHelper::EventRecordCallback(EVENT_RECORD* pEventRecord)
         if (ERROR_SUCCESS != status)
         {
             printf("GetEventInformation failed with %lu\n", status);
-            goto cleanup;
         }
-
-        if (DecodingSourceTlg == pInfo->DecodingSource)
+        else
         {
-            FormatDataForCPUFallback(pEventRecord, pInfo);
-        }
-        else // Not handling any events other than Tlg type
-        {
-            // Do nothing
+            if (DecodingSourceTlg == (pInfo)->DecodingSource)
+            {
+                FormatDataForCPUFallback(pEventRecord, pInfo);
+            }
+            else // Not handling any events other than Tlg type
+            {
+                // Do nothing
+            }
         }
     }
-
-cleanup:
 
     if (pInfo)
     {
@@ -499,26 +496,33 @@ void EventTraceHelper::ProcessEventTrace(PTRACEHANDLE traceHandle)
 
 void EventTraceHelper::Start()
 {
+    if (!commandArgs.UseGPU())
+    {
+        return;
+    }
     int bufferSize = sizeof(EVENT_TRACE_PROPERTIES) + (sizeof(LOGSESSION_NAME) + 1) * sizeof(wchar_t);
-    sessionProperties = static_cast<PEVENT_TRACE_PROPERTIES>(malloc(bufferSize));
-    ZeroMemory(sessionProperties, bufferSize);
+    m_sessionProperties = static_cast<PEVENT_TRACE_PROPERTIES>(malloc(bufferSize));
+    ZeroMemory(m_sessionProperties, bufferSize);
 
     GUID guid;
     UuidCreate(&guid);
-    sessionProperties->Wnode.BufferSize = static_cast<ULONG>(bufferSize);
-    sessionProperties->Wnode.Guid = guid;
-    sessionProperties->Wnode.ClientContext = 0;
-    sessionProperties->Wnode.Flags = WNODE_FLAG_TRACED_GUID;
-    sessionProperties->LogFileMode = EVENT_TRACE_REAL_TIME_MODE;
-    sessionProperties->LoggerNameOffset = sizeof(EVENT_TRACE_PROPERTIES);
+    m_sessionProperties->Wnode.BufferSize = static_cast<ULONG>(bufferSize);
+    m_sessionProperties->Wnode.Guid = guid;
+    m_sessionProperties->Wnode.ClientContext = 0;
+    m_sessionProperties->Wnode.Flags = WNODE_FLAG_TRACED_GUID;
+    m_sessionProperties->LogFileMode = EVENT_TRACE_REAL_TIME_MODE;
+    m_sessionProperties->LoggerNameOffset = sizeof(EVENT_TRACE_PROPERTIES);
 
-    auto hr = StartTrace(static_cast<PTRACEHANDLE>(&sessionHandle), LOGSESSION_NAME, sessionProperties);
+    auto hr = StartTrace(static_cast<PTRACEHANDLE>(&m_sessionHandle), LOGSESSION_NAME, m_sessionProperties);
     if (hr != ERROR_SUCCESS)
     {
-        printf("Error starting event trace: Trace already started %s\n", GetLastError());
+        printf("Warning starting event trace: Trace already started %d\n", GetLastError());
     }
-    auto status = EnableTraceEx2(sessionHandle, &DXGKRNL_PROVIDER_GUID, EVENT_CONTROL_CODE_ENABLE_PROVIDER,
-                                 TRACE_LEVEL_VERBOSE, 2, 0, 0, nullptr);
+    else
+    {
+        auto status = EnableTraceEx2(m_sessionHandle, &WINML_PROVIDER_GUID, EVENT_CONTROL_CODE_ENABLE_PROVIDER,
+                                     TRACE_LEVEL_VERBOSE, 2, 0, 0, nullptr);
+    }
 
     EVENT_TRACE_LOGFILE loggerInfo = {};
 
@@ -536,24 +540,25 @@ void EventTraceHelper::Start()
 
     loggerInfo.LoggerName = const_cast<LPWSTR>(LOGSESSION_NAME);
 
-    traceHandle = OpenTrace(&loggerInfo);
-    if (traceHandle == INVALID_PROCESSTRACE_HANDLE)
+    m_traceHandle = OpenTrace(&loggerInfo);
+    if (m_traceHandle == INVALID_PROCESSTRACE_HANDLE)
     {
         printf("Error opening event trace: OpenTrace failed with %lu\n", GetLastError());
         throw std::runtime_error("Unable to open trace");
     }
 
-    if (pHeader->PointerSize != sizeof(PVOID))
-        pHeader = (PTRACE_LOGFILE_HEADER)((PUCHAR)pHeader + 2 * (pHeader->PointerSize - sizeof(PVOID)));
-
-    PTRACEHANDLE pt = static_cast<PTRACEHANDLE>(&traceHandle);
-    threadPool.SubmitWork(ProcessEventTrace, pt);
+    PTRACEHANDLE pt = static_cast<PTRACEHANDLE>(&m_traceHandle);
+    m_threadPool.SubmitWork(ProcessEventTrace, pt);
 }
 
 void EventTraceHelper::Stop()
 {
-    auto status = CloseTrace(traceHandle);
-    status = ControlTrace(sessionHandle, nullptr, sessionProperties, EVENT_TRACE_CONTROL_STOP);
-    status = EnableTraceEx2(sessionHandle, &DXGKRNL_PROVIDER_GUID, EVENT_CONTROL_CODE_DISABLE_PROVIDER, 0, 0, 0, 0, nullptr);
+    if (!commandArgs.UseGPU())
+    {
+        return;
+    }
+    auto status = CloseTrace(m_traceHandle);
+    status = ControlTrace(m_sessionHandle, nullptr, m_sessionProperties, EVENT_TRACE_CONTROL_STOP);
+    status = EnableTraceEx2(m_sessionHandle, &WINML_PROVIDER_GUID, EVENT_CONTROL_CODE_DISABLE_PROVIDER, 0, 0, 0, 0, nullptr);
 }
 

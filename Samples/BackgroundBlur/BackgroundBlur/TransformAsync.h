@@ -54,7 +54,7 @@ class TransformAsync :
     public IMFVideoSampleAllocatorNotify
 {
 public: 
-    static HRESULT CreateInstance(IMFTransform** ppMFT);
+    static HRESULT CreateInstance(IMFTransform** ppMFT) noexcept;
 
 #pragma region IUnknown
     // IUnknown
@@ -239,7 +239,7 @@ public:
                 UINT64 pun64MarkerID);
 
 protected: 
-    TransformAsync(HRESULT& hr);
+    TransformAsync();
 
     // Destructor is private. The object deletes itself when the reference count is zero.
     ~TransformAsync();

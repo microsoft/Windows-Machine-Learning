@@ -5,54 +5,35 @@
 HRESULT TransformAsync::GetShutdownStatus(
     MFSHUTDOWN_STATUS* pStatus)
 {
-    HRESULT hr = S_OK;
 
-    do
+    if (pStatus == NULL)
     {
-        if (pStatus == NULL)
-        {
-            hr = E_POINTER;
-            break;
-        }
+        return E_POINTER;
+    }
 
-        {
-            std::lock_guard<std::recursive_mutex> lock(m_mutex);
-
-
-            if (m_bShutdown == FALSE)
-            {
-                hr = MF_E_INVALIDREQUEST;
-                break;
-            }
-
-            if (m_spOutputSampleAllocator) {
-                m_spOutputSampleAllocator->UninitializeSampleAllocator();
-            }
-
-            *pStatus = MFSHUTDOWN_COMPLETED;
-        }
-    } while (false);
-
-    return hr;
-}
-
-HRESULT TransformAsync::Shutdown(void)
-{
-    HRESULT hr = S_OK;
-
-    do
     {
         std::lock_guard<std::recursive_mutex> lock(m_mutex);
 
 
-        hr = ShutdownEventQueue();
-        if (FAILED(hr))
+        if (m_bShutdown == FALSE)
         {
-            break;
+            return MF_E_INVALIDREQUEST;
         }
 
-        m_bShutdown = TRUE;
-    } while (false);
+        if (m_spOutputSampleAllocator) {
+            m_spOutputSampleAllocator->UninitializeSampleAllocator();
+        }
 
-    return hr;
+        *pStatus = MFSHUTDOWN_COMPLETED;
+    }
+
+    return S_OK;
+}
+
+HRESULT TransformAsync::Shutdown(void)
+{
+    std::lock_guard<std::recursive_mutex> lock(m_mutex);
+    RETURN_IF_FAILED(ShutdownEventQueue());
+    m_bShutdown = TRUE;
+    return S_OK;
 }

@@ -83,6 +83,7 @@ HRESULT TransformAsync::GetStreamIDs(
     // streams and the stream IDs match the stream indexes.
     return E_NOTIMPL;
 }
+
 //-------------------------------------------------------------------
 // Name: GetInputStreamInfo
 // Returns information about an input stream. 
@@ -223,12 +224,6 @@ HRESULT TransformAsync::GetOutputStreamAttributes(
 )
 {
     return E_NOTIMPL;
-    HRESULT hr = MFCreateAttributes(ppAttributes, 2);
-    hr = (*ppAttributes)->SetUINT32(MF_SA_MINIMUM_OUTPUT_SAMPLE_COUNT, 1);
-    hr = (*ppAttributes)->SetUINT32(MF_SA_MINIMUM_OUTPUT_SAMPLE_COUNT_PROGRESSIVE, 1);
-
-
-    return hr;
 }
 
 //-------------------------------------------------------------------
@@ -293,7 +288,7 @@ HRESULT TransformAsync::GetInputAvailableType(
     else
     {
         // The output type is not set. Create a partial media type.
-        hr = OnGetPartialType(dwTypeIndex, ppType);
+        RETURN_IF_FAILED(OnGetPartialType(dwTypeIndex, ppType));
     }
     return hr;
 }
@@ -340,7 +335,7 @@ HRESULT TransformAsync::GetOutputAvailableType(
     else
     {
         // The input type is not set. Create a partial media type.
-        hr = OnGetPartialType(dwTypeIndex, ppType);
+        RETURN_IF_FAILED(OnGetPartialType(dwTypeIndex, ppType));
     }
 
     return hr;
@@ -372,27 +367,23 @@ HRESULT TransformAsync::SetInputType(
         return E_INVALIDARG;
     }
 
-    HRESULT hr = S_OK;
-
     // Does the caller want us to set the type, or just test it?
     BOOL bReallySet = ((dwFlags & MFT_SET_TYPE_TEST_ONLY) == 0);
 
     // Validate the type, if non-NULL.
     if (pType)
     {
-        CHECK_HR(hr = OnCheckInputType(pType));
+        RETURN_IF_FAILED(OnCheckInputType(pType));
     }
 
     // The type is OK. 
     // Set the type, unless the caller was just testing.
     if (bReallySet)
     {
-        CHECK_HR(hr = OnSetInputType(pType));
+        RETURN_IF_FAILED(OnSetInputType(pType));
     }
 
-done:
-
-    return hr;
+    return S_OK;
 }
 
 
@@ -419,7 +410,6 @@ HRESULT TransformAsync::SetOutputType(
         return E_INVALIDARG;
     }
 
-    HRESULT hr = S_OK;
 
     // Does the caller want us to set the type, or just test it?
     BOOL bReallySet = ((dwFlags & MFT_SET_TYPE_TEST_ONLY) == 0);
@@ -427,7 +417,7 @@ HRESULT TransformAsync::SetOutputType(
     // Validate the type, if non-NULL.
     if (pType)
     {
-        CHECK_HR(hr = OnCheckOutputType(pType));
+        RETURN_IF_FAILED(OnCheckOutputType(pType));
     }
 
     if (bReallySet)
@@ -435,11 +425,10 @@ HRESULT TransformAsync::SetOutputType(
         std::lock_guard<std::recursive_mutex> lock(m_mutex); 
         // The type is OK. 
         // Set the type, unless the caller was just testing.
-        CHECK_HR(hr = OnSetOutputType(pType));
+        RETURN_IF_FAILED(OnSetOutputType(pType));
     }
 
-done:
-    return hr;
+    return S_OK;
 }
 
 
@@ -447,7 +436,6 @@ done:
 // Name: GetInputCurrentType
 // Description: Returns the current input type.
 //-------------------------------------------------------------------
-
 HRESULT TransformAsync::GetInputCurrentType(
     DWORD           dwInputStreamID,
     IMFMediaType** ppType
@@ -600,8 +588,7 @@ HRESULT TransformAsync::ProcessEvent(
 {
     // This MFT does not handle any stream events, so the method can 
     // return S_OK. 
-    HRESULT hr = S_OK;
-    return hr;
+    return S_OK;
 
 }
 
@@ -621,7 +608,7 @@ HRESULT TransformAsync::ProcessMessage(
     {
     case MFT_MESSAGE_COMMAND_FLUSH:
     {
-        hr = OnFlush();
+        RETURN_IF_FAILED(OnFlush());
         if (FAILED(hr))
         {
             break;
@@ -631,7 +618,7 @@ HRESULT TransformAsync::ProcessMessage(
 
     case MFT_MESSAGE_COMMAND_DRAIN:
     {
-        hr = OnDrain((UINT32)ulParam);
+        RETURN_IF_FAILED(OnDrain((UINT32)ulParam));
         if (FAILED(hr))
         {
             break;
@@ -640,12 +627,12 @@ HRESULT TransformAsync::ProcessMessage(
     break;
 
     case MFT_MESSAGE_SET_D3D_MANAGER:
-        hr = OnSetD3DManager(ulParam);
+        RETURN_IF_FAILED(OnSetD3DManager(ulParam));
         break;
     case MFT_MESSAGE_NOTIFY_END_OF_STREAM:
     case MFT_MESSAGE_NOTIFY_END_STREAMING:
     {
-        hr = OnEndOfStream();
+        RETURN_IF_FAILED(OnEndOfStream());
         if (FAILED(hr))
         {
             break;
@@ -655,7 +642,7 @@ HRESULT TransformAsync::ProcessMessage(
     
     case MFT_MESSAGE_COMMAND_MARKER:
     {
-        hr = OnMarker(ulParam);
+        RETURN_IF_FAILED(OnMarker(ulParam));
         if (FAILED(hr))
         {
             break;
@@ -664,7 +651,7 @@ HRESULT TransformAsync::ProcessMessage(
     break;
     case MFT_MESSAGE_NOTIFY_START_OF_STREAM:
     {
-        hr = OnStartOfStream();
+        RETURN_IF_FAILED(OnStartOfStream());
         if (FAILED(hr))
         {
             break;
@@ -674,7 +661,7 @@ HRESULT TransformAsync::ProcessMessage(
     case MFT_MESSAGE_NOTIFY_BEGIN_STREAMING:
     {
         HRESULT getAnalysis = DXGIGetDebugInterface1(0, __uuidof(pGraphicsAnalysis), reinterpret_cast<void**>(&pGraphicsAnalysis));
-        SetupAlloc();
+        RETURN_IF_FAILED(SetupAlloc());
         break;
     }
     default:
@@ -690,7 +677,6 @@ HRESULT TransformAsync::ProcessOutput(
     MFT_OUTPUT_DATA_BUFFER* pOutputSamples,
     DWORD* pdwStatus)
 {
-    HRESULT     hr = S_OK;
     com_ptr<IMFSample> pSample;
 
     {
@@ -698,9 +684,7 @@ HRESULT TransformAsync::ProcessOutput(
         if (m_dwHaveOutputCount == 0)
         {
             // This call does not correspond to a have output call
-
-            hr = E_UNEXPECTED;
-            return hr;
+            return E_UNEXPECTED;
         }
         else
         {
@@ -709,8 +693,7 @@ HRESULT TransformAsync::ProcessOutput(
     }
     if (IsMFTReady() == FALSE)
     {
-        hr = MF_E_TRANSFORM_TYPE_NOT_SET;
-        return hr;
+        return MF_E_TRANSFORM_TYPE_NOT_SET;
     }
 
     /***************************************
@@ -718,12 +701,11 @@ HRESULT TransformAsync::ProcessOutput(
         ** we know m_pOutputSampleQueue can never be
         ** NULL due to InitializeTransform()
         ***************************************/
-    CHECK_HR(hr = m_pOutputSampleQueue->GetNextSample(pSample.put()));
+    RETURN_IF_FAILED(m_pOutputSampleQueue->GetNextSample(pSample.put()));
 
     if (pSample == NULL)
     {
-        hr = MF_E_TRANSFORM_NEED_MORE_INPUT;
-        return hr;
+        return MF_E_TRANSFORM_NEED_MORE_INPUT;
     }
 
     pOutputSamples[0].dwStreamID = 0;
@@ -748,57 +730,32 @@ HRESULT TransformAsync::ProcessOutput(
     {
         // We're out of samples in the output queue
         std::lock_guard<std::recursive_mutex> lock(m_mutex);
-
         if ((m_dwStatus & MYMFT_STATUS_DRAINING) != 0)
         {
             // We're done draining, time to send the event
             com_ptr<IMFMediaEvent> pDrainCompleteEvent;
-
-            do
-            {
-                hr = MFCreateMediaEvent(METransformDrainComplete, GUID_NULL, S_OK, NULL, pDrainCompleteEvent.put());
-                if (FAILED(hr))
-                {
-                    break;
-                }
-
-                /*******************************
-                ** Note: This MFT only has one
-                ** input stream, so the drain
-                ** is always on stream zero.
-                ** Update this is your MFT
-                ** has more than one stream
-                *******************************/
-                hr = pDrainCompleteEvent->SetUINT32(MF_EVENT_MFT_INPUT_STREAM_ID, 0);
-                if (FAILED(hr))
-                {
-                    break;
-                }
-
-                /***************************************
-                ** Since this in an internal function
-                ** we know m_spEventQueue can never be
-                ** NULL due to InitializeTransform()
-                ***************************************/
-                hr = m_spEventQueue->QueueEvent(pDrainCompleteEvent.get());
-                if (FAILED(hr))
-                {
-                    break;
-                }
-            } while (false);
-
-
-            if (FAILED(hr))
-            {
-                goto done;
-            }
+            RETURN_IF_FAILED(MFCreateMediaEvent(METransformDrainComplete, GUID_NULL, S_OK, NULL, pDrainCompleteEvent.put()));
+            
+            /*******************************
+            ** Note: This MFT only has one
+            ** input stream, so the drain
+            ** is always on stream zero.
+            ** Update this is your MFT
+            ** has more than one stream
+            *******************************/
+            RETURN_IF_FAILED(pDrainCompleteEvent->SetUINT32(MF_EVENT_MFT_INPUT_STREAM_ID, 0));
+            
+            /***************************************
+            ** Since this in an internal function
+            ** we know m_spEventQueue can never be
+            ** NULL due to InitializeTransform()
+            ***************************************/
+            RETURN_IF_FAILED(m_spEventQueue->QueueEvent(pDrainCompleteEvent.get()));
 
             m_dwStatus &= (~MYMFT_STATUS_DRAINING);
         }
     }
-done:
-    //pGraphicsAnalysis->EndCapture();
-    return hr;
+    return S_OK;
 }
 
 HRESULT TransformAsync::ProcessInput(
@@ -806,7 +763,6 @@ HRESULT TransformAsync::ProcessInput(
     IMFSample* pSample,
     DWORD       dwFlags)
 {
-    HRESULT hr = S_OK;
     DWORD currFrameLocal = 0;
     TRACE((L" | PI Thread %d | ", std::hash<std::thread::id>()(std::this_thread::get_id())));
 
@@ -818,8 +774,7 @@ HRESULT TransformAsync::ProcessInput(
         if (m_dwNeedInputCount == 0)
         {
             // This call does not correspond to a need input call
-            hr = MF_E_NOTACCEPTING;
-            return hr;
+            return MF_E_NOTACCEPTING;
         }
         else
         {
@@ -829,8 +784,7 @@ HRESULT TransformAsync::ProcessInput(
     }
     if (pSample == NULL)
     {
-        hr = E_POINTER;
-        return hr;
+        return E_POINTER;
     }
 
     /*****************************************
@@ -841,8 +795,7 @@ HRESULT TransformAsync::ProcessInput(
         *****************************************/
     if (dwInputStreamID >= 1)
     {
-        hr = MF_E_INVALIDSTREAMNUMBER;
-        return hr;
+        return MF_E_INVALIDSTREAMNUMBER;
     }
 
     // First, put sample into the input Queue
@@ -852,19 +805,16 @@ HRESULT TransformAsync::ProcessInput(
     ** we know m_pInputSampleQueue can never be
     ** NULL due to InitializeTransform()
     ***************************************/
-    CHECK_HR(hr = m_pInputSampleQueue->AddSample(pSample));
+    RETURN_IF_FAILED(m_pInputSampleQueue->AddSample(pSample));
 
     // Now schedule the work to decode the sample
-    CHECK_HR(hr = ScheduleFrameInference());
+    RETURN_IF_FAILED(ScheduleFrameInference());
 
     // If not at the max number of Need Input count, fire off another request
     // If we're less than MAX_NUM_INPUT_SAMPLES ahead of the number of process samples, request another
     if ((currFrameLocal - m_ulProcessedFrameNum) < m_numThreads)
     {
-        RequestSample(0);
+        RETURN_IF_FAILED(RequestSample(0));
     }
-
-
-done:
-    return hr;
+    return S_OK;
 }

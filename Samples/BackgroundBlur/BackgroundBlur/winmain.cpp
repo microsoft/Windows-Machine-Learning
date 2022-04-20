@@ -360,7 +360,6 @@ namespace MainWindow
     {
         delete g_pEngine;
         g_pEngine = NULL;
-        pSelectedDevice->ShutdownObject();
 
         if (g_hPowerNotify)
         {

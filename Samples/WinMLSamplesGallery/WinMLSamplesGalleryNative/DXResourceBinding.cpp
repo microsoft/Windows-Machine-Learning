@@ -10,6 +10,29 @@
 #include <mfapi.h>
 #include <iostream>
 
+#include <cstdio>
+#include <algorithm>
+#include <numeric>
+#include <functional>
+#include <utility>
+#include <string_view>
+#include <span>
+#include <optional>
+#include <memory>
+
+#include <windows.h>
+#include <d3d12.h>
+#include <wrl/client.h>
+#include "C:\Users\numform\Windows-Machine-Learning\Samples\WinMLSamplesGallery\packages\Microsoft.ML.OnnxRuntime.DirectML.1.10.0\build\native\include\dml_provider_factory.h"
+#include "C:\Users\numform\Windows-Machine-Learning\Samples\WinMLSamplesGallery\packages\Microsoft.ML.OnnxRuntime.DirectML.1.10.0\build\native\include\onnxruntime_cxx_api.h"
+
+#define THROW_IF_FAILED(hr) {HRESULT localHr = (hr); if (FAILED(hr)) throw hr;}
+#define RETURN_IF_FAILED(hr) {HRESULT localHr = (hr); if (FAILED(hr)) return hr;}
+#define THROW_IF_NOT_OK(status) {auto localStatus = (status); if (localStatus) throw E_FAIL;}
+#define RETURN_HR_IF_NOT_OK(status) {auto localStatus = (status); if (localStatus) return E_FAIL;}
+
+Microsoft::WRL::ComPtr<ID3D12Device> d3d12Device;
+
 struct Vertex {
     Vertex(float x, float y, float z, float u, float v) : pos(x, y, z), texCoord(u, v) {}
     DirectX::XMFLOAT3 pos;
@@ -141,6 +164,48 @@ bool InitializeWindow(HINSTANCE hInstance,
     return true;
 }
 
+int OrtEval() {
+    OutputDebugString(L"In OrtEval");
+    // Squeezenet opset v7 https://github.com/onnx/models/blob/master/vision/classification/squeezenet/README.md
+    const wchar_t* modelFilePath = L"./squeezenet1.1-7.onnx";
+    const char* modelInputTensorName = "data";
+    const char* modelOutputTensorName = "squeezenet0_flatten0_reshape0";
+    const std::array<int64_t, 4> inputShape = { 1, 3, 224, 224 };
+    const std::array<int64_t, 2> outputShape = { 1, 1000 };
+
+    const bool passTensorsAsD3DResources = true;
+
+    LARGE_INTEGER startTime;
+    LARGE_INTEGER d3dDeviceCreationTime;
+    LARGE_INTEGER sessionCreationTime;
+    LARGE_INTEGER tensorCreationTime;
+    LARGE_INTEGER bindingTime;
+    LARGE_INTEGER runTime;
+    LARGE_INTEGER synchronizeOutputsTime;
+    LARGE_INTEGER cpuFrequency;
+
+    try
+    {
+
+        OrtApi const& ortApi = Ort::GetApi(); // Uses ORT_API_VERSION
+        const OrtDmlApi* ortDmlApi;
+        THROW_IF_NOT_OK(ortApi.GetExecutionProviderApi("DML", ORT_API_VERSION, reinterpret_cast<const void**>(&ortDmlApi)));
+
+    }
+    catch (Ort::Exception const& exception)
+    {
+        printf("Error running model inference: %s\n", exception.what());
+        return EXIT_FAILURE;
+    }
+    catch (std::exception const& exception)
+    {
+        printf("Error running model inference: %s\n", exception.what());
+        return EXIT_FAILURE;
+    }
+
+    return 0;
+}
+
 void mainloop() {
     MSG msg;
     ZeroMemory(&msg, sizeof(MSG));
@@ -160,8 +225,13 @@ void mainloop() {
             Update(); // update the game logic
             Render(); // execute the command queue (rendering the scene is the result of the gpu executing the command lists)
         }
+
+        // Add inference logic
+        OrtEval();
     }
 }
+
+
 
 LRESULT CALLBACK WndProc(HWND hwnd,
     UINT msg,
@@ -247,6 +317,8 @@ bool InitD3D()
         D3D_FEATURE_LEVEL_11_0,
         IID_PPV_ARGS(&device)
     );
+    d3d12Device = device;
+
     if (FAILED(hr))
     {
         Running = false;

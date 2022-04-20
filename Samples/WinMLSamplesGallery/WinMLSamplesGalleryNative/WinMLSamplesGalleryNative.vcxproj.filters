@@ -15,6 +15,9 @@
     <ClCompile Include="DXResourceBinding.cpp">
       <Filter>DXResourceBinding</Filter>
     </ClCompile>
+    <ClCompile Include="SanityApp.cpp">
+      <Filter>DXResourceBinding</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -55,6 +58,7 @@
     <None Include="squeezenet1.1-7-batched.onnx" />
     <None Include="WinMLSamplesGalleryNative.def" />
     <None Include="PropertySheet.props" />
+    <None Include="..\packages\Microsoft.ML.OnnxRuntime.DirectML.1.10.0\runtimes\win-x64\native\onnxruntime.dll" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="readme.txt" />

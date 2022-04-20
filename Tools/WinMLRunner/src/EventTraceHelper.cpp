@@ -500,6 +500,9 @@ void EventTraceHelper::Start()
     {
         return;
     }
+
+    // Please refer to this link to understand why buffersize was setup in such a seemingly random manner:
+    // https://docs.microsoft.com/en-us/windows/win32/api/evntrace/ns-evntrace-event_trace_propertiesbuffersize
     int bufferSize = sizeof(EVENT_TRACE_PROPERTIES) + (sizeof(LOGSESSION_NAME) + 1) * sizeof(wchar_t);
     m_sessionProperties = static_cast<PEVENT_TRACE_PROPERTIES>(malloc(bufferSize));
     ZeroMemory(m_sessionProperties, bufferSize);

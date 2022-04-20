@@ -12,9 +12,9 @@
 #include <winrt/base.h>
 #include <mfreadwrite.h>
 
-com_ptr<IMFDXGIDeviceManager> g_pDXGIMan;
-com_ptr<ID3D11Device>         g_pDX11Device;
-UINT                  g_ResetToken = 0;
+com_ptr<IMFDXGIDeviceManager> g_DXGIMan;
+com_ptr<ID3D11Device>         g_DX11Device;
+UINT                          g_ResetToken = 0;
 
 
 STDMETHODIMP CaptureManager::CaptureEngineCB::QueryInterface(REFIID riid, void** ppv)
@@ -29,12 +29,12 @@ STDMETHODIMP CaptureManager::CaptureEngineCB::QueryInterface(REFIID riid, void**
 
 STDMETHODIMP_(ULONG) CaptureManager::CaptureEngineCB::AddRef()
 {
-    return InterlockedIncrement(&m_cRef);
+    return InterlockedIncrement(&m_ref);
 }
 
 STDMETHODIMP_(ULONG) CaptureManager::CaptureEngineCB::Release()
 {
-    LONG cRef = InterlockedDecrement(&m_cRef);
+    LONG cRef = InterlockedDecrement(&m_ref);
     if (cRef == 0)
     {
         delete this;
@@ -48,7 +48,7 @@ STDMETHODIMP CaptureManager::CaptureEngineCB::OnEvent( _In_ IMFMediaEvent* pEven
     // Post a message to the application window, so the event is handled 
     // on the application's main thread. 
 
-    if (m_fSleeping && m_pManager != NULL)
+    if (m_sleeping && m_captureManager != NULL)
     {
         // We're about to fall asleep, that means we've just asked the CE to stop the preview
         // and record.  We need to handle it here since our message pump may be gone.
@@ -60,14 +60,14 @@ STDMETHODIMP CaptureManager::CaptureEngineCB::OnEvent( _In_ IMFMediaEvent* pEven
 
         if (guidType == MF_CAPTURE_ENGINE_PREVIEW_STOPPED)
         {
-            m_pManager->OnPreviewStopped(hrStatus);
-            SetEvent(m_pManager->m_hEvent);
+            m_captureManager->OnPreviewStopped(hrStatus);
+            SetEvent(m_captureManager->m_event);
         }
         else
         {
             // This is an event we don't know about, we don't really care and there's
             // no clean way to report the error so just set the event and fall through.
-            SetEvent(m_pManager->m_hEvent);
+            SetEvent(m_captureManager->m_event);
         }
     }
     else
@@ -93,27 +93,27 @@ HRESULT CreateDX11Device(_Out_ ID3D11Device** ppDevice, _Out_ ID3D11DeviceContex
 
     // Find the adapter with the most video memory
     UINT i = 0;
-    com_ptr<IDXGIAdapter> pBestAdapter;
-    com_ptr<IDXGIAdapter> spAdapter;
-    com_ptr<IDXGIFactory> spFactory;
+    com_ptr<IDXGIAdapter> bestAdapater;
+    com_ptr<IDXGIAdapter> adapter;
+    com_ptr<IDXGIFactory> factory;
     DXGI_ADAPTER_DESC desc;
     size_t maxVideoMem = 0;
 
-    RETURN_IF_FAILED(CreateDXGIFactory1(IID_PPV_ARGS(spFactory.put())));
-    while (spFactory->EnumAdapters(i, spAdapter.put()) != DXGI_ERROR_NOT_FOUND) 
+    RETURN_IF_FAILED(CreateDXGIFactory1(IID_PPV_ARGS(factory.put())));
+    while (factory->EnumAdapters(i, adapter.put()) != DXGI_ERROR_NOT_FOUND) 
     {
-        spAdapter->GetDesc(&desc);
+        adapter->GetDesc(&desc);
         if (desc.DedicatedVideoMemory > maxVideoMem)
         {
-            spAdapter.copy_to(pBestAdapter.put());
+            adapter.copy_to(bestAdapater.put());
             maxVideoMem = desc.DedicatedVideoMemory;
         }
-        spAdapter = nullptr;
+        adapter = nullptr;
         ++i;
     }
 
     RETURN_IF_FAILED(D3D11CreateDevice(
-        pBestAdapter.get(),
+        bestAdapater.get(),
         D3D_DRIVER_TYPE_UNKNOWN,
         nullptr,
         D3D11_CREATE_DEVICE_VIDEO_SUPPORT,
@@ -135,11 +135,11 @@ HRESULT CreateDX11Device(_Out_ ID3D11Device** ppDevice, _Out_ ID3D11DeviceContex
 HRESULT CreateD3DManager()
 {
     D3D_FEATURE_LEVEL FeatureLevel;
-    com_ptr<ID3D11DeviceContext> pDX11DeviceContext;
+    com_ptr<ID3D11DeviceContext> DX11DeviceContext;
     
-    RETURN_IF_FAILED(CreateDX11Device(g_pDX11Device.put(), pDX11DeviceContext.put(), &FeatureLevel));
-    RETURN_IF_FAILED(MFCreateDXGIDeviceManager(&g_ResetToken, g_pDXGIMan.put()));
-    RETURN_IF_FAILED(g_pDXGIMan->ResetDevice(g_pDX11Device.get(), g_ResetToken));
+    RETURN_IF_FAILED(CreateDX11Device(g_DX11Device.put(), DX11DeviceContext.put(), &FeatureLevel));
+    RETURN_IF_FAILED(MFCreateDXGIDeviceManager(&g_ResetToken, g_DXGIMan.put()));
+    RETURN_IF_FAILED(g_DXGIMan->ResetDevice(g_DX11Device.get(), g_ResetToken));
         
     return S_OK;
 }
@@ -149,34 +149,34 @@ HRESULT CreateD3DManager()
 HRESULT CaptureManager::InitializeCaptureManager(HWND hwndPreview, IUnknown* pUnk) noexcept try
 {
     HRESULT                         hr = S_OK;
-    com_ptr<IMFAttributes>          pAttributes;
-    com_ptr<IMFCaptureEngineClassFactory>   pFactory;
+    com_ptr<IMFAttributes>          attributes;
+    com_ptr<IMFCaptureEngineClassFactory>   factory;
 
     DestroyCaptureEngine();
 
-    m_hEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
-    THROW_LAST_ERROR_IF_NULL(m_hEvent);
+    m_event = CreateEvent(NULL, FALSE, FALSE, NULL);
+    THROW_LAST_ERROR_IF_NULL(m_event);
 
-    m_pCallback.attach(new CaptureEngineCB(m_hwndEvent));
+    m_callback.attach(new CaptureEngineCB(m_hwndEvent));
 
-    m_pCallback->m_pManager = this;
+    m_callback->m_captureManager = this;
     m_hwndPreview = hwndPreview;
 
     //Create a D3D Manager
     THROW_IF_FAILED(CreateD3DManager());
 
-    THROW_IF_FAILED(MFCreateAttributes(pAttributes.put(), 1));
+    THROW_IF_FAILED(MFCreateAttributes(attributes.put(), 1));
 
-    THROW_IF_FAILED(pAttributes->SetUnknown(MF_CAPTURE_ENGINE_D3D_MANAGER, g_pDXGIMan.get()));
+    THROW_IF_FAILED(attributes->SetUnknown(MF_CAPTURE_ENGINE_D3D_MANAGER, g_DXGIMan.get()));
 
     // Create the factory object for the capture engine.
     THROW_IF_FAILED(CoCreateInstance(CLSID_MFCaptureEngineClassFactory, NULL,
-        CLSCTX_INPROC_SERVER, IID_PPV_ARGS(pFactory.put())));
+        CLSCTX_INPROC_SERVER, IID_PPV_ARGS(factory.put())));
 
     // Create and initialize the capture engine.
-    THROW_IF_FAILED(pFactory->CreateInstance(CLSID_MFCaptureEngine, IID_PPV_ARGS(m_pEngine.put())));
+    THROW_IF_FAILED(factory->CreateInstance(CLSID_MFCaptureEngine, IID_PPV_ARGS(m_engine.put())));
 
-    THROW_IF_FAILED(m_pEngine->Initialize(m_pCallback.get(), pAttributes.get(), NULL, pUnk));
+    THROW_IF_FAILED(m_engine->Initialize(m_callback.get(), attributes.get(), NULL, pUnk));
 }
 CATCH_RETURN();
 
@@ -187,12 +187,12 @@ HRESULT CaptureManager::OnCaptureEvent(WPARAM wParam, LPARAM lParam)
     GUID guidType;
     HRESULT hrStatus = S_OK;
 
-    com_ptr<IMFMediaEvent> pEvent;
-    pEvent.copy_from(reinterpret_cast<IMFMediaEvent*>(wParam));
+    com_ptr<IMFMediaEvent> event;
+    event.copy_from(reinterpret_cast<IMFMediaEvent*>(wParam));
 
-    hrStatus = pEvent->GetStatus(&hrStatus);
+    hrStatus = event->GetStatus(&hrStatus);
 
-    RETURN_IF_FAILED(pEvent->GetExtendedType(&guidType));
+    RETURN_IF_FAILED(event->GetExtendedType(&guidType));
 
 #ifdef _DEBUG
     LPOLESTR str;
@@ -228,7 +228,7 @@ HRESULT CaptureManager::OnCaptureEvent(WPARAM wParam, LPARAM lParam)
         SetErrorID(hrStatus, IDS_ERR_CAPTURE);
     }
 
-    SetEvent(m_hEvent);
+    SetEvent(m_event);
     return hrStatus;
 }
 
@@ -243,12 +243,12 @@ void CaptureManager::OnCaptureEngineInitialized(HRESULT& hrStatus)
 
 void CaptureManager::OnPreviewStarted(HRESULT& hrStatus)
 {
-    m_bPreviewing = SUCCEEDED(hrStatus);
+    m_previewing = SUCCEEDED(hrStatus);
 }
 
 void CaptureManager::OnPreviewStopped(HRESULT& hrStatus)
 {
-    m_bPreviewing = false;
+    m_previewing = false;
 }
 
 /*
@@ -257,49 +257,45 @@ void CaptureManager::OnPreviewStopped(HRESULT& hrStatus)
 */
 HRESULT CaptureManager::StartPreview()
 {
-    if (m_pEngine == NULL)
+    if (m_engine == NULL)
     {
         return MF_E_NOT_INITIALIZED;
     }
-
-    if (m_bPreviewing == true)
+    if (m_previewing == true)
     {
         return S_OK;
     }
+    com_ptr<IMFCaptureSink> sink;
+    com_ptr<IMFMediaType> mediaType;
+    com_ptr<IMFMediaType> mediaType2;
+    com_ptr<IMFCaptureSource> source;
 
-    com_ptr<IMFCaptureSink> pSink;
-    com_ptr<IMFMediaType> pMediaType;
-    com_ptr<IMFMediaType> pMediaType2;
-    com_ptr<IMFCaptureSource> pSource;
-
-    
     // Get a pointer to the preview sink.
-    if (m_pPreview == NULL)
+    if (m_preview == NULL)
     {
-        RETURN_IF_FAILED(m_pEngine->GetSink(MF_CAPTURE_ENGINE_SINK_TYPE_PREVIEW, pSink.put()));
-        RETURN_IF_FAILED(pSink->QueryInterface(IID_PPV_ARGS(m_pPreview.put())));
-        RETURN_IF_FAILED(m_pPreview->SetRenderHandle(m_hwndPreview));
-        RETURN_IF_FAILED(m_pEngine->GetSource(pSource.put()));
+        RETURN_IF_FAILED(m_engine->GetSink(MF_CAPTURE_ENGINE_SINK_TYPE_PREVIEW, sink.put()));
+        RETURN_IF_FAILED(sink->QueryInterface(IID_PPV_ARGS(m_preview.put())));
+        RETURN_IF_FAILED(m_preview->SetRenderHandle(m_hwndPreview));
+        RETURN_IF_FAILED(m_engine->GetSource(source.put()));
 
         // Configure the video format for the preview sink.
-        RETURN_IF_FAILED(pSource->GetCurrentDeviceMediaType((DWORD)MF_CAPTURE_ENGINE_PREFERRED_SOURCE_STREAM_FOR_VIDEO_PREVIEW , pMediaType.put()));
+        RETURN_IF_FAILED(source->GetCurrentDeviceMediaType((DWORD)MF_CAPTURE_ENGINE_PREFERRED_SOURCE_STREAM_FOR_VIDEO_PREVIEW , mediaType.put()));
 
         // Add the transform 
-        com_ptr<IMFTransform>pMFT;
-        RETURN_IF_FAILED(TransformAsync::CreateInstance(pMFT.put()));
+        com_ptr<IMFTransform> mft;
+        RETURN_IF_FAILED(TransformAsync::CreateInstance(mft.put()));
 
         // IMFCaptureSource
-        RETURN_IF_FAILED(pSource->AddEffect(0, pMFT.get()));
-        RETURN_IF_FAILED(CloneVideoMediaType(pMediaType.get(), MFVideoFormat_RGB32, pMediaType2.put()));
-        RETURN_IF_FAILED(pMediaType2->SetUINT32(MF_MT_ALL_SAMPLES_INDEPENDENT, TRUE));
+        RETURN_IF_FAILED(source->AddEffect(0, mft.get()));
+        RETURN_IF_FAILED(CloneVideoMediaType(mediaType.get(), MFVideoFormat_RGB32, mediaType2.put()));
+        RETURN_IF_FAILED(mediaType2->SetUINT32(MF_MT_ALL_SAMPLES_INDEPENDENT, TRUE));
 
         // Connect the video stream to the preview sink.
         DWORD dwSinkStreamIndex;
-        RETURN_IF_FAILED(m_pPreview->AddStream((DWORD)MF_CAPTURE_ENGINE_PREFERRED_SOURCE_STREAM_FOR_VIDEO_PREVIEW,  pMediaType2.get(), NULL, &dwSinkStreamIndex));
+        RETURN_IF_FAILED(m_preview->AddStream((DWORD)MF_CAPTURE_ENGINE_PREFERRED_SOURCE_STREAM_FOR_VIDEO_PREVIEW,  mediaType2.get(), NULL, &dwSinkStreamIndex));
     }
 
-
-    RETURN_IF_FAILED(m_pEngine->StartPreview());
+    RETURN_IF_FAILED(m_engine->StartPreview());
     if (!m_fPowerRequestSet && m_hpwrRequest != INVALID_HANDLE_VALUE)
     {
         // NOTE:  By calling this, on SOC systems (AOAC enabled), we're asking the system to not go
@@ -313,22 +309,21 @@ HRESULT CaptureManager::StartPreview()
     }
 
     return S_OK;
-
 }
 
 HRESULT CaptureManager::StopPreview()
 {
-    if (m_pEngine == NULL)
+    if (m_engine == NULL)
     {
         return MF_E_NOT_INITIALIZED;
     }
 
-    if (!m_bPreviewing)
+    if (!m_previewing)
     {
         return S_OK;
     }
 
-    RETURN_IF_FAILED_WITH_EXPECTED(m_pEngine->StopPreview(), MF_E_INVALIDREQUEST);
+    RETURN_IF_FAILED_WITH_EXPECTED(m_engine->StopPreview(), MF_E_INVALIDREQUEST);
     WaitForResult();
 
     if (m_fPowerRequestSet && m_hpwrRequest != INVALID_HANDLE_VALUE)
@@ -363,20 +358,16 @@ inline HRESULT GetFrameRate(
 
 HRESULT GetEncodingBitrate(IMFMediaType* pMediaType, UINT32* uiEncodingBitrate)
 {
-    UINT32 uiWidth;
-    UINT32 uiHeight;
-    float uiBitrate;
-    UINT32 uiFrameRateNum;
-    UINT32 uiFrameRateDenom;
+    UINT32 width;
+    UINT32 height;
+    float bitrate;
+    UINT32 frameRateNum;
+    UINT32 frameRateDenom;
 
-    RETURN_IF_FAILED(GetFrameSize(pMediaType, &uiWidth, &uiHeight));
-
-    RETURN_IF_FAILED(GetFrameRate(pMediaType, &uiFrameRateNum, &uiFrameRateDenom));
-
-    uiBitrate = uiWidth / 3.0f * uiHeight * uiFrameRateNum / uiFrameRateDenom;
-
-    *uiEncodingBitrate = (UINT32)uiBitrate;
-
+    RETURN_IF_FAILED(GetFrameSize(pMediaType, &width, &height));
+    RETURN_IF_FAILED(GetFrameRate(pMediaType, &frameRateNum, &frameRateDenom));
+    bitrate = width / 3.0f * height * frameRateNum / frameRateDenom;
+    *uiEncodingBitrate = (UINT32)bitrate;
     return S_OK;
 }
 

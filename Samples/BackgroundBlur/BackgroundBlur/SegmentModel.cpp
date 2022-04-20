@@ -49,7 +49,7 @@ void StyleTransfer::InitializeSession(int w, int h)
 }
 void StyleTransfer::Run(IDirect3DSurface src, IDirect3DSurface dest)
 {
-	m_bSyncStarted = TRUE;
+	m_syncStarted = TRUE;
 
 	VideoFrame inVideoFrame = VideoFrame::CreateWithDirect3D11Surface(src);
 	VideoFrame outVideoFrame = VideoFrame::CreateWithDirect3D11Surface(dest);
@@ -67,7 +67,7 @@ void StyleTransfer::Run(IDirect3DSurface src, IDirect3DSurface dest)
 
 	m_outputVideoFrame.CopyToAsync(outVideoFrame).get();
 
-	m_bSyncStarted = FALSE;
+	m_syncStarted = FALSE;
 }
 
 LearningModel StyleTransfer::GetModel()
@@ -79,7 +79,8 @@ LearningModel StyleTransfer::GetModel()
 
 
 /****	Background blur model	****/
-BackgroundBlur::~BackgroundBlur() {
+BackgroundBlur::~BackgroundBlur() 
+{
 	if (m_session) m_session.Close();
 }
 
@@ -120,7 +121,7 @@ LearningModel BackgroundBlur::GetModel()
 
 void BackgroundBlur::Run(IDirect3DSurface src, IDirect3DSurface dest)
 {
-	m_bSyncStarted = TRUE;
+	m_syncStarted = TRUE;
 
 	VideoFrame inVideoFrame = VideoFrame::CreateWithDirect3D11Surface(src);
 	VideoFrame outVideoFrame = VideoFrame::CreateWithDirect3D11Surface(dest);
@@ -137,7 +138,7 @@ void BackgroundBlur::Run(IDirect3DSurface src, IDirect3DSurface dest)
 	m_binding.Bind(outputName, m_outputVideoFrame);
 	auto results = m_session.Evaluate(m_binding, L"");
 	m_outputVideoFrame.CopyToAsync(outVideoFrame).get();
-	m_bSyncStarted = FALSE;
+	m_syncStarted = FALSE;
 }
 
 LearningModel BackgroundBlur::PostProcess(long n, long c, long h, long w, long axis)
@@ -196,8 +197,6 @@ LearningModel BackgroundBlur::PostProcess(long n, long c, long h, long w, long a
 
 	return builder.CreateModel();
 }
-
-
 
 LearningModel Invert(long n, long c, long h, long w)
 {

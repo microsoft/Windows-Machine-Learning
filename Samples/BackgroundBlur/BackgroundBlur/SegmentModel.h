@@ -37,14 +37,14 @@ public:
 		m_outputVideoFrame(NULL),
 		m_session(NULL),
 		m_binding(NULL), 
-		m_bSyncStarted(FALSE)
+		m_syncStarted(FALSE)
 	{}
 	StreamModelBase(int w, int h) :
 		m_inputVideoFrame(NULL),
 		m_outputVideoFrame(NULL),
 		m_session(NULL),
 		m_binding(NULL),
-		m_bSyncStarted(FALSE)
+		m_syncStarted(FALSE)
 	{}
 	virtual ~StreamModelBase() {
 		if(m_session) m_session.Close();
@@ -57,7 +57,7 @@ public:
 	virtual void Run(IDirect3DSurface src, IDirect3DSurface dest) =0;
 	
 	// Synchronous eval status
-	BOOL m_bSyncStarted; 
+	BOOL m_syncStarted; 
 	VideoFrame m_outputVideoFrame;
 	static const int m_scale = 5;
 
@@ -65,7 +65,7 @@ protected:
 	// Cache input frames into a shareable d3d-backed VideoFrame
 	void SetVideoFrames(VideoFrame inVideoFrame, VideoFrame outVideoFrame) 
 	{
-		if (true || !m_bVideoFramesSet)
+		if (true || !m_videoFramesSet)
 		{
 			auto device = m_session.Device().Direct3D11Device();
 			auto inDesc = inVideoFrame.Direct3DSurface().Description();
@@ -77,7 +77,7 @@ protected:
 			auto format = winrt::Windows::Graphics::DirectX::DirectXPixelFormat::B8G8R8X8UIntNormalized;
 			m_inputVideoFrame = VideoFrame::CreateAsDirect3D11SurfaceBacked(format, m_imageWidthInPixels, m_imageHeightInPixels, device);
 			m_outputVideoFrame = VideoFrame::CreateAsDirect3D11SurfaceBacked(format, m_imageWidthInPixels, m_imageHeightInPixels, device);
-			m_bVideoFramesSet = true;
+			m_videoFramesSet = true;
 		}
 		// TODO: Fix bug in WinML so that the surfaces from capture engine are shareable, remove copy. 
 		inVideoFrame.CopyToAsync(m_inputVideoFrame).get();
@@ -90,7 +90,7 @@ protected:
 	}
 
 	LearningModelSession CreateLearningModelSession(const LearningModel& model, bool closedModel = true) {
-		auto device = m_bUseGPU ? LearningModelDevice(LearningModelDeviceKind::DirectXHighPerformance) : LearningModelDevice(LearningModelDeviceKind::Default);
+		auto device = m_useGPU ? LearningModelDevice(LearningModelDeviceKind::DirectXHighPerformance) : LearningModelDevice(LearningModelDeviceKind::Default);
 		auto options = LearningModelSessionOptions();
 		options.BatchSizeOverride(0);
 		options.CloseModelOnSessionCreation(closedModel);
@@ -98,8 +98,8 @@ protected:
 		return session;
 	}
 
-	bool						m_bUseGPU = true;
-	bool						m_bVideoFramesSet = false;
+	bool						m_useGPU = true;
+	bool						m_videoFramesSet = false;
 	VideoFrame					m_inputVideoFrame;
 								
 	UINT32                      m_imageWidthInPixels;

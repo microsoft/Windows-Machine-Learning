@@ -7,24 +7,24 @@
 
 #include "Capture.h"
 
-extern CaptureManager *g_pEngine;
+extern CaptureManager *g_engine;
 
 
 // Implements the window procedure for the video preview window.
 
 namespace PreviewWnd
 {
-    HBRUSH hBackgroundBrush = 0;
+    HBRUSH backgroundBrush = 0;
 
     BOOL OnCreate(HWND /*hwnd*/, LPCREATESTRUCT /*lpCreateStruct*/)
     {
-        hBackgroundBrush = CreateSolidBrush(RGB(0,0,0));
-        return (hBackgroundBrush != NULL);
+        backgroundBrush = CreateSolidBrush(RGB(0,0,0));
+        return (backgroundBrush != NULL);
     }
 
     void OnDestroy(HWND hwnd)
     {
-        DeleteObject(hBackgroundBrush);
+        DeleteObject(backgroundBrush);
     }
 
     void OnPaint(HWND hwnd)
@@ -32,13 +32,13 @@ namespace PreviewWnd
         PAINTSTRUCT ps;
         HDC hdc = BeginPaint(hwnd, &ps);
 
-        if (g_pEngine->IsPreviewing())
+        if (g_engine->IsPreviewing())
         {
-            g_pEngine->UpdateVideo();
+            g_engine->UpdateVideo();
         }
         else
         {
-            FillRect(hdc, &ps.rcPaint, hBackgroundBrush);
+            FillRect(hdc, &ps.rcPaint, backgroundBrush);
         }
         EndPaint(hwnd, &ps);
     }

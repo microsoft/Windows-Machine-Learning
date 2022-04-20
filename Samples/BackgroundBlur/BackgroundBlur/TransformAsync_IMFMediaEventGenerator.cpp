@@ -8,11 +8,11 @@ HRESULT TransformAsync::BeginGetEvent(
 {
     /***************************************
     ** Since this in an internal function
-    ** we know m_spEventQueue can never be
+    ** we know m_eventQueue can never be
     ** NULL due to InitializeTransform()
     ***************************************/
 
-    return m_spEventQueue->BeginGetEvent(pCallback, punkState);
+    return m_eventQueue->BeginGetEvent(pCallback, punkState);
 }
 
 HRESULT TransformAsync::EndGetEvent(
@@ -21,11 +21,11 @@ HRESULT TransformAsync::EndGetEvent(
 {
     /***************************************
     ** Since this in an internal function
-    ** we know m_spEventQueue can never be
+    ** we know m_eventQueue can never be
     ** NULL due to InitializeTransform()
     ***************************************/
 
-    return m_spEventQueue->EndGetEvent(pResult, ppEvent);
+    return m_eventQueue->EndGetEvent(pResult, ppEvent);
 }
 
 HRESULT TransformAsync::GetEvent(
@@ -34,11 +34,11 @@ HRESULT TransformAsync::GetEvent(
 {
     /***************************************
     ** Since this in an internal function
-    ** we know m_spEventQueue can never be
+    ** we know m_eventQueue can never be
     ** NULL due to InitializeTransform()
     ***************************************/
 
-    return m_spEventQueue->GetEvent(dwFlags, ppEvent);
+    return m_eventQueue->GetEvent(dwFlags, ppEvent);
 }
 
 HRESULT TransformAsync::QueueEvent(
@@ -49,9 +49,9 @@ HRESULT TransformAsync::QueueEvent(
 {
     /***************************************
     ** Since this in an internal function
-    ** we know m_spEventQueue can never be
+    ** we know m_eventQueue can never be
     ** NULL due to InitializeTransform()
     ***************************************/
 
-    return m_spEventQueue->QueueEventParamVar(met, guidExtendedType, hrStatus, pvValue);
+    return m_eventQueue->QueueEventParamVar(met, guidExtendedType, hrStatus, pvValue);
 }

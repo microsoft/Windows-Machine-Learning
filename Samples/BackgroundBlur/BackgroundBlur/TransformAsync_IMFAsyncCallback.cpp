@@ -5,40 +5,28 @@ int g_now;
 
 HRESULT TransformAsync::NotifyRelease() 
 {
-    HRESULT hr = S_OK;
     const UINT64 currFenceValue = m_fenceValue;
-    auto fenceComplete = m_spFence->GetCompletedValue();
-    
+    auto fenceComplete = m_fence->GetCompletedValue();
+    DWORD dwThreadID;
 
-    do {
-        DWORD dwThreadID;
+    // Fail fast if context doesn't exist anymore. 
+    if (m_context == nullptr)
+    {
+        return S_OK;
+    }
 
-        // Fail fast if context doesn't exist anymore. 
-        if (m_spContext == nullptr)
-        {
-            //hr = E_FAIL;
-            break;
-        }
+    // Scheduel a Signal command in the queue
+    RETURN_IF_FAILED(m_context->Signal(m_fence.get(), currFenceValue));
 
-        // Scheduel a Signal command in the queue
-        hr = m_spContext->Signal(m_spFence.get(), currFenceValue);
-        if (FAILED(hr))
-            break;
+    if (currFenceValue % FRAME_RATE_UPDATE == 0)
+    {
 
-        // MVP: Wait until the next signal is done. Later wait for x more fence values for better avg.
-        // if this is a multiple of FRAME_RATE_UPDATE then we'll take take the next time and average it out. 
-        if (currFenceValue % FRAME_RATE_UPDATE == 0)
-        {
-            
-            m_spFence->SetEventOnCompletion(currFenceValue, m_hFenceEvent.get()); // Raise FenceEvent when done
-            m_hFrameThread.reset(CreateThread(NULL, 0, FrameThreadProc, m_hFenceEvent.get(), 0, &dwThreadID));
-        }
+        m_fence->SetEventOnCompletion(currFenceValue, m_fenceEvent.get()); // Raise FenceEvent when done
+        m_frameThread.reset(CreateThread(NULL, 0, FrameThreadProc, m_fenceEvent.get(), 0, &dwThreadID));
+    }
 
-        m_fenceValue = currFenceValue + 1;
-
-    } while (false);
-
-    return hr;
+    m_fenceValue = currFenceValue + 1;
+    return S_OK;
 }
 
 HRESULT TransformAsync::GetParameters(
@@ -70,50 +58,30 @@ HRESULT TransformAsync::Invoke(
     ** action
     *********************************/
 
-    HRESULT hr = S_OK;
-    com_ptr<IUnknown> pStateUnk;
-    com_ptr<IUnknown> pObjectUnk;
-    com_ptr<TransformAsync> pMFT;
-    com_ptr<IMFSample> pInputSample;
+    com_ptr<IUnknown> stateUnk;
+    com_ptr<IUnknown> objectUnk;
+    com_ptr<TransformAsync> transform;
+    com_ptr<IMFSample> inputSample;
 
-    do
+    if (pAsyncResult == NULL)
     {
-        //TRACE((L"\n Invoke Thread %d | ", std::hash<std::thread::id>()(std::this_thread::get_id())));
+        return E_POINTER;
+    }
 
-        if (pAsyncResult == NULL)
-        {
-            hr = E_POINTER;
-            break;
-        }
+    // Get the IMFSample tied to this specific Invoke call
+    RETURN_IF_FAILED(pAsyncResult->GetObjectW(objectUnk.put()));
+    
+    inputSample = objectUnk.try_as<IMFSample>();
+    RETURN_IF_NULL_ALLOC(inputSample);
 
-        // Get the IMFSample tied to this specific Invoke call
-        hr = pAsyncResult->GetObjectW(pObjectUnk.put());
-        if (FAILED(hr))
-            break;
-        pInputSample = pObjectUnk.try_as<IMFSample>();
-        if (!pInputSample)
-        {
-            hr = E_NOINTERFACE;
-            break;
-        }
+    // Get the transform current state
+    RETURN_IF_FAILED(pAsyncResult->GetState(stateUnk.put()));  
+    RETURN_IF_FAILED(stateUnk->QueryInterface(__uuidof(TransformAsync), transform.put_void()));
 
-        // Get the pMFT current state
-        hr = pAsyncResult->GetState(pStateUnk.put());
-        if (FAILED(hr))
-            break;
-        hr = pStateUnk->QueryInterface(__uuidof(TransformAsync), pMFT.put_void());
-        if (!pMFT)
-        {
-            hr = E_NOINTERFACE;
-            break;
-        }
+    // Now that scheduler has told us to process this sample, call SubmitEval with next
+    // Available set of bindings, session. 
+    HRESULT eval = transform->SubmitEval(inputSample.get());
+    RETURN_IF_FAILED(pAsyncResult->SetStatus(eval));
 
-
-        // Now that scheduler has told us to process this sample, call SubmitEval with next
-        // Available set of bindings, session. 
-        hr = pMFT->SubmitEval(pInputSample.get());
-        hr = pAsyncResult->SetStatus(hr);
-    } while (false);
-
-    return hr;
+    return S_OK;
 }

@@ -250,21 +250,21 @@ protected:
     HRESULT ShutdownEventQueue(void);
 
     /******* MFT Helpers **********/
-    // Returns the partial media type of the media type in g_MediaSubtypes.
+    // Returns the partial media type of the media type in g_mediaSubtypes.
     HRESULT OnGetPartialType(DWORD dwTypeIndex, IMFMediaType** ppmt);
 
     // Validates the input media type.
     HRESULT OnCheckInputType(IMFMediaType* pmt);
     // Validates the output media type.
     HRESULT OnCheckOutputType(IMFMediaType* pmt);
-    // Validates the media type against supported types listed in g_MediaSubtypes.
+    // Validates the media type against supported types listed in g_mediaSubtypes.
     HRESULT OnCheckMediaType(IMFMediaType* pmt);
 
     //  Sets or clears the input media type once input type has been validated. 
     HRESULT OnSetInputType(IMFMediaType* pmt);
     // Sets or clears the input media type once output type has been validated. 
     HRESULT OnSetOutputType(IMFMediaType* pmt);
-    // Sets m_spDeviceManager to the IMFDXGIDeviceManager that ulParam points to. 
+    // Sets m_deviceManager to the IMFDXGIDeviceManager that ulParam points to. 
     HRESULT OnSetD3DManager(ULONG_PTR ulParam);
 
     // After the input type is set, update MFT format information and sets
@@ -302,52 +302,52 @@ protected:
     BOOL                IsMFTReady(void); 
 
     // Member variables
-    volatile ULONG                  m_nRefCount;            // Reference count.
+    volatile ULONG                  m_refCount = 1;        // Reference count.
     std::recursive_mutex            m_mutex;                // Controls access streaming status and event queue. 
-    com_ptr<IMFMediaType>           m_spInputType;          // Input media type.
-    com_ptr<IMFMediaType>           m_spOutputType;         // Output media type.
-    com_ptr<IMFAttributes>          m_spAttributes;         // MFT Attributes.
-    com_ptr<IMFAttributes>          m_spAllocatorAttributes;// Output sample allocator attributes.    
-    bool                            m_bAllocatorInitialized;// True if sample allocator has been initialized. 
-    volatile ULONG                  m_ulSampleCounter;      // Frame number, can use to pick a StreamModelBase.
-    volatile ULONG                  m_ulProcessedFrameNum;  // Number of frames we've processed.
+    com_ptr<IMFMediaType>           m_inputType;          // Input media type.
+    com_ptr<IMFMediaType>           m_outputType;         // Output media type.
+    com_ptr<IMFAttributes>          m_attributes;         // MFT Attributes.
+    com_ptr<IMFAttributes>          m_allocatorAttributes;// Output sample allocator attributes.    
+    bool                            m_allocatorInitialized;// True if sample allocator has been initialized. 
+    volatile ULONG                  m_sampleCounter = 0;  // Frame number, can use to pick a StreamModelBase.
+    volatile ULONG                  m_processedFrameNum;  // Number of frames we've processed.
     volatile ULONG                  m_currFrameNumber;      // The current frame to be processed.
 
     // Event fields
-    DWORD                           m_dwStatus;             // MFT status. References one of the states defined in enum eMFTStatus.
-    com_ptr<IMFMediaEventQueue>     m_spEventQueue;         // Event queue the client uses to get NeedInput/HaveOutput events via IMFMediaEventGenerator.
-    DWORD                           m_dwNeedInputCount;     // Number of pending NeedInput requests to be resolved by client calling ProcessInput. 0 at end of stream.
-    DWORD                           m_dwHaveOutputCount;    // Number of pending HaveOutput requests to be resolved by client calling ProcessOutput.
-    BOOL                            m_bFirstSample;         // True the incoming sample is the first one after a gap in the stream. 
-    BOOL                            m_bShutdown;            // True if MFT is currently shutting down, signals to client through IMFShutdown. 
-    CSampleQueue*                   m_pInputSampleQueue;    // Queue of input samples to be processed by ProcessInput. 
-    CSampleQueue*                   m_pOutputSampleQueue;   // Queue of output samples to be processed by ProcessOutput. 
+    DWORD                           m_status = 0;         // MFT status. References one of the states defined in enum eMFTStatus.
+    com_ptr<IMFMediaEventQueue>     m_eventQueue;         // Event queue the client uses to get NeedInput/HaveOutput events via IMFMediaEventGenerator.
+    DWORD                           m_needInputCount = 0; // Number of pending NeedInput requests to be resolved by client calling ProcessInput. 0 at end of stream.
+    DWORD                           m_haveOutputCount = 0;// Number of pending HaveOutput requests to be resolved by client calling ProcessOutput.
+    BOOL                            m_firstSample = TRUE;  // True the incoming sample is the first one after a gap in the stream. 
+    BOOL                            m_shutdown = FALSE;    // True if MFT is currently shutting down, signals to client through IMFShutdown. 
+    CSampleQueue*                   m_inputSampleQueue;    // Queue of input samples to be processed by ProcessInput. 
+    CSampleQueue*                   m_outputSampleQueue;   // Queue of output samples to be processed by ProcessOutput. 
 
     // Fomat information
-    FOURCC                          m_videoFOURCC;          // Video format code. 
-    UINT32                          m_imageWidthInPixels;
-    UINT32                          m_imageHeightInPixels;
-    DWORD                           m_cbImageSize;          // Image size, in bytes.
+    FOURCC                          m_videoFOURCC = 0;      // Video format code. 
+    UINT32                          m_imageWidthInPixels = 0;
+    UINT32                          m_imageHeightInPixels = 0;
+    DWORD                           m_imageSize;          // Image size, in bytes.
 
     // D3D fields
-    com_ptr<IMFDXGIDeviceManager>       m_spDeviceManager;  // Device manager, shared with the video renderer. 
-    wil::unique_handle                  m_hDeviceHandle;    // Handle to the current device
+    com_ptr<IMFDXGIDeviceManager>       m_deviceManager;  // Device manager, shared with the video renderer. 
+    wil::unique_handle                  m_deviceHandle;    // Handle to the current device
     // Immediate device context
-    com_ptr<ID3D11DeviceContext4>       m_spContext;
-    com_ptr<ID3D11Device5>              m_spDevice;
-    com_ptr<IMFVideoSampleAllocatorEx>  m_spOutputSampleAllocator;  // Allocates d3d-backed output samples. 
-    com_ptr<IMFVideoSampleAllocatorCallback> m_spOutputSampleCallback; // Callback for when a frame is returns to the output sample allocator. 
+    com_ptr<ID3D11DeviceContext4>       m_context;
+    com_ptr<ID3D11Device5>              m_device;
+    com_ptr<IMFVideoSampleAllocatorEx>  m_outputSampleAllocator;  // Allocates d3d-backed output samples. 
+    com_ptr<IMFVideoSampleAllocatorCallback> m_outputSampleCallback; // Callback for when a frame is returns to the output sample allocator. 
     // Frame rate synch objects
-    com_ptr<ID3D11Fence>                m_spFence;
+    com_ptr<ID3D11Fence>                m_fence;
     UINT64 m_fenceValue;
-    wil::unique_handle                  m_hFrameThread; 
-    wil::unique_handle                  m_hFenceEvent;      // Handle to the fence complete event
+    wil::unique_handle                  m_frameThread; 
+    wil::unique_handle                  m_fenceEvent;      // Handle to the fence complete event
 
 
     // Model Inference fields
     int m_numThreads =                                     // Number of threads running inference in parallel.
          max(std::thread::hardware_concurrency(), 5);
     std::vector<std::unique_ptr<StreamModelBase>> m_models; // m_numThreads number of models to run inference in parallel. 
-    int modelIndex = 0;
+    int m_modelIndex = 0;
 
 };

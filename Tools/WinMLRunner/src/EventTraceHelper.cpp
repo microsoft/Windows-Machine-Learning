@@ -24,7 +24,7 @@ Level Verbosity is as follows:
 From <https://docs.microsoft.com/en-us/message-analyzer/system-etw-provider-event-keyword-level-settings>  
 */
 
-void EventTraceHelper::RemoveTrailingSpace(PEVENT_MAP_INFO pMapInfo)
+static void RemoveTrailingSpace(PEVENT_MAP_INFO pMapInfo)
 {
     DWORD byteLength = 0;
 
@@ -35,7 +35,7 @@ void EventTraceHelper::RemoveTrailingSpace(PEVENT_MAP_INFO pMapInfo)
     }
 }
 
-DWORD EventTraceHelper::GetArraySize(PEVENT_RECORD pEvent, PTRACE_EVENT_INFO pInfo, USHORT i, PUSHORT ArraySize)
+static DWORD GetArraySize(PEVENT_RECORD pEvent, PTRACE_EVENT_INFO pInfo, USHORT i, PUSHORT ArraySize)
 {
     DWORD status = ERROR_SUCCESS;
     PROPERTY_DATA_DESCRIPTOR dataDescriptor;
@@ -64,7 +64,7 @@ DWORD EventTraceHelper::GetArraySize(PEVENT_RECORD pEvent, PTRACE_EVENT_INFO pIn
 // map values can be integer values or bit values. If the property specifies a value
 // map, get the map.
 
-DWORD EventTraceHelper::GetMapInfo(PEVENT_RECORD pEvent, LPWSTR pMapName, DWORD DecodingSource,
+static DWORD GetMapInfo(PEVENT_RECORD pEvent, LPWSTR pMapName, DWORD DecodingSource,
                                    PEVENT_MAP_INFO& pMapInfo)
 {
     DWORD status = ERROR_SUCCESS;
@@ -111,7 +111,7 @@ DWORD EventTraceHelper::GetMapInfo(PEVENT_RECORD pEvent, LPWSTR pMapName, DWORD 
     return status;
 }
 
-DWORD EventTraceHelper::GetPropertyLength(PEVENT_RECORD pEvent, PTRACE_EVENT_INFO pInfo, USHORT i, PUSHORT PropertyLength)
+static DWORD GetPropertyLength(PEVENT_RECORD pEvent, PTRACE_EVENT_INFO pInfo, USHORT i, PUSHORT PropertyLength)
 {
     DWORD status = ERROR_SUCCESS;
     PROPERTY_DATA_DESCRIPTOR dataDescriptor;
@@ -170,7 +170,7 @@ DWORD EventTraceHelper::GetPropertyLength(PEVENT_RECORD pEvent, PTRACE_EVENT_INF
     return status;
 }
 
-DWORD EventTraceHelper::GetEventInformation(PEVENT_RECORD pEvent, PTRACE_EVENT_INFO& pInfo)
+static DWORD GetEventInformation(PEVENT_RECORD pEvent, PTRACE_EVENT_INFO& pInfo)
 {
     DWORD status = ERROR_SUCCESS;
     DWORD bufferSize = 0;
@@ -202,7 +202,7 @@ DWORD EventTraceHelper::GetEventInformation(PEVENT_RECORD pEvent, PTRACE_EVENT_I
     return status;
 }
 
-std::wstring& EventTraceHelper::TrimOperatorName(std::wstring& s)
+static std::wstring& TrimOperatorName(std::wstring& s)
 {
     wstring substring = L"_kernel_time";
     int offset = (int)s.find(substring);
@@ -232,7 +232,7 @@ std::wstring& EventTraceHelper::TrimOperatorName(std::wstring& s)
 /// \return A DWORD with a windows error value. If the function succeded, it returns
 ///     ERROR_SUCCESS.
 ///
-DWORD EventTraceHelper::GetFormatedPropertyData(_In_ const PEVENT_RECORD EventRecord,
+static DWORD GetFormatedPropertyData(_In_ const PEVENT_RECORD EventRecord,
                                               _In_ const PTRACE_EVENT_INFO EventInfo,
                               _In_ USHORT Index, _Inout_ PBYTE& UserData, _In_ PBYTE EndOfUserData,
                               _Inout_ wstring& propertyValue)
@@ -353,7 +353,7 @@ DWORD EventTraceHelper::GetFormatedPropertyData(_In_ const PEVENT_RECORD EventRe
 /// \return A DWORD with a windows error value. If the function succeded, it returns
 ///     ERROR_SUCCESS.
 ///
-DWORD EventTraceHelper::FormatDataForCPUFallback(_In_ const PEVENT_RECORD EventRecord,
+static DWORD FormatDataForCPUFallback(_In_ const PEVENT_RECORD EventRecord,
                                                _In_ const PTRACE_EVENT_INFO EventInfo)
 {
     DWORD status = ERROR_SUCCESS;
@@ -419,7 +419,7 @@ DWORD EventTraceHelper::FormatDataForCPUFallback(_In_ const PEVENT_RECORD EventR
     return ERROR_SUCCESS;
 }
 
-VOID WINAPI EventTraceHelper::EventRecordCallback(EVENT_RECORD* pEventRecord)
+static VOID WINAPI EventRecordCallback(EVENT_RECORD* pEventRecord)
 {
     // This is where you would get the details of ETW event
     DWORD status = ERROR_SUCCESS;
@@ -470,7 +470,7 @@ VOID WINAPI EventTraceHelper::EventRecordCallback(EVENT_RECORD* pEventRecord)
     }
 }
 
-ULONG WINAPI EventTraceHelper::BufferCallback(PEVENT_TRACE_LOGFILEW pLogFile) 
+static ULONG WINAPI BufferCallback(PEVENT_TRACE_LOGFILEW pLogFile) 
 { 
     return TRUE; 
 }

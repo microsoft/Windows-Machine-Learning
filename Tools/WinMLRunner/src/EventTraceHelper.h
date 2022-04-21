@@ -1,13 +1,13 @@
 #pragma once
-#include <iostream>
-#include <windows.h>
-#include <evntrace.h>
+#include "CommandLineArgs.h"
 #include <evntcons.h>
+#include <evntrace.h>
+#include <in6addr.h>
+#include <iostream>
 #include <tchar.h>
 #include <tdh.h>
 #include "ThreadPool.h"
-#include <in6addr.h>
-#include "CommandLineArgs.h"
+#include <windows.h>
 
 using namespace std;
 

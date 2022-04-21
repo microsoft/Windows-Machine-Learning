@@ -1,5 +1,5 @@
-#include "EventTraceHelper.h"
 #include <direct.h>
+#include "EventTraceHelper.h"
 
 #define LOGSESSION_NAME L"winml"
 

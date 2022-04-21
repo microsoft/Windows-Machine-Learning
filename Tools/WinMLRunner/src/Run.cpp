@@ -561,6 +561,7 @@ int run(CommandLineArgs& args,
         if (args.IsConcurrentLoad())
         {
             ConcurrentLoadModel(modelPaths, args.NumThreads(), args.ThreadInterval(), true);
+            printf("Concurrent model loading, will skip event trace for CPU fallback.");
             return 0;
         }
         traceHelper.Start();

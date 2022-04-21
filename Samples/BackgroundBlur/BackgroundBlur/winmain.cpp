@@ -2,8 +2,8 @@
 
 #include "Capture.h"
 #include "resource.h"
-#include "Helpers/common.h"
-#include "Helpers/trace.h"
+#include "External/common.h"
+#include "External/trace.h"
 #include <shlobj.h>
 #include <Shlwapi.h>
 #include <powrprof.h>

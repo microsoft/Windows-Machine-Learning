@@ -6,7 +6,6 @@
 #include <winrt/Windows.Foundation.h>
 #include <wil/resource.h>
 
-
 using winrt::com_ptr;
 
 DEFINE_GUID(TransformAsync_MFSampleExtension_Marker,
@@ -38,13 +37,7 @@ inline void SAFE_RELEASE(T*& p)
 #define ARRAY_SIZE(x) (sizeof(x) / sizeof(x[0]) )
 #endif
 
-// CheckPointer macro.
-// Returns 'hr' if pointer 'x' is NULL.
-#ifndef CheckPointer
-#define CheckPointer(x, hr) if (x == NULL) { return hr; }
-#endif
 
 namespace MainWindow {
     inline void _SetStatusText(const WCHAR* szStatus);
-
 }

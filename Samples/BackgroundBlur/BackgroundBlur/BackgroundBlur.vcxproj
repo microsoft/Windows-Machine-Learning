@@ -149,19 +149,19 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="Capture.h" />
-    <ClInclude Include="Helpers\common.h" />
-    <ClInclude Include="Helpers\CSampleQueue.h" />
-    <ClInclude Include="Helpers\logging.h" />
-    <ClInclude Include="Helpers\logmediatype.h" />
-    <ClInclude Include="Helpers\trace.h" />
+    <ClInclude Include="External\common.h" />
+    <ClInclude Include="External\CSampleQueue.h" />
+    <ClInclude Include="External\logging.h" />
+    <ClInclude Include="External\logmediatype.h" />
+    <ClInclude Include="External\trace.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="SegmentModel.h" />
     <ClInclude Include="TransformAsync.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Capture.cpp" />
-    <ClCompile Include="Helpers\CSampleQueue.cpp" />
-    <ClCompile Include="Helpers\utils.cpp" />
+    <ClCompile Include="External\CSampleQueue.cpp" />
+    <ClCompile Include="External\utils.cpp" />
     <ClCompile Include="PreviewWnd.cpp" />
     <ClCompile Include="SegmentModel.cpp" />
     <ClCompile Include="TransformAsync.cpp" />
@@ -169,6 +169,7 @@
     <ClCompile Include="TransformAsync_IMFMediaEventGenerator.cpp" />
     <ClCompile Include="TransformAsync_IMFShutdown.cpp" />
     <ClCompile Include="TransformAsync_IMFTransform.cpp" />
+    <ClCompile Include="TransformAsync_IMFVideoSampleAllocatorNotify.cpp" />
     <ClCompile Include="winmain.cpp" />
   </ItemGroup>
   <ItemGroup>

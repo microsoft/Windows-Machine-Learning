@@ -1,6 +1,5 @@
 #define USE_PIX
 //#define DBG
-
 #include <winrt/Microsoft.AI.MachineLearning.Experimental.h>
 #include <winrt/Microsoft.AI.MachineLearning.h>
 #include <Windows.AI.MachineLearning.native.h>
@@ -16,7 +15,7 @@
 #include <winrt/windows.foundation.collections.h>
 #include <winrt/Windows.Media.h>
 //#include <DXProgrammableCapture.h>
-#include "Helpers/common.h"
+#include "External/common.h"
 
 
 using namespace winrt::Microsoft::AI::MachineLearning;

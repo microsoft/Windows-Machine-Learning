@@ -1,34 +1,6 @@
 #include "TransformAsync.h"
 #include <format>
 
-int g_now;
-
-HRESULT TransformAsync::NotifyRelease() 
-{
-    const UINT64 currFenceValue = m_fenceValue;
-    auto fenceComplete = m_fence->GetCompletedValue();
-    DWORD dwThreadID;
-
-    // Fail fast if context doesn't exist anymore. 
-    if (m_context == nullptr)
-    {
-        return S_OK;
-    }
-
-    // Scheduel a Signal command in the queue
-    RETURN_IF_FAILED(m_context->Signal(m_fence.get(), currFenceValue));
-
-    if (currFenceValue % FRAME_RATE_UPDATE == 0)
-    {
-
-        m_fence->SetEventOnCompletion(currFenceValue, m_fenceEvent.get()); // Raise FenceEvent when done
-        m_frameThread.reset(CreateThread(NULL, 0, FrameThreadProc, m_fenceEvent.get(), 0, &dwThreadID));
-    }
-
-    m_fenceValue = currFenceValue + 1;
-    return S_OK;
-}
-
 HRESULT TransformAsync::GetParameters(
     DWORD* pdwFlags,
     DWORD* pdwQueue)

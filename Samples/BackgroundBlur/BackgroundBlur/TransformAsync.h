@@ -1,5 +1,5 @@
 #pragma once
-#include "Helpers/CSampleQueue.h"
+#include "External/CSampleQueue.h"
 #include <Mfidl.h>
 #include <mftransform.h>
 #include <mfapi.h>
@@ -9,7 +9,6 @@
 #include <strsafe.h>
 #include <shlwapi.h> // registry stuff
 #include <assert.h>
-#include <evr.h>
 #include <mfobjects.h>
 
 #include <initguid.h>
@@ -21,8 +20,8 @@
 #include <dxva2api.h>
 
 #define USE_LOGGING
-#include "Helpers/common.h"
-using namespace MediaFoundationSamples;
+#include "External/common.h"
+//using namespace MediaFoundationSamples;
 #include "SegmentModel.h"
 
 #define MFT_NUM_DEFAULT_ATTRIBUTES  4
@@ -51,7 +50,7 @@ class TransformAsync :
     public IMFMediaEventGenerator,      // Generates NeedInput and HasOutput events for the client to respond to. 
     public IMFAsyncCallback,            // The callback interface to notify when an async method completes. 
     public IUnknown,
-    public IMFVideoSampleAllocatorNotify
+    public IMFVideoSampleAllocatorNotify // Callback interface to notify when an IMFSample is freed back to allocator. 
 {
 public: 
     static HRESULT CreateInstance(IMFTransform** ppMFT) noexcept;
@@ -345,8 +344,7 @@ protected:
 
 
     // Model Inference fields
-    int m_numThreads =                                     // Number of threads running inference in parallel.
-         max(std::thread::hardware_concurrency(), 5);
+    int m_numThreads = std::thread::hardware_concurrency(); // Number of threads running inference in parallel.
     std::vector<std::unique_ptr<StreamModelBase>> m_models; // m_numThreads number of models to run inference in parallel. 
     int m_modelIndex = 0;
 

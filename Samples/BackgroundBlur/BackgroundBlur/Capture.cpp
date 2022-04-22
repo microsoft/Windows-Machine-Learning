@@ -146,7 +146,7 @@ HRESULT CreateD3DManager()
 
 // https://github.com/Microsoft/wil/wiki/Error-handling-helpers#using-exception-based-code-in-a-routine-that-cannot-throw
 // Use function guard and don't co-mix exception and error handling in a single function
-HRESULT CaptureManager::InitializeCaptureManager(HWND hwndPreview, IUnknown* pUnk) noexcept try
+HRESULT CaptureManager::InitializeCaptureManager(HWND hwndPreview, HWND hwndStatus, IUnknown* pUnk) noexcept try
 {
     HRESULT                         hr = S_OK;
     com_ptr<IMFAttributes>          attributes;
@@ -161,6 +161,7 @@ HRESULT CaptureManager::InitializeCaptureManager(HWND hwndPreview, IUnknown* pUn
 
     m_callback->m_captureManager = this;
     m_hwndPreview = hwndPreview;
+    m_hwndStatus = hwndStatus;
 
     //Create a D3D Manager
     THROW_IF_FAILED(CreateD3DManager());
@@ -284,6 +285,7 @@ HRESULT CaptureManager::StartPreview()
         // Add the transform 
         com_ptr<IMFTransform> mft;
         RETURN_IF_FAILED(TransformAsync::CreateInstance(mft.put()));
+        mft.as<TransformAsync>()->SetFrameRateWnd(m_hwndStatus);
 
         // IMFCaptureSource
         RETURN_IF_FAILED(source->AddEffect(0, mft.get()));

@@ -1,14 +1,20 @@
 #include "TransformAsync.h"
+#include <CommCtrl.h>
 long long g_now; // The time since the last call to FrameThreadProc
 
 DWORD __stdcall FrameThreadProc(LPVOID lpParam)
 {
     DWORD waitResult;
     // Get the handle from the lpParam pointer
-    HANDLE event = lpParam;
+    //HANDLE event = lpParam;
+    com_ptr<IUnknown> unk;
+    com_ptr<TransformAsync> transform;
+    unk.attach((IUnknown*)lpParam);
+    transform = unk.as<TransformAsync>();
+
     //OutputDebugString(L"Thread %d waiting for Frame event...");
     waitResult = WaitForSingleObject(
-        event,         // event handle
+        transform->m_fenceEvent.get(),         // event handle
         INFINITE);      // indefinite wait
 
 
@@ -29,7 +35,8 @@ DWORD __stdcall FrameThreadProc(LPVOID lpParam)
             OutputDebugString(L"\n");
 
             auto message = std::wstring(L"Frame Rate: ") + std::to_wstring(fps) + L" FPS";
-            MainWindow::_SetStatusText(message.c_str());
+            transform->WriteFrameRate(message.c_str());
+            //MainWindow::_SetStatusText(message.c_str());
             //TRACE(("Responded to event and it's been %d miliseconds", timePassed));
             // TODO: Call Set status text with new framerate
         }
@@ -61,9 +68,21 @@ HRESULT TransformAsync::NotifyRelease()
     {
 
         m_fence->SetEventOnCompletion(currFenceValue, m_fenceEvent.get()); // Raise FenceEvent when done
-        m_frameThread.reset(CreateThread(NULL, 0, FrameThreadProc, m_fenceEvent.get(), 0, &dwThreadID));
+        m_frameThread.reset(CreateThread(NULL, 0, FrameThreadProc, this, 0, &dwThreadID));
     }
 
     m_fenceValue = currFenceValue + 1;
     return S_OK;
+}
+
+void TransformAsync::SetFrameRateWnd(HWND hwnd)
+{
+    m_frameWnd = hwnd;
+}
+
+void TransformAsync::WriteFrameRate(const WCHAR* frameRate)
+{
+    if (m_frameWnd) {
+        SendMessage(m_frameWnd, SB_SETTEXT, (WPARAM)(0), (LPARAM)frameRate);
+    }
 }

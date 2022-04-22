@@ -110,8 +110,9 @@ class CaptureManager
         CaptureManager* m_captureManager;
     };
 
-    HWND                    m_hwndEvent;
-    HWND                    m_hwndPreview;
+    HWND                    m_hwndEvent;    // Event message thread for responding to MF
+    HWND                    m_hwndPreview;  // Preview window to render frames 
+    HWND                    m_hwndStatus;   // For displaying status messages, eg. frame rate
 
     com_ptr<IMFCaptureEngine>       m_engine;        // Manages the capture engine (ie. the camera) 
     com_ptr<IMFCapturePreviewSink>  m_preview;  // Manages the preview sink (ie. the video window) 
@@ -170,7 +171,7 @@ public:
         return S_OK;
     }CATCH_RETURN();
 
-    HRESULT InitializeCaptureManager(HWND hwndPreview, IUnknown* pUnk) noexcept;
+    HRESULT InitializeCaptureManager(HWND hwndPreview, HWND hwndMessage, IUnknown* pUnk) noexcept;
     void DestroyCaptureEngine()
     {
         if (NULL != m_event)

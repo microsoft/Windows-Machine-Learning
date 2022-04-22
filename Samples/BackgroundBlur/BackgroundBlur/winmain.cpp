@@ -232,13 +232,13 @@ BOOL StatusSetText(HWND hwnd, int iPart, const TCHAR* szText, BOOL bNoBorders = 
 namespace MainWindow
 {
     HWND preview = NULL;
-    HWND hStatus = NULL;
+    HWND status = NULL;
     bool previewing = false;
     com_ptr<IMFActivate> selectedDevice;
 
     inline void _SetStatusText(const WCHAR* szStatus)
     {
-        StatusSetText(hStatus, 0, szStatus);
+        StatusSetText(status, 0, szStatus);
     }
 
     void OnChooseDevice(HWND hwnd);
@@ -285,15 +285,15 @@ namespace MainWindow
             goto done;
         }
 
-        hStatus = CreateStatusBar(hwnd, IDC_STATUS_BAR);
-        if (hStatus == NULL)
+        status = CreateStatusBar(hwnd, IDC_STATUS_BAR);
+        if (status == NULL)
         {
             goto done;
         }
 
         CHECK_HR(hr = CaptureManager::CreateInstance(hwnd, &g_engine));
 
-        hr = g_engine->InitializeCaptureManager(preview, selectedDevice.get());
+        hr = g_engine->InitializeCaptureManager(preview, status, selectedDevice.get());
         if (FAILED(hr))
         {
             ShowError(hwnd, IDS_ERR_SET_DEVICE, hr);
@@ -330,11 +330,11 @@ namespace MainWindow
         if (state == SIZE_RESTORED || state == SIZE_MAXIMIZED)
         {
             // Resize the status bar.
-            SendMessageW(hStatus, WM_SIZE, 0, 0);
+            SendMessageW(status, WM_SIZE, 0, 0);
 
             // Resize the preview window.
             RECT statusRect;
-            SendMessageW(hStatus, SB_GETRECT, 0, (LPARAM)&statusRect);
+            SendMessageW(status, SB_GETRECT, 0, (LPARAM)&statusRect);
             cy -= (statusRect.bottom - statusRect.top);
 
             MoveWindow(preview, 0, 0, cx, cy, TRUE);
@@ -389,7 +389,7 @@ namespace MainWindow
                 goto done;
             }
 
-            CHECK_HR(hr = g_engine->InitializeCaptureManager(preview, param.devices[iDevice]));
+            CHECK_HR(hr = g_engine->InitializeCaptureManager(preview, status, param.devices[iDevice]));
 
             //selectedDevice.detach(); // TODO: detach instead of release? 
             selectedDevice.copy_from(param.devices[iDevice]);
@@ -488,7 +488,7 @@ namespace MainWindow
                 TRACE(L"++WM_POWERBROADCAST++ Reinitializing capture engine.\n");
                 g_sleepState = false;
                 g_engine->SleepState(g_sleepState);
-                g_engine->InitializeCaptureManager(preview, selectedDevice.get());
+                g_engine->InitializeCaptureManager(preview, status, selectedDevice.get());
                 break;
             case PBT_POWERSETTINGCHANGE:
             {
@@ -517,7 +517,7 @@ namespace MainWindow
                         TRACE(L"++WM_POWERBROADCAST++ Reinitializing capture engine.\n");
                         g_sleepState = false;
                         g_engine->SleepState(g_sleepState);
-                        g_engine->InitializeCaptureManager(preview, selectedDevice.get());
+                        g_engine->InitializeCaptureManager(preview,status, selectedDevice.get());
                     }
                 }
             }

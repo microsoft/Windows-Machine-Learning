@@ -48,11 +48,6 @@ HRESULT TransformAsync::CreateInstance(IMFTransform** mft) noexcept try
    return S_OK;
 }CATCH_RETURN();
 
-TransformAsync::TransformAsync() 
-{
-    
-}
-
 TransformAsync::~TransformAsync()
 {
     assert(m_refCount == 0);

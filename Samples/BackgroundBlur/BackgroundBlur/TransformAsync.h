@@ -237,8 +237,11 @@ public:
                 LONGLONG hnsTime,
                 UINT64 pun64MarkerID);
 
+    void WriteFrameRate(const WCHAR* frameRate);
+    void SetFrameRateWnd(HWND hwnd);
+    wil::unique_handle m_fenceEvent;      // Handle to the fence complete event
+
 protected: 
-    TransformAsync();
 
     // Destructor is private. The object deletes itself when the reference count is zero.
     ~TransformAsync();
@@ -278,7 +281,6 @@ protected:
     HRESULT UpdateDX11Device();
     void    InvalidateDX11Resources();
     IDirect3DSurface SampleToD3Dsurface(IMFSample* sample);
-
 
     /******* MFT Media Event Handlers **********/
     HRESULT             OnStartOfStream(void);
@@ -340,8 +342,7 @@ protected:
     com_ptr<ID3D11Fence>                m_fence;
     UINT64 m_fenceValue;
     wil::unique_handle                  m_frameThread; 
-    wil::unique_handle                  m_fenceEvent;      // Handle to the fence complete event
-
+    HWND                                m_frameWnd;
 
     // Model Inference fields
     int m_numThreads = std::thread::hardware_concurrency(); // Number of threads running inference in parallel.

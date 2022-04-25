@@ -202,7 +202,7 @@ static DWORD GetEventInformation(PEVENT_RECORD pEvent, PTRACE_EVENT_INFO& pInfo)
     return status;
 }
 
-static std::wstring& TrimOperatorName(std::wstring& s)
+static std::wstring TrimOperatorName(std::wstring& s)
 {
     wstring substring = L"_kernel_time";
     int offset = (int)s.find(substring);

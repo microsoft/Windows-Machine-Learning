@@ -46,6 +46,7 @@
     <ClInclude Include="src/TimerHelper.h" />
     <ClInclude Include="src/TypeHelper.h" />
     <ClInclude Include="src\LearningModelDeviceHelper.h" />
+    <ClInclude Include="src\EventTraceHelper.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src/CommandLineArgs.cpp" />
@@ -54,6 +55,7 @@
     <ClCompile Include="src\BindingUtilities.cpp" />
     <ClCompile Include="src\LearningModelDeviceHelper.cpp" />
     <ClCompile Include="src\OutputHelper.cpp" />
+    <ClCompile Include="src\EventTraceHelper.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
@@ -330,6 +332,9 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
+    <Lib>
+      <AdditionalDependencies>Tdh.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release_NuGet|x64'">
     <ClCompile>

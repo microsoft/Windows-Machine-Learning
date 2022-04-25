@@ -393,6 +393,10 @@ CommandLineArgs::CommandLineArgs(const std::vector<std::wstring>& args)
             }
             __debugbreak();
         }
+        else if((_wcsicmp(args[i].c_str(), L"-LogCPUFallback") == 0))
+        {
+            ToggleLogCPUFallback(true);
+        }
         else
         {
             std::wstring msg = L"Unknown option ";

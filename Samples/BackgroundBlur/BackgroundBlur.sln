@@ -5,6 +5,8 @@ VisualStudioVersion = 16.0.31702.278
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "BackgroundBlur", "BackgroundBlur\BackgroundBlur.vcxproj", "{7519DDE1-9348-4054-81AA-0456DAC71CBD}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TransformAsync", "TransformAsync\TransformAsync.vcxproj", "{DC45E5ED-8104-4FA2-8A7A-7CAFFBB9F94B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -21,6 +23,14 @@ Global
 		{7519DDE1-9348-4054-81AA-0456DAC71CBD}.Release|x64.Build.0 = Release|x64
 		{7519DDE1-9348-4054-81AA-0456DAC71CBD}.Release|x86.ActiveCfg = Release|Win32
 		{7519DDE1-9348-4054-81AA-0456DAC71CBD}.Release|x86.Build.0 = Release|Win32
+		{DC45E5ED-8104-4FA2-8A7A-7CAFFBB9F94B}.Debug|x64.ActiveCfg = Debug|x64
+		{DC45E5ED-8104-4FA2-8A7A-7CAFFBB9F94B}.Debug|x64.Build.0 = Debug|x64
+		{DC45E5ED-8104-4FA2-8A7A-7CAFFBB9F94B}.Debug|x86.ActiveCfg = Debug|Win32
+		{DC45E5ED-8104-4FA2-8A7A-7CAFFBB9F94B}.Debug|x86.Build.0 = Debug|Win32
+		{DC45E5ED-8104-4FA2-8A7A-7CAFFBB9F94B}.Release|x64.ActiveCfg = Release|x64
+		{DC45E5ED-8104-4FA2-8A7A-7CAFFBB9F94B}.Release|x64.Build.0 = Release|x64
+		{DC45E5ED-8104-4FA2-8A7A-7CAFFBB9F94B}.Release|x86.ActiveCfg = Release|Win32
+		{DC45E5ED-8104-4FA2-8A7A-7CAFFBB9F94B}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

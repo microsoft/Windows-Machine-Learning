@@ -1,3 +1,5 @@
+#include "pch.h"
+#include "framework.h"
 #include "TransformAsync.h"
 #include <windows.graphics.directx.direct3d11.interop.h>
 #include <winrt/Windows.Graphics.DirectX.Direct3D11.h>
@@ -47,6 +49,7 @@ HRESULT TransformAsync::CreateInstance(IMFTransform** mft) noexcept try
 
    return S_OK;
 }CATCH_RETURN();
+
 
 TransformAsync::~TransformAsync()
 {
@@ -122,6 +125,7 @@ HRESULT TransformAsync::QueryInterface(REFIID iid, void** ppv)
     AddRef();
     return S_OK;
 }
+
 ULONG TransformAsync::Release()
 {
     ULONG count = InterlockedDecrement(&m_refCount);

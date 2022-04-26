@@ -1,13 +1,15 @@
 // The main message window and UI for the streaming sample. 
-
+#include "pch.h"
 #include "Capture.h"
 #include "resource.h"
-#include "External/common.h"
-#include "External/trace.h"
+//#include "External/common.h"
+//#include "External/trace.h"
 #include <shlobj.h>
 #include <Shlwapi.h>
 #include <powrprof.h>
 #include <KnownFolders.h>
+
+#define USE_LOGGING
 
 CaptureManager* g_engine = NULL;
 HPOWERNOTIFY    g_powerNotify = NULL;

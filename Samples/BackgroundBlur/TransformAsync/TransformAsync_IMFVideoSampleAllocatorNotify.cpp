@@ -1,3 +1,4 @@
+#include "pch.h"
 #include "TransformAsync.h"
 #include <CommCtrl.h>
 long long g_now; // The time since the last call to FrameThreadProc
@@ -9,7 +10,7 @@ DWORD __stdcall FrameThreadProc(LPVOID lpParam)
     //HANDLE event = lpParam;
     com_ptr<IUnknown> unk;
     com_ptr<TransformAsync> transform;
-    unk.attach((IUnknown*)lpParam);
+    unk.copy_from((IUnknown*)lpParam);
     transform = unk.as<TransformAsync>();
 
     //OutputDebugString(L"Thread %d waiting for Frame event...");

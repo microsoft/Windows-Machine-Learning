@@ -49,7 +49,7 @@ public:
 		if(m_session) m_session.Close();
 		if(m_binding) m_binding.Clear();
 		if (m_inputVideoFrame) m_inputVideoFrame.Close();
-		if (m_outputVideoFrame) m_outputVideoFrame.Close();
+		if (m_outputVideoFrame) m_outputVideoFrame.Close(); 
 	};
 
 	virtual void InitializeSession(int w, int h) =0;

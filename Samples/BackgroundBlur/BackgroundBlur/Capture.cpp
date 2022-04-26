@@ -4,7 +4,7 @@
 // PARTICULAR PURPOSE.
 //
 // Copyright (c) Microsoft Corporation. All rights reserved.
-
+#include "pch.h"
 #include "Capture.h"
 #include "resource.h"
 #include "TransformAsync.h"

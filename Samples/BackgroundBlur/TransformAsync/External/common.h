@@ -1,10 +1,13 @@
 #pragma once
-#include "logging.h"
-#include "logmediatype.h"
 #include <wil/cppwinrt.h> // must be before the first C++ WinRT header
 #include <wil/result.h>
 #include <winrt/Windows.Foundation.h>
 #include <wil/resource.h>
+
+#include <initguid.h>
+#include "logging.h"
+#include "logmediatype.h"
+
 
 using winrt::com_ptr;
 

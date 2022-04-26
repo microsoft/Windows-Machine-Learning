@@ -1,5 +1,5 @@
+#include "pch.h"
 #include "SegmentModel.h"
-
 #include <iostream>
 #include <filesystem>
 
@@ -76,7 +76,6 @@ LearningModel StyleTransfer::GetModel()
 	model_path.append("Assets\\mosaic.onnx");
 	return LearningModel::LoadFromFilePath(model_path.c_str());
 }
-
 
 /****	Background blur model	****/
 BackgroundBlur::~BackgroundBlur() 

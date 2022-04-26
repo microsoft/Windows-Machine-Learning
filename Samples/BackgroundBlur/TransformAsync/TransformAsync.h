@@ -1,3 +1,15 @@
+// The following ifdef block is the standard way of creating macros which make exporting
+// from a DLL simpler. All files within this DLL are compiled with the TRANSFORMASYNC_EXPORTS
+// symbol defined on the command line. This symbol should not be defined on any project
+// that uses this DLL. This way any other project whose source files include this file see
+// TRANSFORMASYNC_API functions as being imported from a DLL, whereas this DLL sees symbols
+// defined with this macro as being exported.
+#ifdef TRANSFORMASYNC_EXPORTS
+#define TRANSFORMASYNC_API __declspec(dllexport)
+#else
+#define TRANSFORMASYNC_API __declspec(dllimport)
+#endif
+
 #pragma once
 #include "External/CSampleQueue.h"
 #include <Mfidl.h>
@@ -5,6 +17,7 @@
 #include <mfapi.h>
 #include <mftransform.h>
 #include <mfidl.h>
+#include <mmiscapi.h>
 #include <mferror.h>
 #include <strsafe.h>
 #include <shlwapi.h> // registry stuff
@@ -18,18 +31,15 @@
 #include <d3d11_3.h>
 #include <d3d11_4.h>
 #include <dxva2api.h>
-
-#define USE_LOGGING
 #include "External/common.h"
-//using namespace MediaFoundationSamples;
 #include "SegmentModel.h"
 
+#define USE_LOGGING
 #define MFT_NUM_DEFAULT_ATTRIBUTES  4
 #define FRAME_RATE_UPDATE 30     // The number of samples to render before update framerate value
 
 
 DWORD __stdcall FrameThreadProc(LPVOID lpParam);
-
 enum eMFTStatus
 {
     MYMFT_STATUS_INPUT_ACCEPT_DATA = 0x00000001,   /* The MFT can accept input data */
@@ -42,9 +52,9 @@ enum eMFTStatus
                                             ** output. At that time, it should send METransformDrainComplete */
 };
 
-
+// This class is exported from the dll
 class __declspec(uuid("4D354CAD-AA8D-45AE-B031-A85F10A6C655")) TransformAsync;
-class TransformAsync :
+class TRANSFORMASYNC_API TransformAsync:
     public IMFTransform,                // Main interface to implement for MFT functionality. 
     public IMFShutdown,                 // Shuts down the MFT event queue when signalled from client. 
     public IMFMediaEventGenerator,      // Generates NeedInput and HasOutput events for the client to respond to. 
@@ -224,24 +234,24 @@ public:
 #pragma region IMFVideoSampleAllocatorNotify
     HRESULT NotifyRelease();
 #pragma endregion IMFVideoSampleAllocatorNotify
-    
+
     // Uses the next available StreamModelBase to run inference on pInputSample 
     // and allocates a transformed output sample. 
     HRESULT SubmitEval(IMFSample* pInputSample);
-    
+
     // Helper function for SubmitEval, sets attributes on the output sample,
     // adds it to the output sample queue, and queues an MFHasOutput event. 
-    HRESULT FinishEval(com_ptr<IMFSample> pInputSample, 
-                com_ptr<IMFSample> pOutputSample,
-                LONGLONG hnsDuration,
-                LONGLONG hnsTime,
-                UINT64 pun64MarkerID);
+    HRESULT FinishEval(com_ptr<IMFSample> pInputSample,
+        com_ptr<IMFSample> pOutputSample,
+        LONGLONG hnsDuration,
+        LONGLONG hnsTime,
+        UINT64 pun64MarkerID);
 
     void WriteFrameRate(const WCHAR* frameRate);
     void SetFrameRateWnd(HWND hwnd);
     wil::unique_handle m_fenceEvent;      // Handle to the fence complete event
 
-protected: 
+protected:
 
     // Destructor is private. The object deletes itself when the reference count is zero.
     ~TransformAsync();
@@ -271,12 +281,12 @@ protected:
 
     // After the input type is set, update MFT format information and sets
     // StreamModelBase input sizes. 
-    HRESULT UpdateFormatInfo(); 
+    HRESULT UpdateFormatInfo();
 
     // Sets up the output sample allocator.
-    HRESULT SetupAlloc();  
+    HRESULT SetupAlloc();
     // Tests the device manager to ensure it's still available. 
-    HRESULT CheckDX11Device(); 
+    HRESULT CheckDX11Device();
     // Updates the device handle if it's no longer valid. 
     HRESULT UpdateDX11Device();
     void    InvalidateDX11Resources();
@@ -300,7 +310,7 @@ protected:
     // Pops a sample from the input queue and schedules an inference job
     // with the Media Foundation async work queue. 
     HRESULT             ScheduleFrameInference(void);
-    BOOL                IsMFTReady(void); 
+    BOOL                IsMFTReady(void);
 
     // Member variables
     volatile ULONG                  m_refCount = 1;        // Reference count.
@@ -321,8 +331,8 @@ protected:
     DWORD                           m_haveOutputCount = 0;// Number of pending HaveOutput requests to be resolved by client calling ProcessOutput.
     BOOL                            m_firstSample = TRUE;  // True the incoming sample is the first one after a gap in the stream. 
     BOOL                            m_shutdown = FALSE;    // True if MFT is currently shutting down, signals to client through IMFShutdown. 
-    CSampleQueue*                   m_inputSampleQueue;    // Queue of input samples to be processed by ProcessInput. 
-    CSampleQueue*                   m_outputSampleQueue;   // Queue of output samples to be processed by ProcessOutput. 
+    CSampleQueue* m_inputSampleQueue;    // Queue of input samples to be processed by ProcessInput. 
+    CSampleQueue* m_outputSampleQueue;   // Queue of output samples to be processed by ProcessOutput. 
 
     // Fomat information
     FOURCC                          m_videoFOURCC = 0;      // Video format code. 
@@ -341,7 +351,7 @@ protected:
     // Frame rate synch objects
     com_ptr<ID3D11Fence>                m_fence;
     UINT64 m_fenceValue;
-    wil::unique_handle                  m_frameThread; 
+    wil::unique_handle                  m_frameThread;
     HWND                                m_frameWnd;
 
     // Model Inference fields
@@ -350,3 +360,7 @@ protected:
     int m_modelIndex = 0;
 
 };
+
+extern TRANSFORMASYNC_API int nTransformAsync;
+
+TRANSFORMASYNC_API int fnTransformAsync(void);

@@ -32,7 +32,8 @@
 #include <commctrl.h>
 #include <d3d11.h>
 #include <initguid.h>
-#include "External/common.h"
+//#include "External/common.h"
+#include "TransformAsync.h"
 
 const UINT WM_APP_CAPTURE_EVENT = WM_APP + 1;
 

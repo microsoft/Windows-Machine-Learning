@@ -1,3 +1,4 @@
+#include "pch.h"
 #include "CSampleQueue.h"
 
 class CSampleQueue::CNode

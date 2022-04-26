@@ -1,3 +1,4 @@
+#include "pch.h"
 #include "TransformAsync.h"
 #include <mferror.h>
 #include <Mfapi.h>

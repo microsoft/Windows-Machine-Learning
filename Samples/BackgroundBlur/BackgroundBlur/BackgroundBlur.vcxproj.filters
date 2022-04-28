@@ -1,28 +1,15 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <ClCompile Include="SegmentModel.cpp" />
     <ClCompile Include="Capture.cpp" />
     <ClCompile Include="PreviewWnd.cpp" />
     <ClCompile Include="winmain.cpp" />
-    <ClCompile Include="Helpers\CSampleQueue.cpp" />
-    <ClCompile Include="TransformAsync.cpp" />
-    <ClCompile Include="TransformAsync_IMFAsyncCallback.cpp" />
-    <ClCompile Include="TransformAsync_IMFMediaEventGenerator.cpp" />
-    <ClCompile Include="TransformAsync_IMFShutdown.cpp" />
-    <ClCompile Include="TransformAsync_IMFTransform.cpp" />
-    <ClCompile Include="Helpers\utils.cpp" />
+    <ClCompile Include="utils.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="SegmentModel.h" />
     <ClInclude Include="Capture.h" />
     <ClInclude Include="Resource.h" />
-    <ClInclude Include="Helpers\CSampleQueue.h" />
-    <ClInclude Include="TransformAsync.h" />
-    <ClInclude Include="Helpers\common.h" />
-    <ClInclude Include="Helpers\logging.h" />
-    <ClInclude Include="Helpers\logmediatype.h" />
-    <ClInclude Include="Helpers\trace.h" />
+    <ClInclude Include="pch.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

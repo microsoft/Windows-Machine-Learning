@@ -7,24 +7,24 @@
 #include "pch.h"
 #include "Capture.h"
 
-extern CaptureManager *g_pEngine;
+extern CaptureManager* g_engine;
 
 
 // Implements the window procedure for the video preview window.
 
 namespace PreviewWnd
 {
-    HBRUSH hBackgroundBrush = 0;
+    HBRUSH backgroundBrush = 0;
 
     BOOL OnCreate(HWND /*hwnd*/, LPCREATESTRUCT /*lpCreateStruct*/)
     {
-        hBackgroundBrush = CreateSolidBrush(RGB(0,0,0));
-        return (hBackgroundBrush != NULL);
+        backgroundBrush = CreateSolidBrush(RGB(0, 0, 0));
+        return (backgroundBrush != NULL);
     }
 
     void OnDestroy(HWND hwnd)
     {
-        DeleteObject(hBackgroundBrush);
+        DeleteObject(backgroundBrush);
     }
 
     void OnPaint(HWND hwnd)
@@ -32,13 +32,13 @@ namespace PreviewWnd
         PAINTSTRUCT ps;
         HDC hdc = BeginPaint(hwnd, &ps);
 
-        if (g_pEngine->IsPreviewing())
+        if (g_engine->IsPreviewing())
         {
-            g_pEngine->UpdateVideo();
+            g_engine->UpdateVideo();
         }
         else
         {
-            FillRect(hdc, &ps.rcPaint, hBackgroundBrush);
+            FillRect(hdc, &ps.rcPaint, backgroundBrush);
         }
         EndPaint(hwnd, &ps);
     }
@@ -55,10 +55,10 @@ namespace PreviewWnd
     {
         switch (uMsg)
         {
-        HANDLE_MSG(hwnd, WM_CREATE,  OnCreate);
-        HANDLE_MSG(hwnd, WM_PAINT,   OnPaint);
-        HANDLE_MSG(hwnd, WM_SIZE,    OnSize);
-        HANDLE_MSG(hwnd, WM_DESTROY, OnDestroy);
+            HANDLE_MSG(hwnd, WM_CREATE, OnCreate);
+            HANDLE_MSG(hwnd, WM_PAINT, OnPaint);
+            HANDLE_MSG(hwnd, WM_SIZE, OnSize);
+            HANDLE_MSG(hwnd, WM_DESTROY, OnDestroy);
 
         case WM_ERASEBKGND:
             return 1;
@@ -71,12 +71,12 @@ namespace PreviewWnd
 HWND CreatePreviewWindow(HINSTANCE hInstance, HWND hParent)
 {
     // Register the window class.
-    const wchar_t CLASS_NAME[]  = L"Capture Engine Preview Window Class";
-    
+    const wchar_t CLASS_NAME[] = L"Capture Engine Preview Window Class";
+
     WNDCLASS wc = { };
 
-    wc.lpfnWndProc   = PreviewWnd::WindowProc;
-    wc.hInstance     = hInstance;
+    wc.lpfnWndProc = PreviewWnd::WindowProc;
+    wc.hInstance = hInstance;
     wc.lpszClassName = CLASS_NAME;
 
     RegisterClass(&wc);
@@ -85,7 +85,7 @@ HWND CreatePreviewWindow(HINSTANCE hInstance, HWND hParent)
     GetClientRect(hParent, &rc);
 
     // Create the window.
-    return CreateWindowEx(0, CLASS_NAME, NULL, 
+    return CreateWindowEx(0, CLASS_NAME, NULL,
         WS_CHILD | WS_VISIBLE, 0, 0, 0, 0,
         hParent, NULL, hInstance, NULL);
 };

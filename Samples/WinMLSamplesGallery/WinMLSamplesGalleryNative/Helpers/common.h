@@ -1,6 +1,7 @@
 #pragma once
 #include "logging.h"
 #include "logmediatype.h"
+
 #include <winrt/Windows.Foundation.h>
 using winrt::com_ptr;
 

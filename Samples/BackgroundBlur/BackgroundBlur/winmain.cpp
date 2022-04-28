@@ -1,19 +1,17 @@
 // The main message window and UI for the streaming sample. 
-
+#include "pch.h"
 #include "Capture.h"
 #include "resource.h"
-#include "Helpers/common.h"
-#include "Helpers/trace.h"
+//#include "External/common.h"
+//#include "External/trace.h"
 #include <shlobj.h>
 #include <Shlwapi.h>
 #include <powrprof.h>
 #include <KnownFolders.h>
 
-CaptureManager* g_pEngine = NULL;
-HPOWERNOTIFY    g_hPowerNotify = NULL;
-HPOWERNOTIFY    g_hPowerNotifyMonitor = NULL;
-SYSTEM_POWER_CAPABILITIES   g_pwrCaps{};
-bool            g_fSleepState = false;
+#define USE_LOGGING
+
+CaptureManager* g_engine = NULL;
 
 INT_PTR CALLBACK ChooseDeviceDlgProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
@@ -51,9 +49,6 @@ static std::wstring GetLatestWinPixGpuCapturerPath_Cpp17()
 
 INT WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance*/, _In_ LPWSTR /*lpCmdLine*/, _In_ INT nCmdShow)
 {
-
-
-
 #ifdef _DEBUG
     // Check to see if a copy of WinPixGpuCapturer.dll has already been injected into the application.
     // This may happen if the application is launched through the PIX UI. 
@@ -63,7 +58,7 @@ INT WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
     }
 #endif
 
-    bool bCoInit = false, bMFStartup = false;
+    bool coInit = false, isMFStartup = false;
     HWND hwnd;
     // Initialize the common controls
     const INITCOMMONCONTROLSEX icex = { sizeof(INITCOMMONCONTROLSEX), ICC_WIN95_CLASSES };
@@ -75,11 +70,11 @@ INT WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
     {
         goto done;
     }
-    bCoInit = true;
+    coInit = true;
 
     CHECK_HR(hr = MFStartup(MF_VERSION));
 
-    bMFStartup = true;
+    isMFStartup = true;
 
     hwnd = CreateMainWindow(hInstance);
     if (hwnd == 0)
@@ -104,11 +99,11 @@ done:
     {
         ShowError(NULL, L"Failed to start application", hr);
     }
-    if (bMFStartup)
+    if (isMFStartup)
     {
         MFShutdown();
     }
-    if (bCoInit)
+    if (coInit)
     {
         CoUninitialize();
     }
@@ -125,20 +120,20 @@ HRESULT OnOK(HWND hwnd, ChooseDeviceParam* pParam);
 
 INT_PTR CALLBACK ChooseDeviceDlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-    static ChooseDeviceParam* pParam = NULL;
+    static ChooseDeviceParam* param = NULL;
 
     switch (msg)
     {
     case WM_INITDIALOG:
-        pParam = (ChooseDeviceParam*)lParam;
-        OnInitDialog(hwnd, pParam);
+        param = (ChooseDeviceParam*)lParam;
+        OnInitDialog(hwnd, param);
         return TRUE;
 
     case WM_COMMAND:
         switch (LOWORD(wParam))
         {
         case IDOK:
-            OnOK(hwnd, pParam);
+            OnOK(hwnd, param);
             EndDialog(hwnd, LOWORD(wParam));
             return TRUE;
 
@@ -157,33 +152,28 @@ INT_PTR CALLBACK ChooseDeviceDlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM 
 HRESULT OnInitDialog(HWND hwnd, ChooseDeviceParam* pParam)
 {
     HRESULT hr = S_OK;
-
-    HWND hList = GetDlgItem(hwnd, IDC_DEVICE_LIST);
+    HWND list = GetDlgItem(hwnd, IDC_DEVICE_LIST);
 
     // Display a list of the devices.
-
     for (DWORD i = 0; i < pParam->count; i++)
     {
-        WCHAR* szFriendlyName = NULL;
-        UINT32 cchName;
+        WCHAR* friendlyName = NULL;
+        UINT32 name;
 
-        hr = pParam->ppDevices[i]->GetAllocatedString(MF_DEVSOURCE_ATTRIBUTE_FRIENDLY_NAME,
-            &szFriendlyName, &cchName);
+        hr = pParam->devices[i]->GetAllocatedString(MF_DEVSOURCE_ATTRIBUTE_FRIENDLY_NAME,
+            &friendlyName, &name);
         if (FAILED(hr))
         {
             break;
         }
 
-        int index = ListBox_AddString(hList, szFriendlyName);
-
-        ListBox_SetItemData(hList, index, i);
-
-        CoTaskMemFree(szFriendlyName);
+        int index = ListBox_AddString(list, friendlyName);
+        ListBox_SetItemData(list, index, i);
+        CoTaskMemFree(friendlyName);
     }
 
     // Assume no selection for now.
     pParam->selection = (UINT32)-1;
-
     if (pParam->count == 0)
     {
         // If there are no devices, disable the "OK" button.
@@ -192,7 +182,7 @@ HRESULT OnInitDialog(HWND hwnd, ChooseDeviceParam* pParam)
     else
     {
         // Select the first device in the list.
-        ListBox_SetCurSel(hList, 0);
+        ListBox_SetCurSel(list, 0);
     }
 
     return hr;
@@ -202,14 +192,14 @@ HRESULT OnInitDialog(HWND hwnd, ChooseDeviceParam* pParam)
 
 HRESULT OnOK(HWND hwnd, ChooseDeviceParam* pParam)
 {
-    HWND hList = GetDlgItem(hwnd, IDC_DEVICE_LIST);
+    HWND list = GetDlgItem(hwnd, IDC_DEVICE_LIST);
 
     // Get the current selection and return it to the application.
-    int sel = ListBox_GetCurSel(hList);
+    int sel = ListBox_GetCurSel(list);
 
     if (sel != LB_ERR)
     {
-        pParam->selection = (UINT32)ListBox_GetItemData(hList, sel);
+        pParam->selection = (UINT32)ListBox_GetItemData(list, sel);
     }
 
     return S_OK;
@@ -236,21 +226,17 @@ BOOL StatusSetText(HWND hwnd, int iPart, const TCHAR* szText, BOOL bNoBorders = 
     return (BOOL)SendMessage(hwnd, SB_SETTEXT, (WPARAM)(iPart | flags), (LPARAM)szText);
 }
 
-
-
 // Implements the window procedure for the main application window.
-
 namespace MainWindow
 {
-    HWND hPreview = NULL;
-    HWND hStatus = NULL;
-    bool bPreviewing = false;
-
-    com_ptr<IMFActivate> pSelectedDevice;
+    HWND preview = NULL;
+    HWND status = NULL;
+    bool previewing = false;
+    com_ptr<IMFActivate> selectedDevice;
 
     inline void _SetStatusText(const WCHAR* szStatus)
     {
-        StatusSetText(hStatus, 0, szStatus);
+        StatusSetText(status, 0, szStatus);
     }
 
     void OnChooseDevice(HWND hwnd);
@@ -263,11 +249,10 @@ namespace MainWindow
 
     void UpdateUI(HWND hwnd)
     {
-
-        if (g_pEngine->IsPreviewing() != bPreviewing)
+        if (g_engine->IsPreviewing() != previewing)
         {
-            bPreviewing = g_pEngine->IsPreviewing();
-            if (bPreviewing)
+            previewing = g_engine->IsPreviewing();
+            if (previewing)
             {
                 SetMenuItemText(GetMenu(hwnd), ID_CAPTURE_PREVIEW, L"Stop Preview");
             }
@@ -276,7 +261,7 @@ namespace MainWindow
                 SetMenuItemText(GetMenu(hwnd), ID_CAPTURE_PREVIEW, L"Start Preview");
             }
         }
-        else if (g_pEngine->IsPreviewing())
+        else if (g_engine->IsPreviewing())
         {
             _SetStatusText(L"Previewing");
         }
@@ -284,49 +269,40 @@ namespace MainWindow
         {
             _SetStatusText(L"Please select a device or start preview (using the default device).");
         }
-
     }
-
 
     BOOL OnCreate(HWND hwnd, LPCREATESTRUCT /*lpCreateStruct*/)
     {
-        BOOL                fSuccess = FALSE;
-        com_ptr<IMFAttributes> pAttributes;
+        BOOL                success = FALSE;
+        com_ptr<IMFAttributes> attributes;
         HRESULT             hr = S_OK;
 
-        hPreview = CreatePreviewWindow(GetModuleHandle(NULL), hwnd);
-        if (hPreview == NULL)
+        preview = CreatePreviewWindow(GetModuleHandle(NULL), hwnd);
+        if (preview == NULL)
         {
             goto done;
         }
 
-        hStatus = CreateStatusBar(hwnd, IDC_STATUS_BAR);
-        if (hStatus == NULL)
+        status = CreateStatusBar(hwnd, IDC_STATUS_BAR);
+        if (status == NULL)
         {
             goto done;
         }
 
-        CHECK_HR(hr = CaptureManager::CreateInstance(hwnd, &g_pEngine));
+        CHECK_HR(hr = CaptureManager::CreateInstance(hwnd, &g_engine));
 
-        hr = g_pEngine->InitializeCaptureManager(hPreview, pSelectedDevice.get());
+        hr = g_engine->InitializeCaptureManager(preview, status, selectedDevice.get());
         if (FAILED(hr))
         {
             ShowError(hwnd, IDS_ERR_SET_DEVICE, hr);
             goto done;
         }
 
-        // Register for connected standy changes.  This should come through the normal
-        // WM_POWERBROADCAST messages that we're already handling below.
-        // We also want to hook into the monitor on/off notification for AOAC (SOC) systems.
-        g_hPowerNotify = RegisterSuspendResumeNotification((HANDLE)hwnd, DEVICE_NOTIFY_WINDOW_HANDLE);
-        g_hPowerNotifyMonitor = RegisterPowerSettingNotification((HANDLE)hwnd, &GUID_MONITOR_POWER_ON, DEVICE_NOTIFY_WINDOW_HANDLE);
-        GetPwrCapabilities(&g_pwrCaps);
-
         UpdateUI(hwnd);
-        fSuccess = TRUE;
+        success = TRUE;
 
     done:
-        return fSuccess;
+        return success;
     }
 
     void OnPaint(HWND hwnd)
@@ -345,27 +321,22 @@ namespace MainWindow
         if (state == SIZE_RESTORED || state == SIZE_MAXIMIZED)
         {
             // Resize the status bar.
-            SendMessageW(hStatus, WM_SIZE, 0, 0);
+            SendMessageW(status, WM_SIZE, 0, 0);
 
             // Resize the preview window.
             RECT statusRect;
-            SendMessageW(hStatus, SB_GETRECT, 0, (LPARAM)&statusRect);
+            SendMessageW(status, SB_GETRECT, 0, (LPARAM)&statusRect);
             cy -= (statusRect.bottom - statusRect.top);
 
-            MoveWindow(hPreview, 0, 0, cx, cy, TRUE);
+            MoveWindow(preview, 0, 0, cx, cy, TRUE);
         }
     }
 
     void OnDestroy(HWND hwnd)
     {
-        delete g_pEngine;
-        g_pEngine = NULL;
+        delete g_engine;
+        g_engine = NULL;
 
-        if (g_hPowerNotify)
-        {
-            UnregisterSuspendResumeNotification(g_hPowerNotify);
-            g_hPowerNotify = NULL;
-        }
         PostQuitMessage(0);
     }
 
@@ -373,21 +344,21 @@ namespace MainWindow
     {
         ChooseDeviceParam param;
 
-        com_ptr<IMFAttributes> pAttributes;
+        com_ptr<IMFAttributes> attributes;
         INT_PTR result = NULL;
 
-        HRESULT hr = MFCreateAttributes(pAttributes.put(), 1);
+        HRESULT hr = MFCreateAttributes(attributes.put(), 1);
         if (FAILED(hr))
         {
             goto done;
         }
 
         // Ask for source type = video capture devices
-        CHECK_HR(hr = pAttributes->SetGUID(MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE,
+        CHECK_HR(hr = attributes->SetGUID(MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE,
             MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE_VIDCAP_GUID));
 
         // Enumerate devices.
-        CHECK_HR(hr = MFEnumDeviceSources(pAttributes.get(), &param.ppDevices, &param.count));
+        CHECK_HR(hr = MFEnumDeviceSources(attributes.get(), &param.devices, &param.count));
 
         // Ask the user to select one.
         result = DialogBoxParam(GetModuleHandle(NULL),
@@ -404,10 +375,10 @@ namespace MainWindow
                 goto done;
             }
 
-            CHECK_HR(hr = g_pEngine->InitializeCaptureManager(hPreview, param.ppDevices[iDevice]));
+            CHECK_HR(hr = g_engine->InitializeCaptureManager(preview, status, param.devices[iDevice]));
 
-            pSelectedDevice.detach(); // TODO: detach instead of release? 
-            pSelectedDevice.attach(param.ppDevices[iDevice]);
+            //selectedDevice.detach(); // TODO: detach instead of release? 
+            selectedDevice.copy_from(param.devices[iDevice]);
         }
 
     done:
@@ -417,10 +388,10 @@ namespace MainWindow
         }
         UpdateUI(hwnd);
     }
-   
+
     void OnStopPreview(HWND hwnd)
     {
-        HRESULT hr = g_pEngine->StopPreview();
+        HRESULT hr = g_engine->StopPreview();
         if (FAILED(hr))
         {
             ShowError(hwnd, IDS_ERR_CAPTURE, hr);
@@ -429,7 +400,7 @@ namespace MainWindow
     }
     void OnStartPreview(HWND hwnd)
     {
-        HRESULT hr = g_pEngine->StartPreview();
+        HRESULT hr = g_engine->StartPreview();
         if (FAILED(hr))
         {
             ShowError(hwnd, IDS_ERR_CAPTURE, hr);
@@ -446,7 +417,7 @@ namespace MainWindow
             break;
 
         case ID_CAPTURE_PREVIEW:
-            if (g_pEngine->IsPreviewing())
+            if (g_engine->IsPreviewing())
             {
                 OnStopPreview(hwnd);
             }
@@ -474,12 +445,12 @@ namespace MainWindow
 
         case WM_APP_CAPTURE_EVENT:
         {
-            if (g_pEngine)
+            if (g_engine)
             {
-                HRESULT hr = g_pEngine->OnCaptureEvent(wParam, lParam);
+                HRESULT hr = g_engine->OnCaptureEvent(wParam, lParam);
                 if (FAILED(hr))
                 {
-                    ShowError(hwnd, g_pEngine->ErrorID(), hr);
+                    ShowError(hwnd, g_engine->ErrorID(), hr);
                     InvalidateRect(hwnd, NULL, FALSE);
                 }
             }
@@ -487,65 +458,7 @@ namespace MainWindow
             UpdateUI(hwnd);
         }
         return 0;
-        case WM_POWERBROADCAST:
-        {
-            switch (wParam)
-            {
-            case PBT_APMSUSPEND:
-                TRACE(L"++WM_POWERBROADCAST++ Stopping both preview & record stream.\n");
-                g_fSleepState = true;
-                g_pEngine->SleepState(g_fSleepState);
-                g_pEngine->StopPreview();
-                g_pEngine->DestroyCaptureEngine();
-                TRACE(L"++WM_POWERBROADCAST++ streams stopped, capture engine destroyed.\n");
-                break;
-            case PBT_APMRESUMEAUTOMATIC:
-                TRACE(L"++WM_POWERBROADCAST++ Reinitializing capture engine.\n");
-                g_fSleepState = false;
-                g_pEngine->SleepState(g_fSleepState);
-                g_pEngine->InitializeCaptureManager(hPreview, pSelectedDevice.get());
-                break;
-            case PBT_POWERSETTINGCHANGE:
-            {
-                // We should only be in here for GUID_MONITOR_POWER_ON.
-                POWERBROADCAST_SETTING* pSettings = (POWERBROADCAST_SETTING*)lParam;
-
-                // If this is a SOC system (AoAc is true), we want to check our current
-                // sleep state and based on whether the monitor is being turned on/off,
-                // we can turn off our media streams and/or re-initialize the capture
-                // engine.
-                if (pSettings != NULL && g_pwrCaps.AoAc && pSettings->PowerSetting == GUID_MONITOR_POWER_ON)
-                {
-                    DWORD   dwData = *((DWORD*)pSettings->Data);
-                    if (dwData == 0 && !g_fSleepState)
-                    {
-                        // This is a AOAC machine, and we're about to turn off our monitor, let's stop recording/preview.
-                        TRACE(L"++WM_POWERBROADCAST++ Stopping both preview & record stream.\n");
-                        g_fSleepState = true;
-                        g_pEngine->SleepState(g_fSleepState);
-                        g_pEngine->StopPreview();
-                        g_pEngine->DestroyCaptureEngine();
-                        TRACE(L"++WM_POWERBROADCAST++ streams stopped, capture engine destroyed.\n");
-                    }
-                    else if (dwData != 0 && g_fSleepState)
-                    {
-                        TRACE(L"++WM_POWERBROADCAST++ Reinitializing capture engine.\n");
-                        g_fSleepState = false;
-                        g_pEngine->SleepState(g_fSleepState);
-                        g_pEngine->InitializeCaptureManager(hPreview, pSelectedDevice.get());
-                    }
-                }
-            }
-            break;
-            case PBT_APMRESUMESUSPEND:
-            default:
-                // Don't care about this one, we always get the resume automatic so just
-                // latch onto that one.
-                TRACE((L"++WM_POWERBROADCAST++ (wParam=%u,lParam=%u)\n", wParam, lParam));
-                break;
-            }
-        }
-        return 1;
+        
         }
         return DefWindowProc(hwnd, uMsg, wParam, lParam);
     }

@@ -4,7 +4,7 @@ using Microsoft.AI.MachineLearning.Experimental;
 namespace WinMLSamplesGallery.Samples
 {
     public static class TensorizationModels {
-        public enum OnnxDataType : long {
+        enum OnnxDataType : long {
             UNDEFINED = 0,
             // Basic types.
             FLOAT = 1,

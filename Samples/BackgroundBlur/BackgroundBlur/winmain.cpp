@@ -12,10 +12,6 @@
 #define USE_LOGGING
 
 CaptureManager* g_engine = NULL;
-HPOWERNOTIFY    g_powerNotify = NULL;
-HPOWERNOTIFY    g_powerNotifyMonitor = NULL;
-SYSTEM_POWER_CAPABILITIES   g_pwrCaps{};
-bool            g_sleepState = false;
 
 INT_PTR CALLBACK ChooseDeviceDlgProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
@@ -302,13 +298,6 @@ namespace MainWindow
             goto done;
         }
 
-        // Register for connected standy changes.  This should come through the normal
-        // WM_POWERBROADCAST messages that we're already handling below.
-        // We also want to hook into the monitor on/off notification for AOAC (SOC) systems.
-        g_powerNotify = RegisterSuspendResumeNotification((HANDLE)hwnd, DEVICE_NOTIFY_WINDOW_HANDLE);
-        g_powerNotifyMonitor = RegisterPowerSettingNotification((HANDLE)hwnd, &GUID_MONITOR_POWER_ON, DEVICE_NOTIFY_WINDOW_HANDLE);
-        GetPwrCapabilities(&g_pwrCaps);
-
         UpdateUI(hwnd);
         success = TRUE;
 
@@ -348,11 +337,6 @@ namespace MainWindow
         delete g_engine;
         g_engine = NULL;
 
-        if (g_powerNotify)
-        {
-            UnregisterSuspendResumeNotification(g_powerNotify);
-            g_powerNotify = NULL;
-        }
         PostQuitMessage(0);
     }
 
@@ -474,65 +458,7 @@ namespace MainWindow
             UpdateUI(hwnd);
         }
         return 0;
-        case WM_POWERBROADCAST:
-        {
-            switch (wParam)
-            {
-            case PBT_APMSUSPEND:
-                TRACE(L"++WM_POWERBROADCAST++ Stopping both preview & record stream.\n");
-                g_sleepState = true;
-                g_engine->SleepState(g_sleepState);
-                g_engine->StopPreview();
-                g_engine->DestroyCaptureEngine();
-                TRACE(L"++WM_POWERBROADCAST++ streams stopped, capture engine destroyed.\n");
-                break;
-            case PBT_APMRESUMEAUTOMATIC:
-                TRACE(L"++WM_POWERBROADCAST++ Reinitializing capture engine.\n");
-                g_sleepState = false;
-                g_engine->SleepState(g_sleepState);
-                g_engine->InitializeCaptureManager(preview, status, selectedDevice.get());
-                break;
-            case PBT_POWERSETTINGCHANGE:
-            {
-                // We should only be in here for GUID_MONITOR_POWER_ON.
-                POWERBROADCAST_SETTING* pSettings = (POWERBROADCAST_SETTING*)lParam;
-
-                // If this is a SOC system (AoAc is true), we want to check our current
-                // sleep state and based on whether the monitor is being turned on/off,
-                // we can turn off our media streams and/or re-initialize the capture
-                // engine.
-                if (pSettings != NULL && g_pwrCaps.AoAc && pSettings->PowerSetting == GUID_MONITOR_POWER_ON)
-                {
-                    DWORD   dwData = *((DWORD*)pSettings->Data);
-                    if (dwData == 0 && !g_sleepState)
-                    {
-                        // This is a AOAC machine, and we're about to turn off our monitor, let's stop recording/preview.
-                        TRACE(L"++WM_POWERBROADCAST++ Stopping both preview & record stream.\n");
-                        g_sleepState = true;
-                        g_engine->SleepState(g_sleepState);
-                        g_engine->StopPreview();
-                        g_engine->DestroyCaptureEngine();
-                        TRACE(L"++WM_POWERBROADCAST++ streams stopped, capture engine destroyed.\n");
-                    }
-                    else if (dwData != 0 && g_sleepState)
-                    {
-                        TRACE(L"++WM_POWERBROADCAST++ Reinitializing capture engine.\n");
-                        g_sleepState = false;
-                        g_engine->SleepState(g_sleepState);
-                        g_engine->InitializeCaptureManager(preview,status, selectedDevice.get());
-                    }
-                }
-            }
-            break;
-            case PBT_APMRESUMESUSPEND:
-            default:
-                // Don't care about this one, we always get the resume automatic so just
-                // latch onto that one.
-                TRACE((L"++WM_POWERBROADCAST++ (wParam=%u,lParam=%u)\n", wParam, lParam));
-                break;
-            }
-        }
-        return 1;
+        
         }
         return DefWindowProc(hwnd, uMsg, wParam, lParam);
     }

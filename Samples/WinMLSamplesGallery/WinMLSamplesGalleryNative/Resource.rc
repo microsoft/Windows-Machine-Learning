@@ -24,7 +24,7 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 // DATAFILERESOURCE
 //
 
-IDR_ENCRYPTED_MODEL     DATAFILERESOURCE        "encrypted.onnx"
+IDR_ENCRYPTED_MODEL    DATAFILERESOURCE        "encrypted.onnx"
 
 
 #ifdef APSTUDIO_INVOKED
@@ -51,82 +51,6 @@ BEGIN
 END
 
 #endif    // APSTUDIO_INVOKED
-
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// Menu
-//
-
-IDR_MENU1 MENU
-BEGIN
-    POPUP "Capture"
-    BEGIN
-        MENUITEM "Choose Device",               ID_CAPTURE_CHOOSEDEVICE
-        MENUITEM "Start Preview",               ID_CAPTURE_PREVIEW
-    END
-END
-
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// Dialog
-//
-
-IDD_CHOOSE_DEVICE DIALOGEX 0, 0, 312, 179
-STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
-CAPTION "Select Camera"
-FONT 8, "MS Shell Dlg", 400, 0, 0x1
-BEGIN
-    DEFPUSHBUTTON   "OK",IDOK,201,158,50,14
-    PUSHBUTTON      "Cancel",IDCANCEL,255,158,50,14
-    LISTBOX         IDC_DEVICE_LIST,7,7,298,145,LBS_SORT | LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
-END
-
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// DESIGNINFO
-//
-
-#ifdef APSTUDIO_INVOKED
-GUIDELINES DESIGNINFO
-BEGIN
-    IDD_CHOOSE_DEVICE, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 305
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 172
-    END
-END
-#endif    // APSTUDIO_INVOKED
-
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// AFX_DIALOG_LAYOUT
-//
-
-IDD_CHOOSE_DEVICE AFX_DIALOG_LAYOUT
-BEGIN
-    0
-END
-
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// String Table
-//
-
-STRINGTABLE
-BEGIN
-    IDS_ERR_SET_DEVICE      " ""Unable to set the capture device."""
-    IDS_ERR_INITIALIZE      """Unable to initialize the capture engine."""
-    IDS_ERR_PREVIEW         """An error occurred during preview."""
-    IDS_ERR_RECORD          """An error occurred during recording."""
-    IDS_ERR_CAPTURE         """An error occurred during capture."""
-END
 
 #endif    // English (United States) resources
 /////////////////////////////////////////////////////////////////////////////

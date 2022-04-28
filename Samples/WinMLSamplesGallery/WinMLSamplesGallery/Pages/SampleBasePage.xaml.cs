@@ -37,8 +37,8 @@ namespace WinMLSamplesGallery
                 case "EncryptedModel":
                     SampleFrame.Navigate(typeof(Samples.EncryptedModel));
                     break;
-                case "StreamEffect":
-                    SampleFrame.Navigate(typeof(Samples.StreamEffect));
+                case "AdapterSelection":
+                    SampleFrame.Navigate(typeof(Samples.AdapterSelection));
                     break;
             }
             if (sampleMetadata.Docs.Count > 0)

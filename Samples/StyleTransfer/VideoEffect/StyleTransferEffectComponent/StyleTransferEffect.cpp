@@ -54,7 +54,6 @@ namespace winrt::StyleTransferEffectComponent::implementation
             OutputDebugString(std::to_wstring(swapChainIndex).c_str());
             OutputDebugString(L" | ");
             // submit an eval and wait for it to finish submitting work
-
             {
                 std::lock_guard<mutex> guard{ Processing };
                 currentBinding->binding.Bind(InputImageDescription, input);

@@ -14,7 +14,7 @@
     <DefaultLanguage>en-US</DefaultLanguage>
     <MinimumVisualStudioVersion>14.0</MinimumVisualStudioVersion>
     <ApplicationTypeRevision>10.0</ApplicationTypeRevision>
-    <WindowsTargetPlatformVersion Condition=" '$(WindowsTargetPlatformVersion)' == '' ">10.0.18362.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion Condition=" '$(WindowsTargetPlatformVersion)' == '' ">10.0.19041.0</WindowsTargetPlatformVersion>
     <WindowsTargetPlatformMinVersion>10.0.17134.0</WindowsTargetPlatformMinVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -126,17 +126,8 @@
       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <ResourceCompile>
-      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(MSBuildThisFileDirectory)../WinMLSamplesGallery/Models/;$(MSBuildThisFileDirectory)../../build/native/include/;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(MSBuildThisFileDirectory)../WinMLSamplesGallery/Models/;$(MSBuildThisFileDirectory)../../build/native/include/;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
-    <Link>
-      <AdditionalDependencies Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">Comctl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
-    </Link>
-    <Link>
-      <AdditionalDependencies Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Comctl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
-    </Link>
-    <Link>
-      <AdditionalDependencies Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Comctl32.lib;powrprof.lib;d3d11.lib;mf.lib;mfplat.lib;mfuuid.lib;shlwapi.lib;Gdi32.lib;%(AdditionalDependencies)</AdditionalDependencies>
-    </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)'=='Release'">
     <ClCompile>
@@ -145,47 +136,33 @@
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">Comctl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalDependencies Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Comctl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalDependencies Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Comctl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <ResourceCompile>
-      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(MSBuildThisFileDirectory)../WinMLSamplesGallery/Models/;$(MSBuildThisFileDirectory)../../build/native/include/;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(MSBuildThisFileDirectory)../WinMLSamplesGallery/Models/;$(MSBuildThisFileDirectory)../../build/native/include/;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="Capture.h" />
-    <ClInclude Include="common.h" />
+    <ClInclude Include="AdapterList.h" />
     <ClInclude Include="EncryptedModels.h" />
     <ClInclude Include="OpenCVImage.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="RandomAccessStream.h" />
-    <ClInclude Include="resource.h" />
-    <ClInclude Include="SegmentModel.h" />
-    <ClInclude Include="StreamEffect.h" />
-    <ClInclude Include="TransformBlur.h" />
     <ClInclude Include="WeakBuffer.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Capture.cpp" />
+    <ClCompile Include="AdapterList.cpp" />
     <ClCompile Include="EncryptedModels.cpp" />
     <ClCompile Include="OpenCVImage.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="$(GeneratedFilesDir)module.g.cpp" />
-    <ClCompile Include="PreviewWnd.cpp" />
-    <ClCompile Include="SegmentModel.cpp" />
-    <ClCompile Include="StreamEffect.cpp" />
-    <ClCompile Include="TransformBlur.cpp" />
-    <ClCompile Include="utils.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Midl Include="WinMLSamplesGalleryNative.idl" />
   </ItemGroup>
   <ItemGroup>
     <None Include="datafile.bin" />
-    <None Include="encrypted.onnx" />
     <None Include="packages.config" />
     <None Include="squeezenet1.1-7-batched.onnx" />
     <None Include="WinMLSamplesGalleryNative.def" />

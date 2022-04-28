@@ -17,11 +17,6 @@ namespace WinMLSamplesGallery.Controls
             SelectedIndex = DeviceBox.SelectedIndex;
         }
 
-        public int GetSelectedIndex() 
-        {
-            return SelectedIndex;
-        }
-
         public LearningModelDeviceKind GetDeviceKind()
         {
             if (SelectedIndex == 0)

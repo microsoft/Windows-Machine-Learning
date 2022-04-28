@@ -16,14 +16,11 @@ namespace WinMLSamplesGalleryNative
     {
         static Microsoft.AI.MachineLearning.LearningModel LoadEncryptedResource(String key);
     }
-      
+
     [default_interface]
-    runtimeclass StreamEffect
+    runtimeclass AdapterList
     {
-        static void LaunchNewWindow(String modelPath);
-        static void ShutDownWindow();
+        static String[] GetAdapters();
+        static Microsoft.AI.MachineLearning.LearningModelDevice CreateLearningModelDeviceFromAdapter(String description);
     }
-        
-        
-    
 }

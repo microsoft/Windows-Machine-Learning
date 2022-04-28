@@ -7,7 +7,6 @@
 #include "pch.h"
 #include "Capture.h"
 #include "resource.h"
-#include "TransformAsync.h"
 #include <winrt/Windows.Foundation.h>
 #include <winrt/base.h>
 #include <mfreadwrite.h>
@@ -199,7 +198,7 @@ HRESULT CaptureManager::OnCaptureEvent(WPARAM wParam, LPARAM lParam)
     LPOLESTR str;
     if (SUCCEEDED(StringFromCLSID(guidType, &str)))
     {
-        TRACE((L"MF_CAPTURE_ENGINE_EVENT: %s (hr = 0x%X)\n", str, hrStatus));
+        //TRACE((L"MF_CAPTURE_ENGINE_EVENT: %s (hr = 0x%X)\n", str, hrStatus));
         CoTaskMemFree(str);
     }
 #endif
@@ -285,10 +284,10 @@ HRESULT CaptureManager::StartPreview()
         // Add the transform 
         com_ptr<IMFTransform> mft;
         RETURN_IF_FAILED(TransformAsync::CreateInstance(mft.put()));
-        // mft.as<TransformAsync>()->SetFrameRateWnd(m_hwndStatus);
+        //mft.as<TransformAsync>()->SetFrameRateWnd(m_hwndStatus);
 
-        // IMFCaptureSource
-        RETURN_IF_FAILED(source->AddEffect(0, mft.get()));
+        //// IMFCaptureSource
+        //RETURN_IF_FAILED(source->AddEffect(0, mft.get()));
         RETURN_IF_FAILED(CloneVideoMediaType(mediaType.get(), MFVideoFormat_RGB32, mediaType2.put()));
         RETURN_IF_FAILED(mediaType2->SetUINT32(MF_MT_ALL_SAMPLES_INDEPENDENT, TRUE));
 

@@ -18,16 +18,7 @@
     <ClCompile Include="PreviewWnd.cpp">
       <Filter>StreamEffect</Filter>
     </ClCompile>
-    <ClCompile Include="SegmentModel.cpp">
-      <Filter>StreamEffect</Filter>
-    </ClCompile>
-    <ClCompile Include="Helpers\CSampleQueue.cpp" />
     <ClCompile Include="Helpers\utils.cpp" />
-    <ClCompile Include="TransformAsync.cpp" />
-    <ClCompile Include="TransformAsync_IMFAsyncCallback.cpp" />
-    <ClCompile Include="TransformAsync_IMFMediaEventGenerator.cpp" />
-    <ClCompile Include="TransformAsync_IMFShutdown.cpp" />
-    <ClCompile Include="TransformAsync_IMFTransform.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -49,16 +40,7 @@
     <ClInclude Include="common.h">
       <Filter>StreamEffect</Filter>
     </ClInclude>
-    <ClInclude Include="SegmentModel.h">
-      <Filter>StreamEffect</Filter>
-    </ClInclude>
     <ClInclude Include="resource.h" />
-    <ClInclude Include="Helpers\common.h" />
-    <ClInclude Include="Helpers\CSampleQueue.h" />
-    <ClInclude Include="Helpers\logging.h" />
-    <ClInclude Include="Helpers\logmediatype.h" />
-    <ClInclude Include="Helpers\trace.h" />
-    <ClInclude Include="TransformAsync.h" />
     <ClInclude Include="Helpers\pch.h" />
   </ItemGroup>
   <ItemGroup>

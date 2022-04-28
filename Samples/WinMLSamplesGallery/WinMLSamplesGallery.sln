@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 17
-VisualStudioVersion = 17.0.31919.166
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.32407.337
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{C7167F0D-BC9F-4E6E-AFE1-012C56B48DB5}") = "WinMLSamplesGallery (Package)", "WinMLSamplesGallery (Package)\WinMLSamplesGallery (Package).wapproj", "{DEA7791F-55CF-4ED5-BC99-3870997B1242}"
 EndProject
@@ -15,6 +15,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 	ProjectSection(SolutionItems) = preProject
 		.editorconfig = .editorconfig
 	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TransformAsync", "..\BackgroundBlur\TransformAsync\TransformAsync.vcxproj", "{DC45E5ED-8104-4FA2-8A7A-7CAFFBB9F94B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -80,6 +82,16 @@ Global
 		{8E1F2E33-58A3-4454-926E-1C98B93A2A30}.Release|x64.Build.0 = Release|x64
 		{8E1F2E33-58A3-4454-926E-1C98B93A2A30}.Release|x86.ActiveCfg = Release|x86
 		{8E1F2E33-58A3-4454-926E-1C98B93A2A30}.Release|x86.Build.0 = Release|x86
+		{DC45E5ED-8104-4FA2-8A7A-7CAFFBB9F94B}.Debug|arm64.ActiveCfg = Debug|Win32
+		{DC45E5ED-8104-4FA2-8A7A-7CAFFBB9F94B}.Debug|x64.ActiveCfg = Debug|x64
+		{DC45E5ED-8104-4FA2-8A7A-7CAFFBB9F94B}.Debug|x64.Build.0 = Debug|x64
+		{DC45E5ED-8104-4FA2-8A7A-7CAFFBB9F94B}.Debug|x86.ActiveCfg = Debug|Win32
+		{DC45E5ED-8104-4FA2-8A7A-7CAFFBB9F94B}.Debug|x86.Build.0 = Debug|Win32
+		{DC45E5ED-8104-4FA2-8A7A-7CAFFBB9F94B}.Release|arm64.ActiveCfg = Release|Win32
+		{DC45E5ED-8104-4FA2-8A7A-7CAFFBB9F94B}.Release|x64.ActiveCfg = Release|x64
+		{DC45E5ED-8104-4FA2-8A7A-7CAFFBB9F94B}.Release|x64.Build.0 = Release|x64
+		{DC45E5ED-8104-4FA2-8A7A-7CAFFBB9F94B}.Release|x86.ActiveCfg = Release|Win32
+		{DC45E5ED-8104-4FA2-8A7A-7CAFFBB9F94B}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

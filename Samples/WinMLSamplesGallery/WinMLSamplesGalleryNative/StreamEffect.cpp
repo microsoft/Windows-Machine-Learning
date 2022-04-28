@@ -392,14 +392,13 @@ namespace winrt::WinMLSamplesGalleryNative::implementation
         MainWindow::WindowProc(g_hwnd, WM_DESTROY, NULL, NULL);
     }
 
-    void StreamEffect::LaunchNewWindow(hstring modelPath)
+    void StreamEffect::LaunchNewWindow()
     {
         HWND hwnd;
         HWND galleryHwnd = GetActiveWindow();
         HRESULT hr = S_OK;
         BOOL bMFStartup = false;
         HMODULE hmodule = GetCurrentModule();
-        g_modelPath = modelPath;
 
         // Initialize the common controls
         const INITCOMMONCONTROLSEX icex = { sizeof(INITCOMMONCONTROLSEX), ICC_WIN95_CLASSES };

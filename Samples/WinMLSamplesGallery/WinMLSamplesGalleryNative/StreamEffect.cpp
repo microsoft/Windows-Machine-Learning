@@ -174,6 +174,7 @@ namespace MainWindow
             previewing = g_engine->IsPreviewing();
             if (previewing)
             {
+                _SetStatusText(L"Loading...");
                 SetMenuItemText(GetMenu(hwnd), ID_CAPTURE_PREVIEW, L"Stop Preview");
             }
             else
@@ -358,11 +359,12 @@ namespace MainWindow
             HANDLE_MSG(hwnd, WM_PAINT, OnPaint);
             HANDLE_MSG(hwnd, WM_SIZE, OnSize);
             HANDLE_MSG(hwnd, WM_DESTROY, OnDestroy);
+            //HANDLE_MSG(hwnd, WM_CLOSE, OnClose);
             HANDLE_MSG(hwnd, WM_COMMAND, OnCommand);
 
         case WM_ERASEBKGND:
             return 1;
-
+        
         case WM_APP_CAPTURE_EVENT:
         {
             if (g_engine)
@@ -389,7 +391,10 @@ namespace winrt::WinMLSamplesGalleryNative::implementation
 {
     void StreamEffect::ShutDownWindow()
     {
-        MainWindow::WindowProc(g_hwnd, WM_DESTROY, NULL, NULL);
+        try { MainWindow::WindowProc(GetActiveWindow(), WM_DESTROY, NULL, NULL); }
+        catch (...) {
+            return;
+        }
     }
 
     void StreamEffect::LaunchNewWindow(winrt::hstring modelPath)

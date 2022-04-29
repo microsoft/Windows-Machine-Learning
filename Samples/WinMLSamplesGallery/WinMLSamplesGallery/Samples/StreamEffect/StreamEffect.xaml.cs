@@ -32,42 +32,37 @@ namespace WinMLSamplesGallery.Samples
             // ensure that the dll is loaded.
             var builder = Microsoft.AI.MachineLearning.Experimental.LearningModelBuilder.Create(11);
 
-
             currentHwnd = GetForegroundWindow();
             //var modelName = "mosaic.onnx";
             modelPath = Path.Join(Windows.ApplicationModel.Package.Current.InstalledLocation.Path, "Models");
             
         }
 
-        // TODO: If keep in a separate window, send a task to shut down all stream effect processes
-        public void ShutDownWindow() 
-        {
-            //windTask.
-            WinMLSamplesGalleryNative.StreamEffect.ShutDownWindow();
-            return; 
-        }
         async private void ToggleInference(object sender, RoutedEventArgs e)
         {
             isPreviewing = !isPreviewing; // Toggle the previewing bool
-
             if (isPreviewing)
             {
                 // Change the button text/symbol on the button to prompt user to close window on next click
-                ToggleInferenceBtnText.Text = "Stop Inference";
-                ToggleInferenceBtnIcon.Symbol = Symbol.Cancel;
-
-                // Running as a task ensures that the samples gallery window isn't blocked.
+                //ToggleInferenceBtnText.Text = "Stop Inference";
+                //ToggleInferenceBtnIcon.Symbol = Symbol.Cancel;
+                // Waiting on the task makes sure can't navigate away from this sample until the window is closed. 
                 windTask = Task.Run(() => WinMLSamplesGalleryNative.StreamEffect.LaunchNewWindow(modelPath));
+                // Wait doesn't actually throw away input to the ui
+                windTask.Wait();
+                ToggleInferenceBtn.Visibility = Visibility.Visible;
             }
-            else if(!isPreviewing)
+
+            else if (!isPreviewing)
             {
                 ToggleInferenceBtnText.Text = "Start Inference";
                 ToggleInferenceBtnIcon.Symbol = Symbol.NewWindow;
+                ToggleInferenceBtn.Visibility = Visibility.Visible;
 
                 // TODO: Implement the ShutDownWindow function
-                ShutDownWindow();
+                //ShutDownWindow();
             }
-            
+
         }
 
     }

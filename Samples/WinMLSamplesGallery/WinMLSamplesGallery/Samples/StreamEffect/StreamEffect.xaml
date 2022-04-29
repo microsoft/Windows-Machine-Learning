@@ -17,7 +17,7 @@
 
     <Button x:Name="ToggleInferenceBtn" Style="{StaticResource AccentButtonStyle}" Click="ToggleInference" Margin="0,20,0,0">
         <StackPanel Orientation="Horizontal">
-            <TextBlock x:Name="ToggleInferenceBtnText" Margin="5,0">Start Stream</TextBlock>
+            <TextBlock x:Name="ToggleInferenceBtnText" Margin="5,0">Launch Streaming Demo</TextBlock>
             <SymbolIcon x:Name="ToggleInferenceBtnIcon" Symbol="NewWindow"/>
         </StackPanel>
     </Button>

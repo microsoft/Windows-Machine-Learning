@@ -114,7 +114,7 @@ export async function downloadPip(listener?: IOutputListener) {
     return new Promise(async (resolve, reject) => {
         const installer = path.join(localPython, 'get-pip.py');
         try {
-            const data = await downloadBinaryFile('https://bootstrap.pypa.io/get-pip.py') as Buffer;
+            const data = await downloadBinaryFile('https://bootstrap.pypa.io/pip/3.6/get-pip.py') as Buffer;
             fs.writeFileSync(installer, data);
             await python([installer], {}, listener);
         } catch (err) {

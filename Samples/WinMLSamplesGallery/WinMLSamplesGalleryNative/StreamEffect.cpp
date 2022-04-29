@@ -320,7 +320,7 @@ namespace MainWindow
     }
     void OnStartPreview(HWND hwnd)
     {
-        HRESULT hr = g_engine->StartPreview();
+        HRESULT hr = g_engine->StartPreview(g_modelPath);
         if (FAILED(hr))
         {
             ShowError(hwnd, IDS_ERR_CAPTURE, hr);
@@ -392,13 +392,14 @@ namespace winrt::WinMLSamplesGalleryNative::implementation
         MainWindow::WindowProc(g_hwnd, WM_DESTROY, NULL, NULL);
     }
 
-    void StreamEffect::LaunchNewWindow()
+    void StreamEffect::LaunchNewWindow(winrt::hstring modelPath)
     {
         HWND hwnd;
         HWND galleryHwnd = GetActiveWindow();
         HRESULT hr = S_OK;
         BOOL bMFStartup = false;
         HMODULE hmodule = GetCurrentModule();
+        g_modelPath = modelPath;
 
         // Initialize the common controls
         const INITCOMMONCONTROLSEX icex = { sizeof(INITCOMMONCONTROLSEX), ICC_WIN95_CLASSES };

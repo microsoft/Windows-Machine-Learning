@@ -20,7 +20,7 @@ namespace WinMLSamplesGalleryNative
     [default_interface]
     runtimeclass StreamEffect
     {
-        static void LaunchNewWindow();
+        static void LaunchNewWindow(String modelPath);
         static void ShutDownWindow();
     }
         

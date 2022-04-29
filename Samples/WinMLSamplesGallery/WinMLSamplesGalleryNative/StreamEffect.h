@@ -8,7 +8,7 @@ namespace winrt::WinMLSamplesGalleryNative::implementation
     {
         StreamEffect() = default;
 
-        static void LaunchNewWindow();
+        static void LaunchNewWindow(winrt::hstring modelPath);
 
         static void ShutDownWindow();
     };

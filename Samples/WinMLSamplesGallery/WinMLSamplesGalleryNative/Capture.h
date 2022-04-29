@@ -197,7 +197,7 @@ public:
     UINT    ErrorID() const { return m_errorID; }
 
     HRESULT OnCaptureEvent(WPARAM wParam, LPARAM lParam);
-    HRESULT StartPreview();
+    HRESULT StartPreview(winrt::hstring modelPath);
     HRESULT StopPreview();
 
     void    SleepState(bool fSleeping)

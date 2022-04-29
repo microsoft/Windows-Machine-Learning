@@ -57,7 +57,7 @@ namespace WinMLSamplesGallery.Samples
                 ToggleInferenceBtnIcon.Symbol = Symbol.Cancel;
 
                 // Running as a task ensures that the samples gallery window isn't blocked.
-                windTask = Task.Run(() => WinMLSamplesGalleryNative.StreamEffect.LaunchNewWindow());
+                windTask = Task.Run(() => WinMLSamplesGalleryNative.StreamEffect.LaunchNewWindow(modelPath));
             }
             else if(!isPreviewing)
             {

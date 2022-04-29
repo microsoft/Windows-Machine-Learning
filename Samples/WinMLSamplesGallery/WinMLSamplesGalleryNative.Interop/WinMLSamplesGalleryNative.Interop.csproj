@@ -14,7 +14,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\BackgroundBlur\TransformAsync\TransformAsync.vcxproj" />
     <ProjectReference Include="..\WinMLSamplesGalleryNative\WinMLSamplesGalleryNative.vcxproj" />
   </ItemGroup>
 

@@ -255,7 +255,7 @@ void CaptureManager::OnPreviewStopped(HRESULT& hrStatus)
 * Begins a preview stream by initializing the preview sink, adding a TransformAsync
 * MFT to the preview stream, and signalling the capture engine to begin previewing frames.
 */
-HRESULT CaptureManager::StartPreview()
+HRESULT CaptureManager::StartPreview(winrt::hstring modelPath)
 {
     if (m_engine == NULL)
     {
@@ -281,13 +281,14 @@ HRESULT CaptureManager::StartPreview()
         // Configure the video format for the preview sink.
         RETURN_IF_FAILED(source->GetCurrentDeviceMediaType((DWORD)MF_CAPTURE_ENGINE_PREFERRED_SOURCE_STREAM_FOR_VIDEO_PREVIEW, mediaType.put()));
 
-        // Add the transform 
+        // Add the transform s
         com_ptr<IMFTransform> mft;
         RETURN_IF_FAILED(TransformAsync::CreateInstance(mft.put()));
-        //mft.as<TransformAsync>()->SetFrameRateWnd(m_hwndStatus);
+        mft.as<TransformAsync>()->SetFrameRateWnd(m_hwndStatus);
+        mft.as<TransformAsync>()->SetModelBasePath(modelPath);
 
-        //// IMFCaptureSource
-        //RETURN_IF_FAILED(source->AddEffect(0, mft.get()));
+        // IMFCaptureSource
+        RETURN_IF_FAILED(source->AddEffect(0, mft.get()));
         RETURN_IF_FAILED(CloneVideoMediaType(mediaType.get(), MFVideoFormat_RGB32, mediaType2.put()));
         RETURN_IF_FAILED(mediaType2->SetUINT32(MF_MT_ALL_SAMPLES_INDEPENDENT, TRUE));
 

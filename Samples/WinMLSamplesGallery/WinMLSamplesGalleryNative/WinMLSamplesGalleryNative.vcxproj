@@ -100,7 +100,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup>
     <ClCompile>
-      <AdditionalIncludeDirectories>$(MSBuildThisFileDirectory)../../build/native/include/;C:\Windows-Machine-Learning\Samples\BackgroundBlur\TransformAsync;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(MSBuildThisFileDirectory)../../build/native/include/;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
   </ItemDefinitionGroup>
   <!-- OpenCV -->
@@ -157,24 +157,39 @@
     <ClInclude Include="Capture.h" />
     <ClInclude Include="common.h" />
     <ClInclude Include="EncryptedModels.h" />
-    <ClInclude Include="Helpers\pch.h" />
+    <ClInclude Include="External\common.h" />
+    <ClInclude Include="External\CSampleQueue.h" />
+    <ClInclude Include="External\logging.h" />
+    <ClInclude Include="External\logmediatype.h" />
+    <ClInclude Include="External\pch.h" />
+    <ClInclude Include="External\trace.h" />
     <ClInclude Include="OpenCVImage.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="RandomAccessStream.h" />
     <ClInclude Include="resource.h" />
+    <ClInclude Include="SegmentModel.h" />
     <ClInclude Include="StreamEffect.h" />
+    <ClInclude Include="TransformAsync.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Capture.cpp" />
     <ClCompile Include="EncryptedModels.cpp" />
-    <ClCompile Include="Helpers\utils.cpp" />
+    <ClCompile Include="External\CSampleQueue.cpp" />
+    <ClCompile Include="External\utils.cpp" />
     <ClCompile Include="OpenCVImage.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="$(GeneratedFilesDir)module.g.cpp" />
     <ClCompile Include="PreviewWnd.cpp" />
+    <ClCompile Include="SegmentModel.cpp" />
     <ClCompile Include="StreamEffect.cpp" />
+    <ClCompile Include="TransformAsync.cpp" />
+    <ClCompile Include="TransformAsync_IMFAsyncCallback.cpp" />
+    <ClCompile Include="TransformAsync_IMFMediaEventGenerator.cpp" />
+    <ClCompile Include="TransformAsync_IMFShutdown.cpp" />
+    <ClCompile Include="TransformAsync_IMFTransform.cpp" />
+    <ClCompile Include="TransformAsync_IMFVideoSampleAllocatorNotify.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Midl Include="WinMLSamplesGalleryNative.idl" />
@@ -194,11 +209,6 @@
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Resource.rc" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\..\BackgroundBlur\TransformAsync\TransformAsync.vcxproj">
-      <Project>{dc45e5ed-8104-4fa2-8a7a-7caffbb9f94b}</Project>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

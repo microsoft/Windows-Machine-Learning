@@ -21,7 +21,7 @@
 #include <dxva2api.h>
 
 #define USE_LOGGING
-#include "Helpers/common.h"
+#include "External/common.h"
 using namespace MediaFoundationSamples;
 #include "SegmentModel.h"
 

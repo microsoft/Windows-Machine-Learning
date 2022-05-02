@@ -58,7 +58,7 @@ public:
 	// Synchronous eval status
 	BOOL m_syncStarted = false; 
 	VideoFrame m_outputVideoFrame;
-	static const int m_scale = 5;
+	static const int m_scale = 4;
 	winrt::hstring m_modelBasePath;
 
 protected:

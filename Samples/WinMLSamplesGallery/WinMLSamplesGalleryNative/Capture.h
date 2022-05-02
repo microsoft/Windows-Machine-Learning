@@ -186,6 +186,14 @@ public:
         {
             g_DXGIMan->ResetDevice(g_DX11Device.get(), g_ResetToken);
         }
+        
+        if (m_previewing)
+        {
+            com_ptr<IMFCaptureSource> source;
+            m_engine->GetSource(source.put());
+            source->RemoveAllEffects(0);
+            m_engine->StopPreview();
+        }
 
         m_previewing = false;
         m_errorID = 0;

@@ -328,12 +328,6 @@ HRESULT CaptureManager::StopPreview()
     RETURN_IF_FAILED_WITH_EXPECTED(m_engine->StopPreview(), MF_E_INVALIDREQUEST);
     WaitForResult();
 
-    if (m_fPowerRequestSet && m_hpwrRequest != INVALID_HANDLE_VALUE)
-    {
-        PowerClearRequest(m_hpwrRequest, PowerRequestExecutionRequired);
-        m_fPowerRequestSet = false;
-    }
-
     return S_OK;
 }
 

@@ -53,9 +53,9 @@ HRESULT TransformAsync::CreateInstance(IMFTransform** mft) noexcept try
 
 TransformAsync::~TransformAsync()
 {
+    OutputDebugString(L"TransformAsync::~TransformAsync");
     assert(m_refCount == 0);
     Shutdown();
-
     m_inputType.detach();
     m_outputType.detach();
    

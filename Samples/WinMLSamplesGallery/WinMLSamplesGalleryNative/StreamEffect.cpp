@@ -391,10 +391,10 @@ namespace winrt::WinMLSamplesGalleryNative::implementation
 {
     void StreamEffect::ShutDownWindow()
     {
-        try { MainWindow::WindowProc(GetActiveWindow(), WM_DESTROY, NULL, NULL); }
-        catch (...) {
-            return;
-        }
+        /*delete g_engine;
+        g_engine = NULL;
+        CloseWindow(GetActiveWindow());*/
+        MainWindow::WindowProc(g_hwnd, WM_DESTROY, NULL, NULL);
     }
 
     void StreamEffect::LaunchNewWindow(winrt::hstring modelPath)

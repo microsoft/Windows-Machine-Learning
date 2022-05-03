@@ -23,8 +23,8 @@
 #include <windows.h>
 #include <d3d12.h>
 #include <wrl/client.h>
-#include "C:\Users\numform\Windows-Machine-Learning\Samples\WinMLSamplesGallery\packages\Microsoft.ML.OnnxRuntime.DirectML.1.10.0\build\native\include\dml_provider_factory.h"
-#include "C:\Users\numform\Windows-Machine-Learning\Samples\WinMLSamplesGallery\packages\Microsoft.ML.OnnxRuntime.DirectML.1.10.0\build\native\include\onnxruntime_cxx_api.h"
+#include "dml_provider_factory.h"
+#include "onnxruntime_cxx_api.h"
 
 #include "winrt/Microsoft.AI.MachineLearning.h"
 #include "winrt/Microsoft.AI.MachineLearning.Experimental.h"
@@ -328,7 +328,8 @@ int EvalORT()
         //.Outputs().Add(LearningModelBuilder::CreateTensorFeatureDescriptor(L"Output", TensorKind::Float, preprocessOutputShape))
         //.Operators().Add(dimension_transpose);
 
-    preprocessingModelBuilder.Save(L"nhwc_to_nchw.onnx");
+    //preprocessingModelBuilder.Save(L"nhwc_to_nchw.onnx");
+    preprocessingModelBuilder.Save(L"e:\\nhwc_to_nchw.onnx");
 
     const bool passTensorsAsD3DResources = true;
 
@@ -841,7 +842,8 @@ bool InitD3D()
 
     // compile vertex shader
     ID3DBlob* vertexShader; // d3d blob for holding vertex shader bytecode
-    hr = D3DCompileFromFile(L"C:/Users/numform/Windows-Machine-Learning/Samples/WinMLSamplesGallery/WinMLSamplesGalleryNative/VertexShader.hlsl",
+    //hr = D3DCompileFromFile(L"C:/Users/numform/Windows-Machine-Learning/Samples/WinMLSamplesGallery/WinMLSamplesGalleryNative/VertexShader.hlsl",
+    hr = D3DCompileFromFile(L"E:\\work\\Windows-Machine-Learning\\Samples\\WinMLSamplesGallery\\WinMLSamplesGalleryNative\\VertexShader.hlsl",
         nullptr,
         nullptr,
         "main",
@@ -865,7 +867,8 @@ bool InitD3D()
 
     // compile pixel shader
     ID3DBlob* pixelShader;
-    hr = D3DCompileFromFile(L"C:/Users/numform/Windows-Machine-Learning/Samples/WinMLSamplesGallery/WinMLSamplesGalleryNative/PixelShader.hlsl",
+    //hr = D3DCompileFromFile(L"E:\\work\\Windows-Machine-Learning\\Samples\\WinMLSamplesGallery\\WinMLSamplesGalleryNative\\PixelShader.hlsl",
+    hr = D3DCompileFromFile(L"E:\\work\\Windows-Machine-Learning\\Samples\\WinMLSamplesGallery\\WinMLSamplesGalleryNative\\PixelShader.hlsl",
         nullptr,
         nullptr,
         "main",
@@ -1224,7 +1227,8 @@ bool InitD3D()
     D3D12_RESOURCE_DESC textureDesc;
     int imageBytesPerRow;
     BYTE* imageData;
-    int imageSize = LoadImageDataFromFile(&imageData, textureDesc, L"C:/Users/numform/Windows-Machine-Learning/Samples/WinMLSamplesGallery/WinMLSamplesGalleryNative/cat.jpg", imageBytesPerRow);
+    //int imageSize = LoadImageDataFromFile(&imageData, textureDesc, L"C:/Users/numform/Windows-Machine-Learning/Samples/WinMLSamplesGallery/WinMLSamplesGalleryNative/cat.jpg", imageBytesPerRow);
+    int imageSize = LoadImageDataFromFile(&imageData, textureDesc, L"e:\\cat.jpg", imageBytesPerRow);
 
     //interpret as byte buffer instead of file
     //copy output buffer to another buffer that I've created

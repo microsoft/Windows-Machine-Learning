@@ -58,7 +58,6 @@
     <None Include="squeezenet1.1-7-batched.onnx" />
     <None Include="WinMLSamplesGalleryNative.def" />
     <None Include="PropertySheet.props" />
-    <None Include="$(MSBuildThisFileDirectory)..\..\runtimes\win-x64\native\onnxruntime.dll" />
     <None Include="squeezenet1.1-7.onnx">
       <Filter>DXResourceBinding</Filter>
     </None>

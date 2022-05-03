@@ -181,6 +181,7 @@
     <None Include="datafile.bin" />
     <None Include="packages.config" />
     <None Include="squeezenet1.1-7-batched.onnx" />
+    <None Include="squeezenet1.1-7.onnx" />
     <None Include="WinMLSamplesGalleryNative.def" />
   </ItemGroup>
   <ItemGroup>

@@ -87,9 +87,9 @@ bool InitD3D(); // initializes direct3d 12
 
 void Update(); // update the game logic
 
-void UpdatePipeline(); // update the direct3d pipeline (update command lists)
+CD3DX12_CPU_DESCRIPTOR_HANDLE UpdatePipeline(); // update the direct3d pipeline (update command lists)
 
-void Render(); // execute the command list
+CD3DX12_CPU_DESCRIPTOR_HANDLE Render(); // execute the command list
 
 void Cleanup(); // release com ojects and clean up memory
 

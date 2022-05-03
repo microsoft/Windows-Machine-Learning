@@ -67,7 +67,6 @@ HRESULT TransformAsync::NotifyRelease()
 
     if (currFenceValue % FRAME_RATE_UPDATE == 0)
     {
-
         m_fence->SetEventOnCompletion(currFenceValue, m_fenceEvent.get()); // Raise FenceEvent when done
         m_frameThread.reset(CreateThread(NULL, 0, FrameThreadProc, this, 0, &dwThreadID));
     }

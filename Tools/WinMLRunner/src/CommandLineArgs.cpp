@@ -78,6 +78,7 @@ void CommandLineArgs::PrintUsage()
     std::cout << "  -AutoScale <interpolationMode> : Enable image autoscaling and set the interpolation mode [Nearest, "
                  "Linear, Cubic, Fant]"
               << std::endl;
+    std::cout << "  -LogCPUFallback : output warnings when operators execute on the CPU when the CPU is not the chosen device" << std::endl;
     std::cout << std::endl;
     std::cout << "Concurrency Options:" << std::endl;
     std::cout << "  -ConcurrentLoad: load models concurrently" << std::endl;
@@ -395,7 +396,7 @@ CommandLineArgs::CommandLineArgs(const std::vector<std::wstring>& args)
         }
         else if((_wcsicmp(args[i].c_str(), L"-LogCPUFallback") == 0))
         {
-            ToggleLogCPUFallback(true);
+            EnableLogCPUFallback();
         }
         else
         {

@@ -496,7 +496,7 @@ void EventTraceHelper::ProcessEventTrace(PTRACEHANDLE traceHandle)
 
 void EventTraceHelper::Start()
 {
-    if (!commandArgs.UseGPU())
+    if (DontLog())
     {
         return;
     }
@@ -556,7 +556,7 @@ void EventTraceHelper::Start()
 
 void EventTraceHelper::Stop()
 {
-    if (!commandArgs.UseGPU())
+    if (DontLog())
     {
         return;
     }

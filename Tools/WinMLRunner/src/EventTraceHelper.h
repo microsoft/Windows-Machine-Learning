@@ -31,5 +31,6 @@ public:
 
 private:
     static void ProcessEventTrace(PTRACEHANDLE traceHandle);
+    bool DontLog() { return !commandArgs.UseGPU() || !commandArgs.IsLogCPUFallbackEnabled(); }
 
 };

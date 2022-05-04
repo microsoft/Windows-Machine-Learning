@@ -63,38 +63,43 @@ INT WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
     // Initialize the common controls
     const INITCOMMONCONTROLSEX icex = { sizeof(INITCOMMONCONTROLSEX), ICC_WIN95_CLASSES };
     InitCommonControlsEx(&icex);
+    HRESULT hr = S_OK;
+    
+    do {
+        // Note: The shell common File dialog requires apartment threading.
+        hr = CoInitializeEx(NULL, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
+        if (FAILED(hr))
+        {
+            break;
+        }
+        coInit = true;
 
-    // Note: The shell common File dialog requires apartment threading.
-    HRESULT hr = CoInitializeEx(NULL, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
-    if (FAILED(hr))
-    {
-        goto done;
-    }
-    coInit = true;
+        hr = MFStartup(MF_VERSION);
+        if (FAILED(hr)) {
+            break;
+        }
 
-    CHECK_HR(hr = MFStartup(MF_VERSION));
+        isMFStartup = true;
 
-    isMFStartup = true;
+        hwnd = CreateMainWindow(hInstance);
+        if (hwnd == 0)
+        {
+            ShowError(NULL, L"CreateMainWindow failed.", hr);
+            break;
+        }
 
-    hwnd = CreateMainWindow(hInstance);
-    if (hwnd == 0)
-    {
-        ShowError(NULL, L"CreateMainWindow failed.", hr);
-        goto done;
-    }
+        ShowWindow(hwnd, nCmdShow);
 
-    ShowWindow(hwnd, nCmdShow);
+        // Run the message loop.
 
-    // Run the message loop.
+        MSG msg;
+        while (GetMessage(&msg, NULL, 0, 0))
+        {
+            TranslateMessage(&msg);
+            DispatchMessage(&msg);
+        }
+    } while (false);
 
-    MSG msg;
-    while (GetMessage(&msg, NULL, 0, 0))
-    {
-        TranslateMessage(&msg);
-        DispatchMessage(&msg);
-    }
-
-done:
     if (FAILED(hr))
     {
         ShowError(NULL, L"Failed to start application", hr);
@@ -278,30 +283,36 @@ namespace MainWindow
         HRESULT             hr = S_OK;
 
         preview = CreatePreviewWindow(GetModuleHandle(NULL), hwnd);
-        if (preview == NULL)
-        {
-            goto done;
-        }
+        do {
+            if (preview == NULL)
+            {
+                break;
+            }
 
-        status = CreateStatusBar(hwnd, IDC_STATUS_BAR);
-        if (status == NULL)
-        {
-            goto done;
-        }
+            status = CreateStatusBar(hwnd, IDC_STATUS_BAR);
+            if (status == NULL)
+            {
+                break;
+            }
 
-        CHECK_HR(hr = CaptureManager::CreateInstance(hwnd, &g_engine));
+            hr = CaptureManager::CreateInstance(hwnd, &g_engine);
+            if (FAILED(hr))
+            {
+                break;
+            }
+                
 
-        hr = g_engine->InitializeCaptureManager(preview, status, selectedDevice.get());
-        if (FAILED(hr))
-        {
-            ShowError(hwnd, IDS_ERR_SET_DEVICE, hr);
-            goto done;
-        }
+            hr = g_engine->InitializeCaptureManager(preview, status, selectedDevice.get());
+            if (FAILED(hr))
+            {
+                ShowError(hwnd, IDS_ERR_SET_DEVICE, hr);
+                break;
+            }
 
-        UpdateUI(hwnd);
-        success = TRUE;
+            UpdateUI(hwnd);
+            success = TRUE;
+        } while (false);
 
-    done:
         return success;
     }
 
@@ -346,42 +357,52 @@ namespace MainWindow
 
         com_ptr<IMFAttributes> attributes;
         INT_PTR result = NULL;
-
-        HRESULT hr = MFCreateAttributes(attributes.put(), 1);
-        if (FAILED(hr))
-        {
-            goto done;
-        }
-
-        // Ask for source type = video capture devices
-        CHECK_HR(hr = attributes->SetGUID(MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE,
-            MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE_VIDCAP_GUID));
-
-        // Enumerate devices.
-        CHECK_HR(hr = MFEnumDeviceSources(attributes.get(), &param.devices, &param.count));
-
-        // Ask the user to select one.
-        result = DialogBoxParam(GetModuleHandle(NULL),
-            MAKEINTRESOURCE(IDD_CHOOSE_DEVICE), hwnd,
-            ChooseDeviceDlgProc, (LPARAM)&param);
-
-        if ((result == IDOK) && (param.selection != (UINT32)-1))
-        {
-            UINT iDevice = param.selection;
-
-            if (iDevice >= param.count)
+        HRESULT hr = S_OK;
+        do {
+            hr = MFCreateAttributes(attributes.put(), 1);
+            if (FAILED(hr))
             {
-                hr = E_UNEXPECTED;
-                goto done;
+                break;
             }
 
-            CHECK_HR(hr = g_engine->InitializeCaptureManager(preview, status, param.devices[iDevice]));
+            // Ask for source type = video capture devices
+            hr = attributes->SetGUID(MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE,
+                MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE_VIDCAP_GUID);
+            if (FAILED(hr)) {
+                break;
+            }
 
-            //selectedDevice.detach(); // TODO: detach instead of release? 
-            selectedDevice.copy_from(param.devices[iDevice]);
-        }
+            // Enumerate devices.
+            hr = MFEnumDeviceSources(attributes.get(), &param.devices, &param.count);
+            if (FAILED(hr)) {
+                break;
+            }
 
-    done:
+            // Ask the user to select one.
+            result = DialogBoxParam(GetModuleHandle(NULL),
+                MAKEINTRESOURCE(IDD_CHOOSE_DEVICE), hwnd,
+                ChooseDeviceDlgProc, (LPARAM)&param);
+
+            if ((result == IDOK) && (param.selection != (UINT32)-1))
+            {
+                UINT iDevice = param.selection;
+
+                if (iDevice >= param.count)
+                {
+                    hr = E_UNEXPECTED;
+                    break;
+                }
+
+                hr = g_engine->InitializeCaptureManager(preview, status, param.devices[iDevice]);
+                if (FAILED(hr)) {
+                    break;
+                }
+
+                //selectedDevice.detach(); // TODO: detach instead of release? 
+                selectedDevice.copy_from(param.devices[iDevice]);
+            }
+        } while (false);
+
         if (FAILED(hr))
         {
             ShowError(hwnd, IDS_ERR_SET_DEVICE, hr);

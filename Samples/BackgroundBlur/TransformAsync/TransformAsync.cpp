@@ -386,7 +386,7 @@ HRESULT TransformAsync::SetupAlloc()
 
             // Set up IMFVideoSampleAllocatorCallback
             m_outputSampleCallback = m_outputSampleAllocator.try_as<IMFVideoSampleAllocatorCallback>();
-            m_outputSampleCallback->SetCallback(this); // TODO: Will setCallback QI for Notify ? 
+            m_outputSampleCallback->SetCallback(this);
         }
         m_allocatorInitialized = true;
 
@@ -772,6 +772,10 @@ HRESULT TransformAsync::OnStartOfStream(void)
     ** input stream, you will
     ** have to change this logic
     *******************************/
+    if (m_outputSampleAllocator)
+    {
+        m_outputSampleCallback->SetCallback(this); 
+    }
     RETURN_IF_FAILED(RequestSample(0));
     return S_OK;
 }
@@ -836,6 +840,7 @@ HRESULT TransformAsync::OnFlush(void)
 {
     std::lock_guard<std::recursive_mutex> lock(m_mutex);
     m_status &= (~MYMFT_STATUS_STREAM_STARTED);
+    m_outputSampleCallback->SetCallback(NULL);
     RETURN_IF_FAILED(FlushSamples());
     return S_OK;
 }

@@ -135,7 +135,7 @@
       <AdditionalDependencies Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Comctl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <Link>
-      <AdditionalDependencies Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Comctl32.lib;powrprof.lib;d3d11.lib;mf.lib;mfplat.lib;mfuuid.lib;shlwapi.lib;Gdi32.lib;Mfplat.lib;Mf.lib;Mfcore.lib;evr.lib;DXGI.lib;user32.lib</AdditionalDependencies>
+      <AdditionalDependencies Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Comctl32.lib;powrprof.lib;d3d11.lib;mf.lib;mfplat.lib;mfuuid.lib;shlwapi.lib;Gdi32.lib;Mfplat.lib;Mf.lib;Mfcore.lib;evr.lib;DXGI.lib;user32.lib;ole32.lib</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)'=='Release'">
@@ -147,7 +147,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <AdditionalDependencies Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">Comctl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalDependencies Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Comctl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalDependencies Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Comctl32.lib;powrprof.lib;d3d11.lib;mf.lib;mfplat.lib;mfuuid.lib;shlwapi.lib;Gdi32.lib;Mfplat.lib;Mf.lib;Mfcore.lib;evr.lib;DXGI.lib;user32.lib</AdditionalDependencies>
+      <AdditionalDependencies Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Comctl32.lib;powrprof.lib;d3d11.lib;mf.lib;mfplat.lib;mfuuid.lib;shlwapi.lib;Gdi32.lib;Mfplat.lib;Mf.lib;Mfcore.lib;evr.lib;DXGI.lib;user32.lib;ole32.lib</AdditionalDependencies>
     </Link>
     <ResourceCompile>
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(MSBuildThisFileDirectory)../WinMLSamplesGallery/Models/;$(MSBuildThisFileDirectory)../../build/native/include/;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>

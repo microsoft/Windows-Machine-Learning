@@ -401,48 +401,65 @@ namespace winrt::WinMLSamplesGalleryNative::implementation
         MainWindow::WindowProc(g_hwnd, WM_DESTROY, NULL, NULL);
     }
 
-    void StreamEffect::LaunchNewWindow(winrt::hstring modelPath)
+    int32_t StreamEffect::CreateInferenceWindow()
     {
         HWND hwnd;
         HWND galleryHwnd = GetActiveWindow();
         HRESULT hr = S_OK;
         BOOL bMFStartup = false;
         HMODULE hmodule = GetCurrentModule();
-        g_modelPath = modelPath;
 
-        // Initialize the common controls
-        const INITCOMMONCONTROLSEX icex = { sizeof(INITCOMMONCONTROLSEX), ICC_WIN95_CLASSES };
-        InitCommonControlsEx(&icex);
+        do {
+            // Initialize the common controls
+            const INITCOMMONCONTROLSEX icex = { sizeof(INITCOMMONCONTROLSEX), ICC_WIN95_CLASSES };
+            InitCommonControlsEx(&icex);
 
-        hr = MFStartup(MF_VERSION);
+            hr = MFStartup(MF_VERSION);
+            if (FAILED(hr))
+            {
+                break;
+            }
+
+            // Create window
+            const wchar_t CLASS_NAME[] = L"Capture Engine Window Class";
+            INT nCmdShow = 1;
+
+            WNDCLASS wc = { 0 };
+
+            wc.lpfnWndProc = MainWindow::WindowProc;
+            wc.hInstance = hmodule;
+            wc.lpszClassName = CLASS_NAME;
+            wc.lpszMenuName = MAKEINTRESOURCE(IDR_MENU1);
+
+            RegisterClass(&wc);
+
+            g_hwnd = CreateWindowEx(
+                0, CLASS_NAME, L"Capture Application", WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT,
+                CW_USEDEFAULT, CW_USEDEFAULT, galleryHwnd, NULL, hmodule, NULL
+            );
+
+            if (g_hwnd == 0)
+            {
+                throw_hresult(E_FAIL);
+            }
+        } while (false);
+        
         if (FAILED(hr))
         {
-            goto done;
+            // TODO: Add utils from BackgroundBlur sample utils.cpp
+            //ShowError(NULL, L"Failed to start application", hr);
         }
-
-        // Create window
-        const wchar_t CLASS_NAME[] = L"Capture Engine Window Class";
-        INT nCmdShow = 1;
-
-        WNDCLASS wc = { 0 };
-
-        wc.lpfnWndProc = MainWindow::WindowProc;
-        wc.hInstance = hmodule;
-        wc.lpszClassName = CLASS_NAME;
-        wc.lpszMenuName = MAKEINTRESOURCE(IDR_MENU1);
-
-        RegisterClass(&wc);
-
-        g_hwnd = CreateWindowEx(
-            0, CLASS_NAME, L"Capture Application", WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT,
-            CW_USEDEFAULT, CW_USEDEFAULT, galleryHwnd, NULL, hmodule, NULL
-        );
-
-        if (g_hwnd == 0)
+        if (bMFStartup)
         {
-            throw_hresult(E_FAIL);
+            MFShutdown();
         }
 
+        return (int32_t)g_hwnd;
+    }
+
+    void StreamEffect::LaunchNewWindow(winrt::hstring modelPath)
+    {
+        g_modelPath = modelPath;
         ShowWindow(g_hwnd, 10);
 
         // Run the main message loop
@@ -453,17 +470,6 @@ namespace winrt::WinMLSamplesGalleryNative::implementation
             DispatchMessage(&msg);
         }
 
-
-    done: 
-        if (FAILED(hr))
-        {
-            // TODO: Add utils from BackgroundBlur sample utils.cpp
-            //ShowError(NULL, L"Failed to start application", hr);
-        }
-        if (bMFStartup)
-        {
-            MFShutdown();
-        }
         return ;
     }
 }

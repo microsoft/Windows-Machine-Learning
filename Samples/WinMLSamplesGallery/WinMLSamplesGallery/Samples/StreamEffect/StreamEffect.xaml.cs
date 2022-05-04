@@ -9,21 +9,23 @@ using WinMLSamplesGalleryNative;
 using System.Runtime.InteropServices;
 using System.Threading;
 using Windows.UI.Core;
-using muxc = Microsoft.UI.Xaml.Controls;
 
 namespace WinMLSamplesGallery.Samples
 {
-
+    delegate IntPtr WndProc(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam);
 
     public sealed partial class StreamEffect : Page
     {
         string modelPath;
         bool isPreviewing = false;
         IntPtr currentHwnd;
+        IntPtr demoHwnd;
         Task windTask;
 
         [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
         static extern IntPtr GetForegroundWindow();
+        [System.Runtime.InteropServices.DllImport("user32.dll", SetLastError = true)]
+        static extern bool DestroyWindow(IntPtr hWnd);
 
         public StreamEffect()
         {
@@ -33,6 +35,7 @@ namespace WinMLSamplesGallery.Samples
             // To work around this, we make a dummy call to the builder to
             // ensure that the dll is loaded.
             var builder = Microsoft.AI.MachineLearning.Experimental.LearningModelBuilder.Create(11);
+            demoHwnd = (IntPtr)WinMLSamplesGalleryNative.StreamEffect.CreateInferenceWindow();
 
             currentHwnd = GetForegroundWindow();
             //var modelName = "mosaic.onnx";
@@ -42,40 +45,27 @@ namespace WinMLSamplesGallery.Samples
 
         public void CloseInferenceWindow()
         {
-            // If not already completed, shut down the window
+            // if have a windtask running and it's not complete, destroy the window
             if (windTask != null && !windTask.IsCompleted)
             {
-                //windTask.Dispose();
-                WinMLSamplesGalleryNative.StreamEffect.ShutDownWindow();
+                DestroyWindow(demoHwnd);
             }
         }
 
         async private void ToggleInference(object sender, RoutedEventArgs e)
         {
-            isPreviewing = !isPreviewing; // Toggle the previewing bool
-            if (isPreviewing)
+            isPreviewing = !isPreviewing;
+            if(isPreviewing)
             {
                 ToggleInferenceBtn.Visibility = Visibility.Visible;
                 ToggleInferenceBtnText.Text = "Close Streaming Demo";
                 ToggleInferenceBtnIcon.Symbol = Symbol.Stop;
-                //MainWindow.
-                MainWindow.navigationView.IsEnabled = false;
-                MainWindow.mainFrame.Visibility = Visibility.Collapsed;
-
-                // Change the button text/symbol on the button to prompt user to close window on next click
-                // Waiting on the task makes sure can't navigate away from this sample until the window is closed. 
-                var tok = new CancellationTokenSource(); 
+                var tok = new CancellationTokenSource();
                 windTask = new Task(
-                    () => WinMLSamplesGalleryNative.StreamEffect.LaunchNewWindow(modelPath), tok.Token);
-                // Wait doesn't actually throw away input to the ui
-                //windTask.Wait();
-                //Task close = windTask.ContinueWith((antecendent) => { 
-                //    isPreviewing = false;
-                //});
+                        () => WinMLSamplesGalleryNative.StreamEffect.LaunchNewWindow(modelPath), tok.Token);
                 windTask.Start();
-                //close.Wait();
             }
-
+            
             else if (!isPreviewing)
             {
                 ToggleInferenceBtnText.Text = "Launch Streaming Demo";
@@ -83,11 +73,13 @@ namespace WinMLSamplesGallery.Samples
                 ToggleInferenceBtn.Visibility = Visibility.Visible;
 
                 CloseInferenceWindow();
-                // TODO: Implement the ShutDownWindow function
-                //ShutDownWindow();
-            }
+                // Close this inference window and set up a new one to use in the future
+                demoHwnd = (IntPtr)WinMLSamplesGalleryNative.StreamEffect.CreateInferenceWindow();
 
+            }
         }
 
+
     }
+    
 }

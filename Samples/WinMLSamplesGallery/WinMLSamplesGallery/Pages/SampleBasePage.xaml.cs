@@ -60,7 +60,7 @@ namespace WinMLSamplesGallery
             if (SampleFrame.SourcePageType == typeof(Samples.StreamEffect))
             {
                 var page = (Samples.StreamEffect)SampleFrame.Content;
-                //page.CloseInferenceWindow();
+                page.CloseInferenceWindow();
             }
 
 

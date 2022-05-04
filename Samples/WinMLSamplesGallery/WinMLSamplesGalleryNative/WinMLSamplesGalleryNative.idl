@@ -22,8 +22,7 @@ namespace WinMLSamplesGalleryNative
     {
         static void LaunchNewWindow(String modelPath);
         static void ShutDownWindow();
+        static Int32 CreateInferenceWindow();
     }
-        
-        
-    
+
 }

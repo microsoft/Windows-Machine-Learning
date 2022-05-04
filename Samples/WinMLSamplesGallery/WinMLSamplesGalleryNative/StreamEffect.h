@@ -11,6 +11,7 @@ namespace winrt::WinMLSamplesGalleryNative::implementation
         static void LaunchNewWindow(winrt::hstring modelPath);
 
         static void ShutDownWindow();
+        static int32_t CreateInferenceWindow();
     };
 }
 namespace winrt::WinMLSamplesGalleryNative::factory_implementation

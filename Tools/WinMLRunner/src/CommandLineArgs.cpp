@@ -396,7 +396,7 @@ CommandLineArgs::CommandLineArgs(const std::vector<std::wstring>& args)
         }
         else if((_wcsicmp(args[i].c_str(), L"-LogCPUFallback") == 0))
         {
-            ToggleLogCPUFallback(true);
+            EnableLogCPUFallback();
         }
         else
         {

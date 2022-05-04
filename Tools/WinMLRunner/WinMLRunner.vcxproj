@@ -204,7 +204,7 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>WindowsApp.lib; mincore.lib; DXGI.lib;tdh.lib</AdditionalDependencies>
+      <AdditionalDependencies>WindowsApp.lib; mincore.lib; DXGI.lib;Tdh.lib</AdditionalDependencies>
       <DelayLoadDLLs>"ext-ms-win-dxcore-l1-1-0.dll"; dxgi.dll; d3d11.dll</DelayLoadDLLs>
     </Link>
     <PreBuildEvent>
@@ -233,7 +233,7 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>WindowsApp.lib; mincore.lib; DXGI.lib;tdh.lib</AdditionalDependencies>
+      <AdditionalDependencies>WindowsApp.lib; mincore.lib; DXGI.lib;Tdh.lib</AdditionalDependencies>
       <DelayLoadDLLs>"ext-ms-win-dxcore-l1-1-0.dll"; dxgi.dll; d3d11.dll</DelayLoadDLLs>
     </Link>
     <PreBuildEvent>
@@ -259,7 +259,7 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>WindowsApp.lib; mincore.lib; DXGI.lib;tdh.lib</AdditionalDependencies>
+      <AdditionalDependencies>WindowsApp.lib; mincore.lib; DXGI.lib;Tdh.lib</AdditionalDependencies>
       <DelayLoadDLLs>"ext-ms-win-dxcore-l1-1-0.dll"; dxgi.dll; d3d11.dll</DelayLoadDLLs>
     </Link>
     <ResourceCompile>
@@ -286,7 +286,7 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>WindowsApp.lib; mincore.lib; DXGI.lib;tdh.lib</AdditionalDependencies>
+      <AdditionalDependencies>WindowsApp.lib; mincore.lib; DXGI.lib;Tdh.lib</AdditionalDependencies>
       <DelayLoadDLLs>"ext-ms-win-dxcore-l1-1-0.dll"; dxgi.dll; d3d11.dll</DelayLoadDLLs>
     </Link>
     <ResourceCompile>
@@ -317,7 +317,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>WindowsApp.lib; mincore.lib; DXGI.lib;tdh.lib</AdditionalDependencies>
+      <AdditionalDependencies>WindowsApp.lib; mincore.lib; DXGI.lib;Tdh.lib</AdditionalDependencies>
       <DelayLoadDLLs>"ext-ms-win-dxcore-l1-1-0.dll"; dxgi.dll; d3d11.dll</DelayLoadDLLs>
     </Link>
     <ResourceCompile>
@@ -349,7 +349,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>WindowsApp.lib; mincore.lib; DXGI.lib;tdh.lib</AdditionalDependencies>
+      <AdditionalDependencies>WindowsApp.lib; mincore.lib; DXGI.lib;Tdh.lib</AdditionalDependencies>
       <DelayLoadDLLs>"ext-ms-win-dxcore-l1-1-0.dll"; dxgi.dll; d3d11.dll</DelayLoadDLLs>
     </Link>
     <ResourceCompile>
@@ -382,7 +382,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>WindowsApp.lib; mincore.lib; DXGI.lib;tdh.lib</AdditionalDependencies>
+      <AdditionalDependencies>WindowsApp.lib; mincore.lib; DXGI.lib;Tdh.lib</AdditionalDependencies>
       <DelayLoadDLLs>"ext-ms-win-dxcore-l1-1-0.dll"; dxgi.dll; d3d11.dll</DelayLoadDLLs>
     </Link>
     <PreBuildEvent>
@@ -416,7 +416,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>WindowsApp.lib; mincore.lib; DXGI.lib;tdh.lib</AdditionalDependencies>
+      <AdditionalDependencies>WindowsApp.lib; mincore.lib; DXGI.lib;Tdh.lib</AdditionalDependencies>
       <DelayLoadDLLs>"ext-ms-win-dxcore-l1-1-0.dll"; dxgi.dll; d3d11.dll</DelayLoadDLLs>
     </Link>
     <PreBuildEvent>

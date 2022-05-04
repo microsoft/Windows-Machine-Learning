@@ -257,8 +257,8 @@ namespace MainWindow
     {
         delete g_engine;
         g_engine = NULL;
-
-        PostQuitMessage(0);
+        DestroyWindow(g_hwnd);
+        //PostQuitMessage(0);
     }
 
     void OnChooseDevice(HWND hwnd)
@@ -282,7 +282,7 @@ namespace MainWindow
         CHECK_HR(hr = MFEnumDeviceSources(attributes.get(), &param.devices, &param.count));
 
         // Ask the user to select one.
-        result = DialogBoxParam(GetModuleHandle(NULL),
+        result = DialogBoxParam(GetCurrentModule(),
             MAKEINTRESOURCE(IDD_CHOOSE_DEVICE), hwnd,
             ChooseDeviceDlgProc, (LPARAM)&param);
 
@@ -361,7 +361,8 @@ namespace MainWindow
             HANDLE_MSG(hwnd, WM_DESTROY, OnDestroy);
             //HANDLE_MSG(hwnd, WM_CLOSE, OnClose);
             HANDLE_MSG(hwnd, WM_COMMAND, OnCommand);
-
+        /*case WM_CLOSE:
+            DestroyWindow(hwnd);*/
         case WM_ERASEBKGND:
             return 1;
         
@@ -391,9 +392,12 @@ namespace winrt::WinMLSamplesGalleryNative::implementation
 {
     void StreamEffect::ShutDownWindow()
     {
-        /*delete g_engine;
+        /*  delete g_engine;
         g_engine = NULL;
-        CloseWindow(GetActiveWindow());*/
+        DestroyWindow(g_hwnd);
+        PostQuitMessage(0);*/
+        CloseWindow(g_hwnd);
+        DestroyWindow(g_hwnd);
         MainWindow::WindowProc(g_hwnd, WM_DESTROY, NULL, NULL);
     }
 

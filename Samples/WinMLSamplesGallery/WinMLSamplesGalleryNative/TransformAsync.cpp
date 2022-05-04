@@ -768,6 +768,10 @@ HRESULT TransformAsync::OnStartOfStream(void)
     {
         std::lock_guard<std::recursive_mutex> lock(m_mutex);
         m_status |= MYMFT_STATUS_STREAM_STARTED;
+        if (m_outputSampleAllocator)
+        {
+            m_outputSampleCallback->SetCallback(this); // TODO: Will setCallback QI for Notify ? 
+        }
     }
 
     /*******************************

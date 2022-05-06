@@ -319,7 +319,7 @@ int EvalORT()
     const std::array<int64_t, 2> inferenceOutputShape = { 1, 1000 };
 
     auto dimension_transpose = LearningModelOperator(L"Transpose")
-        .SetInput(L"data", L"SubOutput")
+        .SetInput(L"data", L"Input")
         .SetAttribute(L"perm", TensorInt64Bit::CreateFromArray({ 4 }, { INT64(0), INT64(3), INT64(1), INT64(2)}))
         .SetOutput(L"transposed", L"Output");
 
@@ -327,29 +327,29 @@ int EvalORT()
         LearningModelBuilder::Create(12)
         .Inputs().Add(LearningModelBuilder::CreateTensorFeatureDescriptor(L"Input", TensorKind::Float, preprocessInputShape))
         .Outputs().Add(LearningModelBuilder::CreateTensorFeatureDescriptor(L"Output", TensorKind::Float, preprocessOutputShape))
-        //.Operators().Add(dimension_transpose)
-        .CreateModel();
-    //preprocessingModelBuilder.Operators().Add(dimension_transpose);
+        .Operators().Add(dimension_transpose);
+    auto preprocessingModel = preprocessingModelBuilder.CreateModel();
 
-    auto window_operator =
-        LearningModelOperator(L"Transpose")
-        .SetInput(L"size", L"Input")
-        .SetOutput(L"output", L"Output");
+    //auto window_operator =
+    //    LearningModelOperator(L"Transpose")
+    //    .SetInput(L"size", L"Input")
+    //    .SetOutput(L"output", L"Output");
 
-    std::vector<int64_t> scalar_shape = {};
-    std::vector<int64_t> output_shape = { 32 };
-    auto test_model =
-        LearningModelBuilder::Create(13)
-        .Inputs().Add(LearningModelBuilder::CreateTensorFeatureDescriptor(L"Input", TensorKind::Int64, scalar_shape))
-        .Outputs().Add(LearningModelBuilder::CreateTensorFeatureDescriptor(L"Output", TensorKind::Float, output_shape))
-        .Operators().Add(window_operator)
-        .CreateModel();
+    //std::vector<int64_t> scalar_shape = {};
+    //std::vector<int64_t> output_shape = { 32 };
+    //auto test_model_builder =
+    //    LearningModelBuilder::Create(13)
+    //    .Inputs().Add(LearningModelBuilder::CreateTensorFeatureDescriptor(L"Input", TensorKind::Int64, scalar_shape))
+    //    .Outputs().Add(LearningModelBuilder::CreateTensorFeatureDescriptor(L"Output", TensorKind::Float, output_shape))
+    //    .Operators().Add(window_operator);
+    //auto test_model = test_model_builder.CreateModel();
 
-    //preprocessingModelBuilder.Save(L"C:/Users/numform/Windows-Machine-Learning/Samples/WinMLSamplesGallery/WinMLSamplesGalleryNative/nhwc_to_nchw.onnx");
+    preprocessingModelBuilder.Save(L"C:/Users/numform/Windows-Machine-Learning/Samples/WinMLSamplesGallery/WinMLSamplesGalleryNative/nhwc_to_nchw.onnx");
     const wchar_t* preprocessingModelFilePath = L"C:/Users/numform/Windows-Machine-Learning/Samples/WinMLSamplesGallery/WinMLSamplesGalleryNative/nhwc_to_nchw.onnx";
 
+    //test_model_builder.Save(L"C:/Users/numform/Windows-Machine-Learning/Samples/WinMLSamplesGallery/WinMLSamplesGalleryNative/test.onnx");
     //auto preprocessingModel = preprocessingModelBuilder.CreateModel();
-    LearningModelSession session(test_model);
+    //LearningModelSession session(preprocessingModel);
 
 
     const bool passTensorsAsD3DResources = true;

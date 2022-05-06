@@ -61,6 +61,7 @@
     <None Include="squeezenet1.1-7.onnx">
       <Filter>DXResourceBinding</Filter>
     </None>
+    <None Include="$(MSBuildThisFileDirectory)..\..\runtimes\win-x64\native\onnxruntime.dll" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="readme.txt" />

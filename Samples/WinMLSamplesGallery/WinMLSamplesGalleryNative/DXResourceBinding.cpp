@@ -302,7 +302,122 @@ Ort::Value CreateTensorValueUsingD3DResource(
     );
 }
 
+int EvalORTInference(const Ort::Value& prev_input) {
+    OutputDebugString(L"In EvalORTInferencec");
+    // Squeezenet opset v7 https://github.com/onnx/models/blob/master/vision/classification/squeezenet/README.md
+    const wchar_t* modelFilePath = L"C:/Users/numform/Windows-Machine-Learning/Samples/WinMLSamplesGallery/WinMLSamplesGalleryNative/squeezenet1.1-7.onnx";
+    const char* modelInputTensorName = "data";
+    const char* modelOutputTensorName = "squeezenet0_flatten0_reshape0";
+    const std::array<int64_t, 4> inputShape = { 1, 3, 224, 224 };
+    const std::array<int64_t, 2> outputShape = { 1, 1000 };
 
+    const bool passTensorsAsD3DResources = true;
+
+    LARGE_INTEGER startTime;
+    LARGE_INTEGER d3dDeviceCreationTime;
+    LARGE_INTEGER sessionCreationTime;
+    LARGE_INTEGER tensorCreationTime;
+    LARGE_INTEGER bindingTime;
+    LARGE_INTEGER runTime;
+    LARGE_INTEGER synchronizeOutputsTime;
+    LARGE_INTEGER cpuFrequency;
+    QueryPerformanceFrequency(&cpuFrequency);
+    QueryPerformanceCounter(&startTime);
+
+    try
+    {
+        Microsoft::WRL::ComPtr<ID3D12Device> d3d12Device;
+        THROW_IF_FAILED(D3D12CreateDevice(nullptr, D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&d3d12Device)));
+        QueryPerformanceCounter(&d3dDeviceCreationTime);
+
+        OrtApi const& ortApi = Ort::GetApi(); // Uses ORT_API_VERSION
+        const OrtDmlApi* ortDmlApi;
+        THROW_IF_NOT_OK(ortApi.GetExecutionProviderApi("DML", ORT_API_VERSION, reinterpret_cast<const void**>(&ortDmlApi)));
+
+        // ONNX Runtime setup
+        Ort::Env ortEnvironment(ORT_LOGGING_LEVEL_WARNING, "DirectML_Direct3D_TensorAllocation_Test");
+        Ort::SessionOptions sessionOptions;
+        sessionOptions.SetExecutionMode(ExecutionMode::ORT_SEQUENTIAL);
+        sessionOptions.DisableMemPattern();
+        sessionOptions.SetGraphOptimizationLevel(GraphOptimizationLevel::ORT_ENABLE_ALL);
+        ortApi.AddFreeDimensionOverrideByName(sessionOptions, "batch_size", 1);
+        OrtSessionOptionsAppendExecutionProvider_DML(sessionOptions, 0);
+        Ort::Session session = Ort::Session(ortEnvironment, modelFilePath, sessionOptions);
+        QueryPerformanceCounter(&sessionCreationTime);
+
+        Ort::IoBinding ioBinding = Ort::IoBinding::IoBinding(session);
+        const char* memoryInformationName = passTensorsAsD3DResources ? "DML" : "Cpu";
+        Ort::MemoryInfo memoryInformation(memoryInformationName, OrtAllocatorType::OrtDeviceAllocator, 0, OrtMemType::OrtMemTypeDefault);
+        // Not needed: Ort::Allocator allocator(session, memoryInformation);
+
+        // Create input tensor.
+        //Ort::Value inputTensor(nullptr);
+        //std::vector<float> inputTensorValues(static_cast<size_t>(GetElementCount(inputShape)), 0.0f);
+        //std::iota(inputTensorValues.begin(), inputTensorValues.end(), 0.0f);
+        //Microsoft::WRL::ComPtr<IUnknown> inputTensorEpWrapper;
+
+        //// Create empty D3D resource for input.
+        //inputTensor = CreateTensorValueUsingD3DResource(
+        //    d3d12Device.Get(),
+        //    *ortDmlApi,
+        //    memoryInformation,
+        //    inputShape,
+        //    ONNX_TENSOR_ELEMENT_DATA_TYPE_FLOAT,
+        //    sizeof(float),
+        //    /*out*/ IID_PPV_ARGS_Helper(inputTensorEpWrapper.GetAddressOf())
+        //);
+
+        // Create output tensor on device memory.
+        Ort::Value outputTensor(nullptr);
+        std::vector<float> outputTensorValues(static_cast<size_t>(GetElementCount(outputShape)), 0.0f);
+        Microsoft::WRL::ComPtr<IUnknown> outputTensorEpWrapper;
+
+        outputTensor = CreateTensorValueUsingD3DResource(
+            d3d12Device.Get(),
+            *ortDmlApi,
+            memoryInformation,
+            outputShape,
+            ONNX_TENSOR_ELEMENT_DATA_TYPE_FLOAT,
+            sizeof(float),
+            /*out*/ IID_PPV_ARGS_Helper(outputTensorEpWrapper.GetAddressOf())
+        );
+
+
+        QueryPerformanceCounter(&tensorCreationTime);
+
+        ////////////////////////////////////////
+        // Bind the tensor inputs to the model, and run it.
+        ioBinding.BindInput(modelInputTensorName, prev_input);
+        ioBinding.BindOutput(modelOutputTensorName, outputTensor);
+        ioBinding.SynchronizeInputs();
+        QueryPerformanceCounter(&bindingTime);
+
+        Ort::RunOptions runOptions;
+
+        // TODO: Upload inputTensorValues to GPU inputTensor.
+
+        session.Run(runOptions, ioBinding);
+        OutputDebugString(L"Done evaluating inference session");
+        QueryPerformanceCounter(&runTime);
+        printf("Synchronizing outputs.\n");
+        ioBinding.SynchronizeOutputs();
+        QueryPerformanceCounter(&synchronizeOutputsTime);
+        printf("Finished execution.\n");
+
+    }
+    catch (Ort::Exception const& exception)
+    {
+        printf("Error running model inference: %s\n", exception.what());
+        return EXIT_FAILURE;
+    }
+    catch (std::exception const& exception)
+    {
+        printf("Error running model inference: %s\n", exception.what());
+        return EXIT_FAILURE;
+    }
+
+    return 0;
+}
 
 int EvalORT()
 {
@@ -312,9 +427,11 @@ int EvalORT()
     const wchar_t* modelFilePath = L"C:/Users/numform/Windows-Machine-Learning/Samples/WinMLSamplesGallery/WinMLSamplesGalleryNative/squeezenet1.1-7.onnx";
     const char* modelInputTensorName = "data";
     const char* modelOutputTensorName = "squeezenet0_flatten0_reshape0";
+    const char* preprocessModelInputTensorName = "Input";
+    const char* preprocessModelOutputTensorName = "Output";
     // Might have to change the 3's below to 4 for rgba
     const std::array<int64_t, 4> preprocessInputShape = { 1, 224, 224, 3};
-    const std::array<int64_t, 4> preprocessOutputShape = { 1, 3, -1, -1 };
+    const std::array<int64_t, 4> preprocessOutputShape = { 1, 3, 224, 224 };
     const std::array<int64_t, 4> inferenceInputShape = { 1, 3, 224, 224,};
     const std::array<int64_t, 2> inferenceOutputShape = { 1, 1000 };
 
@@ -330,27 +447,8 @@ int EvalORT()
         .Operators().Add(dimension_transpose);
     auto preprocessingModel = preprocessingModelBuilder.CreateModel();
 
-    //auto window_operator =
-    //    LearningModelOperator(L"Transpose")
-    //    .SetInput(L"size", L"Input")
-    //    .SetOutput(L"output", L"Output");
-
-    //std::vector<int64_t> scalar_shape = {};
-    //std::vector<int64_t> output_shape = { 32 };
-    //auto test_model_builder =
-    //    LearningModelBuilder::Create(13)
-    //    .Inputs().Add(LearningModelBuilder::CreateTensorFeatureDescriptor(L"Input", TensorKind::Int64, scalar_shape))
-    //    .Outputs().Add(LearningModelBuilder::CreateTensorFeatureDescriptor(L"Output", TensorKind::Float, output_shape))
-    //    .Operators().Add(window_operator);
-    //auto test_model = test_model_builder.CreateModel();
-
     preprocessingModelBuilder.Save(L"C:/Users/numform/Windows-Machine-Learning/Samples/WinMLSamplesGallery/WinMLSamplesGalleryNative/nhwc_to_nchw.onnx");
     const wchar_t* preprocessingModelFilePath = L"C:/Users/numform/Windows-Machine-Learning/Samples/WinMLSamplesGallery/WinMLSamplesGalleryNative/nhwc_to_nchw.onnx";
-
-    //test_model_builder.Save(L"C:/Users/numform/Windows-Machine-Learning/Samples/WinMLSamplesGallery/WinMLSamplesGalleryNative/test.onnx");
-    //auto preprocessingModel = preprocessingModelBuilder.CreateModel();
-    //LearningModelSession session(preprocessingModel);
-
 
     const bool passTensorsAsD3DResources = true;
 
@@ -409,7 +507,7 @@ int EvalORT()
             d3d12Device.Get(),
             *ortDmlApi,
             memoryInformation,
-            inferenceInputShape,
+            preprocessInputShape,
             ONNX_TENSOR_ELEMENT_DATA_TYPE_FLOAT,
             sizeof(float),
             /*out*/ IID_PPV_ARGS_Helper(inputTensorEpWrapper.GetAddressOf())
@@ -428,7 +526,7 @@ int EvalORT()
             d3d12Device.Get(),
             *ortDmlApi,
             memoryInformation,
-            inferenceOutputShape,
+            preprocessOutputShape,
             ONNX_TENSOR_ELEMENT_DATA_TYPE_FLOAT,
             sizeof(float),
             /*out*/ IID_PPV_ARGS_Helper(outputTensorEpWrapper.GetAddressOf())
@@ -438,8 +536,8 @@ int EvalORT()
 
         ////////////////////////////////////////
         // Bind the tensor inputs to the model, and run it.
-        ioBinding.BindInput(modelInputTensorName, inputTensor);
-        ioBinding.BindOutput(modelOutputTensorName, outputTensor);
+        ioBinding.BindInput(preprocessModelInputTensorName, inputTensor);
+        ioBinding.BindOutput(preprocessModelOutputTensorName, outputTensor);
         ioBinding.SynchronizeInputs();
         QueryPerformanceCounter(&bindingTime);
 
@@ -450,54 +548,10 @@ int EvalORT()
         printf("Beginning execution.\n");
         printf("Running Session.\n");
         session.Run(runOptions, ioBinding);
-        OutputDebugString(L"Done evaluating");
-        ioBinding.SynchronizeOutputs();
+        OutputDebugString(L"Done evaluating preprocessing session");
+        //ioBinding.SynchronizeOutputs();
         QueryPerformanceCounter(&synchronizeOutputsTime);
-
- /*       auto printDuration = [=](char const* message, LARGE_INTEGER qpcTime) mutable
-        {
-            double durationMs = static_cast<double>(qpcTime.QuadPart - startTime.QuadPart);
-            durationMs /= static_cast<double>(cpuFrequency.QuadPart);
-            durationMs *= 1000.0;
-            printf("%s % 12.6f\n", message, durationMs);
-
-            startTime = qpcTime;
-        };
-        printDuration("d3dDeviceCreationTime ...", d3dDeviceCreationTime);
-        printDuration("sessionCreationTime .....", sessionCreationTime);
-        printDuration("tensorCreationTime ......", tensorCreationTime);
-        printDuration("bindingTime .............", bindingTime);
-        printDuration("runTime .................", runTime);
-        printDuration("synchronizeOutputsTime ..", synchronizeOutputsTime);*/
-
-        // TODO: Download inputTensorValues from GPU outputTensor.
-
-        ////////////////////////////////////////
-        // Print the top results if the output tensors were on the CPU.
-//        if (!passTensorsAsD3DResources)
-//        {
-//#if 1 // Print first 10 values.
-//            for (int i = 0; i <= std::min(outputTensorValues.size(), size_t(10)); ++i)
-//            {
-//                printf("output[%d] = %f\n", i, outputTensorValues[i]);
-//            }
-//#else // Print top 10.
-//            std::vector<uint32_t> indices(outputTensorValues.size(), 0);
-//            std::iota(indices.begin(), indices.end(), 0);
-//            sort(
-//                indices.begin(),
-//                indices.end(),
-//                [&](uint32_t a, uint32_t b)
-//                {
-//                    return (outputTensorValues[a] > outputTensorValues[b]);
-//                }
-//            );
-//            for (int i = 0; i <= std::min(indices.size(), size_t(10)); ++i)
-//            {
-//                printf("output[%d] = %f\n", indices[i], outputTensorValues[indices[i]]);
-//            }
-//#endif
-//        }
+        EvalORTInference(outputTensor);
     }
     catch (Ort::Exception const& exception)
     {

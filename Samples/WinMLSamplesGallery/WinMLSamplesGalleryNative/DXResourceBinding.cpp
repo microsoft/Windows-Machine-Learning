@@ -419,6 +419,44 @@ int EvalORTInference(const Ort::Value& prev_input) {
     return 0;
 }
 
+std::array<long, 6> CalculateCenterFillDimensions(long oldH, long oldW, long h, long w)
+{
+    long resizedW, resizedH, top, bottom, left, right;
+    auto oldHFloat = (float)oldH;
+    auto oldWFloat = (float)oldW;
+    auto hFloat = (float)h;
+    auto wFloat = (float)w;
+
+    auto oldAspectRatio = oldWFloat / oldHFloat;
+    auto newAspectRatio = wFloat / hFloat;
+
+    auto scale = (newAspectRatio < oldAspectRatio) ? (hFloat / oldHFloat) : (wFloat / oldWFloat);
+    resizedW = (newAspectRatio < oldAspectRatio) ? (long)std::floor(scale * oldWFloat) : w;
+    resizedH = (newAspectRatio < oldAspectRatio) ? h : (long)std::floor(scale * oldHFloat);
+    long totalPad = (newAspectRatio < oldAspectRatio) ? resizedW - w : resizedH - h;
+    long biggerDim = (newAspectRatio < oldAspectRatio) ? w : h;
+    long first = (totalPad % 2 == 0) ? totalPad / 2 : (long)std::floor(totalPad / 2.0f);
+    long second = first + biggerDim;
+
+    if (newAspectRatio < oldAspectRatio)
+    {
+        top = 0;
+        bottom = h;
+        left = first;
+        right = second;
+    }
+    else
+    {
+        top = first;
+        bottom = second;
+        left = 0;
+        right = w;
+    }
+
+    std::array<long, 6> new_dimensions = { resizedW, resizedH, top, bottom, left, right};
+    return new_dimensions;
+}
+
 int EvalORT()
 {
     OutputDebugString(L"In EvalORT");
@@ -430,13 +468,39 @@ int EvalORT()
     const char* preprocessModelInputTensorName = "Input";
     const char* preprocessModelOutputTensorName = "Output";
     // Might have to change the 3's below to 4 for rgba
-    const std::array<int64_t, 4> preprocessInputShape = { 1, 224, 224, 3};
+    const std::array<int64_t, 4> preprocessInputShape = { 1, 512, 512, 3};
     const std::array<int64_t, 4> preprocessOutputShape = { 1, 3, 224, 224 };
-    const std::array<int64_t, 4> inferenceInputShape = { 1, 3, 224, 224,};
-    const std::array<int64_t, 2> inferenceOutputShape = { 1, 1000 };
+
+    long newH = 224;
+    long newW = 224;
+    long h = 512;
+    long w = 512;
+    std::array<long, 6> center_fill_dimensions = CalculateCenterFillDimensions(h, w, newH, newW);
+    long resizedW = center_fill_dimensions[0];
+    long resizedH = center_fill_dimensions[1];
+    long top = center_fill_dimensions[2];
+    long bottom = center_fill_dimensions[3];
+    long left = center_fill_dimensions[4];
+    long right = center_fill_dimensions[5];
+    winrt::hstring interpolationMode = L"nearest";
+    long c = 3;
+
+
+    auto resize_op = LearningModelOperator(L"Resize")
+        .SetInput(L"X", L"Input")
+        .SetConstant(L"roi", TensorFloat::CreateFromIterable({ 8 }, { 0, 0, 0, 0, 1, 1, 1, 1 }))
+        .SetConstant(L"scales", TensorFloat::CreateFromIterable({ 4 }, { 1, (float)(1 + resizedH) / (float)h, (float)(1 + resizedH) / (float)h, 1 }))
+        .SetAttribute(L"mode", TensorString::CreateFromArray({}, { interpolationMode }))
+        .SetOutput(L"Y", L"ResizeOutput");
+
+    auto slice_op = LearningModelOperator(L"Slice")
+        .SetInput(L"data", L"ResizeOutput")
+        .SetConstant(L"starts", TensorInt64Bit::CreateFromIterable({ 4 }, { 0, top, left, 0 }))
+        .SetConstant(L"ends", TensorInt64Bit::CreateFromIterable({ 4 }, { LLONG_MAX, bottom, right, 3 }))
+        .SetOutput(L"output", L"SliceOutput");
 
     auto dimension_transpose = LearningModelOperator(L"Transpose")
-        .SetInput(L"data", L"Input")
+        .SetInput(L"data", L"SliceOutput")
         .SetAttribute(L"perm", TensorInt64Bit::CreateFromArray({ 4 }, { INT64(0), INT64(3), INT64(1), INT64(2)}))
         .SetOutput(L"transposed", L"Output");
 
@@ -444,11 +508,13 @@ int EvalORT()
         LearningModelBuilder::Create(12)
         .Inputs().Add(LearningModelBuilder::CreateTensorFeatureDescriptor(L"Input", TensorKind::Float, preprocessInputShape))
         .Outputs().Add(LearningModelBuilder::CreateTensorFeatureDescriptor(L"Output", TensorKind::Float, preprocessOutputShape))
+        .Operators().Add(resize_op)
+        .Operators().Add(slice_op)
         .Operators().Add(dimension_transpose);
     auto preprocessingModel = preprocessingModelBuilder.CreateModel();
 
-    preprocessingModelBuilder.Save(L"C:/Users/numform/Windows-Machine-Learning/Samples/WinMLSamplesGallery/WinMLSamplesGalleryNative/nhwc_to_nchw.onnx");
-    const wchar_t* preprocessingModelFilePath = L"C:/Users/numform/Windows-Machine-Learning/Samples/WinMLSamplesGallery/WinMLSamplesGalleryNative/nhwc_to_nchw.onnx";
+    preprocessingModelBuilder.Save(L"C:/Users/numform/Windows-Machine-Learning/Samples/WinMLSamplesGallery/WinMLSamplesGalleryNative/dx_preprocessor.onnx");
+    const wchar_t* preprocessingModelFilePath = L"C:/Users/numform/Windows-Machine-Learning/Samples/WinMLSamplesGallery/WinMLSamplesGalleryNative/dx_preprocessor.onnx";
 
     const bool passTensorsAsD3DResources = true;
 

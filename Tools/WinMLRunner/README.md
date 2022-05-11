@@ -60,6 +60,7 @@ Required command-Line arguments:
 -Terse: Terse Mode (suppresses repetitive console output)
 -AutoScale <interpolationMode>: Enable image autoscaling and set the interpolation mode [Nearest, Linear, Cubic, Fant]
 -GarbageDataMaxValue <maxValue>: Limit generated garbage data to a maximum value.  Helpful if input data is used as an index.
+-LogCPUFallback: Prints which operators fallback to run on CPU when GPU is the specified device
 
 Concurrency Options:
 -ConcurrentLoad: load models concurrently
@@ -268,6 +269,10 @@ First Iteration Performance (load, bind, session creation, and evaluate):
   Shared Memory usage (evaluate): 1 MB
   Shared Memory usage (load, bind, session creation, and evaluate): 6.04688 MB
  ```
+ 
+## Log CPU Fallback
+Operators falling back to the CPU can cause slow performance, so you can use the -LogCPUFallback argument to see which operators are falling back to CPU. To fix CPU fallback, please make sure you are using the correct [operator set](https://docs.microsoft.com/en-us/windows/ai/windows-ml/onnx-versions) and if the issue persists please log a bug [here](https://github.com/microsoft/Windows-Machine-Learning/issues). 
+ 
  
  ## Capturing Trace Logs
  If you want to capture trace logs using the tool, you can use logman commands in conjunction with the debug flag:

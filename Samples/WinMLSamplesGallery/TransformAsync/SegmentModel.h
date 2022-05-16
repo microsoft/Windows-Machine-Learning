@@ -35,16 +35,16 @@ public:
 		m_inputVideoFrame(NULL),
 		m_outputVideoFrame(NULL),
 		m_session(NULL),
-		m_binding(NULL)
-	{};
-	StreamModelBase(int w, int h): 
+		m_binding(NULL), 
+		m_syncStarted(FALSE)
+	{}
+	StreamModelBase(int w, int h) :
 		m_inputVideoFrame(NULL),
 		m_outputVideoFrame(NULL),
 		m_session(NULL),
 		m_binding(NULL),
-		m_imageWidthInPixels(w),
-		m_imageHeightInPixels(h)
-	{};
+		m_syncStarted(FALSE)
+	{}
 	virtual ~StreamModelBase() {
 		if(m_session) m_session.Close();
 		if(m_binding) m_binding.Clear();
@@ -52,14 +52,13 @@ public:
 		if (m_outputVideoFrame) m_outputVideoFrame.Close(); 
 	};
 
-	virtual void InitializeSession(int w, int h) = 0;
+	virtual void InitializeSession(int w, int h) =0;
 	virtual void Run(IDirect3DSurface src, IDirect3DSurface dest) =0;
 	
 	// Synchronous eval status
-	BOOL m_syncStarted = false; 
+	BOOL m_syncStarted; 
 	VideoFrame m_outputVideoFrame;
-	static const int m_scale = 4;
-	winrt::hstring m_modelBasePath;
+	static const int m_scale = 5;
 
 protected:
 	// Cache input frames into a shareable d3d-backed VideoFrame
@@ -88,7 +87,7 @@ protected:
 		m_imageWidthInPixels = w;
 		m_imageHeightInPixels = h;
 	}
-	
+
 	LearningModelSession CreateLearningModelSession(const LearningModel& model, bool closedModel = true) {
 		auto device = m_useGPU ? LearningModelDevice(LearningModelDeviceKind::DirectXHighPerformance) : LearningModelDevice(LearningModelDeviceKind::Default);
 		auto options = LearningModelSessionOptions();

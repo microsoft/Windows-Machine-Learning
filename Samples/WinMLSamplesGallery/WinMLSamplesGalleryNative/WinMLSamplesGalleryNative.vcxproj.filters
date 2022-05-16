@@ -9,9 +9,41 @@
     <ClCompile Include="OpenCVImage.cpp">
       <Filter>OpenCVInterop</Filter>
     </ClCompile>
-    <ClCompile Include="AdapterList.cpp">
-      <Filter>AdapterList</Filter>
+    <ClCompile Include="StreamEffect.cpp">
+      <Filter>StreamEffect</Filter>
     </ClCompile>
+    <ClCompile Include="Capture.cpp">
+      <Filter>StreamEffect</Filter>
+    </ClCompile>
+    <ClCompile Include="PreviewWnd.cpp">
+      <Filter>StreamEffect</Filter>
+    </ClCompile>
+    <ClCompile Include="External\CSampleQueue.cpp" />
+    <ClCompile Include="SegmentModel.cpp">
+      <Filter>StreamEffect</Filter>
+    </ClCompile>
+    <ClCompile Include="TransformAsync_IMFAsyncCallback.cpp">
+      <Filter>StreamEffect</Filter>
+    </ClCompile>
+    <ClCompile Include="TransformAsync_IMFMediaEventGenerator.cpp">
+      <Filter>StreamEffect</Filter>
+    </ClCompile>
+    <ClCompile Include="TransformAsync_IMFShutdown.cpp">
+      <Filter>StreamEffect</Filter>
+    </ClCompile>
+    <ClCompile Include="TransformAsync_IMFTransform.cpp">
+      <Filter>StreamEffect</Filter>
+    </ClCompile>
+    <ClCompile Include="TransformAsync_IMFVideoSampleAllocatorNotify.cpp">
+      <Filter>StreamEffect</Filter>
+    </ClCompile>
+    <ClCompile Include="TransformAsync.cpp">
+      <Filter>StreamEffect</Filter>
+    </ClCompile>
+    <ClCompile Include="External\utils.cpp">
+      <Filter>StreamEffect</Filter>
+    </ClCompile>
+    <ClCompile Include="AdapterList.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -24,12 +56,29 @@
     <ClInclude Include="RandomAccessStream.h">
       <Filter>AbiHelpers</Filter>
     </ClInclude>
-    <ClInclude Include="WeakBuffer.h">
-      <Filter>AbiHelpers</Filter>
+    <ClInclude Include="StreamEffect.h">
+      <Filter>StreamEffect</Filter>
     </ClInclude>
-    <ClInclude Include="AdapterList.h">
-      <Filter>AdapterList</Filter>
+    <ClInclude Include="Capture.h">
+      <Filter>StreamEffect</Filter>
     </ClInclude>
+    <ClInclude Include="common.h">
+      <Filter>StreamEffect</Filter>
+    </ClInclude>
+    <ClInclude Include="resource.h" />
+    <ClInclude Include="External\pch.h" />
+    <ClInclude Include="External\common.h" />
+    <ClInclude Include="External\CSampleQueue.h" />
+    <ClInclude Include="External\logging.h" />
+    <ClInclude Include="External\logmediatype.h" />
+    <ClInclude Include="External\trace.h" />
+    <ClInclude Include="SegmentModel.h">
+      <Filter>StreamEffect</Filter>
+    </ClInclude>
+    <ClInclude Include="TransformAsync.h">
+      <Filter>StreamEffect</Filter>
+    </ClInclude>
+    <ClInclude Include="AdapterList.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Resource.rc" />
@@ -43,6 +92,7 @@
     <None Include="squeezenet1.1-7-batched.onnx" />
     <None Include="WinMLSamplesGalleryNative.def" />
     <None Include="PropertySheet.props" />
+    <None Include="encrypted.onnx" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="readme.txt" />
@@ -57,8 +107,8 @@
     <Filter Include="AbiHelpers">
       <UniqueIdentifier>{ed4f3871-4514-4b93-9ace-1315cad5491e}</UniqueIdentifier>
     </Filter>
-    <Filter Include="AdapterList">
-      <UniqueIdentifier>{9df6a233-c2c6-4062-b738-31f7ba631acd}</UniqueIdentifier>
+    <Filter Include="StreamEffect">
+      <UniqueIdentifier>{91675ea9-10e7-4490-af40-762311cf5ba9}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

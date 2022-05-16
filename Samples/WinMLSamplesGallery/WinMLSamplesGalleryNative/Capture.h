@@ -32,6 +32,8 @@
 #include <commctrl.h>
 #include <d3d11.h>
 #include <initguid.h>
+//#include "Helpers/common.h"
+#include "TransformAsync.h"
 
 const UINT WM_APP_CAPTURE_EVENT = WM_APP + 1;
 
@@ -40,42 +42,23 @@ HWND    CreateMainWindow(HINSTANCE hInstance);
 void    SetMenuItemText(HMENU hMenu, UINT uItem, _In_ PWSTR pszText);
 void    ShowError(HWND hwnd, PCWSTR szMessage, HRESULT hr);
 void    ShowError(HWND hwnd, UINT id, HRESULT hr);
-HRESULT CloneVideoMediaType(IMFMediaType *pSrcMediaType, REFGUID guidSubType, IMFMediaType **ppNewMediaType);
-HRESULT CreatePhotoMediaType(IMFMediaType *pSrcMediaType, IMFMediaType **ppPhotoMediaType);
+HRESULT CloneVideoMediaType(IMFMediaType* pSrcMediaType, REFGUID guidSubType, IMFMediaType** ppNewMediaType);
 
 // DXGI DevManager support
-extern IMFDXGIDeviceManager* g_pDXGIMan;
-extern ID3D11Device*         g_pDX11Device;
+extern com_ptr<IMFDXGIDeviceManager> g_DXGIMan;
+extern com_ptr<ID3D11Device>         g_DX11Device;
 extern UINT                  g_ResetToken;
-
-#ifdef _DEBUG
-#define DBGMSG(x)  { DbgPrint x;}
-#else
-#define DBGMSG(x)
-#endif
-
-VOID DbgPrint(PCTSTR format, ...);
-
-
-template <class T> void SafeRelease(T **ppT)
-{
-    if (*ppT)
-    {
-        (*ppT)->Release();
-        *ppT = NULL;
-    }
-}
 
 // Gets an interface pointer from a Media Foundation collection.
 template <class IFACE>
-HRESULT GetCollectionObject(IMFCollection *pCollection, DWORD index, IFACE **ppObject)
+HRESULT GetCollectionObject(IMFCollection* pCollection, DWORD index, IFACE** ppObject)
 {
-    IUnknown *pUnk;
-    HRESULT hr = pCollection->GetElement(index, &pUnk);
+    IUnknown* unk;
+    HRESULT hr = pCollection->GetElement(index, &unk);
     if (SUCCEEDED(hr))
     {
-        hr = pUnk->QueryInterface(IID_PPV_ARGS(ppObject));
-        pUnk->Release();
+        hr = unk->QueryInterface(IID_PPV_ARGS(ppObject));
+        unk->Release();
     }
     return hr;
 }
@@ -83,19 +66,20 @@ HRESULT GetCollectionObject(IMFCollection *pCollection, DWORD index, IFACE **ppO
 
 struct ChooseDeviceParam
 {
-    ChooseDeviceParam() : ppDevices(NULL), count(0)
+    ChooseDeviceParam() : devices(NULL), count(0)
     {
     }
     ~ChooseDeviceParam()
     {
         for (DWORD i = 0; i < count; i++)
         {
-            SafeRelease(&ppDevices[i]);
+            SAFE_RELEASE(devices[i]);
         }
-        CoTaskMemFree(ppDevices);
+        CoTaskMemFree(devices);
+
     }
 
-    IMFActivate **ppDevices;
+    IMFActivate** devices;
     UINT32      count;
     UINT32      selection;
 };
@@ -110,51 +94,50 @@ class CaptureManager
     // The event callback object.
     class CaptureEngineCB : public IMFCaptureEngineOnEventCallback
     {
-        long m_cRef;
+        long m_ref;
         HWND m_hwnd;
 
     public:
-        CaptureEngineCB(HWND hwnd) : m_cRef(1), m_hwnd(hwnd), m_fSleeping(false), m_pManager(NULL) {}
+        CaptureEngineCB(HWND hwnd) : m_ref(1), m_hwnd(hwnd), m_sleeping(false), m_captureManager(NULL) {}
 
         // IUnknown
         STDMETHODIMP QueryInterface(REFIID riid, void** ppv);
         STDMETHODIMP_(ULONG) AddRef();
         STDMETHODIMP_(ULONG) Release();
-    
-        // IMFCaptureEngineOnEventCallback
-        STDMETHODIMP OnEvent( _In_ IMFMediaEvent* pEvent);
 
-        bool m_fSleeping;
-        CaptureManager* m_pManager;
+        // IMFCaptureEngineOnEventCallback
+        STDMETHODIMP OnEvent(_In_ IMFMediaEvent* pEvent);
+
+        bool m_sleeping;
+        CaptureManager* m_captureManager;
     };
 
-    HWND                    m_hwndEvent;
-    HWND                    m_hwndPreview;
+    HWND                    m_hwndEvent;    // Event message thread for responding to MF
+    HWND                    m_hwndPreview;  // Preview window to render frames 
+    HWND                    m_hwndStatus;   // For displaying status messages, eg. frame rate
 
-    IMFCaptureEngine        *m_pEngine;
-    IMFCapturePreviewSink   *m_pPreview;
+    com_ptr<IMFCaptureEngine>       m_engine;        // Manages the capture engine (ie. the camera) 
+    com_ptr<IMFCapturePreviewSink>  m_preview;  // Manages the preview sink (ie. the video window) 
 
-    CaptureEngineCB         *m_pCallback;
+    com_ptr<CaptureEngineCB> m_callback;
 
-    bool                    m_bPreviewing;
-    bool                    m_bRecording;
-    bool                    m_bPhotoPending;
+    bool                    m_previewing;
 
     UINT                    m_errorID;
-    HANDLE                  m_hEvent;
-    HANDLE                  m_hpwrRequest;
+    HANDLE                  m_event;
+    HANDLE                  m_hpwrRequest; // TODO: REMOVE
     bool                    m_fPowerRequestSet;
 
-    CaptureManager(HWND hwnd) : 
-        m_hwndEvent(hwnd), m_hwndPreview(NULL), m_pEngine(NULL), m_pPreview(NULL), 
-        m_pCallback(NULL), m_bRecording(false), m_bPreviewing(false), m_bPhotoPending(false), m_errorID(0),m_hEvent(NULL)
-        ,m_hpwrRequest(INVALID_HANDLE_VALUE)
-        ,m_fPowerRequestSet(false)
+    CaptureManager(HWND hwnd) :
+        m_hwndEvent(hwnd), m_hwndPreview(NULL), m_engine(NULL), m_preview(NULL),
+        m_callback(NULL), m_previewing(false), m_errorID(0), m_event(NULL)
+        , m_hpwrRequest(INVALID_HANDLE_VALUE)
+        , m_fPowerRequestSet(false)
     {
         REASON_CONTEXT  pwrCtxt;
 
         pwrCtxt.Version = POWER_REQUEST_CONTEXT_VERSION;
-        pwrCtxt.Flags   = POWER_REQUEST_CONTEXT_SIMPLE_STRING;
+        pwrCtxt.Flags = POWER_REQUEST_CONTEXT_SIMPLE_STRING;
         pwrCtxt.Reason.SimpleReasonString = L"CaptureEngine is recording!";
 
         m_hpwrRequest = PowerCreateRequest(&pwrCtxt);
@@ -169,11 +152,9 @@ class CaptureManager
     void OnCaptureEngineInitialized(HRESULT& hrStatus);
     void OnPreviewStarted(HRESULT& hrStatus);
     void OnPreviewStopped(HRESULT& hrStatus);
-    void OnRecordStarted(HRESULT& hrStatus);
-    void OnRecordStopped(HRESULT& hrStatus);
     void WaitForResult()
     {
-        WaitForSingleObject(m_hEvent, INFINITE);
+        WaitForSingleObject(m_event, INFINITE);
     }
 public:
     ~CaptureManager()
@@ -181,81 +162,65 @@ public:
         DestroyCaptureEngine();
     }
 
-    static HRESULT CreateInstance(HWND hwndEvent, CaptureManager **ppEngine)
+    static HRESULT CreateInstance(HWND hwndEvent, CaptureManager** ppEngine) noexcept try
     {
-        HRESULT hr = S_OK;
         *ppEngine = NULL;
 
-        CaptureManager *pEngine = new (std::nothrow) CaptureManager(hwndEvent);
-        if (pEngine == NULL)
-        {
-            hr = E_OUTOFMEMORY;
-            goto Exit;
-        }
-        *ppEngine = pEngine;
-        pEngine = NULL;
+        CaptureManager* engine = new CaptureManager(hwndEvent);
+        *ppEngine = engine;
+        engine = NULL;
 
-    Exit:
-        if (NULL != pEngine)
-        {
-            delete pEngine;
-        }
-        return hr;
-    }
+        return S_OK;
+    }CATCH_RETURN();
 
-    HRESULT InitializeCaptureManager(HWND hwndPreview, IUnknown* pUnk);
+    HRESULT InitializeCaptureManager(HWND hwndPreview, HWND hwndMessage, IUnknown* pUnk) noexcept;
     void DestroyCaptureEngine()
     {
-        if (NULL != m_hEvent)
+        if (NULL != m_event)
         {
-            CloseHandle(m_hEvent);
-            m_hEvent = NULL;
+            CloseHandle(m_event);
+            m_event = NULL;
         }
-        SafeRelease(&m_pPreview);
-        SafeRelease(&m_pEngine);
-        SafeRelease(&m_pCallback);
 
-        if(g_pDXGIMan)
+        if (g_DXGIMan)
         {
-            g_pDXGIMan->ResetDevice(g_pDX11Device, g_ResetToken);
+            g_DXGIMan->ResetDevice(g_DX11Device.get(), g_ResetToken);
         }
-        SafeRelease(&g_pDX11Device);
-        SafeRelease(&g_pDXGIMan);
+        
+        if (m_previewing)
+        {
+            com_ptr<IMFCaptureSource> source;
+            m_engine->GetSource(source.put());
+            source->RemoveAllEffects(0);
+            m_engine->StopPreview();
+        }
 
-        m_bPreviewing = false;
-        m_bRecording = false;
-        m_bPhotoPending = false;
-        m_errorID = 0;  
+        m_previewing = false;
+        m_errorID = 0;
     }
 
 
 
-    bool    IsPreviewing() const { return m_bPreviewing; }
-    bool    IsRecording() const { return m_bRecording; }
-    bool    IsPhotoPending() const { return m_bPhotoPending; }
+    bool    IsPreviewing() const { return m_previewing; }
     UINT    ErrorID() const { return m_errorID; }
 
-    HRESULT OnCaptureEvent(WPARAM wParam, LPARAM lParam); 
-    HRESULT SetVideoDevice(IUnknown *pUnk);
+    HRESULT OnCaptureEvent(WPARAM wParam, LPARAM lParam);
     HRESULT StartPreview(winrt::hstring modelPath);
     HRESULT StopPreview();
-    HRESULT StartRecord(PCWSTR pszDestinationFile);
-    HRESULT StopRecord();
-    HRESULT TakePhoto(PCWSTR pszFileName);
 
     void    SleepState(bool fSleeping)
     {
-        if (NULL != m_pCallback)
+        if (NULL != m_callback)
         {
-            m_pCallback->m_fSleeping = fSleeping;
+            m_callback->m_sleeping = fSleeping;
         }
     }
 
     HRESULT UpdateVideo()
     {
-        if (m_pPreview)
+        if (m_preview)
         {
-            return m_pPreview->UpdateVideo(NULL, NULL, NULL);
+            return m_preview->UpdateVideo(NULL, NULL, NULL);
         }
         else
         {

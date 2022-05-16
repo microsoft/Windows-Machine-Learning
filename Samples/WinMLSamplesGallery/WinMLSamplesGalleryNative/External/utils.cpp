@@ -8,9 +8,9 @@
 
 // Miscellaneous helper functions.
 #include "pch.h"
-#include "Capture.h"
+#include "../Capture.h"
 #include <wincodec.h>
-//#include "common.h"
+#include "common.h"
 
 HRESULT CopyAttribute(IMFAttributes *pSrc, IMFAttributes *pDest, const GUID& key)
 {

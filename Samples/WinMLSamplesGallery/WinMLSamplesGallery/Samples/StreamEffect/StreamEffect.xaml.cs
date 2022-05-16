@@ -7,21 +7,25 @@ using System.Runtime.CompilerServices;
 using System.IO;
 using WinMLSamplesGalleryNative;
 using System.Runtime.InteropServices;
-
+using System.Threading;
+using Windows.UI.Core;
 
 namespace WinMLSamplesGallery.Samples
 {
-
+    delegate IntPtr WndProc(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam);
 
     public sealed partial class StreamEffect : Page
     {
         string modelPath;
         bool isPreviewing = false;
         IntPtr currentHwnd;
+        IntPtr demoHwnd;
         Task windTask;
 
         [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
         static extern IntPtr GetForegroundWindow();
+        [System.Runtime.InteropServices.DllImport("user32.dll", SetLastError = true)]
+        static extern bool DestroyWindow(IntPtr hWnd);
 
         public StreamEffect()
         {
@@ -31,44 +35,51 @@ namespace WinMLSamplesGallery.Samples
             // To work around this, we make a dummy call to the builder to
             // ensure that the dll is loaded.
             var builder = Microsoft.AI.MachineLearning.Experimental.LearningModelBuilder.Create(11);
-
+            demoHwnd = (IntPtr)WinMLSamplesGalleryNative.StreamEffect.CreateInferenceWindow();
 
             currentHwnd = GetForegroundWindow();
             //var modelName = "mosaic.onnx";
             modelPath = Path.Join(Windows.ApplicationModel.Package.Current.InstalledLocation.Path, "Models");
-            
+
         }
 
-        // TODO: If keep in a separate window, send a task to shut down all stream effect processes
-        public void ShutDownWindow() 
+        public void CloseInferenceWindow()
         {
-            windTask.
-            WinMLSamplesGalleryNative.StreamEffect.ShutDownWindow();
-            return; 
+            // if have a windtask running and it's not complete, destroy the window
+            if (windTask != null && !windTask.IsCompleted)
+            {
+                DestroyWindow(demoHwnd);
+            }
         }
+
         async private void ToggleInference(object sender, RoutedEventArgs e)
         {
-            isPreviewing = !isPreviewing; // Toggle the previewing bool
-
+            isPreviewing = !isPreviewing;
             if (isPreviewing)
             {
-                // Change the button text/symbol on the button to prompt user to close window on next click
-                ToggleInferenceBtnText.Text = "Stop Inference";
-                ToggleInferenceBtnIcon.Symbol = Symbol.Cancel;
-
-                // Running as a task ensures that the samples gallery window isn't blocked.
-                windTask = Task.Run(() => WinMLSamplesGalleryNative.StreamEffect.LaunchNewWindow(modelPath));
+                ToggleInferenceBtn.Visibility = Visibility.Visible;
+                ToggleInferenceBtnText.Text = "Close Streaming Demo";
+                ToggleInferenceBtnIcon.Symbol = Symbol.Stop;
+                var tok = new CancellationTokenSource();
+                windTask = new Task(
+                        () => WinMLSamplesGalleryNative.StreamEffect.LaunchNewWindow(modelPath), tok.Token);
+                windTask.Start();
             }
-            else if(!isPreviewing)
+
+            else if (!isPreviewing)
             {
-                ToggleInferenceBtnText.Text = "Start Inference";
+                ToggleInferenceBtnText.Text = "Launch Streaming Demo";
                 ToggleInferenceBtnIcon.Symbol = Symbol.NewWindow;
+                ToggleInferenceBtn.Visibility = Visibility.Visible;
 
-                // TODO: Implement the ShutDownWindow function
-                ShutDownWindow();
+                CloseInferenceWindow();
+                // Close this inference window and set up a new one to use in the future
+                demoHwnd = (IntPtr)WinMLSamplesGalleryNative.StreamEffect.CreateInferenceWindow();
+
             }
-            
         }
 
+
     }
+
 }

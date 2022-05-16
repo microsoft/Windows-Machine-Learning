@@ -72,8 +72,8 @@ void StyleTransfer::Run(IDirect3DSurface src, IDirect3DSurface dest)
 
 LearningModel StyleTransfer::GetModel()
 {
-	auto model_path = std::filesystem::path(m_modelBasePath.c_str());
-	model_path.append("mosaic.onnx");
+	auto model_path = std::filesystem::current_path();
+	model_path.append("Assets\\mosaic.onnx");
 	return LearningModel::LoadFromFilePath(model_path.c_str());
 }
 
@@ -113,8 +113,8 @@ void BackgroundBlur::InitializeSession(int w, int h)
 }
 LearningModel BackgroundBlur::GetModel()
 {
-	auto model_path = std::filesystem::path(m_modelBasePath.c_str());
-	model_path.append("fcn-resnet50-12.onnx");
+	auto model_path = std::filesystem::current_path();
+	model_path.append("Assets\\fcn-resnet50-12.onnx");
 	return LearningModel::LoadFromFilePath(model_path.c_str());
 }
 

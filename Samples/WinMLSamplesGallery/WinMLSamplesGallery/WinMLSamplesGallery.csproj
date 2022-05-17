@@ -31,6 +31,8 @@
     <None Remove="AllSamplesPage.xaml" />
     <None Remove="Controls\PerformanceMonitor.xaml" />
     <None Remove="HomePage.xaml" />
+    <None Remove="Models\fcn-resnet50-12.onnx" />
+    <None Remove="Models\mosaic.onnx" />
     <None Remove="Models\squeezenet1.1-7-batched.onnx" />
 	<None Remove="SamplesGrid.xaml" />
 	<None Remove="SampleBasePage.xaml" />
@@ -43,6 +45,12 @@
     <None Remove="Video.xaml" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Models\fcn-resnet50-12.onnx">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Models\mosaic.onnx">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="Models\squeezenet1.1-7-batched.onnx" />
     <Content Include="SampleMetadata\SampleMetadata.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -78,7 +86,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AI.MachineLearning" Version="1.9.1" />
+    <PackageReference Include="Microsoft.AI.MachineLearning" Version="1.11.0" />
     <PackageReference Include="Microsoft.Windows.CsWinRT" Version="1.3.5" />
     <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.0.0-stable" />
     <PackageReference Include="SixLabors.ImageSharp" Version="1.0.4" />
@@ -165,54 +173,54 @@
 
   <Target Name="DownloadContentFiles" BeforeTargets="BeforeBuild">
     <!-- Small models. These models get shipped in the store app by default. -->
-    <DownloadFile Condition="!Exists('$(MSBuildProjectDirectory)\Models\densenet-9.onnx')" SourceUrl="https://github.com/onnx/models/blob/main/vision/classification/densenet-121/model/densenet-9.onnx?raw=true" DestinationFolder="$(MSBuildProjectDirectory)\Models">
+    <DownloadFile Condition="!Exists('$(MSBuildProjectDirectory)\Models\densenet-9.onnx')" SourceUrl="https://github.com/onnx/models/raw/master/vision/classification/densenet-121/model/densenet-9.onnx" DestinationFolder="$(MSBuildProjectDirectory)\Models">
       <Output TaskParameter="DownloadedFile" ItemName="Content" />
     </DownloadFile>
-    <DownloadFile Condition="!Exists('$(MSBuildProjectDirectory)\Models\efficientnet-lite4-11.onnx')" SourceUrl="https://github.com/onnx/models/blob/main/vision/classification/efficientnet-lite4/model/efficientnet-lite4-11.onnx?raw=true" DestinationFolder="$(MSBuildProjectDirectory)\Models">
+    <DownloadFile Condition="!Exists('$(MSBuildProjectDirectory)\Models\efficientnet-lite4-11.onnx')" SourceUrl="https://github.com/onnx/models/raw/master/vision/classification/efficientnet-lite4/model/efficientnet-lite4-11.onnx" DestinationFolder="$(MSBuildProjectDirectory)\Models">
       <Output TaskParameter="DownloadedFile" ItemName="Content" />
     </DownloadFile>
-    <DownloadFile Condition="!Exists('$(MSBuildProjectDirectory)\Models\shufflenet-9.onnx')" SourceUrl="https://github.com/onnx/models/blob/main/vision/classification/shufflenet/model/shufflenet-9.onnx?raw=true" DestinationFolder="$(MSBuildProjectDirectory)\Models">
+    <DownloadFile Condition="!Exists('$(MSBuildProjectDirectory)\Models\shufflenet-9.onnx')" SourceUrl="https://github.com/onnx/models/raw/master/vision/classification/shufflenet/model/shufflenet-9.onnx" DestinationFolder="$(MSBuildProjectDirectory)\Models">
       <Output TaskParameter="DownloadedFile" ItemName="Content" />
     </DownloadFile>
-    <DownloadFile Condition="!Exists('$(MSBuildProjectDirectory)\Models\squeezenet1.1-7.onnx')" SourceUrl="https://github.com/onnx/models/blob/main/vision/classification/squeezenet/model/squeezenet1.1-7.onnx?raw=true" DestinationFolder="$(MSBuildProjectDirectory)\Models">
+    <DownloadFile Condition="!Exists('$(MSBuildProjectDirectory)\Models\squeezenet1.1-7.onnx')" SourceUrl="https://github.com/onnx/models/raw/master/vision/classification/squeezenet/model/squeezenet1.1-7.onnx" DestinationFolder="$(MSBuildProjectDirectory)\Models">
       <Output TaskParameter="DownloadedFile" ItemName="Content" />
     </DownloadFile>
 
     <!-- Large models. This models must be enabled for Build-From-Source scenarios -->
-    <DownloadFile Condition="$(UseLargeModels) AND !Exists('$(MSBuildProjectDirectory)\LargeModels\bvlcalexnet-9.onnx')" SourceUrl="https://github.com/onnx/models/blob/main/vision/classification/alexnet/model/bvlcalexnet-9.onnx?raw=true" DestinationFolder="$(MSBuildProjectDirectory)\LargeModels">
+    <DownloadFile Condition="$(UseLargeModels) AND !Exists('$(MSBuildProjectDirectory)\LargeModels\bvlcalexnet-9.onnx')" SourceUrl="https://github.com/onnx/models/raw/master/vision/classification/alexnet/model/bvlcalexnet-9.onnx" DestinationFolder="$(MSBuildProjectDirectory)\LargeModels">
       <Output TaskParameter="DownloadedFile" ItemName="Content" />
     </DownloadFile>
-    <DownloadFile Condition="$(UseLargeModels) AND !Exists('$(MSBuildProjectDirectory)\LargeModels\caffenet-9.onnx')" SourceUrl="https://github.com/onnx/models/blob/main/vision/classification/caffenet/model/caffenet-9.onnx?raw=true" DestinationFolder="$(MSBuildProjectDirectory)\LargeModels">
+    <DownloadFile Condition="$(UseLargeModels) AND !Exists('$(MSBuildProjectDirectory)\LargeModels\caffenet-9.onnx')" SourceUrl="https://github.com/onnx/models/raw/master/vision/classification/caffenet/model/caffenet-9.onnx" DestinationFolder="$(MSBuildProjectDirectory)\LargeModels">
       <Output TaskParameter="DownloadedFile" ItemName="Content" />
     </DownloadFile>
-    <DownloadFile Condition="$(UseLargeModels) AND !Exists('$(MSBuildProjectDirectory)\LargeModels\googlenet-9.onnx')" SourceUrl="https://github.com/onnx/models/blob/main/vision/classification/inception_and_googlenet/googlenet/model/googlenet-9.onnx?raw=true" DestinationFolder="$(MSBuildProjectDirectory)\LargeModels">
+    <DownloadFile Condition="$(UseLargeModels) AND !Exists('$(MSBuildProjectDirectory)\LargeModels\googlenet-9.onnx')" SourceUrl="https://github.com/onnx/models/raw/master/vision/classification/inception_and_googlenet/googlenet/model/googlenet-9.onnx" DestinationFolder="$(MSBuildProjectDirectory)\LargeModels">
       <Output TaskParameter="DownloadedFile" ItemName="Content" />
     </DownloadFile>
-    <DownloadFile Condition="$(UseLargeModels) AND !Exists('$(MSBuildProjectDirectory)\LargeModels\inception-v1-9.onnx')" SourceUrl="https://github.com/onnx/models/blob/main/vision/classification/inception_and_googlenet/inception_v1/model/inception-v1-9.onnx?raw=true" DestinationFolder="$(MSBuildProjectDirectory)\LargeModels">
+    <DownloadFile Condition="$(UseLargeModels) AND !Exists('$(MSBuildProjectDirectory)\LargeModels\inception-v1-9.onnx')" SourceUrl="https://github.com/onnx/models/raw/master/vision/classification/inception_and_googlenet/inception_v1/model/inception-v1-9.onnx" DestinationFolder="$(MSBuildProjectDirectory)\LargeModels">
       <Output TaskParameter="DownloadedFile" ItemName="Content" />
     </DownloadFile>
-    <DownloadFile Condition="$(UseLargeModels) AND !Exists('$(MSBuildProjectDirectory)\LargeModels\inception-v2-9.onnx')" SourceUrl="https://github.com/onnx/models/blob/main/vision/classification/inception_and_googlenet/inception_v2/model/inception-v2-9.onnx?raw=true" DestinationFolder="$(MSBuildProjectDirectory)\LargeModels">
+    <DownloadFile Condition="$(UseLargeModels) AND !Exists('$(MSBuildProjectDirectory)\LargeModels\inception-v2-9.onnx')" SourceUrl="https://github.com/onnx/models/raw/master/vision/classification/inception_and_googlenet/inception_v2/model/inception-v2-9.onnx" DestinationFolder="$(MSBuildProjectDirectory)\LargeModels">
       <Output TaskParameter="DownloadedFile" ItemName="Content" />
     </DownloadFile>
-    <DownloadFile Condition="$(UseLargeModels) AND !Exists('$(MSBuildProjectDirectory)\LargeModels\mobilenetv2-7.onnx')" SourceUrl="https://github.com/onnx/models/blob/main/vision/classification/mobilenet/model/mobilenetv2-7.onnx?raw=true" DestinationFolder="$(MSBuildProjectDirectory)\LargeModels">
+    <DownloadFile Condition="$(UseLargeModels) AND !Exists('$(MSBuildProjectDirectory)\LargeModels\mobilenetv2-7.onnx')" SourceUrl="https://github.com/onnx/models/raw/master/vision/classification/mobilenet/model/mobilenetv2-7.onnx" DestinationFolder="$(MSBuildProjectDirectory)\LargeModels">
       <Output TaskParameter="DownloadedFile" ItemName="Content" />
     </DownloadFile>
-    <DownloadFile Condition="$(UseLargeModels) AND !Exists('$(MSBuildProjectDirectory)\LargeModels\rcnn-ilsvrc13-9.onnx')" SourceUrl="https://github.com/onnx/models/blob/main/vision/classification/rcnn_ilsvrc13/model/rcnn-ilsvrc13-9.onnx?raw=true" DestinationFolder="$(MSBuildProjectDirectory)\LargeModels">
+    <DownloadFile Condition="$(UseLargeModels) AND !Exists('$(MSBuildProjectDirectory)\LargeModels\rcnn-ilsvrc13-9.onnx')" SourceUrl="https://github.com/onnx/models/raw/master/vision/classification/rcnn_ilsvrc13/model/rcnn-ilsvrc13-9.onnx" DestinationFolder="$(MSBuildProjectDirectory)\LargeModels">
       <Output TaskParameter="DownloadedFile" ItemName="Content" />
     </DownloadFile>
-    <DownloadFile Condition="$(UseLargeModels) AND !Exists('$(MSBuildProjectDirectory)\LargeModels\resnet50-caffe2-v1-9.onnx')" SourceUrl="https://github.com/onnx/models/blob/main/vision/classification/resnet/model/resnet50-caffe2-v1-9.onnx?raw=true" DestinationFolder="$(MSBuildProjectDirectory)\LargeModels">
+    <DownloadFile Condition="$(UseLargeModels) AND !Exists('$(MSBuildProjectDirectory)\LargeModels\resnet50-caffe2-v1-9.onnx')" SourceUrl="https://github.com/onnx/models/raw/master/vision/classification/resnet/model/resnet50-caffe2-v1-9.onnx" DestinationFolder="$(MSBuildProjectDirectory)\LargeModels">
       <Output TaskParameter="DownloadedFile" ItemName="Content" />
     </DownloadFile>
-    <DownloadFile Condition="$(UseLargeModels) AND !Exists('$(MSBuildProjectDirectory)\LargeModels\shufflenet-v2-10.onnx')" SourceUrl="https://github.com/onnx/models/blob/main/vision/classification/shufflenet/model/shufflenet-v2-10.onnx?raw=true" DestinationFolder="$(MSBuildProjectDirectory)\LargeModels">
+    <DownloadFile Condition="$(UseLargeModels) AND !Exists('$(MSBuildProjectDirectory)\LargeModels\shufflenet-v2-10.onnx')" SourceUrl="https://github.com/onnx/models/raw/master/vision/classification/shufflenet/model/shufflenet-v2-10.onnx" DestinationFolder="$(MSBuildProjectDirectory)\LargeModels">
       <Output TaskParameter="DownloadedFile" ItemName="Content" />
     </DownloadFile>
-    <DownloadFile Condition="$(UseLargeModels) AND !Exists('$(MSBuildProjectDirectory)\LargeModels\vgg19-7.onnx')" SourceUrl="https://github.com/onnx/models/blob/main/vision/classification/vgg/model/vgg19-7.onnx?raw=true" DestinationFolder="$(MSBuildProjectDirectory)\LargeModels">
+    <DownloadFile Condition="$(UseLargeModels) AND !Exists('$(MSBuildProjectDirectory)\LargeModels\vgg19-7.onnx')" SourceUrl="https://github.com/onnx/models/raw/master/vision/classification/vgg/model/vgg19-7.onnx" DestinationFolder="$(MSBuildProjectDirectory)\LargeModels">
       <Output TaskParameter="DownloadedFile" ItemName="Content" />
     </DownloadFile>
-    <DownloadFile Condition="$(UseLargeModels) AND !Exists('$(MSBuildProjectDirectory)\LargeModels\vgg19-bn-7.onnx')" SourceUrl="https://github.com/onnx/models/blob/main/vision/classification/vgg/model/vgg19-bn-7.onnx?raw=true" DestinationFolder="$(MSBuildProjectDirectory)\LargeModels">
+    <DownloadFile Condition="$(UseLargeModels) AND !Exists('$(MSBuildProjectDirectory)\LargeModels\vgg19-bn-7.onnx')" SourceUrl="https://github.com/onnx/models/raw/master/vision/classification/vgg/model/vgg19-bn-7.onnx" DestinationFolder="$(MSBuildProjectDirectory)\LargeModels">
       <Output TaskParameter="DownloadedFile" ItemName="Content" />
     </DownloadFile>
-    <DownloadFile Condition="$(UseLargeModels) AND !Exists('$(MSBuildProjectDirectory)\LargeModels\zfnet512-9.onnx')" SourceUrl="https://github.com/onnx/models/blob/main/vision/classification/zfnet-512/model/zfnet512-9.onnx?raw=true" DestinationFolder="$(MSBuildProjectDirectory)\LargeModels">
+    <DownloadFile Condition="$(UseLargeModels) AND !Exists('$(MSBuildProjectDirectory)\LargeModels\zfnet512-9.onnx')" SourceUrl="https://github.com/onnx/models/raw/master/vision/classification/zfnet-512/model/zfnet512-9.onnx" DestinationFolder="$(MSBuildProjectDirectory)\LargeModels">
       <Output TaskParameter="DownloadedFile" ItemName="Content" />
     </DownloadFile>
   </Target>

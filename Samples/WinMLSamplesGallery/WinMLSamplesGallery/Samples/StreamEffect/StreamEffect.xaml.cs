@@ -40,7 +40,7 @@ namespace WinMLSamplesGallery.Samples
             currentHwnd = GetForegroundWindow();
             //var modelName = "mosaic.onnx";
             modelPath = Path.Join(Windows.ApplicationModel.Package.Current.InstalledLocation.Path, "Models");
-
+            
         }
 
         public void CloseInferenceWindow()
@@ -55,7 +55,7 @@ namespace WinMLSamplesGallery.Samples
         async private void ToggleInference(object sender, RoutedEventArgs e)
         {
             isPreviewing = !isPreviewing;
-            if (isPreviewing)
+            if(isPreviewing)
             {
                 ToggleInferenceBtn.Visibility = Visibility.Visible;
                 ToggleInferenceBtnText.Text = "Close Streaming Demo";
@@ -65,7 +65,7 @@ namespace WinMLSamplesGallery.Samples
                         () => WinMLSamplesGalleryNative.StreamEffect.LaunchNewWindow(modelPath), tok.Token);
                 windTask.Start();
             }
-
+            
             else if (!isPreviewing)
             {
                 ToggleInferenceBtnText.Text = "Launch Streaming Demo";
@@ -81,5 +81,5 @@ namespace WinMLSamplesGallery.Samples
 
 
     }
-
+    
 }

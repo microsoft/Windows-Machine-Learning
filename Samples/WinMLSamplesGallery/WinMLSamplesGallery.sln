@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 17
-VisualStudioVersion = 17.0.31919.166
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.32407.337
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{C7167F0D-BC9F-4E6E-AFE1-012C56B48DB5}") = "WinMLSamplesGallery (Package)", "WinMLSamplesGallery (Package)\WinMLSamplesGallery (Package).wapproj", "{DEA7791F-55CF-4ED5-BC99-3870997B1242}"
 EndProject

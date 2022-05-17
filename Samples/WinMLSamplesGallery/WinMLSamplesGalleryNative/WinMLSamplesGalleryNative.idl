@@ -16,6 +16,13 @@ namespace WinMLSamplesGalleryNative
     {
         static Microsoft.AI.MachineLearning.LearningModel LoadEncryptedResource(String key);
     }
+
+    [default_interface]
+    runtimeclass AdapterList
+    {
+        static String[] GetAdapters();
+        static Microsoft.AI.MachineLearning.LearningModelDevice CreateLearningModelDeviceFromAdapter(String description);
+    }
       
     [default_interface]
     runtimeclass StreamEffect
@@ -24,11 +31,5 @@ namespace WinMLSamplesGalleryNative
         static void ShutDownWindow();
         static Int32 CreateInferenceWindow();
     }
-       
-    [default_interface]
-    runtimeclass AdapterList
-    {
-        static String[] GetAdapters();
-        static Microsoft.AI.MachineLearning.LearningModelDevice CreateLearningModelDeviceFromAdapter(String description);
-    }
+
 }

@@ -5,9 +5,15 @@
     xmlns:local="using:WinMLSamplesGallery"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
     mc:Ignorable="d">
 
-    <Grid Background="#f5f5f5">
+        <Grid Background="#f5f5f5">
+        <Rectangle 
+            Fill="Blue"
+            Width="100"
+            Height="100"
+            />
         <NavigationView
             IsBackEnabled="True"
             x:Name="nvSample"

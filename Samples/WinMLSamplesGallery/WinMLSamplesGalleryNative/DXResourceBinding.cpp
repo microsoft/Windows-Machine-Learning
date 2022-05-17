@@ -39,6 +39,8 @@ using namespace winrt::Microsoft::AI::MachineLearning;
 #define THROW_IF_NOT_OK(status) {auto localStatus = (status); if (localStatus) throw E_FAIL;}
 #define RETURN_HR_IF_NOT_OK(status) {auto localStatus = (status); if (localStatus) return E_FAIL;}
 
+#undef min
+
 Microsoft::WRL::ComPtr<ID3D12Resource> d3dResource;
 
 template <typename T>
@@ -190,6 +192,45 @@ bool InitializeWindow(HINSTANCE hInstance,
 
     return true;
 }
+
+Ort::Value CreateTensorValueFromRTVResource(
+    OrtDmlApi const& ortDmlApi,
+    Ort::MemoryInfo const& memoryInformation,
+    ID3D12Resource* d3dResource,
+    std::span<const int64_t> tensorDimensions,
+    ONNXTensorElementDataType elementDataType,
+    /*out*/ void** dmlEpResourceWrapper // Must stay alive with Ort::Value.
+)
+{
+    *dmlEpResourceWrapper = nullptr;
+
+    void* dmlAllocatorResource;
+    THROW_IF_NOT_OK(ortDmlApi.CreateGPUAllocationFromD3DResource(d3dResource, &dmlAllocatorResource));
+    auto deleter = [&](void*) {ortDmlApi.FreeGPUAllocation(dmlAllocatorResource); };
+    deleting_unique_ptr<void> dmlAllocatorResourceCleanup(dmlAllocatorResource, deleter);
+
+    size_t tensorByteSize = static_cast<size_t>(d3dResource->GetDesc().Width * d3dResource->GetDesc().Height
+        * 3 * 1 * 4);
+    Ort::Value newValue(
+        Ort::Value::CreateTensor(
+            memoryInformation,
+            dmlAllocatorResource,
+            tensorByteSize,
+            tensorDimensions.data(),
+            tensorDimensions.size(),
+            elementDataType
+        )
+    );
+
+    // Return values and the wrapped resource.
+    // TODO: Is there some way to get Ort::Value to just own the D3DResource
+    // directly so that it gets freed after execution or session destruction?
+    *dmlEpResourceWrapper = dmlAllocatorResource;
+    dmlAllocatorResourceCleanup.release();
+
+    return newValue;
+}
+
 
 Ort::Value CreateTensorValueFromExistingD3DResource(
     OrtDmlApi const& ortDmlApi,
@@ -372,16 +413,19 @@ int EvalORTInference(const Ort::Value& prev_input) {
         std::vector<float> outputTensorValues(static_cast<size_t>(GetElementCount(outputShape)), 0.0f);
         Microsoft::WRL::ComPtr<IUnknown> outputTensorEpWrapper;
 
-        outputTensor = CreateTensorValueUsingD3DResource(
-            d3d12Device.Get(),
-            *ortDmlApi,
-            memoryInformation,
-            outputShape,
-            ONNX_TENSOR_ELEMENT_DATA_TYPE_FLOAT,
-            sizeof(float),
-            /*out*/ IID_PPV_ARGS_Helper(outputTensorEpWrapper.GetAddressOf())
-        );
+        //outputTensor = CreateTensorValueUsingD3DResource(
+        //    d3d12Device.Get(),
+        //    *ortDmlApi,
+        //    memoryInformation,
+        //    outputShape,
+        //    ONNX_TENSOR_ELEMENT_DATA_TYPE_FLOAT,
+        //    sizeof(float),
+        //    /*out*/ IID_PPV_ARGS_Helper(outputTensorEpWrapper.GetAddressOf())
+        //);
 
+        const char* otMemoryInformationName = "Cpu";
+        Ort::MemoryInfo otMemoryInformation(otMemoryInformationName, OrtAllocatorType::OrtDeviceAllocator, 0, OrtMemType::OrtMemTypeDefault);
+        outputTensor = Ort::Value::CreateTensor<float>(otMemoryInformation, outputTensorValues.data(), outputTensorValues.size(), outputShape.data(), 2);
 
         QueryPerformanceCounter(&tensorCreationTime);
 
@@ -403,6 +447,43 @@ int EvalORTInference(const Ort::Value& prev_input) {
         ioBinding.SynchronizeOutputs();
         QueryPerformanceCounter(&synchronizeOutputsTime);
         printf("Finished execution.\n");
+
+        for (int i = 0; i <= std::min(outputTensorValues.size(), size_t(10)); ++i)
+        {
+            std::wstring value = std::to_wstring(outputTensorValues[i]);
+            std::wstring i_w_str = std::to_wstring(i);
+            OutputDebugString(L"Output[");
+            OutputDebugString(i_w_str.c_str());
+            OutputDebugString(L"]: ");
+            OutputDebugString(value.c_str());
+            OutputDebugString(L"\n");
+        }
+        std::vector<uint32_t> indices(outputTensorValues.size(), 0);
+        std::iota(indices.begin(), indices.end(), 0);
+        sort(
+            indices.begin(),
+            indices.end(),
+            [&](uint32_t a, uint32_t b)
+            {
+                return (outputTensorValues[a] > outputTensorValues[b]);
+            }
+        );
+        OutputDebugString(L"Top 10:");
+        OutputDebugString(L"\n");
+
+
+        for (int i = 0; i <= std::min(indices.size(), size_t(10)); ++i)
+        {
+            std::wstring first = std::to_wstring(indices[i]);
+            std::wstring second = std::to_wstring(outputTensorValues[indices[i]]);
+
+            printf("output[%d] = %f\n", indices[i], outputTensorValues[indices[i]]);
+            OutputDebugString(L"Output[");
+            OutputDebugString(first.c_str());
+            OutputDebugString(L"]: ");
+            OutputDebugString(second.c_str());
+            OutputDebugString(L"\n");
+        }
 
     }
     catch (Ort::Exception const& exception)
@@ -468,8 +549,61 @@ int EvalORT()
     const char* preprocessModelInputTensorName = "Input";
     const char* preprocessModelOutputTensorName = "Output";
     // Might have to change the 3's below to 4 for rgba
-    const std::array<int64_t, 4> preprocessInputShape = { 1, 512, 512, 3};
+    const std::array<int64_t, 4> preprocessInputShape = { 1, 512, 512, 4};
     const std::array<int64_t, 4> preprocessOutputShape = { 1, 3, 224, 224 };
+
+    HRESULT hr;
+    ID3D12Resource* new_buffer;
+    ID3D12Resource* current_buffer;
+
+    D3D12_RESOURCE_DESC resourceDesc = {
+        D3D12_RESOURCE_DIMENSION_BUFFER,
+        0,
+        static_cast<uint64_t>(800 * 600 * 3 * 4),
+        1,
+        1,
+        1,
+        DXGI_FORMAT_UNKNOWN,
+        {1, 0},
+        D3D12_TEXTURE_LAYOUT_ROW_MAJOR,
+        D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS
+    };
+
+    const CD3DX12_HEAP_PROPERTIES default_heap(D3D12_HEAP_TYPE_DEFAULT);
+    hr = device->CreateCommittedResource(
+        &default_heap, // a default heap
+        D3D12_HEAP_FLAG_NONE, // no flags
+        &resourceDesc, // resource description for a buffer
+        D3D12_RESOURCE_STATE_COPY_DEST, // we will start this heap in the copy destination state since we will copy data
+                                        // from the upload heap to this heap
+        nullptr, // optimized clear value must be null for this type of resource. used for render targets and depth/stencil buffers
+        IID_PPV_ARGS(&new_buffer));
+    if (FAILED(hr))
+    {
+        Running = false;
+        return false;
+    }
+
+    hr = swapChain->GetBuffer(frameIndex, IID_PPV_ARGS(&current_buffer));
+    auto buffer_desc = current_buffer->GetDesc();
+
+    if (FAILED(hr))
+    {
+        OutputDebugString(L"Failed to get buffer");
+        return false;
+    }
+
+    const auto barrier = CD3DX12_RESOURCE_BARRIER::Transition(current_buffer, D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_COPY_SOURCE);
+
+    commandAllocator[frameIndex]->Reset();
+    commandList->CopyResource(new_buffer, current_buffer);
+
+    auto new_buffer_desc = new_buffer->GetDesc();
+
+
+    //commandList->CopyTextureRegion(new_buffer, 10, 20, 0, pSourceTexture);
+
+    //Try this if it doesn't workwidth = width * height and height = 1
 
     long newH = 224;
     long newW = 224;
@@ -486,34 +620,34 @@ int EvalORT()
     long c = 3;
 
 
-    auto resize_op = LearningModelOperator(L"Resize")
-        .SetInput(L"X", L"Input")
-        .SetConstant(L"roi", TensorFloat::CreateFromIterable({ 8 }, { 0, 0, 0, 0, 1, 1, 1, 1 }))
-        .SetConstant(L"scales", TensorFloat::CreateFromIterable({ 4 }, { 1, (float)(1 + resizedH) / (float)h, (float)(1 + resizedH) / (float)h, 1 }))
-        .SetAttribute(L"mode", TensorString::CreateFromArray({}, { interpolationMode }))
-        .SetOutput(L"Y", L"ResizeOutput");
+    //auto resize_op = LearningModelOperator(L"Resize")
+    //    .SetInput(L"X", L"Input")
+    //    .SetConstant(L"roi", TensorFloat::CreateFromIterable({ 8 }, { 0, 0, 0, 0, 1, 1, 1, 1 }))
+    //    .SetConstant(L"scales", TensorFloat::CreateFromIterable({ 4 }, { 1, (float)(1 + resizedH) / (float)h, (float)(1 + resizedH) / (float)h, 1 }))
+    //    .SetAttribute(L"mode", TensorString::CreateFromArray({}, { interpolationMode }))
+    //    .SetOutput(L"Y", L"ResizeOutput");
 
-    auto slice_op = LearningModelOperator(L"Slice")
-        .SetInput(L"data", L"ResizeOutput")
-        .SetConstant(L"starts", TensorInt64Bit::CreateFromIterable({ 4 }, { 0, top, left, 0 }))
-        .SetConstant(L"ends", TensorInt64Bit::CreateFromIterable({ 4 }, { LLONG_MAX, bottom, right, 3 }))
-        .SetOutput(L"output", L"SliceOutput");
+    //auto slice_op = LearningModelOperator(L"Slice")
+    //    .SetInput(L"data", L"ResizeOutput")
+    //    .SetConstant(L"starts", TensorInt64Bit::CreateFromIterable({ 4 }, { 0, top, left, 0 }))
+    //    .SetConstant(L"ends", TensorInt64Bit::CreateFromIterable({ 4 }, { LLONG_MAX, bottom, right, 3 }))
+    //    .SetOutput(L"output", L"SliceOutput");
 
-    auto dimension_transpose = LearningModelOperator(L"Transpose")
-        .SetInput(L"data", L"SliceOutput")
-        .SetAttribute(L"perm", TensorInt64Bit::CreateFromArray({ 4 }, { INT64(0), INT64(3), INT64(1), INT64(2)}))
-        .SetOutput(L"transposed", L"Output");
+    //auto dimension_transpose = LearningModelOperator(L"Transpose")
+    //    .SetInput(L"data", L"SliceOutput")
+    //    .SetAttribute(L"perm", TensorInt64Bit::CreateFromArray({ 4 }, { INT64(0), INT64(3), INT64(1), INT64(2)}))
+    //    .SetOutput(L"transposed", L"Output");
 
-    auto preprocessingModelBuilder =
-        LearningModelBuilder::Create(12)
-        .Inputs().Add(LearningModelBuilder::CreateTensorFeatureDescriptor(L"Input", TensorKind::Float, preprocessInputShape))
-        .Outputs().Add(LearningModelBuilder::CreateTensorFeatureDescriptor(L"Output", TensorKind::Float, preprocessOutputShape))
-        .Operators().Add(resize_op)
-        .Operators().Add(slice_op)
-        .Operators().Add(dimension_transpose);
-    auto preprocessingModel = preprocessingModelBuilder.CreateModel();
+    //auto preprocessingModelBuilder =
+    //    LearningModelBuilder::Create(12)
+    //    .Inputs().Add(LearningModelBuilder::CreateTensorFeatureDescriptor(L"Input", TensorKind::Float, preprocessInputShape))
+    //    .Outputs().Add(LearningModelBuilder::CreateTensorFeatureDescriptor(L"Output", TensorKind::Float, preprocessOutputShape))
+    //    .Operators().Add(resize_op)
+    //    .Operators().Add(slice_op)
+    //    .Operators().Add(dimension_transpose);
+    //auto preprocessingModel = preprocessingModelBuilder.CreateModel();
 
-    preprocessingModelBuilder.Save(L"C:/Users/numform/Windows-Machine-Learning/Samples/WinMLSamplesGallery/WinMLSamplesGalleryNative/dx_preprocessor.onnx");
+    //preprocessingModelBuilder.Save(L"C:/Users/numform/Windows-Machine-Learning/Samples/WinMLSamplesGallery/WinMLSamplesGalleryNative/dx_preprocessor.onnx");
     const wchar_t* preprocessingModelFilePath = L"C:/Users/numform/Windows-Machine-Learning/Samples/WinMLSamplesGallery/WinMLSamplesGalleryNative/dx_preprocessor.onnx";
 
     const bool passTensorsAsD3DResources = true;
@@ -561,21 +695,45 @@ int EvalORT()
         //Ort::Value inputTensor(nullptr);
         //std::vector<float> inputTensorValues(static_cast<size_t>(GetElementCount(inferenceInputShape)), 0.0f);
         //std::iota(inputTensorValues.begin(), inputTensorValues.end(), 0.0f);
-        //Microsoft::WRL::ComPtr<IUnknown> inputTensorEpWrapper;
-
-        Ort::Value inputTensor(nullptr);
-        std::vector<float> inputTensorValues(static_cast<size_t>(GetElementCount(preprocessInputShape)), 0.0f);
-        std::iota(inputTensorValues.begin(), inputTensorValues.end(), 0.0f);
         Microsoft::WRL::ComPtr<IUnknown> inputTensorEpWrapper;
 
-        // Create empty D3D resource for input.
-        inputTensor = CreateTensorValueUsingD3DResource(
-            d3d12Device.Get(),
+        //Ort::Value inputTensor(nullptr);
+        //std::vector<float> inputTensorValues(static_cast<size_t>(GetElementCount(preprocessInputShape)), 0.0f);
+        //std::iota(inputTensorValues.begin(), inputTensorValues.end(), 0.0f);
+        //Microsoft::WRL::ComPtr<IUnknown> inputTensorEpWrapper;
+
+        //// Create empty D3D resource for input.
+        //inputTensor = CreateTensorValueUsingD3DResource(
+        //    d3d12Device.Get(),
+        //    *ortDmlApi,
+        //    memoryInformation,
+        //    preprocessInputShape,
+        //    ONNX_TENSOR_ELEMENT_DATA_TYPE_FLOAT,
+        //    sizeof(float),
+        //    /*out*/ IID_PPV_ARGS_Helper(inputTensorEpWrapper.GetAddressOf())
+        //);
+
+ /*       Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> to_cpy;
+        RETURN_IF_FAILED((
+            create_resource_barrier_command_list<D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_COPY_SOURCE>(
+                d3d12Device.Get(),
+                commandQueue,
+                commandAllocator,
+                position_buffer_.Get(),
+                &to_cpy)));
+
+        ID3D12CommandList* const to_cpy_list[] = {
+            to_cpy.Get()
+        };*/
+
+        //commandQueue->ExecuteCommandLists(_countof(to_cpy_list), to_cpy_list);
+
+        Ort::Value inputTensor = CreateTensorValueFromRTVResource(
             *ortDmlApi,
             memoryInformation,
+            new_buffer,
             preprocessInputShape,
             ONNX_TENSOR_ELEMENT_DATA_TYPE_FLOAT,
-            sizeof(float),
             /*out*/ IID_PPV_ARGS_Helper(inputTensorEpWrapper.GetAddressOf())
         );
 

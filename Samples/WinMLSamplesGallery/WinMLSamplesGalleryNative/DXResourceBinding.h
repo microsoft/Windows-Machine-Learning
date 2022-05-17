@@ -6,7 +6,8 @@ namespace winrt::WinMLSamplesGalleryNative::implementation
     struct DXResourceBinding : DXResourceBindingT<DXResourceBinding>
     {
         DXResourceBinding() = default;
-        static int BindDXResourcesUsingORT();
+        static int LaunchWindow();
+        static winrt::com_array<float> EvalORT();
     };
 }
 namespace winrt::WinMLSamplesGalleryNative::factory_implementation

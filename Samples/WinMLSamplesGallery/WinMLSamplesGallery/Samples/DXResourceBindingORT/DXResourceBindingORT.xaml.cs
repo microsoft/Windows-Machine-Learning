@@ -22,7 +22,16 @@ namespace WinMLSamplesGallery.Samples
 
         private void LaunchWindow(object sender, RoutedEventArgs e)
         {
-            WinMLSamplesGalleryNative.DXResourceBinding.BindDXResourcesUsingORT();
+            Task.Run(() => WinMLSamplesGalleryNative.DXResourceBinding.LaunchWindow());
+            //WinMLSamplesGalleryNative.DXResourceBinding.EvalORT();
+            System.Threading.Thread.Sleep(1000);
+            float[] results = WinMLSamplesGalleryNative.DXResourceBinding.EvalORT();
+            var results_lst = new List<float>(results);
+            System.Diagnostics.Debug.WriteLine("In C# code");
+            for(int i = 0; i < results_lst.Count; i++)
+            {
+                System.Diagnostics.Debug.WriteLine(i.ToString() + ": " + results_lst[i].ToString());
+            }
         }
     }
 }

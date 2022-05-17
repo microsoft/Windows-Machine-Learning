@@ -33,6 +33,7 @@ using TensorKind = winrt::Microsoft::AI::MachineLearning::TensorKind;
 using LearningModelBuilder = winrt::Microsoft::AI::MachineLearning::Experimental::LearningModelBuilder;
 using LearningModelOperator = winrt::Microsoft::AI::MachineLearning::Experimental::LearningModelOperator;
 using namespace winrt::Microsoft::AI::MachineLearning;
+using namespace Microsoft::WRL;
 
 #define THROW_IF_FAILED(hr) {HRESULT localHr = (hr); if (FAILED(hr)) throw hr;}
 #define RETURN_IF_FAILED(hr) {HRESULT localHr = (hr); if (FAILED(hr)) return hr;}
@@ -68,129 +69,42 @@ struct Vertex {
     DirectX::XMFLOAT2 texCoord;
 };
 
-static HMODULE GetCurrentModule()
-{ // NB: XP+ solution!
-    HMODULE hModule = NULL;
-    GetModuleHandleEx(
-        GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS,
-        (LPCTSTR)GetCurrentModule,
-        &hModule);
-
-    return hModule;
-}
-
-namespace winrt::WinMLSamplesGalleryNative::implementation
+std::array<long, 6> CalculateCenterFillDimensions(long oldH, long oldW, long h, long w)
 {
-	int DXResourceBinding::BindDXResourcesUsingORT() {
-        OutputDebugString(L"Will this output work?");
-        //LaunchNewWindow();
-        HINSTANCE hInstance = GetCurrentModule();
-        StartHWind(hInstance, 10);
-		return 0;
-	}
-}
+    long resizedW, resizedH, top, bottom, left, right;
+    auto oldHFloat = (float)oldH;
+    auto oldWFloat = (float)oldW;
+    auto hFloat = (float)h;
+    auto wFloat = (float)w;
 
-int WINAPI StartHWind(HINSTANCE hInstance,    //Main windows function
-    int nShowCmd)
-{
-    // create the window
-    if (!InitializeWindow(hInstance, nShowCmd, FullScreen))
+    auto oldAspectRatio = oldWFloat / oldHFloat;
+    auto newAspectRatio = wFloat / hFloat;
+
+    auto scale = (newAspectRatio < oldAspectRatio) ? (hFloat / oldHFloat) : (wFloat / oldWFloat);
+    resizedW = (newAspectRatio < oldAspectRatio) ? (long)std::floor(scale * oldWFloat) : w;
+    resizedH = (newAspectRatio < oldAspectRatio) ? h : (long)std::floor(scale * oldHFloat);
+    long totalPad = (newAspectRatio < oldAspectRatio) ? resizedW - w : resizedH - h;
+    long biggerDim = (newAspectRatio < oldAspectRatio) ? w : h;
+    long first = (totalPad % 2 == 0) ? totalPad / 2 : (long)std::floor(totalPad / 2.0f);
+    long second = first + biggerDim;
+
+    if (newAspectRatio < oldAspectRatio)
     {
-        MessageBox(0, L"Window Initialization - Failed",
-            L"Error", MB_OK);
-        return 1;
+        top = 0;
+        bottom = h;
+        left = first;
+        right = second;
+    }
+    else
+    {
+        top = first;
+        bottom = second;
+        left = 0;
+        right = w;
     }
 
-    // initialize direct3d
-    if (!InitD3D())
-    {
-        MessageBox(0, L"Failed to initialize direct3d 12",
-            L"Error", MB_OK);
-        Cleanup();
-        return 1;
-    }
-
-    // start the main loop
-    mainloop();
-
-    // we want to wait for the gpu to finish executing the command list before we start releasing everything
-    WaitForPreviousFrame();
-
-    // close the fence event
-    CloseHandle(fenceEvent);
-
-    // clean up everything
-    Cleanup();
-
-    return 0;
-}
-
-// create and show the window
-bool InitializeWindow(HINSTANCE hInstance,
-    int ShowWnd,
-    bool fullscreen)
-
-{
-    if (fullscreen)
-    {
-        HMONITOR hmon = MonitorFromWindow(hwnd,
-            MONITOR_DEFAULTTONEAREST);
-        MONITORINFO mi = { sizeof(mi) };
-        GetMonitorInfo(hmon, &mi);
-
-        Width = mi.rcMonitor.right - mi.rcMonitor.left;
-        Height = mi.rcMonitor.bottom - mi.rcMonitor.top;
-    }
-
-    WNDCLASSEX wc;
-
-    wc.cbSize = sizeof(WNDCLASSEX);
-    wc.style = CS_HREDRAW | CS_VREDRAW;
-    wc.lpfnWndProc = WndProc;
-    wc.cbClsExtra = NULL;
-    wc.cbWndExtra = NULL;
-    wc.hInstance = hInstance;
-    wc.hIcon = LoadIcon(NULL, IDI_APPLICATION);
-    wc.hCursor = LoadCursor(NULL, IDC_ARROW);
-    wc.hbrBackground = (HBRUSH)(COLOR_WINDOW + 2);
-    wc.lpszMenuName = NULL;
-    wc.lpszClassName = WindowName;
-    wc.hIconSm = LoadIcon(NULL, IDI_APPLICATION);
-
-    if (!RegisterClassEx(&wc))
-    {
-        MessageBox(NULL, L"Error registering class",
-            L"Error", MB_OK | MB_ICONERROR);
-        return false;
-    }
-
-    hwnd = CreateWindowEx(NULL,
-        WindowName,
-        WindowTitle,
-        WS_OVERLAPPEDWINDOW,
-        CW_USEDEFAULT, CW_USEDEFAULT,
-        Width, Height,
-        NULL,
-        NULL,
-        hInstance,
-        NULL);
-
-    if (!hwnd)
-    {
-        MessageBox(NULL, L"Error creating window",
-            L"Error", MB_OK | MB_ICONERROR);
-        return false;
-    }
-
-    if (fullscreen)
-    {
-        SetWindowLong(hwnd, GWL_STYLE, 0);
-    }
-
-    ShowWindow(hwnd, ShowWnd);
-    UpdateWindow(hwnd);
-
-    return true;
+    std::array<long, 6> new_dimensions = { resizedW, resizedH, top, bottom, left, right };
+    return new_dimensions;
 }
 
 Ort::Value CreateTensorValueFromRTVResource(
@@ -230,7 +144,6 @@ Ort::Value CreateTensorValueFromRTVResource(
 
     return newValue;
 }
-
 
 Ort::Value CreateTensorValueFromExistingD3DResource(
     OrtDmlApi const& ortDmlApi,
@@ -343,8 +256,8 @@ Ort::Value CreateTensorValueUsingD3DResource(
     );
 }
 
-int EvalORTInference(const Ort::Value& prev_input) {
-    OutputDebugString(L"In EvalORTInferencec");
+std::vector<float> EvalORTInference(const Ort::Value& prev_input) {
+    OutputDebugString(L"In EvalORTInference");
     // Squeezenet opset v7 https://github.com/onnx/models/blob/master/vision/classification/squeezenet/README.md
     const wchar_t* modelFilePath = L"C:/Users/numform/Windows-Machine-Learning/Samples/WinMLSamplesGallery/WinMLSamplesGalleryNative/squeezenet1.1-7.onnx";
     const char* modelInputTensorName = "data";
@@ -484,311 +397,404 @@ int EvalORTInference(const Ort::Value& prev_input) {
             OutputDebugString(second.c_str());
             OutputDebugString(L"\n");
         }
-
+        return outputTensorValues;
     }
     catch (Ort::Exception const& exception)
     {
         printf("Error running model inference: %s\n", exception.what());
-        return EXIT_FAILURE;
+        //return EXIT_FAILURE;
     }
     catch (std::exception const& exception)
     {
         printf("Error running model inference: %s\n", exception.what());
-        return EXIT_FAILURE;
+        //return EXIT_FAILURE;
     }
 
-    return 0;
 }
 
-std::array<long, 6> CalculateCenterFillDimensions(long oldH, long oldW, long h, long w)
-{
-    long resizedW, resizedH, top, bottom, left, right;
-    auto oldHFloat = (float)oldH;
-    auto oldWFloat = (float)oldW;
-    auto hFloat = (float)h;
-    auto wFloat = (float)w;
+static HMODULE GetCurrentModule()
+{ // NB: XP+ solution!
+    HMODULE hModule = NULL;
+    GetModuleHandleEx(
+        GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS,
+        (LPCTSTR)GetCurrentModule,
+        &hModule);
 
-    auto oldAspectRatio = oldWFloat / oldHFloat;
-    auto newAspectRatio = wFloat / hFloat;
-
-    auto scale = (newAspectRatio < oldAspectRatio) ? (hFloat / oldHFloat) : (wFloat / oldWFloat);
-    resizedW = (newAspectRatio < oldAspectRatio) ? (long)std::floor(scale * oldWFloat) : w;
-    resizedH = (newAspectRatio < oldAspectRatio) ? h : (long)std::floor(scale * oldHFloat);
-    long totalPad = (newAspectRatio < oldAspectRatio) ? resizedW - w : resizedH - h;
-    long biggerDim = (newAspectRatio < oldAspectRatio) ? w : h;
-    long first = (totalPad % 2 == 0) ? totalPad / 2 : (long)std::floor(totalPad / 2.0f);
-    long second = first + biggerDim;
-
-    if (newAspectRatio < oldAspectRatio)
-    {
-        top = 0;
-        bottom = h;
-        left = first;
-        right = second;
-    }
-    else
-    {
-        top = first;
-        bottom = second;
-        left = 0;
-        right = w;
-    }
-
-    std::array<long, 6> new_dimensions = { resizedW, resizedH, top, bottom, left, right};
-    return new_dimensions;
+    return hModule;
 }
 
-int EvalORT()
+namespace winrt::WinMLSamplesGalleryNative::implementation
 {
-    OutputDebugString(L"In EvalORT");
-    // Squeezenet opset v7 https://github.com/onnx/models/blob/master/vision/classification/squeezenet/README.md
-    //const wchar_t* modelFilePath = L"./squeezenet1.1-7.onnx";
-    const wchar_t* modelFilePath = L"C:/Users/numform/Windows-Machine-Learning/Samples/WinMLSamplesGallery/WinMLSamplesGalleryNative/squeezenet1.1-7.onnx";
-    const char* modelInputTensorName = "data";
-    const char* modelOutputTensorName = "squeezenet0_flatten0_reshape0";
-    const char* preprocessModelInputTensorName = "Input";
-    const char* preprocessModelOutputTensorName = "Output";
-    // Might have to change the 3's below to 4 for rgba
-    const std::array<int64_t, 4> preprocessInputShape = { 1, 512, 512, 4};
-    const std::array<int64_t, 4> preprocessOutputShape = { 1, 3, 224, 224 };
+	int DXResourceBinding::LaunchWindow() {
+        OutputDebugString(L"Will this output work?");
+        //LaunchNewWindow();
+        HINSTANCE hInstance = GetCurrentModule();
+        StartHWind(hInstance, 10);
+		return 0;
+	}
 
-    HRESULT hr;
-    ID3D12Resource* new_buffer;
-    ID3D12Resource* current_buffer;
-
-    D3D12_RESOURCE_DESC resourceDesc = {
-        D3D12_RESOURCE_DIMENSION_BUFFER,
-        0,
-        static_cast<uint64_t>(800 * 600 * 3 * 4),
-        1,
-        1,
-        1,
-        DXGI_FORMAT_UNKNOWN,
-        {1, 0},
-        D3D12_TEXTURE_LAYOUT_ROW_MAJOR,
-        D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS
-    };
-
-    const CD3DX12_HEAP_PROPERTIES default_heap(D3D12_HEAP_TYPE_DEFAULT);
-    hr = device->CreateCommittedResource(
-        &default_heap, // a default heap
-        D3D12_HEAP_FLAG_NONE, // no flags
-        &resourceDesc, // resource description for a buffer
-        D3D12_RESOURCE_STATE_COPY_DEST, // we will start this heap in the copy destination state since we will copy data
-                                        // from the upload heap to this heap
-        nullptr, // optimized clear value must be null for this type of resource. used for render targets and depth/stencil buffers
-        IID_PPV_ARGS(&new_buffer));
-    if (FAILED(hr))
+    winrt::com_array<float> DXResourceBinding::EvalORT()
     {
-        Running = false;
-        return false;
-    }
+        OutputDebugString(L"In EvalORT");
+        // Squeezenet opset v7 https://github.com/onnx/models/blob/master/vision/classification/squeezenet/README.md
+        //const wchar_t* modelFilePath = L"./squeezenet1.1-7.onnx";
+        const wchar_t* modelFilePath = L"C:/Users/numform/Windows-Machine-Learning/Samples/WinMLSamplesGallery/WinMLSamplesGalleryNative/squeezenet1.1-7.onnx";
+        const char* modelInputTensorName = "data";
+        const char* modelOutputTensorName = "squeezenet0_flatten0_reshape0";
+        const char* preprocessModelInputTensorName = "Input";
+        const char* preprocessModelOutputTensorName = "Output";
+        // Might have to change the 3's below to 4 for rgba
+        const std::array<int64_t, 4> preprocessInputShape = { 1, 512, 512, 4 };
+        const std::array<int64_t, 4> preprocessOutputShape = { 1, 3, 224, 224 };
 
-    hr = swapChain->GetBuffer(frameIndex, IID_PPV_ARGS(&current_buffer));
-    auto buffer_desc = current_buffer->GetDesc();
+        HRESULT hr;
+        ID3D12Resource* new_buffer;
+        ID3D12Resource* current_buffer;
 
-    if (FAILED(hr))
-    {
-        OutputDebugString(L"Failed to get buffer");
-        return false;
-    }
+        D3D12_RESOURCE_DESC resourceDesc = {
+            D3D12_RESOURCE_DIMENSION_BUFFER,
+            0,
+            static_cast<uint64_t>(800 * 600 * 3 * 4),
+            1,
+            1,
+            1,
+            DXGI_FORMAT_UNKNOWN,
+            {1, 0},
+            D3D12_TEXTURE_LAYOUT_ROW_MAJOR,
+            D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS
+        };
 
-    const auto barrier = CD3DX12_RESOURCE_BARRIER::Transition(current_buffer, D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_COPY_SOURCE);
+        const CD3DX12_HEAP_PROPERTIES default_heap(D3D12_HEAP_TYPE_DEFAULT);
+        hr = device->CreateCommittedResource(
+            &default_heap, // a default heap
+            D3D12_HEAP_FLAG_NONE, // no flags
+            &resourceDesc, // resource description for a buffer
+            D3D12_RESOURCE_STATE_COPY_DEST, // we will start this heap in the copy destination state since we will copy data
+                                            // from the upload heap to this heap
+            nullptr, // optimized clear value must be null for this type of resource. used for render targets and depth/stencil buffers
+            IID_PPV_ARGS(&new_buffer));
+        if (FAILED(hr))
+        {
+            Running = false;
+            //return false;
+        }
 
-    commandAllocator[frameIndex]->Reset();
-    commandList->CopyResource(new_buffer, current_buffer);
+        hr = swapChain->GetBuffer(frameIndex, IID_PPV_ARGS(&current_buffer));
+        auto buffer_desc = current_buffer->GetDesc();
 
-    auto new_buffer_desc = new_buffer->GetDesc();
+        if (FAILED(hr))
+        {
+            OutputDebugString(L"Failed to get buffer");
+            //return false;
+        }
 
+        const auto barrier = CD3DX12_RESOURCE_BARRIER::Transition(current_buffer, D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_COPY_SOURCE);
 
-    //commandList->CopyTextureRegion(new_buffer, 10, 20, 0, pSourceTexture);
+        commandAllocator[frameIndex]->Reset();
+        commandList->CopyResource(new_buffer, current_buffer);
 
-    //Try this if it doesn't workwidth = width * height and height = 1
-
-    long newH = 224;
-    long newW = 224;
-    long h = 512;
-    long w = 512;
-    std::array<long, 6> center_fill_dimensions = CalculateCenterFillDimensions(h, w, newH, newW);
-    long resizedW = center_fill_dimensions[0];
-    long resizedH = center_fill_dimensions[1];
-    long top = center_fill_dimensions[2];
-    long bottom = center_fill_dimensions[3];
-    long left = center_fill_dimensions[4];
-    long right = center_fill_dimensions[5];
-    winrt::hstring interpolationMode = L"nearest";
-    long c = 3;
+        auto new_buffer_desc = new_buffer->GetDesc();
 
 
-    //auto resize_op = LearningModelOperator(L"Resize")
-    //    .SetInput(L"X", L"Input")
-    //    .SetConstant(L"roi", TensorFloat::CreateFromIterable({ 8 }, { 0, 0, 0, 0, 1, 1, 1, 1 }))
-    //    .SetConstant(L"scales", TensorFloat::CreateFromIterable({ 4 }, { 1, (float)(1 + resizedH) / (float)h, (float)(1 + resizedH) / (float)h, 1 }))
-    //    .SetAttribute(L"mode", TensorString::CreateFromArray({}, { interpolationMode }))
-    //    .SetOutput(L"Y", L"ResizeOutput");
+        //commandList->CopyTextureRegion(new_buffer, 10, 20, 0, pSourceTexture);
 
-    //auto slice_op = LearningModelOperator(L"Slice")
-    //    .SetInput(L"data", L"ResizeOutput")
-    //    .SetConstant(L"starts", TensorInt64Bit::CreateFromIterable({ 4 }, { 0, top, left, 0 }))
-    //    .SetConstant(L"ends", TensorInt64Bit::CreateFromIterable({ 4 }, { LLONG_MAX, bottom, right, 3 }))
-    //    .SetOutput(L"output", L"SliceOutput");
+        //Try this if it doesn't workwidth = width * height and height = 1
 
-    //auto dimension_transpose = LearningModelOperator(L"Transpose")
-    //    .SetInput(L"data", L"SliceOutput")
-    //    .SetAttribute(L"perm", TensorInt64Bit::CreateFromArray({ 4 }, { INT64(0), INT64(3), INT64(1), INT64(2)}))
-    //    .SetOutput(L"transposed", L"Output");
+        long newH = 224;
+        long newW = 224;
+        long h = 512;
+        long w = 512;
+        std::array<long, 6> center_fill_dimensions = CalculateCenterFillDimensions(h, w, newH, newW);
+        long resizedW = center_fill_dimensions[0];
+        long resizedH = center_fill_dimensions[1];
+        long top = center_fill_dimensions[2];
+        long bottom = center_fill_dimensions[3];
+        long left = center_fill_dimensions[4];
+        long right = center_fill_dimensions[5];
+        winrt::hstring interpolationMode = L"nearest";
+        long c = 3;
 
-    //auto preprocessingModelBuilder =
-    //    LearningModelBuilder::Create(12)
-    //    .Inputs().Add(LearningModelBuilder::CreateTensorFeatureDescriptor(L"Input", TensorKind::Float, preprocessInputShape))
-    //    .Outputs().Add(LearningModelBuilder::CreateTensorFeatureDescriptor(L"Output", TensorKind::Float, preprocessOutputShape))
-    //    .Operators().Add(resize_op)
-    //    .Operators().Add(slice_op)
-    //    .Operators().Add(dimension_transpose);
-    //auto preprocessingModel = preprocessingModelBuilder.CreateModel();
 
-    //preprocessingModelBuilder.Save(L"C:/Users/numform/Windows-Machine-Learning/Samples/WinMLSamplesGallery/WinMLSamplesGalleryNative/dx_preprocessor.onnx");
-    const wchar_t* preprocessingModelFilePath = L"C:/Users/numform/Windows-Machine-Learning/Samples/WinMLSamplesGallery/WinMLSamplesGalleryNative/dx_preprocessor.onnx";
+        //auto resize_op = LearningModelOperator(L"Resize")
+        //    .SetInput(L"X", L"Input")
+        //    .SetConstant(L"roi", TensorFloat::CreateFromIterable({ 8 }, { 0, 0, 0, 0, 1, 1, 1, 1 }))
+        //    .SetConstant(L"scales", TensorFloat::CreateFromIterable({ 4 }, { 1, (float)(1 + resizedH) / (float)h, (float)(1 + resizedH) / (float)h, 1 }))
+        //    .SetAttribute(L"mode", TensorString::CreateFromArray({}, { interpolationMode }))
+        //    .SetOutput(L"Y", L"ResizeOutput");
 
-    const bool passTensorsAsD3DResources = true;
+        //auto slice_op = LearningModelOperator(L"Slice")
+        //    .SetInput(L"data", L"ResizeOutput")
+        //    .SetConstant(L"starts", TensorInt64Bit::CreateFromIterable({ 4 }, { 0, top, left, 0 }))
+        //    .SetConstant(L"ends", TensorInt64Bit::CreateFromIterable({ 4 }, { LLONG_MAX, bottom, right, 3 }))
+        //    .SetOutput(L"output", L"SliceOutput");
 
-    LARGE_INTEGER startTime;
-    LARGE_INTEGER d3dDeviceCreationTime;
-    LARGE_INTEGER sessionCreationTime;
-    LARGE_INTEGER tensorCreationTime;
-    LARGE_INTEGER bindingTime;
-    LARGE_INTEGER runTime;
-    LARGE_INTEGER synchronizeOutputsTime;
-    LARGE_INTEGER cpuFrequency;
-    QueryPerformanceFrequency(&cpuFrequency);
-    QueryPerformanceCounter(&startTime);
+        //auto dimension_transpose = LearningModelOperator(L"Transpose")
+        //    .SetInput(L"data", L"SliceOutput")
+        //    .SetAttribute(L"perm", TensorInt64Bit::CreateFromArray({ 4 }, { INT64(0), INT64(3), INT64(1), INT64(2)}))
+        //    .SetOutput(L"transposed", L"Output");
 
-    try
-    {
-        Microsoft::WRL::ComPtr<ID3D12Device> d3d12Device;
-        THROW_IF_FAILED(D3D12CreateDevice(nullptr, D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&d3d12Device)));
-        QueryPerformanceCounter(&d3dDeviceCreationTime);
+        //auto preprocessingModelBuilder =
+        //    LearningModelBuilder::Create(12)
+        //    .Inputs().Add(LearningModelBuilder::CreateTensorFeatureDescriptor(L"Input", TensorKind::Float, preprocessInputShape))
+        //    .Outputs().Add(LearningModelBuilder::CreateTensorFeatureDescriptor(L"Output", TensorKind::Float, preprocessOutputShape))
+        //    .Operators().Add(resize_op)
+        //    .Operators().Add(slice_op)
+        //    .Operators().Add(dimension_transpose);
+        //auto preprocessingModel = preprocessingModelBuilder.CreateModel();
 
-        OrtApi const& ortApi = Ort::GetApi(); // Uses ORT_API_VERSION
-        const OrtDmlApi* ortDmlApi;
-        THROW_IF_NOT_OK(ortApi.GetExecutionProviderApi("DML", ORT_API_VERSION, reinterpret_cast<const void**>(&ortDmlApi)));
+        //preprocessingModelBuilder.Save(L"C:/Users/numform/Windows-Machine-Learning/Samples/WinMLSamplesGallery/WinMLSamplesGalleryNative/dx_preprocessor.onnx");
+        const wchar_t* preprocessingModelFilePath = L"C:/Users/numform/Windows-Machine-Learning/Samples/WinMLSamplesGallery/WinMLSamplesGalleryNative/dx_preprocessor.onnx";
 
-        // ONNX Runtime setup
-        Ort::Env ortEnvironment(ORT_LOGGING_LEVEL_WARNING, "DirectML_Direct3D_TensorAllocation_Test");
-        Ort::SessionOptions sessionOptions;
-        sessionOptions.SetExecutionMode(ExecutionMode::ORT_SEQUENTIAL);
-        sessionOptions.DisableMemPattern();
-        sessionOptions.SetGraphOptimizationLevel(GraphOptimizationLevel::ORT_ENABLE_ALL);
-        ortApi.AddFreeDimensionOverrideByName(sessionOptions, "batch_size", 1);
-        OrtSessionOptionsAppendExecutionProvider_DML(sessionOptions, 0);
-        //Ort::Session session = Ort::Session(ortEnvironment, modelFilePath, sessionOptions);
-        Ort::Session session = Ort::Session(ortEnvironment, preprocessingModelFilePath, sessionOptions);
+        const bool passTensorsAsD3DResources = true;
 
-        QueryPerformanceCounter(&sessionCreationTime);
+        LARGE_INTEGER startTime;
+        LARGE_INTEGER d3dDeviceCreationTime;
+        LARGE_INTEGER sessionCreationTime;
+        LARGE_INTEGER tensorCreationTime;
+        LARGE_INTEGER bindingTime;
+        LARGE_INTEGER runTime;
+        LARGE_INTEGER synchronizeOutputsTime;
+        LARGE_INTEGER cpuFrequency;
+        QueryPerformanceFrequency(&cpuFrequency);
+        QueryPerformanceCounter(&startTime);
 
-        Ort::IoBinding ioBinding = Ort::IoBinding::IoBinding(session);
-        const char* memoryInformationName = passTensorsAsD3DResources ? "DML" : "Cpu";
-        Ort::MemoryInfo memoryInformation(memoryInformationName, OrtAllocatorType::OrtDeviceAllocator, 0, OrtMemType::OrtMemTypeDefault);
-        // Not needed: Ort::Allocator allocator(session, memoryInformation);
+        try
+        {
+            ComPtr<ID3D12Device> d3d12Device;
+            THROW_IF_FAILED(D3D12CreateDevice(nullptr, D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&d3d12Device)));
+            QueryPerformanceCounter(&d3dDeviceCreationTime);
 
-        // Create input tensor.
-        //Ort::Value inputTensor(nullptr);
-        //std::vector<float> inputTensorValues(static_cast<size_t>(GetElementCount(inferenceInputShape)), 0.0f);
-        //std::iota(inputTensorValues.begin(), inputTensorValues.end(), 0.0f);
-        Microsoft::WRL::ComPtr<IUnknown> inputTensorEpWrapper;
+            OrtApi const& ortApi = Ort::GetApi(); // Uses ORT_API_VERSION
+            const OrtDmlApi* ortDmlApi;
+            THROW_IF_NOT_OK(ortApi.GetExecutionProviderApi("DML", ORT_API_VERSION, reinterpret_cast<const void**>(&ortDmlApi)));
 
-        //Ort::Value inputTensor(nullptr);
-        //std::vector<float> inputTensorValues(static_cast<size_t>(GetElementCount(preprocessInputShape)), 0.0f);
-        //std::iota(inputTensorValues.begin(), inputTensorValues.end(), 0.0f);
-        //Microsoft::WRL::ComPtr<IUnknown> inputTensorEpWrapper;
+            // ONNX Runtime setup
+            Ort::Env ortEnvironment(ORT_LOGGING_LEVEL_WARNING, "DirectML_Direct3D_TensorAllocation_Test");
+            Ort::SessionOptions sessionOptions;
+            sessionOptions.SetExecutionMode(ExecutionMode::ORT_SEQUENTIAL);
+            sessionOptions.DisableMemPattern();
+            sessionOptions.SetGraphOptimizationLevel(GraphOptimizationLevel::ORT_ENABLE_ALL);
+            ortApi.AddFreeDimensionOverrideByName(sessionOptions, "batch_size", 1);
+            OrtSessionOptionsAppendExecutionProvider_DML(sessionOptions, 0);
+            //Ort::Session session = Ort::Session(ortEnvironment, modelFilePath, sessionOptions);
+            Ort::Session session = Ort::Session(ortEnvironment, preprocessingModelFilePath, sessionOptions);
 
-        //// Create empty D3D resource for input.
-        //inputTensor = CreateTensorValueUsingD3DResource(
-        //    d3d12Device.Get(),
-        //    *ortDmlApi,
-        //    memoryInformation,
-        //    preprocessInputShape,
-        //    ONNX_TENSOR_ELEMENT_DATA_TYPE_FLOAT,
-        //    sizeof(float),
-        //    /*out*/ IID_PPV_ARGS_Helper(inputTensorEpWrapper.GetAddressOf())
-        //);
+            QueryPerformanceCounter(&sessionCreationTime);
 
- /*       Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> to_cpy;
-        RETURN_IF_FAILED((
-            create_resource_barrier_command_list<D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_COPY_SOURCE>(
+            Ort::IoBinding ioBinding = Ort::IoBinding::IoBinding(session);
+            const char* memoryInformationName = passTensorsAsD3DResources ? "DML" : "Cpu";
+            Ort::MemoryInfo memoryInformation(memoryInformationName, OrtAllocatorType::OrtDeviceAllocator, 0, OrtMemType::OrtMemTypeDefault);
+            // Not needed: Ort::Allocator allocator(session, memoryInformation);
+
+            // Create input tensor.
+            //Ort::Value inputTensor(nullptr);
+            //std::vector<float> inputTensorValues(static_cast<size_t>(GetElementCount(inferenceInputShape)), 0.0f);
+            //std::iota(inputTensorValues.begin(), inputTensorValues.end(), 0.0f);
+            ComPtr<IUnknown> inputTensorEpWrapper;
+
+            //Ort::Value inputTensor(nullptr);
+            //std::vector<float> inputTensorValues(static_cast<size_t>(GetElementCount(preprocessInputShape)), 0.0f);
+            //std::iota(inputTensorValues.begin(), inputTensorValues.end(), 0.0f);
+            //Microsoft::WRL::ComPtr<IUnknown> inputTensorEpWrapper;
+
+            //// Create empty D3D resource for input.
+            //inputTensor = CreateTensorValueUsingD3DResource(
+            //    d3d12Device.Get(),
+            //    *ortDmlApi,
+            //    memoryInformation,
+            //    preprocessInputShape,
+            //    ONNX_TENSOR_ELEMENT_DATA_TYPE_FLOAT,
+            //    sizeof(float),
+            //    /*out*/ IID_PPV_ARGS_Helper(inputTensorEpWrapper.GetAddressOf())
+            //);
+
+     /*       Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> to_cpy;
+            RETURN_IF_FAILED((
+                create_resource_barrier_command_list<D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_COPY_SOURCE>(
+                    d3d12Device.Get(),
+                    commandQueue,
+                    commandAllocator,
+                    position_buffer_.Get(),
+                    &to_cpy)));
+
+            ID3D12CommandList* const to_cpy_list[] = {
+                to_cpy.Get()
+            };*/
+
+            //commandQueue->ExecuteCommandLists(_countof(to_cpy_list), to_cpy_list);
+
+            Ort::Value inputTensor = CreateTensorValueFromRTVResource(
+                *ortDmlApi,
+                memoryInformation,
+                new_buffer,
+                preprocessInputShape,
+                ONNX_TENSOR_ELEMENT_DATA_TYPE_FLOAT,
+                /*out*/ IID_PPV_ARGS_Helper(inputTensorEpWrapper.GetAddressOf())
+            );
+
+            // Create output tensor on device memory.
+            //Ort::Value outputTensor(nullptr);
+            //std::vector<float> outputTensorValues(static_cast<size_t>(GetElementCount(inferenceOutputShape)), 0.0f);
+            //Microsoft::WRL::ComPtr<IUnknown> outputTensorEpWrapper;
+
+            Ort::Value outputTensor(nullptr);
+            std::vector<float> outputTensorValues(static_cast<size_t>(GetElementCount(preprocessOutputShape)), 0.0f);
+            ComPtr<IUnknown> outputTensorEpWrapper;
+
+            outputTensor = CreateTensorValueUsingD3DResource(
                 d3d12Device.Get(),
-                commandQueue,
-                commandAllocator,
-                position_buffer_.Get(),
-                &to_cpy)));
+                *ortDmlApi,
+                memoryInformation,
+                preprocessOutputShape,
+                ONNX_TENSOR_ELEMENT_DATA_TYPE_FLOAT,
+                sizeof(float),
+                /*out*/ IID_PPV_ARGS_Helper(outputTensorEpWrapper.GetAddressOf())
+            );
 
-        ID3D12CommandList* const to_cpy_list[] = {
-            to_cpy.Get()
-        };*/
+            QueryPerformanceCounter(&tensorCreationTime);
 
-        //commandQueue->ExecuteCommandLists(_countof(to_cpy_list), to_cpy_list);
+            ////////////////////////////////////////
+            // Bind the tensor inputs to the model, and run it.
+            ioBinding.BindInput(preprocessModelInputTensorName, inputTensor);
+            ioBinding.BindOutput(preprocessModelOutputTensorName, outputTensor);
+            ioBinding.SynchronizeInputs();
+            QueryPerformanceCounter(&bindingTime);
 
-        Ort::Value inputTensor = CreateTensorValueFromRTVResource(
-            *ortDmlApi,
-            memoryInformation,
-            new_buffer,
-            preprocessInputShape,
-            ONNX_TENSOR_ELEMENT_DATA_TYPE_FLOAT,
-            /*out*/ IID_PPV_ARGS_Helper(inputTensorEpWrapper.GetAddressOf())
-        );
+            Ort::RunOptions runOptions;
 
-        // Create output tensor on device memory.
-        //Ort::Value outputTensor(nullptr);
-        //std::vector<float> outputTensorValues(static_cast<size_t>(GetElementCount(inferenceOutputShape)), 0.0f);
-        //Microsoft::WRL::ComPtr<IUnknown> outputTensorEpWrapper;
+            // TODO: Upload inputTensorValues to GPU inputTensor.
 
-        Ort::Value outputTensor(nullptr);
-        std::vector<float> outputTensorValues(static_cast<size_t>(GetElementCount(preprocessOutputShape)), 0.0f);
-        Microsoft::WRL::ComPtr<IUnknown> outputTensorEpWrapper;
+            printf("Beginning execution.\n");
+            printf("Running Session.\n");
+            session.Run(runOptions, ioBinding);
+            OutputDebugString(L"Done evaluating preprocessing session");
+            //ioBinding.SynchronizeOutputs();
+            QueryPerformanceCounter(&synchronizeOutputsTime);
 
-        outputTensor = CreateTensorValueUsingD3DResource(
-            d3d12Device.Get(),
-            *ortDmlApi,
-            memoryInformation,
-            preprocessOutputShape,
-            ONNX_TENSOR_ELEMENT_DATA_TYPE_FLOAT,
-            sizeof(float),
-            /*out*/ IID_PPV_ARGS_Helper(outputTensorEpWrapper.GetAddressOf())
-        );
 
-        QueryPerformanceCounter(&tensorCreationTime);
+            auto eval_results_std = EvalORTInference(outputTensor);
+            com_array<float> eval_results(1000);
+            for (int i = 0; i < 1000; i++) {
+                eval_results[i] = eval_results_std[i];
+            }
+            return eval_results;
+        }
+        catch (Ort::Exception const& exception)
+        {
+            printf("Error running model inference: %s\n", exception.what());
+            //return EXIT_FAILURE;
+        }
+        catch (std::exception const& exception)
+        {
+            printf("Error running model inference: %s\n", exception.what());
+            //return EXIT_FAILURE;
+        }
 
-        ////////////////////////////////////////
-        // Bind the tensor inputs to the model, and run it.
-        ioBinding.BindInput(preprocessModelInputTensorName, inputTensor);
-        ioBinding.BindOutput(preprocessModelOutputTensorName, outputTensor);
-        ioBinding.SynchronizeInputs();
-        QueryPerformanceCounter(&bindingTime);
-
-        Ort::RunOptions runOptions;
-
-        // TODO: Upload inputTensorValues to GPU inputTensor.
-
-        printf("Beginning execution.\n");
-        printf("Running Session.\n");
-        session.Run(runOptions, ioBinding);
-        OutputDebugString(L"Done evaluating preprocessing session");
-        //ioBinding.SynchronizeOutputs();
-        QueryPerformanceCounter(&synchronizeOutputsTime);
-        EvalORTInference(outputTensor);
     }
-    catch (Ort::Exception const& exception)
+
+}
+
+int WINAPI StartHWind(HINSTANCE hInstance,    //Main windows function
+    int nShowCmd)
+{
+    // create the window
+    if (!InitializeWindow(hInstance, nShowCmd, FullScreen))
     {
-        printf("Error running model inference: %s\n", exception.what());
-        return EXIT_FAILURE;
+        MessageBox(0, L"Window Initialization - Failed",
+            L"Error", MB_OK);
+        return 1;
     }
-    catch (std::exception const& exception)
+
+    // initialize direct3d
+    if (!InitD3D())
     {
-        printf("Error running model inference: %s\n", exception.what());
-        return EXIT_FAILURE;
+        MessageBox(0, L"Failed to initialize direct3d 12",
+            L"Error", MB_OK);
+        Cleanup();
+        return 1;
     }
+
+    // start the main loop
+    mainloop();
+
+    // we want to wait for the gpu to finish executing the command list before we start releasing everything
+    WaitForPreviousFrame();
+
+    // close the fence event
+    CloseHandle(fenceEvent);
+
+    // clean up everything
+    Cleanup();
 
     return 0;
+}
+
+// create and show the window
+bool InitializeWindow(HINSTANCE hInstance,
+    int ShowWnd,
+    bool fullscreen)
+
+{
+    if (fullscreen)
+    {
+        HMONITOR hmon = MonitorFromWindow(hwnd,
+            MONITOR_DEFAULTTONEAREST);
+        MONITORINFO mi = { sizeof(mi) };
+        GetMonitorInfo(hmon, &mi);
+
+        Width = mi.rcMonitor.right - mi.rcMonitor.left;
+        Height = mi.rcMonitor.bottom - mi.rcMonitor.top;
+    }
+
+    WNDCLASSEX wc;
+
+    wc.cbSize = sizeof(WNDCLASSEX);
+    wc.style = CS_HREDRAW | CS_VREDRAW;
+    wc.lpfnWndProc = WndProc;
+    wc.cbClsExtra = NULL;
+    wc.cbWndExtra = NULL;
+    wc.hInstance = hInstance;
+    wc.hIcon = LoadIcon(NULL, IDI_APPLICATION);
+    wc.hCursor = LoadCursor(NULL, IDC_ARROW);
+    wc.hbrBackground = (HBRUSH)(COLOR_WINDOW + 2);
+    wc.lpszMenuName = NULL;
+    wc.lpszClassName = WindowName;
+    wc.hIconSm = LoadIcon(NULL, IDI_APPLICATION);
+
+    if (!RegisterClassEx(&wc))
+    {
+        MessageBox(NULL, L"Error registering class",
+            L"Error", MB_OK | MB_ICONERROR);
+        return false;
+    }
+
+    hwnd = CreateWindowEx(NULL,
+        WindowName,
+        WindowTitle,
+        WS_OVERLAPPEDWINDOW,
+        CW_USEDEFAULT, CW_USEDEFAULT,
+        Width, Height,
+        NULL,
+        NULL,
+        hInstance,
+        NULL);
+
+    if (!hwnd)
+    {
+        MessageBox(NULL, L"Error creating window",
+            L"Error", MB_OK | MB_ICONERROR);
+        return false;
+    }
+
+    if (fullscreen)
+    {
+        SetWindowLong(hwnd, GWL_STYLE, 0);
+    }
+
+    ShowWindow(hwnd, ShowWnd);
+    UpdateWindow(hwnd);
+
+    return true;
 }
 
 void mainloop() {
@@ -812,8 +818,7 @@ void mainloop() {
             Update(); // update the game logic
             CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle = Render(); // execute the command queue (rendering the scene is the result of the gpu executing the command lists)
             d3dResource = textureBuffer;
-            //EvalORT(rtvHandle);
-            EvalORT();
+            //EvalORT();
         }
 
     }

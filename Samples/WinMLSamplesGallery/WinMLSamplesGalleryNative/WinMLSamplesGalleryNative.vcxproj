@@ -14,7 +14,7 @@
     <DefaultLanguage>en-US</DefaultLanguage>
     <MinimumVisualStudioVersion>14.0</MinimumVisualStudioVersion>
     <ApplicationTypeRevision>10.0</ApplicationTypeRevision>
-    <WindowsTargetPlatformVersion Condition=" '$(WindowsTargetPlatformVersion)' == '' ">10.0.18362.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion Condition=" '$(WindowsTargetPlatformVersion)' == '' ">10.0.19041.0</WindowsTargetPlatformVersion>
     <WindowsTargetPlatformMinVersion>10.0.17134.0</WindowsTargetPlatformMinVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -154,6 +154,7 @@
     </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="AdapterList.h" />
     <ClInclude Include="Capture.h" />
     <ClInclude Include="common.h" />
     <ClInclude Include="EncryptedModels.h" />
@@ -172,6 +173,7 @@
     <ClInclude Include="TransformAsync.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="AdapterList.cpp" />
     <ClCompile Include="Capture.cpp" />
     <ClCompile Include="EncryptedModels.cpp" />
     <ClCompile Include="External\CSampleQueue.cpp" />

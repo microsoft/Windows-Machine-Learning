@@ -196,11 +196,14 @@ namespace TensorizationHelper
             pGPUResource.put_void()
         ));
 
+
         // 5. Create the GPU upload buffer.
+        heapProperties = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD);
+        resourceDesc = CD3DX12_RESOURCE_DESC::Buffer(bufferbytesize);
         CHECK_HRESULT(pD3D12Device->CreateCommittedResource(
-            &CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD),
+            &heapProperties,
             D3D12_HEAP_FLAG_NONE,
-            &CD3DX12_RESOURCE_DESC::Buffer(bufferbytesize),
+            &resourceDesc,
             D3D12_RESOURCE_STATE_GENERIC_READ,
             nullptr,
             __uuidof(ID3D12Resource),

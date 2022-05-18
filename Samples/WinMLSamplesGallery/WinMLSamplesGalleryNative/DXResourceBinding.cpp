@@ -384,11 +384,12 @@ std::vector<float> EvalORTInference(const Ort::Value& prev_input) {
         OutputDebugString(L"Top 10:");
         OutputDebugString(L"\n");
 
-
+        std::vector<float> top_10;
         for (int i = 0; i <= std::min(indices.size(), size_t(10)); ++i)
         {
             std::wstring first = std::to_wstring(indices[i]);
             std::wstring second = std::to_wstring(outputTensorValues[indices[i]]);
+            top_10.push_back(outputTensorValues[indices[i]]);
 
             printf("output[%d] = %f\n", indices[i], outputTensorValues[indices[i]]);
             OutputDebugString(L"Output[");
@@ -397,6 +398,7 @@ std::vector<float> EvalORTInference(const Ort::Value& prev_input) {
             OutputDebugString(second.c_str());
             OutputDebugString(L"\n");
         }
+        //return top_10;
         return outputTensorValues;
     }
     catch (Ort::Exception const& exception)

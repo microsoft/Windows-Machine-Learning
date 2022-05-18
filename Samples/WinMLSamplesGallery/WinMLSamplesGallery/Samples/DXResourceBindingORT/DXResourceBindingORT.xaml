@@ -10,9 +10,29 @@
     FontFamily="Arial">
 
     <Page.Resources>
+        <DataTemplate x:Key="ContactListViewTemplate" x:DataType="local_samples:DXClassifierResult">
+            <TextBlock Margin="0,5,0,5">
+                <Span>
+                    <Run Text="{Binding index}" />
+                </Span>
+                <Span>
+                    <Run Text="{Binding probability}" />
+                </Span>
+            </TextBlock>
+        </DataTemplate>
     </Page.Resources>
 
-	<StackPanel>
+    <StackPanel>
         <Button Click="LaunchWindow">Launch Window</Button>
-	</StackPanel>
+
+        <ListView
+            x:Name="BaseExample"
+            ItemTemplate="{StaticResource ContactListViewTemplate}"
+            BorderThickness="1"
+            BorderBrush="{ThemeResource SystemControlForegroundBaseMediumLowBrush}"
+            Width="350"
+            Height="400"
+            HorizontalAlignment="Left"/>
+
+    </StackPanel>
 </Page>

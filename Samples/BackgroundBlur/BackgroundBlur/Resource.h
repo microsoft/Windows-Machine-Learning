@@ -1,41 +1,30 @@
 //{{NO_DEPENDENCIES}}
 // Microsoft Visual C++ generated include file.
-// Used by BackgroundBlur.rc
-
-#define IDS_APP_TITLE			103
-
-#define IDR_MAINFRAME			128
-#define IDD_WINDOWSPROJECT1_DIALOG	102
-#define IDD_ABOUTBOX			103
-#define IDM_ABOUT				104
-#define IDM_EXIT				105
-#define IDI_WINDOWSPROJECT1			107
-#define IDI_SMALL				108
-#define IDC_BACKGROUNDBLUR			109
-#define IDC_MYICON				2
-#ifndef IDC_STATIC
-#define IDC_STATIC				-1
-#endif
-
-#define IDD_MFPLAYBACK_DIALOG           102
-#define IDM_EXIT                        105
-#define IDC_MFPLAYBACK                  109
-#define IDD_OPENURL                     129
-#define IDC_EDIT_URL                    1000
-#define ID_FILE_OPENFILE                32771
-#define ID_FILE_OPENURL                 32772
-#define ID_STREAM_START					32773
-#define IDC_STATIC                      -1
+// Used by Capture.rc
+//
+#define IDR_MENU1                       101
+#define IDD_CHOOSE_DEVICE               102
+#define IDS_ERR_SET_DEVICE              103
+#define IDS_ERR_INITIALIZE              104
+#define IDS_ERR_PREVIEW                 105
+#define IDS_ERR_RECORD                  106
+#define IDS_ERR_CAPTURE                 107
+#define IDS_ERR_PHOTO                   108
+#define IDC_DEVICE_LIST                 1001
+#define IDC_STATUS_BAR                  1002
+#define ID_CAPTURE_CHOOSEDEVICE         40001
+#define ID_CAPTURE_STARTRECORDING       40002
+#define ID_CAPTURE_RECORD               40003
+#define ID_CAPTURE_TAKEPHOTO            40004
+#define ID_CAPTURE_PREVIEW              40005
 
 // Next default values for new objects
-//
+// 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-
-#define _APS_NO_MFC					130
-#define _APS_NEXT_RESOURCE_VALUE	129
-#define _APS_NEXT_COMMAND_VALUE		32771
-#define _APS_NEXT_CONTROL_VALUE		1000
-#define _APS_NEXT_SYMED_VALUE		110
+#define _APS_NEXT_RESOURCE_VALUE        109
+#define _APS_NEXT_COMMAND_VALUE         40005
+#define _APS_NEXT_CONTROL_VALUE         1003
+#define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

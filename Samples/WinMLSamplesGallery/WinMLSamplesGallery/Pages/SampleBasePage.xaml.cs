@@ -40,6 +40,9 @@ namespace WinMLSamplesGallery
                 case "AdapterSelection":
                     SampleFrame.Navigate(typeof(Samples.AdapterSelection));
                     break;
+                case "StreamEffect":
+                    SampleFrame.Navigate(typeof(Samples.StreamEffect));
+                    break;
             }
             if (sampleMetadata.Docs.Count > 0)
                 DocsHeader.Visibility = Visibility.Visible;
@@ -55,6 +58,15 @@ namespace WinMLSamplesGallery
                 var page = (Samples.Batching)SampleFrame.Content;
                 page.StopAllEvents();
             }
+            
+            // Batching Sample contains background thread events that may need to be stopped.
+            if (SampleFrame.SourcePageType == typeof(Samples.StreamEffect))
+            {
+                var page = (Samples.StreamEffect)SampleFrame.Content;
+                page.CloseInferenceWindow();
+            }
+
+
         }
     }
 }

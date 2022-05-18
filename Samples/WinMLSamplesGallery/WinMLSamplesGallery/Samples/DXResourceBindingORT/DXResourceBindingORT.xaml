@@ -16,6 +16,9 @@
                     <Run Text="{Binding index}" />
                 </Span>
                 <Span>
+                    <Run Text="{Binding label}" />
+                </Span>
+                <Span>
                     <Run Text="{Binding probability}" />
                 </Span>
             </TextBlock>

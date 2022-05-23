@@ -10,6 +10,7 @@ using Windows.Media;
 using Windows.Storage;
 using WinMLSamplesGalleryNative;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace WinMLSamplesGallery.Samples
 {
@@ -35,25 +36,21 @@ namespace WinMLSamplesGallery.Samples
             //WinMLSamplesGalleryNative.DXResourceBinding.BindDXResourcesUsingORT();
         }
 
-        private void LaunchWindow(object sender, RoutedEventArgs e)
+        private async void LaunchWindow(object sender, RoutedEventArgs e)
         {
             Task.Run(() => WinMLSamplesGalleryNative.DXResourceBinding.LaunchWindow());
             //WinMLSamplesGalleryNative.DXResourceBinding.EvalORT();
             System.Threading.Thread.Sleep(2000);
-            float[] results = WinMLSamplesGalleryNative.DXResourceBinding.EvalORT();
-            var results_lst = new List<float>(results);
-            List<int> indices = Enumerable.Range(0, 1000).ToList();
-            indices.Sort((x, y) => results_lst[y].CompareTo(results_lst[x]));
-            List<int> top_10_indices = indices.Take(10).ToList();
 
-            List<DXClassifierResult> final_results = new List<DXClassifierResult>();
-            for(int i = 0; i < 10; i++)
+            for (int i = 0; i < 10; i++)
             {
-                final_results.Add(new DXClassifierResult(i, ClassificationLabels.ImageNet[top_10_indices[i]],
-                    top_10_indices[i]));
+                float[] results = await Task.Run(() => WinMLSamplesGalleryNative.DXResourceBinding.EvalORT());
+                UpdateClassification(results);
+                System.Diagnostics.Debug.WriteLine("Updated ui with eval");
+                //System.Threading.Thread.Sleep(10000);
             }
 
-            BaseExample.ItemsSource = final_results;
+
 
             //System.Diagnostics.Debug.WriteLine("In C# code");
             //for(int i = 0; i < results_lst.Count; i++)
@@ -61,6 +58,28 @@ namespace WinMLSamplesGallery.Samples
             //    System.Diagnostics.Debug.WriteLine("indicies[i]: " + indices[i].ToString());
             //    //System.Diagnostics.Debug.WriteLine(i.ToString() + ": " + results_lst[i].ToString());
             //}
+        }
+
+        private async Task<float[]> ClassifyFrame()
+        {
+            return WinMLSamplesGalleryNative.DXResourceBinding.EvalORT();
+        }
+
+        void UpdateClassification(float[] results)
+        {
+            var results_lst = new List<float>(results);
+            List<int> indices = Enumerable.Range(0, 1000).ToList();
+            indices.Sort((x, y) => results_lst[y].CompareTo(results_lst[x]));
+            List<int> top_10_indices = indices.Take(10).ToList();
+
+            List<DXClassifierResult> final_results = new List<DXClassifierResult>();
+            for (int i = 0; i < 10; i++)
+            {
+                final_results.Add(new DXClassifierResult(i, ClassificationLabels.ImageNet[top_10_indices[i]],
+                    top_10_indices[i]));
+            }
+
+            BaseExample.ItemsSource = final_results;
         }
     }
 }

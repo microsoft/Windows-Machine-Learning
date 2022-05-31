@@ -256,7 +256,7 @@ Ort::Value CreateTensorValueUsingD3DResource(
     );
 }
 
-std::vector<float> EvalORTInference(Ort::Session& session, const Ort::Value& prev_input) {
+std::vector<float> Eval(Ort::Session& session, const Ort::Value& prev_input) {
     OutputDebugString(L"In EvalORTInference");
     // Squeezenet opset v7 https://github.com/onnx/models/blob/master/vision/classification/squeezenet/README.md
     const wchar_t* modelFilePath = L"C:/Users/numform/Windows-Machine-Learning/Samples/WinMLSamplesGallery/WinMLSamplesGalleryNative/squeezenet1.1-7.onnx";
@@ -653,7 +653,7 @@ winrt::com_array<float> Preproces(Ort::Session& session, Ort::Session& inference
         QueryPerformanceCounter(&synchronizeOutputsTime);
 
 
-        auto eval_results_std = EvalORTInference(inferenceSession, outputTensor);
+        auto eval_results_std = Eval(inferenceSession, outputTensor);
         winrt::com_array<float> eval_results(1000);
         for (int i = 0; i < 1000; i++) {
             eval_results[i] = eval_results_std[i];

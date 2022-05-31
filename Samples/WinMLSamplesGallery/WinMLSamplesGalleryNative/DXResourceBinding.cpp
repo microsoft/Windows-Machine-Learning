@@ -256,7 +256,7 @@ Ort::Value CreateTensorValueUsingD3DResource(
     );
 }
 
-std::vector<float> EvalORTInference(const Ort::Value& prev_input) {
+std::vector<float> EvalORTInference(Ort::Session& session, const Ort::Value& prev_input) {
     OutputDebugString(L"In EvalORTInference");
     // Squeezenet opset v7 https://github.com/onnx/models/blob/master/vision/classification/squeezenet/README.md
     const wchar_t* modelFilePath = L"C:/Users/numform/Windows-Machine-Learning/Samples/WinMLSamplesGallery/WinMLSamplesGalleryNative/squeezenet1.1-7.onnx";
@@ -289,15 +289,15 @@ std::vector<float> EvalORTInference(const Ort::Value& prev_input) {
         THROW_IF_NOT_OK(ortApi.GetExecutionProviderApi("DML", ORT_API_VERSION, reinterpret_cast<const void**>(&ortDmlApi)));
 
         // ONNX Runtime setup
-        Ort::Env ortEnvironment(ORT_LOGGING_LEVEL_WARNING, "DirectML_Direct3D_TensorAllocation_Test");
-        Ort::SessionOptions sessionOptions;
-        sessionOptions.SetExecutionMode(ExecutionMode::ORT_SEQUENTIAL);
-        sessionOptions.DisableMemPattern();
-        sessionOptions.SetGraphOptimizationLevel(GraphOptimizationLevel::ORT_ENABLE_ALL);
-        ortApi.AddFreeDimensionOverrideByName(sessionOptions, "batch_size", 1);
-        OrtSessionOptionsAppendExecutionProvider_DML(sessionOptions, 0);
-        Ort::Session session = Ort::Session(ortEnvironment, modelFilePath, sessionOptions);
-        QueryPerformanceCounter(&sessionCreationTime);
+        //Ort::Env ortEnvironment(ORT_LOGGING_LEVEL_WARNING, "DirectML_Direct3D_TensorAllocation_Test");
+        //Ort::SessionOptions sessionOptions;
+        //sessionOptions.SetExecutionMode(ExecutionMode::ORT_SEQUENTIAL);
+        //sessionOptions.DisableMemPattern();
+        //sessionOptions.SetGraphOptimizationLevel(GraphOptimizationLevel::ORT_ENABLE_ALL);
+        //ortApi.AddFreeDimensionOverrideByName(sessionOptions, "batch_size", 1);
+        //OrtSessionOptionsAppendExecutionProvider_DML(sessionOptions, 0);
+        //Ort::Session session = Ort::Session(ortEnvironment, modelFilePath, sessionOptions);
+        //QueryPerformanceCounter(&sessionCreationTime);
 
         Ort::IoBinding ioBinding = Ort::IoBinding::IoBinding(session);
         const char* memoryInformationName = passTensorsAsD3DResources ? "DML" : "Cpu";
@@ -414,7 +414,7 @@ std::vector<float> EvalORTInference(const Ort::Value& prev_input) {
 
 }
 
-winrt::com_array<float> Preproces(Ort::Session& session)
+winrt::com_array<float> Preproces(Ort::Session& session, Ort::Session& inferenceSession)
 {
     OutputDebugString(L"In Preprocess");
     // Squeezenet opset v7 https://github.com/onnx/models/blob/master/vision/classification/squeezenet/README.md
@@ -653,7 +653,7 @@ winrt::com_array<float> Preproces(Ort::Session& session)
         QueryPerformanceCounter(&synchronizeOutputsTime);
 
 
-        auto eval_results_std = EvalORTInference(outputTensor);
+        auto eval_results_std = EvalORTInference(inferenceSession, outputTensor);
         winrt::com_array<float> eval_results(1000);
         for (int i = 0; i < 1000; i++) {
             eval_results[i] = eval_results_std[i];
@@ -701,15 +701,23 @@ namespace winrt::WinMLSamplesGalleryNative::implementation
         preprocessingSessionOptions.SetGraphOptimizationLevel(GraphOptimizationLevel::ORT_ENABLE_ALL);
         ortApi.AddFreeDimensionOverrideByName(preprocessingSessionOptions, "batch_size", 1);
         OrtSessionOptionsAppendExecutionProvider_DML(preprocessingSessionOptions, 0);
-        //Ort::Session session = Ort::Session(ortEnvironment, modelFilePath, sessionOptions);
         Ort::Session preprocesingSession = Ort::Session(ortEnvironment, preprocessingModelFilePath, preprocessingSessionOptions);
+
+        const wchar_t* inferencemodelFilePath = L"C:/Users/numform/Windows-Machine-Learning/Samples/WinMLSamplesGallery/WinMLSamplesGalleryNative/squeezenet1.1-7.onnx";
+        Ort::SessionOptions inferenceSessionOptions;
+        inferenceSessionOptions.SetExecutionMode(ExecutionMode::ORT_SEQUENTIAL);
+        inferenceSessionOptions.DisableMemPattern();
+        inferenceSessionOptions.SetGraphOptimizationLevel(GraphOptimizationLevel::ORT_ENABLE_ALL);
+        ortApi.AddFreeDimensionOverrideByName(inferenceSessionOptions, "batch_size", 1);
+        OrtSessionOptionsAppendExecutionProvider_DML(inferenceSessionOptions, 0);
+        Ort::Session inferenceSession = Ort::Session(ortEnvironment, inferencemodelFilePath, inferenceSessionOptions);
 
         HINSTANCE hInstance = GetCurrentModule();
         std::thread hwnd_th(StartHWind, hInstance, 10);
         hwnd_th.detach();
         Sleep(2000);
 
-        Preproces(preprocesingSession);
+        Preproces(preprocesingSession, inferenceSession);
 
 		return 0;
 	}

@@ -39,7 +39,9 @@ namespace WinMLSamplesGallery.Samples
         private async void LaunchWindow(object sender, RoutedEventArgs e)
         {
             //Task.Run(() => WinMLSamplesGalleryNative.DXResourceBinding.LaunchWindow());
-            WinMLSamplesGalleryNative.DXResourceBinding.LaunchWindow();
+            float[] results = WinMLSamplesGalleryNative.DXResourceBinding.LaunchWindow();
+            UpdateClassification(results);
+
             //WinMLSamplesGalleryNative.DXResourceBinding.EvalORT();
             //System.Threading.Thread.Sleep(2000);
 

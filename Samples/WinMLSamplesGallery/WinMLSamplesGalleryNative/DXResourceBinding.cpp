@@ -652,7 +652,6 @@ winrt::com_array<float> Preproces(Ort::Session& session, Ort::Session& inference
         //ioBinding.SynchronizeOutputs();
         QueryPerformanceCounter(&synchronizeOutputsTime);
 
-
         auto eval_results_std = Eval(inferenceSession, outputTensor);
         winrt::com_array<float> eval_results(1000);
         for (int i = 0; i < 1000; i++) {
@@ -686,7 +685,7 @@ static HMODULE GetCurrentModule()
 
 namespace winrt::WinMLSamplesGalleryNative::implementation
 {
-	int DXResourceBinding::LaunchWindow() {
+	winrt::com_array<float> DXResourceBinding::LaunchWindow() {
         OutputDebugString(L"In Launch Window\n");
 
         OrtApi const& ortApi = Ort::GetApi(); // Uses ORT_API_VERSION
@@ -717,9 +716,9 @@ namespace winrt::WinMLSamplesGalleryNative::implementation
         hwnd_th.detach();
         Sleep(2000);
 
-        Preproces(preprocesingSession, inferenceSession);
+        auto results = Preproces(preprocesingSession, inferenceSession);
 
-		return 0;
+		return results;
 	}
 }
 

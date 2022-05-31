@@ -27,7 +27,7 @@ namespace WinMLSamplesGalleryNative
     [default_interface]
     runtimeclass DXResourceBinding
     {
-        static Int32 LaunchWindow();
+        static float[] LaunchWindow();
         //static float[] EvalORT();
     }
 }

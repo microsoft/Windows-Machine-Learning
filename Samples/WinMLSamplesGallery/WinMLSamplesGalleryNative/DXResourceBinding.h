@@ -7,7 +7,7 @@ namespace winrt::WinMLSamplesGalleryNative::implementation
     {
         DXResourceBinding() = default;
         static int LaunchWindow();
-        static winrt::com_array<float> EvalORT();
+        //static winrt::com_array<float> EvalORT();
     };
 }
 namespace winrt::WinMLSamplesGalleryNative::factory_implementation

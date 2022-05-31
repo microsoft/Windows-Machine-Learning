@@ -38,17 +38,18 @@ namespace WinMLSamplesGallery.Samples
 
         private async void LaunchWindow(object sender, RoutedEventArgs e)
         {
-            Task.Run(() => WinMLSamplesGalleryNative.DXResourceBinding.LaunchWindow());
+            //Task.Run(() => WinMLSamplesGalleryNative.DXResourceBinding.LaunchWindow());
+            WinMLSamplesGalleryNative.DXResourceBinding.LaunchWindow();
             //WinMLSamplesGalleryNative.DXResourceBinding.EvalORT();
-            System.Threading.Thread.Sleep(2000);
+            //System.Threading.Thread.Sleep(2000);
 
-            for (int i = 0; i < 10; i++)
-            {
-                float[] results = await Task.Run(() => WinMLSamplesGalleryNative.DXResourceBinding.EvalORT());
-                UpdateClassification(results);
-                System.Diagnostics.Debug.WriteLine("Updated ui with eval");
-                //System.Threading.Thread.Sleep(10000);
-            }
+            //for (int i = 0; i < 10; i++)
+            //{
+            //    float[] results = await Task.Run(() => WinMLSamplesGalleryNative.DXResourceBinding.EvalORT());
+            //    UpdateClassification(results);
+            //    System.Diagnostics.Debug.WriteLine("Updated ui with eval");
+            //    //System.Threading.Thread.Sleep(10000);
+            //}
 
 
 
@@ -60,10 +61,10 @@ namespace WinMLSamplesGallery.Samples
             //}
         }
 
-        private async Task<float[]> ClassifyFrame()
-        {
-            return WinMLSamplesGalleryNative.DXResourceBinding.EvalORT();
-        }
+        //private async Task<float[]> ClassifyFrame()
+        //{
+        //    return WinMLSamplesGalleryNative.DXResourceBinding.EvalORT();
+        //}
 
         void UpdateClassification(float[] results)
         {

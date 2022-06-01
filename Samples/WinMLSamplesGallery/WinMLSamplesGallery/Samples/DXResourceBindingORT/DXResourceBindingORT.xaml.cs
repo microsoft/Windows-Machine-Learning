@@ -38,6 +38,7 @@ namespace WinMLSamplesGallery.Samples
 
         private async void LaunchWindow(object sender, RoutedEventArgs e)
         {
+            LaunchWindowBtn.IsEnabled = false;
             //Task.Run(() => WinMLSamplesGalleryNative.DXResourceBinding.LaunchWindow());
             WinMLSamplesGalleryNative.DXResourceBinding.LaunchWindow();
 
@@ -60,6 +61,7 @@ namespace WinMLSamplesGallery.Samples
             //    System.Diagnostics.Debug.WriteLine("indicies[i]: " + indices[i].ToString());
             //    //System.Diagnostics.Debug.WriteLine(i.ToString() + ": " + results_lst[i].ToString());
             //}
+            LaunchWindowBtn.IsEnabled = true;
         }
 
         //private async Task<float[]> ClassifyFrame()

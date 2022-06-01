@@ -43,6 +43,11 @@ using namespace Microsoft::WRL;
 #undef min
 
 Microsoft::WRL::ComPtr<ID3D12Resource> d3dResource;
+//static std::unique_ptr<Ort::Session> preprocesingSession = std::make_unique<Ort::Session>();
+//static std::unique_ptr<Ort::Session> inferenceSession = std::make_unique<Ort::Session>();
+static std::optional<Ort::Session> preprocesingSession;
+static std::optional<Ort::Session> inferenceSession;
+
 
 template <typename T>
 using BaseType =
@@ -700,7 +705,7 @@ namespace winrt::WinMLSamplesGalleryNative::implementation
         preprocessingSessionOptions.SetGraphOptimizationLevel(GraphOptimizationLevel::ORT_ENABLE_ALL);
         ortApi.AddFreeDimensionOverrideByName(preprocessingSessionOptions, "batch_size", 1);
         OrtSessionOptionsAppendExecutionProvider_DML(preprocessingSessionOptions, 0);
-        Ort::Session preprocesingSession = Ort::Session(ortEnvironment, preprocessingModelFilePath, preprocessingSessionOptions);
+        preprocesingSession = Ort::Session(ortEnvironment, preprocessingModelFilePath, preprocessingSessionOptions);
 
         const wchar_t* inferencemodelFilePath = L"C:/Users/numform/Windows-Machine-Learning/Samples/WinMLSamplesGallery/WinMLSamplesGalleryNative/squeezenet1.1-7.onnx";
         Ort::SessionOptions inferenceSessionOptions;
@@ -709,17 +714,27 @@ namespace winrt::WinMLSamplesGalleryNative::implementation
         inferenceSessionOptions.SetGraphOptimizationLevel(GraphOptimizationLevel::ORT_ENABLE_ALL);
         ortApi.AddFreeDimensionOverrideByName(inferenceSessionOptions, "batch_size", 1);
         OrtSessionOptionsAppendExecutionProvider_DML(inferenceSessionOptions, 0);
-        Ort::Session inferenceSession = Ort::Session(ortEnvironment, inferencemodelFilePath, inferenceSessionOptions);
+        inferenceSession = Ort::Session(ortEnvironment, inferencemodelFilePath, inferenceSessionOptions);
 
         HINSTANCE hInstance = GetCurrentModule();
         std::thread hwnd_th(StartHWind, hInstance, 10);
         hwnd_th.detach();
         Sleep(2000);
 
-        auto results = Preproces(preprocesingSession, inferenceSession);
+        //auto results = Preproces(preprocesingSession, inferenceSession);
 
-		return results;
+        winrt::com_array<float> eval_results(1000);
+        for (int i = 0; i < 1000; i++) {
+            eval_results[i] = 100;
+        }
+        return eval_results;
+
+		//return results;
 	}
+
+    winrt::com_array<float> DXResourceBinding::EvalORT() {
+        return Preproces(*preprocesingSession, *inferenceSession);
+    }
 }
 
 int WINAPI StartHWind(HINSTANCE hInstance,    //Main windows function

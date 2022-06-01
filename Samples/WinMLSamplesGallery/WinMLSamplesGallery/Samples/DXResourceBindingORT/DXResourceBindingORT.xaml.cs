@@ -39,19 +39,18 @@ namespace WinMLSamplesGallery.Samples
         private async void LaunchWindow(object sender, RoutedEventArgs e)
         {
             //Task.Run(() => WinMLSamplesGalleryNative.DXResourceBinding.LaunchWindow());
-            float[] results = WinMLSamplesGalleryNative.DXResourceBinding.LaunchWindow();
-            UpdateClassification(results);
+            WinMLSamplesGalleryNative.DXResourceBinding.LaunchWindow();
 
             //WinMLSamplesGalleryNative.DXResourceBinding.EvalORT();
             //System.Threading.Thread.Sleep(2000);
 
-            //for (int i = 0; i < 10; i++)
-            //{
-            //    float[] results = await Task.Run(() => WinMLSamplesGalleryNative.DXResourceBinding.EvalORT());
-            //    UpdateClassification(results);
-            //    System.Diagnostics.Debug.WriteLine("Updated ui with eval");
-            //    //System.Threading.Thread.Sleep(10000);
-            //}
+            for (int i = 0; i < 10; i++)
+            {
+                float[] results = await Task.Run(() => WinMLSamplesGalleryNative.DXResourceBinding.EvalORT());
+                UpdateClassification(results);
+                System.Diagnostics.Debug.WriteLine(i.ToString() + ": Updated ui with eval\n");
+                System.Threading.Thread.Sleep(1000);
+            }
 
 
 

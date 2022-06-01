@@ -39,8 +39,10 @@ namespace WinMLSamplesGallery.Samples
         private async void LaunchWindow(object sender, RoutedEventArgs e)
         {
             LaunchWindowBtn.IsEnabled = false;
-            //Task.Run(() => WinMLSamplesGalleryNative.DXResourceBinding.LaunchWindow());
-            WinMLSamplesGalleryNative.DXResourceBinding.LaunchWindow();
+            LoadingTxt.Visibility = Visibility.Visible;
+            await Task.Run(() => WinMLSamplesGalleryNative.DXResourceBinding.LaunchWindow());
+            LoadingTxt.Visibility = Visibility.Collapsed;
+
 
             //WinMLSamplesGalleryNative.DXResourceBinding.EvalORT();
             //System.Threading.Thread.Sleep(2000);

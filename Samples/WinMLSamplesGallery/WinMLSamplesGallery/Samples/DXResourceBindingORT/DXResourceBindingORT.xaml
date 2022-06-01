@@ -26,7 +26,20 @@
     </Page.Resources>
 
     <StackPanel>
-        <Button x:Name="LaunchWindowBtn" Click="LaunchWindow">Launch Window</Button>
+        <Button
+            x:Name="LaunchWindowBtn"
+            Click="LaunchWindow"
+            Margin="0,10,0,0">
+            Launch Window
+        </Button>
+
+        <TextBlock
+            x:Name="LoadingTxt"
+            Margin="0,15,0,0"
+            FontWeight="Bold"
+            Visibility="Collapsed">
+            Loading Window and ONNX Runtime Sessions...
+        </TextBlock>
 
         <ListView
             x:Name="BaseExample"
@@ -35,7 +48,8 @@
             BorderBrush="{ThemeResource SystemControlForegroundBaseMediumLowBrush}"
             Width="350"
             Height="400"
-            HorizontalAlignment="Left"/>
+            HorizontalAlignment="Left"
+            Margin="0,15,0,0"/>
 
     </StackPanel>
 </Page>

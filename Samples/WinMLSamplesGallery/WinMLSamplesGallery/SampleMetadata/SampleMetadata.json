@@ -85,7 +85,7 @@
     },
     {
       "Title": "DX Resource Binding in ORT",
-      "DescriptionShort": "Learn how to bind DirectX Resources using ONNX Runtime",
+      "DescriptionShort": "Learn how to bind and evaluate DirectX Resources using ONNX Runtime.",
       "Description": "The sample showcases how to create and bind OrtValue objects from ID3D12 Resources using the ONNX Runtime C-API.",
       "Icon": "\uE155",
       "Tag": "DXResourceBindingORT",

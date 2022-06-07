@@ -39,7 +39,7 @@
         </TextBlock>
 
         <ListView
-            x:Name="BaseExample"
+            x:Name="Top10Results"
             ItemTemplate="{StaticResource ContactListViewTemplate}"
             BorderThickness="1"
             BorderBrush="{ThemeResource SystemControlForegroundBaseMediumLowBrush}"

@@ -30,6 +30,7 @@ namespace WinMLSamplesGallery.Samples
 
     public sealed partial class DXResourceBindingORT : Page
     {
+        private bool pageExited = false;
         public DXResourceBindingORT()
         {
             this.InitializeComponent();
@@ -47,12 +48,19 @@ namespace WinMLSamplesGallery.Samples
             //WinMLSamplesGalleryNative.DXResourceBinding.EvalORT();
             //System.Threading.Thread.Sleep(2000);
 
-            for (int i = 0; i < 10; i++)
+            int i = 0;
+            while(true)
             {
+                if(pageExited)
+                {
+                    WinMLSamplesGalleryNative.DXResourceBinding.CloseWindow();
+                    break;
+                }
                 float[] results = await Task.Run(() => WinMLSamplesGalleryNative.DXResourceBinding.EvalORT());
                 UpdateClassification(results);
                 System.Diagnostics.Debug.WriteLine(i.ToString() + ": Updated ui with eval\n");
                 System.Threading.Thread.Sleep(1000);
+                i++;
             }
 
 
@@ -64,6 +72,7 @@ namespace WinMLSamplesGallery.Samples
             //    //System.Diagnostics.Debug.WriteLine(i.ToString() + ": " + results_lst[i].ToString());
             //}
             LaunchWindowBtn.IsEnabled = true;
+            pageExited = false;
         }
 
         //private async Task<float[]> ClassifyFrame()
@@ -86,6 +95,13 @@ namespace WinMLSamplesGallery.Samples
             }
 
             BaseExample.ItemsSource = final_results;
+        }
+
+        public void StopAllEvents()
+        {
+            System.Diagnostics.Debug.WriteLine("In dx... stop all events called");
+            pageExited = true;
+            //WinMLSamplesGalleryNative.DXResourceBinding.CloseWindow();
         }
     }
 }

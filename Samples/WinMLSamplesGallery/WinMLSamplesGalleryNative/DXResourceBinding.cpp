@@ -47,7 +47,7 @@ Microsoft::WRL::ComPtr<ID3D12Resource> d3dResource;
 //static std::unique_ptr<Ort::Session> inferenceSession = std::make_unique<Ort::Session>();
 static std::optional<Ort::Session> preprocesingSession;
 static std::optional<Ort::Session> inferenceSession;
-
+static bool closeWindow = false;
 
 template <typename T>
 using BaseType =
@@ -735,6 +735,10 @@ namespace winrt::WinMLSamplesGalleryNative::implementation
     winrt::com_array<float> DXResourceBinding::EvalORT() {
         return Preproces(*preprocesingSession, *inferenceSession);
     }
+
+    void DXResourceBinding::CloseWindow() {
+        closeWindow = true;
+    }
 }
 
 int WINAPI StartHWind(HINSTANCE hInstance,    //Main windows function
@@ -758,7 +762,9 @@ int WINAPI StartHWind(HINSTANCE hInstance,    //Main windows function
     }
 
     // start the main loop
+    Running = true;
     mainloop();
+    closeWindow = false;
 
     // we want to wait for the gpu to finish executing the command list before we start releasing everything
     WaitForPreviousFrame();
@@ -768,6 +774,14 @@ int WINAPI StartHWind(HINSTANCE hInstance,    //Main windows function
 
     // clean up everything
     Cleanup();
+
+    if (!UnregisterClass(WindowName, hInstance))
+    {
+        auto error = GetLastError();
+        MessageBox(NULL, L"Error unregistering class",
+            L"Error", MB_OK | MB_ICONERROR);
+        return 1;
+    }
 
     return 0;
 }
@@ -856,12 +870,14 @@ void mainloop() {
             TranslateMessage(&msg);
             DispatchMessage(&msg);
         }
+        else if (closeWindow) {
+            PostMessage(hwnd, WM_CLOSE, 0, 0);
+        }
         else {
             // run game code
             Update(); // update the game logic
             CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle = Render(); // execute the command queue (rendering the scene is the result of the gpu executing the command lists)
             d3dResource = textureBuffer;
-            //EvalORT();
         }
 
     }

@@ -29,5 +29,6 @@ namespace WinMLSamplesGalleryNative
     {
         static float[] LaunchWindow();
         static float[] EvalORT();
+        static void CloseWindow();
     }
 }

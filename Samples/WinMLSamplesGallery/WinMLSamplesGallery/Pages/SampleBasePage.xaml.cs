@@ -57,6 +57,11 @@ namespace WinMLSamplesGallery
             {
                 var page = (Samples.Batching)SampleFrame.Content;
                 page.StopAllEvents();
+            } else if(SampleFrame.SourcePageType == typeof(Samples.DXResourceBindingORT))
+            {
+                var page = (Samples.DXResourceBindingORT)SampleFrame.Content;
+                page.StopAllEvents();
+
             }
         }
     }

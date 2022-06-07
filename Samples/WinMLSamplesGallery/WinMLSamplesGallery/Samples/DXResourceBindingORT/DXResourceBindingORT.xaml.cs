@@ -18,13 +18,10 @@ namespace WinMLSamplesGallery.Samples
     {
         public int index { get; private set; }
         public string label { get; private set; }
-        public float probability { get; private set; }
-
-        public DXClassifierResult(int i, string lab, float prob)
+        public DXClassifierResult(int i, string lab)
         {
             index = i;
             label = lab;
-            probability = prob;
         }
     }
 
@@ -90,8 +87,7 @@ namespace WinMLSamplesGallery.Samples
             List<DXClassifierResult> final_results = new List<DXClassifierResult>();
             for (int i = 0; i < 10; i++)
             {
-                final_results.Add(new DXClassifierResult(i, ClassificationLabels.ImageNet[top_10_indices[i]],
-                    top_10_indices[i]));
+                final_results.Add(new DXClassifierResult(i+1, ClassificationLabels.ImageNet[top_10_indices[i]]));
             }
 
             BaseExample.ItemsSource = final_results;

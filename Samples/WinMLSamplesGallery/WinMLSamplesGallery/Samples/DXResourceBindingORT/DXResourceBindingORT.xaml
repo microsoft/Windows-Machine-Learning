@@ -18,9 +18,6 @@
                 <Span>
                     <Run Text="{Binding label}" />
                 </Span>
-                <Span>
-                    <Run Text="{Binding probability}" />
-                </Span>
             </TextBlock>
         </DataTemplate>
     </Page.Resources>

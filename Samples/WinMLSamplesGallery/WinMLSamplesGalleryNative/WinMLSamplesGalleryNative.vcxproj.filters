@@ -18,6 +18,7 @@
     <ClCompile Include="SanityApp.cpp">
       <Filter>DXResourceBinding</Filter>
     </ClCompile>
+    <ClCompile Include="DXHelpers.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -45,6 +46,7 @@
     <ClInclude Include="stdafx.h">
       <Filter>DXResourceBinding</Filter>
     </ClInclude>
+    <ClInclude Include="DXHelpers.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Resource.rc" />

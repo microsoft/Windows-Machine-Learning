@@ -40,19 +40,11 @@ bool Running = true;
 int WINAPI StartHWind(HINSTANCE hInstance,    //Main windows function
     int nShowCmd);
 
-// create a window
-bool InitializeWindow(HINSTANCE hInstance,
-    int ShowWnd,
-    bool fullscreen);
 
 // main application loop
 void mainloop();
 
-// callback function for windows messages
-LRESULT CALLBACK WndProc(HWND hWnd,
-    UINT msg,
-    WPARAM wParam,
-    LPARAM lParam);
+
 
 // direct3d stuff
 const int frameBufferCount = 3; // number of buffers we want, 2 for double buffering, 3 for tripple buffering

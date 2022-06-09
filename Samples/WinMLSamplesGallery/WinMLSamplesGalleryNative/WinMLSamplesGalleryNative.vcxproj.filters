@@ -18,7 +18,12 @@
     <ClCompile Include="SanityApp.cpp">
       <Filter>DXResourceBinding</Filter>
     </ClCompile>
-    <ClCompile Include="DXHelpers.cpp" />
+    <ClCompile Include="DXHelpers.cpp">
+      <Filter>DXResourceBinding</Filter>
+    </ClCompile>
+    <ClCompile Include="ORTHelpers.cpp">
+      <Filter>DXResourceBinding</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -46,7 +51,12 @@
     <ClInclude Include="stdafx.h">
       <Filter>DXResourceBinding</Filter>
     </ClInclude>
-    <ClInclude Include="DXHelpers.h" />
+    <ClInclude Include="DXHelpers.h">
+      <Filter>DXResourceBinding</Filter>
+    </ClInclude>
+    <ClInclude Include="ORTHelpers.h">
+      <Filter>DXResourceBinding</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Resource.rc" />

@@ -162,6 +162,7 @@
     <ClInclude Include="DXResourceBinding.h" />
     <ClInclude Include="EncryptedModels.h" />
     <ClInclude Include="OpenCVImage.h" />
+    <ClInclude Include="ORTHelpers.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="RandomAccessStream.h" />
     <ClInclude Include="stdafx.h" />
@@ -173,6 +174,7 @@
     <ClCompile Include="DXResourceBinding.cpp" />
     <ClCompile Include="EncryptedModels.cpp" />
     <ClCompile Include="OpenCVImage.cpp" />
+    <ClCompile Include="ORTHelpers.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>
     </ClCompile>

@@ -14,7 +14,7 @@
 #include <wincodec.h>
 
 // this will only call release if an object exists (prevents exceptions calling release on non existant objects)
-#define SAFE_RELEASE(p) { if ( (p) ) { (p)->Release(); (p) = 0; } }
+//#define SAFE_RELEASE(p) { if ( (p) ) { (p)->Release(); (p) = 0; } }
 
 using namespace DirectX; // we will be using the directxmath library
 
@@ -75,17 +75,15 @@ int frameIndex; // current rtv we are on
 int rtvDescriptorSize; // size of the rtv descriptor on the device (all front and back buffers will be the same size)
                        // function declarations
 
-bool InitD3D(); // initializes direct3d 12
+//void Update(); // update the game logic
+//
+//CD3DX12_CPU_DESCRIPTOR_HANDLE UpdatePipeline(); // update the direct3d pipeline (update command lists)
+//
+//CD3DX12_CPU_DESCRIPTOR_HANDLE Render(); // execute the command list
+//
+//void Cleanup(); // release com ojects and clean up memory
 
-void Update(); // update the game logic
-
-CD3DX12_CPU_DESCRIPTOR_HANDLE UpdatePipeline(); // update the direct3d pipeline (update command lists)
-
-CD3DX12_CPU_DESCRIPTOR_HANDLE Render(); // execute the command list
-
-void Cleanup(); // release com ojects and clean up memory
-
-void WaitForPreviousFrame(); // wait until gpu is finished with command list
+//void WaitForPreviousFrame(); // wait until gpu is finished with command list
 
 ID3D12PipelineState* pipelineStateObject; // pso containing a pipeline state
 
@@ -107,9 +105,9 @@ ID3D12Resource* depthStencilBuffer; // This is the memory for our depth buffer. 
 ID3D12DescriptorHeap* dsDescriptorHeap; // This is a heap for our depth/stencil buffer descriptor
 
 // this is the structure of our constant buffer.
-struct ConstantBufferPerObject {
-    XMFLOAT4X4 wvpMat;
-};
+//struct ConstantBufferPerObject {
+//    XMFLOAT4X4 wvpMat;
+//};
 
 // Constant buffers must be 256-byte aligned which has to do with constant reads on the GPU.
 // We are only able to read at 256 byte intervals from the start of a resource heap, so we will
@@ -120,10 +118,10 @@ struct ConstantBufferPerObject {
 // buffer data to the gpu virtual address. currently we memcpy the size of our structure, which is 16 bytes here, but if we
 // were to add the padding array, we would memcpy 64 bytes if we memcpy the size of our structure, which is 50 wasted bytes
 // being copied.
-int ConstantBufferPerObjectAlignedSize = (sizeof(ConstantBufferPerObject) + 255) & ~255;
+//int ConstantBufferPerObjectAlignedSize = (sizeof(ConstantBufferPerObject) + 255) & ~255;
 
-ConstantBufferPerObject cbPerObject; // this is the constant buffer data we will send to the gpu 
-                                        // (which will be placed in the resource we created above)
+//ConstantBufferPerObject cbPerObject; // this is the constant buffer data we will send to the gpu 
+//                                        // (which will be placed in the resource we created above)
 
 ID3D12Resource* constantBufferUploadHeaps[frameBufferCount]; // this is the memory on the gpu where constant buffers for each frame will be placed
 
@@ -148,11 +146,11 @@ int numCubeIndices; // the number of indices to draw the cube
 
 ID3D12Resource* textureBuffer; // the resource heap containing our texture
 
-int LoadImageDataFromFile(BYTE** imageData, D3D12_RESOURCE_DESC& resourceDescription, LPCWSTR filename, int& bytesPerRow);
-
-DXGI_FORMAT GetDXGIFormatFromWICFormat(WICPixelFormatGUID& wicFormatGUID);
-WICPixelFormatGUID GetConvertToWICFormat(WICPixelFormatGUID& wicFormatGUID);
-int GetDXGIFormatBitsPerPixel(DXGI_FORMAT& dxgiFormat);
+//int LoadImageDataFromFile(BYTE** imageData, D3D12_RESOURCE_DESC& resourceDescription, LPCWSTR filename, int& bytesPerRow);
+//
+//DXGI_FORMAT GetDXGIFormatFromWICFormat(WICPixelFormatGUID& wicFormatGUID);
+//WICPixelFormatGUID GetConvertToWICFormat(WICPixelFormatGUID& wicFormatGUID);
+//int GetDXGIFormatBitsPerPixel(DXGI_FORMAT& dxgiFormat);
 
 ID3D12DescriptorHeap* mainDescriptorHeap;
 ID3D12Resource* textureBufferUploadHeap;

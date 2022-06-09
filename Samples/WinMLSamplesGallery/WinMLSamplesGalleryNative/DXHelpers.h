@@ -34,10 +34,6 @@ LRESULT CALLBACK WndProc(HWND hWnd,
     WPARAM wParam,
     LPARAM lParam);
 
-struct ConstantBufferPerObject {
-    XMFLOAT4X4 wvpMat;
-};
-
 // Constant buffers must be 256-byte aligned which has to do with constant reads on the GPU.
 // We are only able to read at 256 byte intervals from the start of a resource heap, so we will
 // make sure that we add padding between the two constant buffers in the heap (one for cube1 and one for cube2)
@@ -47,10 +43,6 @@ struct ConstantBufferPerObject {
 // buffer data to the gpu virtual address. currently we memcpy the size of our structure, which is 16 bytes here, but if we
 // were to add the padding array, we would memcpy 64 bytes if we memcpy the size of our structure, which is 50 wasted bytes
 // being copied.
-int ConstantBufferPerObjectAlignedSize = (sizeof(ConstantBufferPerObject) + 255) & ~255;
-
-ConstantBufferPerObject cbPerObject; // this is the constant buffer data we will send to the gpu 
-                                        // (which will be placed in the resource we created above)
 
 // initializes direct3d 12
 bool InitD3D(bool& Running,
@@ -96,8 +88,7 @@ bool InitD3D(bool& Running,
     XMFLOAT4X4& cube1RotMat,
     XMFLOAT4X4& cube1WorldMat,
     XMFLOAT4X4& cube2RotMat,
-    XMFLOAT4X4& cube2WorldMat,
-    int ConstantBufferPerObjectAlignedSize);
+    XMFLOAT4X4& cube2WorldMat);
 
 int LoadImageDataFromFile(BYTE** imageData,
     D3D12_RESOURCE_DESC& resourceDescription,

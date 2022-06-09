@@ -1,6 +1,15 @@
 #include "pch.h"
 #include "DXHelpers.h"
 
+struct ConstantBufferPerObject {
+    XMFLOAT4X4 wvpMat;
+};
+
+int ConstantBufferPerObjectAlignedSize = (sizeof(ConstantBufferPerObject) + 255) & ~255;
+
+ConstantBufferPerObject cbPerObject; // this is the constant buffer data we will send to the gpu 
+                                        // (which will be placed in the resource we created above)
+
 struct Vertex {
     Vertex(float x, float y, float z, float u, float v) : pos(x, y, z), texCoord(u, v) {}
     DirectX::XMFLOAT3 pos;
@@ -152,8 +161,7 @@ bool InitD3D(bool& Running,
     XMFLOAT4X4& cube1RotMat,
     XMFLOAT4X4& cube1WorldMat,
     XMFLOAT4X4& cube2RotMat,
-    XMFLOAT4X4& cube2WorldMat,
-    int ConstantBufferPerObjectAlignedSize)
+    XMFLOAT4X4& cube2WorldMat)
 {
     HRESULT hr;
 

@@ -756,8 +756,7 @@ int WINAPI StartHWind(HINSTANCE hInstance,    //Main windows function
         dsDescriptorHeap, depthStencilBuffer, constantBufferUploadHeaps, cbvGPUAddress,
         textureBuffer, textureBufferUploadHeap, mainDescriptorHeap, vertexBufferView,
         indexBufferView, viewport, scissorRect, cameraProjMat, cameraPosition, cameraTarget,
-        cameraUp, cameraViewMat, cube1Position, cube1RotMat, cube1WorldMat, cube2RotMat, cube2WorldMat,
-        ConstantBufferPerObjectAlignedSize))
+        cameraUp, cameraViewMat, cube1Position, cube1RotMat, cube1WorldMat, cube2RotMat, cube2WorldMat))
     {
         MessageBox(0, L"Failed to initialize direct3d 12",
             L"Error", MB_OK);

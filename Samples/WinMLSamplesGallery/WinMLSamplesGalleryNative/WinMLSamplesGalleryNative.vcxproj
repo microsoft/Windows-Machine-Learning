@@ -186,6 +186,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="datafile.bin" />
+    <None Include="dx_preprocessor.onnx">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
     <None Include="packages.config" />
     <None Include="squeezenet1.1-7-batched.onnx" />
     <None Include="squeezenet1.1-7.onnx" />

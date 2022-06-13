@@ -57,7 +57,7 @@ namespace winrt::WinMLSamplesGalleryNative::implementation
         const OrtDmlApi* ortDmlApi;
         ortApi.GetExecutionProviderApi("DML", ORT_API_VERSION, reinterpret_cast<const void**>(&ortDmlApi));
 
-        const wchar_t* preprocessingModelFilePath = L"C:/Users/numform/Windows-Machine-Learning/Samples/WinMLSamplesGallery/WinMLSamplesGalleryNative/dx_preprocessor.onnx";
+        const wchar_t* preprocessingModelFilePath = L"C:/Users/numform/Windows-Machine-Learning/Samples/WinMLSamplesGallery/WinMLSamplesGalleryNative/dx_preprocessor_efficient_net.onnx";
         Ort::Env ortEnvironment(ORT_LOGGING_LEVEL_WARNING, "DirectML_Direct3D_TensorAllocation_Test");
         Ort::SessionOptions preprocessingSessionOptions;
         preprocessingSessionOptions.SetExecutionMode(ExecutionMode::ORT_SEQUENTIAL);
@@ -67,7 +67,7 @@ namespace winrt::WinMLSamplesGalleryNative::implementation
         OrtSessionOptionsAppendExecutionProvider_DML(preprocessingSessionOptions, 0);
         preprocesingSession = Ort::Session(ortEnvironment, preprocessingModelFilePath, preprocessingSessionOptions);
 
-        const wchar_t* inferencemodelFilePath = L"C:/Users/numform/Windows-Machine-Learning/Samples/WinMLSamplesGallery/WinMLSamplesGalleryNative/squeezenet1.1-7.onnx";
+        const wchar_t* inferencemodelFilePath = L"C:/Users/numform/Windows-Machine-Learning/Samples/WinMLSamplesGallery/WinMLSamplesGalleryNative/efficientnet-lite4-11.onnx";
         Ort::SessionOptions inferenceSessionOptions;
         inferenceSessionOptions.SetExecutionMode(ExecutionMode::ORT_SEQUENTIAL);
         inferenceSessionOptions.DisableMemPattern();

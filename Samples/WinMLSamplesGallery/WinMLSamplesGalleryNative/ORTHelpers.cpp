@@ -223,10 +223,10 @@ Ort::Value CreateTensorValueUsingD3DResource(
 std::vector<float> Eval(Ort::Session& session, const Ort::Value& prev_input) {
     OutputDebugString(L"In EvalORTInference");
     // Squeezenet opset v7 https://github.com/onnx/models/blob/master/vision/classification/squeezenet/README.md
-    const wchar_t* modelFilePath = L"C:/Users/numform/Windows-Machine-Learning/Samples/WinMLSamplesGallery/WinMLSamplesGalleryNative/squeezenet1.1-7.onnx";
-    const char* modelInputTensorName = "data";
-    const char* modelOutputTensorName = "squeezenet0_flatten0_reshape0";
-    const std::array<int64_t, 4> inputShape = { 1, 3, 224, 224 };
+    const wchar_t* modelFilePath = L"C:/Users/numform/Windows-Machine-Learning/Samples/WinMLSamplesGallery/WinMLSamplesGalleryNative/efficientnet-lite4-11.onnx";
+    const char* modelInputTensorName = "images:0";
+    const char* modelOutputTensorName = "Softmax:0";
+    const std::array<int64_t, 4> inputShape = { 1, 224, 224, 3 };
     const std::array<int64_t, 2> outputShape = { 1, 1000 };
 
     const bool passTensorsAsD3DResources = true;
@@ -350,6 +350,52 @@ winrt::com_array<float> Preprocess(Ort::Session& session,
     ID3D12CommandQueue*& commandQueue)
 {
     OutputDebugString(L"In Preprocess");
+
+    long newH = 224;
+    long newW = 224;
+    long h = 512;
+    long w = 512;
+    std::array<long, 6> center_fill_dimensions = CalculateCenterFillDimensions(h, w, newH, newW);
+    long resizedW = center_fill_dimensions[0];
+    long resizedH = center_fill_dimensions[1];
+    long top = center_fill_dimensions[2];
+    long bottom = center_fill_dimensions[3];
+    long left = center_fill_dimensions[4];
+    long right = center_fill_dimensions[5];
+    winrt::hstring interpolationMode = L"nearest";
+    long c = 3;
+    const std::array<int64_t, 4> preprocessInputShape = { 1, 512, 512, 4 };
+    const std::array<int64_t, 4> preprocessOutputShape = { 1, 224, 224, 3 };
+
+    auto resize_op = LearningModelOperator(L"Resize")
+        .SetInput(L"X", L"Input")
+        .SetConstant(L"roi", TensorFloat::CreateFromIterable({ 8 }, { 0, 0, 0, 0, 1, 1, 1, 1 }))
+        .SetConstant(L"scales", TensorFloat::CreateFromIterable({ 4 }, { 1, (float)(1 + resizedH) / (float)h, (float)(1 + resizedH) / (float)h, 1 }))
+        .SetAttribute(L"mode", TensorString::CreateFromArray({}, { interpolationMode }))
+        .SetOutput(L"Y", L"ResizeOutput");
+
+    auto slice_op = LearningModelOperator(L"Slice")
+        .SetInput(L"data", L"ResizeOutput")
+        .SetConstant(L"starts", TensorInt64Bit::CreateFromIterable({ 4 }, { 0, top, left, 0 }))
+        .SetConstant(L"ends", TensorInt64Bit::CreateFromIterable({ 4 }, { LLONG_MAX, bottom, right, 3 }))
+        .SetOutput(L"output", L"Output");
+
+    //auto dimension_transpose = LearningModelOperator(L"Transpose")
+    //    .SetInput(L"data", L"SliceOutput")
+    //    .SetAttribute(L"perm", TensorInt64Bit::CreateFromArray({ 4 }, { INT64(0), INT64(3), INT64(1), INT64(2)}))
+    //    .SetOutput(L"transposed", L"Output");
+
+    //auto preprocessingModelBuilder =
+    //    LearningModelBuilder::Create(12)
+    //    .Inputs().Add(LearningModelBuilder::CreateTensorFeatureDescriptor(L"Input", TensorKind::Float, preprocessInputShape))
+    //    .Outputs().Add(LearningModelBuilder::CreateTensorFeatureDescriptor(L"Output", TensorKind::Float, preprocessOutputShape))
+    //    .Operators().Add(resize_op)
+    //    .Operators().Add(slice_op);
+    //    //.Operators().Add(dimension_transpose);
+    //auto preprocessingModel = preprocessingModelBuilder.CreateModel();
+
+    //preprocessingModelBuilder.Save(L"C:/Users/numform/Windows-Machine-Learning/Samples/WinMLSamplesGallery/WinMLSamplesGalleryNative/dx_preprocessor_efficient_net.onnx");
+
     // Squeezenet opset v7 https://github.com/onnx/models/blob/master/vision/classification/squeezenet/README.md
     //const wchar_t* modelFilePath = L"./squeezenet1.1-7.onnx";
     const wchar_t* modelFilePath = L"C:/Users/numform/Windows-Machine-Learning/Samples/WinMLSamplesGallery/WinMLSamplesGalleryNative/squeezenet1.1-7.onnx";
@@ -358,8 +404,8 @@ winrt::com_array<float> Preprocess(Ort::Session& session,
     const char* preprocessModelInputTensorName = "Input";
     const char* preprocessModelOutputTensorName = "Output";
     // Might have to change the 3's below to 4 for rgba
-    const std::array<int64_t, 4> preprocessInputShape = { 1, 512, 512, 4 };
-    const std::array<int64_t, 4> preprocessOutputShape = { 1, 3, 224, 224 };
+    //const std::array<int64_t, 4> preprocessInputShape = { 1, 512, 512, 4 };
+    //const std::array<int64_t, 4> preprocessOutputShape = { 1, 3, 224, 224 };
 
     HRESULT hr;
     ID3D12Resource* new_buffer;
@@ -413,19 +459,19 @@ winrt::com_array<float> Preprocess(Ort::Session& session,
 
     auto new_buffer_desc = new_buffer->GetDesc();
 
-    long newH = 224;
-    long newW = 224;
-    long h = 512;
-    long w = 512;
-    std::array<long, 6> center_fill_dimensions = CalculateCenterFillDimensions(h, w, newH, newW);
-    long resizedW = center_fill_dimensions[0];
-    long resizedH = center_fill_dimensions[1];
-    long top = center_fill_dimensions[2];
-    long bottom = center_fill_dimensions[3];
-    long left = center_fill_dimensions[4];
-    long right = center_fill_dimensions[5];
-    winrt::hstring interpolationMode = L"nearest";
-    long c = 3;
+    //long newH = 224;
+    //long newW = 224;
+    //long h = 512;
+    //long w = 512;
+    //std::array<long, 6> center_fill_dimensions = CalculateCenterFillDimensions(h, w, newH, newW);
+    //long resizedW = center_fill_dimensions[0];
+    //long resizedH = center_fill_dimensions[1];
+    //long top = center_fill_dimensions[2];
+    //long bottom = center_fill_dimensions[3];
+    //long left = center_fill_dimensions[4];
+    //long right = center_fill_dimensions[5];
+    //winrt::hstring interpolationMode = L"nearest";
+    //long c = 3;
 
     const wchar_t* preprocessingModelFilePath = L"C:/Users/numform/Windows-Machine-Learning/Samples/WinMLSamplesGallery/WinMLSamplesGalleryNative/dx_preprocessor.onnx";
 

@@ -29,6 +29,7 @@
 #include "d3dx12.h"
 #include <string>
 #include <wincodec.h>
+#include <ScreenGrab.h>
 
 using namespace winrt::Microsoft::AI::MachineLearning;
 using namespace Microsoft::WRL;
@@ -42,7 +43,8 @@ winrt::com_array<float> Preprocess(Ort::Session& session,
     IDXGISwapChain3*& swapChain,
     int& frameIndex,
     ID3D12CommandAllocator* commandAllocator[],
-    ID3D12GraphicsCommandList*& commandList);
+    ID3D12GraphicsCommandList*& commandList,
+    ID3D12CommandQueue*& commandQueue);
 
 Ort::Value CreateTensorValueUsingD3DResource(
     ID3D12Device* d3d12Device,

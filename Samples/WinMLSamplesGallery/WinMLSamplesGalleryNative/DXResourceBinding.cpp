@@ -94,7 +94,8 @@ namespace winrt::WinMLSamplesGalleryNative::implementation
 
     winrt::com_array<float> DXResourceBinding::EvalORT() {
         return Preprocess(*preprocesingSession, *inferenceSession, device,
-            Running, swapChain, frameIndex, commandAllocator, commandList);
+            Running, swapChain, frameIndex, commandAllocator, commandList,
+            commandQueue);
     }
 
     void DXResourceBinding::CloseWindow() {

@@ -2,6 +2,8 @@
 #include "ORTHelpers.h"
 #undef min
 
+using namespace DirectX;
+
 using TensorInt64Bit = winrt::Microsoft::AI::MachineLearning::TensorInt64Bit;
 using TensorKind = winrt::Microsoft::AI::MachineLearning::TensorKind;
 using LearningModelBuilder = winrt::Microsoft::AI::MachineLearning::Experimental::LearningModelBuilder;
@@ -344,7 +346,8 @@ winrt::com_array<float> Preprocess(Ort::Session& session,
     IDXGISwapChain3*& swapChain,
     int& frameIndex,
     ID3D12CommandAllocator* commandAllocator[],
-    ID3D12GraphicsCommandList*& commandList)
+    ID3D12GraphicsCommandList*& commandList,
+    ID3D12CommandQueue*& commandQueue)
 {
     OutputDebugString(L"In Preprocess");
     // Squeezenet opset v7 https://github.com/onnx/models/blob/master/vision/classification/squeezenet/README.md
@@ -398,6 +401,10 @@ winrt::com_array<float> Preprocess(Ort::Session& session,
         OutputDebugString(L"Failed to get buffer");
         //return false;
     }
+
+    SaveWICTextureToFile(commandQueue, current_buffer,
+        GUID_ContainerFormatJpeg, L"C:/Users/numform/Windows-Machine-Learning/Samples/WinMLSamplesGallery/WinMLSamplesGalleryNative/current_cube_image.jpg",
+        D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_PRESENT);
 
     const auto barrier = CD3DX12_RESOURCE_BARRIER::Transition(current_buffer, D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_COPY_SOURCE);
 

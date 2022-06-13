@@ -233,6 +233,7 @@
     <Import Project="..\packages\Microsoft.AI.DirectML.1.8.0\build\Microsoft.AI.DirectML.targets" Condition="Exists('..\packages\Microsoft.AI.DirectML.1.8.0\build\Microsoft.AI.DirectML.targets')" />
     <Import Project="..\packages\Microsoft.AI.MachineLearning.1.11.0\build\native\Microsoft.AI.MachineLearning.targets" Condition="Exists('..\packages\Microsoft.AI.MachineLearning.1.11.0\build\native\Microsoft.AI.MachineLearning.targets')" />
     <Import Project="..\packages\Microsoft.ML.OnnxRuntime.DirectML.1.11.0\build\native\Microsoft.ML.OnnxRuntime.DirectML.targets" Condition="Exists('..\packages\Microsoft.ML.OnnxRuntime.DirectML.1.11.0\build\native\Microsoft.ML.OnnxRuntime.DirectML.targets')" />
+    <Import Project="..\packages\directxtk12_desktop_2019.2022.5.10.1\build\native\directxtk12_desktop_2019.targets" Condition="Exists('..\packages\directxtk12_desktop_2019.2022.5.10.1\build\native\directxtk12_desktop_2019.targets')" />
   </ImportGroup>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
@@ -246,6 +247,7 @@
     <Error Condition="!Exists('..\packages\Microsoft.AI.MachineLearning.1.11.0\build\native\Microsoft.AI.MachineLearning.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.AI.MachineLearning.1.11.0\build\native\Microsoft.AI.MachineLearning.targets'))" />
     <Error Condition="!Exists('..\packages\Microsoft.ML.OnnxRuntime.DirectML.1.11.0\build\native\Microsoft.ML.OnnxRuntime.DirectML.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.ML.OnnxRuntime.DirectML.1.11.0\build\native\Microsoft.ML.OnnxRuntime.DirectML.props'))" />
     <Error Condition="!Exists('..\packages\Microsoft.ML.OnnxRuntime.DirectML.1.11.0\build\native\Microsoft.ML.OnnxRuntime.DirectML.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.ML.OnnxRuntime.DirectML.1.11.0\build\native\Microsoft.ML.OnnxRuntime.DirectML.targets'))" />
+    <Error Condition="!Exists('..\packages\directxtk12_desktop_2019.2022.5.10.1\build\native\directxtk12_desktop_2019.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\directxtk12_desktop_2019.2022.5.10.1\build\native\directxtk12_desktop_2019.targets'))" />
   </Target>
   <Target Name="CopyNeutral" AfterTargets="Build">
     <Copy SourceFiles="$(OutDir)\WinMLSamplesGalleryNative.winmd" DestinationFolder="$(SolutionDir)$(MSBuildProjectName)\bin\neutral\WinMLSamplesGalleryNative.winmd" />

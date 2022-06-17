@@ -410,8 +410,8 @@ static DWORD FormatDataForCPUFallback(_In_ const PEVENT_RECORD EventRecord,
         }
         if (wcscmp(executionProvider.c_str(), L"CPUExecutionProvider") == 0 && !operatorName.empty())
         {
-            bool logCPUFallback = (int)(EventRecord->UserContext) & 0x1;
-            bool useGPU = (int)(EventRecord->UserContext) & 0x2; 
+            bool logCPUFallback = (int64_t)(EventRecord->UserContext) & 0x1;
+            bool useGPU = (int64_t)(EventRecord->UserContext) & 0x2; 
             if (useGPU && logCPUFallback)
             {
                 wprintf(L"WARNING: CPU fallback detected for operator %s(%s), duration: %s\n", operatorName.c_str(),
@@ -544,7 +544,7 @@ void EventTraceHelper::Start()
     loggerInfo.EventRecordCallback = EventRecordCallback;
 
     // set some flags that the record processing can use
-    int icontext = (m_commandArgs.UseGPU() << 1) | (m_commandArgs.IsLogCPUFallbackEnabled());
+    int64_t icontext = ((int64_t)m_commandArgs.UseGPU() << 1) | ((int64_t)m_commandArgs.IsLogCPUFallbackEnabled());
     loggerInfo.Context = (void*)(icontext);
 
     // LoggerName is the sessionName that we had provided in StartTrace

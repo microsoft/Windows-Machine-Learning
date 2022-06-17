@@ -543,7 +543,13 @@ void EventTraceHelper::Start()
     // provide a callback whenever we get an event record
     loggerInfo.EventRecordCallback = EventRecordCallback;
 
-    // set some flags that the record processing can use
+    // Set some flags that the record processing can use.
+    // The "Context" member is a void*, which can be used to point to any data, but instead 
+    // of using it as a pointer and having to manage that object, we use the value 
+    // of the pointer itself as the information. So the 0/1 value of the second last bit
+    // represents the "UseGPU()" flag, and the last bit represents the "IsLogCPUFallbackEnabled()"
+    // flag. We use the Context field later on when the event is handled and we no longer
+    // have access to the m_commandArgs object. 
     int64_t icontext = ((int64_t)m_commandArgs.UseGPU() << 1) | ((int64_t)m_commandArgs.IsLogCPUFallbackEnabled());
     loggerInfo.Context = (void*)(icontext);
 

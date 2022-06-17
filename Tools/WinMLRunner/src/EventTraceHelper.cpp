@@ -408,11 +408,21 @@ static DWORD FormatDataForCPUFallback(_In_ const PEVENT_RECORD EventRecord,
                 return status;
             }
         }
-        if (wcscmp(executionProvider.c_str(), L"CPUExecutionProvider") == 0 && 
-            !operatorName.empty())
+        if (wcscmp(executionProvider.c_str(), L"CPUExecutionProvider") == 0 && !operatorName.empty())
         {
-            wprintf(L"WARNING: CPU fallback detected for operator %s(%s), duration: %s\n", operatorName.c_str(),
-                    operatorType.c_str(), duration.c_str());
+            bool logCPUFallback = (int)(EventRecord->UserContext) & 0x1;
+            bool useGPU = (int)(EventRecord->UserContext) & 0x2; 
+            if (useGPU && logCPUFallback)
+            {
+                wprintf(L"WARNING: CPU fallback detected for operator %s(%s), duration: %s\n", operatorName.c_str(),
+                        operatorType.c_str(), duration.c_str());
+            }
+            static bool showOneWarningMessage = useGPU && !logCPUFallback;
+            if (showOneWarningMessage)
+            {
+                wprintf(L"WARNING: CPU fallback detected. Run again with -logCPUFallback to see which operators ran on the CPU.");
+                showOneWarningMessage = false;
+            }
         }
     }
 
@@ -496,11 +506,6 @@ void EventTraceHelper::ProcessEventTrace(PTRACEHANDLE traceHandle)
 
 void EventTraceHelper::Start()
 {
-    if (DontLog())
-    {
-        return;
-    }
-
     // Please refer to this link to understand why buffersize was setup in such a seemingly random manner:
     // https://docs.microsoft.com/en-us/windows/win32/api/evntrace/ns-evntrace-event_trace_propertiesbuffersize
     int bufferSize = sizeof(EVENT_TRACE_PROPERTIES) + (sizeof(LOGSESSION_NAME) + 1) * sizeof(wchar_t);
@@ -537,10 +542,13 @@ void EventTraceHelper::Start()
 
     // provide a callback whenever we get an event record
     loggerInfo.EventRecordCallback = EventRecordCallback;
-    loggerInfo.Context = nullptr;
+
+    // set some flags that the record processing can use
+    int icontext = (m_commandArgs.UseGPU() << 1) | (m_commandArgs.IsLogCPUFallbackEnabled());
+    loggerInfo.Context = (void*)(icontext);
+
     // LoggerName is the sessionName that we had provided in StartTrace
     // For consuming events from ETL file we will provide path to ETL file.
-
     loggerInfo.LoggerName = const_cast<LPWSTR>(LOGSESSION_NAME);
 
     m_traceHandle = OpenTrace(&loggerInfo);
@@ -556,10 +564,6 @@ void EventTraceHelper::Start()
 
 void EventTraceHelper::Stop()
 {
-    if (DontLog())
-    {
-        return;
-    }
     auto status = CloseTrace(m_traceHandle);
     status = ControlTrace(m_sessionHandle, nullptr, m_sessionProperties, EVENT_TRACE_CONTROL_STOP);
     status = EnableTraceEx2(m_sessionHandle, &WINML_PROVIDER_GUID, EVENT_CONTROL_CODE_DISABLE_PROVIDER, 0, 0, 0, 0, nullptr);

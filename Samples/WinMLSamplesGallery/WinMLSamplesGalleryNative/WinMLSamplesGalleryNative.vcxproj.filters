@@ -18,10 +18,13 @@
     <ClCompile Include="SanityApp.cpp">
       <Filter>DXResourceBinding</Filter>
     </ClCompile>
-    <ClCompile Include="DXHelpers.cpp">
+    <ClCompile Include="ORTHelpers.cpp">
       <Filter>DXResourceBinding</Filter>
     </ClCompile>
-    <ClCompile Include="ORTHelpers.cpp">
+    <ClCompile Include="D3D12Quad.cpp">
+      <Filter>DXResourceBinding</Filter>
+    </ClCompile>
+    <ClCompile Include="Win32Application.cpp">
       <Filter>DXResourceBinding</Filter>
     </ClCompile>
   </ItemGroup>
@@ -51,10 +54,13 @@
     <ClInclude Include="stdafx.h">
       <Filter>DXResourceBinding</Filter>
     </ClInclude>
-    <ClInclude Include="DXHelpers.h">
+    <ClInclude Include="ORTHelpers.h">
       <Filter>DXResourceBinding</Filter>
     </ClInclude>
-    <ClInclude Include="ORTHelpers.h">
+    <ClInclude Include="D3D12Quad.h">
+      <Filter>DXResourceBinding</Filter>
+    </ClInclude>
+    <ClInclude Include="Win32Application.h">
       <Filter>DXResourceBinding</Filter>
     </ClInclude>
   </ItemGroup>
@@ -110,5 +116,16 @@
     <Image Include="cat.jpg">
       <Filter>DXResourceBinding</Filter>
     </Image>
+    <Image Include="fish.png">
+      <Filter>DXResourceBinding</Filter>
+    </Image>
+    <Image Include="hummingbird.jpg">
+      <Filter>DXResourceBinding</Filter>
+    </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="shaders.hlsl">
+      <Filter>DXResourceBinding</Filter>
+    </CustomBuild>
   </ItemGroup>
 </Project>

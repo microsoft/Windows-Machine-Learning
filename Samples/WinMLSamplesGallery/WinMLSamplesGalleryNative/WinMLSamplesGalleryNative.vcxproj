@@ -132,6 +132,7 @@
       <LanguageStandard Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">stdcpp20</LanguageStandard>
       <ConformanceMode Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ConformanceMode>
       <LanguageStandard Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">stdcpp20</LanguageStandard>
+      <LanguageStandard_C Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Default</LanguageStandard_C>
     </ClCompile>
     <ResourceCompile>
       <AdditionalIncludeDirectories>$(MSBuildThisFileDirectory)../WinMLSamplesGallery/Models/;$(MSBuildThisFileDirectory)../../build/native/include/;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -157,8 +158,8 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="AdapterList.h" />
+    <ClInclude Include="D3D12Quad.h" />
     <ClInclude Include="d3dx12.h" />
-    <ClInclude Include="DXHelpers.h" />
     <ClInclude Include="DXResourceBinding.h" />
     <ClInclude Include="EncryptedModels.h" />
     <ClInclude Include="OpenCVImage.h" />
@@ -167,10 +168,11 @@
     <ClInclude Include="RandomAccessStream.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="WeakBuffer.h" />
+    <ClInclude Include="Win32Application.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AdapterList.cpp" />
-    <ClCompile Include="DXHelpers.cpp" />
+    <ClCompile Include="D3D12Quad.cpp" />
     <ClCompile Include="DXResourceBinding.cpp" />
     <ClCompile Include="EncryptedModels.cpp" />
     <ClCompile Include="OpenCVImage.cpp" />
@@ -180,6 +182,7 @@
     </ClCompile>
     <ClCompile Include="$(GeneratedFilesDir)module.g.cpp" />
     <ClCompile Include="SanityApp.cpp" />
+    <ClCompile Include="Win32Application.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Midl Include="WinMLSamplesGalleryNative.idl" />
@@ -212,6 +215,10 @@
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">Pixel</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
     </FxCompile>
+    <CustomBuild Include="shaders.hlsl">
+      <DeploymentContent>true</DeploymentContent>
+      <FileType>Document</FileType>
+    </CustomBuild>
     <FxCompile Include="VertexShader.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">Vertex</ShaderType>
@@ -224,6 +231,12 @@
   </ItemGroup>
   <ItemGroup>
     <Image Include="cat.jpg">
+      <DeploymentContent>true</DeploymentContent>
+    </Image>
+    <Image Include="fish.png">
+      <DeploymentContent>true</DeploymentContent>
+    </Image>
+    <Image Include="hummingbird.jpg">
       <DeploymentContent>true</DeploymentContent>
     </Image>
   </ItemGroup>

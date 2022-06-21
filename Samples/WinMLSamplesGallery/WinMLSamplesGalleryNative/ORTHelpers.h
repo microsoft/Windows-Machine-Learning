@@ -38,13 +38,13 @@ std::vector<float> Eval(Ort::Session& session, const Ort::Value& prev_input);
 
 winrt::com_array<float> Preprocess(Ort::Session& session,
     Ort::Session& inferenceSession,
-    ID3D12Device*& device,
+    ID3D12Device* device,
     bool& Running,
-    IDXGISwapChain3*& swapChain,
-    int& frameIndex,
-    ID3D12CommandAllocator* commandAllocator[],
-    ID3D12GraphicsCommandList*& commandList,
-    ID3D12CommandQueue*& commandQueue);
+    IDXGISwapChain3* swapChain,
+    UINT frameIndex,
+    ID3D12CommandAllocator* commandAllocator,
+    ID3D12GraphicsCommandList* commandList,
+    ID3D12CommandQueue* commandQueue);
 
 Ort::Value CreateTensorValueUsingD3DResource(
     ID3D12Device* d3d12Device,

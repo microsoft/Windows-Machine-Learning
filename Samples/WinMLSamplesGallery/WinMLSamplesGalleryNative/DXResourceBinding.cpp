@@ -37,6 +37,7 @@ Microsoft::WRL::ComPtr<ID3D12Resource> d3dResource;
 static std::optional<Ort::Session> preprocesingSession;
 static std::optional<Ort::Session> inferenceSession;
 static bool closeWindow = false;
+D3D12Quad sample(800, 600, L"D3D12 Quad");
 
 static HMODULE GetCurrentModule()
 { // NB: XP+ solution!
@@ -54,28 +55,28 @@ namespace winrt::WinMLSamplesGalleryNative::implementation
 	winrt::com_array<float> DXResourceBinding::LaunchWindow() {
         OutputDebugString(L"In Launch Window\n");
 
-        //OrtApi const& ortApi = Ort::GetApi(); // Uses ORT_API_VERSION
-        //const OrtDmlApi* ortDmlApi;
-        //ortApi.GetExecutionProviderApi("DML", ORT_API_VERSION, reinterpret_cast<const void**>(&ortDmlApi));
+        OrtApi const& ortApi = Ort::GetApi(); // Uses ORT_API_VERSION
+        const OrtDmlApi* ortDmlApi;
+        ortApi.GetExecutionProviderApi("DML", ORT_API_VERSION, reinterpret_cast<const void**>(&ortDmlApi));
 
-        //const wchar_t* preprocessingModelFilePath = L"C:/Users/numform/Windows-Machine-Learning/Samples/WinMLSamplesGallery/WinMLSamplesGalleryNative/dx_preprocessor_efficient_net.onnx";
-        //Ort::Env ortEnvironment(ORT_LOGGING_LEVEL_WARNING, "DirectML_Direct3D_TensorAllocation_Test");
-        //Ort::SessionOptions preprocessingSessionOptions;
-        //preprocessingSessionOptions.SetExecutionMode(ExecutionMode::ORT_SEQUENTIAL);
-        //preprocessingSessionOptions.DisableMemPattern();
-        //preprocessingSessionOptions.SetGraphOptimizationLevel(GraphOptimizationLevel::ORT_ENABLE_ALL);
-        //ortApi.AddFreeDimensionOverrideByName(preprocessingSessionOptions, "batch_size", 1);
-        //OrtSessionOptionsAppendExecutionProvider_DML(preprocessingSessionOptions, 0);
-        //preprocesingSession = Ort::Session(ortEnvironment, preprocessingModelFilePath, preprocessingSessionOptions);
+        const wchar_t* preprocessingModelFilePath = L"C:/Users/numform/Windows-Machine-Learning/Samples/WinMLSamplesGallery/WinMLSamplesGalleryNative/dx_preprocessor_efficient_net.onnx";
+        Ort::Env ortEnvironment(ORT_LOGGING_LEVEL_WARNING, "DirectML_Direct3D_TensorAllocation_Test");
+        Ort::SessionOptions preprocessingSessionOptions;
+        preprocessingSessionOptions.SetExecutionMode(ExecutionMode::ORT_SEQUENTIAL);
+        preprocessingSessionOptions.DisableMemPattern();
+        preprocessingSessionOptions.SetGraphOptimizationLevel(GraphOptimizationLevel::ORT_ENABLE_ALL);
+        ortApi.AddFreeDimensionOverrideByName(preprocessingSessionOptions, "batch_size", 1);
+        OrtSessionOptionsAppendExecutionProvider_DML(preprocessingSessionOptions, 0);
+        preprocesingSession = Ort::Session(ortEnvironment, preprocessingModelFilePath, preprocessingSessionOptions);
 
-        //const wchar_t* inferencemodelFilePath = L"C:/Users/numform/Windows-Machine-Learning/Samples/WinMLSamplesGallery/WinMLSamplesGalleryNative/efficientnet-lite4-11.onnx";
-        //Ort::SessionOptions inferenceSessionOptions;
-        //inferenceSessionOptions.SetExecutionMode(ExecutionMode::ORT_SEQUENTIAL);
-        //inferenceSessionOptions.DisableMemPattern();
-        //inferenceSessionOptions.SetGraphOptimizationLevel(GraphOptimizationLevel::ORT_ENABLE_ALL);
-        //ortApi.AddFreeDimensionOverrideByName(inferenceSessionOptions, "batch_size", 1);
-        //OrtSessionOptionsAppendExecutionProvider_DML(inferenceSessionOptions, 0);
-        //inferenceSession = Ort::Session(ortEnvironment, inferencemodelFilePath, inferenceSessionOptions);
+        const wchar_t* inferencemodelFilePath = L"C:/Users/numform/Windows-Machine-Learning/Samples/WinMLSamplesGallery/WinMLSamplesGalleryNative/efficientnet-lite4-11.onnx";
+        Ort::SessionOptions inferenceSessionOptions;
+        inferenceSessionOptions.SetExecutionMode(ExecutionMode::ORT_SEQUENTIAL);
+        inferenceSessionOptions.DisableMemPattern();
+        inferenceSessionOptions.SetGraphOptimizationLevel(GraphOptimizationLevel::ORT_ENABLE_ALL);
+        ortApi.AddFreeDimensionOverrideByName(inferenceSessionOptions, "batch_size", 1);
+        OrtSessionOptionsAppendExecutionProvider_DML(inferenceSessionOptions, 0);
+        inferenceSession = Ort::Session(ortEnvironment, inferencemodelFilePath, inferenceSessionOptions);
         
         
         HINSTANCE hInstance = GetCurrentModule();
@@ -83,8 +84,18 @@ namespace winrt::WinMLSamplesGalleryNative::implementation
         //hwnd_th.detach();
         //Sleep(2000);
 
-        D3D12Quad sample(1280, 720, L"D3D12 Quad");
-        Win32Application::Run(&sample, hInstance, 10);
+        std::thread d3d_th(Win32Application::Run, &sample, hInstance, 10);
+
+        while (!sample.is_initialized) {
+            OutputDebugString(L"Not done\n");
+
+        }
+
+        d3d_th.detach();
+        OutputDebugString(L"Done. Detached\n");
+
+
+        //Win32Application::Run(&sample, hInstance, 10);
 
         //auto results = Preproces(preprocesingSession, inferenceSession);
 
@@ -98,10 +109,11 @@ namespace winrt::WinMLSamplesGalleryNative::implementation
 	}
 
     winrt::com_array<float> DXResourceBinding::EvalORT() {
-        //return Preprocess(*preprocesingSession, *inferenceSession, device,
-        //    Running, swapChain, frameIndex, commandAllocator, commandList,
-        //    commandQueue);
-        return winrt::com_array<float>(1000);
+        D3D12Quad::D3DInfo info = sample.GetD3DInfo();
+        bool running = true;
+        return Preprocess(*preprocesingSession, *inferenceSession, info.device.Get(),
+            running, info.swapChain.Get(), info.frameIndex, info.commandAllocator.Get(), info.commandList.Get(),
+            info.commandQueue.Get());
     }
 
     void DXResourceBinding::CloseWindow() {

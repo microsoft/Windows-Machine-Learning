@@ -30,6 +30,21 @@ public:
     UINT GetHeight() const { return m_height; }
     const WCHAR* GetTitle() const { return m_title.c_str(); }
 
+    struct D3DInfo
+    {
+        ComPtr<ID3D12Device> device;
+        ComPtr<IDXGISwapChain3> swapChain;
+        UINT frameIndex;
+        ComPtr<ID3D12CommandAllocator> commandAllocator;
+        ComPtr<ID3D12GraphicsCommandList> commandList;
+        ComPtr<ID3D12CommandQueue> commandQueue;
+    };
+
+    D3DInfo GetD3DInfo();
+
+    bool is_initialized = false;
+
+
 private:
     static const UINT FrameCount = 2;
 

@@ -43,6 +43,7 @@ void D3D12Quad::OnInit()
     updateCounter = 0;
     LoadPipeline();
     LoadAssets();
+    is_initialized = true;
 }
 
 // Load the rendering pipeline dependencies.
@@ -50,20 +51,20 @@ void D3D12Quad::LoadPipeline()
 {
     UINT dxgiFactoryFlags = 0;
 
-#if defined(_DEBUG)
-    // Enable the debug layer (requires the Graphics Tools "optional feature").
-    // NOTE: Enabling the debug layer after device creation will invalidate the active device.
-    {
-        ComPtr<ID3D12Debug> debugController;
-        if (SUCCEEDED(D3D12GetDebugInterface(IID_PPV_ARGS(&debugController))))
-        {
-            debugController->EnableDebugLayer();
-
-            // Enable additional debug layers.
-            dxgiFactoryFlags |= DXGI_CREATE_FACTORY_DEBUG;
-        }
-    }
-#endif
+//#if defined(_DEBUG)
+//    // Enable the debug layer (requires the Graphics Tools "optional feature").
+//    // NOTE: Enabling the debug layer after device creation will invalidate the active device.
+//    {
+//        ComPtr<ID3D12Debug> debugController;
+//        if (SUCCEEDED(D3D12GetDebugInterface(IID_PPV_ARGS(&debugController))))
+//        {
+//            debugController->EnableDebugLayer();
+//
+//            // Enable additional debug layers.
+//            dxgiFactoryFlags |= DXGI_CREATE_FACTORY_DEBUG;
+//        }
+//    }
+//#endif
 
     ComPtr<IDXGIFactory4> factory;
     ThrowIfFailed(CreateDXGIFactory2(dxgiFactoryFlags, IID_PPV_ARGS(&factory)));
@@ -386,8 +387,6 @@ void D3D12Quad::Reset() {
 // Update frame-based values.
 void D3D12Quad::OnUpdate()
 {
-    OutputDebugString(L"In OnUpdate\n");
-
     // Change the image every 75 frame updates
     updateCounter++;
     justReset = false;
@@ -453,7 +452,6 @@ void D3D12Quad::PopulateCommandList()
     m_commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
     m_commandList->IASetVertexBuffers(0, 1, &m_vertexBufferView);
     m_commandList->DrawInstanced(4, 1, 0, 0);
-    OutputDebugString(L"Should haved drawn\n");
 
     // Indicate that the back buffer will now be used to present.
     auto render_to_present = CD3DX12_RESOURCE_BARRIER::Transition(m_renderTargets[m_frameIndex].Get(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
@@ -776,4 +774,16 @@ void D3D12Quad::GetHardwareAdapter(
     }
 
     *ppAdapter = adapter.Detach();
+}
+
+D3D12Quad::D3DInfo D3D12Quad::GetD3DInfo() {
+    D3DInfo info = {
+        m_device,
+        m_swapChain,
+        m_frameIndex,
+        m_commandAllocator,
+        m_commandList,
+        m_commandQueue
+    };
+    return info;
 }

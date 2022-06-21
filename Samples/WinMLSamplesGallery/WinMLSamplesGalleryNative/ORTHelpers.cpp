@@ -341,14 +341,27 @@ std::vector<float> Eval(Ort::Session& session, const Ort::Value& prev_input) {
 
 winrt::com_array<float> Preprocess(Ort::Session& session,
     Ort::Session& inferenceSession,
-    ID3D12Device*& device,
+    ID3D12Device* device,
     bool& Running,
-    IDXGISwapChain3*& swapChain,
-    int& frameIndex,
-    ID3D12CommandAllocator* commandAllocator[],
-    ID3D12GraphicsCommandList*& commandList,
-    ID3D12CommandQueue*& commandQueue)
+    IDXGISwapChain3* swapChain,
+    UINT frameIndex,
+    ID3D12CommandAllocator* commandAllocator,
+    ID3D12GraphicsCommandList* commandList,
+    ID3D12CommandQueue* commandQueue)
 {
+    //ComPtr<ID3D12Device> d3d12Device;
+    ComPtr<ID3D12CommandAllocator> cmdAlloc;
+    ComPtr<ID3D12CommandQueue> cmdQueue;
+    D3D12_COMMAND_QUEUE_DESC queueDesc = {};
+    queueDesc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;
+    queueDesc.Type = D3D12_COMMAND_LIST_TYPE_DIRECT;
+    ComPtr<ID3D12GraphicsCommandList> cmdList;
+    //THROW_IF_FAILED(D3D12CreateDevice(nullptr, D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&d3d12Device)));
+    THROW_IF_FAILED(device->CreateCommandQueue(&queueDesc, IID_PPV_ARGS(&cmdQueue)));
+    THROW_IF_FAILED(device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&cmdAlloc)));
+    THROW_IF_FAILED(device->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, cmdAlloc.Get(), nullptr, IID_PPV_ARGS(&cmdList)));
+
+
     OutputDebugString(L"In Preprocess");
 
     long newH = 224;
@@ -407,6 +420,7 @@ winrt::com_array<float> Preprocess(Ort::Session& session,
     //const std::array<int64_t, 4> preprocessInputShape = { 1, 512, 512, 4 };
     //const std::array<int64_t, 4> preprocessOutputShape = { 1, 3, 224, 224 };
 
+
     HRESULT hr;
     ID3D12Resource* new_buffer;
     ID3D12Resource* current_buffer;
@@ -448,16 +462,25 @@ winrt::com_array<float> Preprocess(Ort::Session& session,
         //return false;
     }
 
-    SaveWICTextureToFile(commandQueue, current_buffer,
+    SaveWICTextureToFile(cmdQueue.Get(), current_buffer,
         GUID_ContainerFormatJpeg, L"C:/Users/numform/Windows-Machine-Learning/Samples/WinMLSamplesGallery/WinMLSamplesGalleryNative/current_cube_image.jpg",
         D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_PRESENT);
 
     const auto barrier = CD3DX12_RESOURCE_BARRIER::Transition(current_buffer, D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_COPY_SOURCE);
+    cmdList->ResourceBarrier(1, &barrier);
 
-    commandAllocator[frameIndex]->Reset();
-    commandList->CopyResource(new_buffer, current_buffer);
+    //commandAllocator[frameIndex]->Reset();
+    //cmdAlloc->Reset();
+    //might need to reset
 
-    auto new_buffer_desc = new_buffer->GetDesc();
+    cmdList->CopyResource(new_buffer, current_buffer);
+    //cmdList->CopyBufferRegion(new_buffer, 0, current_buffer, 0, resourceDesc.Width);
+
+    auto new_hr = cmdList->Close();
+    ID3D12CommandList* ppCommandLists[] = { cmdList.Get() };
+    cmdQueue->ExecuteCommandLists(_countof(ppCommandLists), ppCommandLists);
+
+    //auto new_buffer_desc = new_buffer->GetDesc();
 
     //long newH = 224;
     //long newW = 224;
@@ -490,9 +513,9 @@ winrt::com_array<float> Preprocess(Ort::Session& session,
 
     try
     {
-        ComPtr<ID3D12Device> d3d12Device;
-        THROW_IF_FAILED(D3D12CreateDevice(nullptr, D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&d3d12Device)));
-        QueryPerformanceCounter(&d3dDeviceCreationTime);
+        //ComPtr<ID3D12Device> d3d12Device;
+        //THROW_IF_FAILED(D3D12CreateDevice(nullptr, D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&d3d12Device)));
+        //QueryPerformanceCounter(&d3dDeviceCreationTime);
 
         OrtApi const& ortApi = Ort::GetApi(); // Uses ORT_API_VERSION
         const OrtDmlApi* ortDmlApi;
@@ -520,7 +543,7 @@ winrt::com_array<float> Preprocess(Ort::Session& session,
         ComPtr<IUnknown> outputTensorEpWrapper;
 
         outputTensor = CreateTensorValueUsingD3DResource(
-            d3d12Device.Get(),
+            device,
             *ortDmlApi,
             memoryInformation,
             preprocessOutputShape,

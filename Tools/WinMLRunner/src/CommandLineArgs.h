@@ -43,6 +43,7 @@ public:
     bool IsOutputPerf() const { return m_perfOutput; }
     bool IsSaveTensor() const { return m_saveTensor; }
     bool IsTimeLimitIterations() const { return m_timeLimitIterations; }
+    bool IsLogCPUFallbackEnabled() const { return m_logCPUFallback; }
     BitmapInterpolationMode AutoScaleInterpMode() const { return m_autoScaleInterpMode; }
 
     const std::vector<std::wstring>& ImagePaths() const { return m_imagePaths; }
@@ -130,6 +131,7 @@ public:
     void ToggleEvaluationDebugOutput(bool debug) { m_evaluation_debug_output = debug; }
     void ToggleTerseOutput(bool terseOutput) { m_terseOutput = terseOutput; }
     void TogglePerfOutput(bool perfOutput) { m_perfOutput = perfOutput; }
+    void EnableLogCPUFallback() { m_logCPUFallback = true; }
 
     void SetModelPath(const std::wstring& modelPath) { m_modelPath = modelPath; }
     void SetPerIterationDataPath(const std::wstring& perIterationDataPath)
@@ -186,6 +188,7 @@ private:
     BitmapInterpolationMode m_autoScaleInterpMode = BitmapInterpolationMode::Cubic;
     bool m_saveTensor = false;
     bool m_timeLimitIterations = false;
+    bool m_logCPUFallback = false;
     std::wstring m_saveTensorMode = L"First";
     ::TensorizeArgs m_tensorizeArgs;
 

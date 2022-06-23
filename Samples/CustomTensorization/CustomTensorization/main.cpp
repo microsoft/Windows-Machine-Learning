@@ -93,7 +93,7 @@ void BindModel(
         deviceKind = LearningModelDeviceKind::Default;
         inputTensor = TensorizationHelper::SoftwareBitmapToSoftwareTensor(imageFrame.SoftwareBitmap());
     }
-    session = LearningModelSession{ model, deviceKind};
+    session = LearningModelSession( model, LearningModelDevice(deviceKind));
     binding = LearningModelBinding{ session };
 
     // bind the intput image

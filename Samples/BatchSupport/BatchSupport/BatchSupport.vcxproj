@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="..\packages\Microsoft.Windows.CppWinRT.2.0.210722.2\build\native\Microsoft.Windows.CppWinRT.props" Condition="Exists('..\packages\Microsoft.Windows.CppWinRT.2.0.210722.2\build\native\Microsoft.Windows.CppWinRT.props')" />
-  <Import Project="..\packages\Microsoft.AI.MachineLearning.1.8.1\build\native\Microsoft.AI.MachineLearning.props" Condition="Exists('..\packages\Microsoft.AI.MachineLearning.1.8.1\build\native\Microsoft.AI.MachineLearning.props')" />
-  <Import Project="..\packages\Microsoft.AI.DirectML.1.5.1\build\Microsoft.AI.DirectML.props" Condition="Exists('..\packages\Microsoft.AI.DirectML.1.5.1\build\Microsoft.AI.DirectML.props')" />
+  <Import Project="..\packages\Microsoft.Windows.CppWinRT.2.0.220131.2\build\native\Microsoft.Windows.CppWinRT.props" Condition="Exists('..\packages\Microsoft.Windows.CppWinRT.2.0.220131.2\build\native\Microsoft.Windows.CppWinRT.props')" />
+  <Import Project="..\packages\Microsoft.AI.MachineLearning.1.10.0\build\native\Microsoft.AI.MachineLearning.props" Condition="Exists('..\packages\Microsoft.AI.MachineLearning.1.10.0\build\native\Microsoft.AI.MachineLearning.props')" />
+  <Import Project="..\packages\Microsoft.AI.DirectML.1.8.0\build\Microsoft.AI.DirectML.props" Condition="Exists('..\packages\Microsoft.AI.DirectML.1.8.0\build\Microsoft.AI.DirectML.props')" />
   <PropertyGroup Label="Globals">
     <CppWinRTOptimized>true</CppWinRTOptimized>
     <CppWinRTRootNamespaceAutoMerge>true</CppWinRTRootNamespaceAutoMerge>
@@ -12,7 +12,7 @@
     <ProjectGuid>{a43bd199-ec83-4b0e-9950-a2b8aa51439f}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>BatchSupport</RootNamespace>
-    <WindowsTargetPlatformVersion Condition=" '$(WindowsTargetPlatformVersion)' == '' ">10.0.18362.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion Condition=" '$(WindowsTargetPlatformVersion)' == '' ">10.0</WindowsTargetPlatformVersion>
     <WindowsTargetPlatformMinVersion>10.0.17134.0</WindowsTargetPlatformMinVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -44,7 +44,7 @@
   </ItemGroup>
   <PropertyGroup Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
-    <PlatformToolset>v140</PlatformToolset>
+    <PlatformToolset>v141</PlatformToolset>
     <PlatformToolset Condition="'$(VisualStudioVersion)' == '15.0'">v141</PlatformToolset>
     <PlatformToolset Condition="'$(VisualStudioVersion)' == '16.0'">v142</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
@@ -159,9 +159,6 @@
       <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug_NuGet|x64'">true</DeploymentContent>
       <FileType>Document</FileType>
     </CopyFileToFolders>
-    <None Include="packages.config">
-      <SubType>Designer</SubType>
-    </None>
   </ItemGroup>
   <ItemGroup>
     <CopyFileToFolders Include="..\..\..\SharedContent\media\fish.png">
@@ -179,21 +176,24 @@
       <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug_NuGet|x64'">true</DeploymentContent>
     </CopyFileToFolders>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
-    <Import Project="..\packages\Microsoft.AI.DirectML.1.5.1\build\Microsoft.AI.DirectML.targets" Condition="Exists('..\packages\Microsoft.AI.DirectML.1.5.1\build\Microsoft.AI.DirectML.targets')" />
-    <Import Project="..\packages\Microsoft.AI.MachineLearning.1.8.1\build\native\Microsoft.AI.MachineLearning.targets" Condition="Exists('..\packages\Microsoft.AI.MachineLearning.1.8.1\build\native\Microsoft.AI.MachineLearning.targets')" />
-    <Import Project="..\packages\Microsoft.Windows.CppWinRT.2.0.210722.2\build\native\Microsoft.Windows.CppWinRT.targets" Condition="Exists('..\packages\Microsoft.Windows.CppWinRT.2.0.210722.2\build\native\Microsoft.Windows.CppWinRT.targets')" />
+    <Import Project="..\packages\Microsoft.AI.DirectML.1.8.0\build\Microsoft.AI.DirectML.targets" Condition="Exists('..\packages\Microsoft.AI.DirectML.1.8.0\build\Microsoft.AI.DirectML.targets')" />
+    <Import Project="..\packages\Microsoft.AI.MachineLearning.1.10.0\build\native\Microsoft.AI.MachineLearning.targets" Condition="Exists('..\packages\Microsoft.AI.MachineLearning.1.10.0\build\native\Microsoft.AI.MachineLearning.targets')" />
+    <Import Project="..\packages\Microsoft.Windows.CppWinRT.2.0.220131.2\build\native\Microsoft.Windows.CppWinRT.targets" Condition="Exists('..\packages\Microsoft.Windows.CppWinRT.2.0.220131.2\build\native\Microsoft.Windows.CppWinRT.targets')" />
   </ImportGroup>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
-    <Error Condition="!Exists('..\packages\Microsoft.AI.DirectML.1.5.1\build\Microsoft.AI.DirectML.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.AI.DirectML.1.5.1\build\Microsoft.AI.DirectML.props'))" />
-    <Error Condition="!Exists('..\packages\Microsoft.AI.DirectML.1.5.1\build\Microsoft.AI.DirectML.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.AI.DirectML.1.5.1\build\Microsoft.AI.DirectML.targets'))" />
-    <Error Condition="!Exists('..\packages\Microsoft.AI.MachineLearning.1.8.1\build\native\Microsoft.AI.MachineLearning.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.AI.MachineLearning.1.8.1\build\native\Microsoft.AI.MachineLearning.props'))" />
-    <Error Condition="!Exists('..\packages\Microsoft.AI.MachineLearning.1.8.1\build\native\Microsoft.AI.MachineLearning.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.AI.MachineLearning.1.8.1\build\native\Microsoft.AI.MachineLearning.targets'))" />
-    <Error Condition="!Exists('..\packages\Microsoft.Windows.CppWinRT.2.0.210722.2\build\native\Microsoft.Windows.CppWinRT.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Windows.CppWinRT.2.0.210722.2\build\native\Microsoft.Windows.CppWinRT.props'))" />
-    <Error Condition="!Exists('..\packages\Microsoft.Windows.CppWinRT.2.0.210722.2\build\native\Microsoft.Windows.CppWinRT.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Windows.CppWinRT.2.0.210722.2\build\native\Microsoft.Windows.CppWinRT.targets'))" />
+    <Error Condition="!Exists('..\packages\Microsoft.AI.DirectML.1.8.0\build\Microsoft.AI.DirectML.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.AI.DirectML.1.8.0\build\Microsoft.AI.DirectML.props'))" />
+    <Error Condition="!Exists('..\packages\Microsoft.AI.DirectML.1.8.0\build\Microsoft.AI.DirectML.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.AI.DirectML.1.8.0\build\Microsoft.AI.DirectML.targets'))" />
+    <Error Condition="!Exists('..\packages\Microsoft.AI.MachineLearning.1.10.0\build\native\Microsoft.AI.MachineLearning.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.AI.MachineLearning.1.10.0\build\native\Microsoft.AI.MachineLearning.props'))" />
+    <Error Condition="!Exists('..\packages\Microsoft.AI.MachineLearning.1.10.0\build\native\Microsoft.AI.MachineLearning.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.AI.MachineLearning.1.10.0\build\native\Microsoft.AI.MachineLearning.targets'))" />
+    <Error Condition="!Exists('..\packages\Microsoft.Windows.CppWinRT.2.0.220131.2\build\native\Microsoft.Windows.CppWinRT.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Windows.CppWinRT.2.0.220131.2\build\native\Microsoft.Windows.CppWinRT.props'))" />
+    <Error Condition="!Exists('..\packages\Microsoft.Windows.CppWinRT.2.0.220131.2\build\native\Microsoft.Windows.CppWinRT.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Windows.CppWinRT.2.0.220131.2\build\native\Microsoft.Windows.CppWinRT.targets'))" />
   </Target>
 </Project>

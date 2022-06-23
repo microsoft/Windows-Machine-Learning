@@ -10,8 +10,8 @@ pool:
 
 variables:
   SamplesBin: SamplesBin
-  WINDOWS_WINMD: C:\Program Files (x86)\Windows Kits\10\UnionMetadata\10.0.18362.0\Windows.winmd
-  WindowsTargetPlatformVersion: 10.0.18362.0
+  WINDOWS_WINMD: C:\Program Files (x86)\Windows Kits\10\UnionMetadata\10.0.19041.0\Windows.winmd
+  WindowsTargetPlatformVersion: 10.0.19041.0
 
 # CI trigger
 trigger:
@@ -65,10 +65,10 @@ jobs:
         versionSpec: '5.11.0'
 
     - task: PowerShell@2
-      displayName: 'Install the win 10 sdk v18362 if necessary'
+      displayName: 'Install the win 10 sdk v19041 if necessary'
       inputs:
         targetType: inline
-        script: if (-not (Test-Path "${ENV:programfiles(x86)}\windows Kits\10\include\10.0.18362.0\")) { choco install windows-sdk-10-version-1903-all -y }
+        script: choco install windows-sdk-10-version-2004-all -y
 
     - task: PowerShell@1
       displayName: OpenCV - Configure CMake
@@ -218,13 +218,6 @@ jobs:
         targetType: 'inline'
         script: 'mv Samples/WinMLSamplesGallery/"WinMLSamplesGallery (Package)"/AppPackages $(Build.ArtifactStagingDirectory)\$(BuildPlatform)\$(BuildConfiguration)\AppPackages'
       condition: and(succeededOrFailed(), eq(variables['BuildConfiguration'], 'Release'))
-
-    - task: CopyFiles@2
-      inputs:
-        targetFolder: '$(Build.ArtifactStagingDirectory)\$(BuildPlatform)\$(BuildConfiguration)\SharedContent'
-        sourceFolder: 'SharedContent'
-        contents: '**\*'
-      condition: succeededOrFailed()
 
     - task: PublishBuildArtifacts@1
       displayName: 'Publish Artifact: Samples'

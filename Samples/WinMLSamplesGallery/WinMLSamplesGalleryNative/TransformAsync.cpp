@@ -846,7 +846,8 @@ HRESULT TransformAsync::OnFlush(void)
 {
     std::lock_guard<std::recursive_mutex> lock(m_mutex);
     m_status &= (~MYMFT_STATUS_STREAM_STARTED);
-    m_outputSampleCallback->SetCallback(NULL);
+    if(m_outputSampleCallback)
+        m_outputSampleCallback->SetCallback(NULL);
     RETURN_IF_FAILED(FlushSamples());
     return S_OK;
 }

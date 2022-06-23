@@ -1,0 +1,221 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net5.0-windows10.0.19041.0</TargetFramework>
+    <TargetPlatformMinVersion>10.0.17134.0</TargetPlatformMinVersion>
+    <RootNamespace>WinMLSamplesGallery</RootNamespace>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <Platforms>x86;x64;arm64</Platforms>
+    <RuntimeIdentifiers>win10-x86;win10-x64;win10-arm64</RuntimeIdentifiers>
+	  <UseWinUI>true</UseWinUI>
+    <UseLargeModels Condition="$(UseLargeModels) == ''">False</UseLargeModels>
+    <OpenCVLib Condition="'$(Configuration)'=='Debug'">opencv_world454d.lib</OpenCVLib>
+    <OpenCVLib Condition="'$(Configuration)'=='Release'">opencv_world454.lib</OpenCVLib>
+    <OpenCVLibFullPath>$(SolutionDir)..\..\build\external\opencv\cmake_config\$(Platform)\lib\$(Configuration)\$(OpenCVLib)</OpenCVLibFullPath>
+    <UseOpenCV>False</UseOpenCV>
+    <UseOpenCV Condition="Exists('$(OpenCVLibFullPath)')">True</UseOpenCV>
+    <DefineConstants Condition="$(UseLargeModels)">$(DefineConstants);USE_LARGE_MODELS</DefineConstants>
+    <DefineConstants Condition="$(UseOpenCV)">$(DefineConstants);USE_OPENCV</DefineConstants>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Remove="Samples\EncryptedResource\**" />
+    <EmbeddedResource Remove="Samples\EncryptedResource\**" />
+    <None Remove="Samples\EncryptedResource\**" />
+    <Page Remove="Samples\EncryptedResource\**" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Remove="Samples\ObjectDetector\ImageEffects.xaml.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Remove="AllSamplesPage.xaml" />
+    <None Remove="Controls\PerformanceMonitor.xaml" />
+    <None Remove="HomePage.xaml" />
+    <None Remove="Models\squeezenet1.1-7-batched.onnx" />
+	<None Remove="SamplesGrid.xaml" />
+	<None Remove="SampleBasePage.xaml" />
+    <None Remove="Image.xaml" />
+    <None Remove="Samples\ImageClassifier.xaml" />
+    <None Remove="Samples\ImageEffects.xaml" />
+    <None Remove="Samples\ObjectDetector\ObjectDetector.xaml" />
+    <None Remove="Samples\OpenCVInterop\OpenCVInterop.xaml" />
+    <None Remove="Samples\ImageSharpInterop\ImageSharpInterop.xaml" />
+    <None Remove="Video.xaml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Models\squeezenet1.1-7-batched.onnx" />
+    <Content Include="SampleMetadata\SampleMetadata.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="InputData\fish.png" />
+    <Content Include="InputData\hummingbird.jpg" />
+    <Content Include="InputData\ilsvrc2013.txt" />
+    <Content Include="InputData\kitten.png" />
+    <Content Include="InputData\sysnet.txt" />
+  </ItemGroup>
+
+  <!-- Models to include in the app -->
+  <ItemGroup>
+    <Content Include="Models\densenet-9.onnx" />
+    <Content Include="Models\efficientnet-lite4-11.onnx" />
+    <Content Include="Models\shufflenet-9.onnx" />
+    <Content Include="Models\squeezenet1.1-7.onnx" />
+  </ItemGroup>
+  <!-- Large Models -->
+  <ItemGroup Condition="$(UseLargeModels)">
+    <Content Include="LargeModels\bvlcalexnet-9.onnx" />
+    <Content Include="LargeModels\caffenet-9.onnx" />
+    <Content Include="LargeModels\googlenet-9.onnx" />
+    <Content Include="LargeModels\inception-v1-9.onnx" />
+    <Content Include="LargeModels\inception-v2-9.onnx" />
+    <Content Include="LargeModels\mobilenetv2-7.onnx" />
+    <Content Include="LargeModels\rcnn-ilsvrc13-9.onnx" />
+    <Content Include="LargeModels\resnet50-caffe2-v1-9.onnx" />
+    <Content Include="LargeModels\shufflenet-v2-10.onnx" />
+    <Content Include="LargeModels\vgg19-7.onnx" />
+    <Content Include="LargeModels\vgg19-bn-7.onnx" />
+    <Content Include="LargeModels\zfnet512-9.onnx" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AI.MachineLearning" Version="1.9.1" />
+    <PackageReference Include="Microsoft.Windows.CsWinRT" Version="1.3.5" />
+    <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.0.0-stable" />
+    <PackageReference Include="SixLabors.ImageSharp" Version="1.0.4" />
+    <Manifest Include="$(ApplicationManifest)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\.editorconfig" Link=".editorconfig" />
+    <None Include="Samples\ImageEffects\ImageEffects.xaml.cs" />
+    <None Include="Samples\ImageClassifier\ImageClassifier.xaml.cs" />
+    <None Include="Samples\OpenCVInterop\OpenCVInterop.xaml.cs" />
+    <None Include="Samples\ImageSharpInterop\ImageSharpInterop.xaml.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\WinMLSamplesGalleryNative.Interop\WinMLSamplesGalleryNative.Interop.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="Original-LightBlue.png">
+    </Resource>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Page Update="Pages\AllSamplesPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Update="Controls\PerformanceMonitor.xaml">
+      <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="Samples\ImageEffects\ImageEffects.xaml">
+      <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
+      <SubType>Designer</SubType>
+    </Page>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Page Update="Pages\Video.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Page Update="Pages\Image.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Page Update="Pages\HomePage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+	
+  <ItemGroup>
+    <Page Update="Pages\SamplesGrid.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+
+  <ItemGroup>
+	<Page Update="Pages\SampleBasePage.xaml">
+	  <Generator>MSBuild:Compile</Generator>
+	</Page>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Page Update="Samples\ImageClassifier\ImageClassifier.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Update="Samples\OpenCVInterop\OpenCVInterop.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Update="Samples\ImageSharpInterop\ImageSharpInterop.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="LargeModels\" />
+    <Folder Include="Samples\AdapterSelection\Docs\" />
+  </ItemGroup>
+
+  <Target Name="DownloadContentFiles" BeforeTargets="BeforeBuild">
+    <!-- Small models. These models get shipped in the store app by default. -->
+    <DownloadFile Condition="!Exists('$(MSBuildProjectDirectory)\Models\densenet-9.onnx')" SourceUrl="https://github.com/onnx/models/blob/main/vision/classification/densenet-121/model/densenet-9.onnx?raw=true" DestinationFolder="$(MSBuildProjectDirectory)\Models">
+      <Output TaskParameter="DownloadedFile" ItemName="Content" />
+    </DownloadFile>
+    <DownloadFile Condition="!Exists('$(MSBuildProjectDirectory)\Models\efficientnet-lite4-11.onnx')" SourceUrl="https://github.com/onnx/models/blob/main/vision/classification/efficientnet-lite4/model/efficientnet-lite4-11.onnx?raw=true" DestinationFolder="$(MSBuildProjectDirectory)\Models">
+      <Output TaskParameter="DownloadedFile" ItemName="Content" />
+    </DownloadFile>
+    <DownloadFile Condition="!Exists('$(MSBuildProjectDirectory)\Models\shufflenet-9.onnx')" SourceUrl="https://github.com/onnx/models/blob/main/vision/classification/shufflenet/model/shufflenet-9.onnx?raw=true" DestinationFolder="$(MSBuildProjectDirectory)\Models">
+      <Output TaskParameter="DownloadedFile" ItemName="Content" />
+    </DownloadFile>
+    <DownloadFile Condition="!Exists('$(MSBuildProjectDirectory)\Models\squeezenet1.1-7.onnx')" SourceUrl="https://github.com/onnx/models/blob/main/vision/classification/squeezenet/model/squeezenet1.1-7.onnx?raw=true" DestinationFolder="$(MSBuildProjectDirectory)\Models">
+      <Output TaskParameter="DownloadedFile" ItemName="Content" />
+    </DownloadFile>
+
+    <!-- Large models. This models must be enabled for Build-From-Source scenarios -->
+    <DownloadFile Condition="$(UseLargeModels) AND !Exists('$(MSBuildProjectDirectory)\LargeModels\bvlcalexnet-9.onnx')" SourceUrl="https://github.com/onnx/models/blob/main/vision/classification/alexnet/model/bvlcalexnet-9.onnx?raw=true" DestinationFolder="$(MSBuildProjectDirectory)\LargeModels">
+      <Output TaskParameter="DownloadedFile" ItemName="Content" />
+    </DownloadFile>
+    <DownloadFile Condition="$(UseLargeModels) AND !Exists('$(MSBuildProjectDirectory)\LargeModels\caffenet-9.onnx')" SourceUrl="https://github.com/onnx/models/blob/main/vision/classification/caffenet/model/caffenet-9.onnx?raw=true" DestinationFolder="$(MSBuildProjectDirectory)\LargeModels">
+      <Output TaskParameter="DownloadedFile" ItemName="Content" />
+    </DownloadFile>
+    <DownloadFile Condition="$(UseLargeModels) AND !Exists('$(MSBuildProjectDirectory)\LargeModels\googlenet-9.onnx')" SourceUrl="https://github.com/onnx/models/blob/main/vision/classification/inception_and_googlenet/googlenet/model/googlenet-9.onnx?raw=true" DestinationFolder="$(MSBuildProjectDirectory)\LargeModels">
+      <Output TaskParameter="DownloadedFile" ItemName="Content" />
+    </DownloadFile>
+    <DownloadFile Condition="$(UseLargeModels) AND !Exists('$(MSBuildProjectDirectory)\LargeModels\inception-v1-9.onnx')" SourceUrl="https://github.com/onnx/models/blob/main/vision/classification/inception_and_googlenet/inception_v1/model/inception-v1-9.onnx?raw=true" DestinationFolder="$(MSBuildProjectDirectory)\LargeModels">
+      <Output TaskParameter="DownloadedFile" ItemName="Content" />
+    </DownloadFile>
+    <DownloadFile Condition="$(UseLargeModels) AND !Exists('$(MSBuildProjectDirectory)\LargeModels\inception-v2-9.onnx')" SourceUrl="https://github.com/onnx/models/blob/main/vision/classification/inception_and_googlenet/inception_v2/model/inception-v2-9.onnx?raw=true" DestinationFolder="$(MSBuildProjectDirectory)\LargeModels">
+      <Output TaskParameter="DownloadedFile" ItemName="Content" />
+    </DownloadFile>
+    <DownloadFile Condition="$(UseLargeModels) AND !Exists('$(MSBuildProjectDirectory)\LargeModels\mobilenetv2-7.onnx')" SourceUrl="https://github.com/onnx/models/blob/main/vision/classification/mobilenet/model/mobilenetv2-7.onnx?raw=true" DestinationFolder="$(MSBuildProjectDirectory)\LargeModels">
+      <Output TaskParameter="DownloadedFile" ItemName="Content" />
+    </DownloadFile>
+    <DownloadFile Condition="$(UseLargeModels) AND !Exists('$(MSBuildProjectDirectory)\LargeModels\rcnn-ilsvrc13-9.onnx')" SourceUrl="https://github.com/onnx/models/blob/main/vision/classification/rcnn_ilsvrc13/model/rcnn-ilsvrc13-9.onnx?raw=true" DestinationFolder="$(MSBuildProjectDirectory)\LargeModels">
+      <Output TaskParameter="DownloadedFile" ItemName="Content" />
+    </DownloadFile>
+    <DownloadFile Condition="$(UseLargeModels) AND !Exists('$(MSBuildProjectDirectory)\LargeModels\resnet50-caffe2-v1-9.onnx')" SourceUrl="https://github.com/onnx/models/blob/main/vision/classification/resnet/model/resnet50-caffe2-v1-9.onnx?raw=true" DestinationFolder="$(MSBuildProjectDirectory)\LargeModels">
+      <Output TaskParameter="DownloadedFile" ItemName="Content" />
+    </DownloadFile>
+    <DownloadFile Condition="$(UseLargeModels) AND !Exists('$(MSBuildProjectDirectory)\LargeModels\shufflenet-v2-10.onnx')" SourceUrl="https://github.com/onnx/models/blob/main/vision/classification/shufflenet/model/shufflenet-v2-10.onnx?raw=true" DestinationFolder="$(MSBuildProjectDirectory)\LargeModels">
+      <Output TaskParameter="DownloadedFile" ItemName="Content" />
+    </DownloadFile>
+    <DownloadFile Condition="$(UseLargeModels) AND !Exists('$(MSBuildProjectDirectory)\LargeModels\vgg19-7.onnx')" SourceUrl="https://github.com/onnx/models/blob/main/vision/classification/vgg/model/vgg19-7.onnx?raw=true" DestinationFolder="$(MSBuildProjectDirectory)\LargeModels">
+      <Output TaskParameter="DownloadedFile" ItemName="Content" />
+    </DownloadFile>
+    <DownloadFile Condition="$(UseLargeModels) AND !Exists('$(MSBuildProjectDirectory)\LargeModels\vgg19-bn-7.onnx')" SourceUrl="https://github.com/onnx/models/blob/main/vision/classification/vgg/model/vgg19-bn-7.onnx?raw=true" DestinationFolder="$(MSBuildProjectDirectory)\LargeModels">
+      <Output TaskParameter="DownloadedFile" ItemName="Content" />
+    </DownloadFile>
+    <DownloadFile Condition="$(UseLargeModels) AND !Exists('$(MSBuildProjectDirectory)\LargeModels\zfnet512-9.onnx')" SourceUrl="https://github.com/onnx/models/blob/main/vision/classification/zfnet-512/model/zfnet512-9.onnx?raw=true" DestinationFolder="$(MSBuildProjectDirectory)\LargeModels">
+      <Output TaskParameter="DownloadedFile" ItemName="Content" />
+    </DownloadFile>
+  </Target>
+
+  <ProjectExtensions><VisualStudio><UserProperties /></VisualStudio></ProjectExtensions>
+</Project>

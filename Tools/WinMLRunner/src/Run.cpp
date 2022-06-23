@@ -2,6 +2,7 @@
 #include "Common.h"
 #include "OutputHelper.h"
 #include "BindingUtilities.h"
+#include "EventTraceHelper.h"
 #include <filesystem>
 #include <d3d11.h>
 #include <Windows.Graphics.DirectX.Direct3D11.interop.h>
@@ -529,6 +530,7 @@ int run(CommandLineArgs& args,
         const std::vector<LearningModelDeviceWithMetadata>& deviceList,
         const LearningModelSessionOptions& sessionOptions) try
 {
+    EventTraceHelper traceHelper(args);
     // Initialize COM in a multi-threaded environment.
     winrt::init_apartment();
     OutputHelper output(args.NumIterations());
@@ -559,8 +561,10 @@ int run(CommandLineArgs& args,
         if (args.IsConcurrentLoad())
         {
             ConcurrentLoadModel(modelPaths, args.NumThreads(), args.ThreadInterval(), true);
+            printf("Concurrent model loading, will skip event trace for CPU fallback.");
             return 0;
         }
+        traceHelper.Start();
         for (const auto& path : modelPaths)
         {
             LearningModel model = nullptr;
@@ -619,6 +623,7 @@ int run(CommandLineArgs& args,
                 }
             }
         }
+        traceHelper.Stop();
         return lastHr;
     }
     return 0;

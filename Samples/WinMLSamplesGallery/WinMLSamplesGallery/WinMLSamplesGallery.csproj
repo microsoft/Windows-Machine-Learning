@@ -185,6 +185,9 @@
     <DownloadFile Condition="!Exists('$(MSBuildProjectDirectory)\Models\squeezenet1.1-7.onnx')" SourceUrl="https://github.com/onnx/models/blob/main/vision/classification/squeezenet/model/squeezenet1.1-7.onnx?raw=true" DestinationFolder="$(MSBuildProjectDirectory)\Models">
       <Output TaskParameter="DownloadedFile" ItemName="Content" />
     </DownloadFile>
+	<DownloadFile Condition="!Exists('$(MSBuildProjectDirectory)\Models\fcn-resnet50-12.onnx')" SourceUrl="https://github.com/onnx/models/raw/main/vision/object_detection_segmentation/fcn/model/fcn-resnet50-12.onnx?raw=true" DestinationFolder="$(MSBuildProjectDirectory)\Models">
+      <Output TaskParameter="DownloadedFile" ItemName="Content" />
+    </DownloadFile>
 
     <!-- Large models. This models must be enabled for Build-From-Source scenarios -->
     <DownloadFile Condition="$(UseLargeModels) AND !Exists('$(MSBuildProjectDirectory)\LargeModels\bvlcalexnet-9.onnx')" SourceUrl="https://github.com/onnx/models/blob/main/vision/classification/alexnet/model/bvlcalexnet-9.onnx?raw=true" DestinationFolder="$(MSBuildProjectDirectory)\LargeModels">

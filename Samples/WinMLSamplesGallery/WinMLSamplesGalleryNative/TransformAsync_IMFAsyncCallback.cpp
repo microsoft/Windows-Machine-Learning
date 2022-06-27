@@ -1,6 +1,5 @@
 #include "pch.h"
 #include "TransformAsync.h"
-#include <format>
 
 HRESULT TransformAsync::GetParameters(
     DWORD* pdwFlags,

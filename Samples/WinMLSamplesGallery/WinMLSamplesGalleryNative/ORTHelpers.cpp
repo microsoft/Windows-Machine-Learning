@@ -418,17 +418,16 @@ winrt::com_array<float> Preprocess(Ort::Session& session,
     //    test.push_back(first);
     //}
 
-    std::vector<float> test;
-    for (int a = 0; a < 1; a++) {
-        for (int b = 0; b < 512; b++) {
-            for (int c = 0; c < 512; c++) {
-                for (int d = 0; d < 4; d++) {
-                    test.push_back(0.5);
-                }
-            }
-        }
-    }
-
+    //std::vector<float> test;
+    //for (int a = 0; a < 1; a++) {
+    //    for (int b = 0; b < 512; b++) {
+    //        for (int c = 0; c < 512; c++) {
+    //            for (int d = 0; d < 4; d++) {
+    //                test.push_back(0.5);
+    //            }
+    //        }
+    //    }
+    //}
 
     auto resize_op = LearningModelOperator(L"Resize")
         .SetInput(L"X", L"Input")
@@ -478,7 +477,7 @@ winrt::com_array<float> Preprocess(Ort::Session& session,
     D3D12_RESOURCE_DESC resourceDesc = {
         D3D12_RESOURCE_DIMENSION_BUFFER,
         0,
-        static_cast<uint64_t>(800 * 600 * 4),
+        static_cast<uint64_t>(800 * 600 * 3 * 4),
         1,
         1,
         1,
@@ -650,9 +649,9 @@ winrt::com_array<float> Preprocess(Ort::Session& session,
         //    OutputDebugString(L"\n");
         //}
 
-        auto memory_info = Ort::MemoryInfo::CreateCpu(OrtArenaAllocator, OrtMemTypeDefault);
-        auto input_tensor_size = 1 * 512 * 512 * 4;
-        Ort::Value test_input_tensor = Ort::Value::CreateTensor<float>(memory_info, test.data(), input_tensor_size, preprocessInputShape.data(), 4);
+        //auto memory_info = Ort::MemoryInfo::CreateCpu(OrtArenaAllocator, OrtMemTypeDefault);
+        //auto input_tensor_size = 1 * 512 * 512 * 4;
+        //Ort::Value test_input_tensor = Ort::Value::CreateTensor<float>(memory_info, test.data(), input_tensor_size, preprocessInputShape.data(), 4);
         Ort::Value outputTensor(nullptr);
         session.Run(Ort::RunOptions{ nullptr }, input_node_names.data(),
             &inputTensor, 1, output_node_names.data(), &outputTensor, 1);
@@ -671,16 +670,16 @@ winrt::com_array<float> Preprocess(Ort::Session& session,
         //ioBinding.SynchronizeOutputs();
         QueryPerformanceCounter(&synchronizeOutputsTime);
 
-        float* opfloatarr = outputTensor.GetTensorMutableData<float>();
-        for (int i = 0; i < 100000; i++) {
-            std::wstring value = std::to_wstring(opfloatarr[i]);
-            std::wstring i_w_str = std::to_wstring(i);
-            OutputDebugString(L"Output[");
-            OutputDebugString(i_w_str.c_str());
-            OutputDebugString(L"]: ");
-            OutputDebugString(value.c_str());
-            OutputDebugString(L"\n");
-        }
+        //float* opfloatarr = outputTensor.GetTensorMutableData<float>();
+        //for (int i = 0; i < 100000; i++) {
+        //    std::wstring value = std::to_wstring(opfloatarr[i]);
+        //    std::wstring i_w_str = std::to_wstring(i);
+        //    OutputDebugString(L"Output[");
+        //    OutputDebugString(i_w_str.c_str());
+        //    OutputDebugString(L"]: ");
+        //    OutputDebugString(value.c_str());
+        //    OutputDebugString(L"\n");
+        //}
 
         auto eval_results_std = Eval(inferenceSession, outputTensor);
         winrt::com_array<float> eval_results(1000);

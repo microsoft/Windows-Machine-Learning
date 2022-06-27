@@ -242,10 +242,10 @@ void D3D12Quad::LoadAssets()
         // Define the geometry for a quad.
         Vertex quadVertices[] =
         {
-            { { -0.25f, 0.25f * m_aspectRatio, 0.0f }, { 0.0f, 0.0f } }, //top left
-            { { 0.25f, 0.25f * m_aspectRatio, 0.0f }, { 1.0f, 0.0f } }, //top right
-            { { -0.25f, -0.25f * m_aspectRatio, 0.0f }, { 0.0f, 1.0f } }, //bottom left
-            { { 0.25f, -0.25f * m_aspectRatio, 0.0f }, { 1.0f, 1.0f } }, //bottom right
+            { { -0.75f, 0.75f * m_aspectRatio, 0.0f }, { 0.0f, 0.0f } }, //top left
+            { { 0.75f, 0.75f * m_aspectRatio, 0.0f }, { 1.0f, 0.0f } }, //top right
+            { { -0.75f, -0.75f * m_aspectRatio, 0.0f }, { 0.0f, 1.0f } }, //bottom left
+            { { 0.75f, -0.75f * m_aspectRatio, 0.0f }, { 1.0f, 1.0f } }, //bottom right
         };
 
         const UINT vertexBufferSize = sizeof(quadVertices);

@@ -236,7 +236,7 @@ Ort::Value CreateTensorValueUsingD3DResource(
     );
 }
 
-std::vector<float> Eval(Ort::Session& session, const Ort::Value& prev_input) {
+winrt::com_array<float> Eval(Ort::Session& session, const Ort::Value& prev_input) {
     const char* modelInputTensorName = "images:0";
     const char* modelOutputTensorName = "Softmax:0";
     const std::array<int64_t, 4> inputShape = { 1, 224, 224, 3 };
@@ -273,9 +273,9 @@ std::vector<float> Eval(Ort::Session& session, const Ort::Value& prev_input) {
         auto output_tensors = session.Run(Ort::RunOptions{ nullptr }, input_node_names.data(), &prev_input, 1, output_node_names.data(), 1);
         // Get pointer to output tensor float values
         float* floatarr = output_tensors.front().GetTensorMutableData<float>();
-        std::vector<float> final_results;
+        winrt::com_array<float> final_results(1000);
         for (int i = 0; i < 1000; i++) {
-            final_results.push_back(floatarr[i]);
+            final_results[i] = floatarr[i];
         }
 
         return final_results;
@@ -290,13 +290,10 @@ std::vector<float> Eval(Ort::Session& session, const Ort::Value& prev_input) {
         printf("Error running model inference: %s\n", exception.what());
         //return EXIT_FAILURE;
     }
-
 }
 
-winrt::com_array<float> Preprocess(Ort::Session& session,
-    Ort::Session& inferenceSession,
+Ort::Value Preprocess(Ort::Session& session,
     ID3D12Device* device,
-    bool& Running,
     IDXGISwapChain3* swapChain,
     UINT frameIndex,
     ID3D12CommandAllocator* commandAllocator,
@@ -346,7 +343,6 @@ winrt::com_array<float> Preprocess(Ort::Session& session,
         IID_PPV_ARGS(&new_buffer));
     if (FAILED(hr))
     {
-        Running = false;
         //return false;
     }
 
@@ -398,12 +394,7 @@ winrt::com_array<float> Preprocess(Ort::Session& session,
         session.Run(Ort::RunOptions{ nullptr }, input_node_names.data(),
             &inputTensor, 1, output_node_names.data(), &outputTensor, 1);
 
-        auto eval_results_std = Eval(inferenceSession, outputTensor);
-        winrt::com_array<float> eval_results(1000);
-        for (int i = 0; i < 1000; i++) {
-            eval_results[i] = eval_results_std[i];
-        }
-        return eval_results;
+        return outputTensor;
     }
     catch (Ort::Exception const& exception)
     {

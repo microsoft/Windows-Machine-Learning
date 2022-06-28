@@ -38,7 +38,7 @@ D3D12Quad sample(800, 600, L"D3D12 Quad");
 
 namespace winrt::WinMLSamplesGalleryNative::implementation
 {
-	winrt::com_array<float> DXResourceBinding::LaunchWindow() {
+	void DXResourceBinding::LaunchWindow() {
 
         const wchar_t* preprocessingModelFilePath = L"C:/Users/numform/Windows-Machine-Learning/Samples/WinMLSamplesGallery/WinMLSamplesGalleryNative/dx_preprocessor_efficient_net.onnx";
         preprocesingSession = CreateSession(preprocessingModelFilePath);
@@ -53,20 +53,15 @@ namespace winrt::WinMLSamplesGalleryNative::implementation
 
         // Run the quad in a separate, detached thread
         d3d_th.detach();
-
-        winrt::com_array<float> eval_results(1000);
-        for (int i = 0; i < 1000; i++) {
-            eval_results[i] = 100;
-        }
-        return eval_results;
 	}
 
     winrt::com_array<float> DXResourceBinding::EvalORT() {
         D3D12Quad::D3DInfo info = sample.GetD3DInfo();
-        bool running = true;
-        return Preprocess(*preprocesingSession, *inferenceSession, info.device.Get(),
-            running, info.swapChain.Get(), info.frameIndex, info.commandAllocator.Get(), info.commandList.Get(),
+        Ort::Value preprocessedInput = Preprocess(*preprocesingSession, info.device.Get(),
+            info.swapChain.Get(), info.frameIndex, info.commandAllocator.Get(), info.commandList.Get(),
             info.commandQueue.Get());
+        winrt::com_array<float> results = Eval(*inferenceSession, preprocessedInput);
+        return results;
     }
 
     void DXResourceBinding::CloseWindow() {

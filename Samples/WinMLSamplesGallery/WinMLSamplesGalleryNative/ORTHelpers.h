@@ -36,12 +36,10 @@ using namespace Microsoft::WRL;
 
 Ort::Session CreateSession(const wchar_t* model_file_path);
 
-std::vector<float> Eval(Ort::Session& session, const Ort::Value& prev_input);
+winrt::com_array<float> Eval(Ort::Session& session, const Ort::Value& prev_input);
 
-winrt::com_array<float> Preprocess(Ort::Session& session,
-    Ort::Session& inferenceSession,
+Ort::Value Preprocess(Ort::Session& session,
     ID3D12Device* device,
-    bool& Running,
     IDXGISwapChain3* swapChain,
     UINT frameIndex,
     ID3D12CommandAllocator* commandAllocator,

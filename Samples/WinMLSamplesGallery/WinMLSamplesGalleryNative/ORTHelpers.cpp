@@ -71,6 +71,22 @@ std::array<long, 6> CalculateCenterFillDimensions(long oldH, long oldW, long h, 
     return new_dimensions;
 }
 
+Ort::Session CreateSession(const wchar_t* model_file_path)
+{
+    OrtApi const& ortApi = Ort::GetApi();
+    const OrtDmlApi* ortDmlApi;
+    ortApi.GetExecutionProviderApi("DML", ORT_API_VERSION, reinterpret_cast<const void**>(&ortDmlApi));
+    Ort::Env ortEnvironment(ORT_LOGGING_LEVEL_WARNING, "DirectML_Direct3D_TensorAllocation_Test");
+    Ort::SessionOptions sessionOptions;
+    sessionOptions.SetExecutionMode(ExecutionMode::ORT_SEQUENTIAL);
+    sessionOptions.DisableMemPattern();
+    sessionOptions.SetGraphOptimizationLevel(GraphOptimizationLevel::ORT_ENABLE_ALL);
+    ortApi.AddFreeDimensionOverrideByName(sessionOptions, "batch_size", 1);
+    OrtSessionOptionsAppendExecutionProvider_DML(sessionOptions, 0);
+
+    return Ort::Session(ortEnvironment, model_file_path, sessionOptions);
+}
+
 Ort::Value CreateTensorValueFromRTVResource(
     OrtDmlApi const& ortDmlApi,
     Ort::MemoryInfo const& memoryInformation,
@@ -221,39 +237,22 @@ Ort::Value CreateTensorValueUsingD3DResource(
 }
 
 std::vector<float> Eval(Ort::Session& session, const Ort::Value& prev_input) {
-    OutputDebugString(L"In EvalORTInference");
-    // Squeezenet opset v7 https://github.com/onnx/models/blob/master/vision/classification/squeezenet/README.md
-    const wchar_t* modelFilePath = L"C:/Users/numform/Windows-Machine-Learning/Samples/WinMLSamplesGallery/WinMLSamplesGalleryNative/efficientnet-lite4-11.onnx";
     const char* modelInputTensorName = "images:0";
     const char* modelOutputTensorName = "Softmax:0";
     const std::array<int64_t, 4> inputShape = { 1, 224, 224, 3 };
     const std::array<int64_t, 2> outputShape = { 1, 1000 };
 
-    const bool passTensorsAsD3DResources = true;
-
-    LARGE_INTEGER startTime;
-    LARGE_INTEGER d3dDeviceCreationTime;
-    LARGE_INTEGER sessionCreationTime;
-    LARGE_INTEGER tensorCreationTime;
-    LARGE_INTEGER bindingTime;
-    LARGE_INTEGER runTime;
-    LARGE_INTEGER synchronizeOutputsTime;
-    LARGE_INTEGER cpuFrequency;
-    QueryPerformanceFrequency(&cpuFrequency);
-    QueryPerformanceCounter(&startTime);
-
     try
     {
         Microsoft::WRL::ComPtr<ID3D12Device> d3d12Device;
         THROW_IF_FAILED(D3D12CreateDevice(nullptr, D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&d3d12Device)));
-        QueryPerformanceCounter(&d3dDeviceCreationTime);
 
         OrtApi const& ortApi = Ort::GetApi(); // Uses ORT_API_VERSION
         const OrtDmlApi* ortDmlApi;
         THROW_IF_NOT_OK(ortApi.GetExecutionProviderApi("DML", ORT_API_VERSION, reinterpret_cast<const void**>(&ortDmlApi)));
 
         Ort::IoBinding ioBinding = Ort::IoBinding::IoBinding(session);
-        const char* memoryInformationName = passTensorsAsD3DResources ? "DML" : "Cpu";
+        const char* memoryInformationName = "DML";
         Ort::MemoryInfo memoryInformation(memoryInformationName, OrtAllocatorType::OrtDeviceAllocator, 0, OrtMemType::OrtMemTypeDefault);
 
         // Create output tensor on device memory.
@@ -265,18 +264,6 @@ std::vector<float> Eval(Ort::Session& session, const Ort::Value& prev_input) {
         Ort::MemoryInfo otMemoryInformation(otMemoryInformationName, OrtAllocatorType::OrtDeviceAllocator, 0, OrtMemType::OrtMemTypeDefault);
         outputTensor = Ort::Value::CreateTensor<float>(otMemoryInformation, outputTensorValues.data(), outputTensorValues.size(), outputShape.data(), 2);
 
-        QueryPerformanceCounter(&tensorCreationTime);
-
-        ////////////////////////////////////////
-        // Bind the tensor inputs to the model, and run it.
-        //ioBinding.BindInput(modelInputTensorName, prev_input);
-        //ioBinding.BindOutput(modelOutputTensorName, outputTensor);
-        //ioBinding.SynchronizeInputs();
-        //QueryPerformanceCounter(&bindingTime);
-
-        Ort::RunOptions runOptions;
-
-        // TODO: Upload inputTensorValues to GPU inputTensor.
 
         std::vector<const char*> input_node_names;
         input_node_names.push_back(modelInputTensorName);
@@ -288,63 +275,9 @@ std::vector<float> Eval(Ort::Session& session, const Ort::Value& prev_input) {
         float* floatarr = output_tensors.front().GetTensorMutableData<float>();
         std::vector<float> final_results;
         for (int i = 0; i < 1000; i++) {
-            float score = floatarr[i];
-            std::wstring value = std::to_wstring(floatarr[i]);
-            std::wstring i_w_str = std::to_wstring(i);
-            //OutputDebugString(L"Output[");
-            //OutputDebugString(i_w_str.c_str());
-            //OutputDebugString(L"]: ");
-            //OutputDebugString(value.c_str());
-            //OutputDebugString(L"\n");
             final_results.push_back(floatarr[i]);
         }
 
-        //session.Run(runOptions, ioBinding);
-        //OutputDebugString(L"Done evaluating inference session");
-        //QueryPerformanceCounter(&runTime);
-        //printf("Synchronizing outputs.\n");
-        ////ioBinding.SynchronizeOutputs();
-        //QueryPerformanceCounter(&synchronizeOutputsTime);
-        //printf("Finished execution.\n");
-
-        //for (int i = 0; i <= std::min(outputTensorValues.size(), size_t(10)); ++i)
-        //{
-        //    std::wstring value = std::to_wstring(outputTensorValues[i]);
-        //    std::wstring i_w_str = std::to_wstring(i);
-        //    OutputDebugString(L"Output[");
-        //    OutputDebugString(i_w_str.c_str());
-        //    OutputDebugString(L"]: ");
-        //    OutputDebugString(value.c_str());
-        //    OutputDebugString(L"\n");
-        //}
-        //std::vector<uint32_t> indices(outputTensorValues.size(), 0);
-        //std::iota(indices.begin(), indices.end(), 0);
-        //sort(
-        //    indices.begin(),
-        //    indices.end(),
-        //    [&](uint32_t a, uint32_t b)
-        //    {
-        //        return (outputTensorValues[a] > outputTensorValues[b]);
-        //    }
-        //);
-        //OutputDebugString(L"Top 10:");
-        //OutputDebugString(L"\n");
-
-        //std::vector<float> top_10;
-        //for (int i = 0; i <= std::min(indices.size(), size_t(10)); ++i)
-        //{
-        //    std::wstring first = std::to_wstring(indices[i]);
-        //    std::wstring second = std::to_wstring(outputTensorValues[indices[i]]);
-        //    top_10.push_back(outputTensorValues[indices[i]]);
-
-        //    printf("output[%d] = %f\n", indices[i], outputTensorValues[indices[i]]);
-        //    OutputDebugString(L"Output[");
-        //    OutputDebugString(first.c_str());
-        //    OutputDebugString(L"]: ");
-        //    OutputDebugString(second.c_str());
-        //    OutputDebugString(L"\n");
-        //}
-        //return top_10;
         return final_results;
     }
     catch (Ort::Exception const& exception)
@@ -370,105 +303,20 @@ winrt::com_array<float> Preprocess(Ort::Session& session,
     ID3D12GraphicsCommandList* commandList,
     ID3D12CommandQueue* commandQueue)
 {
-    //ComPtr<ID3D12Device> d3d12Device;
     ComPtr<ID3D12CommandAllocator> cmdAlloc;
     ComPtr<ID3D12CommandQueue> cmdQueue;
     D3D12_COMMAND_QUEUE_DESC queueDesc = {};
     queueDesc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;
     queueDesc.Type = D3D12_COMMAND_LIST_TYPE_DIRECT;
     ComPtr<ID3D12GraphicsCommandList> cmdList;
-    //THROW_IF_FAILED(D3D12CreateDevice(nullptr, D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&d3d12Device)));
     THROW_IF_FAILED(device->CreateCommandQueue(&queueDesc, IID_PPV_ARGS(&cmdQueue)));
     THROW_IF_FAILED(device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&cmdAlloc)));
     THROW_IF_FAILED(device->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, cmdAlloc.Get(), nullptr, IID_PPV_ARGS(&cmdList)));
 
-
-    OutputDebugString(L"In Preprocess");
-
-    long newH = 224;
-    long newW = 224;
-    long h = 512;
-    long w = 512;
-    std::array<long, 6> center_fill_dimensions = CalculateCenterFillDimensions(h, w, newH, newW);
-    long resizedW = center_fill_dimensions[0];
-    long resizedH = center_fill_dimensions[1];
-    long top = center_fill_dimensions[2];
-    long bottom = center_fill_dimensions[3];
-    long left = center_fill_dimensions[4];
-    long right = center_fill_dimensions[5];
-    winrt::hstring interpolationMode = L"nearest";
-    long c = 3;
-    const std::array<int64_t, 4> preprocessInputShape = { 1, 512, 512, 4 };
-    const std::array<int64_t, 4> preprocessOutputShape = { 1, 224, 224, 3 };
-
-    //std::vector<std::vector<std::vector<std::vector<float>>>> test;
-    //for (int a = 0; a < 1; a++) {
-    //    std::vector<std::vector<std::vector<float>>> first;
-    //    for (int b = 0; b < 512; b++) {
-    //        std::vector<std::vector<float>> second;
-    //        for (int c = 0; c < 512; c++) {
-    //            std::vector<float> third;
-    //            for (int d = 0; d < 4; d++) {
-    //                third.push_back(1.0);
-    //            }
-    //            second.push_back(third);
-    //        }
-    //        first.push_back(second);
-    //    }
-    //    test.push_back(first);
-    //}
-
-    //std::vector<float> test;
-    //for (int a = 0; a < 1; a++) {
-    //    for (int b = 0; b < 512; b++) {
-    //        for (int c = 0; c < 512; c++) {
-    //            for (int d = 0; d < 4; d++) {
-    //                test.push_back(0.5);
-    //            }
-    //        }
-    //    }
-    //}
-
-    auto resize_op = LearningModelOperator(L"Resize")
-        .SetInput(L"X", L"Input")
-        .SetConstant(L"roi", TensorFloat::CreateFromIterable({ 8 }, { 0, 0, 0, 0, 1, 1, 1, 1 }))
-        .SetConstant(L"scales", TensorFloat::CreateFromIterable({ 4 }, { 1, (float)(1 + resizedH) / (float)h, (float)(1 + resizedH) / (float)h, 1 }))
-        .SetAttribute(L"mode", TensorString::CreateFromArray({}, { interpolationMode }))
-        .SetOutput(L"Y", L"ResizeOutput");
-
-    auto slice_op = LearningModelOperator(L"Slice")
-        .SetInput(L"data", L"ResizeOutput")
-        .SetConstant(L"starts", TensorInt64Bit::CreateFromIterable({ 4 }, { 0, top, left, 0 }))
-        .SetConstant(L"ends", TensorInt64Bit::CreateFromIterable({ 4 }, { LLONG_MAX, bottom, right, 3 }))
-        .SetOutput(L"output", L"Output");
-
-    //auto dimension_transpose = LearningModelOperator(L"Transpose")
-    //    .SetInput(L"data", L"SliceOutput")
-    //    .SetAttribute(L"perm", TensorInt64Bit::CreateFromArray({ 4 }, { INT64(0), INT64(3), INT64(1), INT64(2)}))
-    //    .SetOutput(L"transposed", L"Output");
-
-    //auto preprocessingModelBuilder =
-    //    LearningModelBuilder::Create(12)
-    //    .Inputs().Add(LearningModelBuilder::CreateTensorFeatureDescriptor(L"Input", TensorKind::Float, preprocessInputShape))
-    //    .Outputs().Add(LearningModelBuilder::CreateTensorFeatureDescriptor(L"Output", TensorKind::Float, preprocessOutputShape))
-    //    .Operators().Add(resize_op)
-    //    .Operators().Add(slice_op);
-    //    //.Operators().Add(dimension_transpose);
-    //auto preprocessingModel = preprocessingModelBuilder.CreateModel();
-
-    //preprocessingModelBuilder.Save(L"C:/Users/numform/Windows-Machine-Learning/Samples/WinMLSamplesGallery/WinMLSamplesGalleryNative/dx_preprocessor_efficient_net.onnx");
-
-    // Squeezenet opset v7 https://github.com/onnx/models/blob/master/vision/classification/squeezenet/README.md
-    //const wchar_t* modelFilePath = L"./squeezenet1.1-7.onnx";
-    const wchar_t* modelFilePath = L"C:/Users/numform/Windows-Machine-Learning/Samples/WinMLSamplesGallery/WinMLSamplesGalleryNative/squeezenet1.1-7.onnx";
-    const char* modelInputTensorName = "data";
-    const char* modelOutputTensorName = "squeezenet0_flatten0_reshape0";
     const char* preprocessModelInputTensorName = "Input";
     const char* preprocessModelOutputTensorName = "Output";
-    // Might have to change the 3's below to 4 for rgba
-    //const std::array<int64_t, 4> preprocessInputShape = { 1, 512, 512, 4 };
-    //const std::array<int64_t, 4> preprocessOutputShape = { 1, 3, 224, 224 };
-
+    const std::array<int64_t, 4> preprocessInputShape = { 1, 512, 512, 4 };
+    const std::array<int64_t, 4> preprocessOutputShape = { 1, 224, 224, 3 };
 
     HRESULT hr;
     ID3D12Resource* new_buffer;
@@ -513,16 +361,8 @@ winrt::com_array<float> Preprocess(Ort::Session& session,
         //return false;
     }
 
-    SaveWICTextureToFile(cmdQueue.Get(), current_buffer,
-        GUID_ContainerFormatJpeg, L"C:/Users/numform/Windows-Machine-Learning/Samples/WinMLSamplesGallery/WinMLSamplesGalleryNative/current_cube_image.jpg",
-        D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_PRESENT);
-
     const auto barrier = CD3DX12_RESOURCE_BARRIER::Transition(current_buffer, D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_COPY_SOURCE);
     cmdList->ResourceBarrier(1, &barrier);
-
-    //commandAllocator[frameIndex]->Reset();
-    //cmdAlloc->Reset();
-    //might need to reset
 
     cmdList->CopyResource(new_buffer, current_buffer);
     //cmdList->CopyBufferRegion(new_buffer, 0, current_buffer, 0, resourceDesc.Width);
@@ -531,55 +371,15 @@ winrt::com_array<float> Preprocess(Ort::Session& session,
     ID3D12CommandList* ppCommandLists[] = { cmdList.Get() };
     cmdQueue->ExecuteCommandLists(_countof(ppCommandLists), ppCommandLists);
 
-    //auto new_buffer_desc = new_buffer->GetDesc();
-
-    //long newH = 224;
-    //long newW = 224;
-    //long h = 512;
-    //long w = 512;
-    //std::array<long, 6> center_fill_dimensions = CalculateCenterFillDimensions(h, w, newH, newW);
-    //long resizedW = center_fill_dimensions[0];
-    //long resizedH = center_fill_dimensions[1];
-    //long top = center_fill_dimensions[2];
-    //long bottom = center_fill_dimensions[3];
-    //long left = center_fill_dimensions[4];
-    //long right = center_fill_dimensions[5];
-    //winrt::hstring interpolationMode = L"nearest";
-    //long c = 3;
-
-    const wchar_t* preprocessingModelFilePath = L"C:/Users/numform/Windows-Machine-Learning/Samples/WinMLSamplesGallery/WinMLSamplesGalleryNative/dx_preprocessor.onnx";
-
-    const bool passTensorsAsD3DResources = true;
-
-    LARGE_INTEGER startTime;
-    LARGE_INTEGER d3dDeviceCreationTime;
-    LARGE_INTEGER sessionCreationTime;
-    LARGE_INTEGER tensorCreationTime;
-    LARGE_INTEGER bindingTime;
-    LARGE_INTEGER runTime;
-    LARGE_INTEGER synchronizeOutputsTime;
-    LARGE_INTEGER cpuFrequency;
-    QueryPerformanceFrequency(&cpuFrequency);
-    QueryPerformanceCounter(&startTime);
-
     try
     {
-        //ComPtr<ID3D12Device> d3d12Device;
-        //THROW_IF_FAILED(D3D12CreateDevice(nullptr, D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&d3d12Device)));
-        //QueryPerformanceCounter(&d3dDeviceCreationTime);
-
         OrtApi const& ortApi = Ort::GetApi(); // Uses ORT_API_VERSION
         const OrtDmlApi* ortDmlApi;
         THROW_IF_NOT_OK(ortApi.GetExecutionProviderApi("DML", ORT_API_VERSION, reinterpret_cast<const void**>(&ortDmlApi)));
 
-        QueryPerformanceCounter(&sessionCreationTime);
-
-        Ort::IoBinding ioBinding = Ort::IoBinding::IoBinding(session);
-        const char* memoryInformationName = passTensorsAsD3DResources ? "DML" : "Cpu";
+        const char* memoryInformationName = "DML";
         Ort::MemoryInfo memoryInformation(memoryInformationName, OrtAllocatorType::OrtDeviceAllocator, 0, OrtMemType::OrtMemTypeDefault);
-
         ComPtr<IUnknown> inputTensorEpWrapper;
-
         Ort::Value inputTensor = CreateTensorValueFromRTVResource(
             *ortDmlApi,
             memoryInformation,
@@ -589,97 +389,14 @@ winrt::com_array<float> Preprocess(Ort::Session& session,
             /*out*/ IID_PPV_ARGS_Helper(inputTensorEpWrapper.GetAddressOf())
         );
 
-        //Ort::Value outputTensor(nullptr);
-        //std::vector<float> outputTensorValues(static_cast<size_t>(GetElementCount(preprocessOutputShape)), 0.0f);
-        //ComPtr<IUnknown> outputTensorEpWrapper;
-
-        //outputTensor = CreateTensorValueUsingD3DResource(
-        //    device,
-        //    *ortDmlApi,
-        //    memoryInformation,
-        //    preprocessOutputShape,
-        //    ONNX_TENSOR_ELEMENT_DATA_TYPE_FLOAT,
-        //    sizeof(float),
-        //    /*out*/ IID_PPV_ARGS_Helper(outputTensorEpWrapper.GetAddressOf())
-        //);
-
-        // Create output tensor on device memory.
-        //Ort::Value outputTensor(nullptr);
-        //std::vector<float> outputTensorValues(static_cast<size_t>(GetElementCount(preprocessOutputShape)), 0.0f);
-        //Microsoft::WRL::ComPtr<IUnknown> outputTensorEpWrapper;
-
-        //const char* otMemoryInformationName = "Cpu";
-        //Ort::MemoryInfo otMemoryInformation(otMemoryInformationName, OrtAllocatorType::OrtDeviceAllocator, 0, OrtMemType::OrtMemTypeDefault);
-        //outputTensor = Ort::Value::CreateTensor<float>(otMemoryInformation, outputTensorValues.data(), outputTensorValues.size(), preprocessOutputShape.data(), 4);
-
-        ////////////////////////////////////////
-        // Bind the tensor inputs to the model, and run it.
-        //ioBinding.BindInput(preprocessModelInputTensorName, inputTensor);
-        //ioBinding.BindOutput(preprocessModelOutputTensorName, outputTensor);
-        //ioBinding.SynchronizeInputs();
-        //QueryPerformanceCounter(&bindingTime);
-
-        Ort::RunOptions runOptions;
-
-        // TODO: Upload inputTensorValues to GPU inputTensor.
-
-        printf("Beginning execution.\n");
-        printf("Running Session.\n");
-
         std::vector<const char*> input_node_names;
         input_node_names.push_back(preprocessModelInputTensorName);
         std::vector<const char*> output_node_names;
         output_node_names.push_back(preprocessModelOutputTensorName);
         
-        //std::vector<Ort::Value> output_tensor_ort_values = session.Run(Ort::RunOptions{ nullptr }, input_node_names.data(),
-        //    &inputTensor, 1, output_node_names.data(), 1);
-        //auto outputTensor = output_tensor_ort_values[0];
-        //auto output_tensor_float_values = output_tensor_ort_values.front().GetTensorMutableData<Ort::Value>();
-        //auto outputTensor = output_tensor_float_values[0];
-
-        //const float* floatarr = inputTensor.GetTensorData<float>();
-        //for (int i = 0; i < 20000; i++) {
-        //    float score = floatarr[i];
-        //    std::wstring value = std::to_wstring(floatarr[i]);
-        //    std::wstring i_w_str = std::to_wstring(i);
-        //    OutputDebugString(L"Input[");
-        //    OutputDebugString(i_w_str.c_str());
-        //    OutputDebugString(L"]: ");
-        //    OutputDebugString(value.c_str());
-        //    OutputDebugString(L"\n");
-        //}
-
-        //auto memory_info = Ort::MemoryInfo::CreateCpu(OrtArenaAllocator, OrtMemTypeDefault);
-        //auto input_tensor_size = 1 * 512 * 512 * 4;
-        //Ort::Value test_input_tensor = Ort::Value::CreateTensor<float>(memory_info, test.data(), input_tensor_size, preprocessInputShape.data(), 4);
         Ort::Value outputTensor(nullptr);
         session.Run(Ort::RunOptions{ nullptr }, input_node_names.data(),
             &inputTensor, 1, output_node_names.data(), &outputTensor, 1);
-        //session.Run(Ort::RunOptions{ nullptr }, input_node_names.data(),
-        //    &test_input_tensor, 1, output_node_names.data(), &outputTensor, 1);
-
-        //auto some_len = output_tensor_ort_values.size();
-        //auto output_tensor_float_values = output_tensor_ort_values.front().GetTensorMutableData<float>();
-
-        //auto memory_info = Ort::MemoryInfo::CreateCpu(OrtArenaAllocator, OrtMemTypeDefault);
-        //size_t output_tensor_size = 224 * 224 * 3;
-        //Ort::Value outputTensor = Ort::Value::CreateTensor<float>(memory_info, output_tensor_float_values, output_tensor_size, preprocessOutputShape.data(), 4);
-
-        //session.Run(runOptions, ioBinding);
-        OutputDebugString(L"Done evaluating preprocessing session");
-        //ioBinding.SynchronizeOutputs();
-        QueryPerformanceCounter(&synchronizeOutputsTime);
-
-        //float* opfloatarr = outputTensor.GetTensorMutableData<float>();
-        //for (int i = 0; i < 100000; i++) {
-        //    std::wstring value = std::to_wstring(opfloatarr[i]);
-        //    std::wstring i_w_str = std::to_wstring(i);
-        //    OutputDebugString(L"Output[");
-        //    OutputDebugString(i_w_str.c_str());
-        //    OutputDebugString(L"]: ");
-        //    OutputDebugString(value.c_str());
-        //    OutputDebugString(L"\n");
-        //}
 
         auto eval_results_std = Eval(inferenceSession, outputTensor);
         winrt::com_array<float> eval_results(1000);

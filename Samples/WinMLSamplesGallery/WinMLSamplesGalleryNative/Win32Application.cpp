@@ -3,14 +3,21 @@
 #include "Win32Application.h"
 
 HWND Win32Application::m_hwnd = nullptr;
+bool Win32Application::close_window = false;
 
-int Win32Application::Run(D3D12Quad* pSample, HINSTANCE hInstance, int nCmdShow)
+HMODULE GetCurrentModule()
 {
-    // Parse the command line parameters
-    //int argc;
-    //LPWSTR* argv = CommandLineToArgvW(GetCommandLineW(), &argc);
-    //pSample->ParseCommandLineArgs(argv, argc);
-    //LocalFree(argv);
+    HMODULE hModule = NULL;
+    GetModuleHandleEx(
+        GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS,
+        (LPCTSTR)GetCurrentModule,
+        &hModule);
+    return hModule;
+}
+
+int Win32Application::Run(D3D12Quad* pSample, int nCmdShow)
+{
+    HINSTANCE hInstance = GetCurrentModule();
 
     // Initialize the window class.
     WNDCLASSEX windowClass = { 0 };
@@ -56,11 +63,16 @@ int Win32Application::Run(D3D12Quad* pSample, HINSTANCE hInstance, int nCmdShow)
     pSample->OnInit();
 
     ShowWindow(m_hwnd, nCmdShow);
+    close_window = false;
 
     // Main sample loop.
     MSG msg = {};
     while (msg.message != WM_QUIT)
     {
+        if (close_window) {
+            pSample->OnDestroy();
+            PostMessage(m_hwnd, WM_QUIT, 0, 0);
+        }
         // Process any messages in the queue.
         if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
         {
@@ -113,4 +125,9 @@ LRESULT CALLBACK Win32Application::WindowProc(HWND hWnd, UINT message, WPARAM wP
 
     // Handle any messages the switch statement didn't.
     return DefWindowProc(hWnd, message, wParam, lParam);
+}
+
+void Win32Application::CloseWindow()
+{
+    close_window = true;
 }

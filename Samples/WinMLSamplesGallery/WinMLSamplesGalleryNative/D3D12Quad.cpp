@@ -51,21 +51,6 @@ void D3D12Quad::LoadPipeline()
 {
     UINT dxgiFactoryFlags = 0;
 
-//#if defined(_DEBUG)
-//    // Enable the debug layer (requires the Graphics Tools "optional feature").
-//    // NOTE: Enabling the debug layer after device creation will invalidate the active device.
-//    {
-//        ComPtr<ID3D12Debug> debugController;
-//        if (SUCCEEDED(D3D12GetDebugInterface(IID_PPV_ARGS(&debugController))))
-//        {
-//            debugController->EnableDebugLayer();
-//
-//            // Enable additional debug layers.
-//            dxgiFactoryFlags |= DXGI_CREATE_FACTORY_DEBUG;
-//        }
-//    }
-//#endif
-
     ComPtr<IDXGIFactory4> factory;
     ThrowIfFailed(CreateDXGIFactory2(dxgiFactoryFlags, IID_PPV_ARGS(&factory)));
 
@@ -149,7 +134,6 @@ void D3D12Quad::LoadPipeline()
 // Load the sample assets.
 void D3D12Quad::LoadAssets()
 {
-    OutputDebugString(L"Load Assets Called\n");
     // Create the root signature.
     {
         D3D12_FEATURE_DATA_ROOT_SIGNATURE featureData = {};
@@ -462,11 +446,6 @@ void D3D12Quad::PopulateCommandList()
 
 void D3D12Quad::WaitForPreviousFrame()
 {
-    // WAITING FOR THE FRAME TO COMPLETE BEFORE CONTINUING IS NOT BEST PRACTICE.
-    // This is code implemented as such for simplicity. The D3D12HelloFrameBuffering
-    // sample illustrates how to use fences for efficient resource usage and to
-    // maximize GPU utilization.
-
     // Signal and increment the fence value.
     const UINT64 fence = m_fenceValue;
     ThrowIfFailed(m_commandQueue->Signal(m_fence.Get(), fence));
@@ -580,7 +559,6 @@ int D3D12Quad::LoadImageDataFromFile(BYTE** imageData, D3D12_RESOURCE_DESC& reso
 {
     HRESULT hr;
 
-    // we only need one instance of the imaging factory to create decoders and frames
     static IWICImagingFactory* wicFactory;
 
     // reset decoder, frame and converter since these will be different for each image we load
@@ -628,9 +606,6 @@ int D3D12Quad::LoadImageDataFromFile(BYTE** imageData, D3D12_RESOURCE_DESC& reso
     UINT textureWidth, textureHeight;
     hr = wicFrame->GetSize(&textureWidth, &textureHeight);
     if (FAILED(hr)) return 0;
-
-    // we are not handling sRGB types in this tutorial, so if you need that support, you'll have to figure
-    // out how to implement the support yourself
 
     // convert wic pixel format to dxgi pixel format
     DXGI_FORMAT dxgiFormat = GetDXGIFormatFromWICFormat(pixelFormat);
@@ -699,7 +674,7 @@ int D3D12Quad::LoadImageDataFromFile(BYTE** imageData, D3D12_RESOURCE_DESC& reso
     resourceDescription.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN; // The arrangement of the pixels. Setting to unknown lets the driver choose the most efficient one
     resourceDescription.Flags = D3D12_RESOURCE_FLAG_NONE; // no flags
 
-    // return the size of the image. remember to delete the image once your done with it (in this tutorial once its uploaded to the gpu)
+    // return the size of the image.
     return imageSize;
 }
 

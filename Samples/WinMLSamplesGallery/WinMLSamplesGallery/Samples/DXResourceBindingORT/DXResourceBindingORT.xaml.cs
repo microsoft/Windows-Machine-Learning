@@ -55,7 +55,6 @@ namespace WinMLSamplesGallery.Samples
                 }
                 float[] results = await Task.Run(() => WinMLSamplesGalleryNative.DXResourceBinding.EvalORT());
                 UpdateClassificationResults(results);
-                System.Diagnostics.Debug.WriteLine(i.ToString() + ": Updated ui with eval\n");
                 System.Threading.Thread.Sleep(1000);
                 i++;
             }
@@ -96,7 +95,6 @@ namespace WinMLSamplesGallery.Samples
 
         public void StopAllEvents()
         {
-            System.Diagnostics.Debug.WriteLine("In dx... stop all events called");
             pageExited = true;
         }
     }

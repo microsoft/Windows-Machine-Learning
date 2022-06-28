@@ -34,6 +34,8 @@
 using namespace winrt::Microsoft::AI::MachineLearning;
 using namespace Microsoft::WRL;
 
+Ort::Session CreateSession(const wchar_t* model_file_path);
+
 std::vector<float> Eval(Ort::Session& session, const Ort::Value& prev_input);
 
 winrt::com_array<float> Preprocess(Ort::Session& session,

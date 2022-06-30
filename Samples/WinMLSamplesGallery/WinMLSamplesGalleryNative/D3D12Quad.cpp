@@ -33,7 +33,6 @@ D3D12Quad::D3D12Quad(UINT width, UINT height, std::wstring name) :
 void D3D12Quad::OnInit()
 {
     auto title = GetTitle();
-    OutputDebugString(L"In OnInit\n");
     fileNames = {
         L"C:/Users/numform/Windows-Machine-Learning/Samples/WinMLSamplesGallery/WinMLSamplesGalleryNative/cat.jpg",
         L"C:/Users/numform/Windows-Machine-Learning/Samples/WinMLSamplesGallery/WinMLSamplesGalleryNative/fish.png",

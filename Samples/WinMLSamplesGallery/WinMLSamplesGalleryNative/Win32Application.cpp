@@ -32,8 +32,10 @@ int Win32Application::Run(D3D12Quad* pSample, int nCmdShow)
     windowClass.hCursor = LoadCursor(NULL, IDC_ARROW);
     windowClass.lpszClassName = L"DXQuad";
 
+    auto hr = RegisterClassEx(&windowClass);
     // Register window class
-    if (!RegisterClassEx(&windowClass))
+    auto err = GetLastError();
+    if (!hr)
     {
         MessageBox(NULL, L"Error registering class",
             L"Error", MB_OK | MB_ICONERROR);
@@ -76,7 +78,8 @@ int Win32Application::Run(D3D12Quad* pSample, int nCmdShow)
         // variable is set to true
         if (close_window) {
             pSample->OnDestroy();
-            PostMessage(m_hwnd, WM_QUIT, 0, 0);
+            PostMessage(m_hwnd, WM_CLOSE, 0, 0);
+            break;
         }
         // Process any messages in the queue.
         if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
@@ -94,6 +97,9 @@ int Win32Application::Run(D3D12Quad* pSample, int nCmdShow)
         MessageBox(NULL, L"Error unregistering class",
             L"Error", MB_OK | MB_ICONERROR);
         return 1;
+    }
+    else {
+        OutputDebugString(L"Class unregistered");
     }
 
     // Return this part of the WM_QUIT message to Windows.
@@ -118,8 +124,11 @@ LRESULT CALLBACK Win32Application::WindowProc(HWND hWnd, UINT message, WPARAM wP
     case WM_PAINT:
         if (pSample)
         {
-            pSample->OnUpdate();
-            pSample->OnRender();
+            if (!close_window)
+            {
+                pSample->OnUpdate();
+                pSample->OnRender();
+            }
         }
         return 0;
 

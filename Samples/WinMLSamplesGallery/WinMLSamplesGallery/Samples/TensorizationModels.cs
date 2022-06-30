@@ -736,7 +736,7 @@ namespace WinMLSamplesGallery.Samples
                                   .SetOutput("C", "SubOutput"))
               .Operators.Add(new LearningModelOperator("Transpose") // Move the output back to NHWC (this is what efficientnet requires)
                                   .SetInput("data", "SubOutput")
-                                  .SetAttribute("perm", TensorInt64Bit.CreateFromArray(new long[] { 4 }, new long[] { 0, 2, 3, 1 })) // 0,3,1,2
+                                  .SetAttribute("perm", TensorInt64Bit.CreateFromArray(new long[] { 4 }, new long[] { 0, 2, 3, 1 }))
                                   .SetOutput("transposed", "Output"));
             return builder.CreateModel();
 

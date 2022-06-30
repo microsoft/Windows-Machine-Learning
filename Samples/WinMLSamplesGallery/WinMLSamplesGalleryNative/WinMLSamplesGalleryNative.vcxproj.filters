@@ -15,9 +15,6 @@
     <ClCompile Include="DXResourceBinding.cpp">
       <Filter>DXResourceBinding</Filter>
     </ClCompile>
-    <ClCompile Include="SanityApp.cpp">
-      <Filter>DXResourceBinding</Filter>
-    </ClCompile>
     <ClCompile Include="ORTHelpers.cpp">
       <Filter>DXResourceBinding</Filter>
     </ClCompile>
@@ -103,14 +100,6 @@
     <Filter Include="DXResourceBinding">
       <UniqueIdentifier>{393a0b12-622a-4d4c-b4a6-ed0bb1b2e285}</UniqueIdentifier>
     </Filter>
-  </ItemGroup>
-  <ItemGroup>
-    <FxCompile Include="VertexShader.hlsl">
-      <Filter>DXResourceBinding</Filter>
-    </FxCompile>
-    <FxCompile Include="PixelShader.hlsl">
-      <Filter>DXResourceBinding</Filter>
-    </FxCompile>
   </ItemGroup>
   <ItemGroup>
     <Image Include="cat.jpg">

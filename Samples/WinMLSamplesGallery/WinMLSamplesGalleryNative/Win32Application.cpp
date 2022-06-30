@@ -5,6 +5,8 @@
 HWND Win32Application::m_hwnd = nullptr;
 bool Win32Application::close_window = false;
 
+// Get the HModule that will be used to spawn
+// the HWND
 HMODULE GetCurrentModule()
 {
     HMODULE hModule = NULL;
@@ -15,8 +17,10 @@ HMODULE GetCurrentModule()
     return hModule;
 }
 
+// Launch the HWND and init D3D
 int Win32Application::Run(D3D12Quad* pSample, int nCmdShow)
 {
+    // Get the Hinstance
     HINSTANCE hInstance = GetCurrentModule();
 
     // Initialize the window class.
@@ -28,6 +32,7 @@ int Win32Application::Run(D3D12Quad* pSample, int nCmdShow)
     windowClass.hCursor = LoadCursor(NULL, IDC_ARROW);
     windowClass.lpszClassName = L"DXQuad";
 
+    // Register window class
     if (!RegisterClassEx(&windowClass))
     {
         MessageBox(NULL, L"Error registering class",
@@ -51,7 +56,6 @@ int Win32Application::Run(D3D12Quad* pSample, int nCmdShow)
         nullptr,        // We aren't using menus.
         hInstance,
         pSample);
-
     if (!m_hwnd)
     {
         MessageBox(NULL, L"Error creating window",
@@ -59,16 +63,17 @@ int Win32Application::Run(D3D12Quad* pSample, int nCmdShow)
         return false;
     }
 
-    // Initialize the sample
+    // Initialize the sample and show the window
     pSample->OnInit();
-
     ShowWindow(m_hwnd, nCmdShow);
-    close_window = false;
 
     // Main sample loop.
+    close_window = false;
     MSG msg = {};
     while (msg.message != WM_QUIT)
     {
+        // Destroy the sample and window if the close_window
+        // variable is set to true
         if (close_window) {
             pSample->OnDestroy();
             PostMessage(m_hwnd, WM_QUIT, 0, 0);
@@ -81,8 +86,8 @@ int Win32Application::Run(D3D12Quad* pSample, int nCmdShow)
         }
     }
 
-    pSample->OnDestroy();
-
+    // Unregister the hInstance so it can be reused if
+    // the sample is reloaded
     if (!UnregisterClass(L"DXQuad", hInstance))
     {
         auto error = GetLastError();

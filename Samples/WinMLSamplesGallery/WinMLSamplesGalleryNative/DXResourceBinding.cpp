@@ -38,32 +38,41 @@ D3D12Quad sample(800, 600, L"D3D12 Quad");
 
 namespace winrt::WinMLSamplesGalleryNative::implementation
 {
+    // Create ORT Sessions and launch D3D window in a separate thread
 	void DXResourceBinding::LaunchWindow() {
-
+        // Create ORT Sessions that will be used for preprocessing and classification
         const wchar_t* preprocessingModelFilePath = L"C:/Users/numform/Windows-Machine-Learning/Samples/WinMLSamplesGallery/WinMLSamplesGalleryNative/dx_preprocessor_efficient_net.onnx";
-        preprocesingSession = CreateSession(preprocessingModelFilePath);
-
         const wchar_t* inferencemodelFilePath = L"C:/Users/numform/Windows-Machine-Learning/Samples/WinMLSamplesGallery/WinMLSamplesGalleryNative/efficientnet-lite4-11.onnx";
+        preprocesingSession = CreateSession(preprocessingModelFilePath);
         inferenceSession = CreateSession(inferencemodelFilePath);
 
+        // Spawn the window in a separate thread
         std::thread d3d_th(Win32Application::Run, &sample, 10);
 
         // Wait until the D3D pipeline finishes
         while (!sample.is_initialized) {}
 
-        // Run the quad in a separate, detached thread
+        // Detach the thread so it doesn't block the UI
         d3d_th.detach();
 	}
 
+    // Get the buffer currently being drawn to the screen then
+    // preprocess and classify it
     winrt::com_array<float> DXResourceBinding::EvalORT() {
-        D3D12Quad::D3DInfo info = sample.GetD3DInfo();
-        Ort::Value preprocessedInput = Preprocess(*preprocesingSession, info.device.Get(),
-            info.swapChain.Get(), info.frameIndex, info.commandAllocator.Get(), info.commandList.Get(),
-            info.commandQueue.Get());
+        // Get the buffer currently being drawn to the screen
+        ComPtr<ID3D12Resource> currentBuffer = sample.GetCurrentBuffer();
+
+        // Preprocess the buffer (shrink from 512 x 512 x 4 to 224 x 224 x 3)
+        Ort::Value preprocessedInput = Preprocess(*preprocesingSession,
+            currentBuffer);
+
+        // Classify the image using EfficientNet and return the results
         winrt::com_array<float> results = Eval(*inferenceSession, preprocessedInput);
+
         return results;
     }
 
+    // Close the D3D Window and cleanup
     void DXResourceBinding::CloseWindow() {
         Win32Application::CloseWindow();
     }

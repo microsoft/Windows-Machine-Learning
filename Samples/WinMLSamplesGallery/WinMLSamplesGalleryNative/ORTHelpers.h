@@ -36,27 +36,12 @@ using namespace Microsoft::WRL;
 
 Ort::Session CreateSession(const wchar_t* model_file_path);
 
+Ort::Value Preprocess(Ort::Session& session,
+    ComPtr<ID3D12Resource> currentBuffer);
+
 winrt::com_array<float> Eval(Ort::Session& session, const Ort::Value& prev_input);
 
-Ort::Value Preprocess(Ort::Session& session,
-    ID3D12Device* device,
-    IDXGISwapChain3* swapChain,
-    UINT frameIndex,
-    ID3D12CommandAllocator* commandAllocator,
-    ID3D12GraphicsCommandList* commandList,
-    ID3D12CommandQueue* commandQueue);
-
-Ort::Value CreateTensorValueUsingD3DResource(
-    ID3D12Device* d3d12Device,
-    OrtDmlApi const& ortDmlApi,
-    Ort::MemoryInfo const& memoryInformation,
-    std::span<const int64_t> tensorDimensions,
-    ONNXTensorElementDataType elementDataType,
-    size_t elementByteSize,
-    /*out*/ void** dmlEpResourceWrapper // Must stay alive with Ort::Value.
-);
-
-Ort::Value CreateTensorValueFromRTVResource(
+Ort::Value CreateTensorValueFromD3DResource(
     OrtDmlApi const& ortDmlApi,
     Ort::MemoryInfo const& memoryInformation,
     ID3D12Resource* d3dResource,
@@ -64,5 +49,3 @@ Ort::Value CreateTensorValueFromRTVResource(
     ONNXTensorElementDataType elementDataType,
     /*out*/ void** dmlEpResourceWrapper // Must stay alive with Ort::Value.
 );
-
-std::array<long, 6> CalculateCenterFillDimensions(long oldH, long oldW, long h, long w);

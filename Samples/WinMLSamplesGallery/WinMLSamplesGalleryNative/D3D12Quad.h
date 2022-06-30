@@ -21,17 +21,7 @@ public:
     UINT GetHeight() const { return m_height; }
     const WCHAR* GetTitle() const { return m_title.c_str(); }
 
-    struct D3DInfo
-    {
-        ComPtr<ID3D12Device> device;
-        ComPtr<IDXGISwapChain3> swapChain;
-        UINT frameIndex;
-        ComPtr<ID3D12CommandAllocator> commandAllocator;
-        ComPtr<ID3D12GraphicsCommandList> commandList;
-        ComPtr<ID3D12CommandQueue> commandQueue;
-    };
-
-    D3DInfo GetD3DInfo();
+    ComPtr<ID3D12Resource> GetCurrentBuffer();
 
     bool is_initialized = false;
 
@@ -74,6 +64,13 @@ private:
     void LoadAssets();
     void PopulateCommandList();
     void WaitForPreviousFrame();
+    void CreateRootSignature();
+    void CreatePipelineState();
+    void CreateVertexBuffer();
+    void CreateFence();
+    void CreateDescriptorHeaps();
+    void CreateFrameResources();
+    void CreateCurrentBuffer();
 
     ID3D12Resource* textureBuffer; // the resource heap containing our texture
 
@@ -100,5 +97,8 @@ private:
     UINT m_height;
     float m_aspectRatio;
     std::wstring m_title;
+    // holds the texture currently being drawn to the screen in 
+    // a resource dimension buffer that will be used by ORT for inference
+    ComPtr<ID3D12Resource> currentBuffer;
 };
 

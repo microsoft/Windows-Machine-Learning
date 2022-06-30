@@ -4,30 +4,8 @@
 #include "pch.h"
 #include "DXResourceBinding.h"
 #include "DXResourceBinding.g.cpp"
-#include <DirectXMath.h>
 #include "stdafx.h"
-#include <commctrl.h>
-#include <mfapi.h>
-#include <iostream>
-
-#include <cstdio>
-#include <algorithm>
-#include <numeric>
-#include <functional>
-#include <utility>
-#include <string_view>
-#include <span>
-#include <optional>
-#include <memory>
-
-#include <windows.h>
-#include <d3d12.h>
-#include <wrl/client.h>
-#include "dml_provider_factory.h"
-#include "onnxruntime_cxx_api.h"
 #include "ORTHelpers.h"
-
-#include "Win32Application.h"
 
 #undef min
 

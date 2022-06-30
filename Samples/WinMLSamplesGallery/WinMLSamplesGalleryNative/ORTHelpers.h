@@ -1,37 +1,13 @@
 #pragma once
 
-#include "winrt/Microsoft.AI.MachineLearning.h"
-#include "winrt/Microsoft.AI.MachineLearning.Experimental.h"
-
-#include <DirectXMath.h>
-#include <commctrl.h>
-#include <mfapi.h>
-#include <iostream>
-
-#include <cstdio>
 #include <algorithm>
 #include <numeric>
 #include <functional>
-#include <utility>
-#include <string_view>
 #include <span>
-#include <optional>
-#include <memory>
-
-#include <windows.h>
-#include <d3d12.h>
 #include <wrl/client.h>
 #include "dml_provider_factory.h"
 #include "onnxruntime_cxx_api.h"
 
-#include <dxgi1_4.h>
-#include <D3Dcompiler.h>
-#include "d3dx12.h"
-#include <string>
-#include <wincodec.h>
-#include <ScreenGrab.h>
-
-using namespace winrt::Microsoft::AI::MachineLearning;
 using namespace Microsoft::WRL;
 
 Ort::Session CreateSession(const wchar_t* model_file_path);

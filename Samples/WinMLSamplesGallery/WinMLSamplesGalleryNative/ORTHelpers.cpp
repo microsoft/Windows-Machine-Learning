@@ -2,13 +2,6 @@
 #include "ORTHelpers.h"
 #undef min
 
-using namespace DirectX;
-
-using TensorInt64Bit = winrt::Microsoft::AI::MachineLearning::TensorInt64Bit;
-using TensorKind = winrt::Microsoft::AI::MachineLearning::TensorKind;
-using LearningModelBuilder = winrt::Microsoft::AI::MachineLearning::Experimental::LearningModelBuilder;
-using LearningModelOperator = winrt::Microsoft::AI::MachineLearning::Experimental::LearningModelOperator;
-
 #define THROW_IF_FAILED(hr) {HRESULT localHr = (hr); if (FAILED(hr)) throw hr;}
 #define RETURN_IF_FAILED(hr) {HRESULT localHr = (hr); if (FAILED(hr)) return hr;}
 #define THROW_IF_NOT_OK(status) {auto localStatus = (status); if (localStatus) throw E_FAIL;}

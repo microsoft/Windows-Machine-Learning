@@ -26,7 +26,7 @@ std::vector<ILearningModelFeatureValue> GenerateInputFeatures(const LearningMode
         ColorManagementMode colorManagementMode = ColorManagementMode::DoNotColorManage;
         if (args.IsImageInput())
         {
-            colorManagementMode = GetColorManagementMode(model);
+            colorManagementMode = GetColorManagementMode(model, args.TerseOutput());
         }
         if (inputDataType == InputDataType::Tensor)
         {

@@ -151,16 +151,17 @@ template <> winrt::hstring ConvertToPointerType<TensorKind::String>(winrt::hstri
     return static_cast<winrt::hstring>(value);
 };
 
-static ColorManagementMode GetColorManagementMode(const LearningModel& model)
+static ColorManagementMode GetColorManagementMode(const LearningModel& model, bool terseOutput)
 
 {
     // Get model color space gamma
     hstring gammaSpace = L"";
-    try
+    std::optional<hstring> triedGammaSpace = model.Metadata().TryLookup(L"Image.ColorSpaceGamma");
+    if (triedGammaSpace)
     {
-        gammaSpace = model.Metadata().Lookup(L"Image.ColorSpaceGamma");
+        gammaSpace = std::move(triedGammaSpace.value());
     }
-    catch (...)
+    else if (!terseOutput)
     {
         printf("    Model does not have color space gamma information. Will color manage to sRGB by default...\n");
     }

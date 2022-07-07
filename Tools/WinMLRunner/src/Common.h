@@ -64,8 +64,9 @@ using namespace winrt;
 #ifndef THROW_IF_FAILED
 #define THROW_IF_FAILED(hr)                                                                                            \
     {                                                                                                                  \
-        if (FAILED(hr))                                                                                                \
-            throw hresult_error(hr);                                                                                   \
+        HRESULT localHresult = (hr);                                                                                   \
+        if (FAILED(localHresult))                                                                                      \
+            throw hresult_error(localHresult);                                                                         \
     }
 #endif
 inline std::wstring MakeErrorMsg(HRESULT hr)

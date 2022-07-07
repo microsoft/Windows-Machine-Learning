@@ -739,8 +739,6 @@ namespace WinMLSamplesGallery.Samples
                                   .SetAttribute("perm", TensorInt64Bit.CreateFromArray(new long[] { 4 }, new long[] { 0, 2, 3, 1 }))
                                   .SetOutput("transposed", "Output"));
             return builder.CreateModel();
-
-            //can use join model on the fly
         }
 #pragma warning restore CA1416 // Validate platform compatibility
     }

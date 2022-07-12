@@ -153,8 +153,28 @@ void D3D12Quad::LoadAssets()
     // in a resource dimension buffer. This will be used for inference in ORT
     CreateCurrentBuffer();
 
+    const auto present_to_copy_src = CD3DX12_RESOURCE_BARRIER::Transition(m_renderTargets[m_frameIndex].Get(), D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_COPY_SOURCE);
+    m_commandList->ResourceBarrier(1, &present_to_copy_src);
+
+    auto desc = m_renderTargets[m_frameIndex]->GetDesc();
+    D3D12_PLACED_SUBRESOURCE_FOOTPRINT bufferFootprint = {};
+    bufferFootprint.Footprint.Width = static_cast<UINT>(desc.Width);
+    bufferFootprint.Footprint.Height = desc.Height;
+    bufferFootprint.Footprint.Depth = 1;
+    bufferFootprint.Footprint.RowPitch = static_cast<UINT>(imageBytesPerRow);
+    bufferFootprint.Footprint.Format = desc.Format;
+
+    const CD3DX12_TEXTURE_COPY_LOCATION copyDest(currentBuffer.Get(), bufferFootprint);
+    const CD3DX12_TEXTURE_COPY_LOCATION copySrc(m_renderTargets[m_frameIndex].Get(), 0);
+
+    m_commandList->CopyTextureRegion(&copyDest, 0, 0, 0, &copySrc, nullptr);
+
+    const auto copy_src_to_present = CD3DX12_RESOURCE_BARRIER::Transition(m_renderTargets[m_frameIndex].Get(), D3D12_RESOURCE_STATE_COPY_SOURCE, D3D12_RESOURCE_STATE_PRESENT);
+    m_commandList->ResourceBarrier(1, &copy_src_to_present);
+
     // Close the command list and execute it to begin the initial GPU setup.
-    ThrowIfFailed(m_commandList->Close());
+    //ThrowIfFailed(m_commandList->Close());
+    auto close_hr = m_commandList->Close();
     ID3D12CommandList* ppCommandLists[] = { m_commandList.Get() };
     m_commandQueue->ExecuteCommandLists(_countof(ppCommandLists), ppCommandLists);
 
@@ -288,7 +308,6 @@ void D3D12Quad::CreateVertexBuffer()
 void D3D12Quad::LoadImageTexture() {
     // Load the image from file
     D3D12_RESOURCE_DESC textureDesc;
-    int imageBytesPerRow;
     BYTE* imageData;
     int imageSize = LoadImageDataFromFile(&imageData, textureDesc, fileNames[fileIndex].c_str(), imageBytesPerRow);
 
@@ -356,27 +375,51 @@ void D3D12Quad::LoadImageTexture() {
 // in a resource dimension buffer. This will be used for inference in ORT
 void D3D12Quad::CreateCurrentBuffer()
 {
-    D3D12_RESOURCE_DESC resourceDesc = {
-        D3D12_RESOURCE_DIMENSION_BUFFER,
-        0,
-        static_cast<uint64_t>(800 * 600 * 3 * 4),
-        1,
-        1,
-        1,
-        DXGI_FORMAT_UNKNOWN,
-        {1, 0},
-        D3D12_TEXTURE_LAYOUT_ROW_MAJOR,
-        D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS
-    };
+    //D3D12_RESOURCE_DESC resourceDesc = {
+    //    D3D12_RESOURCE_DIMENSION_BUFFER,
+    //    0,
+    //    static_cast<uint64_t>(800 * 600 * 3 * 4),
+    //    1,
+    //    1,
+    //    1,
+    //    DXGI_FORMAT_UNKNOWN,
+    //    {1, 0},
+    //    D3D12_TEXTURE_LAYOUT_ROW_MAJOR,
+    //    D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS
+    //};
 
-    auto heap_properties = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT);
-    ThrowIfFailed(m_device->CreateCommittedResource(
-        &heap_properties,
+    // Readback resources must be buffers
+    auto desc = m_renderTargets[m_frameIndex]->GetDesc();
+    D3D12_RESOURCE_DESC bufferDesc = {};
+    bufferDesc.DepthOrArraySize = 1;
+    bufferDesc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
+    bufferDesc.Flags = D3D12_RESOURCE_FLAG_NONE;
+    bufferDesc.Format = DXGI_FORMAT_UNKNOWN;
+    //bufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+    bufferDesc.Height = 1;
+    bufferDesc.Width = imageBytesPerRow * desc.Height;
+    //bufferDesc.Width = static_cast<uint64_t>(800 * 600 * 3 * 4);
+    bufferDesc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
+    //bufferDesc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
+    bufferDesc.MipLevels = 1;
+    bufferDesc.SampleDesc.Count = 1;
+
+    //auto heap_properties = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT);
+    const CD3DX12_HEAP_PROPERTIES readBackHeapProperties(D3D12_HEAP_TYPE_READBACK);
+    auto some_hr = m_device->CreateCommittedResource(
+        &readBackHeapProperties,
         D3D12_HEAP_FLAG_NONE,
-        &resourceDesc,
+        &bufferDesc,
         D3D12_RESOURCE_STATE_COPY_DEST,
         nullptr,
-        IID_PPV_ARGS(&currentBuffer)));
+        IID_PPV_ARGS(&currentBuffer));
+    //ThrowIfFailed(m_device->CreateCommittedResource(
+    //    &readBackHeapProperties,
+    //    D3D12_HEAP_FLAG_NONE,
+    //    &bufferDesc,
+    //    D3D12_RESOURCE_STATE_COPY_DEST,
+    //    nullptr,
+    //    IID_PPV_ARGS(&currentBuffer)));
 }
 
 // Create synchronization objects and wait until assets have been uploaded to the GPU.
@@ -486,11 +529,28 @@ void D3D12Quad::PopulateCommandList()
     // copy the current texture into a resource dimension buffer
     const auto present_to_copy_src = CD3DX12_RESOURCE_BARRIER::Transition(m_renderTargets[m_frameIndex].Get(), D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_COPY_SOURCE);
     m_commandList->ResourceBarrier(1, &present_to_copy_src);
-    m_commandList->CopyResource(currentBuffer.Get(), m_renderTargets[m_frameIndex].Get());
+
+    //m_commandList->CopyResource(currentBuffer.Get(), m_renderTargets[m_frameIndex].Get());
+
+    auto desc = m_renderTargets[m_frameIndex]->GetDesc();
+    D3D12_PLACED_SUBRESOURCE_FOOTPRINT bufferFootprint = {};
+    bufferFootprint.Footprint.Width = desc.Width;
+    bufferFootprint.Footprint.Height = desc.Height;
+    bufferFootprint.Footprint.Depth = 1;
+    bufferFootprint.Footprint.RowPitch = static_cast<UINT>(imageBytesPerRow);
+    bufferFootprint.Footprint.Format = desc.Format;
+
+    const CD3DX12_TEXTURE_COPY_LOCATION copyDest(currentBuffer.Get(), bufferFootprint);
+    const CD3DX12_TEXTURE_COPY_LOCATION copySrc(m_renderTargets[m_frameIndex].Get(), 0);
+
+    // Copy the texture
+    m_commandList->CopyTextureRegion(&copyDest, 0, 0, 0, &copySrc, nullptr);
+
     const auto copy_src_to_present = CD3DX12_RESOURCE_BARRIER::Transition(m_renderTargets[m_frameIndex].Get(), D3D12_RESOURCE_STATE_COPY_SOURCE, D3D12_RESOURCE_STATE_PRESENT);
     m_commandList->ResourceBarrier(1, &copy_src_to_present);
 
-    ThrowIfFailed(m_commandList->Close());
+    auto close_hr = m_commandList->Close();
+    return;
 }
 
 void D3D12Quad::WaitForPreviousFrame()

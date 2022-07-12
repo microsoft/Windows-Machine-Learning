@@ -100,5 +100,6 @@ private:
     // holds the texture currently being drawn to the screen in 
     // a resource dimension buffer that will be used by ORT for inference
     ComPtr<ID3D12Resource> currentBuffer;
+    int imageBytesPerRow;
 };
 

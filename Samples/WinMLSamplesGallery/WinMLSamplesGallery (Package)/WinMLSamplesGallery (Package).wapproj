@@ -132,7 +132,7 @@
   </ItemGroup>
   <Import Project="$(WapProjPath)\Microsoft.DesktopBridge.targets" />
   <ItemGroup>
-    <PackageReference Include="Microsoft.AI.MachineLearning" Version="1.9.1" />
+    <PackageReference Include="Microsoft.AI.MachineLearning" Version="1.11.0" />
     <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.0.0-stable" />
   </ItemGroup>
 </Project>

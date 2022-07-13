@@ -1,6 +1,8 @@
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
+using Microsoft.AI.MachineLearning;
+using Microsoft.AI.MachineLearning.Experimental;
 using System;
 
 namespace WinMLSamplesGallery
@@ -55,6 +57,13 @@ namespace WinMLSamplesGallery
                 var page = (Samples.Batching)SampleFrame.Content;
                 page.StopAllEvents();
             }
+        }
+
+        public static void SetModelNameForTelemetry(String modelName, String sampleName, LearningModel model)
+        {
+            var telemetryModelName = modelName + "_" + sampleName;
+            var experimentalModel = new LearningModelExperimental(model);
+            experimentalModel.SetName(telemetryModelName);
         }
     }
 }

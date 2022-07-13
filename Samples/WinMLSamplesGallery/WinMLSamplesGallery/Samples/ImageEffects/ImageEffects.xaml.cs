@@ -364,6 +364,7 @@ namespace WinMLSamplesGallery.Samples
                 CloseModelOnSessionCreation = closeModel, // Close the model to prevent extra memory usage
                 BatchSizeOverride = 0
             };
+            SampleBasePage.SetModelNameForTelemetry("TensorizationModel", "ImageEffects", model);
             var session = new LearningModelSession(model, device, options);
             return session;
         }

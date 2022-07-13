@@ -44,6 +44,7 @@ namespace WinMLSamplesGallery.Samples
             var modelName = "squeezenet1.1-7-batched.onnx";
             var modelPath = Path.Join(Windows.ApplicationModel.Package.Current.InstalledLocation.Path, "Models", modelName);
             _model = LearningModel.LoadFromFilePath(modelPath);
+            SampleBasePage.SetModelNameForTelemetry("SqueezeNet", "Batching", _model);
         }
 
         async private void StartInference(object sender, RoutedEventArgs e)

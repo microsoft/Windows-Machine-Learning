@@ -61,6 +61,7 @@ namespace WinMLSamplesGallery.Samples
             var inferenceModelName = "squeezenet1.1-7.onnx";
             var inferenceModelPath = Path.Join(Windows.ApplicationModel.Package.Current.InstalledLocation.Path, "Models", inferenceModelName);
             var inferenceModel = LearningModel.LoadFromFilePath(inferenceModelPath);
+            SampleBasePage.SetModelNameForTelemetry("SqueezeNet", "ImageSharp", inferenceModel);
             _inferenceSession = CreateLearningModelSession(inferenceModel);
 
             var postProcessingModel = TensorizationModels.SoftMaxThenTopK(TopK);

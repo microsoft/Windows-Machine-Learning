@@ -33,6 +33,8 @@ namespace WinMLSamplesGallery.Samples
 
             adapter_options.AddRange(adapters);
             AdapterListView.ItemsSource = adapter_options;
+
+            Task.Run(() => SetModelNameForTelemetry(device));
         }
 
         private void ChangeAdapter(object sender, RoutedEventArgs e)
@@ -99,6 +101,16 @@ namespace WinMLSamplesGallery.Samples
                 }
             }
             return adapters;
+        }
+
+        private void SetModelNameForTelemetry(LearningModelDevice device)
+        {
+            var modelName = "squeezenet1.1-7.onnx";
+            var modelPath = Path.Join(Windows.ApplicationModel.Package.Current.InstalledLocation.Path, "Models", modelName);
+            var model = LearningModel.LoadFromFilePath(modelPath);
+            var options = new LearningModelSessionOptions();
+            SampleBasePage.SetModelNameForTelemetry("SqueezeNet", "AdapterSelection", model);
+            var session = new LearningModelSession(model, device, options);
         }
     }
 }

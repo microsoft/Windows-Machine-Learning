@@ -145,7 +145,7 @@ namespace WinMLSamplesGallery.Samples
                     { Classifier.GoogleNet,         Path.Combine(installPath, "LargeModels\\googlenet-9.onnx") },
                     { Classifier.Inception_V1,      Path.Combine(installPath, "LargeModels\\inception-v1-9.onnx") },
                     { Classifier.Inception_V2,      Path.Combine(installPath, "LargeModels\\inception-v2-9.onnx") },
-                    { Classifier.MobileNet,         Path.Combine(installPath, "LargeModels\\mobilenetv2-7.onnx" },
+                    { Classifier.MobileNet,         Path.Combine(installPath, "LargeModels\\mobilenetv2-7.onnx") },
                     { Classifier.ShuffleNet_V2,     Path.Combine(installPath, "LargeModels\\shufflenet-v2-10.onnx") },
                     { Classifier.RCNN_ILSVRC13,     Path.Combine(installPath, "LargeModels\\rcnn-ilsvrc13-9.onnx") },
                     { Classifier.ResNet,            Path.Combine(installPath, "LargeModels\\resnet50-caffe2-v1-9.onnx") },

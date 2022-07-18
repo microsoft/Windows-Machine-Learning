@@ -47,7 +47,8 @@ Ort::Session CreateSession(const wchar_t* model_file_path)
 // Run the buffer through a preprocessing model that will shrink the
 // image from 512 x 512 x 4 to 224 x 224 x 3
 Ort::Value Preprocess(Ort::Session& session,
-    ComPtr<ID3D12Resource> currentBuffer)
+    ComPtr<ID3D12Resource> currentBuffer,
+    const std::array<int64_t, 4> inputShape)
 {
     // Init OrtAPI
     OrtApi const& ortApi = Ort::GetApi(); // Uses ORT_API_VERSION
@@ -58,7 +59,7 @@ Ort::Value Preprocess(Ort::Session& session,
     const char* memoryInformationName = "DML";
     Ort::MemoryInfo memoryInformation(memoryInformationName, OrtAllocatorType::OrtDeviceAllocator, 0, OrtMemType::OrtMemTypeDefault);
     ComPtr<IUnknown> inputTensorEpWrapper;
-    const std::array<int64_t, 4> inputShape = { 1, 512, 512, 4 };
+    //const std::array<int64_t, 4> inputShape = { 1, 512, 512, 4 };
     Ort::Value inputTensor = CreateTensorValueFromD3DResource(
         *ortDmlApi,
         memoryInformation,

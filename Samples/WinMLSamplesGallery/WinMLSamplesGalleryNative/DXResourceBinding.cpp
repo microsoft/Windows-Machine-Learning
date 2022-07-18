@@ -6,6 +6,10 @@
 #include "DXResourceBinding.g.cpp"
 #include "stdafx.h"
 #include "ORTHelpers.h"
+#include "winrt/Microsoft.AI.MachineLearning.h"
+#include "winrt/Microsoft.AI.MachineLearning.Experimental.h"
+
+using namespace winrt::Microsoft::AI::MachineLearning;
 
 #undef min
 
@@ -13,6 +17,51 @@ Microsoft::WRL::ComPtr<ID3D12Resource> d3dResource;
 static std::optional<Ort::Session> preprocesingSession;
 static std::optional<Ort::Session> inferenceSession;
 D3D12Quad sample(800, 600, L"D3D12 Quad");
+
+using TensorInt64Bit = winrt::Microsoft::AI::MachineLearning::TensorInt64Bit;
+using TensorKind = winrt::Microsoft::AI::MachineLearning::TensorKind;
+using LearningModelBuilder = winrt::Microsoft::AI::MachineLearning::Experimental::LearningModelBuilder;
+using LearningModelOperator = winrt::Microsoft::AI::MachineLearning::Experimental::LearningModelOperator;
+
+std::array<int64_t, 4> preprocessInputShape;
+
+std::array<long, 6> CalculateCenterFillDimensions(long oldH, long oldW, long h, long w)
+{
+    long resizedW, resizedH, top, bottom, left, right;
+    auto oldHFloat = (float)oldH;
+    auto oldWFloat = (float)oldW;
+    auto hFloat = (float)h;
+    auto wFloat = (float)w;
+
+    auto oldAspectRatio = oldWFloat / oldHFloat;
+    auto newAspectRatio = wFloat / hFloat;
+
+    auto scale = (newAspectRatio < oldAspectRatio) ? (hFloat / oldHFloat) : (wFloat / oldWFloat);
+    resizedW = (newAspectRatio < oldAspectRatio) ? (long)std::floor(scale * oldWFloat) : w;
+    resizedH = (newAspectRatio < oldAspectRatio) ? h : (long)std::floor(scale * oldHFloat);
+    long totalPad = (newAspectRatio < oldAspectRatio) ? resizedW - w : resizedH - h;
+    long biggerDim = (newAspectRatio < oldAspectRatio) ? w : h;
+    long first = (totalPad % 2 == 0) ? totalPad / 2 : (long)std::floor(totalPad / 2.0f);
+    long second = first + biggerDim;
+
+    if (newAspectRatio < oldAspectRatio)
+    {
+        top = 0;
+        bottom = h;
+        left = first;
+        right = second;
+    }
+    else
+    {
+        top = first;
+        bottom = second;
+        left = 0;
+        right = w;
+    }
+
+    std::array<long, 6> new_dimensions = { resizedW, resizedH, top, bottom, left, right };
+    return new_dimensions;
+}
 
 namespace winrt::WinMLSamplesGalleryNative::implementation
 {
@@ -39,42 +88,45 @@ namespace winrt::WinMLSamplesGalleryNative::implementation
         auto rowPitchInPixels = (width + 255) & ~255;
         auto rowPitchInBytes = rowPitchInPixels * 4;
         auto bufferInBytes = rowPitchInBytes * height;
-        const std::array<int64_t, 4> preprocessInputShape = { 1, bufferInBytes};
+        preprocessInputShape = { 1, bufferInBytes};
+        //const std::array<int64_t, 4> preprocessInputShape = { 1, 512, 512, 4 };
+        //const std::array<int64_t, 4> preprocessInputShape = { 1, -1, -1, -1 };
+
         const std::array<int64_t, 4> preprocessOutputShape = { 1, 224, 224, 3 };
 
-        var kernel = new float[] {
+        auto kernel = new float[] {
             0,0,1,
             0,1,0,
             1,0,0
         };
 
-        .Inputs.Add(LearningModelBuilder.CreateTensorFeatureDescriptor("Input", TensorKind.UInt8, new long[] { 1, bufferInBytes }))
-            .Outputs.Add(LearningModelBuilder.CreateTensorFeatureDescriptor("Output", TensorKind.Float, new long[] { 1, newH, newW, c }))
-            .Operators.Add(new LearningModelOperator("Cast")
-                .SetInput("input", "Input")
-                .SetAttribute("to", TensorInt64Bit.CreateFromIterable(new long[] {}, new long[] { (long)OnnxDataType.FLOAT }))
-                .SetOutput("output", "CastOutput"))
-            .Operators.Add(new LearningModelOperator("Reshape")
-                .SetInput("data", "CastOutput")
-                .SetConstant("shape", TensorInt64Bit.CreateFromIterable(new long[] { 4 }, new long[] { 1, height, width, 4 }))
-                .SetOutput("reshaped", "ReshapeOutput"))
-            .Operators.Add(new LearningModelOperator("Slice")
-                .SetInput("data", "ReshapeOutput")
-                .SetConstant("starts", TensorInt64Bit.CreateFromIterable(new long[] { 4 }, new long[] { 0, 0, 0, 0 }))
-                .SetConstant("ends", TensorInt64Bit.CreateFromIterable(new long[] { 4 }, new long[] { long.MaxValue, long.MaxValue, width, c - 1 }))
-                .SetOutput("output", "SliceOutput"))
-            .Operators.Add(new LearningModelOperator("Resize")
-                .SetInput("X", "ReshapeOutput")
-                .SetConstant("roi", TensorFloat.CreateFromIterable(new long[] { 8 }, new float[] { 0, 0, 0, 0, 1, 1, 1, 1 }))
-                .SetConstant("scales", TensorFloat.CreateFromIterable(new long[] { 4 }, new float[] { 1, (float)(1 + resizedH) / (float)h, (float)(1 + resizedH) / (float)h, 1 }))
-                //.SetConstant("sizes", TensorInt64Bit.CreateFromIterable(new long[] { 4 }, new long[] { 1, 3, resizedH, resizedW }))
-                .SetAttribute("mode", TensorString.CreateFromArray(new long[] {}, new string[]{ interpolationMode }))
-                .SetOutput("Y", "ResizeOutput"))
-            .Operators.Add(new LearningModelOperator("Slice")
-                .SetInput("data", "ResizeOutput")
-                .SetConstant("starts", TensorInt64Bit.CreateFromIterable(new long[] { 4 }, new long[] { 0, 0, 0, 0 }))
-                .SetConstant("ends", TensorInt64Bit.CreateFromIterable(new long[] { 4 }, new long[] { long.MaxValue, 224, 224, 3 }))
-                .SetOutput("output", "SliceOutput"))
+        //.Inputs.Add(LearningModelBuilder.CreateTensorFeatureDescriptor("Input", TensorKind.UInt8, new long[] { 1, bufferInBytes }))
+        //    .Outputs.Add(LearningModelBuilder.CreateTensorFeatureDescriptor("Output", TensorKind.Float, new long[] { 1, newH, newW, c }))
+        //    .Operators.Add(new LearningModelOperator("Cast")
+        //        .SetInput("input", "Input")
+        //        .SetAttribute("to", TensorInt64Bit.CreateFromIterable(new long[] {}, new long[] { (long)OnnxDataType.FLOAT }))
+        //        .SetOutput("output", "CastOutput"))
+        //    .Operators.Add(new LearningModelOperator("Reshape")
+        //        .SetInput("data", "CastOutput")
+        //        .SetConstant("shape", TensorInt64Bit.CreateFromIterable(new long[] { 4 }, new long[] { 1, height, width, 4 }))
+        //        .SetOutput("reshaped", "ReshapeOutput"))
+        //    .Operators.Add(new LearningModelOperator("Slice")
+        //        .SetInput("data", "ReshapeOutput")
+        //        .SetConstant("starts", TensorInt64Bit.CreateFromIterable(new long[] { 4 }, new long[] { 0, 0, 0, 0 }))
+        //        .SetConstant("ends", TensorInt64Bit.CreateFromIterable(new long[] { 4 }, new long[] { long.MaxValue, long.MaxValue, width, c - 1 }))
+        //        .SetOutput("output", "SliceOutput"))
+        //    .Operators.Add(new LearningModelOperator("Resize")
+        //        .SetInput("X", "ReshapeOutput")
+        //        .SetConstant("roi", TensorFloat.CreateFromIterable(new long[] { 8 }, new float[] { 0, 0, 0, 0, 1, 1, 1, 1 }))
+        //        .SetConstant("scales", TensorFloat.CreateFromIterable(new long[] { 4 }, new float[] { 1, (float)(1 + resizedH) / (float)h, (float)(1 + resizedH) / (float)h, 1 }))
+        //        //.SetConstant("sizes", TensorInt64Bit.CreateFromIterable(new long[] { 4 }, new long[] { 1, 3, resizedH, resizedW }))
+        //        .SetAttribute("mode", TensorString.CreateFromArray(new long[] {}, new string[]{ interpolationMode }))
+        //        .SetOutput("Y", "ResizeOutput"))
+        //    .Operators.Add(new LearningModelOperator("Slice")
+        //        .SetInput("data", "ResizeOutput")
+        //        .SetConstant("starts", TensorInt64Bit.CreateFromIterable(new long[] { 4 }, new long[] { 0, 0, 0, 0 }))
+        //        .SetConstant("ends", TensorInt64Bit.CreateFromIterable(new long[] { 4 }, new long[] { long.MaxValue, 224, 224, 3 }))
+        //        .SetOutput("output", "SliceOutput"))
             // This is just getting bgr to rgb
            /* .Operators.Add(new LearningModelOperator("Conv")
                 .SetInput("X", "Input")
@@ -86,35 +138,63 @@ namespace winrt::WinMLSamplesGalleryNative::implementation
             //.SetConstant("W", TensorFloat.CreateFromArray(new long[] { 3, 1, 1, 3 }, kernel))
             //.SetConstant("B", TensorFloat.CreateFromArray(new long[] { 1, 1, 1, 3 }, new float[] { 0, 0, 0 }))
 
+        //auto resize_op = LearningModelOperator(L"Resize")
+        //    .SetInput(L"X", L"Input")
+        //    .SetConstant(L"roi", TensorFloat::CreateFromIterable({ 8 }, { 0, 0, 0, 0, 1, 1, 1, 1 }))
+        //    .SetConstant(L"scales", TensorFloat::CreateFromIterable({ 4 }, { 1, (float)(1 + resizedH) / (float)h, (float)(1 + resizedH) / (float)h, 1 }))
+        //    .SetAttribute(L"mode", TensorString::CreateFromArray({}, { interpolationMode }))
+        //    .SetOutput(L"Y", L"ResizeOutput");
+
+        //auto slice_op = LearningModelOperator(L"Slice")
+        //    .SetInput(L"data", L"ResizeOutput")
+        //    .SetConstant(L"starts", TensorInt64Bit::CreateFromIterable({ 4 }, { 0, top, left, 0 }))
+        //    .SetConstant(L"ends", TensorInt64Bit::CreateFromIterable({ 4 }, { LLONG_MAX, bottom, right, 3 }))
+        //    .SetOutput(L"output", L"Output");
+
+        auto cast_op = LearningModelOperator(L"Cast")
+            .SetInput(L"input", L"Input")
+            .SetAttribute(L"to", TensorInt64Bit::CreateFromIterable({}, { (long)1 }))
+            .SetOutput(L"output", L"CastOutput");
+
+        auto reshape_op = LearningModelOperator(L"Reshape")
+            .SetInput(L"data", L"CastOutput")
+            .SetConstant(L"shape", TensorInt64Bit::CreateFromIterable({ 4 }, { 1, 512, 512, 4 }))
+            .SetOutput(L"reshaped", L"ReshapeOutput");
+
+        auto slice_1 = LearningModelOperator(L"Slice")
+            .SetInput(L"data", L"ReshapeOutput")
+            .SetConstant(L"starts", TensorInt64Bit::CreateFromIterable({ 4 }, { 0, 0, 0, 0 }))
+            .SetConstant(L"ends", TensorInt64Bit::CreateFromIterable({ 4 }, { LONG_MAX, LONG_MAX, width, c - 1 }))
+            .SetOutput(L"output", L"SliceOutput");
+
         auto resize_op = LearningModelOperator(L"Resize")
-            .SetInput(L"X", L"Input")
+            .SetInput(L"X", L"SliceOutput")
             .SetConstant(L"roi", TensorFloat::CreateFromIterable({ 8 }, { 0, 0, 0, 0, 1, 1, 1, 1 }))
             .SetConstant(L"scales", TensorFloat::CreateFromIterable({ 4 }, { 1, (float)(1 + resizedH) / (float)h, (float)(1 + resizedH) / (float)h, 1 }))
             .SetAttribute(L"mode", TensorString::CreateFromArray({}, { interpolationMode }))
             .SetOutput(L"Y", L"ResizeOutput");
 
-        auto slice_op = LearningModelOperator(L"Slice")
+        auto slice_2 = LearningModelOperator(L"Slice")
             .SetInput(L"data", L"ResizeOutput")
-            .SetConstant(L"starts", TensorInt64Bit::CreateFromIterable({ 4 }, { 0, top, left, 0 }))
-            .SetConstant(L"ends", TensorInt64Bit::CreateFromIterable({ 4 }, { LLONG_MAX, bottom, right, 3 }))
+            .SetConstant(L"starts", TensorInt64Bit::CreateFromIterable({ 4 }, { 0, 0, 0, 0 }))
+            .SetConstant(L"ends", TensorInt64Bit::CreateFromIterable({ 4 }, { LONG_MAX, 224, 224, 3 }))
             .SetOutput(L"output", L"Output");
-
 
         auto preprocessingModelBuilder =
             LearningModelBuilder::Create(12)
-            .Inputs().Add(LearningModelBuilder::CreateTensorFeatureDescriptor(L"Input", TensorKind::UInt8, preprocessInputShape))
+            .Inputs().Add(LearningModelBuilder::CreateTensorFeatureDescriptor(L"Input", TensorKind::Float, preprocessInputShape))
             .Outputs().Add(LearningModelBuilder::CreateTensorFeatureDescriptor(L"Output", TensorKind::Float, preprocessOutputShape))
+            .Operators().Add(cast_op)
+            .Operators().Add(reshape_op)
+            .Operators().Add(slice_1)
             .Operators().Add(resize_op)
-            .Operators().Add(slice_op);
-            //.Operators().Add(dimension_transpose);
+            .Operators().Add(slice_2);
         auto preprocessingModel = preprocessingModelBuilder.CreateModel();
 
-        preprocessingModelBuilder.Save(L"C:/Users/numform/Windows-Machine-Learning/Samples/WinMLSamplesGallery/WinMLSamplesGalleryNative/dx_preprocessor_efficient_net.onnx");
-
-
+        preprocessingModelBuilder.Save(L"C:/Users/numform/Windows-Machine-Learning/Samples/WinMLSamplesGallery/WinMLSamplesGalleryNative/dx_preprocessor_efficient_net_v2.onnx");
 
         // Create ORT Sessions that will be used for preprocessing and classification
-        const wchar_t* preprocessingModelFilePath = L"C:/Users/numform/Windows-Machine-Learning/Samples/WinMLSamplesGallery/WinMLSamplesGalleryNative/dx_preprocessor_efficient_net.onnx";
+        const wchar_t* preprocessingModelFilePath = L"C:/Users/numform/Windows-Machine-Learning/Samples/WinMLSamplesGallery/WinMLSamplesGalleryNative/dx_preprocessor_efficient_net_v2.onnx";
         const wchar_t* inferencemodelFilePath = L"C:/Users/numform/Windows-Machine-Learning/Samples/WinMLSamplesGallery/WinMLSamplesGalleryNative/efficientnet-lite4-11.onnx";
         preprocesingSession = CreateSession(preprocessingModelFilePath);
         inferenceSession = CreateSession(inferencemodelFilePath);
@@ -137,7 +217,7 @@ namespace winrt::WinMLSamplesGalleryNative::implementation
 
         // Preprocess the buffer (shrink from 512 x 512 x 4 to 224 x 224 x 3)
         Ort::Value preprocessedInput = Preprocess(*preprocesingSession,
-            currentBuffer);
+            currentBuffer, preprocessInputShape);
 
         // Classify the image using EfficientNet and return the results
         winrt::com_array<float> results = Eval(*inferenceSession, preprocessedInput);

@@ -157,13 +157,13 @@ void D3D12Quad::LoadAssets()
     m_commandList->ResourceBarrier(1, &present_to_copy_src);
 
     auto desc = m_renderTargets[m_frameIndex]->GetDesc();
-    UINT64 rowSize, totalSize;
-    m_device->GetCopyableFootprints(&desc, 0, 1, 0, nullptr, nullptr, &rowSize, &totalSize);
+    UINT64 rowSizeInBytes, totalSizeInBytes;
+    m_device->GetCopyableFootprints(&desc, 0, 1, 0, nullptr, nullptr, &rowSizeInBytes, &totalSizeInBytes);
     D3D12_PLACED_SUBRESOURCE_FOOTPRINT bufferFootprint = {};
     bufferFootprint.Footprint.Width = static_cast<UINT>(desc.Width);
     bufferFootprint.Footprint.Height = desc.Height;
     bufferFootprint.Footprint.Depth = 1;
-    bufferFootprint.Footprint.RowPitch = static_cast<UINT>((rowSize + 255) & ~255);
+    bufferFootprint.Footprint.RowPitch = static_cast<UINT>((rowSizeInBytes + 255) & ~255);
     bufferFootprint.Footprint.Format = desc.Format;
 
     const CD3DX12_TEXTURE_COPY_LOCATION copyDest(currentBuffer.Get(), bufferFootprint);
@@ -395,11 +395,11 @@ void D3D12Quad::CreateCurrentBuffer()
     D3D12_RESOURCE_DESC bufferDesc = {};
     bufferDesc.DepthOrArraySize = 1;
     bufferDesc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
-    bufferDesc.Flags = D3D12_RESOURCE_FLAG_NONE;
+    bufferDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
     bufferDesc.Format = DXGI_FORMAT_UNKNOWN;
     //bufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
     bufferDesc.Height = 1;
-    bufferDesc.Width = ((desc.Width + 255) & ~255) * 4 * desc.Height;
+    bufferDesc.Width = ((desc.Width* 4  + 255) & ~255) * desc.Height;
     //bufferDesc.Width = static_cast<uint64_t>(800 * 600 * 3 * 4);
     bufferDesc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
     //bufferDesc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
@@ -407,7 +407,7 @@ void D3D12Quad::CreateCurrentBuffer()
     bufferDesc.SampleDesc.Count = 1;
 
     //auto heap_properties = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT);
-    const CD3DX12_HEAP_PROPERTIES readBackHeapProperties(D3D12_HEAP_TYPE_READBACK);
+    const CD3DX12_HEAP_PROPERTIES readBackHeapProperties(D3D12_HEAP_TYPE_DEFAULT);
     auto some_hr = m_device->CreateCommittedResource(
         &readBackHeapProperties,
         D3D12_HEAP_FLAG_NONE,
@@ -535,13 +535,13 @@ void D3D12Quad::PopulateCommandList()
     //m_commandList->CopyResource(currentBuffer.Get(), m_renderTargets[m_frameIndex].Get());
 
     auto desc = m_renderTargets[m_frameIndex]->GetDesc();
-    UINT64 rowSize, totalSize;
-    m_device->GetCopyableFootprints(&desc, 0, 1, 0, nullptr, nullptr, &rowSize, &totalSize);
+    UINT64 rowSizeInBytes, totalSizeInBytes;
+    m_device->GetCopyableFootprints(&desc, 0, 1, 0, nullptr, nullptr, &rowSizeInBytes, &totalSizeInBytes);
     D3D12_PLACED_SUBRESOURCE_FOOTPRINT bufferFootprint = {};
     bufferFootprint.Footprint.Width = desc.Width;
     bufferFootprint.Footprint.Height = desc.Height;
     bufferFootprint.Footprint.Depth = 1;
-    bufferFootprint.Footprint.RowPitch = static_cast<UINT>((rowSize + 255) & ~255);
+    bufferFootprint.Footprint.RowPitch = static_cast<UINT>((rowSizeInBytes + 255) & ~255);
     bufferFootprint.Footprint.Format = desc.Format;
 
     const CD3DX12_TEXTURE_COPY_LOCATION copyDest(currentBuffer.Get(), bufferFootprint);

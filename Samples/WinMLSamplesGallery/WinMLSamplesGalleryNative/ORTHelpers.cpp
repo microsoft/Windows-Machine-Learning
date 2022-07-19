@@ -48,7 +48,7 @@ Ort::Session CreateSession(const wchar_t* model_file_path)
 // image from 512 x 512 x 4 to 224 x 224 x 3
 Ort::Value Preprocess(Ort::Session& session,
     ComPtr<ID3D12Resource> currentBuffer,
-    const std::array<int64_t, 4> inputShape)
+    const std::array<int64_t, 2> inputShape)
 {
     // Init OrtAPI
     OrtApi const& ortApi = Ort::GetApi(); // Uses ORT_API_VERSION
@@ -65,7 +65,7 @@ Ort::Value Preprocess(Ort::Session& session,
         memoryInformation,
         currentBuffer.Get(),
         inputShape,
-        ONNX_TENSOR_ELEMENT_DATA_TYPE_FLOAT,
+        ONNX_TENSOR_ELEMENT_DATA_TYPE_UINT8,
         /*out*/ IID_PPV_ARGS_Helper(inputTensorEpWrapper.GetAddressOf())
     );
 

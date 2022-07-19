@@ -23,7 +23,7 @@ using TensorKind = winrt::Microsoft::AI::MachineLearning::TensorKind;
 using LearningModelBuilder = winrt::Microsoft::AI::MachineLearning::Experimental::LearningModelBuilder;
 using LearningModelOperator = winrt::Microsoft::AI::MachineLearning::Experimental::LearningModelOperator;
 
-std::array<int64_t, 4> preprocessInputShape;
+std::array<int64_t, 2> preprocessInputShape;
 
 std::array<long, 6> CalculateCenterFillDimensions(long oldH, long oldW, long h, long w)
 {
@@ -81,12 +81,12 @@ namespace winrt::WinMLSamplesGalleryNative::implementation
         long left = center_fill_dimensions[4];
         long right = center_fill_dimensions[5];
         winrt::hstring interpolationMode = L"nearest";
-        long c = 3;
+        long c = 4;
 
         auto width = 800;
         auto height = 600;
-        auto rowPitchInPixels = (width + 255) & ~255;
-        auto rowPitchInBytes = rowPitchInPixels * 4;
+        auto rowPitchInBytes = (width * 4 + 255) & ~255;
+        auto rowPitchInPixels = rowPitchInBytes / 4;
         auto bufferInBytes = rowPitchInBytes * height;
         preprocessInputShape = { 1, bufferInBytes};
         //const std::array<int64_t, 4> preprocessInputShape = { 1, 512, 512, 4 };
@@ -158,7 +158,7 @@ namespace winrt::WinMLSamplesGalleryNative::implementation
 
         auto reshape_op = LearningModelOperator(L"Reshape")
             .SetInput(L"data", L"CastOutput")
-            .SetConstant(L"shape", TensorInt64Bit::CreateFromIterable({ 4 }, { 1, 512, 512, 4 }))
+            .SetConstant(L"shape", TensorInt64Bit::CreateFromIterable({ 4 }, { 1, height, 832, 4 }))
             .SetOutput(L"reshaped", L"ReshapeOutput");
 
         auto slice_1 = LearningModelOperator(L"Slice")
@@ -182,7 +182,7 @@ namespace winrt::WinMLSamplesGalleryNative::implementation
 
         auto preprocessingModelBuilder =
             LearningModelBuilder::Create(12)
-            .Inputs().Add(LearningModelBuilder::CreateTensorFeatureDescriptor(L"Input", TensorKind::Float, preprocessInputShape))
+            .Inputs().Add(LearningModelBuilder::CreateTensorFeatureDescriptor(L"Input", TensorKind::UInt8, preprocessInputShape))
             .Outputs().Add(LearningModelBuilder::CreateTensorFeatureDescriptor(L"Output", TensorKind::Float, preprocessOutputShape))
             .Operators().Add(cast_op)
             .Operators().Add(reshape_op)

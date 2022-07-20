@@ -71,6 +71,7 @@ private:
     void CreateDescriptorHeaps();
     void CreateFrameResources();
     void CreateCurrentBuffer();
+    void CopyTextureIntoCurrentBuffer();
 
     ID3D12Resource* textureBuffer; // the resource heap containing our texture
 

@@ -153,30 +153,10 @@ void D3D12Quad::LoadAssets()
     // in a resource dimension buffer. This will be used for inference in ORT
     CreateCurrentBuffer();
 
-    const auto present_to_copy_src = CD3DX12_RESOURCE_BARRIER::Transition(m_renderTargets[m_frameIndex].Get(), D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_COPY_SOURCE);
-    m_commandList->ResourceBarrier(1, &present_to_copy_src);
-
-    auto desc = m_renderTargets[m_frameIndex]->GetDesc();
-    UINT64 rowSizeInBytes, totalSizeInBytes;
-    m_device->GetCopyableFootprints(&desc, 0, 1, 0, nullptr, nullptr, &rowSizeInBytes, &totalSizeInBytes);
-    D3D12_PLACED_SUBRESOURCE_FOOTPRINT bufferFootprint = {};
-    bufferFootprint.Footprint.Width = static_cast<UINT>(desc.Width);
-    bufferFootprint.Footprint.Height = desc.Height;
-    bufferFootprint.Footprint.Depth = 1;
-    bufferFootprint.Footprint.RowPitch = static_cast<UINT>((rowSizeInBytes + 255) & ~255);
-    bufferFootprint.Footprint.Format = desc.Format;
-
-    const CD3DX12_TEXTURE_COPY_LOCATION copyDest(currentBuffer.Get(), bufferFootprint);
-    const CD3DX12_TEXTURE_COPY_LOCATION copySrc(m_renderTargets[m_frameIndex].Get(), 0);
-
-    m_commandList->CopyTextureRegion(&copyDest, 0, 0, 0, &copySrc, nullptr);
-
-    const auto copy_src_to_present = CD3DX12_RESOURCE_BARRIER::Transition(m_renderTargets[m_frameIndex].Get(), D3D12_RESOURCE_STATE_COPY_SOURCE, D3D12_RESOURCE_STATE_PRESENT);
-    m_commandList->ResourceBarrier(1, &copy_src_to_present);
+    CopyTextureIntoCurrentBuffer();
 
     // Close the command list and execute it to begin the initial GPU setup.
-    //ThrowIfFailed(m_commandList->Close());
-    auto close_hr = m_commandList->Close();
+    ThrowIfFailed(m_commandList->Close());
     ID3D12CommandList* ppCommandLists[] = { m_commandList.Get() };
     m_commandQueue->ExecuteCommandLists(_countof(ppCommandLists), ppCommandLists);
 
@@ -424,6 +404,30 @@ void D3D12Quad::CreateCurrentBuffer()
     //    IID_PPV_ARGS(&currentBuffer)));
 }
 
+void D3D12Quad::CopyTextureIntoCurrentBuffer()
+{
+    const auto present_to_copy_src = CD3DX12_RESOURCE_BARRIER::Transition(m_renderTargets[m_frameIndex].Get(), D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_COPY_SOURCE);
+    m_commandList->ResourceBarrier(1, &present_to_copy_src);
+
+    auto desc = m_renderTargets[m_frameIndex]->GetDesc();
+    UINT64 rowSizeInBytes, totalSizeInBytes;
+    m_device->GetCopyableFootprints(&desc, 0, 1, 0, nullptr, nullptr, &rowSizeInBytes, &totalSizeInBytes);
+    D3D12_PLACED_SUBRESOURCE_FOOTPRINT bufferFootprint = {};
+    bufferFootprint.Footprint.Width = static_cast<UINT>(desc.Width);
+    bufferFootprint.Footprint.Height = desc.Height;
+    bufferFootprint.Footprint.Depth = 1;
+    bufferFootprint.Footprint.RowPitch = static_cast<UINT>((rowSizeInBytes + 255) & ~255);
+    bufferFootprint.Footprint.Format = desc.Format;
+
+    const CD3DX12_TEXTURE_COPY_LOCATION copyDest(currentBuffer.Get(), bufferFootprint);
+    const CD3DX12_TEXTURE_COPY_LOCATION copySrc(m_renderTargets[m_frameIndex].Get(), 0);
+
+    m_commandList->CopyTextureRegion(&copyDest, 0, 0, 0, &copySrc, nullptr);
+
+    const auto copy_src_to_present = CD3DX12_RESOURCE_BARRIER::Transition(m_renderTargets[m_frameIndex].Get(), D3D12_RESOURCE_STATE_COPY_SOURCE, D3D12_RESOURCE_STATE_PRESENT);
+    m_commandList->ResourceBarrier(1, &copy_src_to_present);
+}
+
 // Create synchronization objects and wait until assets have been uploaded to the GPU.
 void D3D12Quad::CreateFence()
 {
@@ -528,33 +532,7 @@ void D3D12Quad::PopulateCommandList()
     auto render_to_present = CD3DX12_RESOURCE_BARRIER::Transition(m_renderTargets[m_frameIndex].Get(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
     m_commandList->ResourceBarrier(1, &render_to_present);
 
-    // copy the current texture into a resource dimension buffer
-    const auto present_to_copy_src = CD3DX12_RESOURCE_BARRIER::Transition(m_renderTargets[m_frameIndex].Get(), D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_COPY_SOURCE);
-    m_commandList->ResourceBarrier(1, &present_to_copy_src);
-
-    //m_commandList->CopyResource(currentBuffer.Get(), m_renderTargets[m_frameIndex].Get());
-
-    auto desc = m_renderTargets[m_frameIndex]->GetDesc();
-    UINT64 rowSizeInBytes, totalSizeInBytes;
-    m_device->GetCopyableFootprints(&desc, 0, 1, 0, nullptr, nullptr, &rowSizeInBytes, &totalSizeInBytes);
-    D3D12_PLACED_SUBRESOURCE_FOOTPRINT bufferFootprint = {};
-    bufferFootprint.Footprint.Width = desc.Width;
-    bufferFootprint.Footprint.Height = desc.Height;
-    bufferFootprint.Footprint.Depth = 1;
-    bufferFootprint.Footprint.RowPitch = static_cast<UINT>((rowSizeInBytes + 255) & ~255);
-    bufferFootprint.Footprint.Format = desc.Format;
-
-    const CD3DX12_TEXTURE_COPY_LOCATION copyDest(currentBuffer.Get(), bufferFootprint);
-    const CD3DX12_TEXTURE_COPY_LOCATION copySrc(m_renderTargets[m_frameIndex].Get(), 0);
-
-    // Copy the texture
-    m_commandList->CopyTextureRegion(&copyDest, 0, 0, 0, &copySrc, nullptr);
-
-    const auto copy_src_to_present = CD3DX12_RESOURCE_BARRIER::Transition(m_renderTargets[m_frameIndex].Get(), D3D12_RESOURCE_STATE_COPY_SOURCE, D3D12_RESOURCE_STATE_PRESENT);
-    m_commandList->ResourceBarrier(1, &copy_src_to_present);
-
-    auto close_hr = m_commandList->Close();
-    return;
+    ThrowIfFailed(m_commandList->Close());
 }
 
 void D3D12Quad::WaitForPreviousFrame()

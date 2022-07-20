@@ -43,6 +43,7 @@ void D3D12Quad::OnInit()
     LoadPipeline();
     LoadAssets();
     is_initialized = true;
+    copy_texture = false;
 }
 
 // Load the rendering pipeline dependencies.
@@ -532,6 +533,12 @@ void D3D12Quad::PopulateCommandList()
     auto render_to_present = CD3DX12_RESOURCE_BARRIER::Transition(m_renderTargets[m_frameIndex].Get(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
     m_commandList->ResourceBarrier(1, &render_to_present);
 
+    if (copy_texture)
+    {
+        CopyTextureIntoCurrentBuffer();
+        copy_texture = false;
+    }
+
     ThrowIfFailed(m_commandList->Close());
 }
 
@@ -848,5 +855,10 @@ void D3D12Quad::GetHardwareAdapter(
 ComPtr<ID3D12Resource> D3D12Quad::GetCurrentBuffer()
 {
     return currentBuffer;
+}
+
+void D3D12Quad::ScheduleTextureCopy()
+{
+    copy_texture = true;
 }
 

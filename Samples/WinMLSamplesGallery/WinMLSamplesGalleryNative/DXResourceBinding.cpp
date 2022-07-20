@@ -222,6 +222,8 @@ namespace winrt::WinMLSamplesGalleryNative::implementation
         // Classify the image using EfficientNet and return the results
         winrt::com_array<float> results = Eval(*inferenceSession, preprocessedInput);
 
+        sample.ScheduleTextureCopy();
+
         return results;
     }
 

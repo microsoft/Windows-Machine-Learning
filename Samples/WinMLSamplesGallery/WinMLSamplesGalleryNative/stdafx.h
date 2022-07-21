@@ -31,3 +31,5 @@
 #include <wrl.h>
 #include <shellapi.h>
 #include "Win32Application.h"
+#include <string.h>
+#include <stdio.h>

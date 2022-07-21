@@ -145,3 +145,22 @@ void Win32Application::CloseWindow()
 {
     close_window = true;
 }
+
+std::wstring Win32Application::GetAssetPath(LPCWSTR assetName)
+{
+    WCHAR modulePath[512];
+    UINT modulePathSize = _countof(modulePath);
+    GetModuleFileName(nullptr, modulePath, modulePathSize);
+
+    const wchar_t* gallery = L"WinMLSamplesGallery";
+    UINT gallerySize = 19; // length of the gallery string
+
+    // Erase everything after the first occurence of the gallery string
+    std::wstring path(modulePath);
+    size_t found = path.find(gallery);
+    path.erase(path.begin() + found + gallerySize, path.end());
+
+    std::wstring native = L"\\WinMLSamplesGalleryNative\\";
+    path = path + native + assetName;
+    return path;
+}

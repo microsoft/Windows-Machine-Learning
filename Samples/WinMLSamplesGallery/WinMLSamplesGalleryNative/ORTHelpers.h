@@ -13,8 +13,7 @@ using namespace Microsoft::WRL;
 Ort::Session CreateSession(const wchar_t* model_file_path);
 
 Ort::Value Preprocess(Ort::Session& session,
-    ComPtr<ID3D12Resource> currentBuffer,
-    const std::array<int64_t, 2> inputShape);
+    ComPtr<ID3D12Resource> currentBuffer);
 
 winrt::com_array<float> Eval(Ort::Session& session, const Ort::Value& prev_input);
 

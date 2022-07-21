@@ -35,7 +35,7 @@ void D3D12Quad::OnInit()
     auto title = GetTitle();
     fileNames = {
         L"C:/Users/numform/Windows-Machine-Learning/Samples/WinMLSamplesGallery/WinMLSamplesGalleryNative/dog.jpg",
-        L"C:/Users/numform/Windows-Machine-Learning/Samples/WinMLSamplesGallery/WinMLSamplesGalleryNative/new_cat.jpg",
+        L"C:/Users/numform/Windows-Machine-Learning/Samples/WinMLSamplesGallery/WinMLSamplesGalleryNative/cat.jpg",
         L"C:/Users/numform/Windows-Machine-Learning/Samples/WinMLSamplesGallery/WinMLSamplesGalleryNative/hummingbird.jpg"
     };
     fileIndex = 0;

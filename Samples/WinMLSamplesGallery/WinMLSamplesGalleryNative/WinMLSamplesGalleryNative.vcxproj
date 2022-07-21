@@ -215,9 +215,6 @@
     <Image Include="cat.jpg">
       <DeploymentContent>true</DeploymentContent>
     </Image>
-    <Image Include="fish.png">
-      <DeploymentContent>true</DeploymentContent>
-    </Image>
     <Image Include="hummingbird.jpg">
       <DeploymentContent>true</DeploymentContent>
     </Image>

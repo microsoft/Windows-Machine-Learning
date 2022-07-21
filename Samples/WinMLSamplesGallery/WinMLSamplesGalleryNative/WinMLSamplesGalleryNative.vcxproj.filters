@@ -105,9 +105,6 @@
     <Image Include="cat.jpg">
       <Filter>DXResourceBinding</Filter>
     </Image>
-    <Image Include="fish.png">
-      <Filter>DXResourceBinding</Filter>
-    </Image>
     <Image Include="hummingbird.jpg">
       <Filter>DXResourceBinding</Filter>
     </Image>

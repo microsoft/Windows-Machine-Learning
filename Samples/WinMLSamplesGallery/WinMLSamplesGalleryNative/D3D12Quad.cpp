@@ -253,10 +253,10 @@ void D3D12Quad::CreateVertexBuffer()
     // Define the geometry for a quad.
     Vertex quadVertices[] =
     {
-        { { -0.75f, 0.75f * m_aspectRatio, 0.0f }, { 0.0f, 0.0f } }, //top left
-        { { 0.75f, 0.75f * m_aspectRatio, 0.0f }, { 1.0f, 0.0f } }, //top right
-        { { -0.75f, -0.75f * m_aspectRatio, 0.0f }, { 0.0f, 1.0f } }, //bottom left
-        { { 0.75f, -0.75f * m_aspectRatio, 0.0f }, { 1.0f, 1.0f } }, //bottom right
+        { { -1.0f, 1.0f * m_aspectRatio, 0.0f }, { 0.0f, 0.0f } }, //top left
+        { { 1.0f, 1.0f * m_aspectRatio, 0.0f }, { 1.0f, 0.0f } }, //top right
+        { { -1.0f, -1.0f * m_aspectRatio, 0.0f }, { 0.0f, 1.0f } }, //bottom left
+        { { 1.0f, -1.0f * m_aspectRatio, 0.0f }, { 1.0f, 1.0f } }, //bottom right
     };
 
     const UINT vertexBufferSize = sizeof(quadVertices);
@@ -464,12 +464,18 @@ void D3D12Quad::Reset() {
 void D3D12Quad::OnUpdate()
 {
     // Change the image every 75 frame updates
-    updateCounter++;
+    //updateCounter++;
+    //justReset = false;
+    //if (updateCounter == 75) {
+    //    Reset();
+    //    LoadImageTexture();
+    //    updateCounter = 0;
+    //    justReset = true;
+    //}
     justReset = false;
-    if (updateCounter == 75) {
+    if (copy_texture) {
         Reset();
         LoadImageTexture();
-        updateCounter = 0;
         justReset = true;
     }
 }
@@ -857,8 +863,12 @@ ComPtr<ID3D12Resource> D3D12Quad::GetCurrentBuffer()
     return currentBuffer;
 }
 
-void D3D12Quad::ScheduleTextureCopy()
+void D3D12Quad::ShowNextImage()
 {
+    //justReset = false;
+    //Reset();
+    //LoadImageTexture();
+    //justReset = true;
     copy_texture = true;
 }
 

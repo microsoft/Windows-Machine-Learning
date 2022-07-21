@@ -22,7 +22,7 @@ public:
     const WCHAR* GetTitle() const { return m_title.c_str(); }
 
     ComPtr<ID3D12Resource> GetCurrentBuffer();
-    void ScheduleTextureCopy();
+    void ShowNextImage();
 
     bool is_initialized = false;
 
@@ -104,5 +104,6 @@ private:
     ComPtr<ID3D12Resource> currentBuffer;
     int imageBytesPerRow;
     bool copy_texture;
+    bool show_next_image;
 };
 

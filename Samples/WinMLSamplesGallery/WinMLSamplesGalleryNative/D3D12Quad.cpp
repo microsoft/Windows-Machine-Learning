@@ -296,12 +296,6 @@ void D3D12Quad::LoadImageTexture() {
     if (fileIndex > 2)
         fileIndex = 0;
 
-    // make sure we have data
-    if (imageSize <= 0)
-    {
-        OutputDebugString(L"image file not found");
-    }
-
     // create a default heap where the upload heap will copy its contents into (contents being the texture)
     auto heap_properties_default = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT);
     ThrowIfFailed(m_device->CreateCommittedResource(
@@ -356,51 +350,26 @@ void D3D12Quad::LoadImageTexture() {
 // in a resource dimension buffer. This will be used for inference in ORT
 void D3D12Quad::CreateCurrentBuffer()
 {
-    //D3D12_RESOURCE_DESC resourceDesc = {
-    //    D3D12_RESOURCE_DIMENSION_BUFFER,
-    //    0,
-    //    static_cast<uint64_t>(800 * 600 * 3 * 4),
-    //    1,
-    //    1,
-    //    1,
-    //    DXGI_FORMAT_UNKNOWN,
-    //    {1, 0},
-    //    D3D12_TEXTURE_LAYOUT_ROW_MAJOR,
-    //    D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS
-    //};
-
-    // Readback resources must be buffers
     auto desc = m_renderTargets[m_frameIndex]->GetDesc();
     D3D12_RESOURCE_DESC bufferDesc = {};
     bufferDesc.DepthOrArraySize = 1;
     bufferDesc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
     bufferDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
     bufferDesc.Format = DXGI_FORMAT_UNKNOWN;
-    //bufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
     bufferDesc.Height = 1;
     bufferDesc.Width = ((desc.Width* 4  + 255) & ~255) * desc.Height;
-    //bufferDesc.Width = static_cast<uint64_t>(800 * 600 * 3 * 4);
     bufferDesc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
-    //bufferDesc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
     bufferDesc.MipLevels = 1;
     bufferDesc.SampleDesc.Count = 1;
 
-    //auto heap_properties = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT);
-    const CD3DX12_HEAP_PROPERTIES readBackHeapProperties(D3D12_HEAP_TYPE_DEFAULT);
+    const CD3DX12_HEAP_PROPERTIES heapProperties(D3D12_HEAP_TYPE_DEFAULT);
     auto some_hr = m_device->CreateCommittedResource(
-        &readBackHeapProperties,
+        &heapProperties,
         D3D12_HEAP_FLAG_NONE,
         &bufferDesc,
         D3D12_RESOURCE_STATE_COPY_DEST,
         nullptr,
         IID_PPV_ARGS(&currentBuffer));
-    //ThrowIfFailed(m_device->CreateCommittedResource(
-    //    &readBackHeapProperties,
-    //    D3D12_HEAP_FLAG_NONE,
-    //    &bufferDesc,
-    //    D3D12_RESOURCE_STATE_COPY_DEST,
-    //    nullptr,
-    //    IID_PPV_ARGS(&currentBuffer)));
 }
 
 void D3D12Quad::CopyTextureIntoCurrentBuffer()
@@ -461,15 +430,6 @@ void D3D12Quad::Reset() {
 // Update frame-based values.
 void D3D12Quad::OnUpdate()
 {
-    // Change the image every 75 frame updates
-    //updateCounter++;
-    //justReset = false;
-    //if (updateCounter == 75) {
-    //    Reset();
-    //    LoadImageTexture();
-    //    updateCounter = 0;
-    //    justReset = true;
-    //}
     justReset = false;
     if (copy_texture) {
         Reset();
@@ -861,12 +821,12 @@ ComPtr<ID3D12Resource> D3D12Quad::GetCurrentBuffer()
     return currentBuffer;
 }
 
+// Schedules the next image to be shown by setting the copy_texture
+// variable to true. OnUpdate will catch this variable and load the
+// next image then the image texture will be copied into a resource
+// dimension buffer at the end of PopulateCommandLists
 void D3D12Quad::ShowNextImage()
 {
-    //justReset = false;
-    //Reset();
-    //LoadImageTexture();
-    //justReset = true;
     copy_texture = true;
 }
 

@@ -104,6 +104,5 @@ private:
     ComPtr<ID3D12Resource> currentBuffer;
     int imageBytesPerRow;
     bool copy_texture;
-    bool show_next_image;
 };
 

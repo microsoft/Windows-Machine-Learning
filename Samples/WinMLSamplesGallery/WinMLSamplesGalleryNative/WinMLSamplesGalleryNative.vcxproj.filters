@@ -77,7 +77,7 @@
       <Filter>DXResourceBinding</Filter>
     </None>
     <None Include="$(MSBuildThisFileDirectory)..\..\runtimes\win-x64\native\onnxruntime.dll" />
-    <None Include="dx_preprocessor.onnx">
+    <None Include="dx_preprocessor_efficient_net.onnx">
       <Filter>DXResourceBinding</Filter>
     </None>
   </ItemGroup>

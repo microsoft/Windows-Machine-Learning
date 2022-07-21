@@ -188,7 +188,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="datafile.bin" />
-    <None Include="dx_preprocessor.onnx">
+    <None Include="dx_preprocessor_efficient_net.onnx">
       <DeploymentContent>true</DeploymentContent>
     </None>
     <None Include="packages.config" />

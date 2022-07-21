@@ -21,7 +21,7 @@ namespace winrt::WinMLSamplesGalleryNative::implementation
     // Create ORT Sessions and launch D3D window in a separate thread
 	void DXResourceBinding::LaunchWindow() {
         // Create ORT Sessions that will be used for preprocessing and classification
-        preprocesingSession = CreateSession(Win32Application::GetAssetPath(L"dx_preprocessor_efficient_net_v2.onnx").c_str());
+        preprocesingSession = CreateSession(Win32Application::GetAssetPath(L"dx_preprocessor_efficient_net.onnx").c_str());
         inferenceSession = CreateSession(Win32Application::GetAssetPath(L"efficientnet-lite4-11.onnx").c_str());
 
         // Spawn the window in a separate thread

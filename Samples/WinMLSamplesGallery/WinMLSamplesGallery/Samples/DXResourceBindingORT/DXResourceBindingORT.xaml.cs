@@ -54,6 +54,9 @@ namespace WinMLSamplesGallery.Samples
                     break;
                 }
                 float[] results = await Task.Run(() => WinMLSamplesGalleryNative.DXResourceBinding.EvalORT());
+                // The first evaluation may return null so move to the next iteration
+                if (results == null)
+                    continue;
                 UpdateClassificationResults(results);
                 System.Threading.Thread.Sleep(1000);
                 i++;

@@ -550,7 +550,9 @@ void EventTraceHelper::Start()
     // represents the "UseGPU()" flag, and the last bit represents the "IsLogCPUFallbackEnabled()"
     // flag. We use the Context field later on when the event is handled and we no longer
     // have access to the m_commandArgs object. 
-    int64_t icontext = ((int64_t)m_commandArgs.UseGPU() << 1) | ((int64_t)m_commandArgs.IsLogCPUFallbackEnabled());
+    bool usingAnyGPU =
+        m_commandArgs.UseGPU() || m_commandArgs.IsUsingGPUHighPerformance() || m_commandArgs.IsUsingGPUMinPower();
+    int64_t icontext = ((int64_t)usingAnyGPU << 1) | ((int64_t)m_commandArgs.IsLogCPUFallbackEnabled());
     loggerInfo.Context = (void*)(icontext);
 
     // LoggerName is the sessionName that we had provided in StartTrace

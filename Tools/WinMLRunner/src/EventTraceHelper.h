@@ -18,12 +18,12 @@ private:
     TRACEHANDLE m_sessionHandle;
     PEVENT_TRACE_PROPERTIES m_sessionProperties;
     ThreadPool m_threadPool;
-    CommandLineArgs commandArgs;
+    CommandLineArgs m_commandArgs;
 
 public:
     EventTraceHelper(CommandLineArgs args) : m_sessionHandle(INVALID_PROCESSTRACE_HANDLE), m_threadPool(1)
     {
-        commandArgs = args;
+        m_commandArgs = args;
     }
 
     void Start();
@@ -31,6 +31,4 @@ public:
 
 private:
     static void ProcessEventTrace(PTRACEHANDLE traceHandle);
-    bool DontLog() { return !commandArgs.UseGPU() || !commandArgs.IsLogCPUFallbackEnabled(); }
-
 };

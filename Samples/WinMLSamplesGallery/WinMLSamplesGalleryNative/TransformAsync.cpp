@@ -59,7 +59,7 @@ TransformAsync::~TransformAsync()
     m_inputType.detach();
     m_outputType.detach();
    
-    CloseHandle(m_fenceEvent.get());
+    //CloseHandle(m_fenceEvent.get());
 
     if (m_eventQueue)
     {
@@ -71,6 +71,11 @@ TransformAsync::~TransformAsync()
         m_deviceManager->CloseDeviceHandle(m_deviceHandle.get());
         m_deviceManager->Release();
     }
+
+    if (m_fenceEvent)
+        m_fenceEvent.reset();
+
+
 }
 
 // Passes the root directory where the model(s) are located for the stream effect. 

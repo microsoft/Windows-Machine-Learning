@@ -80,7 +80,7 @@ LearningModel StyleTransfer::GetModel()
 /****	Background blur model	****/
 BackgroundBlur::~BackgroundBlur() 
 {
-	if (m_session) m_session.Close();
+	//if (m_session) m_session.Close();
 }
 
 void BackgroundBlur::InitializeSession(int w, int h)

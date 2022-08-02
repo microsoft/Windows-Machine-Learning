@@ -175,7 +175,7 @@ namespace MainWindow
             if (previewing)
             {
                 _SetStatusText(L"Loading...");
-                SetMenuItemText(GetMenu(hwnd), ID_CAPTURE_PREVIEW, L"Stop Preview");
+                EnableMenuItem(GetMenu(hwnd), ID_CAPTURE_PREVIEW, MF_DISABLED);
             }
             else
             {

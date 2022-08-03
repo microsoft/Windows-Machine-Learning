@@ -84,7 +84,7 @@ void TransformAsync::SetModelBasePath(winrt::hstring path) {
 }
 
 #pragma region IUnknown
-ULONG TransformAsync::AddRef(void)
+ULONG TransformAsync::AddRef()
 {
     return InterlockedIncrement(&m_refCount);
 }

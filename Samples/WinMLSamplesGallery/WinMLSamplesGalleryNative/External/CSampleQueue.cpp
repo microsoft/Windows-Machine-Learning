@@ -23,7 +23,7 @@ HRESULT CSampleQueue::Create(
     CSampleQueue**   ppQueue)
 {
     HRESULT         hr          = S_OK;
-    CSampleQueue*   pNewQueue   = NULL;
+    CSampleQueue*   pNewQueue   = nullptr;
 
     do
     {
@@ -49,7 +49,7 @@ HRESULT CSampleQueue::Create(
     return hr;
 }
 
-ULONG CSampleQueue::AddRef(void)
+ULONG CSampleQueue::AddRef()
 {
     return InterlockedIncrement(&m_ulRef);
 }

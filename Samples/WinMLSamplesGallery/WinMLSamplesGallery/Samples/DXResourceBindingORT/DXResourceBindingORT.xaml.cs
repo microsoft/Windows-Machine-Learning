@@ -27,6 +27,7 @@ namespace WinMLSamplesGallery.Samples
     public sealed partial class DXResourceBindingORT : Page
     {
         private bool pageExited = false;
+
         public DXResourceBindingORT()
         {
             this.InitializeComponent();
@@ -78,7 +79,7 @@ namespace WinMLSamplesGallery.Samples
             List<int> top_10_imagenet_indices = top_1k_imagenet_indices.Take(10).ToList();
 
             List<DXClassifierResult> dx_classifier_results = new List<DXClassifierResult>();
-            for (int i = 0; i < 10; i++)
+            for (int i = 0; i < top_10_imagenet_indices.Count; i++)
             {
                 dx_classifier_results.Add(new DXClassifierResult(i+1,
                     ClassificationLabels.ImageNet[top_10_imagenet_indices[i]]));

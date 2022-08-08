@@ -58,12 +58,7 @@ int Win32Application::Run(D3D12Quad* pSample, int nCmdShow)
         nullptr,        // We aren't using menus.
         hInstance,
         pSample);
-    if (!m_hwnd)
-    {
-        MessageBox(NULL, L"Error creating window",
-            L"Error", MB_OK | MB_ICONERROR);
-        return false;
-    }
+    if (!m_hwnd) { MessageBox(NULL, L"Error creating window", L"Error", MB_OK | MB_ICONERROR); return false; }
 
     // Initialize the sample and show the window
     pSample->OnInit();
@@ -76,7 +71,8 @@ int Win32Application::Run(D3D12Quad* pSample, int nCmdShow)
     {
         // Destroy the sample and window if the close_window
         // variable is set to true
-        if (close_window) {
+        if (close_window)
+        {
             pSample->OnDestroy();
             PostMessage(m_hwnd, WM_CLOSE, 0, 0);
             break;
@@ -149,7 +145,7 @@ void Win32Application::CloseWindow()
 std::wstring Win32Application::GetAssetPath(LPCWSTR assetName)
 {
     WCHAR modulePath[512];
-    UINT modulePathSize = _countof(modulePath);
+    UINT modulePathSize = std::size(modulePath);
     GetModuleFileName(nullptr, modulePath, modulePathSize);
 
     const wchar_t* gallery = L"WinMLSamplesGallery";

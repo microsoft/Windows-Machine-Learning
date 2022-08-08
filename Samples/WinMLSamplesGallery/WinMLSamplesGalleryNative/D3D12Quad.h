@@ -49,14 +49,14 @@ private:
     ComPtr<ID3D12DescriptorHeap> m_srvHeap;
     ComPtr<ID3D12PipelineState> m_pipelineState;
     ComPtr<ID3D12GraphicsCommandList> m_commandList;
-    UINT m_rtvDescriptorSize;
+    UINT m_rtvDescriptorSize = 0;
 
     // App resources.
     ComPtr<ID3D12Resource> m_vertexBuffer;
     D3D12_VERTEX_BUFFER_VIEW m_vertexBufferView;
 
     // Synchronization objects.
-    UINT m_frameIndex;
+    UINT m_frameIndex = 0;
     HANDLE m_fenceEvent;
     ComPtr<ID3D12Fence> m_fence;
     UINT64 m_fenceValue;
@@ -74,13 +74,13 @@ private:
     void CreateCurrentBuffer();
     void CopyTextureIntoCurrentBuffer();
 
-    ID3D12Resource* textureBuffer; // the resource heap containing our texture
+    ComPtr<ID3D12Resource> textureBuffer; // the resource heap containing our texture
 
     int LoadImageDataFromFile(BYTE** imageData, D3D12_RESOURCE_DESC& resourceDescription, LPCWSTR filename, int& bytesPerRow);
 
-    DXGI_FORMAT GetDXGIFormatFromWICFormat(WICPixelFormatGUID& wicFormatGUID);
-    WICPixelFormatGUID GetConvertToWICFormat(WICPixelFormatGUID& wicFormatGUID);
-    int GetDXGIFormatBitsPerPixel(DXGI_FORMAT& dxgiFormat);
+    DXGI_FORMAT GetDXGIFormatFromWICFormat(WICPixelFormatGUID wicFormatGUID);
+    WICPixelFormatGUID GetConvertToWICFormat(WICPixelFormatGUID wicFormatGUID);
+    int GetDXGIFormatBitsPerPixel(DXGI_FORMAT dxgiFormat);
     void LoadImageTexture();
     void Reset();
     void ThrowIfFailed(HRESULT hr);
@@ -89,8 +89,8 @@ private:
         IDXGIAdapter1** ppAdapter,
         bool requestHighPerformanceAdapter = false);
 
-    ID3D12DescriptorHeap* mainDescriptorHeap;
-    ID3D12Resource* textureBufferUploadHeap;
+    ComPtr<ID3D12DescriptorHeap> mainDescriptorHeap;
+    ComPtr<ID3D12Resource> textureBufferUploadHeap;
     int updateCounter;
     std::vector<std::wstring> fileNames;
     int fileIndex;

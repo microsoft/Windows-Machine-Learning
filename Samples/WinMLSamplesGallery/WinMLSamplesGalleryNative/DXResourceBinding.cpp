@@ -9,8 +9,6 @@
 
 using namespace winrt::Microsoft::AI::MachineLearning;
 
-#undef min
-
 Microsoft::WRL::ComPtr<ID3D12Resource> d3dResource;
 static std::optional<Ort::Session> preprocesingSession;
 static std::optional<Ort::Session> inferenceSession;
@@ -25,7 +23,7 @@ namespace winrt::WinMLSamplesGalleryNative::implementation
         inferenceSession = CreateSession(Win32Application::GetAssetPath(L"efficientnet-lite4-11.onnx").c_str());
 
         // Spawn the window in a separate thread
-        std::thread d3d_th(Win32Application::Run, &sample, 10);
+        std::jthread d3d_th(Win32Application::Run, &sample, 10);
 
         // Wait until the D3D pipeline finishes
         while (!sample.is_initialized) {}

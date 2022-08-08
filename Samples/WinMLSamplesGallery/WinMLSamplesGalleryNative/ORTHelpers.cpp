@@ -93,7 +93,9 @@ Ort::Value Preprocess(Ort::Session& session,
 }
 
 // Classify the image using EfficientNet and return the results
-winrt::com_array<float> Eval(Ort::Session& session, const Ort::Value& prev_input) {
+winrt::com_array<float> Eval(Ort::Session& session,
+    const Ort::Value& prev_input)
+{
     // Create input and output node names
     const char* inputTensorName = "images:0";
     const char* outputTensorName = "Softmax:0";
@@ -107,10 +109,10 @@ winrt::com_array<float> Eval(Ort::Session& session, const Ort::Value& prev_input
     
     // Get the 1000 EfficientNet classifications as a com_array and return
     // the results
-    float* floatarr = output_tensors.front().GetTensorMutableData<float>();
+    float* floatArray = output_tensors.front().GetTensorMutableData<float>();
     winrt::com_array<float> final_results(1000);
     for (int i = 0; i < 1000; i++) {
-        final_results[i] = floatarr[i];
+        final_results[i] = floatArray[i];
     }
 
     return final_results;

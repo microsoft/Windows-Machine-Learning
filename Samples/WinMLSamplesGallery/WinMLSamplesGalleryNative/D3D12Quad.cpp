@@ -4,9 +4,7 @@
 
 inline std::string HrToString(HRESULT hr)
 {
-    char s_str[64] = {};
-    sprintf_s(s_str, "HRESULT of 0x%08X", static_cast<UINT>(hr));
-    return std::string(s_str);
+    return std::format("HRESULT of {:08X}", static_cast<UINT>(hr));
 }
 
 class HrException : public std::runtime_error
@@ -22,10 +20,8 @@ D3D12Quad::D3D12Quad(UINT width, UINT height, std::wstring name) :
     m_width(width),
     m_height(height),
     m_title(name),
-    m_frameIndex(0),
     m_viewport(0.0f, 0.0f, static_cast<float>(width), static_cast<float>(height)),
-    m_scissorRect(0, 0, static_cast<LONG>(width), static_cast<LONG>(height)),
-    m_rtvDescriptorSize(0)
+    m_scissorRect(0, 0, static_cast<LONG>(width), static_cast<LONG>(height))
 {
     m_aspectRatio = static_cast<float>(width) / static_cast<float>(height);
 }
@@ -331,10 +327,10 @@ void D3D12Quad::LoadImageTexture() {
     textureData.SlicePitch = imageBytesPerRow * textureDesc.Height; // also the size of our quad vertex data
 
     // Now we copy the upload buffer contents to the default heap
-    UpdateSubresources(m_commandList.Get(), textureBuffer, textureBufferUploadHeap, 0, 0, 1, &textureData);
+    UpdateSubresources(m_commandList.Get(), textureBuffer.Get(), textureBufferUploadHeap.Get(), 0, 0, 1, &textureData);
 
     // transition the texture default heap to a pixel shader resource (we will be sampling from this heap in the pixel shader to get the color of pixels)
-    auto tb_transition = CD3DX12_RESOURCE_BARRIER::Transition(textureBuffer, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+    auto tb_transition = CD3DX12_RESOURCE_BARRIER::Transition(textureBuffer.Get(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
     m_commandList->ResourceBarrier(1, &tb_transition);
 
     // Describe and create a SRV for the texture.
@@ -343,7 +339,7 @@ void D3D12Quad::LoadImageTexture() {
     srvDesc.Format = textureDesc.Format;
     srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
     srvDesc.Texture2D.MipLevels = 1;
-    m_device->CreateShaderResourceView(textureBuffer, &srvDesc, m_srvHeap->GetCPUDescriptorHandleForHeapStart());
+    m_device->CreateShaderResourceView(textureBuffer.Get(), &srvDesc, m_srvHeap->GetCPUDescriptorHandleForHeapStart());
 }
 
 // Create buffer that will hold the contents of the texture being drawn to the screen
@@ -524,7 +520,7 @@ void D3D12Quad::WaitForPreviousFrame()
 }
 
 // get the dxgi format equivilent of a wic format
-DXGI_FORMAT D3D12Quad::GetDXGIFormatFromWICFormat(WICPixelFormatGUID& wicFormatGUID)
+DXGI_FORMAT D3D12Quad::GetDXGIFormatFromWICFormat(WICPixelFormatGUID wicFormatGUID)
 {
     if (wicFormatGUID == GUID_WICPixelFormat128bppRGBAFloat) return DXGI_FORMAT_R32G32B32A32_FLOAT;
     else if (wicFormatGUID == GUID_WICPixelFormat64bppRGBAHalf) return DXGI_FORMAT_R16G16B16A16_FLOAT;
@@ -533,7 +529,6 @@ DXGI_FORMAT D3D12Quad::GetDXGIFormatFromWICFormat(WICPixelFormatGUID& wicFormatG
     else if (wicFormatGUID == GUID_WICPixelFormat32bppBGRA) return DXGI_FORMAT_B8G8R8A8_UNORM;
     else if (wicFormatGUID == GUID_WICPixelFormat32bppBGR) return DXGI_FORMAT_B8G8R8X8_UNORM;
     else if (wicFormatGUID == GUID_WICPixelFormat32bppRGBA1010102XR) return DXGI_FORMAT_R10G10B10_XR_BIAS_A2_UNORM;
-
     else if (wicFormatGUID == GUID_WICPixelFormat32bppRGBA1010102) return DXGI_FORMAT_R10G10B10A2_UNORM;
     else if (wicFormatGUID == GUID_WICPixelFormat16bppBGRA5551) return DXGI_FORMAT_B5G5R5A1_UNORM;
     else if (wicFormatGUID == GUID_WICPixelFormat16bppBGR565) return DXGI_FORMAT_B5G6R5_UNORM;
@@ -542,12 +537,11 @@ DXGI_FORMAT D3D12Quad::GetDXGIFormatFromWICFormat(WICPixelFormatGUID& wicFormatG
     else if (wicFormatGUID == GUID_WICPixelFormat16bppGray) return DXGI_FORMAT_R16_UNORM;
     else if (wicFormatGUID == GUID_WICPixelFormat8bppGray) return DXGI_FORMAT_R8_UNORM;
     else if (wicFormatGUID == GUID_WICPixelFormat8bppAlpha) return DXGI_FORMAT_A8_UNORM;
-
     else return DXGI_FORMAT_UNKNOWN;
 }
 
 // get a dxgi compatible wic format from another wic format
-WICPixelFormatGUID D3D12Quad::GetConvertToWICFormat(WICPixelFormatGUID& wicFormatGUID)
+WICPixelFormatGUID D3D12Quad::GetConvertToWICFormat(WICPixelFormatGUID wicFormatGUID)
 {
     if (wicFormatGUID == GUID_WICPixelFormatBlackWhite) return GUID_WICPixelFormat8bppGray;
     else if (wicFormatGUID == GUID_WICPixelFormat1bppIndexed) return GUID_WICPixelFormat32bppRGBA;
@@ -596,7 +590,7 @@ WICPixelFormatGUID D3D12Quad::GetConvertToWICFormat(WICPixelFormatGUID& wicForma
 }
 
 // get the number of bits per pixel for a dxgi format
-int D3D12Quad::GetDXGIFormatBitsPerPixel(DXGI_FORMAT& dxgiFormat)
+int D3D12Quad::GetDXGIFormatBitsPerPixel(DXGI_FORMAT dxgiFormat)
 {
     if (dxgiFormat == DXGI_FORMAT_R32G32B32A32_FLOAT) return 128;
     else if (dxgiFormat == DXGI_FORMAT_R16G16B16A16_FLOAT) return 64;
@@ -616,7 +610,7 @@ int D3D12Quad::GetDXGIFormatBitsPerPixel(DXGI_FORMAT& dxgiFormat)
     else if (dxgiFormat == DXGI_FORMAT_A8_UNORM) return 8;
 }
 
-// load and decode image from file
+// load and decode image from file, returning the number of image bytes
 int D3D12Quad::LoadImageDataFromFile(BYTE** imageData, D3D12_RESOURCE_DESC& resourceDescription, LPCWSTR filename, int& bytesPerRow)
 {
     HRESULT hr;
@@ -771,12 +765,7 @@ void D3D12Quad::GetHardwareAdapter(
             DXGI_ADAPTER_DESC1 desc;
             adapter->GetDesc1(&desc);
 
-            if (desc.Flags & DXGI_ADAPTER_FLAG_SOFTWARE)
-            {
-                // Don't select the Basic Render Driver adapter.
-                // If you want a software adapter, pass in "/warp" on the command line.
-                continue;
-            }
+            if (desc.Flags & DXGI_ADAPTER_FLAG_SOFTWARE) { continue; }
 
             // Check to see whether the adapter supports Direct3D 12, but don't create the
             // actual device yet.

@@ -66,7 +66,7 @@ HRESULT GetCollectionObject(IMFCollection* pCollection, DWORD index, IFACE** ppO
 
 struct ChooseDeviceParam
 {
-    ChooseDeviceParam() : devices(NULL), count(0)
+    ChooseDeviceParam() : devices(nullptr), count(0)
     {
     }
     ~ChooseDeviceParam()
@@ -98,7 +98,7 @@ class CaptureManager
         HWND m_hwnd;
 
     public:
-        CaptureEngineCB(HWND hwnd) : m_ref(1), m_hwnd(hwnd), m_sleeping(false), m_captureManager(NULL) {}
+        CaptureEngineCB(HWND hwnd) : m_ref(1), m_hwnd(hwnd), m_sleeping(false), m_captureManager(nullptr) {}
 
         // IUnknown
         STDMETHODIMP QueryInterface(REFIID riid, void** ppv);
@@ -129,8 +129,8 @@ class CaptureManager
     bool                    m_fPowerRequestSet;
 
     CaptureManager(HWND hwnd) :
-        m_hwndEvent(hwnd), m_hwndPreview(NULL), m_engine(NULL), m_preview(NULL),
-        m_callback(NULL), m_previewing(false), m_errorID(0), m_event(NULL)
+        m_hwndEvent(hwnd), m_hwndPreview(nullptr), m_engine(nullptr), m_preview(nullptr),
+        m_callback(nullptr), m_previewing(false), m_errorID(0), m_event(nullptr)
         , m_hpwrRequest(INVALID_HANDLE_VALUE)
         , m_fPowerRequestSet(false)
     {
@@ -164,11 +164,11 @@ public:
 
     static HRESULT CreateInstance(HWND hwndEvent, CaptureManager** ppEngine) noexcept try
     {
-        *ppEngine = NULL;
+        *ppEngine = nullptr;
 
         CaptureManager* engine = new CaptureManager(hwndEvent);
         *ppEngine = engine;
-        engine = NULL;
+        engine = nullptr;
 
         return S_OK;
     }CATCH_RETURN();
@@ -176,10 +176,10 @@ public:
     HRESULT InitializeCaptureManager(HWND hwndPreview, HWND hwndMessage, IUnknown* pUnk) noexcept;
     void DestroyCaptureEngine()
     {
-        if (NULL != m_event)
+        if (nullptr != m_event)
         {
             CloseHandle(m_event);
-            m_event = NULL;
+            m_event = nullptr;
         }
 
         if (g_DXGIMan)
@@ -210,7 +210,7 @@ public:
 
     void    SleepState(bool fSleeping)
     {
-        if (NULL != m_callback)
+        if (nullptr != m_callback)
         {
             m_callback->m_sleeping = fSleeping;
         }
@@ -220,7 +220,7 @@ public:
     {
         if (m_preview)
         {
-            return m_preview->UpdateVideo(NULL, NULL, NULL);
+            return m_preview->UpdateVideo(nullptr, nullptr, nullptr);
         }
         else
         {

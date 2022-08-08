@@ -31,20 +31,13 @@ LearningModel Invert(long n, long c, long h, long w);
 class StreamModelBase
 {
 public:
-	StreamModelBase(): 
-		m_inputVideoFrame(NULL),
-		m_outputVideoFrame(NULL),
-		m_session(NULL),
-		m_binding(NULL)
-	{};
-	StreamModelBase(int w, int h): 
-		m_inputVideoFrame(NULL),
-		m_outputVideoFrame(NULL),
-		m_session(NULL),
-		m_binding(NULL),
-		m_imageWidthInPixels(w),
-		m_imageHeightInPixels(h)
-	{};
+	StreamModelBase() :
+		m_inputVideoFrame(nullptr),
+		m_outputVideoFrame(nullptr),
+		m_session(nullptr),
+		m_binding(nullptr),
+		m_syncStarted(false) {}
+
 	virtual ~StreamModelBase() {
 		if(m_session) m_session.Close();
 		if(m_binding) m_binding.Clear();
@@ -53,10 +46,10 @@ public:
 	};
 
 	virtual void InitializeSession(int w, int h) = 0;
-	virtual void Run(IDirect3DSurface src, IDirect3DSurface dest) =0;
+	virtual void Run(IDirect3DSurface src, IDirect3DSurface dest) = 0;
 	
 	// Synchronous eval status
-	BOOL m_syncStarted = false; 
+	bool m_syncStarted = false; 
 	VideoFrame m_outputVideoFrame;
 	static const int m_scale = 4;
 	winrt::hstring m_modelBasePath;
@@ -79,7 +72,8 @@ protected:
 			m_outputVideoFrame = VideoFrame::CreateAsDirect3D11SurfaceBacked(format, m_imageWidthInPixels, m_imageHeightInPixels, device);
 			m_videoFramesSet = true;
 		}
-		// TODO: Fix bug in WinML so that the surfaces from capture engine are shareable, remove copy. 
+		// NOTE: WinML supports mainly RGB-formatted video frames, which aren't backed by a shareable surface by the Capture Engine. 
+		// Copying to a new VideoFrame makes it shareable for use in inference. 
 		inVideoFrame.CopyToAsync(m_inputVideoFrame).get();
 		outVideoFrame.CopyToAsync(m_outputVideoFrame).get();
 	}
@@ -90,7 +84,7 @@ protected:
 	}
 	
 	LearningModelSession CreateLearningModelSession(const LearningModel& model, bool closedModel = true) {
-		auto device = m_useGPU ? LearningModelDevice(LearningModelDeviceKind::DirectXHighPerformance) : LearningModelDevice(LearningModelDeviceKind::Default);
+		auto device = LearningModelDevice(m_useGPU ? LearningModelDeviceKind::DirectXHighPerformance : LearningModelDeviceKind::Default);
 		auto options = LearningModelSessionOptions();
 		options.BatchSizeOverride(0);
 		options.CloseModelOnSessionCreation(closedModel);
@@ -102,8 +96,8 @@ protected:
 	bool						m_videoFramesSet = false;
 	VideoFrame					m_inputVideoFrame;
 								
-	UINT32                      m_imageWidthInPixels;
-	UINT32                      m_imageHeightInPixels;
+	UINT32                      m_imageWidthInPixels = 0;
+	UINT32                      m_imageHeightInPixels = 0;
 
 	// Learning Model Binding and Session. 
 	LearningModelSession m_session;
@@ -111,14 +105,10 @@ protected:
 }; 
 
 
-class StyleTransfer : public StreamModelBase {
+class StyleTransfer : public StreamModelBase 
+{
 public:
-	StyleTransfer(int w, int h) : StreamModelBase(w, h) 
-	{
-		InitializeSession(w, h); 
-	}
 	StyleTransfer() : StreamModelBase() {};
-	virtual ~StyleTransfer(){};
 	void InitializeSession(int w, int h);
 	void Run(IDirect3DSurface src, IDirect3DSurface dest);
 private: 
@@ -129,15 +119,9 @@ private:
 class BackgroundBlur : public StreamModelBase
 {
 public:
-	BackgroundBlur(int w, int h) : 
-		StreamModelBase(w, h)
-	{
-		InitializeSession(w, h);
-	}
 	BackgroundBlur() : 
 		StreamModelBase()
 	{};
-	virtual ~BackgroundBlur();
 	void InitializeSession(int w, int h);
 	void Run(IDirect3DSurface src, IDirect3DSurface dest);
 

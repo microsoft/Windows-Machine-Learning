@@ -10,7 +10,7 @@ HRESULT TransformAsync::BeginGetEvent(
     /***************************************
     ** Since this in an internal function
     ** we know m_eventQueue can never be
-    ** NULL due to InitializeTransform()
+    ** nullptr due to InitializeTransform()
     ***************************************/
 
     return m_eventQueue->BeginGetEvent(pCallback, punkState);
@@ -23,7 +23,7 @@ HRESULT TransformAsync::EndGetEvent(
     /***************************************
     ** Since this in an internal function
     ** we know m_eventQueue can never be
-    ** NULL due to InitializeTransform()
+    ** nullptr due to InitializeTransform()
     ***************************************/
 
     return m_eventQueue->EndGetEvent(pResult, ppEvent);
@@ -36,7 +36,7 @@ HRESULT TransformAsync::GetEvent(
     /***************************************
     ** Since this in an internal function
     ** we know m_eventQueue can never be
-    ** NULL due to InitializeTransform()
+    ** nullptr due to InitializeTransform()
     ***************************************/
 
     return m_eventQueue->GetEvent(dwFlags, ppEvent);
@@ -51,7 +51,7 @@ HRESULT TransformAsync::QueueEvent(
     /***************************************
     ** Since this in an internal function
     ** we know m_eventQueue can never be
-    ** NULL due to InitializeTransform()
+    ** nullptr due to InitializeTransform()
     ***************************************/
 
     return m_eventQueue->QueueEventParamVar(met, guidExtendedType, hrStatus, pvValue);

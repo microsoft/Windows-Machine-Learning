@@ -88,7 +88,7 @@ void ShowError(HWND hwnd, PCWSTR szMessage, HRESULT hr)
 
     if (SUCCEEDED(StringCchPrintfW(msg, ARRAYSIZE(msg),  L"%s (hr = 0x%X)", szMessage, hr)))
     {
-        MessageBox(hwnd, msg, NULL, MB_OK | MB_ICONERROR);
+        MessageBox(hwnd, msg, nullptr, MB_OK | MB_ICONERROR);
     }
 }
 
@@ -97,7 +97,7 @@ void ShowError(HWND hwnd, UINT id, HRESULT hr)
 {
     wchar_t msg[256];
 
-    if (0 != LoadString(GetModuleHandle(NULL), id, msg, ARRAYSIZE(msg)))
+    if (0 != LoadString(GetModuleHandle(nullptr), id, msg, ARRAYSIZE(msg)))
     {
         ShowError(hwnd, msg, hr);
     }
@@ -112,6 +112,6 @@ void SetMenuItemText(HMENU hMenu, UINT uItem, _In_ PWSTR pszText)
     mii.fMask = MIIM_STRING;
     mii.dwTypeData = pszText;
 
-    SetMenuItemInfo(hMenu, uItem, FALSE, &mii);
+    SetMenuItemInfo(hMenu, uItem, false, &mii);
 }
 

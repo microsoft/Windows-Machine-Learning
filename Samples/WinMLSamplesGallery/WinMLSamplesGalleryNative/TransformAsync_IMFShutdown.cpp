@@ -6,13 +6,13 @@
 HRESULT TransformAsync::GetShutdownStatus(
     MFSHUTDOWN_STATUS* pStatus)
 {
-    if (pStatus == NULL)
+    if (pStatus == nullptr)
     {
         return E_POINTER;
     }
     {
         std::lock_guard<std::recursive_mutex> lock(m_mutex);
-        if (m_shutdown == FALSE)
+        if (m_shutdown == false)
         {
             return MF_E_INVALIDREQUEST;
         }
@@ -27,10 +27,10 @@ HRESULT TransformAsync::GetShutdownStatus(
     return S_OK;
 }
 
-HRESULT TransformAsync::Shutdown(void)
+HRESULT TransformAsync::Shutdown()
 {
     std::lock_guard<std::recursive_mutex> lock(m_mutex);
     RETURN_IF_FAILED(ShutdownEventQueue());
-    m_shutdown = TRUE;
+    m_shutdown = true;
     return S_OK;
 }

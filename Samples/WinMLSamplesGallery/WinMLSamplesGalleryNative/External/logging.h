@@ -47,14 +47,14 @@ namespace MediaFoundationSamples
 
             if (SUCCEEDED(hr))
             {
-                _CrtDbgReport(_CRT_WARN, NULL, NULL, NULL, "%S", message);
+                _CrtDbgReport(_CRT_WARN, nullptr, nullptr, nullptr, "%S", message);
             }
         }
 
         static void Close()
         {
             int bLeak = _CrtDumpMemoryLeaks();
-            assert( bLeak == FALSE );
+            assert( bLeak == false );
         }
     };
 

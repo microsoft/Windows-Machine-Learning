@@ -7,15 +7,15 @@ public:
     IMFSample*  pSample;
     CNode*      pNext;
 
-    CNode(void)
+    CNode()
     {
-        pSample = NULL;
-        pNext   = NULL;
+        pSample = nullptr;
+        pNext   = nullptr;
     }
-    ~CNode(void)
+    ~CNode()
     {
         SAFE_RELEASE(pSample);
-        pNext   = NULL;
+        pNext   = nullptr;
     }
 };
 
@@ -27,14 +27,14 @@ HRESULT CSampleQueue::Create(
 
     do
     {
-        if(ppQueue == NULL)
+        if(ppQueue == nullptr)
         {
             hr = E_POINTER;
             break;
         }
 
         pNewQueue = new CSampleQueue();
-        if(pNewQueue == NULL)
+        if(pNewQueue == nullptr)
         {
             hr = E_OUTOFMEMORY;
             break;
@@ -62,7 +62,7 @@ HRESULT CSampleQueue::QueryInterface(
 
     do
     {
-        if(ppvObject == NULL)
+        if(ppvObject == nullptr)
         {
             hr = E_POINTER;
             break;
@@ -74,7 +74,7 @@ HRESULT CSampleQueue::QueryInterface(
         }
         else
         {
-            *ppvObject = NULL;
+            *ppvObject = nullptr;
             hr = E_NOINTERFACE;
             break;
         }
@@ -85,7 +85,7 @@ HRESULT CSampleQueue::QueryInterface(
     return hr;
 }
 
-ULONG CSampleQueue::Release(void)
+ULONG CSampleQueue::Release()
 {
     ULONG   ulRef = 0;
     
@@ -106,19 +106,19 @@ HRESULT CSampleQueue::AddSample(
     IMFSample*  pSample)
 {
     HRESULT hr          = S_OK;
-    CNode*  pNewNode    = NULL;
+    CNode*  pNewNode    = nullptr;
 
 
     do
     {
-        if(pSample == NULL)
+        if(pSample == nullptr)
         {
             hr = E_POINTER;
             break;
         }
 
         pNewNode = new CNode();
-        if(pNewNode == NULL)
+        if(pNewNode == nullptr)
         {
             hr = E_OUTOFMEMORY;
             break;
@@ -126,13 +126,13 @@ HRESULT CSampleQueue::AddSample(
 
         pNewNode->pSample           = pSample;
         pNewNode->pSample->AddRef();
-        pNewNode->pNext             = NULL;
+        pNewNode->pNext             = nullptr;
         InterlockedIncrement(&m_length);
 
         {
             std::lock_guard<std::recursive_mutex> lock(m_mutex);
 
-            if(m_bAddMarker != FALSE)
+            if(m_bAddMarker != false)
             {
                 hr = pSample->SetUINT64(TransformAsync_MFSampleExtension_Marker, m_pulMarkerID);
                 if(FAILED(hr))
@@ -141,10 +141,10 @@ HRESULT CSampleQueue::AddSample(
                 }
 
                 m_pulMarkerID   = 0;
-                m_bAddMarker    = FALSE;
+                m_bAddMarker    = false;
             }
 
-            if(IsQueueEmpty() != FALSE)
+            if(IsQueueEmpty() != false)
             {
                 // This is the first sample in the queue
                 m_pHead     = pNewNode;
@@ -174,23 +174,23 @@ HRESULT CSampleQueue::GetNextSample(
     IMFSample** ppSample)
 {
     HRESULT hr              = S_OK;
-    CNode*  pCurrentNode    = NULL;
+    CNode*  pCurrentNode    = nullptr;
 
     do
     {
-        if(ppSample == NULL)
+        if(ppSample == nullptr)
         {
             hr = E_POINTER;
             break;
         }
 
-        *ppSample   = NULL;
+        *ppSample   = nullptr;
         InterlockedDecrement(&m_length);
 
         {
             std::lock_guard<std::recursive_mutex> lock(m_mutex);
 
-            if(IsQueueEmpty() != FALSE)
+            if(IsQueueEmpty() != false)
             {
                 // The queue is empty
                 hr = S_FALSE;
@@ -207,10 +207,10 @@ HRESULT CSampleQueue::GetNextSample(
             m_pHead = m_pHead->pNext;
 
 
-            if(m_pHead == NULL)
+            if(m_pHead == nullptr)
             {
                 // This was the last sample in the queue
-                m_pTail = NULL;
+                m_pTail = nullptr;
 
             }
         }
@@ -221,15 +221,15 @@ HRESULT CSampleQueue::GetNextSample(
     return hr;
 }
 
-HRESULT CSampleQueue::RemoveAllSamples(void)
+HRESULT CSampleQueue::RemoveAllSamples()
 {
     HRESULT hr          = S_OK;
-    CNode*  pCurrNode   = NULL;
+    CNode*  pCurrNode   = nullptr;
     // Scope the lock
     {
         std::lock_guard<std::recursive_mutex> lock(m_mutex);
 
-        while(IsQueueEmpty() == FALSE)
+        while(IsQueueEmpty() == false)
         {
             pCurrNode = m_pHead;
 
@@ -238,7 +238,7 @@ HRESULT CSampleQueue::RemoveAllSamples(void)
             delete pCurrNode;
         }
 
-        m_pTail = NULL;
+        m_pTail = nullptr;
         m_length = 0;
     }
 
@@ -254,17 +254,17 @@ HRESULT CSampleQueue::MarkerNextSample(
         std::lock_guard<std::recursive_mutex> lock(m_mutex);
 
         m_pulMarkerID   = pulID;
-        m_bAddMarker    = TRUE;
+        m_bAddMarker    = true;
     }
 
     return hr;
 }
 
-BOOL CSampleQueue::IsQueueEmpty(void)
+bool CSampleQueue::IsQueueEmpty()
 {
     std::lock_guard<std::recursive_mutex> lock(m_mutex);
 
-    return (m_pHead == NULL) ? TRUE : FALSE;
+    return (m_pHead == nullptr) ? true : false;
 }
 
 ULONG CSampleQueue::GetLength()
@@ -272,17 +272,17 @@ ULONG CSampleQueue::GetLength()
     return m_length;
 }
 
-CSampleQueue::CSampleQueue(void)
+CSampleQueue::CSampleQueue()
 {
     m_ulRef         = 1;
-    m_pHead         = NULL;
-    m_pTail         = NULL;
-    m_bAddMarker    = FALSE;
+    m_pHead         = nullptr;
+    m_pTail         = nullptr;
+    m_bAddMarker    = false;
     m_pulMarkerID   = 0;
 
 }
 
-CSampleQueue::~CSampleQueue(void)
+CSampleQueue::~CSampleQueue()
 {
     RemoveAllSamples();
     //m_critSec.~CritSec();

@@ -44,8 +44,8 @@ namespace MediaFoundationSamples
 
     inline HRESULT LogAttributeValueByIndex(IMFAttributes *pAttr, DWORD index)
     {
-        WCHAR *pGuidName = NULL;
-        WCHAR *pGuidValName = NULL;
+        WCHAR *pGuidName = nullptr;
+        WCHAR *pGuidValName = nullptr;
         PROPVARIANT var;
 
         HRESULT hr = S_OK;
@@ -117,7 +117,7 @@ namespace MediaFoundationSamples
         HRESULT hr = S_OK;
         size_t cchLength = 0;
 
-        WCHAR *pName = NULL;
+        WCHAR *pName = nullptr;
 
         LPCWSTR pcwsz = GetGUIDNameConst(guid);
 
@@ -139,7 +139,7 @@ namespace MediaFoundationSamples
     done:
         if (FAILED(hr))
         {
-            *ppwsz = NULL;
+            *ppwsz = nullptr;
             CoTaskMemFree(pName);
         }
         return hr;
@@ -337,7 +337,7 @@ namespace MediaFoundationSamples
         IF_EQUAL_RETURN(guid, MFAudioFormat_ADTS); //             WAVE_FORMAT_MPEG_ADTS_AAC );
 #endif
 
-        return NULL;
+        return nullptr;
 
     }
 

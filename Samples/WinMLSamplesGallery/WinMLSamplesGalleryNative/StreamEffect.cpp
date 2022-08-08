@@ -11,8 +11,8 @@
 #include <shlobj.h>
 #define USE_LOGGING
 
-CaptureManager* g_engine = NULL;
-HWND            g_hwnd = NULL;
+CaptureManager* g_engine = nullptr;
+HWND            g_hwnd = nullptr;
 winrt::hstring  g_modelPath = L"";
 
 // Forward declarations
@@ -23,7 +23,7 @@ HRESULT OnOK(HWND hwnd, ChooseDeviceParam* pParam);
 
 static HMODULE GetCurrentModule()
 { // NB: XP+ solution!
-    HMODULE hModule = NULL;
+    HMODULE hModule = nullptr;
     GetModuleHandleEx(
         GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS,
         (LPCTSTR)GetCurrentModule,
@@ -40,14 +40,14 @@ HRESULT OnOK(HWND hwnd, ChooseDeviceParam* pParam);
 
 INT_PTR CALLBACK ChooseDeviceDlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-    static ChooseDeviceParam* param = NULL;
+    static ChooseDeviceParam* param = nullptr;
 
     switch (msg)
     {
     case WM_INITDIALOG:
         param = (ChooseDeviceParam*)lParam;
         OnInitDialog(hwnd, param);
-        return TRUE;
+        return true;
 
     case WM_COMMAND:
         switch (LOWORD(wParam))
@@ -55,16 +55,16 @@ INT_PTR CALLBACK ChooseDeviceDlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM 
         case IDOK:
             OnOK(hwnd, param);
             EndDialog(hwnd, LOWORD(wParam));
-            return TRUE;
+            return true;
 
         case IDCANCEL:
             EndDialog(hwnd, LOWORD(wParam));
-            return TRUE;
+            return true;
         }
         break;
     }
 
-    return FALSE;
+    return false;
 }
 
 // Handler for WM_INITDIALOG
@@ -77,7 +77,7 @@ HRESULT OnInitDialog(HWND hwnd, ChooseDeviceParam* pParam)
     // Display a list of the devices.
     for (DWORD i = 0; i < pParam->count; i++)
     {
-        WCHAR* friendlyName = NULL;
+        WCHAR* friendlyName = nullptr;
         UINT32 name;
 
         hr = pParam->devices[i]->GetAllocatedString(MF_DEVSOURCE_ATTRIBUTE_FRIENDLY_NAME,
@@ -97,7 +97,7 @@ HRESULT OnInitDialog(HWND hwnd, ChooseDeviceParam* pParam)
     if (pParam->count == 0)
     {
         // If there are no devices, disable the "OK" button.
-        EnableWindow(GetDlgItem(hwnd, IDOK), FALSE);
+        EnableWindow(GetDlgItem(hwnd, IDOK), false);
     }
     else
     {
@@ -131,7 +131,7 @@ HWND CreateStatusBar(HWND hParent, UINT nID)
     return CreateStatusWindow(WS_CHILD | WS_VISIBLE, L"", hParent, nID);
 }
 
-BOOL StatusSetText(HWND hwnd, int iPart, const TCHAR* szText, BOOL bNoBorders = FALSE, BOOL bPopOut = FALSE)
+bool StatusSetText(HWND hwnd, int iPart, const TCHAR* szText, bool bNoBorders = false, bool bPopOut = false)
 {
     UINT flags = 0;
     if (bNoBorders)
@@ -143,14 +143,14 @@ BOOL StatusSetText(HWND hwnd, int iPart, const TCHAR* szText, BOOL bNoBorders = 
         flags |= SBT_POPOUT;
     }
 
-    return (BOOL)SendMessage(hwnd, SB_SETTEXT, (WPARAM)(iPart | flags), (LPARAM)szText);
+    return (bool)SendMessage(hwnd, SB_SETTEXT, (WPARAM)(iPart | flags), (LPARAM)szText);
 }
 
 // Implements the window procedure for the main application window.
 namespace MainWindow
 {
-    HWND preview = NULL;
-    HWND status = NULL;
+    HWND preview = nullptr;
+    HWND status = nullptr;
     bool previewing = false;
     com_ptr<IMFActivate> selectedDevice;
 
@@ -160,7 +160,7 @@ namespace MainWindow
     }
 
     void OnChooseDevice(HWND hwnd);
-    BOOL OnCreate(HWND hwnd, LPCREATESTRUCT lpCreateStruct);
+    bool OnCreate(HWND hwnd, LPCREATESTRUCT lpCreateStruct);
     void OnPaint(HWND hwnd);
     void OnSize(HWND hwnd, UINT state, int cx, int cy);
     void OnDestroy(HWND hwnd);
@@ -192,20 +192,20 @@ namespace MainWindow
         }
     }
 
-    BOOL OnCreate(HWND hwnd, LPCREATESTRUCT /*lpCreateStruct*/)
+    bool OnCreate(HWND hwnd, LPCREATESTRUCT /*lpCreateStruct*/)
     {
-        BOOL                success = FALSE;
+        bool                success = false;
         com_ptr<IMFAttributes> attributes;
         HRESULT             hr = S_OK;
 
-        preview = CreatePreviewWindow(GetModuleHandle(NULL), hwnd);
-        if (preview == NULL)
+        preview = CreatePreviewWindow(GetModuleHandle(nullptr), hwnd);
+        if (preview == nullptr)
         {
             goto done;
         }
 
         status = CreateStatusBar(hwnd, IDC_STATUS_BAR);
-        if (status == NULL)
+        if (status == nullptr)
         {
             goto done;
         }
@@ -220,7 +220,7 @@ namespace MainWindow
         }
 
         UpdateUI(hwnd);
-        success = TRUE;
+        success = true;
 
     done:
         return success;
@@ -249,14 +249,14 @@ namespace MainWindow
             SendMessageW(status, SB_GETRECT, 0, (LPARAM)&statusRect);
             cy -= (statusRect.bottom - statusRect.top);
 
-            MoveWindow(preview, 0, 0, cx, cy, TRUE);
+            MoveWindow(preview, 0, 0, cx, cy, true);
         }
     }
 
     void OnDestroy(HWND hwnd)
     {
         delete g_engine;
-        g_engine = NULL;
+        g_engine = nullptr;
         DestroyWindow(g_hwnd);
         //PostQuitMessage(0);
     }
@@ -374,7 +374,7 @@ namespace MainWindow
                 if (FAILED(hr))
                 {
                     ShowError(hwnd, g_engine->ErrorID(), hr);
-                    InvalidateRect(hwnd, NULL, FALSE);
+                    InvalidateRect(hwnd, nullptr, false);
                 }
             }
 
@@ -392,10 +392,6 @@ namespace winrt::WinMLSamplesGalleryNative::implementation
 {
     void StreamEffect::ShutDownWindow()
     {
-        /*  delete g_engine;
-        g_engine = NULL;
-        DestroyWindow(g_hwnd);
-        PostQuitMessage(0);*/
         CloseWindow(g_hwnd);
         DestroyWindow(g_hwnd);
         MainWindow::WindowProc(g_hwnd, WM_DESTROY, NULL, NULL);
@@ -406,7 +402,7 @@ namespace winrt::WinMLSamplesGalleryNative::implementation
         HWND hwnd;
         HWND galleryHwnd = GetActiveWindow();
         HRESULT hr = S_OK;
-        BOOL bMFStartup = false;
+        bool bMFStartup = false;
         HMODULE hmodule = GetCurrentModule();
 
         do {
@@ -435,7 +431,7 @@ namespace winrt::WinMLSamplesGalleryNative::implementation
 
             g_hwnd = CreateWindowEx(
                 0, CLASS_NAME, L"Capture Application", WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT,
-                CW_USEDEFAULT, CW_USEDEFAULT, galleryHwnd, NULL, hmodule, NULL
+                CW_USEDEFAULT, CW_USEDEFAULT, galleryHwnd, nullptr, hmodule, nullptr
             );
 
             if (g_hwnd == 0)
@@ -446,8 +442,7 @@ namespace winrt::WinMLSamplesGalleryNative::implementation
         
         if (FAILED(hr))
         {
-            // TODO: Add utils from BackgroundBlur sample utils.cpp
-            //ShowError(NULL, L"Failed to start application", hr);
+            ShowError(nullptr, L"Failed to start application", hr);
         }
         if (bMFStartup)
         {
@@ -464,7 +459,7 @@ namespace winrt::WinMLSamplesGalleryNative::implementation
 
         // Run the main message loop
         MSG msg;
-        while (GetMessage(&msg, NULL, 0, 0))
+        while (GetMessage(&msg, nullptr, 0, 0))
         {
             TranslateMessage(&msg);
             DispatchMessage(&msg);

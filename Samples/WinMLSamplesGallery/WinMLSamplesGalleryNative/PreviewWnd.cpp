@@ -16,10 +16,10 @@ namespace PreviewWnd
 {
     HBRUSH backgroundBrush = 0;
 
-    BOOL OnCreate(HWND /*hwnd*/, LPCREATESTRUCT /*lpCreateStruct*/)
+    bool OnCreate(HWND /*hwnd*/, LPCREATESTRUCT /*lpCreateStruct*/)
     {
         backgroundBrush = CreateSolidBrush(RGB(0, 0, 0));
-        return (backgroundBrush != NULL);
+        return (backgroundBrush != nullptr);
     }
 
     void OnDestroy(HWND hwnd)
@@ -47,7 +47,7 @@ namespace PreviewWnd
     {
         if (state == SIZE_RESTORED)
         {
-            InvalidateRect(hwnd, NULL, FALSE);
+            InvalidateRect(hwnd, nullptr, false);
         }
     }
 
@@ -85,7 +85,7 @@ HWND CreatePreviewWindow(HINSTANCE hInstance, HWND hParent)
     GetClientRect(hParent, &rc);
 
     // Create the window.
-    return CreateWindowEx(0, CLASS_NAME, NULL,
+    return CreateWindowEx(0, CLASS_NAME, nullptr,
         WS_CHILD | WS_VISIBLE, 0, 0, 0, 0,
-        hParent, NULL, hInstance, NULL);
+        hParent, nullptr, hInstance, nullptr);
 };

@@ -26,10 +26,10 @@ HRESULT TransformAsync::GetStreamLimits(
     DWORD* pdwOutputMaximum
 )
 {
-    if ((pdwInputMinimum == NULL) ||
-        (pdwInputMaximum == NULL) ||
-        (pdwOutputMinimum == NULL) ||
-        (pdwOutputMaximum == NULL))
+    if ((pdwInputMinimum == nullptr) ||
+        (pdwInputMaximum == nullptr) ||
+        (pdwOutputMinimum == nullptr) ||
+        (pdwOutputMaximum == nullptr))
     {
         return E_POINTER;
     }
@@ -53,7 +53,7 @@ HRESULT TransformAsync::GetStreamCount(
     DWORD* pcOutputStreams
 )
 {
-    if ((pcInputStreams == NULL) || (pcOutputStreams == NULL))
+    if ((pcInputStreams == nullptr) || (pcOutputStreams == nullptr))
 
     {
         return E_POINTER;
@@ -95,7 +95,7 @@ HRESULT TransformAsync::GetInputStreamInfo(
 
     std::lock_guard<std::recursive_mutex> lock(m_mutex);
 
-    if (pStreamInfo == NULL)
+    if (pStreamInfo == nullptr)
     {
         return E_POINTER;
     }
@@ -114,7 +114,7 @@ HRESULT TransformAsync::GetInputStreamInfo(
     pStreamInfo->dwFlags = MFT_INPUT_STREAM_WHOLE_SAMPLES
         | MFT_INPUT_STREAM_SINGLE_SAMPLE_PER_BUFFER;
 
-    if (m_inputType == NULL)
+    if (m_inputType == nullptr)
     {
         pStreamInfo->cbSize = 0;
     }
@@ -140,7 +140,7 @@ HRESULT TransformAsync::GetOutputStreamInfo(
 {
     std::lock_guard<std::recursive_mutex> lock(m_mutex);
 
-    if (pStreamInfo == NULL)
+    if (pStreamInfo == nullptr)
     {
         return E_POINTER;
     }
@@ -162,7 +162,7 @@ HRESULT TransformAsync::GetOutputStreamInfo(
         MFT_OUTPUT_STREAM_PROVIDES_SAMPLES
         ;
 
-    if (m_outputType == NULL)
+    if (m_outputType == nullptr)
     {
         pStreamInfo->cbSize = 0;
     }
@@ -181,7 +181,7 @@ HRESULT TransformAsync::GetOutputStreamInfo(
 */
 HRESULT TransformAsync::GetAttributes(IMFAttributes** ppAttributes)
 {
-    if (ppAttributes == NULL)
+    if (ppAttributes == nullptr)
     {
         return E_POINTER;
     }
@@ -189,7 +189,7 @@ HRESULT TransformAsync::GetAttributes(IMFAttributes** ppAttributes)
     std::lock_guard<std::recursive_mutex> lock(m_mutex);
 
     *ppAttributes = m_attributes.get();
-    if ((*ppAttributes) == NULL)
+    if ((*ppAttributes) == nullptr)
     {
         return E_UNEXPECTED;
     }
@@ -260,7 +260,7 @@ HRESULT TransformAsync::GetInputAvailableType(
 
     std::lock_guard<std::recursive_mutex> lock(m_mutex);
 
-    if (ppType == NULL)
+    if (ppType == nullptr)
     {
         return E_INVALIDARG;
     }
@@ -305,7 +305,7 @@ HRESULT TransformAsync::GetOutputAvailableType(
 
     std::lock_guard<std::recursive_mutex> lock(m_mutex);
 
-    if (ppType == NULL)
+    if (ppType == nullptr)
     {
         return E_INVALIDARG;
     }
@@ -343,7 +343,7 @@ HRESULT TransformAsync::GetOutputAvailableType(
 
 HRESULT TransformAsync::SetInputType(
     DWORD           dwInputStreamID,
-    IMFMediaType* pType, // Can be NULL to clear the input type.
+    IMFMediaType* pType, // Can be nullptr to clear the input type.
     DWORD           dwFlags
 )
 {
@@ -364,9 +364,9 @@ HRESULT TransformAsync::SetInputType(
     }
 
     // Does the caller want us to set the type, or just test it?
-    BOOL reallySet = ((dwFlags & MFT_SET_TYPE_TEST_ONLY) == 0);
+    bool reallySet = ((dwFlags & MFT_SET_TYPE_TEST_ONLY) == 0);
 
-    // Validate the type, if non-NULL.
+    // Validate the type, if non-nullptr.
     if (pType)
     {
         RETURN_IF_FAILED(OnCheckInputType(pType));
@@ -385,13 +385,13 @@ HRESULT TransformAsync::SetInputType(
 
 HRESULT TransformAsync::SetOutputType(
     DWORD           dwOutputStreamID,
-    IMFMediaType* pType, // Can be NULL to clear the output type.
+    IMFMediaType* pType, // Can be nullptr to clear the output type.
     DWORD           dwFlags
 )
 {
     TRACE((L"TransformAsync::SetOutputType\n"));
 
-    if (pType == NULL) 
+    if (pType == nullptr) 
     {
         return E_POINTER;
     }
@@ -408,9 +408,9 @@ HRESULT TransformAsync::SetOutputType(
 
 
     // Does the caller want us to set the type, or just test it?
-    BOOL reallySet = ((dwFlags & MFT_SET_TYPE_TEST_ONLY) == 0);
+    bool reallySet = ((dwFlags & MFT_SET_TYPE_TEST_ONLY) == 0);
 
-    // Validate the type, if non-NULL.
+    // Validate the type, if non-nullptr.
     if (pType)
     {
         RETURN_IF_FAILED(OnCheckOutputType(pType));
@@ -439,7 +439,7 @@ HRESULT TransformAsync::GetInputCurrentType(
 {
     std::lock_guard<std::recursive_mutex> lock(m_mutex);
 
-    if (ppType == NULL)
+    if (ppType == nullptr)
     {
         return E_POINTER;
     }
@@ -473,7 +473,7 @@ HRESULT TransformAsync::GetOutputCurrentType(
 {
     std::lock_guard<std::recursive_mutex> lock(m_mutex);
 
-    if (ppType == NULL)
+    if (ppType == nullptr)
     {
         return E_POINTER;
     }
@@ -507,7 +507,7 @@ HRESULT TransformAsync::GetInputStatus(
 {
     TRACE((L"GetInputStatus\n"));
 
-    if (pdwFlags == NULL)
+    if (pdwFlags == nullptr)
     {
         return E_POINTER;
     }
@@ -539,7 +539,7 @@ HRESULT TransformAsync::GetOutputStatus(DWORD* pdwFlags)
     TRACE((L"GetOutputStatus\n"));
 
 
-    if (pdwFlags == NULL)
+    if (pdwFlags == nullptr)
     {
         return E_POINTER;
     }
@@ -686,7 +686,7 @@ HRESULT TransformAsync::ProcessOutput(
             m_haveOutputCount--;
         }
     }
-    if (IsMFTReady() == FALSE)
+    if (IsMFTReady() == false)
     {
         return MF_E_TRANSFORM_TYPE_NOT_SET;
     }
@@ -694,17 +694,17 @@ HRESULT TransformAsync::ProcessOutput(
     /***************************************
         ** Since this in an internal function
         ** we know m_outputSampleQueue can never be
-        ** NULL due to InitializeTransform()
+        ** nullptr due to InitializeTransform()
         ***************************************/
     RETURN_IF_FAILED(m_outputSampleQueue->GetNextSample(sample.put()));
 
-    if (sample == NULL)
+    if (sample == nullptr)
     {
         return MF_E_TRANSFORM_NEED_MORE_INPUT;
     }
 
     pOutputSamples[0].dwStreamID = 0;
-    if ((pOutputSamples[0].pSample) == NULL)
+    if ((pOutputSamples[0].pSample) == nullptr)
     {
         // The MFT is providing it's own samples
         (pOutputSamples[0].pSample) = sample.get();
@@ -718,9 +718,9 @@ HRESULT TransformAsync::ProcessOutput(
     /***************************************
         ** Since this in an internal function
         ** we know m_outputSampleQueue can never be
-        ** NULL due to InitializeTransform()
+        ** nullptr due to InitializeTransform()
         ***************************************/
-    if (m_outputSampleQueue->IsQueueEmpty() != FALSE)
+    if (m_outputSampleQueue->IsQueueEmpty() != false)
     {
         // We're out of samples in the output queue
         std::lock_guard<std::recursive_mutex> lock(m_mutex);
@@ -728,7 +728,7 @@ HRESULT TransformAsync::ProcessOutput(
         {
             // We're done draining, time to send the event
             com_ptr<IMFMediaEvent> pDrainCompleteEvent;
-            RETURN_IF_FAILED(MFCreateMediaEvent(METransformDrainComplete, GUID_NULL, S_OK, NULL, pDrainCompleteEvent.put()));
+            RETURN_IF_FAILED(MFCreateMediaEvent(METransformDrainComplete, GUID_NULL, S_OK, nullptr, pDrainCompleteEvent.put()));
             
             /*******************************
             ** Note: This MFT only has one
@@ -742,7 +742,7 @@ HRESULT TransformAsync::ProcessOutput(
             /***************************************
             ** Since this in an internal function
             ** we know m_eventQueue can never be
-            ** NULL due to InitializeTransform()
+            ** nullptr due to InitializeTransform()
             ***************************************/
             RETURN_IF_FAILED(m_eventQueue->QueueEvent(pDrainCompleteEvent.get()));
 
@@ -774,7 +774,7 @@ HRESULT TransformAsync::ProcessInput(
         }
         currFrameLocal = m_currFrameNumber++;
     }
-    if (pSample == NULL)
+    if (pSample == nullptr)
     {
         return E_POINTER;
     }
@@ -795,7 +795,7 @@ HRESULT TransformAsync::ProcessInput(
     /***************************************
     ** Since this in an internal function
     ** we know m_inputSampleQueue can never be
-    ** NULL due to InitializeTransform()
+    ** nullptr due to InitializeTransform()
     ***************************************/
     RETURN_IF_FAILED(m_inputSampleQueue->AddSample(pSample));
 

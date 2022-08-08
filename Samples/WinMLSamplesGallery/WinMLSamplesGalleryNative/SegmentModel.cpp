@@ -35,7 +35,7 @@ enum OnnxDataType : long {
 	// floating-point number truncated to 16 bits.
 	// This format has 1 sign bit, 8 exponent bits, and 7 mantissa bits.
 	ONNX_BFLOAT16 = 16,
-}OnnxDataType;
+} OnnxDataType;
 
 
 const int32_t opset = 12;
@@ -43,13 +43,14 @@ const int32_t opset = 12;
 /****	Style transfer model	****/
 void StyleTransfer::InitializeSession(int w, int h)
 {
-	SetImageSize(720, 720); // SIze model input sizes fixed to 720x720
+	SetImageSize(720, 720); // Model input sizes fixed to 720x720.
 	m_session = CreateLearningModelSession(GetModel());
 	m_binding = LearningModelBinding(m_session);
 }
+
 void StyleTransfer::Run(IDirect3DSurface src, IDirect3DSurface dest)
 {
-	m_syncStarted = TRUE;
+	m_syncStarted = true;
 
 	VideoFrame inVideoFrame = VideoFrame::CreateWithDirect3D11Surface(src);
 	VideoFrame outVideoFrame = VideoFrame::CreateWithDirect3D11Surface(dest);
@@ -67,20 +68,14 @@ void StyleTransfer::Run(IDirect3DSurface src, IDirect3DSurface dest)
 
 	m_outputVideoFrame.CopyToAsync(outVideoFrame).get();
 
-	m_syncStarted = FALSE;
+	m_syncStarted = false;
 }
 
 LearningModel StyleTransfer::GetModel()
 {
-	auto model_path = std::filesystem::path(m_modelBasePath.c_str());
-	model_path.append("mosaic.onnx");
-	return LearningModel::LoadFromFilePath(model_path.c_str());
-}
-
-/****	Background blur model	****/
-BackgroundBlur::~BackgroundBlur() 
-{
-	//if (m_session) m_session.Close();
+	auto modelPath = std::filesystem::path(m_modelBasePath.c_str());
+	modelPath.append("mosaic.onnx");
+	return LearningModel::LoadFromFilePath(modelPath.c_str());
 }
 
 void BackgroundBlur::InitializeSession(int w, int h)
@@ -120,7 +115,7 @@ LearningModel BackgroundBlur::GetModel()
 
 void BackgroundBlur::Run(IDirect3DSurface src, IDirect3DSurface dest)
 {
-	m_syncStarted = TRUE;
+	m_syncStarted = true;
 
 	VideoFrame inVideoFrame = VideoFrame::CreateWithDirect3D11Surface(src);
 	VideoFrame outVideoFrame = VideoFrame::CreateWithDirect3D11Surface(dest);
@@ -137,26 +132,25 @@ void BackgroundBlur::Run(IDirect3DSurface src, IDirect3DSurface dest)
 	m_binding.Bind(outputName, m_outputVideoFrame);
 	auto results = m_session.Evaluate(m_binding, L"");
 	m_outputVideoFrame.CopyToAsync(outVideoFrame).get();
-	m_syncStarted = FALSE;
+	m_syncStarted = false;
 }
 
 LearningModel BackgroundBlur::PostProcess(long n, long c, long h, long w, long axis)
 {
 	auto builder = LearningModelBuilder::Create(opset)
 		.Inputs().Add(LearningModelBuilder::CreateTensorFeatureDescriptor(L"InputImage", TensorKind::Float, { n, c, h, w }))
-		.Inputs().Add(LearningModelBuilder::CreateTensorFeatureDescriptor(L"InputScores", TensorKind::Float, { -1, -1, h, w })) // Different input type? 
+		.Inputs().Add(LearningModelBuilder::CreateTensorFeatureDescriptor(L"InputScores", TensorKind::Float, { -1, -1, h, w })) 
 		.Outputs().Add(LearningModelBuilder::CreateTensorFeatureDescriptor(L"OutputImage", TensorKind::Float, { n, c, h, w }))
 		// Argmax Model Outputs
 		.Operators().Add(LearningModelOperator(L"ArgMax")
 			.SetInput(L"data", L"InputScores")
 			.SetAttribute(L"keepdims", TensorInt64Bit::CreateFromArray({ 1 }, { 1 }))
-			.SetAttribute(L"axis", TensorInt64Bit::CreateFromIterable({ 1 }, { axis })) // Correct way of passing axis? 
+			.SetAttribute(L"axis", TensorInt64Bit::CreateFromIterable({ 1 }, { axis })) 
 			.SetOutput(L"reduced", L"Reduced"))
 		.Operators().Add(LearningModelOperator(L"Cast")
 			.SetInput(L"input", L"Reduced")
 			.SetAttribute(L"to", TensorInt64Bit::CreateFromIterable({}, { OnnxDataType::ONNX_FLOAT }))
 			.SetOutput(L"output", L"ArgmaxOutput"))
-
 		// Extract the foreground using the argmax scores to create a mask
 		.Operators().Add(LearningModelOperator(L"Clip")
 			.SetInput(L"input", L"ArgmaxOutput")
@@ -191,8 +185,7 @@ LearningModel BackgroundBlur::PostProcess(long n, long c, long h, long w, long a
 		.Operators().Add(LearningModelOperator(L"Add")
 			.SetInput(L"A", L"ForegroundImage")
 			.SetInput(L"B", L"BackgroundImage")
-			.SetOutput(L"C", L"OutputImage"))
-		;
+			.SetOutput(L"C", L"OutputImage"));
 
 	return builder.CreateModel();
 }
@@ -206,15 +199,12 @@ LearningModel Invert(long n, long c, long h, long w)
 		.Operators().Add(LearningModelOperator(L"Mul")
 			.SetInput(L"A", L"Input")
 			.SetConstant(L"B", TensorFloat::CreateFromIterable({ 1 }, { -1.f }))
-			//.SetConstant(L"B", TensorFloat::CreateFromIterable({3}, {0.114f, 0.587f, 0.299f}))
 			.SetOutput(L"C", L"MulOutput")
 		)
 		.Operators().Add(LearningModelOperator(L"Add")
 			.SetConstant(L"A", TensorFloat::CreateFromIterable({ 1 }, { 255.f }))
 			.SetInput(L"B", L"MulOutput")
-			.SetOutput(L"C", L"Output")
-		)
-		;
+			.SetOutput(L"C", L"Output"));
 
 	return builder.CreateModel();
 }
@@ -262,18 +252,17 @@ LearningModel ReshapeFlatBufferToNCHW(long n, long c, long h, long w)
 		.Outputs().Add(LearningModelBuilder::CreateTensorFeatureDescriptor(L"Output", TensorKind::Float, {n, c, h, w}))
 		.Operators().Add(LearningModelOperator((L"Cast"))
 			.SetInput(L"input", L"Input")
-			.SetOutput(L"output", L"SliceOutput")
+			.SetOutput(L"output", L"CastOutput")
 			.SetAttribute(L"to",
 				TensorInt64Bit::CreateFromIterable({}, {OnnxDataType::ONNX_FLOAT})))
 		.Operators().Add(LearningModelOperator(L"Reshape")
-			.SetInput(L"data", L"SliceOutput")
+			.SetInput(L"data", L"CastOutput")
 			.SetConstant(L"shape", TensorInt64Bit::CreateFromIterable({4}, {n, h, w, c}))
 			.SetOutput(L"reshaped", L"ReshapeOutput"))
 		.Operators().Add(LearningModelOperator(L"Transpose")
 			.SetInput(L"data", L"ReshapeOutput")
 			.SetAttribute(L"perm", TensorInt64Bit::CreateFromArray({ 4 }, { 0, 3, 1, 2 }))
-			.SetOutput(L"transposed", L"Output"))
-	;
+			.SetOutput(L"transposed", L"Output"));
 	return builder.CreateModel();
 }
 

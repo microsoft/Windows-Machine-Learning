@@ -37,7 +37,7 @@ HRESULT GetImageSize(FOURCC fcc, UINT32 width, UINT32 height, DWORD* pcbImage);
 HRESULT TransformAsync::CreateInstance(IMFTransform** mft) noexcept try
 {
     com_ptr<TransformAsync> transform;
-    if (mft == NULL)
+    if (mft == nullptr)
     {
         return E_POINTER;
     }
@@ -50,7 +50,6 @@ HRESULT TransformAsync::CreateInstance(IMFTransform** mft) noexcept try
    return S_OK;
 }CATCH_RETURN();
 
-
 TransformAsync::~TransformAsync()
 {
     OutputDebugString(L"TransformAsync::~TransformAsync");
@@ -59,8 +58,6 @@ TransformAsync::~TransformAsync()
     m_inputType.detach();
     m_outputType.detach();
    
-    //CloseHandle(m_fenceEvent.get());
-
     if (m_eventQueue)
     {
         m_eventQueue->Shutdown();
@@ -73,9 +70,9 @@ TransformAsync::~TransformAsync()
     }
 
     if (m_fenceEvent)
+    {
         m_fenceEvent.reset();
-
-
+    } 
 }
 
 // Passes the root directory where the model(s) are located for the stream effect. 
@@ -129,7 +126,7 @@ HRESULT TransformAsync::QueryInterface(REFIID iid, void** ppv)
     }
     else
     {
-        *ppv = NULL;
+        *ppv = nullptr;
         return E_NOINTERFACE;
     }
     AddRef();
@@ -149,7 +146,7 @@ ULONG TransformAsync::Release()
 #pragma endregion IUnknown
 
 
-HRESULT TransformAsync::ScheduleFrameInference(void)
+HRESULT TransformAsync::ScheduleFrameInference()
 {
     com_ptr<IMFSample> inputSample; 
     com_ptr<IMFAsyncResult> result;
@@ -158,7 +155,7 @@ HRESULT TransformAsync::ScheduleFrameInference(void)
      /***************************************
         ** Since this in an internal function
         ** we know m_inputSampleQueue can never be
-        ** NULL due to InitializeTransform()
+        ** nullptr due to InitializeTransform()
         ***************************************/
 
     RETURN_IF_FAILED(m_inputSampleQueue->GetNextSample(inputSample.put()));
@@ -179,7 +176,6 @@ HRESULT TransformAsync::SubmitEval(IMFSample* pInput)
 {
     com_ptr<IMFSample> outputSample;
     com_ptr<IMFSample> inputSample;
-    IDirect3DSurface src, dest;
     inputSample.copy_from(pInput); 
 
     // Select the next available model
@@ -215,13 +211,13 @@ HRESULT TransformAsync::SubmitEval(IMFSample* pInput)
     RETURN_IF_FAILED(inputSample->GetSampleTime(&time));
     inputSample->GetUINT64(TransformAsync_MFSampleExtension_Marker, &markerID);
 
-    // Extract an IDirect3DSurface from the input and output samples to use for inference, 
-    src = SampleToD3Dsurface(inputSample.get());
-    dest = SampleToD3Dsurface(outputSample.get());
-
     // Make sure this model isn't already running, if so drop the frame and move on. 
-    if(model->m_syncStarted == FALSE)
+    if(model->m_syncStarted == false)
     {
+        // Extract an IDirect3DSurface from the input and output samples to use for inference, 
+        IDirect3DSurface src = SampleToD3Dsurface(inputSample.get());
+        IDirect3DSurface dest = SampleToD3Dsurface(outputSample.get());
+
         auto now = std::chrono::high_resolution_clock::now();
         // Run model inference 
         model->Run(src, dest); 
@@ -230,7 +226,7 @@ HRESULT TransformAsync::SubmitEval(IMFSample* pInput)
         src.Close();
         dest.Close();
         // Perform housekeeping out the output sample
-        RETURN_IF_FAILED(FinishEval(inputSample, outputSample, duration, time, markerID)); 
+        RETURN_IF_FAILED(FinishEval(outputSample.get(), duration, time, markerID)); 
     }
     else {
         TRACE((L"Model %d already running, DROP", m_modelIndex));
@@ -240,7 +236,7 @@ HRESULT TransformAsync::SubmitEval(IMFSample* pInput)
 }
 
 // Clean up output sample and schedule MFHaveOutput task
-HRESULT TransformAsync::FinishEval(com_ptr<IMFSample> pInputSample, com_ptr<IMFSample> pOutputSample,
+HRESULT TransformAsync::FinishEval(IMFSample* pOutputSample,
     LONGLONG hnsDuration, LONGLONG hnsTime, UINT64 pun64MarkerID)
 {
     com_ptr<IMFMediaBuffer> mediaBuffer;
@@ -255,15 +251,15 @@ HRESULT TransformAsync::FinishEval(com_ptr<IMFSample> pInputSample, com_ptr<IMFS
     RETURN_IF_FAILED(mediaBuffer->SetCurrentLength(m_imageSize));
 
     // This is the first sample after a gap in the stream. 
-    if(m_firstSample != FALSE)
+    if(m_firstSample != false)
     {
-        RETURN_IF_FAILED(pOutputSample->SetUINT32(MFSampleExtension_Discontinuity, TRUE));
-        m_firstSample = FALSE;
+        RETURN_IF_FAILED(pOutputSample->SetUINT32(MFSampleExtension_Discontinuity, true));
+        m_firstSample = false;
     }
 
     // Allocate output sample to queue
-    RETURN_IF_FAILED(m_outputSampleQueue->AddSample(pOutputSample.get()));
-    RETURN_IF_FAILED(MFCreateMediaEvent(METransformHaveOutput, GUID_NULL, S_OK, NULL, haveOutputEvent.put()));
+    RETURN_IF_FAILED(m_outputSampleQueue->AddSample(pOutputSample));
+    RETURN_IF_FAILED(MFCreateMediaEvent(METransformHaveOutput, GUID_NULL, S_OK, nullptr, haveOutputEvent.put()));
     // Scope event queue lock
     {
         std::lock_guard<std::recursive_mutex> lock(m_mutex);
@@ -277,7 +273,7 @@ HRESULT TransformAsync::FinishEval(com_ptr<IMFSample> pInputSample, com_ptr<IMFS
     {
         // This input sample is flagged as a marker
         com_ptr<IMFMediaEvent> pMarkerEvent;
-        RETURN_IF_FAILED(MFCreateMediaEvent(METransformMarker, GUID_NULL, S_OK, NULL, pMarkerEvent.put()));
+        RETURN_IF_FAILED(MFCreateMediaEvent(METransformMarker, GUID_NULL, S_OK, nullptr, pMarkerEvent.put()));
         RETURN_IF_FAILED(pMarkerEvent->SetUINT64(MF_EVENT_MFT_CONTEXT, pun64MarkerID));
         RETURN_IF_FAILED(m_eventQueue->QueueEvent(pMarkerEvent.get()));
     }
@@ -314,9 +310,9 @@ HRESULT TransformAsync::OnSetD3DManager(ULONG_PTR ulParam)
             }
 
             // Create event and thread for framerate
-            m_fenceEvent.reset(CreateEvent(NULL,               // Security attributes
-                FALSE,              // Reset token to false means system will auto-reset event object
-                FALSE,              // Initial state is nonsignaled
+            m_fenceEvent.reset(CreateEvent(nullptr,               // Security attributes
+                false,              // Reset token to false means system will auto-reset event object
+                false,              // Initial state is nonsignaled
                 TEXT("FrameEvent")));  // Event object name
             
             DWORD dwThreadID;
@@ -378,7 +374,7 @@ HRESULT TransformAsync::SetupAlloc()
             RETURN_IF_FAILED(m_allocatorAttributes->SetUINT32(MF_SA_D3D11_USAGE, D3D11_USAGE_DEFAULT));
 
             // Set up the output sample allocator if needed
-            if (NULL == m_outputSampleAllocator)
+            if (nullptr == m_outputSampleAllocator)
             {
                 com_ptr<IMFVideoSampleAllocatorEx> spVideoSampleAllocator;
                 com_ptr<IUnknown> spDXGIManagerUnk;
@@ -445,12 +441,12 @@ HRESULT TransformAsync::OnGetPartialType(DWORD typeIndex, IMFMediaType** ppmt)
 HRESULT TransformAsync::OnCheckInputType(IMFMediaType* pmt)
 {
     TRACE((L"OnCheckInputType\n"));
-    assert(pmt != NULL);
+    assert(pmt != nullptr);
 
     HRESULT hr = S_OK;
 
     // If the output type is set, see if they match.
-    if (m_outputType != NULL)
+    if (m_outputType != nullptr)
     {
         DWORD flags = 0;
         hr = pmt->IsEqual(m_outputType.get(), &flags);
@@ -480,12 +476,12 @@ HRESULT TransformAsync::OnCheckInputType(IMFMediaType* pmt)
 HRESULT TransformAsync::OnCheckOutputType(IMFMediaType* pmt)
 {
     TRACE((L"OnCheckOutputType\n"));
-    assert(pmt != NULL);
+    assert(pmt != nullptr);
 
     HRESULT hr = S_OK;
 
     // If the input type is set, see if they match.
-    if (m_inputType != NULL)
+    if (m_inputType != nullptr)
     {
         DWORD flags = 0;
         hr = pmt->IsEqual(m_inputType.get(), &flags);
@@ -519,7 +515,7 @@ HRESULT TransformAsync::OnCheckMediaType(IMFMediaType* pmt)
     GUID subtype = GUID_NULL;
     MFVideoInterlaceMode interlace = MFVideoInterlace_Unknown;
     UINT32 val = 0;
-    BOOL foundMatchingSubtype = FALSE;
+    bool foundMatchingSubtype = false;
 
     // Major type must be video.
     RETURN_IF_FAILED(pmt->GetGUID(MF_MT_MAJOR_TYPE, &major_type));
@@ -539,7 +535,7 @@ HRESULT TransformAsync::OnCheckMediaType(IMFMediaType* pmt)
     {
         if (subtype == *g_mediaSubtypes[i])
         {
-            foundMatchingSubtype = TRUE;
+            foundMatchingSubtype = true;
             break;
         }
     }
@@ -551,7 +547,7 @@ HRESULT TransformAsync::OnCheckMediaType(IMFMediaType* pmt)
 
     // Video must be progressive frames.
     RETURN_IF_FAILED(pmt->GetUINT32(MF_MT_INTERLACE_MODE, (UINT32*)&interlace));
-    if (!(interlace == MFVideoInterlace_Progressive /* || interlace == MFVideoInterlace_MixedInterlaceOrProgressive*/))
+    if (!(interlace == MFVideoInterlace_Progressive))
     {
         RETURN_IF_FAILED(MF_E_INVALIDMEDIATYPE);
     }
@@ -593,8 +589,8 @@ HRESULT TransformAsync::OnSetOutputType(IMFMediaType* pmt)
 {
     TRACE((L"TransformAsync::OnSetOutputType\n"));
 
-    // if pmt is NULL, clear the type.
-    // if pmt is non-NULL, set the type.
+    // if pmt is nullptr, clear the type.
+    // if pmt is non-nullptr, set the type.
 
     m_outputType.detach();
     m_outputType.attach(pmt);
@@ -631,13 +627,13 @@ IDirect3DSurface TransformAsync::SampleToD3Dsurface(IMFSample* sample)
     return surfaceInspectable.try_as<IDirect3DSurface>();
 }
 
-HRESULT TransformAsync::InitializeTransform(void)
+HRESULT TransformAsync::InitializeTransform()
 {
     RETURN_IF_FAILED(MFCreateAttributes(m_attributes.put(), MFT_NUM_DEFAULT_ATTRIBUTES));
-    RETURN_IF_FAILED(m_attributes->SetUINT32(MF_TRANSFORM_ASYNC, TRUE));
-    RETURN_IF_FAILED(m_attributes->SetUINT32(MFT_SUPPORT_DYNAMIC_FORMAT_CHANGE, TRUE));
-    RETURN_IF_FAILED(m_attributes->SetUINT32(MF_SA_D3D_AWARE, TRUE));
-    RETURN_IF_FAILED(m_attributes->SetUINT32(MF_SA_D3D11_AWARE, TRUE));
+    RETURN_IF_FAILED(m_attributes->SetUINT32(MF_TRANSFORM_ASYNC, true));
+    RETURN_IF_FAILED(m_attributes->SetUINT32(MFT_SUPPORT_DYNAMIC_FORMAT_CHANGE, true));
+    RETURN_IF_FAILED(m_attributes->SetUINT32(MF_SA_D3D_AWARE, true));
+    RETURN_IF_FAILED(m_attributes->SetUINT32(MF_SA_D3D11_AWARE, true));
 
     // Initialize attributes for output sample allocator
     RETURN_IF_FAILED(MFCreateAttributes(m_allocatorAttributes.put(), 3));
@@ -662,12 +658,12 @@ HRESULT TransformAsync::InitializeTransform(void)
     return S_OK;
 }
 
-HRESULT TransformAsync::ShutdownEventQueue(void)
+HRESULT TransformAsync::ShutdownEventQueue()
 {
     /***************************************
         ** Since this in an internal function
         ** we know m_eventQueue can never be
-        ** NULL due to InitializeTransform()
+        ** nullptr due to InitializeTransform()
         ***************************************/
 
     RETURN_IF_FAILED(m_eventQueue->Shutdown());
@@ -739,7 +735,7 @@ HRESULT TransformAsync::UpdateFormatInfo()
     m_videoFOURCC = 0;
     m_imageSize = 0;
 
-    if (m_inputType != NULL)
+    if (m_inputType != nullptr)
     {
         RETURN_IF_FAILED(m_inputType->GetGUID(MF_MT_SUBTYPE, &subtype));
 
@@ -768,7 +764,7 @@ HRESULT TransformAsync::UpdateFormatInfo()
     return S_OK;
 }
 
-HRESULT TransformAsync::OnStartOfStream(void)
+HRESULT TransformAsync::OnStartOfStream()
 {
     {
         std::lock_guard<std::recursive_mutex> lock(m_mutex);
@@ -791,7 +787,7 @@ HRESULT TransformAsync::OnStartOfStream(void)
     return S_OK;
 }
 
-HRESULT TransformAsync::OnEndOfStream(void)
+HRESULT TransformAsync::OnEndOfStream()
 {
     std::lock_guard<std::recursive_mutex> lock(m_mutex);
     m_status &= (~MYMFT_STATUS_STREAM_STARTED);
@@ -812,7 +808,7 @@ HRESULT TransformAsync::OnDrain(
     if (m_outputSampleQueue->IsQueueEmpty())
     {
         com_ptr<IMFMediaEvent> drainCompleteEvent;
-        RETURN_IF_FAILED(MFCreateMediaEvent(METransformDrainComplete, GUID_NULL, S_OK, NULL, drainCompleteEvent.put()));
+        RETURN_IF_FAILED(MFCreateMediaEvent(METransformDrainComplete, GUID_NULL, S_OK, nullptr, drainCompleteEvent.put()));
 
         /*******************************
         ** Note: This MFT only has one
@@ -826,7 +822,7 @@ HRESULT TransformAsync::OnDrain(
         /***************************************
         ** Since this in an internal function
         ** we know m_eventQueue can never be
-        ** NULL due to InitializeTransform()
+        ** nullptr due to InitializeTransform()
         ***************************************/
         RETURN_IF_FAILED(m_eventQueue->QueueEvent(drainCompleteEvent.get()));
     }
@@ -847,12 +843,12 @@ HRESULT TransformAsync::OnDrain(
     return S_OK;
 }
 
-HRESULT TransformAsync::OnFlush(void)
+HRESULT TransformAsync::OnFlush()
 {
     std::lock_guard<std::recursive_mutex> lock(m_mutex);
     m_status &= (~MYMFT_STATUS_STREAM_STARTED);
     if(m_outputSampleCallback)
-        m_outputSampleCallback->SetCallback(NULL);
+        m_outputSampleCallback->SetCallback(nullptr);
     RETURN_IF_FAILED(FlushSamples());
     return S_OK;
 }
@@ -865,7 +861,7 @@ HRESULT TransformAsync::OnMarker(
     /***************************************
     ** Since this in an internal function
     ** we know m_inputSampleQueue can never be
-    ** NULL due to InitializeTransform()
+    ** nullptr due to InitializeTransform()
     ***************************************/
     RETURN_IF_FAILED(m_inputSampleQueue->MarkerNextSample(pulID));
 
@@ -886,9 +882,9 @@ HRESULT TransformAsync::RequestSample(
     }
 
     com_ptr<IMFMediaEvent> event;
-    RETURN_IF_FAILED(MFCreateMediaEvent(METransformNeedInput, GUID_NULL, S_OK, NULL, event.put()));
+    RETURN_IF_FAILED(MFCreateMediaEvent(METransformNeedInput, GUID_NULL, S_OK, nullptr, event.put()));
     
-    if (event == NULL)
+    if (event == nullptr)
     {
         TRACE((L"RequestSample: event null not queueing anything!"));
     }
@@ -899,7 +895,7 @@ HRESULT TransformAsync::RequestSample(
     /***************************************
     ** Since this in an internal function
     ** we know m_eventQueue can never be
-    ** NULL due to InitializeTransform()
+    ** nullptr due to InitializeTransform()
     ***************************************/
 
     {
@@ -913,39 +909,39 @@ HRESULT TransformAsync::RequestSample(
     return S_OK;
 }
 
-BOOL TransformAsync::IsMFTReady(void)
+bool TransformAsync::IsMFTReady()
 {
-    BOOL ready = FALSE;
+    bool ready = false;
     do
     {
         std::lock_guard<std::recursive_mutex> lock(m_mutex);
         m_status &= (~MYMFT_STATUS_INPUT_ACCEPT_DATA);
-        if (m_inputType == NULL)
+        if (m_inputType == nullptr)
         {
             // The Input type is not set
             break;
         }
 
-        if (m_outputType == NULL)
+        if (m_outputType == nullptr)
         {
             // The output type is not set
             break;
         }
 
         m_status |= MYMFT_STATUS_INPUT_ACCEPT_DATA; // The MFT is ready for data
-        ready = TRUE;
+        ready = true;
     } while (false);
 
     return ready;
 }
 
-HRESULT TransformAsync::FlushSamples(void)
+HRESULT TransformAsync::FlushSamples()
 {
     std::lock_guard<std::recursive_mutex> lock(m_mutex);
     RETURN_IF_FAILED(OnEndOfStream());       // Treat this like an end of stream, don't accept new samples unti)l
     m_haveOutputCount = 0;    // Don't Output samples until new input samples are given
     RETURN_IF_FAILED(m_inputSampleQueue->RemoveAllSamples());
     RETURN_IF_FAILED(m_outputSampleQueue->RemoveAllSamples());
-    m_firstSample = TRUE; // Be sure to reset our first sample so we know to set discontinuity
+    m_firstSample = true; // Be sure to reset our first sample so we know to set discontinuity
     return S_OK;
 }

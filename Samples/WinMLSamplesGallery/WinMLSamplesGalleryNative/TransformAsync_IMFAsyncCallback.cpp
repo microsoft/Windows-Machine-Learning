@@ -7,7 +7,7 @@ HRESULT TransformAsync::GetParameters(
 {
     HRESULT hr = S_OK;
 
-    if ((pdwFlags == NULL) || (pdwQueue == NULL))
+    if ((pdwFlags == nullptr) || (pdwQueue == nullptr))
     {
         hr = E_POINTER;
         return hr;
@@ -35,7 +35,7 @@ HRESULT TransformAsync::Invoke(
     com_ptr<TransformAsync> transform;
     com_ptr<IMFSample> inputSample;
 
-    if (pAsyncResult == NULL)
+    if (pAsyncResult == nullptr)
     {
         return E_POINTER;
     }

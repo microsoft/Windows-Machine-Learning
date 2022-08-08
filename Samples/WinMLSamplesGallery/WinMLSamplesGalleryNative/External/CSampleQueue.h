@@ -18,12 +18,12 @@ public:
 
 #pragma region IUnknown
     // IUnknown Implementations
-    ULONG   __stdcall   AddRef(void);
+    ULONG   __stdcall   AddRef();
     HRESULT __stdcall   QueryInterface(
                                 REFIID  riid,
                                 void**  ppvObject
                                 );
-    ULONG   __stdcall   Release(void);
+    ULONG   __stdcall   Release();
 #pragma endregion IUnknown
 
     // ILockedSampleCallback Implementation
@@ -34,23 +34,23 @@ public:
             HRESULT GetNextSample(                  // Remove a sample from the front of the queue
                             IMFSample** pSample
                             );
-            HRESULT RemoveAllSamples(void);
+            HRESULT RemoveAllSamples();
             HRESULT MarkerNextSample(
                             const ULONG_PTR pulID
                             );
-            BOOL    IsQueueEmpty(void);
+            bool    IsQueueEmpty();
 
             ULONG GetLength();
 protected:
                 class CNode;
 
-                    CSampleQueue(void);
-                    ~CSampleQueue(void);
+                    CSampleQueue();
+                    ~CSampleQueue();
 
     volatile    ULONG               m_ulRef;
                 CNode*              m_pHead;
                 CNode*              m_pTail;
-                BOOL                m_bAddMarker;
+                bool                m_bAddMarker;
                 ULONG_PTR           m_pulMarkerID;
                 std::recursive_mutex    m_mutex;
                 ULONG               m_length;
@@ -63,5 +63,5 @@ public:
     virtual HRESULT GetSample(
                             IMFSample** ppSample
                             )       = 0;
-    virtual HRESULT Unlock(void)    = 0;
+    virtual HRESULT Unlock()    = 0;
 };

@@ -17,7 +17,7 @@ DEFINE_GUID(TransformAsync_MFSampleExtension_Marker,
 #define CHECK_HR(hr) if (FAILED(hr)) { goto done; }
 
 // SAFE_RELEASE template.
-// Releases a COM pointer if the pointer is not NULL, and sets the pointer to NULL.
+// Releases a COM pointer if the pointer is not nullptr, and sets the pointer to nullptr.
 #ifndef SAFE_RELEASE
 template <class T>
 inline void SAFE_RELEASE(T*& p)
@@ -25,13 +25,13 @@ inline void SAFE_RELEASE(T*& p)
     if (p)
     {
         p->Release();
-        p = NULL;
+        p = nullptr;
     }
 }
 #endif
 
 #ifndef SAFE_DELETE
-#define SAFE_DELETE(x){ delete x; x = NULL; }
+#define SAFE_DELETE(x){ delete x; x = nullptr; }
 #endif
 
 // ARRAY_SIZE macro.

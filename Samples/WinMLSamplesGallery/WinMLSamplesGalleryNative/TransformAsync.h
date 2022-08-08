@@ -164,14 +164,14 @@ public:
     );
 
     // **** IMFTransform Helper functions
-    // IsValidInputStream: Returns TRUE if dwInputStreamID is a valid input stream identifier.
-    BOOL IsValidInputStream(DWORD dwInputStreamID) const
+    // IsValidInputStream: Returns true if dwInputStreamID is a valid input stream identifier.
+    bool IsValidInputStream(DWORD dwInputStreamID) const
     {
         return dwInputStreamID == 0;
     }
 
-    // IsValidOutputStream: Returns TRUE if dwOutputStreamID is a valid output stream identifier.
-    BOOL IsValidOutputStream(DWORD dwOutputStreamID) const
+    // IsValidOutputStream: Returns true if dwOutputStreamID is a valid output stream identifier.
+    bool IsValidOutputStream(DWORD dwOutputStreamID) const
     {
         return dwOutputStreamID == 0;
     }
@@ -183,7 +183,7 @@ public:
     HRESULT __stdcall   GetShutdownStatus(
         MFSHUTDOWN_STATUS* pStatus
     );
-    HRESULT __stdcall   Shutdown(void);
+    HRESULT __stdcall   Shutdown();
 #pragma endregion IMFShutdown
 
 #pragma region IMFMediaEventGenerator
@@ -229,8 +229,8 @@ public:
 
     // Helper function for SubmitEval, sets attributes on the output sample,
     // adds it to the output sample queue, and queues an MFHasOutput event. 
-    HRESULT FinishEval(com_ptr<IMFSample> pInputSample,
-        com_ptr<IMFSample> pOutputSample,
+    HRESULT FinishEval(
+        IMFSample* pOutputSample,
         LONGLONG hnsDuration,
         LONGLONG hnsTime,
         UINT64 pun64MarkerID);
@@ -247,8 +247,8 @@ protected:
 
     // Called by the constructor, intializes sample queues, transform attributes,
     // and the event queue. 
-    HRESULT InitializeTransform(void);
-    HRESULT ShutdownEventQueue(void);
+    HRESULT InitializeTransform();
+    HRESULT ShutdownEventQueue();
 
     /******* MFT Helpers **********/
     // Returns the partial media type of the media type in g_mediaSubtypes.
@@ -282,12 +282,12 @@ protected:
     IDirect3DSurface SampleToD3Dsurface(IMFSample* sample);
 
     /******* MFT Media Event Handlers **********/
-    HRESULT             OnStartOfStream(void);
-    HRESULT             OnEndOfStream(void);
+    HRESULT             OnStartOfStream();
+    HRESULT             OnEndOfStream();
     HRESULT             OnDrain(
         const UINT32 un32StreamID
     );
-    HRESULT             OnFlush(void);
+    HRESULT             OnFlush();
     HRESULT             OnMarker(
         const ULONG_PTR pulID
     );
@@ -295,11 +295,11 @@ protected:
     /*********** End Event Handlers ************/
     // Queues an MFNeedInput event for the client to respond to. 
     HRESULT             RequestSample(const UINT32 un32StreamID);
-    HRESULT             FlushSamples(void);
+    HRESULT             FlushSamples();
     // Pops a sample from the input queue and schedules an inference job
     // with the Media Foundation async work queue. 
-    HRESULT             ScheduleFrameInference(void);
-    BOOL                IsMFTReady(void);
+    HRESULT             ScheduleFrameInference();
+    bool                IsMFTReady();
 
     // Member variables
     volatile ULONG                  m_refCount = 1;        // Reference count.
@@ -318,8 +318,8 @@ protected:
     com_ptr<IMFMediaEventQueue>     m_eventQueue;         // Event queue the client uses to get NeedInput/HaveOutput events via IMFMediaEventGenerator.
     DWORD                           m_needInputCount = 0; // Number of pending NeedInput requests to be resolved by client calling ProcessInput. 0 at end of stream.
     DWORD                           m_haveOutputCount = 0;// Number of pending HaveOutput requests to be resolved by client calling ProcessOutput.
-    BOOL                            m_firstSample = TRUE;  // True the incoming sample is the first one after a gap in the stream. 
-    BOOL                            m_shutdown = FALSE;    // True if MFT is currently shutting down, signals to client through IMFShutdown. 
+    bool                            m_firstSample = true;  // True the incoming sample is the first one after a gap in the stream. 
+    bool                            m_shutdown = false;    // True if MFT is currently shutting down, signals to client through IMFShutdown. 
     CSampleQueue* m_inputSampleQueue;    // Queue of input samples to be processed by ProcessInput. 
     CSampleQueue* m_outputSampleQueue;   // Queue of output samples to be processed by ProcessOutput. 
 

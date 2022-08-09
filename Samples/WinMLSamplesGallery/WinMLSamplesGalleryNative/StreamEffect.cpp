@@ -258,7 +258,6 @@ namespace MainWindow
         delete g_engine;
         g_engine = nullptr;
         DestroyWindow(g_hwnd);
-        //PostQuitMessage(0);
     }
 
     void OnChooseDevice(HWND hwnd)

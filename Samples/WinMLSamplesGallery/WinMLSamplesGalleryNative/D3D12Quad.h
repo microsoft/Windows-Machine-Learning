@@ -2,6 +2,7 @@
 
 #include <stdexcept>
 #include <wincodec.h>
+#include <semaphore>
 
 using namespace DirectX;
 using Microsoft::WRL::ComPtr;
@@ -24,8 +25,7 @@ public:
     ComPtr<ID3D12Resource> GetCurrentBuffer();
     void ShowNextImage();
 
-    bool is_initialized = false;
-
+    std::binary_semaphore initializationSemaphore{ 0 };
 
 private:
     static const UINT FrameCount = 2;
@@ -76,11 +76,11 @@ private:
 
     ComPtr<ID3D12Resource> textureBuffer; // the resource heap containing our texture
 
-    int LoadImageDataFromFile(BYTE** imageData, D3D12_RESOURCE_DESC& resourceDescription, LPCWSTR filename, int& bytesPerRow);
+    static int LoadImageDataFromFile(BYTE** imageData, D3D12_RESOURCE_DESC& resourceDescription, LPCWSTR filename, int& bytesPerRow);
 
-    DXGI_FORMAT GetDXGIFormatFromWICFormat(WICPixelFormatGUID wicFormatGUID);
-    WICPixelFormatGUID GetConvertToWICFormat(WICPixelFormatGUID wicFormatGUID);
-    int GetDXGIFormatBitsPerPixel(DXGI_FORMAT dxgiFormat);
+    static DXGI_FORMAT GetDXGIFormatFromWICFormat(WICPixelFormatGUID wicFormatGUID);
+    static WICPixelFormatGUID GetConvertToWICFormat(WICPixelFormatGUID wicFormatGUID);
+    static int GetDXGIFormatBitsPerPixel(DXGI_FORMAT dxgiFormat);
     void LoadImageTexture();
     void Reset();
     void ThrowIfFailed(HRESULT hr);

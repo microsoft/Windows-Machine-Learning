@@ -112,10 +112,6 @@
     <UseOpenCV>False</UseOpenCV>
     <UseOpenCV Condition="Exists('$(OpenCVLibFullPath)')">True</UseOpenCV>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>C:\Program Files %28x86%29\Windows Kits\10\Include\10.0.19041.0\um;C:\Program Files %28x86%29\Windows Kits\10\Include\10.0.19041.0\shared;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\Program Files %28x86%29\Windows Kits\10\Lib\10.0.19041.0\um\x64;$(LibraryPath)</LibraryPath>
-  </PropertyGroup>
   <ItemDefinitionGroup Condition="$(UseOpenCV)">
     <ClCompile>
       <AdditionalIncludeDirectories>$(SolutionDir)..\..\build\external\opencv\cmake_config\$(PlatformString)\install\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>

@@ -148,7 +148,7 @@ std::wstring Win32Application::GetAssetPath(LPCWSTR assetName)
     UINT modulePathSize = std::size(modulePath);
     GetModuleFileName(nullptr, modulePath, modulePathSize);
 
-    const wchar_t* gallery = L"WinMLSamplesGallery";
+    constexpr std::wstring_view gallery = L"WinMLSamplesGallery";
     UINT gallerySize = 19; // length of the gallery string
 
     // Erase everything after the first occurence of the gallery string
@@ -157,7 +157,7 @@ std::wstring Win32Application::GetAssetPath(LPCWSTR assetName)
     assert(offset != std::string::npos);
     path.erase(path.begin() + offset + gallerySize, path.end());
 
-    std::wstring native = L"\\WinMLSamplesGalleryNative\\";
-    path = path + native + assetName;
+    std::wstring_view galleryPathNative = L"\\WinMLSamplesGalleryNative\\";
+    path = path + galleryPathNative.data() + assetName;
     return path;
 }

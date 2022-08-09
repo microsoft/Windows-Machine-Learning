@@ -26,7 +26,7 @@ namespace winrt::WinMLSamplesGalleryNative::implementation
         std::jthread d3d_th(Win32Application::Run, &sample, 10);
 
         // Wait until the D3D pipeline finishes
-        while (!sample.is_initialized) {}
+        sample.initializationSemaphore.acquire();
 
         // Detach the thread so it doesn't block the UI
         d3d_th.detach();

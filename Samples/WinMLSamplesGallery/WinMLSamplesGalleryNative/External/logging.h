@@ -47,7 +47,7 @@ namespace MediaFoundationSamples
 
             if (SUCCEEDED(hr))
             {
-                _CrtDbgReport(_CRT_WARN, nullptr, nullptr, nullptr, "%S", message);
+                _CrtDbgReport(_CRT_WARN, NULL, NULL, NULL, "%S", message);
             }
         }
 

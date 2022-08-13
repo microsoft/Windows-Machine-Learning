@@ -174,12 +174,11 @@ namespace MainWindow
             previewing = g_engine->IsPreviewing();
             if (previewing)
             {
-                _SetStatusText(L"Loading...");
-                EnableMenuItem(GetMenu(hwnd), ID_CAPTURE_PREVIEW, MF_DISABLED);
+                EnableMenuItem(GetMenu(hwnd), ID_START_PREVIEW, MF_DISABLED);
             }
             else
             {
-                SetMenuItemText(GetMenu(hwnd), ID_CAPTURE_PREVIEW, L"Start Preview");
+                SetMenuItemText(GetMenu(hwnd), ID_START_PREVIEW, L"Start Preview");
             }
         }
         else if (g_engine->IsPreviewing())
@@ -188,6 +187,7 @@ namespace MainWindow
         }
         else
         {
+            
             _SetStatusText(L"Please select a device or start preview (using the default device).");
         }
     }
@@ -326,23 +326,26 @@ namespace MainWindow
             ShowError(hwnd, IDS_ERR_CAPTURE, hr);
         }
         UpdateUI(hwnd);
+        _SetStatusText(L"Loading...");
+
     }
 
     void OnCommand(HWND hwnd, int id, HWND /*hwndCtl*/, UINT /*codeNotify*/)
     {
         switch (id)
         {
-        case ID_CAPTURE_CHOOSEDEVICE:
+        case ID_START_CHOOSEDEVICE:
             OnChooseDevice(hwnd);
             break;
 
-        case ID_CAPTURE_PREVIEW:
+        case ID_START_PREVIEW:
             if (g_engine->IsPreviewing())
             {
                 OnStopPreview(hwnd);
             }
             else
             {
+                _SetStatusText(L"Loading...");
                 OnStartPreview(hwnd);
             }
             break;
@@ -358,10 +361,7 @@ namespace MainWindow
             HANDLE_MSG(hwnd, WM_PAINT, OnPaint);
             HANDLE_MSG(hwnd, WM_SIZE, OnSize);
             HANDLE_MSG(hwnd, WM_DESTROY, OnDestroy);
-            //HANDLE_MSG(hwnd, WM_CLOSE, OnClose);
             HANDLE_MSG(hwnd, WM_COMMAND, OnCommand);
-        /*case WM_CLOSE:
-            DestroyWindow(hwnd);*/
         case WM_ERASEBKGND:
             return 1;
         

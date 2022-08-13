@@ -60,10 +60,10 @@ END
 
 IDR_MENU1 MENU
 BEGIN
-    POPUP "Capture"
+    POPUP "Start"
     BEGIN
-        MENUITEM "Choose Device",               ID_CAPTURE_CHOOSEDEVICE
-        MENUITEM "Start Preview",               ID_CAPTURE_PREVIEW
+        MENUITEM "Choose Device",               ID_START_CHOOSEDEVICE
+        MENUITEM "Start Preview",               ID_START_PREVIEW
     END
 END
 

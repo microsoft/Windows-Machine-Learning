@@ -12,9 +12,7 @@ class CSampleQueue: public IUnknown
 public:
     class   ILockedSample;
 
-    static  HRESULT Create(
-                            CSampleQueue**   ppQueue
-                            );
+    static  HRESULT Create(CSampleQueue**   ppQueue);
 
 #pragma region IUnknown
     // IUnknown Implementations
@@ -26,26 +24,23 @@ public:
     ULONG   __stdcall   Release();
 #pragma endregion IUnknown
 
-    // ILockedSampleCallback Implementation
-            
-            HRESULT AddSample(                      // Add a sample to the back of the queue
-                            IMFSample*  pSample
-                            );
-            HRESULT GetNextSample(                  // Remove a sample from the front of the queue
-                            IMFSample** pSample
-                            );
-            HRESULT RemoveAllSamples();
-            HRESULT MarkerNextSample(
-                            const ULONG_PTR pulID
-                            );
-            bool    IsQueueEmpty();
+    // ILockedSampleCallback Implementation     
+    HRESULT AddSample(                      // Add a sample to the back of the queue
+                    IMFSample*  pSample
+                    );
+    HRESULT GetNextSample(                  // Remove a sample from the front of the queue
+                    IMFSample** pSample
+                    );
+    HRESULT RemoveAllSamples();
+    HRESULT MarkerNextSample(const ULONG_PTR pulID);
+    bool    IsQueueEmpty();
 
-            ULONG GetLength();
+    ULONG GetLength();
 protected:
-                class CNode;
+    class CNode;
 
-                    CSampleQueue();
-                    ~CSampleQueue();
+    CSampleQueue();
+    ~CSampleQueue();
 
     volatile    ULONG               m_ulRef;
                 CNode*              m_pHead;
@@ -60,8 +55,6 @@ protected:
 class CSampleQueue::ILockedSample
 {
 public:
-    virtual HRESULT GetSample(
-                            IMFSample** ppSample
-                            )       = 0;
-    virtual HRESULT Unlock()    = 0;
+    virtual HRESULT GetSample(IMFSample** ppSample) = 0;
+    virtual HRESULT Unlock() = 0;
 };

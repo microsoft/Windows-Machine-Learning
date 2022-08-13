@@ -14,9 +14,9 @@
 #define IDS_ERR_CAPTURE                 109
 #define IDC_DEVICE_LIST                 1004
 #define IDC_STATUS_BAR					1005
-#define ID_CAPTURE_CHOOSEDEVICE         40001
-#define ID_CAPTURE_STARTPREVIEW         40002
-#define ID_CAPTURE_PREVIEW              40003
+#define ID_START_CHOOSEDEVICE         40001
+#define ID_START_STARTPREVIEW         40002
+#define ID_START_PREVIEW              40003
 #define IDD_CHOOSE_DEVICE               40003
 
 // Next default values for new objects

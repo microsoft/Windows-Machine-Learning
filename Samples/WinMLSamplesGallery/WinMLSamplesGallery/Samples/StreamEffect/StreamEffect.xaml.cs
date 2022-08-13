@@ -30,15 +30,9 @@ namespace WinMLSamplesGallery.Samples
         public StreamEffect()
         {
             this.InitializeComponent();
-            // TODO: Currently the WinMLSamplesGalleryNative component will load
-            // the wrong version of the Microsoft.AI.MachineLearning.dll.
-            // To work around this, we make a dummy call to the builder to
-            // ensure that the dll is loaded.
-            var builder = Microsoft.AI.MachineLearning.Experimental.LearningModelBuilder.Create(11);
             demoHwnd = (IntPtr)WinMLSamplesGalleryNative.StreamEffect.CreateInferenceWindow();
 
             currentHwnd = GetForegroundWindow();
-            //var modelName = "mosaic.onnx";
             modelPath = Path.Join(Windows.ApplicationModel.Package.Current.InstalledLocation.Path, "Models");
             
         }
@@ -78,8 +72,6 @@ namespace WinMLSamplesGallery.Samples
 
             }
         }
-
-
     }
     
 }

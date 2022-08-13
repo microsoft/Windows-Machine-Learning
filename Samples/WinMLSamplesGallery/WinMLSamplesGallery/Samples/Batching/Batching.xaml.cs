@@ -44,7 +44,6 @@ namespace WinMLSamplesGallery.Samples
             var modelName = "squeezenet1.1-7-batched.onnx";
             var modelPath = Path.Join(Windows.ApplicationModel.Package.Current.InstalledLocation.Path, "Models", modelName);
             _model = LearningModel.LoadFromFilePath(modelPath);
-
         }
 
         async private void StartInference(object sender, RoutedEventArgs e)
@@ -85,7 +84,6 @@ namespace WinMLSamplesGallery.Samples
         // Test input consists of 50 images (25 bird and 25 cat)
         private async Task<List<VideoFrame>> GetInputImages()
         {
-
             var birdFile = await StorageFile.GetFileFromApplicationUriAsync(new Uri("ms-appx:///InputData/hummingbird.jpg"));
             var catFile = await StorageFile .GetFileFromApplicationUriAsync(new Uri("ms-appx:///InputData/kitten.png"));
             var birdImage = await CreateSoftwareBitmapFromStorageFile(birdFile);

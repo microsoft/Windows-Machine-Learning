@@ -31,6 +31,9 @@ namespace WinMLSamplesGallery.Samples
         public DXResourceBindingORT()
         {
             this.InitializeComponent();
+
+            // Run in background thread to avoid blocking UI on sample launch
+            Task.Run(() => SetModelNameForTelemetry());
         }
 
         private async void LaunchWindow(object sender, RoutedEventArgs e)
@@ -104,6 +107,18 @@ namespace WinMLSamplesGallery.Samples
         public void StopAllEvents()
         {
             pageExited = true;
+        }
+
+        // Session must be created for telemety to be sent
+        private void SetModelNameForTelemetry()
+        {
+            var modelName = "squeezenet1.1-7.onnx";
+            var modelPath = Path.Join(Windows.ApplicationModel.Package.Current.InstalledLocation.Path, "Models", modelName);
+            var model = LearningModel.LoadFromFilePath(modelPath);
+            var device = new LearningModelDevice(LearningModelDeviceKind.Cpu);
+            var options = new LearningModelSessionOptions();
+            SampleBasePage.SetModelNameForTelemetry("SqueezeNet", "AdapterSelection", model);
+            new LearningModelSession(model, device, options);
         }
     }
 }

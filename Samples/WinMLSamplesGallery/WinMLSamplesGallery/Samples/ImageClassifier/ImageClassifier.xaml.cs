@@ -243,6 +243,8 @@ namespace WinMLSamplesGallery.Samples
             {
                 var modelPath = _modelDictionary[model];
                 var inferenceModel = LearningModel.LoadFromFilePath(modelPath);
+                SetModelNameForTelemetry(inferenceModel);
+
                 _inferenceSession = CreateLearningModelSession(inferenceModel);
 
                 var preProcessor = _preProcessorDictionary[model];
@@ -443,6 +445,14 @@ namespace WinMLSamplesGallery.Samples
         private void DeviceComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             TryPerformInference();
+        }
+
+        private void SetModelNameForTelemetry(LearningModel model)
+        {
+            var viewModel = (ClassifierViewModel)AllModelsGrid.SelectedItem;
+            var modelName = viewModel.Title;
+            var sampleName = "ImageClassifier";
+            SampleBasePage.SetModelNameForTelemetry(modelName, sampleName, model);
         }
     }
 }

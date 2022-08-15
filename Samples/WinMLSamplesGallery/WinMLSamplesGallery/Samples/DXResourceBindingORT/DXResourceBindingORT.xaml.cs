@@ -117,7 +117,7 @@ namespace WinMLSamplesGallery.Samples
             var model = LearningModel.LoadFromFilePath(modelPath);
             var device = new LearningModelDevice(LearningModelDeviceKind.Cpu);
             var options = new LearningModelSessionOptions();
-            SampleBasePage.SetModelNameForTelemetry("SqueezeNet", "AdapterSelection", model);
+            SampleBasePage.SetModelNameForTelemetry("SqueezeNet", "DXResourceBinding", model);
             new LearningModelSession(model, device, options);
         }
     }

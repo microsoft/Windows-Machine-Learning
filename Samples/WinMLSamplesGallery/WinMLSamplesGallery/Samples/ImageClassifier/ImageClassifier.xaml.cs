@@ -145,7 +145,7 @@ namespace WinMLSamplesGallery.Samples
                     { Classifier.GoogleNet,         Path.Combine(installPath, "LargeModels\\googlenet-9.onnx") },
                     { Classifier.Inception_V1,      Path.Combine(installPath, "LargeModels\\inception-v1-9.onnx") },
                     { Classifier.Inception_V2,      Path.Combine(installPath, "LargeModels\\inception-v2-9.onnx") },
-                    { Classifier.MobileNet,         Path.Combine(installPath, "LargeModels\\mobilenetv2-7.onnx" },
+                    { Classifier.MobileNet,         Path.Combine(installPath, "LargeModels\\mobilenetv2-7.onnx") },
                     { Classifier.ShuffleNet_V2,     Path.Combine(installPath, "LargeModels\\shufflenet-v2-10.onnx") },
                     { Classifier.RCNN_ILSVRC13,     Path.Combine(installPath, "LargeModels\\rcnn-ilsvrc13-9.onnx") },
                     { Classifier.ResNet,            Path.Combine(installPath, "LargeModels\\resnet50-caffe2-v1-9.onnx") },
@@ -243,6 +243,8 @@ namespace WinMLSamplesGallery.Samples
             {
                 var modelPath = _modelDictionary[model];
                 var inferenceModel = LearningModel.LoadFromFilePath(modelPath);
+                SetModelNameForTelemetry(inferenceModel);
+
                 _inferenceSession = CreateLearningModelSession(inferenceModel);
 
                 var preProcessor = _preProcessorDictionary[model];
@@ -443,6 +445,14 @@ namespace WinMLSamplesGallery.Samples
         private void DeviceComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             TryPerformInference();
+        }
+
+        private void SetModelNameForTelemetry(LearningModel model)
+        {
+            var viewModel = (ClassifierViewModel)AllModelsGrid.SelectedItem;
+            var modelName = viewModel.Title;
+            var sampleName = "ImageClassifier";
+            SampleBasePage.SetModelNameForTelemetry(modelName, sampleName, model);
         }
     }
 }

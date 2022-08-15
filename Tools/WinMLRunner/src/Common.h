@@ -2,7 +2,7 @@
 #ifndef _SILENCE_ALL_CXX17_DEPRECATION_WARNINGS
 #define _SILENCE_ALL_CXX17_DEPRECATION_WARNINGS
 #endif
-// unknown.h needs to be inlcuded before any winrt headers
+// unknown.h needs to be included before any winrt headers
 #include <unknwn.h>
 #ifdef USE_WINML_NUGET
 #include <winrt/Microsoft.AI.MachineLearning.h>
@@ -64,8 +64,9 @@ using namespace winrt;
 #ifndef THROW_IF_FAILED
 #define THROW_IF_FAILED(hr)                                                                                            \
     {                                                                                                                  \
-        if (FAILED(hr))                                                                                                \
-            throw hresult_error(hr);                                                                                   \
+        HRESULT localHresult = (hr);                                                                                   \
+        if (FAILED(localHresult))                                                                                      \
+            throw hresult_error(localHresult);                                                                         \
     }
 #endif
 inline std::wstring MakeErrorMsg(HRESULT hr)

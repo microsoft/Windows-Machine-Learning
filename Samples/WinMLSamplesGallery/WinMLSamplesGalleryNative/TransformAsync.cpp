@@ -212,7 +212,7 @@ HRESULT TransformAsync::SubmitEval(IMFSample* pInput)
     inputSample->GetUINT64(TransformAsync_MFSampleExtension_Marker, &markerID);
 
     // Make sure this model isn't already running, if so drop the frame and move on. 
-    if(model->m_syncStarted == false)
+    if(!model->m_syncStarted)
     {
         // Extract an IDirect3DSurface from the input and output samples to use for inference, 
         IDirect3DSurface src = SampleToD3Dsurface(inputSample.get());

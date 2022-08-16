@@ -48,6 +48,7 @@ namespace WinMLSamplesGallery.Samples
             // The encrypted model (encrypted.onnx) is embedded as a resource in
             // the native binary: WinMLSamplesGalleryNative.dll.
             var inferenceModel = WinMLSamplesGalleryNative.EncryptedModels.LoadEncryptedResource(DecryptionKey.Password);
+            SampleBasePage.SetModelNameForTelemetry("Encrypted", "EncryptedModel", inferenceModel);
             var postProcessingModel = TensorizationModels.SoftMaxThenTopK(10);
 
             // Update the status

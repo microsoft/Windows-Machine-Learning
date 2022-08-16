@@ -4,6 +4,7 @@ using Microsoft.UI.Xaml.Controls;
 using System.Threading.Tasks;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
+using Microsoft.AI.MachineLearning;
 using System.IO;
 using WinMLSamplesGalleryNative;
 using System.Runtime.InteropServices;
@@ -30,11 +31,21 @@ namespace WinMLSamplesGallery.Samples
         public StreamEffect()
         {
             this.InitializeComponent();
+            // Run in background thread to avoid blocking UI on sample launch
+            Task.Run(() => SetModelNameForTelemetry());
+
             demoHwnd = (IntPtr)WinMLSamplesGalleryNative.StreamEffect.CreateInferenceWindow();
 
             currentHwnd = GetForegroundWindow();
             modelPath = Path.Join(Windows.ApplicationModel.Package.Current.InstalledLocation.Path, "Models");
             
+        }
+
+        private void SetModelNameForTelemetry()
+        {
+            var inferenceBuilder = Microsoft.AI.MachineLearning.Experimental.LearningModelBuilder.Create(11);
+            var inferenceModel = inferenceBuilder.CreateModel();
+            SampleBasePage.SetModelNameForTelemetry("FCNResnet", "StreamEffect", inferenceModel);
         }
 
         public void CloseInferenceWindow()

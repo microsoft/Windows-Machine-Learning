@@ -23,4 +23,12 @@ namespace WinMLSamplesGalleryNative
         static String[] GetAdapters();
         static Microsoft.AI.MachineLearning.LearningModelDevice CreateLearningModelDeviceFromAdapter(String description);
     }
+
+    [default_interface]
+    runtimeclass DXResourceBinding
+    {
+        static void LaunchWindow();
+        static float[] EvalORT();
+        static void CloseWindow();
+    }
 }

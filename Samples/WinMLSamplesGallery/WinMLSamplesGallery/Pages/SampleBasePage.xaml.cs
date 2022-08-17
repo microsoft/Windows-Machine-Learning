@@ -42,6 +42,9 @@ namespace WinMLSamplesGallery
                 case "AdapterSelection":
                     SampleFrame.Navigate(typeof(Samples.AdapterSelection));
                     break;
+                case "DXResourceBindingORT":
+                    SampleFrame.Navigate(typeof(Samples.DXResourceBindingORT));
+                    break;
             }
             if (sampleMetadata.Docs.Count > 0)
                 DocsHeader.Visibility = Visibility.Visible;
@@ -56,6 +59,12 @@ namespace WinMLSamplesGallery
             {
                 var page = (Samples.Batching)SampleFrame.Content;
                 page.StopAllEvents();
+            }
+            else if(SampleFrame.SourcePageType == typeof(Samples.DXResourceBindingORT))
+            {
+                var page = (Samples.DXResourceBindingORT)SampleFrame.Content;
+                page.StopAllEvents();
+
             }
         }
 

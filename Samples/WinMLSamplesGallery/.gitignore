@@ -1,3 +1,5 @@
 *.onnx
 !squeezenet1.1-7-batched.onnx
 !encrypted.onnx
+!efficientnet-lite4-11.onnx
+!dx_preprocessor_efficient_net.onnx

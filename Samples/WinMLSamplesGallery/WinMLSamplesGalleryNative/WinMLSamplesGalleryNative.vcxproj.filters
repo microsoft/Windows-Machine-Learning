@@ -46,6 +46,18 @@
     <ClCompile Include="AdapterList.cpp">
       <Filter>AdapterList</Filter>
     </ClCompile>
+    <ClCompile Include="DXResourceBinding.cpp">
+      <Filter>DXResourceBinding</Filter>
+    </ClCompile>
+    <ClCompile Include="ORTHelpers.cpp">
+      <Filter>DXResourceBinding</Filter>
+    </ClCompile>
+    <ClCompile Include="D3D12Quad.cpp">
+      <Filter>DXResourceBinding</Filter>
+    </ClCompile>
+    <ClCompile Include="Win32Application.cpp">
+      <Filter>DXResourceBinding</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -86,6 +98,25 @@
     <ClInclude Include="AdapterList.h">
       <Filter>AdapterList</Filter>
     </ClInclude>
+    <ClInclude Include="DXResourceBinding.h">
+      <Filter>DXResourceBinding</Filter>
+    </ClInclude>
+    <ClInclude Include="d3dx12.h">
+      <Filter>DXResourceBinding</Filter>
+    </ClInclude>
+    <ClInclude Include="stdafx.h">
+      <Filter>DXResourceBinding</Filter>
+    </ClInclude>
+    <ClInclude Include="ORTHelpers.h">
+      <Filter>DXResourceBinding</Filter>
+    </ClInclude>
+    <ClInclude Include="D3D12Quad.h">
+      <Filter>DXResourceBinding</Filter>
+    </ClInclude>
+    <ClInclude Include="Win32Application.h">
+      <Filter>DXResourceBinding</Filter>
+    </ClInclude>
+    <ClInclude Include="WeakBuffer.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Resource.rc" />
@@ -100,6 +131,13 @@
     <None Include="WinMLSamplesGalleryNative.def" />
     <None Include="PropertySheet.props" />
     <None Include="encrypted.onnx" />
+    <None Include="squeezenet1.1-7.onnx">
+      <Filter>DXResourceBinding</Filter>
+    </None>
+    <None Include="$(MSBuildThisFileDirectory)..\..\runtimes\win-x64\native\onnxruntime.dll" />
+    <None Include="dx_preprocessor_efficient_net.onnx">
+      <Filter>DXResourceBinding</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Text Include="readme.txt" />
@@ -120,5 +158,21 @@
     <Filter Include="StreamEffect">
       <UniqueIdentifier>{91675ea9-10e7-4490-af40-762311cf5ba9}</UniqueIdentifier>
     </Filter>
+    <Filter Include="DXResourceBinding">
+      <UniqueIdentifier>{393a0b12-622a-4d4c-b4a6-ed0bb1b2e285}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="cat.jpg">
+      <Filter>DXResourceBinding</Filter>
+    </Image>
+    <Image Include="hummingbird.jpg">
+      <Filter>DXResourceBinding</Filter>
+    </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="shaders.hlsl">
+      <Filter>DXResourceBinding</Filter>
+    </CustomBuild>
   </ItemGroup>
 </Project>

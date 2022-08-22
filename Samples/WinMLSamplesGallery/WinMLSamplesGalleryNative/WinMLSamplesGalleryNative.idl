@@ -32,4 +32,12 @@ namespace WinMLSamplesGalleryNative
         static Int32 CreateInferenceWindow();
     }
 
+
+    [default_interface]
+    runtimeclass DXResourceBinding
+    {
+        static void LaunchWindow();
+        static float[] EvalORT();
+        static void CloseWindow();
+    }
 }

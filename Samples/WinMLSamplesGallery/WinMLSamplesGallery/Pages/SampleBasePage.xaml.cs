@@ -44,6 +44,8 @@ namespace WinMLSamplesGallery
                     break;
                 case "StreamEffect":
                     SampleFrame.Navigate(typeof(Samples.StreamEffect));
+                case "DXResourceBindingORT":
+                    SampleFrame.Navigate(typeof(Samples.DXResourceBindingORT));
                     break;
             }
             if (sampleMetadata.Docs.Count > 0)
@@ -60,15 +62,18 @@ namespace WinMLSamplesGallery
                 var page = (Samples.Batching)SampleFrame.Content;
                 page.StopAllEvents();
             }
-            
             // Batching Sample contains background thread events that may need to be stopped.
-            if (SampleFrame.SourcePageType == typeof(Samples.StreamEffect))
+            else if (SampleFrame.SourcePageType == typeof(Samples.StreamEffect))
             {
                 var page = (Samples.StreamEffect)SampleFrame.Content;
                 page.CloseInferenceWindow();
             }
+            else if(SampleFrame.SourcePageType == typeof(Samples.DXResourceBindingORT))
+            {
+                var page = (Samples.DXResourceBindingORT)SampleFrame.Content;
+                page.StopAllEvents();
 
-
+            }
         }
 
         public static void SetModelNameForTelemetry(String modelName, String sampleName, LearningModel model)

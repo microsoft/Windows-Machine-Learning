@@ -44,6 +44,7 @@ namespace WinMLSamplesGallery
                     break;
                 case "StreamEffect":
                     SampleFrame.Navigate(typeof(Samples.StreamEffect));
+                    break;
                 case "DXResourceBindingORT":
                     SampleFrame.Navigate(typeof(Samples.DXResourceBindingORT));
                     break;

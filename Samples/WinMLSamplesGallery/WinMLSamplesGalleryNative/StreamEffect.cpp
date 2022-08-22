@@ -178,7 +178,7 @@ namespace MainWindow
             }
             else
             {
-                SetMenuItemText(GetMenu(hwnd), ID_START_PREVIEW, L"Start Preview");
+                SetMenuItemText(GetMenu(hwnd), ID_START_PREVIEW, const_cast<WCHAR*>(L"Start Preview"));
             }
         }
         else if (g_engine->IsPreviewing())

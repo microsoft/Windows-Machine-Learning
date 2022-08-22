@@ -92,7 +92,7 @@
       "XAMLGithubLink": "https://github.com/microsoft/Windows-Machine-Learning/blob/master/Samples/WinMLSamplesGallery/WinMLSamplesGallery/Samples/StreamEffect/StreamEffect.xaml",
       "CSharpGithubLink": "https://github.com/microsoft/Windows-Machine-Learning/blob/master/Samples/WinMLSamplesGallery/WinMLSamplesGallery/Samples/StreamEffect/StreamEffect.xaml.cs",
       "Docs": [],
-      "IsRecentlyAdded": true,
+      "IsRecentlyAdded": true
     },
     {
       "Title": "DX Resource Binding in ORT",

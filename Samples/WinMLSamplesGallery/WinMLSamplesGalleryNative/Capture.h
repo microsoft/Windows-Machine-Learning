@@ -138,7 +138,7 @@ class CaptureManager
 
         pwrCtxt.Version = POWER_REQUEST_CONTEXT_VERSION;
         pwrCtxt.Flags = POWER_REQUEST_CONTEXT_SIMPLE_STRING;
-        pwrCtxt.Reason.SimpleReasonString = L"CaptureEngine is recording!";
+        pwrCtxt.Reason.SimpleReasonString = const_cast<WCHAR*>(L"CaptureEngine is recording!");
 
         m_hpwrRequest = PowerCreateRequest(&pwrCtxt);
     }

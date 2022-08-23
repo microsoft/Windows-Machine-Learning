@@ -116,7 +116,10 @@
     <ClInclude Include="Win32Application.h">
       <Filter>DXResourceBinding</Filter>
     </ClInclude>
+<<<<<<< HEAD
     <ClInclude Include="WeakBuffer.h" />
+=======
+>>>>>>> master
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Resource.rc" />

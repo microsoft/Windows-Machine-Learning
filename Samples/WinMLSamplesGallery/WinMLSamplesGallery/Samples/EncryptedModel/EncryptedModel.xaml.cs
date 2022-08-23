@@ -32,12 +32,6 @@ namespace WinMLSamplesGallery.Samples
             this.InitializeComponent();
             initialized_ = true;
 
-            // TODO: Currently the WinMLSamplesGalleryNative component will load
-            // the wrong version of the Microsoft.AI.MachineLearning.dll.
-            // To work around this, we make a dummy call to the builder to
-            // ensure that the dll is loaded.
-            var builder = Microsoft.AI.MachineLearning.Experimental.LearningModelBuilder.Create(11);
-
             // Initialize the sample with the decrypted model
             DecryptAndEvauluate();
         }

@@ -39,7 +39,7 @@ void D3D12Quad::OnInit()
     LoadPipeline();
     LoadAssets();
     initializationSemaphore.release();
-    copy_texture = false;
+    copyTexture = false;
 }
 
 // Load the rendering pipeline dependencies.
@@ -427,7 +427,7 @@ void D3D12Quad::Reset() {
 void D3D12Quad::OnUpdate()
 {
     justReset = false;
-    if (copy_texture) {
+    if (copyTexture) {
         Reset();
         LoadImageTexture();
         justReset = true;
@@ -493,10 +493,10 @@ void D3D12Quad::PopulateCommandList()
     auto render_to_present = CD3DX12_RESOURCE_BARRIER::Transition(m_renderTargets[m_frameIndex].Get(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
     m_commandList->ResourceBarrier(1, &render_to_present);
 
-    if (copy_texture)
+    if (copyTexture)
     {
         CopyTextureIntoCurrentBuffer();
-        copy_texture = false;
+        copyTexture = false;
     }
 
     ThrowIfFailed(m_commandList->Close());
@@ -826,12 +826,12 @@ ComPtr<ID3D12Resource> D3D12Quad::GetCurrentBuffer()
     return currentBuffer;
 }
 
-// Schedules the next image to be shown by setting the copy_texture
+// Schedules the next image to be shown by setting the copyTexture
 // variable to true. OnUpdate will catch this variable and load the
 // next image then the image texture will be copied into a resource
 // dimension buffer at the end of PopulateCommandLists
 void D3D12Quad::ShowNextImage()
 {
-    copy_texture = true;
+    copyTexture = true;
 }
 

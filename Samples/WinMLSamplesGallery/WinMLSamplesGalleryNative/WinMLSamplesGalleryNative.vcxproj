@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="..\packages\Microsoft.ML.OnnxRuntime.DirectML.1.12.1\build\native\Microsoft.ML.OnnxRuntime.DirectML.props" Condition="Exists('..\packages\Microsoft.ML.OnnxRuntime.DirectML.1.12.1\build\native\Microsoft.ML.OnnxRuntime.DirectML.props')" />
+  <Import Project="..\packages\Microsoft.AI.MachineLearning.1.12.1\build\native\Microsoft.AI.MachineLearning.props" Condition="Exists('..\packages\Microsoft.AI.MachineLearning.1.12.1\build\native\Microsoft.AI.MachineLearning.props')" />
   <Import Project="..\packages\Microsoft.AI.DirectML.1.9.0\build\Microsoft.AI.DirectML.props" Condition="Exists('..\packages\Microsoft.AI.DirectML.1.9.0\build\Microsoft.AI.DirectML.props')" />
-  <Import Project="..\packages\Microsoft.AI.MachineLearning.1.11.0\build\native\Microsoft.AI.MachineLearning.props" Condition="Exists('..\packages\Microsoft.AI.MachineLearning.1.11.0\build\native\Microsoft.AI.MachineLearning.props')" />
+  <Import Project="..\packages\Microsoft.ML.OnnxRuntime.DirectML.1.12.1\build\native\Microsoft.ML.OnnxRuntime.DirectML.props" Condition="Exists('..\packages\Microsoft.ML.OnnxRuntime.DirectML.1.12.1\build\native\Microsoft.ML.OnnxRuntime.DirectML.props')" />
   <Import Project="..\packages\Microsoft.Windows.CppWinRT.2.0.210930.14\build\native\Microsoft.Windows.CppWinRT.props" Condition="Exists('..\packages\Microsoft.Windows.CppWinRT.2.0.210930.14\build\native\Microsoft.Windows.CppWinRT.props')" />
   <PropertyGroup Label="Globals">
     <CppWinRTOptimized>true</CppWinRTOptimized>
@@ -134,7 +134,14 @@
       <AdditionalIncludeDirectories>$(MSBuildThisFileDirectory)../WinMLSamplesGallery/Models/;$(MSBuildThisFileDirectory)../../build/native/include/;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">d3d12.lib;dxgi.lib;d3dcompiler.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">Comctl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+    <Link>
+      <AdditionalDependencies Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Comctl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+    <Link>
+      <AdditionalDependencies Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Comctl32.lib;powrprof.lib;d3d11.lib;mf.lib;mfplat.lib;mfuuid.lib;shlwapi.lib;Gdi32.lib;Mfplat.lib;Mf.lib;Mfcore.lib;evr.lib;DXGI.lib;user32.lib;ole32.lib;d3d12.lib;dxgi.lib;d3dcompiler.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <!-- <AdditionalDependencies Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">d3d12.lib;dxgi.lib;d3dcompiler.lib;%(AdditionalDependencies)</AdditionalDependencies> -->
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)'=='Release'">
@@ -147,6 +154,9 @@
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalDependencies Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">Comctl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Comctl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Comctl32.lib;powrprof.lib;d3d11.lib;mf.lib;mfplat.lib;mfuuid.lib;shlwapi.lib;Gdi32.lib;Mfplat.lib;Mf.lib;Mfcore.lib;evr.lib;DXGI.lib;user32.lib;ole32.lib</AdditionalDependencies>
     </Link>
     <ResourceCompile>
       <AdditionalIncludeDirectories>$(MSBuildThisFileDirectory)../WinMLSamplesGallery/Models/;$(MSBuildThisFileDirectory)../../build/native/include/;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -154,29 +164,55 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="AdapterList.h" />
+    <ClInclude Include="Capture.h" />
+    <ClInclude Include="common.h" />
     <ClInclude Include="D3D12Quad.h" />
     <ClInclude Include="d3dx12.h" />
     <ClInclude Include="DXResourceBinding.h" />
     <ClInclude Include="EncryptedModels.h" />
+    <ClInclude Include="External\common.h" />
+    <ClInclude Include="External\CSampleQueue.h" />
+    <ClInclude Include="External\logging.h" />
+    <ClInclude Include="External\logmediatype.h" />
+    <ClInclude Include="External\pch.h" />
+    <ClInclude Include="External\trace.h" />
     <ClInclude Include="OpenCVImage.h" />
     <ClInclude Include="ORTHelpers.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="RandomAccessStream.h" />
+    <ClInclude Include="resource.h" />
+    <ClInclude Include="SegmentModel.h" />
+    <ClInclude Include="StreamEffect.h" />
+    <ClInclude Include="TransformAsync.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="AdapterList.cpp" />
+    <ClCompile Include="Capture.cpp" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="WeakBuffer.h" />
     <ClInclude Include="Win32Application.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="AdapterList.cpp" />
     <ClCompile Include="D3D12Quad.cpp" />
     <ClCompile Include="DXResourceBinding.cpp" />
     <ClCompile Include="EncryptedModels.cpp" />
+    <ClCompile Include="External\CSampleQueue.cpp" />
+    <ClCompile Include="External\utils.cpp" />
     <ClCompile Include="OpenCVImage.cpp" />
     <ClCompile Include="ORTHelpers.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="$(GeneratedFilesDir)module.g.cpp" />
+    <ClCompile Include="PreviewWnd.cpp" />
+    <ClCompile Include="SegmentModel.cpp" />
+    <ClCompile Include="StreamEffect.cpp" />
+    <ClCompile Include="TransformAsync.cpp" />
+    <ClCompile Include="TransformAsync_IMFAsyncCallback.cpp" />
+    <ClCompile Include="TransformAsync_IMFMediaEventGenerator.cpp" />
+    <ClCompile Include="TransformAsync_IMFShutdown.cpp" />
+    <ClCompile Include="TransformAsync_IMFTransform.cpp" />
+    <ClCompile Include="TransformAsync_IMFVideoSampleAllocatorNotify.cpp" />
     <ClCompile Include="Win32Application.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -184,6 +220,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="datafile.bin" />
+    <None Include="encrypted.onnx" />
     <None Include="dx_preprocessor_efficient_net.onnx">
       <DeploymentContent>true</DeploymentContent>
     </None>
@@ -217,23 +254,25 @@
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
-    <Import Project="..\packages\Microsoft.Windows.CppWinRT.2.0.210930.14\build\native\Microsoft.Windows.CppWinRT.targets" Condition="Exists('..\packages\Microsoft.Windows.CppWinRT.2.0.210930.14\build\native\Microsoft.Windows.CppWinRT.targets')" />
-    <Import Project="..\packages\Microsoft.AI.MachineLearning.1.11.0\build\native\Microsoft.AI.MachineLearning.targets" Condition="Exists('..\packages\Microsoft.AI.MachineLearning.1.11.0\build\native\Microsoft.AI.MachineLearning.targets')" />
-    <Import Project="..\packages\directxtk12_desktop_2019.2022.5.10.1\build\native\directxtk12_desktop_2019.targets" Condition="Exists('..\packages\directxtk12_desktop_2019.2022.5.10.1\build\native\directxtk12_desktop_2019.targets')" />
+    <Import Project="..\packages\Microsoft.Windows.ImplementationLibrary.1.0.220201.1\build\native\Microsoft.Windows.ImplementationLibrary.targets" Condition="Exists('..\packages\Microsoft.Windows.ImplementationLibrary.1.0.220201.1\build\native\Microsoft.Windows.ImplementationLibrary.targets')" />
     <Import Project="..\packages\Microsoft.AI.DirectML.1.9.0\build\Microsoft.AI.DirectML.targets" Condition="Exists('..\packages\Microsoft.AI.DirectML.1.9.0\build\Microsoft.AI.DirectML.targets')" />
+    <Import Project="..\packages\Microsoft.AI.MachineLearning.1.12.1\build\native\Microsoft.AI.MachineLearning.targets" Condition="Exists('..\packages\Microsoft.AI.MachineLearning.1.12.1\build\native\Microsoft.AI.MachineLearning.targets')" />
+    <Import Project="..\packages\Microsoft.Windows.CppWinRT.2.0.210930.14\build\native\Microsoft.Windows.CppWinRT.targets" Condition="Exists('..\packages\Microsoft.Windows.CppWinRT.2.0.210930.14\build\native\Microsoft.Windows.CppWinRT.targets')" />
+    <Import Project="..\packages\directxtk12_desktop_2019.2022.5.10.1\build\native\directxtk12_desktop_2019.targets" Condition="Exists('..\packages\directxtk12_desktop_2019.2022.5.10.1\build\native\directxtk12_desktop_2019.targets')" />
     <Import Project="..\packages\Microsoft.ML.OnnxRuntime.DirectML.1.12.1\build\native\Microsoft.ML.OnnxRuntime.DirectML.targets" Condition="Exists('..\packages\Microsoft.ML.OnnxRuntime.DirectML.1.12.1\build\native\Microsoft.ML.OnnxRuntime.DirectML.targets')" />
   </ImportGroup>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
-    <Error Condition="!Exists('..\packages\Microsoft.Windows.CppWinRT.2.0.210930.14\build\native\Microsoft.Windows.CppWinRT.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Windows.CppWinRT.2.0.210930.14\build\native\Microsoft.Windows.CppWinRT.props'))" />
-    <Error Condition="!Exists('..\packages\Microsoft.Windows.CppWinRT.2.0.210930.14\build\native\Microsoft.Windows.CppWinRT.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Windows.CppWinRT.2.0.210930.14\build\native\Microsoft.Windows.CppWinRT.targets'))" />
-    <Error Condition="!Exists('..\packages\Microsoft.AI.MachineLearning.1.11.0\build\native\Microsoft.AI.MachineLearning.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.AI.MachineLearning.1.11.0\build\native\Microsoft.AI.MachineLearning.props'))" />
-    <Error Condition="!Exists('..\packages\Microsoft.AI.MachineLearning.1.11.0\build\native\Microsoft.AI.MachineLearning.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.AI.MachineLearning.1.11.0\build\native\Microsoft.AI.MachineLearning.targets'))" />
-    <Error Condition="!Exists('..\packages\directxtk12_desktop_2019.2022.5.10.1\build\native\directxtk12_desktop_2019.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\directxtk12_desktop_2019.2022.5.10.1\build\native\directxtk12_desktop_2019.targets'))" />
+    <Error Condition="!Exists('..\packages\Microsoft.Windows.ImplementationLibrary.1.0.220201.1\build\native\Microsoft.Windows.ImplementationLibrary.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Windows.ImplementationLibrary.1.0.220201.1\build\native\Microsoft.Windows.ImplementationLibrary.targets'))" />
     <Error Condition="!Exists('..\packages\Microsoft.AI.DirectML.1.9.0\build\Microsoft.AI.DirectML.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.AI.DirectML.1.9.0\build\Microsoft.AI.DirectML.props'))" />
     <Error Condition="!Exists('..\packages\Microsoft.AI.DirectML.1.9.0\build\Microsoft.AI.DirectML.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.AI.DirectML.1.9.0\build\Microsoft.AI.DirectML.targets'))" />
+    <Error Condition="!Exists('..\packages\Microsoft.AI.MachineLearning.1.12.1\build\native\Microsoft.AI.MachineLearning.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.AI.MachineLearning.1.12.1\build\native\Microsoft.AI.MachineLearning.props'))" />
+    <Error Condition="!Exists('..\packages\Microsoft.AI.MachineLearning.1.12.1\build\native\Microsoft.AI.MachineLearning.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.AI.MachineLearning.1.12.1\build\native\Microsoft.AI.MachineLearning.targets'))" />
+    <Error Condition="!Exists('..\packages\Microsoft.Windows.CppWinRT.2.0.210930.14\build\native\Microsoft.Windows.CppWinRT.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Windows.CppWinRT.2.0.210930.14\build\native\Microsoft.Windows.CppWinRT.props'))" />
+    <Error Condition="!Exists('..\packages\Microsoft.Windows.CppWinRT.2.0.210930.14\build\native\Microsoft.Windows.CppWinRT.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Windows.CppWinRT.2.0.210930.14\build\native\Microsoft.Windows.CppWinRT.targets'))" />
+    <Error Condition="!Exists('..\packages\directxtk12_desktop_2019.2022.5.10.1\build\native\directxtk12_desktop_2019.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\directxtk12_desktop_2019.2022.5.10.1\build\native\directxtk12_desktop_2019.targets'))" />
     <Error Condition="!Exists('..\packages\Microsoft.ML.OnnxRuntime.DirectML.1.12.1\build\native\Microsoft.ML.OnnxRuntime.DirectML.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.ML.OnnxRuntime.DirectML.1.12.1\build\native\Microsoft.ML.OnnxRuntime.DirectML.props'))" />
     <Error Condition="!Exists('..\packages\Microsoft.ML.OnnxRuntime.DirectML.1.12.1\build\native\Microsoft.ML.OnnxRuntime.DirectML.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.ML.OnnxRuntime.DirectML.1.12.1\build\native\Microsoft.ML.OnnxRuntime.DirectML.targets'))" />
   </Target>

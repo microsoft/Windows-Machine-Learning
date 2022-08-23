@@ -290,3 +290,6 @@ __pycache__/
 
 # UWP Generated files
 **/Generated Files/
+/Samples/StyleTransfer/Assets
+/Samples/CustomTensorization/CustomTensorization/output_gpu.png
+/Samples/CustomTensorization/CustomTensorization/output_cpu.png

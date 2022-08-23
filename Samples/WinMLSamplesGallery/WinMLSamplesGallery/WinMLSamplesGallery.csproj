@@ -31,6 +31,8 @@
     <None Remove="AllSamplesPage.xaml" />
     <None Remove="Controls\PerformanceMonitor.xaml" />
     <None Remove="HomePage.xaml" />
+    <None Remove="Models\fcn-resnet50-12.onnx" />
+    <None Remove="Models\mosaic.onnx" />
     <None Remove="Models\squeezenet1.1-7-batched.onnx" />
 	<None Remove="SamplesGrid.xaml" />
 	<None Remove="SampleBasePage.xaml" />
@@ -44,6 +46,12 @@
     <None Remove="Video.xaml" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Models\fcn-resnet50-12.onnx">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Models\mosaic.onnx">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="Models\squeezenet1.1-7-batched.onnx" />
     <Content Include="SampleMetadata\SampleMetadata.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -79,10 +87,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AI.MachineLearning" Version="1.11.0" />
-    <PackageReference Include="Microsoft.Windows.CsWinRT" Version="1.3.5" />
-    <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.0.0-stable" />
-    <PackageReference Include="SixLabors.ImageSharp" Version="1.0.4" />
+    <PackageReference Include="Microsoft.AI.MachineLearning" Version="1.12.1" />
+    <PackageReference Include="Microsoft.Windows.CsWinRT" Version="1.6.5" />
+    <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.1.4" />
+    <PackageReference Include="SixLabors.ImageSharp" Version="2.1.3" />
     <Manifest Include="$(ApplicationManifest)" />
   </ItemGroup>
 
@@ -182,6 +190,9 @@
       <Output TaskParameter="DownloadedFile" ItemName="Content" />
     </DownloadFile>
     <DownloadFile Condition="!Exists('$(MSBuildProjectDirectory)\Models\squeezenet1.1-7.onnx')" SourceUrl="https://github.com/onnx/models/blob/main/vision/classification/squeezenet/model/squeezenet1.1-7.onnx?raw=true" DestinationFolder="$(MSBuildProjectDirectory)\Models">
+      <Output TaskParameter="DownloadedFile" ItemName="Content" />
+    </DownloadFile>
+	<DownloadFile Condition="!Exists('$(MSBuildProjectDirectory)\Models\fcn-resnet50-12.onnx')" SourceUrl="https://github.com/onnx/models/raw/main/vision/object_detection_segmentation/fcn/model/fcn-resnet50-12.onnx?raw=true" DestinationFolder="$(MSBuildProjectDirectory)\Models">
       <Output TaskParameter="DownloadedFile" ItemName="Content" />
     </DownloadFile>
 

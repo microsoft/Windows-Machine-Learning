@@ -39,7 +39,7 @@
     <TargetPlatformVersion>10.0.19041.0</TargetPlatformVersion>
     <AppxAutoIncrementPackageRevision>True</AppxAutoIncrementPackageRevision>
     <AssetTargetFallback>net5.0-windows$(TargetPlatformVersion);$(AssetTargetFallback)</AssetTargetFallback>
-    <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
+    <TargetPlatformMinVersion>10.0.18362.0</TargetPlatformMinVersion>
     <DefaultLanguage>en-US</DefaultLanguage>
     <AppxPackageSigningEnabled>False</AppxPackageSigningEnabled>
     <EntryPointProjectUniqueName>..\WinMLSamplesGallery\WinMLSamplesGallery.csproj</EntryPointProjectUniqueName>
@@ -132,7 +132,7 @@
   </ItemGroup>
   <Import Project="$(WapProjPath)\Microsoft.DesktopBridge.targets" />
   <ItemGroup>
-    <PackageReference Include="Microsoft.AI.MachineLearning" Version="1.11.0" />
-    <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.0.0-stable" />
+    <PackageReference Include="Microsoft.AI.MachineLearning" Version="1.12.1" />
+    <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.1.4" />
   </ItemGroup>
 </Project>

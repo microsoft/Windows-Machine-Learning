@@ -3,7 +3,7 @@
 #include "Win32Application.h"
 
 HWND Win32Application::m_hwnd = nullptr;
-bool Win32Application::close_window = false;
+bool Win32Application::m_closeWindow = false;
 
 // Get the HModule that will be used to spawn
 // the HWND
@@ -65,20 +65,17 @@ int Win32Application::Run(D3D12Quad* pSample, int nCmdShow)
     ShowWindow(m_hwnd, nCmdShow);
 
     // Main sample loop.
-    close_window = false;
+    m_closeWindow = false;
     MSG msg = {};
-    while (msg.message != WM_QUIT)
+    while (GetMessage(&msg, m_hwnd, 0, 0) != 0)
     {
-        // Destroy the sample and window if the close_window
-        // variable is set to true
-        if (close_window)
+        if (m_closeWindow)
         {
             pSample->OnDestroy();
             PostMessage(m_hwnd, WM_CLOSE, 0, 0);
             break;
         }
-        // Process any messages in the queue.
-        if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
+        else
         {
             TranslateMessage(&msg);
             DispatchMessage(&msg);
@@ -121,7 +118,7 @@ LRESULT CALLBACK Win32Application::WindowProc(HWND hWnd, UINT message, WPARAM wP
     case WM_PAINT:
         if (pSample)
         {
-            if (!close_window)
+            if (!m_closeWindow)
             {
                 pSample->OnUpdate();
                 pSample->OnRender();
@@ -140,7 +137,7 @@ LRESULT CALLBACK Win32Application::WindowProc(HWND hWnd, UINT message, WPARAM wP
 
 void Win32Application::CloseWindow()
 {
-    close_window = true;
+    m_closeWindow = true;
 }
 
 std::wstring Win32Application::GetAssetPath(LPCWSTR assetName)

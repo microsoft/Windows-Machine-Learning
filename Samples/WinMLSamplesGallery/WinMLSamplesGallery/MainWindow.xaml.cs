@@ -25,12 +25,14 @@ namespace WinMLSamplesGallery
         };
 
         public static Frame mainFrame;
+        public static NavigationView navigationView;
 
         public MainWindow()
         {
             this.InitializeComponent();
             this.Title = "Windows ML Samples Gallery";
             mainFrame = contentFrame;
+            navigationView = nvSample;
         }
 
         private void nvSample_ItemInvoked(NavigationView sender, NavigationViewItemInvokedEventArgs args)

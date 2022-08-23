@@ -103,6 +103,6 @@ private:
     // a resource dimension buffer that will be used by ORT for inference
     ComPtr<ID3D12Resource> currentBuffer;
     int imageBytesPerRow;
-    bool copy_texture;
+    bool copyTexture;
 };
 

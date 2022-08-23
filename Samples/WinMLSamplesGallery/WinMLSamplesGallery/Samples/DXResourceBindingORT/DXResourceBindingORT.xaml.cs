@@ -50,7 +50,7 @@ namespace WinMLSamplesGallery.Samples
         private async void ClassifyCube()
         {
             int i = 0;
-            float[] prev_results = { };
+            float[] previousResults  = { };
             while (true)
             {
                 if (pageExited)
@@ -60,12 +60,12 @@ namespace WinMLSamplesGallery.Samples
                 }
                 float[] results = await Task.Run(() => WinMLSamplesGalleryNative.DXResourceBinding.EvalORT());
                 if (i == 0)
-                    prev_results = results;
+                    previousResults  = results;
                 // The first evaluation may return null so move to the next iteration
                 if (results == null)
                     continue;
-                UpdateClassificationResults(prev_results);
-                prev_results = results;
+                UpdateClassificationResults(previousResults );
+                previousResults  = results;
                 System.Threading.Thread.Sleep(1000);
                 i++;
             }

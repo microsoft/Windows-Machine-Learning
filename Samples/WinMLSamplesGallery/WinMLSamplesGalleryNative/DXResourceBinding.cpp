@@ -1,6 +1,3 @@
-#define NOMINMAX
-#define WIN32_LEAN_AND_MEAN
-
 #include "pch.h"
 #include "DXResourceBinding.h"
 #include "DXResourceBinding.g.cpp"

@@ -1,6 +1,5 @@
 #include "pch.h"
 #include "ORTHelpers.h"
-#undef min
 
 #define THROW_IF_FAILED(hr) {HRESULT localHr = (hr); if (FAILED(hr)) throw hr;}
 #define RETURN_IF_FAILED(hr) {HRESULT localHr = (hr); if (FAILED(hr)) return hr;}

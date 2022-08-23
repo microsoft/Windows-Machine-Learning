@@ -14,5 +14,5 @@ protected:
 
 private:
     static HWND m_hwnd;
-    static bool close_window;
+    static bool m_closeWindow;
 };

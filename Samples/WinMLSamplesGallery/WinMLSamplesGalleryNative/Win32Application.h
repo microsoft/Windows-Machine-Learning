@@ -7,6 +7,7 @@ public:
     static int Run(D3D12Quad* pSample, int nCmdShow);
     static HWND GetHwnd() { return m_hwnd; }
     static void CloseWindow();
+    static void SetAppPath(winrt::hstring path);
     static std::wstring GetAssetPath(LPCWSTR assetName);
 
 protected:
@@ -15,4 +16,5 @@ protected:
 private:
     static HWND m_hwnd;
     static bool m_closeWindow;
+    static std::wstring m_appPath;
 };

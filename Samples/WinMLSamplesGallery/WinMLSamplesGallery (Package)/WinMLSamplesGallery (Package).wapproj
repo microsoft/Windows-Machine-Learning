@@ -44,7 +44,7 @@
     <AppxPackageSigningEnabled>False</AppxPackageSigningEnabled>
     <EntryPointProjectUniqueName>..\WinMLSamplesGallery\WinMLSamplesGallery.csproj</EntryPointProjectUniqueName>
     <GenerateAppInstallerFile>False</GenerateAppInstallerFile>
-    <PackageCertificateThumbprint>25067E5853327016828B1097611C6D97DAF9F5E8</PackageCertificateThumbprint>
+    <PackageCertificateThumbprint>A22BAAEE253C6FB6D2972C02E0B1945C85644F89</PackageCertificateThumbprint>
     <AppxPackageSigningTimestampDigestAlgorithm>SHA256</AppxPackageSigningTimestampDigestAlgorithm>
     <GenerateTestArtifacts>True</GenerateTestArtifacts>
     <AppxBundlePlatforms>x86|x64|arm64</AppxBundlePlatforms>

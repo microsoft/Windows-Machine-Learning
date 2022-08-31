@@ -220,7 +220,7 @@ public:
 #pragma endregion IMFAsyncCallback
 
 #pragma region IMFVideoSampleAllocatorNotify
-    HRESULT NotifyRelease();
+    HRESULT STDMETHODCALLTYPE NotifyRelease();
 #pragma endregion IMFVideoSampleAllocatorNotify
 
     // Uses the next available StreamModelBase to run inference on pInputSample 

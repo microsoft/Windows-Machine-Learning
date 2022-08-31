@@ -1,181 +1,79 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
+    <ClCompile Include="AdapterList.cpp" />
+    <ClCompile Include="Capture.cpp" />
+    <ClCompile Include="D3D12Quad.cpp" />
+    <ClCompile Include="DXResourceBinding.cpp" />
+    <ClCompile Include="EncryptedModels.cpp" />
+    <ClCompile Include="External\CSampleQueue.cpp" />
+    <ClCompile Include="External\utils.cpp" />
+    <ClCompile Include="OpenCVImage.cpp" />
+    <ClCompile Include="ORTHelpers.cpp" />
     <ClCompile Include="pch.cpp" />
     <ClCompile Include="$(GeneratedFilesDir)module.g.cpp" />
-    <ClCompile Include="EncryptedModels.cpp">
-      <Filter>EncryptedModels</Filter>
-    </ClCompile>
-    <ClCompile Include="OpenCVImage.cpp">
-      <Filter>OpenCVInterop</Filter>
-    </ClCompile>
-    <ClCompile Include="StreamEffect.cpp">
-      <Filter>StreamEffect</Filter>
-    </ClCompile>
-    <ClCompile Include="Capture.cpp">
-      <Filter>StreamEffect</Filter>
-    </ClCompile>
-    <ClCompile Include="PreviewWnd.cpp">
-      <Filter>StreamEffect</Filter>
-    </ClCompile>
-    <ClCompile Include="External\CSampleQueue.cpp" />
-    <ClCompile Include="SegmentModel.cpp">
-      <Filter>StreamEffect</Filter>
-    </ClCompile>
-    <ClCompile Include="TransformAsync_IMFAsyncCallback.cpp">
-      <Filter>StreamEffect</Filter>
-    </ClCompile>
-    <ClCompile Include="TransformAsync_IMFMediaEventGenerator.cpp">
-      <Filter>StreamEffect</Filter>
-    </ClCompile>
-    <ClCompile Include="TransformAsync_IMFShutdown.cpp">
-      <Filter>StreamEffect</Filter>
-    </ClCompile>
-    <ClCompile Include="TransformAsync_IMFTransform.cpp">
-      <Filter>StreamEffect</Filter>
-    </ClCompile>
-    <ClCompile Include="TransformAsync_IMFVideoSampleAllocatorNotify.cpp">
-      <Filter>StreamEffect</Filter>
-    </ClCompile>
-    <ClCompile Include="TransformAsync.cpp">
-      <Filter>StreamEffect</Filter>
-    </ClCompile>
-    <ClCompile Include="External\utils.cpp">
-      <Filter>StreamEffect</Filter>
-    </ClCompile>
-    <ClCompile Include="AdapterList.cpp">
-      <Filter>AdapterList</Filter>
-    </ClCompile>
-    <ClCompile Include="DXResourceBinding.cpp">
-      <Filter>DXResourceBinding</Filter>
-    </ClCompile>
-    <ClCompile Include="ORTHelpers.cpp">
-      <Filter>DXResourceBinding</Filter>
-    </ClCompile>
-    <ClCompile Include="D3D12Quad.cpp">
-      <Filter>DXResourceBinding</Filter>
-    </ClCompile>
-    <ClCompile Include="Win32Application.cpp">
-      <Filter>DXResourceBinding</Filter>
-    </ClCompile>
+    <ClCompile Include="PreviewWnd.cpp" />
+    <ClCompile Include="SegmentModel.cpp" />
+    <ClCompile Include="StreamEffect.cpp" />
+    <ClCompile Include="TransformAsync.cpp" />
+    <ClCompile Include="TransformAsync_IMFAsyncCallback.cpp" />
+    <ClCompile Include="TransformAsync_IMFMediaEventGenerator.cpp" />
+    <ClCompile Include="TransformAsync_IMFShutdown.cpp" />
+    <ClCompile Include="TransformAsync_IMFTransform.cpp" />
+    <ClCompile Include="TransformAsync_IMFVideoSampleAllocatorNotify.cpp" />
+    <ClCompile Include="Win32Application.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="pch.h" />
-    <ClInclude Include="EncryptedModels.h">
-      <Filter>EncryptedModels</Filter>
-    </ClInclude>
-    <ClInclude Include="OpenCVImage.h">
-      <Filter>OpenCVInterop</Filter>
-    </ClInclude>
-    <ClInclude Include="RandomAccessStream.h">
-      <Filter>AbiHelpers</Filter>
-    </ClInclude>
-    <ClInclude Include="StreamEffect.h">
-      <Filter>StreamEffect</Filter>
-    </ClInclude>
-    <ClInclude Include="Capture.h">
-      <Filter>StreamEffect</Filter>
-    </ClInclude>
-    <ClInclude Include="common.h">
-      <Filter>StreamEffect</Filter>
-    </ClInclude>
-    <ClInclude Include="resource.h" />
-    <ClInclude Include="External\pch.h" />
+    <ClInclude Include="AdapterList.h" />
+    <ClInclude Include="Capture.h" />
+    <ClInclude Include="common.h" />
+    <ClInclude Include="D3D12Quad.h" />
+    <ClInclude Include="d3dx12.h" />
+    <ClInclude Include="DXResourceBinding.h" />
+    <ClInclude Include="EncryptedModels.h" />
     <ClInclude Include="External\common.h" />
     <ClInclude Include="External\CSampleQueue.h" />
     <ClInclude Include="External\logging.h" />
     <ClInclude Include="External\logmediatype.h" />
+    <ClInclude Include="External\pch.h" />
     <ClInclude Include="External\trace.h" />
-    <ClInclude Include="SegmentModel.h">
-      <Filter>StreamEffect</Filter>
-    </ClInclude>
-    <ClInclude Include="TransformAsync.h">
-      <Filter>StreamEffect</Filter>
-    </ClInclude>
-    <ClInclude Include="AdapterList.h">
-      <Filter>AdapterList</Filter>
-    </ClInclude>
-    <ClInclude Include="AdapterList.h">
-      <Filter>AdapterList</Filter>
-    </ClInclude>
-    <ClInclude Include="DXResourceBinding.h">
-      <Filter>DXResourceBinding</Filter>
-    </ClInclude>
-    <ClInclude Include="d3dx12.h">
-      <Filter>DXResourceBinding</Filter>
-    </ClInclude>
-    <ClInclude Include="stdafx.h">
-      <Filter>DXResourceBinding</Filter>
-    </ClInclude>
-    <ClInclude Include="ORTHelpers.h">
-      <Filter>DXResourceBinding</Filter>
-    </ClInclude>
-    <ClInclude Include="D3D12Quad.h">
-      <Filter>DXResourceBinding</Filter>
-    </ClInclude>
-    <ClInclude Include="Win32Application.h">
-      <Filter>DXResourceBinding</Filter>
-    </ClInclude>
-<<<<<<< HEAD
+    <ClInclude Include="OpenCVImage.h" />
+    <ClInclude Include="ORTHelpers.h" />
+    <ClInclude Include="pch.h" />
+    <ClInclude Include="RandomAccessStream.h" />
+    <ClInclude Include="resource.h" />
+    <ClInclude Include="SegmentModel.h" />
+    <ClInclude Include="StreamEffect.h" />
+    <ClInclude Include="TransformAsync.h" />
+    <ClInclude Include="stdafx.h" />
     <ClInclude Include="WeakBuffer.h" />
-=======
->>>>>>> master
+    <ClInclude Include="Win32Application.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="shaders.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Resource.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="cat.jpg" />
+    <Image Include="hummingbird.jpg" />
   </ItemGroup>
   <ItemGroup>
     <Midl Include="WinMLSamplesGalleryNative.idl" />
   </ItemGroup>
   <ItemGroup>
     <None Include="datafile.bin" />
+    <None Include="encrypted.onnx" />
+    <None Include="dx_preprocessor_efficient_net.onnx" />
     <None Include="packages.config" />
     <None Include="squeezenet1.1-7-batched.onnx" />
+    <None Include="squeezenet1.1-7.onnx" />
     <None Include="WinMLSamplesGalleryNative.def" />
     <None Include="PropertySheet.props" />
-    <None Include="encrypted.onnx" />
-    <None Include="squeezenet1.1-7.onnx">
-      <Filter>DXResourceBinding</Filter>
-    </None>
-    <None Include="$(MSBuildThisFileDirectory)..\..\runtimes\win-x64\native\onnxruntime.dll" />
-    <None Include="dx_preprocessor_efficient_net.onnx">
-      <Filter>DXResourceBinding</Filter>
-    </None>
+    <None Include="$(MSBuildThisFileDirectory)..\..\runtimes\win-x86\native\onnxruntime.dll" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="readme.txt" />
-  </ItemGroup>
-  <ItemGroup>
-    <Filter Include="EncryptedModels">
-      <UniqueIdentifier>{bacd2f7a-1e95-444f-9447-25f28f21effe}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="OpenCVInterop">
-      <UniqueIdentifier>{c4ac812b-72fd-49d8-891b-a5764f445fc8}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="AbiHelpers">
-      <UniqueIdentifier>{ed4f3871-4514-4b93-9ace-1315cad5491e}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="AdapterList">
-      <UniqueIdentifier>{9df6a233-c2c6-4062-b738-31f7ba631acd}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="StreamEffect">
-      <UniqueIdentifier>{91675ea9-10e7-4490-af40-762311cf5ba9}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="DXResourceBinding">
-      <UniqueIdentifier>{393a0b12-622a-4d4c-b4a6-ed0bb1b2e285}</UniqueIdentifier>
-    </Filter>
-  </ItemGroup>
-  <ItemGroup>
-    <Image Include="cat.jpg">
-      <Filter>DXResourceBinding</Filter>
-    </Image>
-    <Image Include="hummingbird.jpg">
-      <Filter>DXResourceBinding</Filter>
-    </Image>
-  </ItemGroup>
-  <ItemGroup>
-    <CustomBuild Include="shaders.hlsl">
-      <Filter>DXResourceBinding</Filter>
-    </CustomBuild>
   </ItemGroup>
 </Project>

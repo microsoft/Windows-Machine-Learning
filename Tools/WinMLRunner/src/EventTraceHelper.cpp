@@ -420,7 +420,7 @@ static DWORD FormatDataForCPUFallback(_In_ const PEVENT_RECORD EventRecord,
             static bool showOneWarningMessage = useGPU && !logCPUFallback;
             if (showOneWarningMessage)
             {
-                wprintf(L"WARNING: CPU fallback detected. Run again with -logCPUFallback to see which operators ran on the CPU.");
+                wprintf(L"WARNING: CPU fallback detected. Run again with -logCPUFallback to see which operators ran on the CPU.\n");
                 showOneWarningMessage = false;
             }
         }

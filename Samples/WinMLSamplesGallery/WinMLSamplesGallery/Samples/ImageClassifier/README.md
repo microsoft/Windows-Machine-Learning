@@ -37,7 +37,6 @@ By enabling large models, the build will automatically download, package, and li
 - [CaffeNet](https://github.com/onnx/models/tree/master/vision/classification/caffenet)
 - [DenseNet](https://github.com/onnx/models/tree/master/vision/classification/densenet-121)
 - [EfficientNet](https://github.com/onnx/models/tree/master/vision/classification/efficientnet-lite4)
-- [Emoji8](https://blogs.windows.com/windowsdeveloper/2018/11/16/introducing-emoji8/)
 - [GoogleNet](https://github.com/onnx/models/tree/master/vision/classification/inception_and_googlenet/googlenet)
 - [InceptionV1](https://github.com/onnx/models/tree/master/vision/classification/inception_and_googlenet/inception_v1)
 - [InceptionV2](https://github.com/onnx/models/tree/master/vision/classification/inception_and_googlenet/inception_v2)

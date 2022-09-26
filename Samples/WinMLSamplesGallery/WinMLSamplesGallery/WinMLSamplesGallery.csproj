@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net5.0-windows10.0.19041.0</TargetFramework>
+    <TargetFramework>net6.0-windows10.0.19041.0</TargetFramework>
     <TargetPlatformMinVersion>10.0.17134.0</TargetPlatformMinVersion>
     <RootNamespace>WinMLSamplesGallery</RootNamespace>
     <ApplicationManifest>app.manifest</ApplicationManifest>
@@ -17,6 +17,9 @@
     <DefineConstants Condition="$(UseLargeModels)">$(DefineConstants);USE_LARGE_MODELS</DefineConstants>
     <DefineConstants Condition="$(UseOpenCV)">$(DefineConstants);USE_OPENCV</DefineConstants>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <PropertyGroup>
+	<ErrorOnDuplicatePublishOutputFiles>false</ErrorOnDuplicatePublishOutputFiles>
   </PropertyGroup>
   <ItemGroup>
     <Compile Remove="Samples\EncryptedResource\**" />

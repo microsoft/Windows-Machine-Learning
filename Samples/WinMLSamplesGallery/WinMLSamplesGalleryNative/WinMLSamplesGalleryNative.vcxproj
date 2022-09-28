@@ -231,9 +231,6 @@
   <ItemGroup>
     <None Include="datafile.bin" />
     <None Include="encrypted.onnx" />
-    <None Include="dx_preprocessor_efficient_net.onnx">
-      <DeploymentContent>true</DeploymentContent>
-    </None>
     <None Include="packages.config" />
     <None Include="squeezenet1.1-7-batched.onnx" />
     <None Include="squeezenet1.1-7.onnx" />
@@ -253,14 +250,6 @@
       <DeploymentContent>true</DeploymentContent>
       <FileType>Document</FileType>
     </CustomBuild>
-  </ItemGroup>
-  <ItemGroup>
-    <Image Include="cat.jpg">
-      <DeploymentContent>true</DeploymentContent>
-    </Image>
-    <Image Include="hummingbird.jpg">
-      <DeploymentContent>true</DeploymentContent>
-    </Image>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

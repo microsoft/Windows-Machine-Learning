@@ -6,7 +6,7 @@ namespace winrt::WinMLSamplesGalleryNative::implementation
     struct DXResourceBinding : DXResourceBindingT<DXResourceBinding>
     {
         DXResourceBinding() = default;
-        static void LaunchWindow();
+        static void LaunchWindow(winrt::hstring appPath);
         static winrt::com_array<float> EvalORT();
         static void CloseWindow();
     };

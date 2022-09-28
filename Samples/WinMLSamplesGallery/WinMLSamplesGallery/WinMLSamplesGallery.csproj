@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net5.0-windows10.0.19041.0</TargetFramework>
+    <TargetFramework>net6.0-windows10.0.19041.0</TargetFramework>
     <TargetPlatformMinVersion>10.0.17134.0</TargetPlatformMinVersion>
     <RootNamespace>WinMLSamplesGallery</RootNamespace>
     <ApplicationManifest>app.manifest</ApplicationManifest>
@@ -18,6 +18,9 @@
     <DefineConstants Condition="$(UseOpenCV)">$(DefineConstants);USE_OPENCV</DefineConstants>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
+  <PropertyGroup>
+	<ErrorOnDuplicatePublishOutputFiles>false</ErrorOnDuplicatePublishOutputFiles>
+  </PropertyGroup>
   <ItemGroup>
     <Compile Remove="Samples\EncryptedResource\**" />
     <EmbeddedResource Remove="Samples\EncryptedResource\**" />
@@ -30,6 +33,8 @@
   <ItemGroup>
     <None Remove="AllSamplesPage.xaml" />
     <None Remove="Controls\PerformanceMonitor.xaml" />
+    <None Remove="dx_preprocessor_efficient_net.onnx" />
+    <None Remove="efficientnet-lite4-11.onnx" />
     <None Remove="HomePage.xaml" />
     <None Remove="Models\fcn-resnet50-12.onnx" />
     <None Remove="Models\mosaic.onnx" />
@@ -43,9 +48,12 @@
     <None Remove="Samples\ObjectDetector\ObjectDetector.xaml" />
     <None Remove="Samples\OpenCVInterop\OpenCVInterop.xaml" />
     <None Remove="Samples\ImageSharpInterop\ImageSharpInterop.xaml" />
+    <None Remove="shaders.hlsl" />
     <None Remove="Video.xaml" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="dx_preprocessor_efficient_net.onnx" />
+    <Content Include="efficientnet-lite4-11.onnx" />
     <Content Include="Models\fcn-resnet50-12.onnx">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
@@ -69,6 +77,7 @@
     <Content Include="Models\efficientnet-lite4-11.onnx" />
     <Content Include="Models\shufflenet-9.onnx" />
     <Content Include="Models\squeezenet1.1-7.onnx" />
+    <Content Include="shaders.hlsl" />
   </ItemGroup>
   <!-- Large Models -->
   <ItemGroup Condition="$(UseLargeModels)">

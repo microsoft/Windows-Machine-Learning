@@ -14,7 +14,10 @@ D3D12Quad sample(800, 600, L"D3D12 Quad");
 namespace winrt::WinMLSamplesGalleryNative::implementation
 {
     // Create ORT Sessions and launch D3D window in a separate thread
-	void DXResourceBinding::LaunchWindow() {
+	void DXResourceBinding::LaunchWindow(winrt::hstring appPath) {
+        // Set application path that will be used to locate assets
+        Win32Application::SetAppPath(appPath);
+
         // Create ORT Sessions that will be used for preprocessing and classification
         preprocesingSession = CreateSession(Win32Application::GetAssetPath(L"dx_preprocessor_efficient_net.onnx").c_str());
         inferenceSession = CreateSession(Win32Application::GetAssetPath(L"efficientnet-lite4-11.onnx").c_str());

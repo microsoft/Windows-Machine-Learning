@@ -56,22 +56,17 @@
     <ResourceCompile Include="Resource.rc" />
   </ItemGroup>
   <ItemGroup>
-    <Image Include="cat.jpg" />
-    <Image Include="hummingbird.jpg" />
-  </ItemGroup>
-  <ItemGroup>
     <Midl Include="WinMLSamplesGalleryNative.idl" />
   </ItemGroup>
   <ItemGroup>
     <None Include="datafile.bin" />
     <None Include="encrypted.onnx" />
-    <None Include="dx_preprocessor_efficient_net.onnx" />
     <None Include="packages.config" />
     <None Include="squeezenet1.1-7-batched.onnx" />
     <None Include="squeezenet1.1-7.onnx" />
     <None Include="WinMLSamplesGalleryNative.def" />
     <None Include="PropertySheet.props" />
-    <None Include="$(MSBuildThisFileDirectory)..\..\runtimes\win-x86\native\onnxruntime.dll" />
+    <None Include="$(MSBuildThisFileDirectory)..\..\runtimes\win-x64\native\onnxruntime.dll" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="readme.txt" />

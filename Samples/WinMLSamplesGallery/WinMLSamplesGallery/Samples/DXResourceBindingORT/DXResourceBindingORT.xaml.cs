@@ -41,7 +41,8 @@ namespace WinMLSamplesGallery.Samples
             ToggleLaunchWindowButton();
             ToggleLoadingTxtVisibility();
 
-            await Task.Run(() => WinMLSamplesGalleryNative.DXResourceBinding.LaunchWindow());
+            var packagePath = Windows.ApplicationModel.Package.Current.InstalledLocation.Path;
+            await Task.Run(() => WinMLSamplesGalleryNative.DXResourceBinding.LaunchWindow(packagePath));
 
             ToggleLoadingTxtVisibility();
             ClassifyCube();

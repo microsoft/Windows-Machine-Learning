@@ -4,6 +4,7 @@
 
 HWND Win32Application::m_hwnd = nullptr;
 bool Win32Application::m_closeWindow = false;
+std::wstring Win32Application::m_appPath = L"";
 
 // Get the HModule that will be used to spawn
 // the HWND
@@ -140,22 +141,12 @@ void Win32Application::CloseWindow()
     m_closeWindow = true;
 }
 
+void Win32Application::SetAppPath(winrt::hstring path)
+{
+    m_appPath = path;
+}
+
 std::wstring Win32Application::GetAssetPath(LPCWSTR assetName)
 {
-    WCHAR modulePath[MAX_PATH];
-    UINT modulePathSize = std::size(modulePath);
-    GetModuleFileName(nullptr, modulePath, modulePathSize);
-
-    constexpr std::wstring_view gallery = L"WinMLSamplesGallery";
-    UINT gallerySize = 19; // length of the gallery string
-
-    // Erase everything after the first occurence of the gallery string
-    std::wstring path(modulePath);
-    size_t offset = path.find(gallery);
-    assert(offset != std::string::npos);
-    path.erase(path.begin() + offset + gallerySize, path.end());
-
-    std::wstring_view galleryPathNative = L"\\WinMLSamplesGalleryNative\\";
-    path = path + galleryPathNative.data() + assetName;
-    return path;
+    return m_appPath + L"\\" + assetName;
 }

@@ -44,6 +44,8 @@ To learn how to implement these features in your application, or unlock addition
 
 - [Adapter Selection](./WinMLSamplesGallery/Samples/AdapterSelection): Learn how to use [Windows ML](https://docs.microsoft.com/en-us/windows/ai/windows-ml/) with different adapters based on your power and performance needs.
 
+- [DX Resource Binding in ORT](./WinMLSamplesGallery/Samples/DXResourceBindingORT): Learn how to bind and evaluate DirectX Resources using [ONNX Runtime](https://onnxruntime.ai/docs/).
+
 - [Stream Effect](./WinMLSamplesGallery/Samples/StreamEffect): Learn how to use [Windows ML](https://docs.microsoft.com/en-us/windows/ai/windows-ml/) with real-time inference on video streams.
 
 ## Feedback

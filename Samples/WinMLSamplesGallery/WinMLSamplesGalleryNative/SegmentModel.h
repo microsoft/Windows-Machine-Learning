@@ -110,7 +110,7 @@ protected:
 class StyleTransfer : public StreamModelBase 
 {
 public:
-    StyleTransfer() : StreamModelBase() {};
+    StyleTransfer() : StreamModelBase(){};
     void InitializeSession(int w, int h);
     void Run(IDirect3DSurface src, IDirect3DSurface dest);
 private: 
@@ -119,12 +119,16 @@ private:
 
 class WindowsHello : public StreamModelBase {
 public:
-    WindowsHello() : StreamModelBase() {};
+    WindowsHello() : 
+        StreamModelBase(),
+        m_sessionPreprocess(nullptr),
+        m_bindingPreprocess(nullptr) {};
     void InitializeSession(int w, int h);
     void Run(IDirect3DSurface src, IDirect3DSurface dest);
 private:
     LearningModel GetModel();
-
+    LearningModelSession m_sessionPreprocess;
+    LearningModelBinding m_bindingPreprocess;
 };
 
 class BackgroundBlur : public StreamModelBase

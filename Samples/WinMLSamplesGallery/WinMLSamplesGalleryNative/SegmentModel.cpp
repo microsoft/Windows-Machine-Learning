@@ -40,6 +40,7 @@ enum OnnxDataType : long {
 
 const int32_t opset = 12;
 
+
 /****	Style transfer model	****/
 void StyleTransfer::InitializeSession(int w, int h)
 {
@@ -75,6 +76,22 @@ LearningModel StyleTransfer::GetModel()
 {
     auto modelPath = std::filesystem::path(m_modelBasePath.c_str());
     modelPath.append("mosaic.onnx");
+    return LearningModel::LoadFromFilePath(modelPath.c_str());
+}
+
+void WindowsHello::InitializeSession(int w, int h) {
+    SetImageSize(w, h);
+
+    // Preprocessing: grayscale model
+
+    m_session = CreateLearningModelSession(GetModel());
+    m_binding = LearningModelBinding(m_session);
+
+}
+
+LearningModel WindowsHello::GetModel() {
+    auto modelPath = std::filesystem::path(m_modelBasePath.c_str());
+    modelPath.append("retina_rgb.onnx");
     return LearningModel::LoadFromFilePath(modelPath.c_str());
 }
 

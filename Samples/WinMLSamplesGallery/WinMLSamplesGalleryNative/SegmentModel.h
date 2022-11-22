@@ -117,6 +117,15 @@ private:
     LearningModel GetModel();
 };
 
+class WindowsHello : public StreamModelBase {
+public:
+    WindowsHello() : StreamModelBase() {};
+    void InitializeSession(int w, int h);
+    void Run(IDirect3DSurface src, IDirect3DSurface dest);
+private:
+    LearningModel GetModel();
+
+};
 
 class BackgroundBlur : public StreamModelBase
 {

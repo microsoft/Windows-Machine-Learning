@@ -9,7 +9,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AI.MachineLearning" Version="1.12.1" />
+    <PackageReference Include="Microsoft.AI.MachineLearning" Version="1.14.0-dev-20221121-0835-3119381" />
     <PackageReference Include="Microsoft.Windows.CsWinRT" Version="1.6.5" />
   </ItemGroup>
 
@@ -20,7 +20,7 @@
   <Target Name="GenerateProjection" BeforeTargets="DispatchToInnerBuilds;Build;CoreCompile">
     <ItemGroup>
       <WinMLSamplesGalleryNativeWinMDs Include="$(SolutionDir)WinMLSamplesGalleryNative\bin\neutral\WinMLSamplesGalleryNative.winmd" />
-      <WinMLSamplesGalleryNativeWinMDs Include="$(SolutionDir)packages\Microsoft.AI.MachineLearning.1.11.0\winmds\Microsoft.AI.MachineLearning.winmd" />
+      <WinMLSamplesGalleryNativeWinMDs Include="$(SolutionDir)packages\Microsoft.AI.MachineLearning.1.14.0-dev-20221121-0835-3119381\winmds\Microsoft.AI.MachineLearning.winmd" />
     </ItemGroup>
 
     <PropertyGroup>

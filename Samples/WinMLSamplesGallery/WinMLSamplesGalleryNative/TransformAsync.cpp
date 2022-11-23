@@ -652,7 +652,7 @@ HRESULT TransformAsync::InitializeTransform()
     // Set up circular queue of StreamModelBases
     for (int i = 0; i < m_numThreads; i++) {
         // TODO: Have a dialogue to select which model to select for real-time inference. 
-        m_models.push_back(std::make_unique<BackgroundBlur>());
+        m_models.push_back(std::make_unique<BoundBox>());
     }
 
     return S_OK;

@@ -79,11 +79,11 @@ LearningModel StyleTransfer::GetModel()
     return LearningModel::LoadFromFilePath(modelPath.c_str());
 }
 
-void WindowsHello::InitializeSession(int w, int h) {
+void BoundBox::InitializeSession(int w, int h) {
     SetImageSize(w, h);
 
     // Preprocessing: grayscale model
-    m_sessionPreprocess = CreateLearningModelSession(GrayScale(1, 3, m_imageHeightInPixels, m_imageWidthInPixels));
+    m_sessionPreprocess = CreateLearningModelSession(Grayscale(1, 3, m_imageHeightInPixels, m_imageWidthInPixels));
     m_bindingPreprocess = LearningModelBinding(m_sessionPreprocess);
 
     m_session = CreateLearningModelSession(GetModel());
@@ -91,7 +91,7 @@ void WindowsHello::InitializeSession(int w, int h) {
 
 }
 
-void WindowsHello::Run(IDirect3DSurface src, IDirect3DSurface dest)
+void BoundBox::Run(IDirect3DSurface src, IDirect3DSurface dest)
 {
     VideoFrame inVideoFrame = VideoFrame::CreateWithDirect3D11Surface(src);
     VideoFrame outVideoFrame = VideoFrame::CreateWithDirect3D11Surface(dest);
@@ -103,6 +103,7 @@ void WindowsHello::Run(IDirect3DSurface src, IDirect3DSurface dest)
     assert((UINT32)m_inputVideoFrame.Direct3DSurface().Description().Width == m_imageWidthInPixels);
 
     // Preprocessing: grayscale
+    // TODO: make a real grayscale
     std::vector<int64_t> shape = { 1, 1, m_imageHeightInPixels, m_imageWidthInPixels };
     ITensor intermediateTensor = TensorFloat::Create(shape);
     hstring inputName = m_sessionPreprocess.Model().InputFeatures().GetAt(0).Name();
@@ -111,27 +112,34 @@ void WindowsHello::Run(IDirect3DSurface src, IDirect3DSurface dest)
     m_bindingPreprocess.Bind(inputName, m_inputVideoFrame);
     outputBindProperties.Insert(L"DisableTensorCpuSync", PropertyValue::CreateBoolean(true));
     m_bindingPreprocess.Bind(outputName, intermediateTensor, outputBindProperties);
-    m_sessionPreprocess.Evaluate(m_bindingPreprocess, L"");
+    m_sessionPreprocess.Evaluate(m_bindingPreprocess, L""); 
 
     // Run through actual model
-    std::vector<int64_t> helloOutputShape = {1, -1, 4}; // TODO: How many bboxes? 
+    std::vector<int64_t> helloOutputShape = {1, 20400, 4}; // TODO: How many bboxes? 
+    ITensor shapeTensor = TensorInt64Bit::CreateFromArray({ 2 }, { m_imageHeightInPixels, m_imageWidthInPixels });
     ITensor helloOutput = TensorFloat::Create(helloOutputShape);
     m_binding.Bind(m_session.Model().InputFeatures().GetAt(0).Name(), intermediateTensor);
+    m_binding.Bind(m_session.Model().InputFeatures().GetAt(1).Name(), shapeTensor);
     m_binding.Bind(m_session.Model().OutputFeatures().GetAt(0).Name(), helloOutput, outputBindProperties);
     m_session.Evaluate(m_binding, L"");
 
+    // Choose top bounding box
     //m_.CopyToAsync(outVideoFrame);
     // Draw bboxes on videoframe?? For now just print them out
-    auto bbox = helloOutput.as<TensorFloat>().GetAsVectorView();
+    auto bboxes = helloOutput.as<TensorFloat>().CreateReference();
+    auto capacity = bboxes.Capacity();
+    auto data = bboxes.data();
+    auto bbox = std::vector<float>{ data, data + capacity }; // All but divided into chunks of 4?
     m_inputVideoFrame.CopyToAsync(outVideoFrame).get();
     OutputDebugString(L"BOUNDING BOX: ");
-    OutputDebugString(std::to_wstring(bbox.GetAt(0)).c_str());
+    OutputDebugString(std::to_wstring(bbox.at(0)).c_str());
+    OutputDebugString(std::to_wstring(bbox.at(4)).c_str());
     OutputDebugString(L"\n");
 }
 
-LearningModel WindowsHello::GetModel() {
+LearningModel BoundBox::GetModel() {
     auto modelPath = std::filesystem::path(m_modelBasePath.c_str());
-    modelPath.append("retina_rgb.onnx");
+    modelPath.append("bounding_box.onnx");
     return LearningModel::LoadFromFilePath(modelPath.c_str());
 }
 
@@ -247,6 +255,24 @@ LearningModel BackgroundBlur::PostProcess(long n, long c, long h, long w, long a
     return builder.CreateModel();
 }
 
+
+LearningModel Grayscale(long n, long c, long h, long w)
+{
+    // Go from [n, c, h, w] -> [1, 1, h, w] 
+    // Start with simple reduction of mean across channels
+    auto builder = LearningModelBuilder::Create(opset)
+        .Inputs().Add(LearningModelBuilder::CreateTensorFeatureDescriptor(L"Input", TensorKind::Float, { 1, c, h, w }))
+        .Outputs().Add(LearningModelBuilder::CreateTensorFeatureDescriptor(L"Output", TensorKind::Float, { 1, 1, h, w }))
+        .Operators().Add(LearningModelOperator(L"ReduceMean")
+            .SetInput(L"data", L"Input")
+            .SetAttribute(L"axes",TensorInt64Bit::CreateFromArray({ 1 }, { 1 }))
+            .SetAttribute(L"keepdims", TensorInt64Bit::CreateFromArray({ 1 }, { 1 }))
+            .SetOutput(L"reduced", L"Output")
+        );
+    return builder.CreateModel();
+}
+
+
 LearningModel Invert(long n, long c, long h, long w)
 {
     auto builder = LearningModelBuilder::Create(opset)
@@ -266,20 +292,6 @@ LearningModel Invert(long n, long c, long h, long w)
     return builder.CreateModel();
 }
 
-LearningModel GrayScale(long n, long c, long h, long w) 
-{
-    // Go from [n, c, h, w] -> [1, 1, h, w] 
-    // Start with simple reduction of mean across channels
-    auto builder = LearningModelBuilder::Create(opset)
-        .Inputs().Add(LearningModelBuilder::CreateTensorFeatureDescriptor(L"Input", TensorKind::Float, { 1, c, h, w }))
-        .Outputs().Add(LearningModelBuilder::CreateTensorFeatureDescriptor(L"Output", TensorKind::Float, { 1, 1, h, w }))
-        .Operators().Add(LearningModelOperator(L"ReduceMean")
-            .SetInput(L"data", L"Input")
-            .SetConstant(L"axes", TensorFloat::CreateFromIterable({ 1 }, { 1.f }))
-            .SetOutput(L"reduced", L"Output")
-        );
-    return builder.CreateModel();
-}
 
 LearningModel Normalize0_1ThenZScore(long h, long w, long c, const std::array<float, 3>& means, const std::array<float, 3>& stddev)
 {

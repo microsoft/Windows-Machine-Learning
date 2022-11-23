@@ -27,6 +27,7 @@ using namespace winrt::Windows::Media;
 LearningModel Normalize0_1ThenZScore(long height, long width, long channels, const std::array<float, 3>& means, const std::array<float, 3>& stddev);
 LearningModel ReshapeFlatBufferToNCHW(long n, long c, long h, long w);
 LearningModel Invert(long n, long c, long h, long w);
+LearningModel Grayscale(long n, long c, long h, long w);
 
 class StreamModelBase
 {
@@ -117,12 +118,14 @@ private:
     LearningModel GetModel();
 };
 
-class WindowsHello : public StreamModelBase {
+class BoundBox : public StreamModelBase {
 public:
-    WindowsHello() : 
+    BoundBox() : 
         StreamModelBase(),
         m_sessionPreprocess(nullptr),
         m_bindingPreprocess(nullptr) {};
+    virtual ~BoundBox() {}
+
     void InitializeSession(int w, int h);
     void Run(IDirect3DSurface src, IDirect3DSurface dest);
 private:
@@ -147,6 +150,5 @@ private:
     // Mean and standard deviation for z-score normalization during preprocessing. 
     std::array<float, 3> m_mean = { 0.485f, 0.456f, 0.406f };
     std::array<float, 3> m_stddev = { 0.229f, 0.224f, 0.225f };
-
 
 };

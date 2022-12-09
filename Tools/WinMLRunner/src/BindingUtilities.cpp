@@ -646,6 +646,28 @@ namespace BindingUtilities
         }
     }
 
+    TensorString CreateTensorString(const std::vector<int64_t>& tensorShape)
+    {
+        auto length = 1;
+        for (auto&& dim : tensorShape)
+        {
+            if (dim > 0)
+            {
+                length *= dim;
+            }
+        }
+
+        std::vector<winrt::hstring> strings;
+
+        for (auto i = 0; i < length; ++i)
+        {
+            auto str = to_hstring(i);
+            strings.push_back(str);
+        }
+
+        return TensorString::CreateFromArray(tensorShape, strings);
+    }
+
     // Process the descriptor to gather and normalize the shape
     void ProcessDescriptor(const ILearningModelFeatureDescriptor& description, std::vector<int64_t>& shape,
                            TensorKind& tensorKind, InputBufferDesc& inputBufferDesc)
@@ -849,6 +871,11 @@ namespace BindingUtilities
             case TensorKind::UInt64:
             {
                 return CreateTensor<TensorKind::UInt64>(args, shape, inputBindingType, inputBufferDesc);
+            }
+            break;
+            case TensorKind::String:
+            {
+                return CreateTensorString(shape);
             }
             break;
         }

@@ -23,15 +23,6 @@ trigger:
     exclude:
     - Tools
 
-# PR validation trigger
-pr:
-  branches:
-    include:
-    - master
-  paths:
-    exclude:
-    - Tools
-
 jobs:
 - job: Public_Samples_Build
   timeoutInMinutes: 90

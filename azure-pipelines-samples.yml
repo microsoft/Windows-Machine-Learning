@@ -4,9 +4,6 @@ resources:
 
 pool:
     vmImage: 'windows-latest'
-# pool:
-#   name: DirectML_BuildPool
-#  demands: agent.osversion -equals 10.0.17763
 
 variables:
   SamplesBin: SamplesBin

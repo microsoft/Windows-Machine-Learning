@@ -70,7 +70,7 @@ jobs:
       displayName: 'OpenCV - Build'
       inputs:
         solution: 'build/external/opencv/cmake_config/$(BuildPlatform)/OpenCV.sln"'
-        vsVersion: "16.0"
+        vsVersion: "17.0"
         msbuildArgs: '/p:Configuration=$(BuildConfiguration) /t:Build /p:LinkIncremental=false /p:DebugSymbols=false /p:DebugType=None'
         configuration: '$(BuildConfiguration)'
         msbuildArchitecture: x64
@@ -81,7 +81,7 @@ jobs:
       displayName: 'OpenCV - Install'
       inputs:
         solution: 'build/external/opencv/cmake_config/$(BuildPlatform)/INSTALL.vcxproj'
-        vsVersion: "16.0"
+        vsVersion: "17.0"
         msbuildArgs: '/p:Configuration=$(BuildConfiguration) /p:LinkIncremental=false /p:DebugSymbols=false /p:DebugType=None'
         configuration: '$(BuildConfiguration)'
         msbuildArchitecture: x64
@@ -102,7 +102,7 @@ jobs:
       displayName: 'Build WinMLSamplesGallery Debug'
       inputs:
         solution: 'Samples/WinMLSamplesGallery/WinMLSamplesGallery.sln'
-        vsVersion: "16.0"
+        vsVersion: "17.0"
         msbuildArgs: '/p:WindowsTargetPlatformVersion=$(WindowsTargetPlatformVersion) /t:Restore,Clean,Build'
         platform: '$(BuildPlatform)'
         configuration: '$(BuildConfiguration)'
@@ -114,7 +114,7 @@ jobs:
       displayName: 'Build And Publish WinMLSamplesGallery Release'
       inputs:
         solution: 'Samples/WinMLSamplesGallery/WinMLSamplesGallery.sln'
-        vsVersion: "16.0"
+        vsVersion: "17.0"
         msbuildArgs: '/p:UapAppxPackageBuildMode=SideloadOnly /p:AppxPackageSigningEnabled=false /p:AppxBundle=Always "/p:AppxBundlePlatforms=x86|x64|arm64" /p:WindowsTargetPlatformVersion=$(WindowsTargetPlatformVersion) /t:Restore,Clean,Build,Publish'
         platform: '$(BuildPlatform)'
         configuration: '$(BuildConfiguration)'
@@ -126,7 +126,7 @@ jobs:
       displayName: 'Build UI test solution Testing/**/SamplesTest.sln'
       inputs:
         solution: 'Testing/**/SamplesTest.sln'
-        vsVersion: "16.0"
+        vsVersion: "17.0"
         msbuildArgs: '-v:diag /p:OutDir=$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\SamplesTest\ /p:WindowsTargetPlatformVersion=$(WindowsTargetPlatformVersion) /t:Restore,Clean,Build'
         platform: '$(BuildPlatform)'
         configuration: '$(BuildConfiguration)'
@@ -138,7 +138,7 @@ jobs:
       displayName: 'Build MNIST-Tutorial-cs Sample'
       inputs:
         solution: 'Samples/MNIST/Tutorial/cs/mnist_demo.sln'
-        vsVersion: "16.0"
+        vsVersion: "17.0"
         msbuildArgs: '-v:diag /p:OutDir=$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\MNIST-Tutorial\ /p:AppxPackageSigningEnabled=false /p:WindowsTargetPlatformVersion=$(WindowsTargetPlatformVersion)  /t:Restore,Clean,Build'
         platform: '$(BuildPlatform)'
         configuration: '$(BuildConfiguration)'
@@ -150,7 +150,7 @@ jobs:
       displayName: 'Build MNIST-UWP-cs Sample'
       inputs:
         solution: 'Samples/MNIST/UWP/cs/mnist_demo.sln'
-        vsVersion: "16.0"
+        vsVersion: "17.0"
         msbuildArgs: '-v:diag /p:OutDir=$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\MNIST-cs\ /p:AppxBundle=Never /p:AppxPackageSigningEnabled=false /p:WindowsTargetPlatformVersion=$(WindowsTargetPlatformVersion)  /t:Restore,Clean,Build'
         platform: '$(BuildPlatform)'
         configuration: '$(BuildConfiguration)_NuGet'
@@ -162,7 +162,7 @@ jobs:
       displayName: 'Build FNSCandyStyleTransfer-UWP-CS Sample'
       inputs:
         solution: Samples/FNSCandyStyleTransfer/UWP/CS/snapcandy.sln
-        vsVersion: "16.0"
+        vsVersion: "17.0"
         msbuildArgs: '-v:diag  /p:OutDir=$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\FNSCandyStyleTransfer\ /p:AppxPackageSigningEnabled=false /p:WindowsTargetPlatformVersion=$(WindowsTargetPlatformVersion)  /t:Restore,Clean,Build'
         platform: '$(BuildPlatform)'
         configuration: '$(BuildConfiguration)'
@@ -174,7 +174,7 @@ jobs:
       displayName: 'Build MNIST-UWP-cppcx Sample'
       inputs:
         solution: 'Samples/MNIST/UWP/cppcx/mnist_cppcx.sln'
-        vsVersion: "16.0"
+        vsVersion: "17.0"
         msbuildArgs: '-v:diag /p:OutDir=$(System.DefaultWorkingDirectory)\bin\$(BuildPlatform)\$(BuildConfiguration)\MNIST-cppcx\ /p:AppxPackageSigningEnabled=false /p:WindowsTargetPlatformVersion=$(WindowsTargetPlatformVersion) /t:Restore,Clean,Build'
         platform: '$(BuildPlatform)'
         configuration: '$(BuildConfiguration)'

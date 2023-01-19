@@ -4,10 +4,10 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Windows.AI.MachineLearning;
 using Windows.Media;
 using Windows.Storage;
 using Windows.UI.Xaml;
+using Microsoft.AI.MachineLearning;
 
 namespace YOLOv4ObjectDetection
 {

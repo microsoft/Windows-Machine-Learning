@@ -10,8 +10,9 @@ Param
     # CMake generator.
     [ValidateSet(
         'Visual Studio 15 2017', 
-        'Visual Studio 16 2019')]
-    [string]$Generator='Visual Studio 16 2019',
+        'Visual Studio 16 2019',
+        'Visual Studio 17 2022')]
+    [string]$Generator='Visual Studio 17 2022',
 
     # Location to generate build files.
     [string]$BuildDirectory = "$PSScriptRoot\..\..\build\external\opencv\cmake_config\$Architecture",

@@ -4,10 +4,13 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Windows.AI.MachineLearning;
 using Windows.Media;
 using Windows.Storage;
 using Windows.UI.Xaml;
+// Windows.AI.MachineLearning' refers to the libraries included in Windows,
+// while 'Microsoft.AI.MachineLearning' refers to the externally available NuGet package.
+using Microsoft.AI.MachineLearning;
+// using Windows.AI.MachineLearning;
 
 namespace YOLOv4ObjectDetection
 {

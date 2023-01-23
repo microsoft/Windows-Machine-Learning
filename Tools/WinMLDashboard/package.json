@@ -49,7 +49,7 @@
     "@types/react-select": "^3.0.10",
     "@types/webdriverio": "^5.0.0",
     "@types/yauzl": "^2.9.0",
-    "ajv": "^6.5.2",
+    "ajv": "^6.12.3",
     "babel-minify": "^0.5.1",
     "chai": "^4.2.0",
     "chai-as-promised": "^7.1.1",

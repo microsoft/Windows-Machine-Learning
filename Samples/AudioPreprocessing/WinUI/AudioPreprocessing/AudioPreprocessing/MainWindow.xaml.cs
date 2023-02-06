@@ -5,9 +5,10 @@ using Microsoft.UI.Xaml.Media.Imaging;
 using System;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
-using Windows.Graphics.Imaging;
 using Windows.Storage;
 using Windows.Storage.Pickers;
+using System.Text.RegularExpressions;
+
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -38,27 +39,25 @@ namespace AudioPreprocessing
         private async void OnOpenClick(object sender, RoutedEventArgs e)
         {
             string wavPath = await GetFilePath();
-            PreprocessModel melSpectrogram = new PreprocessModel();
-            var softwareBitmap = melSpectrogram.GenerateMelSpectrogram(wavPath, ColorMelSpectrogramCheckBox.IsChecked ?? false);
+            var melSpecSettings = new ModelSetting(
+                ColorMelSpectrogramCheckBox.IsChecked ?? false,
+                (int)BatchSize.Value,
+                (int)WindowSize.Value,
+                (int)DFTSize.Value,
+                (int)HopSize.Value,
+                (int)NMelBins.Value,
+                (int)SampleRate.Value,
+                (int)Amplitude.Value
+                );
 
-            ViewModel.AudioPath = wavPath;
-            ViewModel.MelSpectrogramImage = softwareBitmap;
-
-            //Image control only accepts BGRA8 encoding and Premultiplied/no alpha channel. This checks and converts
-            //the SoftwareBitmap we want to bind.
-            if (softwareBitmap.BitmapPixelFormat != BitmapPixelFormat.Bgra8 ||
-                softwareBitmap.BitmapAlphaMode != BitmapAlphaMode.Premultiplied)
-            {
-                softwareBitmap = SoftwareBitmap.Convert(softwareBitmap, BitmapPixelFormat.Bgra8, BitmapAlphaMode.Premultiplied);
-            }
-
+            ViewModel.GenerateMelSpectrograms(wavPath, melSpecSettings);
             WavFilePath.Text = ViewModel.AudioPath;
 
-            await ((SoftwareBitmapSource)spectrogram.Source).SetBitmapAsync(softwareBitmap);
+            await ((SoftwareBitmapSource)spectrogram.Source).SetBitmapAsync(ViewModel.MelSpectrogramImage);
         }
 
         private async Task<string> GetFilePath()
-        { 
+        {
             FileOpenPicker openPicker = new FileOpenPicker();
             openPicker.ViewMode = PickerViewMode.Thumbnail;
             openPicker.FileTypeFilter.Add(".wav");
@@ -74,6 +73,12 @@ namespace AudioPreprocessing
 
             StorageFile file = await openPicker.PickSingleFileAsync();
             return file.Path;
+        }
+
+        private static readonly Regex _regex = new Regex("[^0-9.-]+"); //regex that matches disallowed text
+        private static bool IsTextAllowed(string text)
+        {
+            return !_regex.IsMatch(text);
         }
     }
 }

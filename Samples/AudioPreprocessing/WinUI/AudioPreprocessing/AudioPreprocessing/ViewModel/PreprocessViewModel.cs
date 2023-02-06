@@ -17,11 +17,12 @@ namespace AudioPreprocessing.ViewModel
     {
         private string audioPath;
         private string imagePath;
+        private MelSpectrogramModel preprocessModel;
         private SoftwareBitmap melSpectrogramImage;
 
         public PreprocessViewModel()
         {
-            PreprocessModel preprocessModel = new PreprocessModel();
+            preprocessModel = new MelSpectrogramModel(new ModelSetting());
             audioPath = preprocessModel.AudioPath;
             imagePath = preprocessModel.MelSpecImagePath;
         }
@@ -61,12 +62,35 @@ namespace AudioPreprocessing.ViewModel
             get { return imagePath; }
             set { imagePath = value; OnPropertyChanged(); }
         }
-
         public SoftwareBitmap MelSpectrogramImage
         {
             get { return melSpectrogramImage; }
             set { melSpectrogramImage = value; OnPropertyChanged(); }
         }
+
+        public void GenerateMelSpectrograms(string wavPath, ModelSetting settings)
+        {
+            bool colorize = settings.Colored;
+            preprocessModel = new MelSpectrogramModel(settings);
+            MelSpectrogramImage = preprocessModel.GenerateMelSpectrogram(wavPath);
+            if (colorize)
+            {
+                // Use computational graph to colorize image
+                //MelSpectrogramImage = PreprocessModel.ColorizeWithComputationalGraph(MelSpectrogramImage);
+                // Use bitmap editing, pixel by pixel, to colorize image
+                MelSpectrogramModel.ColorizeWithBitmapEditing(MelSpectrogramImage);
+            }
+            AudioPath = wavPath;
+
+            //Image control only accepts BGRA8 encoding and Premultiplied/no alpha channel. This checks and converts
+            //the SoftwareBitmap we want to bind.
+            if (MelSpectrogramImage.BitmapPixelFormat != BitmapPixelFormat.Bgra8 ||
+                MelSpectrogramImage.BitmapAlphaMode != BitmapAlphaMode.Premultiplied)
+            {
+                MelSpectrogramImage = SoftwareBitmap.Convert(MelSpectrogramImage, BitmapPixelFormat.Bgra8, BitmapAlphaMode.Premultiplied);
+            }
+        }
+
 
         public ICommand SaveFileCommand => new AsyncRelayCommand(p => SaveFile());
 
@@ -96,13 +120,6 @@ namespace AudioPreprocessing.ViewModel
 
                 // Set the software bitmap
                 encoder.SetSoftwareBitmap(softwareBitmap);
-
-                // Set additional encoding parameters, if needed
-                encoder.BitmapTransform.ScaledWidth = 320;
-                encoder.BitmapTransform.ScaledHeight = 240;
-                encoder.BitmapTransform.Rotation = Windows.Graphics.Imaging.BitmapRotation.Clockwise90Degrees;
-                encoder.BitmapTransform.InterpolationMode = BitmapInterpolationMode.Fant;
-                encoder.IsThumbnailGenerated = true;
 
                 try
                 {

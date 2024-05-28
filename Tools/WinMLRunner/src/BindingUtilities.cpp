@@ -653,7 +653,7 @@ namespace BindingUtilities
         {
             if (dim > 0)
             {
-                length *= dim;
+                length *= int(dim);
             }
         }
 

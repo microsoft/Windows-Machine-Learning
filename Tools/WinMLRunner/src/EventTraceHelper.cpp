@@ -30,7 +30,7 @@ static void RemoveTrailingSpace(PEVENT_MAP_INFO pMapInfo)
 
     for (DWORD i = 0; i < pMapInfo->EntryCount; i++)
     {
-        byteLength = (wcslen((LPWSTR)((PBYTE)pMapInfo + pMapInfo->MapEntryArray[i].OutputOffset)) - 1) * 2;
+        byteLength = DWORD(wcslen((LPWSTR)((PBYTE)pMapInfo + pMapInfo->MapEntryArray[i].OutputOffset)) - 1) * 2;
         *((LPWSTR)((PBYTE)pMapInfo + (pMapInfo->MapEntryArray[i].OutputOffset + byteLength))) = L'\0';
     }
 }
